@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "io.cosgriff.glovebox.data"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 29

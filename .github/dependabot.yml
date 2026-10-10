@@ -6,11 +6,13 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
-      # Kotlin, its compiler plugins and KSP must move together.
+      # Kotlin, its compiler plugins and KSP must move together. Hilt/Dagger reads Kotlin metadata,
+      # so a Kotlin bump usually needs a Hilt bump in the same change.
       kotlin:
         patterns:
           - "org.jetbrains.kotlin*"
           - "com.google.devtools.ksp*"
+          - "com.google.dagger*"
       androidx:
         patterns:
           - "androidx.*"

@@ -13,7 +13,7 @@ https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
 ## Status
 
-`./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.6.0, AGP 9.4.1, lint included).
+`./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.8.1, AGP 9.4.1, lint included).
 Keep them green; lint errors fail the build.
 
 ## Commands
@@ -51,7 +51,8 @@ Keep them green; lint errors fail the build.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
 - **IDE is Android Studio.** Keep AGP current (use Studio's AGP Upgrade Assistant); no IntelliJ IDEA
   compatibility constraint.
-- minSdk 29, target/compile 36, JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
+- minSdk 29, targetSdk 36, compileSdk 37 (current androidx/Compose/OkHttp require compiling against 37;
+  raising targetSdk is a separate decision), JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
   with `@Serializable` routes. Dynamic color is off; use the theme tokens.
 
 ## Design tokens (from the canvas)
