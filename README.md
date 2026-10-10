@@ -35,10 +35,12 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
    ```
    keytool -genkeypair -v -keystore glovebox-release.jks -alias glovebox -keyalg RSA -keysize 4096 -validity 10000
    ```
-2. Add GitHub repository secrets:
+2. Add the signing secrets to the `release` environment (Settings → Environments → release →
+   Environment secrets), not as repository secrets:
    - `KEYSTORE_B64` — `base64 -i glovebox-release.jks | pbcopy`
    - `KEYSTORE_PASSWORD`, `KEY_ALIAS` (`glovebox`), `KEY_PASSWORD`
-3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`
+3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`, then approve the waiting `release` run in
+   the Actions tab. Release tags can't be moved or deleted afterwards.
 4. In Obtainium, add the GitHub repo URL. (Private repo: add a GitHub token in Obtainium's settings.)
 
 `applicationId` (`io.cosgriff.glovebox`) must never change after the first release.
