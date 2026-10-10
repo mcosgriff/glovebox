@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -59,7 +61,9 @@ class AddVehicleViewModel @Inject constructor(
     val vinValid: Boolean get() = Vin.hasValidCheckDigit(vin)
 
     fun onVinChange(input: String) {
-        vin = Vin.normalize(input).take(17)
+        val normalized = Vin.normalize(input).take(17)
+        if (normalized == vin) return // e.g. an 18th character typed; keep the decode result
+        vin = normalized
         decoded = null
         error = null
     }
@@ -98,8 +102,9 @@ class AddVehicleViewModel @Inject constructor(
 
 @Composable
 fun AddVehicleScreen(onDone: () -> Unit, vm: AddVehicleViewModel = hiltViewModel()) {
+    val focusManager = LocalFocusManager.current
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("Start with the VIN", style = MaterialTheme.typography.headlineSmall)
@@ -131,7 +136,10 @@ fun AddVehicleScreen(onDone: () -> Unit, vm: AddVehicleViewModel = hiltViewModel
         val d = vm.decoded
         if (d == null) {
             Button(
-                onClick = { vm.decode() },
+                onClick = {
+                    focusManager.clearFocus() // hide the keyboard so the result is visible
+                    vm.decode()
+                },
                 enabled = vm.vinValid && !vm.decoding,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
@@ -148,7 +156,13 @@ fun AddVehicleScreen(onDone: () -> Unit, vm: AddVehicleViewModel = hiltViewModel
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
             )
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+            Button(
+                onClick = {
+                    focusManager.clearFocus()
+                    vm.save(onDone)
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+            ) {
                 Text("Add to garage")
             }
         }

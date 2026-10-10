@@ -9,6 +9,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.util.Locale
 
 /** What we keep from a vPIC decode. Blank vPIC fields become null. */
 data class DecodedVehicle(
@@ -63,7 +64,10 @@ class NhtsaClient(private val http: HttpClient) {
             trim = f("Trim"),
             bodyClass = f("BodyClass"),
             driveType = f("DriveType"),
-            displacementL = f("DisplacementL"),
+            // vPIC reports e.g. "2.998832712"; show it the way people say it ("3.0").
+            displacementL = f("DisplacementL")?.let { raw ->
+                raw.toDoubleOrNull()?.let { String.format(Locale.US, "%.1f", it) } ?: raw
+            },
             cylinders = f("EngineCylinders"),
             engineModel = f("EngineModel"),
             horsepower = f("EngineHP"),
