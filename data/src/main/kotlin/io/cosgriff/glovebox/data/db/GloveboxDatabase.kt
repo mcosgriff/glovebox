@@ -26,9 +26,12 @@ class Converters {
         PhotoEntity::class,
         TorqueSpecEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)], // 2: schedule_items.templateKey
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2), // schedule_items.templateKey
+        AutoMigration(from = 2, to = 3), // service_record_items.catalogId
+    ],
 )
 @TypeConverters(Converters::class)
 abstract class GloveboxDatabase : RoomDatabase() {

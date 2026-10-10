@@ -97,6 +97,8 @@ data class ServiceRecordItemEntity(
     val recordId: Long,
     val scheduleItemId: Long?,
     val label: String,
+    /** CatalogItem.id this line was picked from; null for custom lines and the user's own schedule items. */
+    val catalogId: String? = null,
 )
 
 @Entity(

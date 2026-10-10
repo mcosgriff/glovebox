@@ -44,6 +44,10 @@ interface ServiceDao {
     fun observeRecords(vehicleId: Long): Flow<List<ServiceRecordWithItems>>
 
     @Transaction
+    @Query("SELECT * FROM service_records WHERE id = :id")
+    fun observeRecord(id: Long): Flow<ServiceRecordWithItems?>
+
+    @Transaction
     @Query("SELECT * FROM service_records WHERE vehicleId = :vehicleId")
     suspend fun recordsFor(vehicleId: Long): List<ServiceRecordWithItems>
 
