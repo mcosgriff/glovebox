@@ -229,16 +229,23 @@ fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltVie
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("HOW DO YOU DRIVE IT?")
+                // Canvas: the chosen side is solid ink.
+                val colors = SegmentedButtonDefaults.colors(
+                    activeContainerColor = MaterialTheme.colorScheme.secondary,
+                    activeContentColor = MaterialTheme.colorScheme.onSecondary,
+                )
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     SegmentedButton(
                         selected = !vm.severeUse,
                         onClick = { vm.chooseSevereUse(false) },
                         shape = SegmentedButtonDefaults.itemShape(0, 2),
+                        colors = colors,
                     ) { Text("Normal") }
                     SegmentedButton(
                         selected = vm.severeUse,
                         onClick = { vm.chooseSevereUse(true) },
                         shape = SegmentedButtonDefaults.itemShape(1, 2),
+                        colors = colors,
                     ) { Text("Severe") }
                 }
                 Text(

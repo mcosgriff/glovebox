@@ -60,8 +60,9 @@ fun ScheduleItemEditor(
     var severe by remember(item.key) { mutableStateOf(item.severe) }
     var useSevere by remember(item.key) { mutableStateOf(item.useSevere && item.severe != null) }
     var rule by remember(item.key) { mutableStateOf(item.rule) }
-    var milesText by remember(item.key) { mutableStateOf(item.active.miles.asText()) }
-    var monthsText by remember(item.key) { mutableStateOf(item.active.months.asText()) }
+    // A new item starts blank: the interval is the user's to say, not ours to guess.
+    var milesText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.miles.asText()) }
+    var monthsText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.months.asText()) }
     var showErrors by remember(item.key) { mutableStateOf(false) }
 
     val typed = IntervalInput.parse(milesText, monthsText)
