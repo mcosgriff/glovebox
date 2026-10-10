@@ -1,0 +1,93 @@
+package io.cosgriff.glovebox.ui.theme
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import io.cosgriff.glovebox.data.settings.ThemeMode
+
+// Tokens from the Glovebox design canvas. Dynamic (wallpaper) color is intentionally off.
+
+private val Light = lightColorScheme(
+    primary = Color(0xFFC2410C),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFFBE9DF),
+    onPrimaryContainer = Color(0xFF9A3412),
+    secondary = Color(0xFF17191C),
+    onSecondary = Color(0xFFFFFFFF),
+    tertiary = Color(0xFF0F766E),
+    tertiaryContainer = Color(0xFFDDEFEC),
+    onTertiaryContainer = Color(0xFF0F766E),
+    background = Color(0xFFF4F3EF),
+    onBackground = Color(0xFF17191C),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF17191C),
+    surfaceVariant = Color(0xFFE9E7E0),
+    onSurfaceVariant = Color(0xFF5A5F66),
+    surfaceContainer = Color(0xFFFFFFFF),
+    outline = Color(0xFFB9B6AE),
+    outlineVariant = Color(0xFFDEDCD5),
+    error = Color(0xFFB42318),
+    errorContainer = Color(0xFFFDE8E7),
+)
+
+private val Dark = darkColorScheme(
+    primary = Color(0xFFF08A4B),
+    onPrimary = Color(0xFF17191C),
+    primaryContainer = Color(0xFF3A2418),
+    onPrimaryContainer = Color(0xFFFDBA74),
+    secondary = Color(0xFFEDEBE6),
+    onSecondary = Color(0xFF17191C),
+    tertiary = Color(0xFF5EEAD4),
+    tertiaryContainer = Color(0xFF123B36),
+    onTertiaryContainer = Color(0xFF5EEAD4),
+    background = Color(0xFF121416),
+    onBackground = Color(0xFFEDEBE6),
+    surface = Color(0xFF1C1F23),
+    onSurface = Color(0xFFEDEBE6),
+    surfaceVariant = Color(0xFF24282D),
+    onSurfaceVariant = Color(0xFFA5A9AF),
+    surfaceContainer = Color(0xFF1C1F23),
+    outline = Color(0xFF4A4F55),
+    outlineVariant = Color(0xFF2E3338),
+    error = Color(0xFFF97066),
+    errorContainer = Color(0xFF3B1714),
+)
+
+/** Status colors that Material's scheme doesn't name. */
+@Immutable
+data class StatusColors(val overdue: Color, val soon: Color, val ok: Color)
+
+val LocalStatusColors = staticCompositionLocalOf {
+    StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
+}
+
+@Composable
+fun GloveboxTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> Unit) {
+    val dark = when (mode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    // TODO: bundle IBM Plex Sans / Mono (res/font) and set them here to match the design.
+    MaterialTheme(
+        colorScheme = if (dark) Dark else Light,
+        typography = Typography(),
+        content = content,
+    )
+}
+
+@Composable
+fun statusColors(): StatusColors {
+    val dark = MaterialTheme.colorScheme.background == Dark.background
+    return if (dark) {
+        StatusColors(overdue = Color(0xFFF59E6B), soon = Color(0xFFC4C1BA), ok = Color(0xFF5EEAD4))
+    } else {
+        StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
+    }
+}

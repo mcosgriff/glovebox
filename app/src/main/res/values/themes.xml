@@ -1,0 +1,8 @@
+<resources>
+    <!-- Compose draws everything; this only sets the window background before first frame. -->
+    <style name="Theme.Glovebox" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ground</item>
+    </style>
+    <color name="ground">#F4F3EF</color>
+    <color name="launcher_background">#C2410C</color>
+</resources>
