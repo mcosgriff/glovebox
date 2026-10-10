@@ -13,7 +13,7 @@ val appVersionCode = (findProperty("versionCode") as String?)?.toInt() ?: 1
 
 android {
     namespace = "io.cosgriff.glovebox"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         // Never change after the first release — Obtainium/Android treat a new ID as a new app.
