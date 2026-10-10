@@ -1,5 +1,5 @@
 [versions]
-# AGP pinned to 8.12.x — the newest line IntelliJ IDEA's Android plugin supports (2025.3.x).
+# AGP pinned to 9.4.1 so the project also opens in IntelliJ IDEA's Android plugin.
 # Bump only after checking https://github.com/rafaeltonholo/agp-intellij-compatibility-matrix
 agp = "9.4.1"
 kotlin = "2.2.20"

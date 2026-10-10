@@ -8,9 +8,8 @@ https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
 ## Status
 
-The scaffold was written without a successful Gradle build (no network/SDK in the environment that
-created it). First job: get `./gradlew build` and `./gradlew :domain:test` green, fixing any
-dependency-version or compile issues, before adding features.
+`./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.6.0, AGP 9.4.1, lint included).
+Keep them green; lint errors fail the build.
 
 ## Commands
 
