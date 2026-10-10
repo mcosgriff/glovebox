@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 960px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Settings.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="font-size: 20px; font-weight: 600">Notifications</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px; padding: 8px 20px 24px 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #DDEFEC; color: #0F766E; font-size: 14px; font-weight: 600">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+      Allowed in Android settings
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">TELL ME ABOUT</div>
+      <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 12px; min-height: 68px; border-bottom: 1px solid #EEECE6">
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; font-weight: 600">{{r.label}}</span>
+              <span style="font-size: 13px; color: #5A5F66">{{r.desc}}</span>
+            </span>
+            <button role="switch" aria-checked="{{r.on}}" aria-label="{{r.label}}" onClick="{{r.toggle}}" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 4px; display: flex; flex-shrink: 0; justify-content: {{r.j}}; background: {{r.track}}">
+              <span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; display: block"></span>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">WHEN</div>
+      <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid #EEECE6; font-size: 15px"><span>Time of day</span><span style="font-size: 13px; font-weight: 600; color: #3A3E44">8:00 AM ›</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid #EEECE6; font-size: 15px"><span>Mileage check-in</span><span style="font-size: 13px; font-weight: 600; color: #3A3E44">Every 2 weeks ›</span></div>
+        <a href="Reminders.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; font-size: 15px; color: #17191C; text-decoration: none"><span>How early to remind</span><span style="font-size: 13px; font-weight: 600; color: #3A3E44">500 mi / 14 days ›</span></a>
+      </div>
+      <div style="font-size: 12px; line-height: 1.45; color: #5A5F66">Mileage reminders only work if the odometer is current, so we'll ask you for a quick reading on a schedule.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { on: { due: true, over: true, recall: true, odo: true } };
+}
+renderVals() {
+var self = this, on = this.state.on;
+var R = [
+['due', 'Service coming due', 'Based on your reminder rules'],
+['over', 'Overdue nudges', 'Once a week until it’s logged or snoozed'],
+['recall', 'New recalls', 'Checked weekly for each vehicle'],
+['odo', 'Mileage check-in', 'A quick prompt to update the odometer']
+];
+return {
+rows: R.map(function (r) {
+var v = !!on[r[0]];
+return { label: r[1], desc: r[2], on: v, track: v ? '#C2410C' : '#8A8E94', j: v ? 'flex-end' : 'flex-start', toggle: function () { var n = Object.assign({}, on); n[r[0]] = !v; self.setState({ on: n }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>

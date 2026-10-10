@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Update mileage</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+  <div aria-hidden="true" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 16px">
+    <div style="height: 44px; display: flex; align-items: center; font-size: 15px; font-weight: 600">All vehicles</div>
+    <div style="height: 170px; border-radius: 20px; background: #17191C"></div>
+    <div style="height: 64px; border-radius: 14px; background: #FBE9DF"></div>
+    <div style="height: 300px; border-radius: 16px; background: #FFFFFF"></div>
+  </div>
+  <a href="Garage.dc.html" aria-label="Close" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(14,16,18,0.55)"></a>
+
+  <div role="dialog" aria-label="Update mileage" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F3EF; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="width: 40px; height: 4px; border-radius: 2px; background: #B9B6AE; align-self: center"></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <div style="font-size: 20px; font-weight: 700">Update mileage</div>
+      <div style="font-size: 13px; color: #5A5F66">2019 4Runner</div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 2px solid {{fieldBorder}}; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px">
+      <div style="font-size: 12px; font-weight: 600; color: #3A3E44">Odometer now</div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 36px; font-weight: 600; letter-spacing: 0.02em">{{display}}</span>
+        <span style="font-size: 15px; color: #5A5F66">mi</span>
+      </div>
+      <div style="font-size: 13px; font-weight: 600; color: {{deltaColor}}">{{deltaText}}</div>
+    </div>
+
+    <div style="background: #E9E7E0; border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.45; color: #3A3E44">{{impact}}</div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+        <button onClick="{{k.press}}" aria-label="{{k.aria}}" style="height: 54px; border-radius: 14px; border: 0; background: {{k.bg}}; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 22px; font-weight: 600; color: #17191C">{{k.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; gap: 10px">
+      <button style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #17191C; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #17191C; display: flex; align-items: center; justify-content: center; gap: 6px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        Read dash
+      </button>
+      <a href="{{saveHref}}" style="flex: 2; height: 52px; border-radius: 14px; background: {{saveBg}}; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600">{{saveLabel}}</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { v: '68950' };
+}
+renderVals() {
+var self = this, v = this.state.v;
+var LAST = 68412, OIL = 70100, ROT = 65100;
+var n = parseInt(v || '0', 10);
+var fmt = function (x) { return x.toLocaleString('en-US'); };
+var low = n < LAST;
+var delta = n - LAST;
+var impact;
+if (low) {
+impact = 'That’s lower than the last reading. If the odometer or cluster was replaced, you can record an offset in Vehicle details.';
+} else {
+var oilLeft = OIL - n;
+impact = (oilLeft > 0 ? 'Oil & filter now due in ' + fmt(oilLeft) + ' mi' : 'Oil & filter is now overdue by ' + fmt(-oilLeft) + ' mi') + ' · Tire rotation overdue by ' + fmt(n - ROT) + ' mi.';
+}
+var press = function (d) { return function () { if (v.length < 7) self.setState({ v: (v === '0' ? '' : v) + d }); }; };
+var K = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return { label: d, aria: d, bg: '#FFFFFF', press: press(d) }; });
+K.push({ label: 'C', aria: 'Clear', bg: '#E9E7E0', press: function () { self.setState({ v: '' }); } });
+K.push({ label: '0', aria: '0', bg: '#FFFFFF', press: press('0') });
+K.push({ label: '⌫', aria: 'Delete digit', bg: '#E9E7E0', press: function () { self.setState({ v: v.slice(0, -1) }); } });
+return {
+display: v ? fmt(n) : '0',
+deltaText: low ? 'Last reading was ' + fmt(LAST) + ' on Oct 10' : '+' + fmt(delta) + ' mi since Oct 10',
+deltaColor: low ? '#B42318' : '#0F766E',
+fieldBorder: low ? '#B42318' : '#17191C',
+impact: impact,
+keys: K,
+saveLabel: low ? 'Save anyway' : 'Save ' + fmt(n) + ' mi',
+saveBg: low ? '#3A3E44' : '#C2410C',
+saveHref: 'Garage.dc.html'
+};
+}
+}
+</script>
+</body>
+</html>

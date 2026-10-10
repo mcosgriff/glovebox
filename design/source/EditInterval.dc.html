@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edit schedule item</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1080px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Schedule.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <div style="flex: 1; font-size: 20px; font-weight: 600">Edit schedule item</div>
+    <a href="Schedule.dc.html" style="margin-right: 12px; height: 40px; padding: 0 16px; border-radius: 12px; background: #C2410C; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; font-size: 14px; font-weight: 600">Save</a>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 12px 20px 24px 20px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="iname" style="font-size: 12px; font-weight: 600; color: #3A3E44">Name</label>
+      <input id="iname" value="Oil &amp; filter" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid #B9B6AE; border-radius: 12px; background: #FFFFFF; padding: 0 12px; font-family: inherit; font-size: 15px; color: #17191C">
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">REPEAT EVERY</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="imi" style="font-size: 12px; font-weight: 600; color: #3A3E44">Miles</label>
+          <input id="imi" value="{{miles}}" inputmode="numeric" style="width: 100%; min-width: 0; height: 52px; box-sizing: border-box; border: 2px solid #17191C; border-radius: 12px; background: #FFFFFF; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600; color: #17191C">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="imo" style="font-size: 12px; font-weight: 600; color: #3A3E44">Months</label>
+          <input id="imo" value="{{months}}" inputmode="numeric" style="width: 100%; min-width: 0; height: 52px; box-sizing: border-box; border: 2px solid #17191C; border-radius: 12px; background: #FFFFFF; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600; color: #17191C">
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 4px 0">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span id="sev-l" style="font-size: 15px; font-weight: 600">Severe-use interval</span>
+          <span style="font-size: 13px; color: #5A5F66">Toyota: 5,000 mi / 6 mo when towing or off-road</span>
+        </span>
+        <button role="switch" aria-checked="{{severe}}" aria-labelledby="sev-l" onClick="{{toggleSevere}}" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 4px; display: flex; justify-content: {{sevJ}}; background: {{sevT}}">
+          <span style="width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; display: block"></span>
+        </button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="irule" style="font-size: 12px; font-weight: 600; color: #3A3E44">Which comes due</label>
+      <select id="irule" style="width: 100%; height: 48px; border: 1.5px solid #B9B6AE; border-radius: 12px; background: #FFFFFF; padding: 0 10px; font-family: inherit; font-size: 15px; color: #17191C">
+        <option>Use my default (whichever comes first)</option>
+        <option>Whichever comes first</option>
+        <option>Whichever comes last</option>
+        <option>Mileage only</option>
+        <option>Time only</option>
+      </select>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">LAST DONE</div>
+      <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
+        <a href="RecordDetail.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid #EEECE6; color: #17191C; text-decoration: none; font-size: 15px">
+          <span>Oct 10, 2026 · 68,412 mi</span><span style="font-size: 13px; color: #5A5F66">From your log ›</span>
+        </a>
+        <div style="display: flex; flex-direction: column; gap: 2px; justify-content: center; min-height: 56px">
+          <span style="font-size: 15px">Logging any of these resets it</span>
+          <span style="font-size: 13px; color: #5A5F66">Oil &amp; filter change</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FBE9DF; border: 1px solid #F3C9B1; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; font-weight: 600; color: #9A3412">NEXT DUE</span>
+      <span style="font-size: 20px; font-weight: 700">{{nextLine}}</span>
+      <span style="font-size: 13px; color: #3A3E44">{{nextWhy}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <button onClick="{{resetDefault}}" style="height: 48px; border: 0; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; font-weight: 600; color: #C2410C">Reset to Toyota's interval</button>
+      <button style="height: 48px; border: 0; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; font-weight: 600; color: #B42318">Stop tracking this item</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { severe: false };
+}
+renderVals() {
+var self = this, sev = this.state.severe;
+return {
+severe: sev,
+miles: sev ? '5,000' : '10,000',
+months: sev ? '6' : '12',
+sevT: sev ? '#C2410C' : '#8A8E94', sevJ: sev ? 'flex-end' : 'flex-start',
+nextLine: sev ? '73,412 mi or Apr 10, 2027' : '78,412 mi or Oct 10, 2027',
+nextWhy: sev ? 'Whichever comes first · est. early Jan 2027 at your pace' : 'Whichever comes first · est. mid-Mar 2027 at your pace',
+toggleSevere: function () { self.setState({ severe: !sev }); },
+resetDefault: function () { self.setState({ severe: false }); }
+};
+}
+}
+</script>
+</body>
+</html>

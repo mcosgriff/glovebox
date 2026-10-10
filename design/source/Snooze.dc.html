@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snooze reminder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+input[type=radio]{accent-color:#C2410C}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+  <div aria-hidden="true" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 48px; font-size: 26px; font-weight: 700">Reminders</div>
+    <div style="height: 120px; border-radius: 16px; background: #FFFFFF"></div>
+    <div style="height: 120px; border-radius: 16px; background: #FFFFFF"></div>
+  </div>
+  <a href="Upcoming.dc.html" aria-label="Close" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(14,16,18,0.55)"></a>
+
+  <div role="dialog" aria-label="Snooze reminder" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F3EF; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="width: 40px; height: 4px; border-radius: 2px; background: #B9B6AE; align-self: center"></div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 20px; font-weight: 700">Snooze tire rotation</div>
+      <div style="font-size: 13px; color: #5A5F66">2019 4Runner · overdue by 3,312 mi</div>
+    </div>
+
+    <div role="radiogroup" aria-label="Snooze for" style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="5">
+        <label style="display: flex; align-items: center; gap: 12px; min-height: 50px; border-bottom: 1px solid #EEECE6; font-size: 15px">
+          <input type="radio" name="snz" checked="{{o.on}}" onChange="{{o.pick}}" style="width: 20px; height: 20px">
+          <span style="flex: 1">{{o.label}}</span>
+          <span style="font-size: 12px; color: #5A5F66">{{o.hint}}</span>
+        </label>
+      </sc-for>
+    </div>
+
+    <div style="font-size: 13px; color: #3A3E44">You'll be reminded again <span style="font-weight: 700">{{when}}</span>.</div>
+
+    <div style="display: flex; gap: 10px">
+      <a href="LogService.dc.html" style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #17191C; color: #17191C; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">Already done</a>
+      <a href="Upcoming.dc.html" style="flex: 2; height: 52px; border-radius: 14px; background: #C2410C; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600">Snooze</a>
+    </div>
+    <button style="height: 40px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #5A5F66">Skip this one — wait for the next interval</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { pick: 'oil' };
+}
+renderVals() {
+var self = this, cur = this.state.pick;
+var O = [
+['500', '500 miles', 'at 68,912 mi', 'at 68,912 mi'],
+['1000', '1,000 miles', 'at 69,412 mi', 'at 69,412 mi'],
+['2w', '2 weeks', 'Oct 24', 'on Oct 24'],
+['1m', '1 month', 'Nov 10', 'on Nov 10'],
+['oil', 'With the next oil change', '~70,100 mi', 'with the oil change at ~70,100 mi']
+];
+var when = '';
+var opts = O.map(function (o) {
+var on = o[0] === cur;
+if (on) when = o[3];
+return { label: o[1], hint: o[2], on: on, pick: function () { self.setState({ pick: o[0] }); } };
+});
+return { opts: opts, when: when };
+}
+}
+</script>
+</body>
+</html>

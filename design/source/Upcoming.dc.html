@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reminders</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 4px 20px">
+    <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">Reminders</div>
+    <a href="Reminders.dc.html" aria-label="Reminder rules" style="height: 40px; padding: 0 12px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Rules</a>
+  </div>
+
+  <div style="display: flex; gap: 8px; padding: 12px 20px">
+    <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+      <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 0 20px 16px 20px; overflow: hidden">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 6px">
+        <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: {{g.color}}">{{g.title}}</div>
+        <sc-for list="{{g.items}}" as="r" hint-placeholder-count="2">
+          <div style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+              <span style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 15px; font-weight: 600">{{r.name}}</span>
+                <span style="font-size: 12px; color: #5A5F66">{{r.vehicle}} · {{r.rule}}</span>
+              </span>
+              <span style="font-size: 13px; font-weight: 600; white-space: nowrap; color: {{g.color}}">{{r.when}}</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <a href="LogService.dc.html" style="flex: 1; height: 40px; border-radius: 10px; background: #C2410C; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600">Log it</a>
+              <a href="Snooze.dc.html" style="flex: 1; height: 40px; border-radius: 10px; background: #E9E7E0; color: #17191C; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600">Snooze…</a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <nav style="height: 80px; background: #FFFFFF; border-top: 1px solid #DEDCD5; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+    <a href="GarageMulti.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"></path><path d="M7 21v-7h10v7"></path></svg></div>
+      Garage
+    </a>
+    <a href="History.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
+      History
+    </a>
+    <a href="Upcoming.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #17191C; text-decoration: none; font-size: 12px; font-weight: 700">
+      <div style="width: 56px; height: 30px; border-radius: 15px; background: #FBE9DF; display: flex; align-items: center; justify-content: center; color: #C2410C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></div>
+      Reminders
+    </a>
+    <a href="Settings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div>
+      Settings
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { v: 'all' };
+}
+renderVals() {
+var self = this, v = this.state.v;
+var ALL = [
+{ g: 'over', v: '4r', name: 'Tire rotation', vehicle: '2019 4Runner', rule: 'every 5,000 mi', when: '3,312 mi over' },
+{ g: 'soon', v: 'gti', name: 'Oil & filter (VW 502 00)', vehicle: '2011 GTI', rule: '10,000 mi / 12 mo', when: 'in 640 mi' },
+{ g: 'soon', v: '4r', name: 'Oil & filter (0W-20)', vehicle: '2019 4Runner', rule: '10,000 mi / 12 mo', when: 'in 1,688 mi' },
+{ g: 'later', v: 'gti', name: 'Brake fluid', vehicle: '2011 GTI', rule: 'every 2 years', when: 'Mar 2027' },
+{ g: 'later', v: '4r', name: 'Engine & cabin air filters', vehicle: '2019 4Runner', rule: 'every 30,000 mi', when: 'in 6,588 mi' }
+];
+var G = [['over', 'OVERDUE', '#C2410C', '#C2410C'], ['soon', 'NEXT 30 DAYS', '#3A3E44', '#DEDCD5'], ['later', 'LATER', '#0F766E', '#DEDCD5']];
+var groups = G.map(function (g) {
+return { title: g[1], color: g[2], items: ALL.filter(function (r) { return r.g === g[0] && (v === 'all' || r.v === v); }).map(function (r) { return Object.assign({}, r, { border: g[3] }); }) };
+}).filter(function (g) { return g.items.length > 0; });
+var F = [['all', 'All vehicles'], ['4r', '4Runner'], ['gti', 'GTI']];
+return {
+groups: groups,
+filters: F.map(function (f) {
+var a = f[0] === v;
+return { label: f[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ v: f[0] }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>

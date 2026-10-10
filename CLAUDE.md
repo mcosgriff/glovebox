@@ -6,6 +6,10 @@ server. Owner: Matthew (sideloads via Obtainium from GitHub Releases, not the Pl
 Design canvas (screens, flows, light/dark, nav map):
 https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
+**Local copy of the design: `design/`** — `design/screens/<Name>.png` (renders) and
+`design/source/<Name>.dc.html` (exact colors, spacing, copy). Start from `design/README.md` and
+`design/screens/NavMap.png`. Before building a screen, look at its PNG and read its source.
+
 ## Status
 
 `./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.6.0, AGP 9.4.1, lint included).
@@ -62,13 +66,13 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 ## Screens (canvas board → status)
 
 Done in code: unlock, empty garage, garage list (odometer + Log service per vehicle), add vehicle via
-VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, settings
-(theme, biometrics, hide in recents, torque units). Placeholders: History, Reminders.
-To build, roughly in order: History + service record detail + edit/delete with Undo, Reminders tab +
-snooze, update-mileage sheet, recalls, vehicle home + details (+ mark sold / archive / delete), torque
-specs, VIN scanning (CameraX + ML Kit bundled barcode, Code 39), receipt photos on service records,
-notifications (WorkManager), encrypted backup/restore, PDF + Markdown export, welcome/first run,
-manual add (no VIN), about.
+VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
+(per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
+(theme, biometrics, hide in recents, torque units). Placeholder: Reminders.
+To build, roughly in order: Reminders tab + snooze, update-mileage sheet, recalls, vehicle home +
+details (+ mark sold / archive / delete), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
+Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
+PDF + Markdown export, welcome/first run, manual add (no VIN), about.
 
 Notes on what's built:
 - The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
@@ -76,6 +80,9 @@ Notes on what's built:
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
   (`ServiceCatalog`); the user's own schedule items appear under "Your items".
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
+- All service-log writes go through `RecordActions` (app), which emits the events behind the
+  nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
+- Schema changes so far are Room auto-migrations (v3); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

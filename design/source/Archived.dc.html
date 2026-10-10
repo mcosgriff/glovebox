@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Archived vehicles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="GarageMulti.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="font-size: 20px; font-weight: 600">Archived vehicles</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; padding: 8px 20px 24px 20px">
+    <div style="font-size: 14px; line-height: 1.45; color: #4F545B">Sold or retired vehicles keep their full history here. They don't get reminders or recall checks.</div>
+
+    <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <div style="font-size: 20px; font-weight: 700">[YEAR MAKE MODEL]</div>
+          <div style="font-size: 13px; color: #5A5F66">Sold [DATE] · final [MILEAGE] mi</div>
+        </div>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #E9E7E0; color: #3A3E44; font-size: 12px; font-weight: 700">SOLD</span>
+      </div>
+      <div style="font-size: 13px; color: #3A3E44">[N] service records · [N] photos</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <a href="History.dc.html" style="height: 44px; border-radius: 12px; border: 1.5px solid #17191C; color: #17191C; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">View history</a>
+        <a href="ExportSheet.dc.html" style="height: 44px; border-radius: 12px; border: 1.5px solid #17191C; color: #17191C; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">Export</a>
+      </div>
+      <div style="display: flex; justify-content: space-between">
+        <button style="height: 40px; border: 0; background: transparent; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: #C2410C">Move back to garage</button>
+        <a href="DeleteVehicle.dc.html" style="display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #B42318; text-decoration: none">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

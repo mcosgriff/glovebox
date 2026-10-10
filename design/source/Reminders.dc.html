@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reminder rules</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+input[type=radio]{accent-color:#C2410C}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1060px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="font-size: 20px; font-weight: 600">Reminder rules</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 8px 20px 24px 20px">
+    <div style="font-size: 15px; line-height: 1.45; color: #4F545B">Most services have a mileage interval and a time interval. Choose which one sets the due date.</div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px" role="radiogroup" aria-label="Due date rule">
+      <sc-for list="{{rules}}" as="r" hint-placeholder-count="4">
+        <label style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 2px solid {{r.border}}">
+          <input type="radio" name="rule" checked="{{r.on}}" onChange="{{r.pick}}" style="width: 20px; height: 20px; margin: 2px 0 0 0; flex-shrink: 0">
+          <span style="display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 15px; font-weight: 600">{{r.label}}</span>
+            <span style="font-size: 13px; line-height: 1.35; color: #5A5F66">{{r.desc}}</span>
+          </span>
+        </label>
+      </sc-for>
+    </div>
+
+    <div style="background: #FFFFFF; color: #17191C; border: 1px solid #DEDCD5; box-shadow: 0 1px 2px rgba(23,25,28,0.06), 0 8px 24px rgba(23,25,28,0.06); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #5A5F66">PREVIEW · OIL &amp; FILTER</div>
+      <div style="font-size: 13px; color: #3A3E44; line-height: 1.4">Every 10,000 mi or 12 months · last done Jun 14, 2026 at 60,100 mi</div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="display: flex; justify-content: space-between; font-size: 13px">
+            <span style="font-weight: 600; color: {{milesFg}}">Mileage · 70,100 mi</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #3A3E44">~Nov 2026</span>
+          </div>
+          <div style="height: 6px; border-radius: 3px; background: #EEECE6"><div style="height: 6px; border-radius: 3px; width: 83%; background: {{milesBar}}"></div></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="display: flex; justify-content: space-between; font-size: 13px">
+            <span style="font-weight: 600; color: {{timeFg}}">Time · 12 months</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: #3A3E44">Jun 14, 2027</span>
+          </div>
+          <div style="height: 6px; border-radius: 3px; background: #EEECE6"><div style="height: 6px; border-radius: 3px; width: 33%; background: {{timeBar}}"></div></div>
+        </div>
+      </div>
+      <div style="height: 1px; background: #EEECE6"></div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-size: 12px; color: #5A5F66">Next reminder</div>
+        <div style="font-size: 20px; font-weight: 700">{{dueLine}}</div>
+        <div style="font-size: 13px; color: #3A3E44">{{dueWhy}}</div>
+      </div>
+      <sc-if value="{{showWarn}}" hint-placeholder-val="{{ false }}">
+        <div style="font-size: 13px; line-height: 1.4; color: #9A3412; background: #FBE9DF; border: 1px solid #F3C9B1; border-radius: 10px; padding: 10px 12px">This can push services past Toyota's recommended interval.</div>
+      </sc-if>
+      <div style="font-size: 12px; color: #5A5F66">Dates estimated from your average of ~2,080 mi/month</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">REMIND ME EARLY</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="leadmi" style="font-size: 12px; font-weight: 600; color: #3A3E44">Miles before</label>
+          <input id="leadmi" value="500" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid #B9B6AE; border-radius: 12px; background: #FFFFFF; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="leadd" style="font-size: 12px; font-weight: 600; color: #3A3E44">Days before</label>
+          <input id="leadd" value="14" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid #B9B6AE; border-radius: 12px; background: #FFFFFF; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 13px; font-weight: 700; color: #3A3E44; letter-spacing: 0.04em">PER-SERVICE OVERRIDES</div>
+      <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid #EEECE6; font-size: 15px">
+          <span>Tire rotation</span><span style="font-size: 13px; font-weight: 600; color: #3A3E44">Mileage only ›</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; border-bottom: 1px solid #EEECE6; font-size: 15px">
+          <span>Brake fluid flush</span><span style="font-size: 13px; font-weight: 600; color: #3A3E44">Time only ›</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 52px; font-size: 15px">
+          <span>Everything else</span><span style="font-size: 13px; font-weight: 600; color: #5A5F66">Uses default</span>
+        </div>
+      </div>
+      <button style="height: 44px; border: 0; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 14px; font-weight: 600; color: #C2410C">+ Add override</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"defaultRule":{"editor":"enum","options":["first","last","miles","time"],"default":"first"},"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { rule: null };
+}
+renderVals() {
+var self = this;
+var rule = this.state.rule || this.props.defaultRule || 'first';
+var R = [
+['first', 'Whichever comes first', 'Recommended. Matches Toyota’s schedule — mileage or time, the earlier one.'],
+['last', 'Whichever comes last', 'Waits until both the mileage and the time interval have passed.'],
+['miles', 'Mileage only', 'Ignore time. Good if you drive a lot.'],
+['time', 'Time only (months)', 'Ignore mileage. Good for a weekend vehicle.']
+];
+var OUT = {
+first: ['~Nov 5, 2026', 'Mileage hits first, at 70,100 mi', 'miles', false],
+last: ['Jun 14, 2027', 'Time hits last — est. ~85,300 mi by then', 'time', true],
+miles: ['70,100 mi', 'Est. around Nov 5, 2026', 'miles', false],
+time: ['Jun 14, 2027', '12 months after last service', 'time', false]
+};
+var o = OUT[rule];
+var on = '#C2410C', off = '#B9B6AE';
+return {
+rules: R.map(function (r) {
+var a = r[0] === rule;
+return { label: r[1], desc: r[2], on: a, border: a ? '#C2410C' : '#DEDCD5', pick: function () { self.setState({ rule: r[0] }); } };
+}),
+dueLine: o[0], dueWhy: o[1], showWarn: o[3],
+milesBar: o[2] === 'miles' ? on : off, milesFg: o[2] === 'miles' ? on : '#3A3E44',
+timeBar: o[2] === 'time' ? on : off, timeFg: o[2] === 'time' ? on : '#3A3E44'
+};
+}
+}
+</script>
+</body>
+</html>

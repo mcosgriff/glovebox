@@ -68,14 +68,15 @@ import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
-import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.ServiceEntry
@@ -83,6 +84,7 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.WorkCategory
+import io.cosgriff.glovebox.domain.WorkOption
 import io.cosgriff.glovebox.ui.LogServiceRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import kotlinx.coroutines.flow.first
@@ -90,7 +92,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -102,8 +103,14 @@ data class LogServiceData(
     val vehicleName: String,
     val categories: List<WorkCategory>,
     val due: List<DueSuggestion>,
+    val tracked: List<TrackedItem>,
+    /** The whole log, including the record being edited. */
+    val entries: List<ServiceEntry>,
+    /** Readings to sanity-check the odometer against; excludes the record being edited. */
     val readings: List<OdometerReading>,
     val lastOdometer: Int?,
+    /** The record being edited; null when logging a new one. */
+    val original: ServiceRecordWithItems?,
 )
 
 @HiltViewModel
@@ -111,11 +118,14 @@ class LogServiceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
     schedule: ScheduleDao,
-    private val service: ServiceDao,
+    service: ServiceDao,
     odometer: OdometerDao,
     settings: SettingsRepository,
+    private val actions: RecordActions,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<LogServiceRoute>().vehicleId
+    private val route = savedStateHandle.toRoute<LogServiceRoute>()
+    private val vehicleId = route.vehicleId
+    val editing: Boolean = route.recordId != 0L
 
     var data by mutableStateOf<LogServiceData?>(null)
         private set
@@ -146,45 +156,82 @@ class LogServiceViewModel @Inject constructor(
             return ServiceLog.isBelowPreviousReading(odo, date, data?.readings.orEmpty())
         }
 
+    private val selectedOptions: List<WorkOption>
+        get() = data?.categories.orEmpty().flatMap { it.options }.filter { it.id in selected }
+
+    /** Edit only: how reminders move if the form is saved as it stands. */
+    val reminderChanges: List<ReminderChange>
+        get() {
+            val d = data ?: return emptyList()
+            val original = d.original ?: return emptyList()
+            val edited = ServiceEntry(
+                id = original.record.id,
+                date = date,
+                odometer = odometer ?: original.record.odometer,
+                itemIds = selectedOptions.mapNotNull { it.scheduleItemId }.toSet(),
+            )
+            return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
+        }
+
     init {
         viewModelScope.launch {
             val vehicle = vehicles.observe(vehicleId).first()
             val items = schedule.allFor(vehicleId)
             val defaultRule = settings.settings.first().defaultRule
-            val entries = service.recordsFor(vehicleId).map { r ->
-                ServiceEntry(r.record.id, r.record.date, r.record.odometer, r.items.mapNotNull { it.scheduleItemId }.toSet())
-            }
+            val records = service.recordsFor(vehicleId)
+            val original = records.firstOrNull { editing && it.record.id == route.recordId }
+            val entries = records.map { it.toEntry() }
+            val others = entries.filter { it.id != original?.record?.id }
             val updates = odometer.readingsFor(vehicleId).map { OdometerReading(it.date, it.odometer) }
             val categories = ServiceCatalog.forVehicle(items.map { ScheduleRef(it.id, it.name, it.templateKey, it.tracked) })
-            val optionFor = categories.flatMap { it.options }
-                .filter { it.scheduleItemId != null }
-                .associateBy { it.scheduleItemId }
+            val options = categories.flatMap { it.options }
+            val optionFor = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
+            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule) }
 
-            val tracked = items.filter { it.tracked }.mapNotNull { item ->
-                val miles = if (item.useSevere) item.severeMiles ?: item.intervalMiles else item.intervalMiles
-                val months = if (item.useSevere) item.severeMonths ?: item.intervalMonths else item.intervalMonths
-                if (miles == null && months == null) return@mapNotNull null
-                val rule = item.ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: defaultRule
-                TrackedItem(item.id, item.name, Interval(miles, months), rule)
+            val due = if (editing) {
+                emptyList()
+            } else {
+                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now())
+                    // Never-logged items count as due, but offering all of them would bury the form on a
+                    // new vehicle; they can still be ticked in the categories below.
+                    .filter { it.lastDone != null && it.status.state != DueState.OK }
+                    .sortedBy { it.status.state != DueState.OVERDUE }
+                    .mapNotNull { s ->
+                        val option = optionFor[s.item.id] ?: return@mapNotNull null
+                        val why = if (s.status.state == DueState.OVERDUE) "overdue" else "due soon"
+                        DueSuggestion(option.id, "${option.label} · $why")
+                    }
             }
-            val due = VehicleReminders.statuses(tracked, entries, updates, LocalDate.now())
-                // Never-logged items count as due, but offering all of them would bury the form on a
-                // new vehicle; they can still be ticked in the categories below.
-                .filter { it.lastDone != null && it.status.state != DueState.OK }
-                .sortedBy { it.status.state != DueState.OVERDUE }
-                .mapNotNull { s ->
-                    val option = optionFor[s.item.id] ?: return@mapNotNull null
-                    val why = if (s.status.state == DueState.OVERDUE) "overdue" else "due soon"
-                    DueSuggestion(option.id, "${option.label} · $why")
-                }
 
-            categoryId = categories.first().id
+            if (original != null) {
+                val r = original.record
+                date = r.date
+                odometerText = String.format(Locale.US, "%,d", r.odometer)
+                diy = r.diy
+                shopName = r.shopName.orEmpty()
+                costText = r.costCents?.let { String.format(Locale.US, "%d.%02d", it / 100, it % 100) }.orEmpty()
+                notes = r.notes.orEmpty()
+                val ticked = mutableSetOf<String>()
+                val custom = mutableListOf<String>()
+                original.items.forEach { item ->
+                    val option = options.firstOrNull { it.id == item.catalogId }
+                        ?: item.scheduleItemId?.let(optionFor::get)
+                    if (option != null) ticked += option.id else custom += item.label
+                }
+                selected = ticked
+                customItems = custom
+            }
+
+            categoryId = categories.firstOrNull { c -> c.options.any { it.id in selected } }?.id ?: categories.first().id
             data = LogServiceData(
                 vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
                 categories = categories,
                 due = due,
-                readings = ServiceLog.readings(entries, updates),
-                lastOdometer = VehicleReminders.currentOdometer(entries, updates),
+                tracked = tracked,
+                entries = entries,
+                readings = ServiceLog.readings(others, updates),
+                lastOdometer = VehicleReminders.currentOdometer(others, updates),
+                original = original,
             )
         }
     }
@@ -212,26 +259,30 @@ class LogServiceViewModel @Inject constructor(
         if (saving) return
         saving = true
         viewModelScope.launch {
-            val options = d.categories.flatMap { it.options }.filter { it.id in selected }
-            service.insertWithItems(
-                ServiceRecordEntity(
-                    vehicleId = vehicleId,
-                    date = date,
-                    odometer = odo,
-                    diy = diy,
-                    shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
-                    costCents = costText.takeIf { it.isNotBlank() }?.let(Money::parseCents),
-                    notes = notes.trim().takeIf { it.isNotEmpty() },
-                ),
-                options.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = it.scheduleItemId, label = it.label) } +
-                    customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) },
+            val catalogIds = d.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
+            val record = ServiceRecordEntity(
+                id = d.original?.record?.id ?: 0,
+                vehicleId = vehicleId,
+                date = date,
+                odometer = odo,
+                diy = diy,
+                shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
+                costCents = costText.takeIf { it.isNotBlank() }?.let(Money::parseCents),
+                notes = notes.trim().takeIf { it.isNotEmpty() },
             )
+            val items = selectedOptions.map {
+                ServiceRecordItemEntity(
+                    recordId = 0,
+                    scheduleItemId = it.scheduleItemId,
+                    label = it.label,
+                    catalogId = it.id.takeIf { id -> id in catalogIds },
+                )
+            } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
+            if (d.original != null) actions.replace(d.original, record, items) else actions.add(record, items)
             onDone()
         }
     }
 }
-
-private val dateFormat = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -243,7 +294,7 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDone) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
-            Text("Log service", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            Text(if (vm.editing) "Edit service" else "Log service", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
             Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape) {
                 Text(
                     data.vehicleName,
@@ -265,7 +316,7 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                             onClick = { pickingDate = true },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth().height(56.dp),
-                        ) { Text(vm.date.format(dateFormat), color = MaterialTheme.colorScheme.onSurface) }
+                        ) { Text(vm.date.format(longDate), color = MaterialTheme.colorScheme.onSurface) }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("Odometer (mi)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -305,7 +356,6 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                                 selected = s.optionId in vm.selected,
                                 onClick = { vm.toggle(s.optionId) },
                                 label = { Text(s.label) },
-                                modifier = Modifier.heightIn(min = 48.dp),
                             )
                         }
                     }
@@ -369,6 +419,31 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                     Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodyMedium,
                 )
+            }
+
+            if (vm.editing) {
+                val changes = vm.reminderChanges
+                Surface(
+                    color = if (changes.isEmpty()) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "WHAT THIS CHANGES",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (changes.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        if (changes.isEmpty()) {
+                            Text("No changes to reminders.", style = MaterialTheme.typography.bodyMedium)
+                        } else {
+                            changes.forEach {
+                                Text(it.text(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -449,7 +524,7 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                 )
             }
             Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-                Text("Save service")
+                Text(if (vm.editing) "Save changes" else "Save service")
             }
         }
     }

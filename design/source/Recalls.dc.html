@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recalls</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+input[type=checkbox]{accent-color:#C2410C}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 980px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column">
+      <div style="font-size: 20px; font-weight: 600">Recalls</div>
+      <div style="font-size: 12px; color: #5A5F66">2019 4Runner · VIN …612345</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 24px 20px">
+    <div style="background: {{sumBg}}; color: #17191C; border: 1px solid {{sumBorder}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: baseline; gap: 10px">
+        <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 40px; font-weight: 600; color: {{openColor}}">{{openCount}}</div>
+        <div style="font-size: 16px; font-weight: 600">{{openLabel}}</div>
+      </div>
+      <div style="font-size: 13px; color: #3A3E44; line-height: 1.4">{{totalCount}} recalls on file for this vehicle. Checked today · we re-check weekly and notify you of new ones.</div>
+      <div style="display: flex; gap: 8px">
+        <button style="flex: 1; height: 44px; border-radius: 12px; border: 1.5px solid #8A8E94; background: #FFFFFF; color: #17191C; font-family: inherit; font-size: 14px; font-weight: 600">Refresh</button>
+        <button style="flex: 2; height: 44px; border-radius: 12px; border: 0; background: #C2410C; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600">Verify my VIN with Toyota</button>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+        <button onClick="{{t.pick}}" aria-pressed="{{t.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+      <div style="background: #FFFFFF; border: 1.5px solid {{r.border}}; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3A3E44">NHTSA {{r.campaign}}</span>
+          <span style="padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: {{r.pillBg}}; color: {{r.pillFg}}">{{r.status}}</span>
+        </div>
+        <div style="font-size: 17px; font-weight: 700">{{r.component}}</div>
+        <div style="font-size: 14px; line-height: 1.45; color: #3A3E44">{{r.summary}}</div>
+        <div style="font-size: 13px; line-height: 1.4; color: #5A5F66"><span style="font-weight: 600; color: #3A3E44">Remedy:</span> {{r.remedy}}</div>
+        <div style="display: flex; gap: 8px; padding-top: 4px">
+          <button onClick="{{r.toggle}}" style="flex: 1; height: 44px; border-radius: 12px; border: 1.5px solid #17191C; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #17191C">{{r.action}}</button>
+          <button style="flex: 1; height: 44px; border-radius: 12px; border: 0; background: #E9E7E0; font-family: inherit; font-size: 14px; font-weight: 600; color: #17191C">Find a dealer</button>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 12px; line-height: 1.45; color: #5A5F66">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <span>Recall list from NHTSA by year, make and model. Whether the repair was already done on this VIN is confirmed with Toyota or marked by you. Marking one done adds it to Service history.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":980}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { tab: 'all', done: { r2: true } };
+}
+renderVals() {
+var self = this;
+var D = [
+{ id: 'r1', campaign: '20V-012', component: 'Fuel pump', summary: 'The low-pressure fuel pump may fail, which can cause the engine to stall while driving.', remedy: 'Dealer replaces the fuel pump at no cost.' },
+{ id: 'r2', campaign: '19V-670', component: 'Suspension', summary: '[NHTSA recall summary loads here]', remedy: '[Remedy from NHTSA]' }
+];
+var done = this.state.done, tab = this.state.tab;
+var all = D.map(function (d) {
+var isDone = !!done[d.id];
+return Object.assign({}, d, {
+isDone: isDone,
+status: isDone ? 'COMPLETED' : 'OPEN',
+pillBg: isDone ? '#DDEFEC' : '#FBE9DF', pillFg: isDone ? '#0F766E' : '#9A3412',
+border: isDone ? '#DEDCD5' : '#C2410C',
+action: isDone ? 'Mark as open' : 'Mark as done',
+toggle: function () { var n = Object.assign({}, done); n[d.id] = !isDone; self.setState({ done: n }); }
+});
+});
+var open = all.filter(function (r) { return !r.isDone; }).length;
+var rows = all.filter(function (r) { return tab === 'all' || (tab === 'open' ? !r.isDone : r.isDone); });
+var T = [['all', 'All'], ['open', 'Open'], ['done', 'Completed']];
+return {
+rows: rows,
+openCount: open, totalCount: all.length,
+openLabel: open === 1 ? 'open recall needs attention' : (open === 0 ? 'open recalls — all clear' : 'open recalls need attention'),
+openColor: open ? '#C2410C' : '#0F766E',
+sumBg: open ? '#FBE9DF' : '#DDEFEC',
+sumBorder: open ? '#F3C9B1' : '#B5DDD6',
+tabs: T.map(function (t) {
+var a = t[0] === tab;
+return { label: t[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ tab: t[0] }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>

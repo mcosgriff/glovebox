@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Glovebox navigation map</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#17191C}a:hover{color:#C2410C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1120px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; padding: 48px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="font-size: 36px; font-weight: 700; letter-spacing: -0.01em">How you get around Glovebox</div>
+      <div style="font-size: 16px; color: #4F545B">Four bottom tabs. Everything else is one or two taps deep, and Back always returns to the tab you came from.</div>
+    </div>
+    <div style="display: flex; gap: 18px; font-size: 14px; color: #3A3E44">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 16px; border-radius: 4px; background: #FFFFFF; border: 1.5px solid #17191C"></span>Designed</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 16px; border-radius: 4px; background: #FDE8E7; border: 1.5px solid #B42318"></span>Destructive</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; flex: 1">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 56px; border-radius: 14px; background: #3A3E44; color: #FFFFFF; display: flex; align-items: center; padding: 0 16px; font-size: 16px; font-weight: 700">App start</div>
+      <a href="Lock.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Biometric unlock</span><span style="font-size: 12px; color: #5A5F66">Every launch, if on · light &amp; dark</span></a>
+      <a href="Welcome.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">First-run welcome</span><span style="font-size: 12px; color: #5A5F66">Turn on biometrics, notifications, restore a backup</span></a>
+      <a href="GarageEmpty.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Empty garage</span><span style="font-size: 12px; color: #5A5F66">No vehicles yet</span></a>
+      <a href="Main.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Add vehicle → VIN</span><span style="font-size: 12px; color: #5A5F66">Scan → Decode → Schedule</span></a>
+      <a href="ManualAdd.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Manual add (no VIN)</span><span style="font-size: 12px; color: #5A5F66">Year / make / model pickers</span></a>
+      <div style="margin-top: auto; padding: 14px; border-radius: 12px; background: #E9E7E0; font-size: 13px; line-height: 1.45; color: #3A3E44"><span style="font-weight: 700">Notifications</span> open the reminder or the recall they're about, after unlock.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 56px; border-radius: 14px; background: #C2410C; color: #FFFFFF; display: flex; align-items: center; padding: 0 16px; font-size: 16px; font-weight: 700">Tab 1 · Garage</div>
+      <a href="GarageMulti.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Vehicle list</span><span style="font-size: 12px; color: #5A5F66">Skipped when you have only one</span></a>
+      <a href="Garage.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Vehicle home</span><span style="font-size: 12px; color: #5A5F66">Coming up, recall banner, Log service button</span></a>
+      <a href="LogService.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Log service</a>
+      <a href="Recalls.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Recalls</a>
+      <a href="UpdateMileage.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Update mileage (sheet)</a>
+      <a href="VehicleDetails.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Vehicle details</span><span style="font-size: 12px; color: #5A5F66">Oil spec, tire size, photo, mark as sold</span></a>
+      <a href="Specs.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Torque &amp; fastener specs</a>
+      <a href="Schedule.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Maintenance schedule</a>
+      <a href="EditInterval.dc.html" style="margin-left: 48px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Edit one interval</a>
+      <a href="VehicleDetails.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Mark as sold (sheet)</span><span style="font-size: 12px; color: #5A5F66">Archive + buyer PDF</span></a>
+      <a href="DeleteVehicle.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FDE8E7; border: 1.5px solid #B42318; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600; color: #B42318">Delete vehicle + all its data</span><span style="font-size: 12px; color: #3A3E44">Type the name to confirm</span></a>
+      <a href="Archived.dc.html" style="padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Archived vehicles</span><span style="font-size: 12px; color: #5A5F66">Sold vehicles, read-only history</span></a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 56px; border-radius: 14px; background: #17191C; color: #FFFFFF; display: flex; align-items: center; padding: 0 16px; font-size: 16px; font-weight: 700">Tab 2 · History</div>
+      <a href="History.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">All service records</span><span style="font-size: 12px; color: #5A5F66">Filter by vehicle and category</span></a>
+      <a href="RecordDetail.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Service record detail</span><span style="font-size: 12px; color: #5A5F66">Receipt photo, notes, edit, delete</span></a>
+      <a href="RecordDetail.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Receipt viewer (tap a photo)</a>
+      <a href="EditRecord.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Edit service</span><span style="font-size: 12px; color: #5A5F66">Shows reminder changes · Undo after save</span></a>
+      <a href="DeleteRecord.dc.html" style="margin-left: 32px; padding: 10px 14px; border-radius: 12px; background: #FDE8E7; border: 1.5px solid #B42318; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600; color: #B42318">Delete record</span><span style="font-size: 12px; color: #3A3E44">Confirm · Undo</span></a>
+      <a href="ExportSheet.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Export sheet</span><span style="font-size: 12px; color: #5A5F66">PDF or Markdown · which vehicle · date range</span></a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 56px; border-radius: 14px; background: #17191C; color: #FFFFFF; display: flex; align-items: center; padding: 0 16px; font-size: 16px; font-weight: 700">Tab 3 · Reminders</div>
+      <a href="Upcoming.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">What's due, all vehicles</span><span style="font-size: 12px; color: #5A5F66">Overdue · next 30 days · later</span></a>
+      <a href="LogService.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Log it</span><span style="font-size: 12px; color: #5A5F66">Opens Log service, pre-filled</span></a>
+      <a href="Snooze.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Snooze options (sheet)</a>
+      <a href="Reminders.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Reminder rules</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 56px; border-radius: 14px; background: #17191C; color: #FFFFFF; display: flex; align-items: center; padding: 0 16px; font-size: 16px; font-weight: 700">Tab 4 · Settings</div>
+      <a href="Settings.dc.html" style="padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 15px; font-weight: 600">Settings</a>
+      <div style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Appearance</span><span style="font-size: 12px; color: #5A5F66">System / Light / Dark (inline)</span></div>
+      <div style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Security</span><span style="font-size: 12px; color: #5A5F66">Biometrics, auto-lock, hide in recents (inline)</span></div>
+      <div style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Units</span><span style="font-size: 12px; color: #5A5F66">Distance (mi/km), torque (N·m, ft-lb, in-lb)</span></div>
+      <a href="Schedule.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Maintenance schedule</a>
+      <div style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Export history</span><span style="font-size: 12px; color: #5A5F66">PDF or Markdown (inline)</span></div>
+      <a href="Reminders.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Reminder rules</a>
+      <a href="Notifications.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; font-size: 14px; font-weight: 600">Notifications</a>
+      <a href="BackupCreate.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Create backup</span><span style="font-size: 12px; color: #5A5F66">Password · restore is on the welcome screen</span></a>
+      <a href="About.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #17191C; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">About</span><span style="font-size: 12px; color: #5A5F66">Version, data sources, licenses</span></a>
+      <a href="DeleteAll.dc.html" style="margin-left: 16px; padding: 10px 14px; border-radius: 12px; background: #FDE8E7; border: 1.5px solid #B42318; text-decoration: none; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600; color: #B42318">Delete all data</span><span style="font-size: 12px; color: #3A3E44">Type DELETE + fingerprint · erases the key</span></a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delete service record</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+
+  <sc-if value="{{confirming}}" hint-placeholder-val="{{ true }}">
+    <div aria-hidden="true" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="height: 48px; font-size: 20px; font-weight: 600; display: flex; align-items: center">Service record</div>
+      <div style="height: 150px; border-radius: 20px; background: #FFFFFF"></div>
+      <div style="height: 200px; border-radius: 16px; background: #FFFFFF"></div>
+    </div>
+    <a href="RecordDetail.dc.html" aria-label="Cancel" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(14,16,18,0.55)"></a>
+    <div role="alertdialog" aria-label="Delete service record" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F3EF; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="width: 40px; height: 4px; border-radius: 2px; background: #B9B6AE; align-self: center"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 20px; font-weight: 700">Delete this service record?</div>
+        <div style="font-size: 13px; color: #5A5F66">Oct 10, 2026 · 68,412 mi · 3 items · 2 photos</div>
+      </div>
+      <div style="background: #FBE9DF; border: 1px solid #F3C9B1; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #9A3412">REMINDERS WILL GO BACK TO</span>
+        <span style="font-size: 14px; line-height: 1.45">Oil &amp; filter — due at 70,100 mi</span>
+        <span style="font-size: 14px; line-height: 1.45">Engine air filter — due at 75,000 mi</span>
+        <span style="font-size: 14px; line-height: 1.45">Tire rotation — overdue (due at 65,100 mi)</span>
+      </div>
+      <div style="font-size: 13px; color: #3A3E44">Its receipt and parts photos are deleted too.</div>
+      <div style="display: flex; gap: 10px">
+        <a href="RecordDetail.dc.html" style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #B9B6AE; color: #17191C; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600">Cancel</a>
+        <button onClick="{{doDelete}}" style="flex: 1; height: 52px; border-radius: 14px; border: 0; background: #B42318; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600">Delete</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{listView}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; height: 844px">
+      <div style="padding: 16px 20px 4px 20px; display: flex; flex-direction: column; gap: 2px">
+        <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
+        <div style="font-size: 13px; color: #5A5F66">2019 4Runner · {{count}} records</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 20px">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+          <a href="RecordDetail.dc.html" style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; color: #17191C; text-decoration: none">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <span style="font-size: 14px; font-weight: 700">{{r.date}}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3A3E44">{{r.miles}}</span>
+            </div>
+            <div style="font-size: 15px; line-height: 1.4">{{r.items}}</div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 24px; min-height: 56px; border-radius: 14px; background: #17191C; color: #F4F3EF; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 16px; box-shadow: 0 8px 24px rgba(23,25,28,0.25)">
+      <span style="flex: 1; font-size: 14px">{{toast}}</span>
+      <sc-if value="{{canUndo}}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{undo}}" style="height: 44px; padding: 0 12px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #FDBA74">Undo</button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { step: 'confirm' };
+}
+renderVals() {
+var self = this, step = this.state.step;
+var R = [
+{ id: 'oct', date: 'Oct 10, 2026', miles: '68,412 mi', items: 'Oil & filter, engine air filter, tire rotation' },
+{ id: 'jun', date: 'Jun 14, 2026', miles: '60,100 mi', items: 'Oil & filter, tire rotation' },
+{ id: 'feb', date: 'Feb 2, 2026', miles: '54,800 mi', items: 'Front brake pads, brake inspection' },
+{ id: 'oct25', date: 'Oct 18, 2025', miles: '50,200 mi', items: 'Transfer case, front & rear diff fluid' }
+];
+var restored = step === 'restored';
+var rows = R.filter(function (r) { return restored || r.id !== 'oct'; }).map(function (r) {
+return Object.assign({}, r, { border: restored && r.id === 'oct' ? '#C2410C' : '#DEDCD5' });
+});
+return {
+confirming: step === 'confirm', listView: step !== 'confirm',
+rows: rows, count: rows.length,
+toast: restored ? 'Record restored · reminders updated' : 'Record deleted · reminders updated',
+canUndo: !restored,
+doDelete: function () { self.setState({ step: 'deleted' }); },
+undo: function () { self.setState({ step: 'restored' }); }
+};
+}
+}
+</script>
+</body>
+</html>

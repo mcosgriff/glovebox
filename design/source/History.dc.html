@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Service history</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 4px 20px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
+      <div style="font-size: 13px; color: #5A5F66">2019 4Runner · {{shown}} records</div>
+    </div>
+    <a href="ExportSheet.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Export · PDF / MD</a>
+  </div>
+
+  <div style="display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto">
+    <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+      <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 16px 20px; overflow: hidden">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+      <a href="RecordDetail.dc.html" style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #17191C; text-decoration: none">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-size: 14px; font-weight: 700">{{r.date}}</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3A3E44">{{r.miles}}</span>
+        </div>
+        <div style="font-size: 15px; line-height: 1.4">{{r.items}}</div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5A5F66">
+          <span>{{r.who}}</span>
+          <span style="font-weight: 600; color: #3A3E44">{{r.cost}}</span>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+
+  <nav style="height: 80px; background: #FFFFFF; border-top: 1px solid #DEDCD5; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+    <a href="GarageMulti.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"></path><path d="M7 21v-7h10v7"></path></svg></div>
+      Garage
+    </a>
+    <a href="History.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #17191C; text-decoration: none; font-size: 12px; font-weight: 700">
+      <div style="width: 56px; height: 30px; border-radius: 15px; background: #FBE9DF; display: flex; align-items: center; justify-content: center; color: #C2410C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
+      History
+    </a>
+    <a href="Upcoming.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></div>
+      Reminders
+    </a>
+    <a href="Settings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></div>
+      More
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { f: 'all' };
+}
+renderVals() {
+var self = this;
+var DATA = [
+{ date: 'Oct 10, 2026', miles: '68,412 mi', items: 'Oil & filter, engine air filter, tire rotation', who: 'DIY · just added', cost: '[COST]', tags: ['engine', 'tires'], fresh: true },
+{ date: 'Jun 14, 2026', miles: '60,100 mi', items: 'Oil & filter, tire rotation', who: 'Shop', cost: '[COST]', tags: ['engine', 'tires'] },
+{ date: 'Feb 2, 2026', miles: '54,800 mi', items: 'Front brake pads, brake inspection', who: 'DIY', cost: '[COST]', tags: ['brakes'] },
+{ date: 'Oct 18, 2025', miles: '50,200 mi', items: 'Transfer case, front & rear diff fluid', who: 'Shop', cost: '[COST]', tags: ['fourwd'] }
+];
+var F = [['all', 'All'], ['engine', 'Oil & engine'], ['tires', 'Tires'], ['brakes', 'Brakes'], ['fourwd', '4WD']];
+var cur = this.state.f;
+var rows = DATA.filter(function (d) { return cur === 'all' || d.tags.indexOf(cur) >= 0; }).map(function (d) {
+return Object.assign({}, d, { border: d.fresh ? '#C2410C' : '#DEDCD5' });
+});
+return {
+shown: rows.length,
+rows: rows,
+filters: F.map(function (f) {
+var a = f[0] === cur;
+return { label: f[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ f: f[0] }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>
