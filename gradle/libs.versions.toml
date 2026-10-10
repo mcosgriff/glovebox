@@ -1,10 +1,10 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
 agp = "9.4.1"
-kotlin = "2.2.20"
-ksp = "2.3.6"
-coroutines = "1.10.2"
-serialization = "1.9.0"
+kotlin = "2.4.20"
+ksp = "2.3.12"
+coroutines = "1.11.0"
+serialization = "1.11.0"
 
 core-ktx = "1.16.0"
 activity-compose = "1.10.1"
