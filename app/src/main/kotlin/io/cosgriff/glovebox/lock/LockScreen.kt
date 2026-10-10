@@ -1,7 +1,10 @@
 package io.cosgriff.glovebox.lock
 
+import android.os.Build
 import androidx.activity.compose.LocalActivity
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Arrangement
@@ -28,12 +31,18 @@ import androidx.fragment.app.FragmentActivity
 @Composable
 fun LockScreen(onUnlocked: () -> Unit) {
     val activity = LocalActivity.current as FragmentActivity
+    // BIOMETRIC_STRONG or DEVICE_CREDENTIAL is unsupported on API 29 and throws.
+    val authenticators =
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) BIOMETRIC_STRONG else BIOMETRIC_WEAK) or DEVICE_CREDENTIAL
+    // No screen lock and no biometrics enrolled: there is nothing to gate with, so don't trap the user.
+    val canAuthenticate =
+        BiometricManager.from(activity).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
 
     fun prompt() {
         val info = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Unlock Glovebox")
             .setSubtitle("Your data is locked and encrypted")
-            .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL) // PIN fallback
+            .setAllowedAuthenticators(authenticators) // PIN fallback
             .build()
         BiometricPrompt(
             activity,
@@ -44,7 +53,7 @@ fun LockScreen(onUnlocked: () -> Unit) {
         ).authenticate(info)
     }
 
-    LaunchedEffect(Unit) { prompt() }
+    LaunchedEffect(Unit) { if (canAuthenticate) prompt() else onUnlocked() }
 
     Surface(color = MaterialTheme.colorScheme.background) {
         Column(
