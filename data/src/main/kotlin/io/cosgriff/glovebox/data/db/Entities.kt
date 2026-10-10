@@ -53,6 +53,8 @@ data class ScheduleItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val vehicleId: Long,
     val name: String,
+    /** ScheduleTemplateItem.key this came from; null for the user's own items. Links catalog work to it. */
+    val templateKey: String? = null,
     val intervalMiles: Int?,
     val intervalMonths: Int?,
     val severeMiles: Int? = null,
@@ -126,6 +128,9 @@ data class TorqueSpecEntity(
     val source: String = "USER",
     val note: String? = null,
 )
+
+/** Latest known odometer for a vehicle, from mileage updates and service records. */
+data class VehicleOdometer(val vehicleId: Long, val odometer: Int)
 
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,

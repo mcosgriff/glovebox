@@ -19,6 +19,14 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     fun observe(id: Long): Flow<VehicleEntity?>
 
+    @Query(
+        "SELECT vehicleId, MAX(odometer) AS odometer FROM (" +
+            "SELECT vehicleId, odometer FROM odometer_readings " +
+            "UNION ALL SELECT vehicleId, odometer FROM service_records" +
+            ") GROUP BY vehicleId",
+    )
+    fun observeOdometers(): Flow<List<VehicleOdometer>>
+
     @Insert suspend fun insert(vehicle: VehicleEntity): Long
     @Update suspend fun update(vehicle: VehicleEntity)
 
@@ -34,6 +42,10 @@ interface ServiceDao {
     @Transaction
     @Query("SELECT * FROM service_records WHERE vehicleId = :vehicleId ORDER BY date DESC, odometer DESC")
     fun observeRecords(vehicleId: Long): Flow<List<ServiceRecordWithItems>>
+
+    @Transaction
+    @Query("SELECT * FROM service_records WHERE vehicleId = :vehicleId")
+    suspend fun recordsFor(vehicleId: Long): List<ServiceRecordWithItems>
 
     @Insert suspend fun insertRecord(record: ServiceRecordEntity): Long
     @Insert suspend fun insertItems(items: List<ServiceRecordItemEntity>)
@@ -64,6 +76,10 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId AND tracked = 1 ORDER BY name")
     fun observeTracked(vehicleId: Long): Flow<List<ScheduleItemEntity>>
 
+    /** Tracked and untracked. */
+    @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
+    suspend fun allFor(vehicleId: Long): List<ScheduleItemEntity>
+
     @Insert suspend fun insertAll(items: List<ScheduleItemEntity>)
     @Update suspend fun update(item: ScheduleItemEntity)
 }
@@ -72,6 +88,9 @@ interface ScheduleDao {
 interface OdometerDao {
     @Query("SELECT * FROM odometer_readings WHERE vehicleId = :vehicleId ORDER BY date")
     fun observe(vehicleId: Long): Flow<List<OdometerReadingEntity>>
+
+    @Query("SELECT * FROM odometer_readings WHERE vehicleId = :vehicleId ORDER BY date")
+    suspend fun readingsFor(vehicleId: Long): List<OdometerReadingEntity>
 
     @Insert suspend fun insert(reading: OdometerReadingEntity)
 }

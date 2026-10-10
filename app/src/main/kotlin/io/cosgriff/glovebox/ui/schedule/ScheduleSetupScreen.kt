@@ -168,6 +168,7 @@ class ScheduleSetupViewModel @Inject constructor(
                 ScheduleItemEntity(
                     vehicleId = vehicleId,
                     name = it.name,
+                    templateKey = it.template?.key,
                     intervalMiles = it.normal.miles,
                     intervalMonths = it.normal.months,
                     severeMiles = it.severe?.miles,
