@@ -77,7 +77,7 @@ class AddVehicleViewModel @Inject constructor(
         decoding = false
     }
 
-    fun save(onDone: () -> Unit) = viewModelScope.launch {
+    fun save(onSaved: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val d = decoded ?: return@launch
         val today = LocalDate.now()
         val id = vehicles.insert(
@@ -96,12 +96,12 @@ class AddVehicleViewModel @Inject constructor(
         odometerText.filter(Char::isDigit).toIntOrNull()?.let {
             odometer.insert(OdometerReadingEntity(vehicleId = id, date = today, odometer = it))
         }
-        onDone()
+        onSaved(id)
     }
 }
 
 @Composable
-fun AddVehicleScreen(onDone: () -> Unit, vm: AddVehicleViewModel = hiltViewModel()) {
+fun AddVehicleScreen(onSaved: (vehicleId: Long) -> Unit, vm: AddVehicleViewModel = hiltViewModel()) {
     val focusManager = LocalFocusManager.current
     Column(
         Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -159,11 +159,11 @@ fun AddVehicleScreen(onDone: () -> Unit, vm: AddVehicleViewModel = hiltViewModel
             Button(
                 onClick = {
                     focusManager.clearFocus()
-                    vm.save(onDone)
+                    vm.save(onSaved)
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
-                Text("Add to garage")
+                Text("Next: maintenance schedule")
             }
         }
     }

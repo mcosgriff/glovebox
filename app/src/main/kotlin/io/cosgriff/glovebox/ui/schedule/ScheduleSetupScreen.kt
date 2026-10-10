@@ -1,0 +1,331 @@
+package io.cosgriff.glovebox.ui.schedule
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.ScheduleDao
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.settings.Settings
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.ScheduleTemplateItem
+import io.cosgriff.glovebox.domain.ScheduleTemplates
+import io.cosgriff.glovebox.domain.label
+import io.cosgriff.glovebox.ui.ScheduleSetupRoute
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+/** A schedule item being set up; nothing is written to the database until the user confirms. */
+data class DraftItem(
+    val key: String,
+    val name: String,
+    val normal: Interval,
+    val severe: Interval?,
+    val useSevere: Boolean = false,
+    /** Null = use the app-wide default rule. */
+    val rule: DueRule? = null,
+    val tracked: Boolean = true,
+    /** The suggestion this came from; null for items the user added. */
+    val template: ScheduleTemplateItem? = null,
+) {
+    val active: Interval get() = if (useSevere) severe ?: normal else normal
+    val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
+}
+
+@HiltViewModel
+class ScheduleSetupViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    vehicles: VehicleDao,
+    private val schedule: ScheduleDao,
+    settings: SettingsRepository,
+) : ViewModel() {
+    private val vehicleId = savedStateHandle.toRoute<ScheduleSetupRoute>().vehicleId
+
+    var vehicle by mutableStateOf<VehicleEntity?>(null)
+        private set
+
+    /** Null until the vehicle has loaded. */
+    var items by mutableStateOf<List<DraftItem>?>(null)
+        private set
+    var severeUse by mutableStateOf(false)
+        private set
+
+    /** The item open in the editor. A key that isn't in [items] means a new item. */
+    var editing by mutableStateOf<DraftItem?>(null)
+        private set
+
+    val defaultRule = settings.settings.map { it.defaultRule }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings().defaultRule)
+
+    private var customCount = 0
+
+    init {
+        viewModelScope.launch {
+            val v = vehicles.observe(vehicleId).first()
+            vehicle = v
+            items = ScheduleTemplates.generic(v?.drivetrain).map {
+                DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
+            }
+        }
+    }
+
+    fun chooseSevereUse(on: Boolean) {
+        severeUse = on
+        items = items?.map { it.copy(useSevere = on) }
+    }
+
+    fun toggle(key: String) {
+        items = items?.map { if (it.key == key) it.copy(tracked = !it.tracked) else it }
+    }
+
+    fun toggleAll() {
+        val list = items ?: return
+        val allOn = list.all { it.tracked }
+        items = list.map { it.copy(tracked = !allOn) }
+    }
+
+    fun edit(key: String) {
+        editing = items?.firstOrNull { it.key == key }
+    }
+
+    fun addOwn() {
+        editing = DraftItem(key = "custom-${customCount++}", name = "", normal = Interval(5_000, 6), severe = null)
+    }
+
+    fun isNew(item: DraftItem): Boolean = items?.none { it.key == item.key } == true
+
+    fun saveEdit(item: DraftItem) {
+        val list = items ?: return
+        items = if (list.any { it.key == item.key }) list.map { if (it.key == item.key) item else it } else list + item
+        editing = null
+    }
+
+    fun stopTracking(key: String) {
+        items = items?.map { if (it.key == key) it.copy(tracked = false) else it }
+        editing = null
+    }
+
+    fun closeEditor() {
+        editing = null
+    }
+
+    /** Unticked items are kept as untracked rows so they can be switched on later. */
+    fun save(onDone: () -> Unit) = viewModelScope.launch {
+        val list = items ?: return@launch
+        schedule.insertAll(
+            list.map {
+                ScheduleItemEntity(
+                    vehicleId = vehicleId,
+                    name = it.name,
+                    intervalMiles = it.normal.miles,
+                    intervalMonths = it.normal.months,
+                    severeMiles = it.severe?.miles,
+                    severeMonths = it.severe?.months,
+                    useSevere = it.useSevere,
+                    ruleOverride = it.rule?.name,
+                    tracked = it.tracked,
+                )
+            },
+        )
+        onDone()
+    }
+}
+
+@Composable
+fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltViewModel()) {
+    val editing = vm.editing
+    if (editing != null) {
+        val defaultRule by vm.defaultRule.collectAsStateWithLifecycle()
+        BackHandler(onBack = vm::closeEditor)
+        ScheduleItemEditor(
+            item = editing,
+            isNew = vm.isNew(editing),
+            defaultRule = defaultRule,
+            onSave = vm::saveEdit,
+            onStopTracking = { vm.stopTracking(editing.key) },
+            onClose = vm::closeEditor,
+        )
+        return
+    }
+
+    val items = vm.items ?: return // first frame while the vehicle loads
+    val count = items.count { it.tracked }
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onDone) {
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+            }
+            Text("Recommended maintenance", style = MaterialTheme.typography.titleLarge)
+        }
+
+        Column(
+            Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    "A typical schedule to start from for your ${vm.vehicle.displayName()}. " +
+                        "Pick what to track — you can edit any interval later.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    "These are common intervals, not the manufacturer's. Check your owner's manual and edit anything that differs.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                SectionLabel("HOW DO YOU DRIVE IT?")
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    SegmentedButton(
+                        selected = !vm.severeUse,
+                        onClick = { vm.chooseSevereUse(false) },
+                        shape = SegmentedButtonDefaults.itemShape(0, 2),
+                    ) { Text("Normal") }
+                    SegmentedButton(
+                        selected = vm.severeUse,
+                        onClick = { vm.chooseSevereUse(true) },
+                        shape = SegmentedButtonDefaults.itemShape(1, 2),
+                    ) { Text("Severe") }
+                }
+                Text(
+                    "Normal: commuting, highway. Severe: towing, off-road, dusty roads, mostly short trips.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                SectionLabel("$count OF ${items.size} SELECTED", Modifier.weight(1f))
+                TextButton(onClick = vm::toggleAll) {
+                    Text(if (count == items.size) "Clear all" else "Select all")
+                }
+            }
+
+            Card(
+                Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                    items.forEach { item ->
+                        ItemRow(item, onToggle = { vm.toggle(item.key) }, onEdit = { vm.edit(item.key) })
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                    TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text("+ Add your own item")
+                    }
+                }
+            }
+
+            Button(
+                onClick = { vm.save(onDone) },
+                enabled = count > 0,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+            ) {
+                Text(if (count == 1) "Track 1 item" else "Track $count items")
+            }
+            TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text("Skip — I'll set up reminders myself")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.weight(1f)
+                .heightIn(min = 60.dp)
+                .toggleable(value = item.tracked, role = Role.Checkbox, onValueChange = { onToggle() }),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Checkbox(checked = item.tracked, onCheckedChange = null, modifier = Modifier.padding(horizontal = 8.dp))
+            Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(item.name, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    item.active.label(),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace,
+                    color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (item.showsSevere) {
+                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
+                    Text(
+                        "SEVERE",
+                        Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+        }
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Outlined.Edit, contentDescription = "Edit ${item.name}")
+        }
+    }
+}
+
+@Composable
+internal fun SectionLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, modifier, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+private fun VehicleEntity?.displayName(): String =
+    if (this == null) "vehicle" else listOfNotNull("$year", nickname ?: model, engine).joinToString(" ")
