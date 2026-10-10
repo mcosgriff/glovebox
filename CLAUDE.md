@@ -61,13 +61,21 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 
 ## Screens (canvas board → status)
 
-Done in code: unlock, empty garage, garage list, add vehicle via VIN (decode + save), settings (theme,
-biometrics, hide in recents, torque units). Placeholders: History, Reminders.
-To build, roughly in order: recommended schedule after decode (+ edit interval), Log service,
-History + service record detail + edit/delete with Undo, Reminders tab + snooze, update-mileage
-sheet, recalls, vehicle details (+ mark sold / archive / delete), torque specs, VIN scanning
-(CameraX + ML Kit bundled barcode, Code 39), notifications (WorkManager), encrypted backup/restore,
-PDF + Markdown export, welcome/first run, manual add (no VIN), about.
+Done in code: unlock, empty garage, garage list (odometer + Log service per vehicle), add vehicle via
+VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, settings
+(theme, biometrics, hide in recents, torque units). Placeholders: History, Reminders.
+To build, roughly in order: History + service record detail + edit/delete with Undo, Reminders tab +
+snooze, update-mileage sheet, recalls, vehicle home + details (+ mark sold / archive / delete), torque
+specs, VIN scanning (CameraX + ML Kit bundled barcode, Code 39), receipt photos on service records,
+notifications (WorkManager), encrypted backup/restore, PDF + Markdown export, welcome/first run,
+manual add (no VIN), about.
+
+Notes on what's built:
+- The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
+  not manufacturer data — there is no source for factory schedules.
+- Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
+  (`ServiceCatalog`); the user's own schedule items appear under "Your items".
+- Log service only offers one-tap "due" chips for reminders that have a log entry.
 
 ## Conventions
 

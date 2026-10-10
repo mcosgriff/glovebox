@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
+import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -35,6 +36,7 @@ import kotlin.reflect.KClass
 @Serializable object SettingsRoute
 @Serializable object AddVehicleRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
+@Serializable data class LogServiceRoute(val vehicleId: Long)
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -75,7 +77,12 @@ fun GloveboxNavHost() {
         },
     ) { padding ->
         NavHost(nav, startDestination = GarageRoute, modifier = Modifier.padding(padding)) {
-            composable<GarageRoute> { GarageScreen(onAddVehicle = { nav.navigate(AddVehicleRoute) }) }
+            composable<GarageRoute> {
+                GarageScreen(
+                    onAddVehicle = { nav.navigate(AddVehicleRoute) },
+                    onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
+                )
+            }
             composable<AddVehicleRoute> {
                 AddVehicleScreen(
                     onSaved = { vehicleId ->
@@ -85,6 +92,7 @@ fun GloveboxNavHost() {
                     },
                 )
             }
+            composable<LogServiceRoute> { LogServiceScreen(onDone = { nav.popBackStack() }) }
             composable<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
             composable<HistoryRoute> { PlaceholderScreen("History", "Service records will list here.") }
             composable<RemindersRoute> { PlaceholderScreen("Reminders", "What's due across all vehicles.") }
