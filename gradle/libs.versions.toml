@@ -1,6 +1,5 @@
 [versions]
-# AGP pinned to 9.4.1 so the project also opens in IntelliJ IDEA's Android plugin.
-# Bump only after checking https://github.com/rafaeltonholo/agp-intellij-compatibility-matrix
+# Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
 agp = "9.4.1"
 kotlin = "2.2.20"
 ksp = "2.3.6"

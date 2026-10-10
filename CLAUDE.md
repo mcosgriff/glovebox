@@ -1,7 +1,8 @@
 # Glovebox — notes for Claude
 
 Private, offline-first Android app for tracking vehicle maintenance. Single user, no account, no
-server. Owner: Matthew (sideloads via Obtainium from GitHub Releases, not the Play Store).
+server. Distributed by sideloading via Obtainium from GitHub Releases, not the Play Store.
+Public repo, GPL-3.0 (`LICENSE`).
 
 Design canvas (screens, flows, light/dark, nav map):
 https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
@@ -48,8 +49,8 @@ Keep them green; lint errors fail the build.
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
-- **AGP pinned to 9.4.1** so the project also opens in IntelliJ IDEA. If Matthew confirms he's using
-  Android Studio only, it's fine to upgrade AGP.
+- **IDE is Android Studio.** Keep AGP current (use Studio's AGP Upgrade Assistant); no IntelliJ IDEA
+  compatibility constraint.
 - minSdk 29, target/compile 36, JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
   with `@Serializable` routes. Dynamic color is off; use the theme tokens.
 
@@ -90,3 +91,5 @@ Notes on what's built:
 - Never show placeholder data as if real; mark sample values clearly.
 - Torque/interval reference values are user-verified; UI says "check your service manual".
 - Any Python helper scripts: use `uv run` with inline script dependencies.
+- Public repo: never commit real personal data (VINs, records, photos), keystores, `local.properties`
+  or `.idea/`. Test fixtures use made-up values.

@@ -11,15 +11,12 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 | `:data` | Room + SQLCipher database, Keystore key management, Tink photo encryption, NHTSA client, settings (DataStore), data wipe. |
 | `:app` | Jetpack Compose UI, Hilt, navigation, biometric app lock. |
 
-## Opening in IntelliJ IDEA
+## Opening the project
 
-1. File → Open → this folder. Let Gradle sync.
-2. If sync says the Android Gradle Plugin version is unsupported, IntelliJ's Android plugin is behind.
-   Keep `agp` in `gradle/libs.versions.toml` at the newest version listed for your IntelliJ build in the
-   [AGP / IntelliJ compatibility matrix](https://github.com/rafaeltonholo/agp-intellij-compatibility-matrix).
-3. Android SDK: set `sdk.dir` in `local.properties`, or let IntelliJ find it (installing Android Studio once
-   is the easiest way to get the SDK, emulator and Compose previews).
-4. Run the fast tests anytime: `./gradlew :domain:test`
+1. Open this folder in Android Studio and let Gradle sync (it installs the SDK if needed).
+2. Run on a device or emulator with the `app` run configuration.
+3. Run the fast tests anytime: `./gradlew :domain:test`
+4. Upgrade the Android Gradle Plugin with Tools → AGP Upgrade Assistant.
 
 ## Security model
 
@@ -55,3 +52,7 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 - Bundle IBM Plex Sans / Mono fonts (`ui/theme/Theme.kt` TODO)
 
 Design canvas: the Glovebox design artifact in Claude.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).

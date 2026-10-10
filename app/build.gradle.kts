@@ -59,6 +59,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    lint {
+        // Existing warnings live in the baseline; CI fails only on new issues.
+        // Regenerate after fixing old ones: ./gradlew :app:updateLintBaseline
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        warningsAsErrors = false
+    }
 }
 
 kotlin {
