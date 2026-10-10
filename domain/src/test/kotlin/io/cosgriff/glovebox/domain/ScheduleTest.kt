@@ -1,0 +1,63 @@
+package io.cosgriff.glovebox.domain
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class ScheduleTest {
+    @Test
+    fun `interval labels`() {
+        assertEquals("7,500 mi / 12 mo", Interval(7_500, 12).label())
+        assertEquals("30,000 mi", Interval(30_000, null).label())
+        assertEquals("36 mo", Interval(null, 36).label())
+    }
+
+    @Test
+    fun `severe use switches only the items that have a severe interval`() {
+        val items = ScheduleTemplates.generic(null).associateBy { it.key }
+        val oil = items.getValue("oil")
+        assertEquals(Interval(7_500, 12), oil.interval(severeUse = false))
+        assertEquals(Interval(5_000, 6), oil.interval(severeUse = true))
+        assertTrue(oil.changesWhenSevere)
+
+        val rotation = items.getValue("rotation")
+        assertEquals(rotation.normal, rotation.interval(severeUse = true))
+        assertFalse(rotation.changesWhenSevere)
+    }
+
+    @Test
+    fun `differential fluid is only suggested when the drivetrain has one to service`() {
+        fun diff(drivetrain: String?) = ScheduleTemplates.generic(drivetrain).firstOrNull { it.key == "diff-fluid" }?.name
+        assertEquals("Differential & transfer case fluid", diff("4WD/4-Wheel Drive/4x4"))
+        assertEquals("Differential & transfer case fluid", diff("AWD/All-Wheel Drive"))
+        assertEquals("Differential fluid", diff("RWD/Rear-Wheel Drive"))
+        assertNull(diff("FWD/Front-Wheel Drive"))
+        assertNull(diff(null))
+    }
+
+    @Test
+    fun `template keys are unique`() {
+        val keys = ScheduleTemplates.generic("4WD").map { it.key }
+        assertEquals(keys.size, keys.toSet().size)
+    }
+
+    @Test
+    fun `interval input accepts blanks and separators`() {
+        assertEquals(Interval(10_000, 12), IntervalInput.parse("10,000", "12"))
+        assertEquals(Interval(5_000, null), IntervalInput.parse(" 5000 ", ""))
+        assertEquals(Interval(null, 24), IntervalInput.parse("", "24"))
+    }
+
+    @Test
+    fun `interval input rejects unusable entries`() {
+        assertNull(IntervalInput.parse("", ""))
+        assertNull(IntervalInput.parse("0", "12"))
+        assertNull(IntervalInput.parse("5000", "0"))
+        assertNull(IntervalInput.parse("-5000", ""))
+        assertNull(IntervalInput.parse("5k", ""))
+        assertNull(IntervalInput.parse("7.5", ""))
+        assertNull(IntervalInput.parse("99999999999", ""))
+    }
+}
