@@ -73,14 +73,15 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 
 Done in code: unlock, empty garage, garage list (status chip, next reminder, across-all strip; opens the
 vehicle directly when there is only one), vehicle home (Coming up + Log
-service), vehicle details (photo, nickname, from the VIN, what it takes, schedule and recalls rows),
+service), vehicle details (photo, nickname, from the VIN, what it takes, schedule and recalls rows,
+Mark as sold), archived vehicles (read-only history, move back to garage),
 update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: mark sold / archive / delete vehicle, odometer offset, torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
+To build, roughly in order: delete vehicle, odometer offset, torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
 
@@ -93,8 +94,7 @@ Notes on what's built:
 - Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
-  vehicles" still returns to it, which is where another vehicle is added. Its archived-vehicles row
-  waits on archiving.
+  vehicles" still returns to it, which is where another vehicle is added.
 - Update mileage adds an `odometer_readings` row dated today; the snackbar's Undo is the only way to
   remove one so far. The sheet's preview comes from `MileageUpdate.preview`. "Read dash" (camera) and
   the notification entry point are not built.
@@ -131,8 +131,14 @@ Notes on what's built:
 - Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
   column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
   a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead:
-  torque specs, Mark as sold, Delete vehicle, and Odometer offset (`vehicles.odometerOffset` exists but
+  torque specs, Delete vehicle, and Odometer offset (`vehicles.odometerOffset` exists but
   nothing applies it). Maintenance schedule only links to setup when the vehicle has no items.
+- Archiving is only `vehicles.archivedOn` (the sold date), set through `VehicleArchiver` (app); nothing is
+  deleted. Screens that list the garage read `observeActive`, so archived vehicles get no reminders, and
+  `RecallRepository` refuses to check them. A final odometer higher than the last reading is logged as an
+  `odometer_readings` row dated the sale (`Archive.finalReading`); Undo removes it, "Move back to garage"
+  keeps it. Archived history reuses `HistoryScreen` via `ArchivedHistoryRoute`, and `RecordDetail.readOnly`
+  hides Edit and Delete. Export and Delete on the archive card wait on their own issues.
 - The vehicle photo is picked with the system photo picker (no permission), redrawn as a JPEG of at most
   1600 px, which drops its metadata, and encrypted by `VehiclePhotoStore` into `PhotoCrypto.photoDir`
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
