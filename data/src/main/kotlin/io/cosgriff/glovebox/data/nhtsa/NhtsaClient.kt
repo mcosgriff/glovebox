@@ -9,7 +9,11 @@ import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.encodeURLPathPart
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -75,6 +79,26 @@ class NhtsaClient(private val http: HttpClient) {
             errorCode = f("ErrorCode"),
             errorText = f("ErrorText"),
         )
+    }
+
+    /**
+     * Makes of cars, trucks and SUVs, for picking one by hand. Nothing about the user's vehicle is
+     * sent. Motorcycle and trailer makes run to thousands and are left to free text.
+     */
+    suspend fun makes(): List<String> = coroutineScope {
+        listOf("car", "truck", "mpv")
+            .map { type -> async { names("$VPIC/vehicles/GetMakesForVehicleType/$type", "MakeName") } }
+            .awaitAll()
+            .flatten()
+    }
+
+    /** Models NHTSA lists for a make in a model year; empty for years or makes it has nothing on. Only those two are sent. */
+    suspend fun models(make: String, year: Int): List<String> =
+        names("$VPIC/vehicles/GetModelsForMakeYear/make/${make.encodeURLPathPart()}/modelyear/$year", "Model_Name")
+
+    private suspend fun names(url: String, key: String): List<String> {
+        val body: JsonObject = http.get(url) { parameter("format", "json") }.body()
+        return body["Results"]?.jsonArray.orEmpty().mapNotNull { it.jsonObject[key]?.jsonPrimitive?.contentOrNull }
     }
 
     /**
