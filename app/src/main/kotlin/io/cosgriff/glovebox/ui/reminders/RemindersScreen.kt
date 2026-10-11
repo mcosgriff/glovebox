@@ -51,6 +51,7 @@ import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageOverview
 import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -215,6 +216,7 @@ private fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.he
         h.remaining <= 60 -> "in ${days(h.remaining)}"
         else -> status.status.dueByDate?.format(monthYear) ?: "in ${days(h.remaining)}"
     }
+    is DueHeadline.Snoozed -> "Snoozed until ${h.snooze.until()}"
 }
 
 private fun days(n: Long): String = if (n == 1L) "1 day" else "$n days"

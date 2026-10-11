@@ -118,9 +118,14 @@ object ServiceCatalog {
 }
 
 /** A schedule item being tracked, with the interval and rule already resolved. */
-data class TrackedItem(val id: Long, val name: String, val interval: Interval, val rule: DueRule)
+/** [snooze] is whatever is stored for the item, whether or not it has passed. */
+data class TrackedItem(val id: Long, val name: String, val interval: Interval, val rule: DueRule, val snooze: Snooze? = null)
 
-data class ItemStatus(val item: TrackedItem, val lastDone: LastDone?, val status: DueStatus)
+/**
+ * [snooze] is set only while a snooze is holding the reminder back; [status] then reads
+ * [DueState.OK] but keeps the real distances, so the reminder is honest once the snooze passes.
+ */
+data class ItemStatus(val item: TrackedItem, val lastDone: LastDone?, val status: DueStatus, val snooze: Snooze? = null)
 
 object VehicleReminders {
     /** Latest known odometer from the service log and standalone mileage updates. */
@@ -140,7 +145,10 @@ object VehicleReminders {
         val pace = ReminderEngine.milesPerDay(readings)
         return items.map { item ->
             val last = ServiceLog.lastDone(item.id, entries)
-            ItemStatus(item, last, ReminderEngine.status(item.interval, item.rule, last, odometer, today, pace, lead))
+            val status = ReminderEngine.status(item.interval, item.rule, last, odometer, today, pace, lead)
+            // A snooze has nothing to hold back until the reminder is due, or before it was ever logged.
+            val snooze = item.snooze?.takeIf { last != null && status.state != DueState.OK && it.isActive(odometer, today) }
+            ItemStatus(item, last, if (snooze != null) status.copy(state = DueState.OK) else status, snooze)
         }
     }
 }
