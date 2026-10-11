@@ -137,4 +137,11 @@ class RecallsTest {
         assertEquals("Mercedes-Benz", Recalls.manufacturerSite(" mercedes-benz ")?.name)
         assertNull(Recalls.manufacturerSite("DeLorean"))
     }
+
+    @Test
+    fun `makes are written the way people write them`() {
+        assertEquals("GMC", Recalls.makeName("GMC"))
+        assertEquals("Toyota", Recalls.makeName("TOYOTA"))
+        assertEquals("Land Rover", Recalls.makeName("LAND ROVER"))
+    }
 }

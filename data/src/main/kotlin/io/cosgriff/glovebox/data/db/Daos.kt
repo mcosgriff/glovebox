@@ -23,6 +23,9 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     suspend fun byId(id: Long): VehicleEntity?
 
+    @Query("SELECT * FROM vehicles WHERE archivedOn IS NULL")
+    suspend fun active(): List<VehicleEntity>
+
     @Query("UPDATE vehicles SET recallsCheckedOn = :date WHERE id = :id")
     suspend fun setRecallsChecked(id: Long, date: LocalDate)
 
@@ -50,6 +53,10 @@ interface ServiceDao {
     @Transaction
     @Query("SELECT * FROM service_records WHERE id = :id")
     fun observeRecord(id: Long): Flow<ServiceRecordWithItems?>
+
+    @Transaction
+    @Query("SELECT * FROM service_records WHERE id = :id")
+    suspend fun record(id: Long): ServiceRecordWithItems?
 
     @Transaction
     @Query("SELECT * FROM service_records WHERE vehicleId = :vehicleId")

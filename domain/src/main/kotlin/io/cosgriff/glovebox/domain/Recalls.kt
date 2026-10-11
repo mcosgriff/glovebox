@@ -129,4 +129,8 @@ object Recalls {
 
     /** The manufacturer's own VIN recall lookup, if we know it. [make] as vPIC spells it ("TOYOTA"). */
     fun manufacturerSite(make: String): ManufacturerSite? = sites[make.trim().uppercase()]
+
+    /** vPIC shouts makes ("TOYOTA", "LAND ROVER"); this is the make as people write it. */
+    fun makeName(make: String): String = manufacturerSite(make)?.name
+        ?: make.trim().lowercase().split(' ').filter { it.isNotEmpty() }.joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
 }
