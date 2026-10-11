@@ -67,7 +67,8 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 
 ## Screens (canvas board → status)
 
-Done in code: unlock, empty garage, garage list (odometer + Log service per vehicle), add vehicle via
+Done in code: unlock, empty garage, garage list (odometer per vehicle), vehicle home (Coming up + Log
+service), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units). Placeholder: Reminders.
@@ -82,6 +83,8 @@ Notes on what's built:
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
   (`ServiceCatalog`); the user's own schedule items appear under "Your items".
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
+- Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")
+  and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Schema changes so far are Room auto-migrations (v3); keep exported schemas in `data/schemas`.

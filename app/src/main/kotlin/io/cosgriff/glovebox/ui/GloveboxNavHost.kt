@@ -36,6 +36,7 @@ import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
+import io.cosgriff.glovebox.ui.vehicle.VehicleHomeScreen
 import io.cosgriff.glovebox.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -47,6 +48,7 @@ import kotlin.reflect.KClass
 @Serializable object SettingsRoute
 @Serializable object AddVehicleRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
+@Serializable data class VehicleHomeRoute(val vehicleId: Long)
 /** [recordId] 0 logs a new record; otherwise that record is edited. */
 @Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0)
 @Serializable data class RecordDetailRoute(val recordId: Long)
@@ -65,7 +67,9 @@ fun GloveboxNavHost() {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     val destination = entry?.destination
-    val showBar = tabs.any { t -> destination?.hasRoute(t.type) == true }
+    // Vehicle home sits under the Garage tab and keeps the bar, as on the design.
+    val onVehicleHome = destination?.hasRoute(VehicleHomeRoute::class) == true
+    val showBar = onVehicleHome || tabs.any { t -> destination?.hasRoute(t.type) == true }
 
     // Service log changes are announced here so Undo works whichever screen the user lands on.
     val recordEvents: RecordEventsViewModel = hiltViewModel()
@@ -94,8 +98,14 @@ fun GloveboxNavHost() {
                 NavigationBar {
                     tabs.forEach { tab ->
                         NavigationBarItem(
-                            selected = destination?.hasRoute(tab.type) == true,
+                            selected = destination?.hasRoute(tab.type) == true ||
+                                (onVehicleHome && tab.route == GarageRoute),
                             onClick = {
+                                // Re-tapping Garage from a vehicle goes back to the list.
+                                if (onVehicleHome && tab.route == GarageRoute) {
+                                    nav.popBackStack<GarageRoute>(inclusive = false)
+                                    return@NavigationBarItem
+                                }
                                 nav.navigate(tab.route) {
                                     popUpTo(nav.graph.findStartDestination().id) { saveState = true }
                                     launchSingleTop = true
@@ -114,6 +124,12 @@ fun GloveboxNavHost() {
             composable<GarageRoute> {
                 GarageScreen(
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
+                    onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
+                )
+            }
+            composable<VehicleHomeRoute> {
+                VehicleHomeScreen(
+                    onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
                 )
             }
