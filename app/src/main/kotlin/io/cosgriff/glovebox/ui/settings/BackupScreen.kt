@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -144,7 +145,7 @@ class BackupViewModel @Inject constructor(
 
 /** Design: 9b · Create encrypted backup. */
 @Composable
-fun BackupScreen(onBack: () -> Unit, vm: BackupViewModel = hiltViewModel()) {
+fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel = hiltViewModel()) {
     val settings = vm.settings.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
@@ -279,6 +280,23 @@ fun BackupScreen(onBack: () -> Unit, vm: BackupViewModel = hiltViewModel()) {
                 color = scheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
+
+            HorizontalDivider(color = scheme.outlineVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Restore", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "Bring back a backup file made on this or another phone. It replaces what is here.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+                OutlinedButton(
+                    onClick = onRestore,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Text("Restore from a backup file", color = scheme.onSurface)
+                }
+            }
         }
     }
 }

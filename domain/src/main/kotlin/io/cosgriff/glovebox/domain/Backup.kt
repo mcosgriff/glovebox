@@ -47,6 +47,15 @@ object BackupRules {
     /** "glovebox-backup-2026-10-11.glovebox" */
     fun fileName(date: LocalDate, extension: String): String = "glovebox-backup-$date.$extension"
 
+    /** What the user types to confirm replacing the data already on the phone. */
+    const val REPLACE_WORD = "REPLACE"
+
+    /** "2 vehicles, 14 service records and 9 photos" */
+    fun restoreSummary(vehicles: Int, records: Int, photos: Int): String =
+        "${if (vehicles == 1) "1 vehicle" else "$vehicles vehicles"}, " +
+            "${if (records == 1) "1 service record" else "$records service records"} and " +
+            if (photos == 1) "1 photo" else "$photos photos"
+
     /** "2 vehicles · 14 records · 9 photos" */
     fun contents(vehicles: Int, records: Int, photos: Int): String = listOf(
         if (vehicles == 1) "1 vehicle" else "$vehicles vehicles",

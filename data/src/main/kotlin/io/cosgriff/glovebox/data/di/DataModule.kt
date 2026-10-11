@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.glovebox.data.DataWipe
+import io.cosgriff.glovebox.data.backup.BackupRestorer
 import io.cosgriff.glovebox.data.backup.BackupWriter
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
@@ -60,6 +61,10 @@ object DataModule {
 
     @Provides @Singleton
     fun backupWriter(db: GloveboxDatabase, photos: PhotoCrypto, settings: SettingsRepository) = BackupWriter(db, photos, settings)
+
+    @Provides @Singleton
+    fun backupRestorer(db: GloveboxDatabase, photos: PhotoCrypto, settings: SettingsRepository, noticeLog: NoticeLogStore) =
+        BackupRestorer(db, photos, settings, noticeLog)
 
     @Provides @Singleton
     fun noticeLog(@ApplicationContext c: Context) = NoticeLogStore(c)

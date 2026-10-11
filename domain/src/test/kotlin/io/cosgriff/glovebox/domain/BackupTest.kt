@@ -62,4 +62,17 @@ class BackupTest {
         assertEquals("2 vehicles · 14 records · 9 photos", BackupRules.contents(2, 14, 9))
         assertEquals("1 vehicle · 1 record · 1 photo", BackupRules.contents(1, 1, 1))
     }
+
+    @Test
+    fun `the restore summary reads as a sentence`() {
+        assertEquals("2 vehicles, 14 service records and 9 photos", BackupRules.restoreSummary(2, 14, 9))
+        assertEquals("1 vehicle, 1 service record and 1 photo", BackupRules.restoreSummary(1, 1, 1))
+        assertEquals("0 vehicles, 0 service records and 0 photos", BackupRules.restoreSummary(0, 0, 0))
+    }
+
+    @Test
+    fun `replacing data is confirmed by typing a word`() {
+        assertTrue(TypedConfirmation.matches(" replace ", BackupRules.REPLACE_WORD))
+        assertFalse(TypedConfirmation.matches("replac", BackupRules.REPLACE_WORD))
+    }
 }
