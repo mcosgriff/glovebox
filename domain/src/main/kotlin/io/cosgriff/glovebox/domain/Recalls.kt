@@ -91,8 +91,8 @@ object Recalls {
     fun canCheck(year: Int, make: String, model: String): Boolean =
         year > 0 && listOf(make, model).none { it.isBlank() || it.equals("Unknown", ignoreCase = true) }
 
-    fun isStale(checkedOn: LocalDate?, today: LocalDate): Boolean =
-        checkedOn == null || ChronoUnit.DAYS.between(checkedOn, today) >= STALE_AFTER_DAYS
+    fun isStale(checkedOn: LocalDate?, today: LocalDate, afterDays: Long = STALE_AFTER_DAYS): Boolean =
+        checkedOn == null || ChronoUnit.DAYS.between(checkedOn, today) >= afterDays
 
     /** Open recalls first, then the most recently reported. */
     fun sorted(recalls: List<StoredRecall>): List<StoredRecall> =

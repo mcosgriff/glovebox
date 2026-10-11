@@ -83,13 +83,14 @@ name to confirm), torque specs (unit switch, categories, search, add / edit / de
 update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
 make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
-(attach, grid, viewer, share), export as PDF or Markdown, recommended schedule after decode (+ edit item, add own), maintenance schedule after
+(attach, grid, viewer, share), export as PDF or Markdown, notifications (service due, overdue, new
+recalls, mileage check-in) with their settings screen, recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), notifications (WorkManager), encrypted backup/restore,
+To build, roughly in order: odometer offset (#73), encrypted backup/restore,
 welcome/first run, about.
 
 Notes on what's built:
@@ -174,6 +175,22 @@ Notes on what's built:
   working copy is deleted either way. Android's PDF writer stores photos without JPEG compression, so
   they go in at 1,000 px and the sheet's size figure is an estimate (`RecordPhotos.PDF_BYTES_PER_PHOTO`).
   An export is not encrypted, and every recall or schedule table carries a note saying what it is.
+- Notifications: two WorkManager jobs, kept in step with the settings by `GloveboxApp` through
+  `NoticeScheduler`. `DailyCheckWorker` runs at about the chosen time and uses no network; what it says
+  is decided by `NoticeRules.daily` (domain): a service is announced once when it enters its lead time,
+  an overdue one is nudged weekly, a snoozed or never-logged one stays quiet, and a mileage check-in is
+  asked for when the newest reading is older than the cadence. `NoticeLogStore` (its own DataStore file,
+  ids and dates only) remembers what was said; it is updated even when a switch is off or Android blocks
+  notifications, so turning them on later doesn't release a backlog. `RecallCheckWorker` needs a network,
+  retries silently, and only announces campaigns added after a vehicle's first check. Both skip archived
+  vehicles. The workers are plain `CoroutineWorker`s that reach Hilt through `NotifyEntryPoint`.
+- "Check for new recalls" (`Settings.recallCadence`) is honoured in `RecallRepository.refreshIfStale`, so
+  it governs the in-app checks as well as the job; Never leaves only the Refresh button.
+- A notification carries a `Destination` on its intent. `MainActivity` puts it in `PendingDestination`
+  and the nav host, which only exists once the app is unlocked, takes it from there, so nothing is drawn
+  before unlock. Collect that flow; don't key an effect on it (taking it clears it, and a keyed effect
+  cancels its own vehicle lookup on a cold start). Each kind has its own channel, and the lock-screen
+  version of a notification says only what kind it is.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a

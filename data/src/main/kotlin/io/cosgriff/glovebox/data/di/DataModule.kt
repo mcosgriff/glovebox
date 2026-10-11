@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
+import io.cosgriff.glovebox.data.settings.NoticeLogStore
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -57,6 +58,9 @@ object DataModule {
     fun settings(@ApplicationContext c: Context) = SettingsRepository(c)
 
     @Provides @Singleton
+    fun noticeLog(@ApplicationContext c: Context) = NoticeLogStore(c)
+
+    @Provides @Singleton
     fun dataWipe(
         @ApplicationContext c: Context,
         db: GloveboxDatabase,
@@ -75,6 +79,6 @@ object DataModule {
     fun nhtsa(http: HttpClient) = NhtsaClient(http)
 
     @Provides @Singleton
-    fun recallRepository(nhtsa: NhtsaClient, vehicles: VehicleDao, recalls: RecallDao) =
-        RecallRepository(nhtsa, vehicles, recalls)
+    fun recallRepository(nhtsa: NhtsaClient, vehicles: VehicleDao, recalls: RecallDao, settings: SettingsRepository) =
+        RecallRepository(nhtsa, vehicles, recalls, settings)
 }

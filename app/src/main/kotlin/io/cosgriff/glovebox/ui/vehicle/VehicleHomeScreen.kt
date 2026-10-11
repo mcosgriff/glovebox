@@ -119,7 +119,11 @@ class VehicleHomeViewModel @Inject constructor(
     recalls: RecallDao,
     recallRepository: RecallRepository,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<VehicleHomeRoute>().vehicleId
+    private val route = savedStateHandle.toRoute<VehicleHomeRoute>()
+    private val vehicleId = route.vehicleId
+
+    /** Came from the mileage check-in notification: the sheet opens without a tap. */
+    val startWithMileage: Boolean = route.updateMileage
 
     init {
         // Quietly re-checks a recall list that is a week old or was never fetched.
@@ -178,7 +182,7 @@ fun VehicleHomeScreen(
     val v = home.vehicle
     val up = home.comingUp
     val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
-    var updatingMileage by rememberSaveable { mutableStateOf(false) }
+    var updatingMileage by rememberSaveable { mutableStateOf(vm.startWithMileage) }
 
     if (updatingMileage) {
         UpdateMileageSheet(

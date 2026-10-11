@@ -1,0 +1,154 @@
+package io.cosgriff.glovebox.notify
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.MainActivity
+import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.domain.Notice
+import io.cosgriff.glovebox.domain.NoticeRules
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/** Where tapping a notification leads. Carried on the launch intent, then held until the app is unlocked. */
+sealed interface Destination {
+    /** The Reminders tab, where the due and overdue services are. */
+    data object Reminders : Destination
+    data class Recalls(val vehicleId: Long) : Destination
+
+    /** The vehicle's home with the Update mileage sheet open. */
+    data class UpdateMileage(val vehicleId: Long) : Destination
+
+    fun putInto(intent: Intent) {
+        intent.putExtra(KIND, when (this) {
+            Reminders -> "reminders"
+            is Recalls -> "recalls"
+            is UpdateMileage -> "mileage"
+        })
+        intent.putExtra(VEHICLE, when (this) {
+            Reminders -> 0L
+            is Recalls -> vehicleId
+            is UpdateMileage -> vehicleId
+        })
+    }
+
+    companion object {
+        private const val KIND = "glovebox.destination"
+        private const val VEHICLE = "glovebox.vehicle"
+
+        /** Null for an ordinary launch. */
+        fun from(intent: Intent?): Destination? {
+            val vehicle = intent?.getLongExtra(VEHICLE, 0L) ?: return null
+            return when (intent.getStringExtra(KIND)) {
+                "reminders" -> Reminders
+                "recalls" -> Recalls(vehicle)
+                "mileage" -> UpdateMileage(vehicle)
+                else -> null
+            }
+        }
+    }
+}
+
+/**
+ * Posts the app's notifications. One channel per kind, so each can be silenced in Android's own
+ * settings as well as in the app.
+ *
+ * Wording is kept to the vehicle's name and the service: notifications can show on the lock screen.
+ * On a phone set to hide sensitive content there, only a line saying which kind it is appears.
+ */
+@Singleton
+class Notifier @Inject constructor(@ApplicationContext private val context: Context) {
+    private val manager = NotificationManagerCompat.from(context)
+
+    /** False when Android won't show them: the permission was refused, or notifications are off for the app. */
+    val allowed: Boolean
+        get() = manager.areNotificationsEnabled() &&
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+
+    /** Safe to call on every launch: creating a channel that exists changes nothing the user set. */
+    fun createChannels() {
+        val system = context.getSystemService(NotificationManager::class.java)
+        Channel.entries.forEach { c ->
+            system.createNotificationChannel(
+                NotificationChannel(c.id, c.label, c.importance).apply { description = c.about },
+            )
+        }
+    }
+
+    fun post(notice: Notice) {
+        if (!allowed) return
+        val (channel, title, text, destination) = when (notice) {
+            is Notice.ServiceDue -> Shown(
+                Channel.SERVICE_DUE,
+                "${notice.vehicleName}: service coming due",
+                "${NoticeRules.list(notice.services)} ${if (notice.services.size == 1) "is" else "are"} coming due.",
+                Destination.Reminders,
+            )
+            is Notice.Overdue -> Shown(
+                Channel.OVERDUE,
+                "${notice.vehicleName}: overdue service",
+                "${NoticeRules.list(notice.services)} ${if (notice.services.size == 1) "is" else "are"} overdue. Log it, or snooze it if it can wait.",
+                Destination.Reminders,
+            )
+            is Notice.MileageCheckIn -> Shown(
+                Channel.MILEAGE,
+                "${notice.vehicleName}: what's the odometer at?",
+                "A quick reading keeps the mileage reminders right.",
+                Destination.UpdateMileage(notice.vehicleId),
+            )
+            is Notice.NewRecalls -> Shown(
+                Channel.RECALLS,
+                if (notice.components.size == 1) "${notice.vehicleName}: new recall" else "${notice.vehicleName}: ${notice.components.size} new recalls",
+                notice.components.distinct().take(3).joinToString(", ") + if (notice.components.distinct().size > 3) " and more" else "",
+                Destination.Recalls(notice.vehicleId),
+            )
+        }
+        // One per vehicle and kind: a newer one replaces the older instead of piling up.
+        val id = channel.ordinal * 1_000_000 + (notice.vehicleId % 1_000_000).toInt()
+        val open = PendingIntent.getActivity(
+            context,
+            id,
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                destination.putInto(this)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        fun builder(title: String, text: String?) = NotificationCompat.Builder(context, channel.id)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+        val shown = builder(title, text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(builder("Glovebox", channel.hidden).build())
+            .build()
+        try {
+            manager.notify(id, shown)
+        } catch (_: SecurityException) {
+            // The permission was withdrawn between the check and the post.
+        }
+    }
+
+    private data class Shown(val channel: Channel, val title: String, val text: String, val destination: Destination)
+
+    /** [hidden] is all a locked phone shows when it is set to hide sensitive notification content. */
+    enum class Channel(val id: String, val label: String, val about: String, val hidden: String, val importance: Int) {
+        SERVICE_DUE("service_due", "Service coming due", "When a service enters the lead time you set", "A service is coming due", NotificationManager.IMPORTANCE_DEFAULT),
+        OVERDUE("overdue", "Overdue nudges", "Once a week until it's logged or snoozed", "A service is overdue", NotificationManager.IMPORTANCE_DEFAULT),
+        RECALLS("recalls", "New recalls", "When NHTSA lists a recall that wasn't on file", "A new recall was found", NotificationManager.IMPORTANCE_HIGH),
+        MILEAGE("mileage", "Mileage check-in", "A prompt to update the odometer", "Time to update the odometer", NotificationManager.IMPORTANCE_LOW),
+    }
+}
