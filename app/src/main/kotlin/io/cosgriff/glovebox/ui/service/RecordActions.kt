@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.ui.service
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -11,6 +12,7 @@ import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.toNotice
+import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.Recalls
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -21,7 +23,12 @@ import javax.inject.Singleton
 
 sealed interface RecordEvent {
     data class Saved(val recordId: Long) : RecordEvent
-    data class Edited(val previous: ServiceRecordWithItems) : RecordEvent
+    /** [addedPhotos] and [removedPhotos] are file names; Undo takes the first away again and brings the second back. */
+    data class Edited(
+        val previous: ServiceRecordWithItems,
+        val addedPhotos: List<String> = emptyList(),
+        val removedPhotos: List<String> = emptyList(),
+    ) : RecordEvent
     /** [recallIds] are recalls this record was the work for; Undo links them again. */
     data class Deleted(val record: ServiceRecordWithItems, val recallIds: List<Long> = emptyList()) : RecordEvent
 
@@ -42,17 +49,34 @@ class RecordActions @Inject constructor(
     private val service: ServiceDao,
     private val recalls: RecallDao,
     private val vehicles: VehicleDao,
+    private val photos: RecordPhotoStore,
 ) {
     private val _events = Channel<RecordEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>) {
-        _events.send(RecordEvent.Saved(service.insertWithItems(record, items)))
+    /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
+    suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, photoFiles: List<String> = emptyList()) {
+        val id = service.insertWithItems(record, items)
+        service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
+        _events.send(RecordEvent.Saved(id))
     }
 
-    suspend fun replace(previous: ServiceRecordWithItems, record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>) {
+    /**
+     * [removedPhotoIds] lose their rows now; their files wait for [discard], so Undo can still
+     * bring them back.
+     */
+    suspend fun replace(
+        previous: ServiceRecordWithItems,
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        addedPhotos: List<String> = emptyList(),
+        removedPhotoIds: Set<Long> = emptySet(),
+    ) {
         service.replaceWithItems(record, items)
-        _events.send(RecordEvent.Edited(previous))
+        service.deletePhotos(removedPhotoIds.toList())
+        service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
+        val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
+        _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
     }
 
     suspend fun delete(record: ServiceRecordWithItems) {
@@ -91,8 +115,10 @@ class RecordActions @Inject constructor(
             is RecordEvent.Edited ->
                 if (vehicles.byId(event.previous.record.vehicleId) != null) {
                     service.replaceWithItems(event.previous.record, event.previous.items)
+                    service.clearPhotos(event.previous.record.id)
+                    service.insertPhotos(event.previous.photos.map { it.copy(id = 0) })
+                    photos.delete(event.addedPhotos)
                 }
-            // TODO: once photos exist, a deleted record's photo files must outlive the Undo window.
             is RecordEvent.Deleted -> restore(event.record)?.let { recalls.linkRecord(event.recallIds, it) }
             is RecordEvent.RecallDone -> if (event.recordId == null) recalls.setDone(event.recallId, null, null)
             is RecordEvent.RecallReopened ->
@@ -104,7 +130,26 @@ class RecordActions @Inject constructor(
     /** Null if the vehicle was deleted while the snackbar was up: there is nothing to put the record back on. */
     private suspend fun restore(record: ServiceRecordWithItems): Long? {
         if (vehicles.byId(record.record.vehicleId) == null) return null
-        return service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
+        val id = service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
+        // The files were left alone when the record went, for exactly this.
+        service.insertPhotos(record.photos.map { it.copy(id = 0, recordId = id) })
+        return id
+    }
+
+    /**
+     * The Undo for [event] was not taken, so the photo files it was keeping can go. Deleting a
+     * record only removes its rows; the files outlive the snackbar and are removed here. If the app
+     * is closed first, the launch sweep removes them instead.
+     */
+    suspend fun discard(event: RecordEvent) {
+        photos.delete(
+            when (event) {
+                is RecordEvent.Deleted -> event.record.photos.map { it.fileName }
+                is RecordEvent.Edited -> event.removedPhotos
+                is RecordEvent.RecallReopened -> event.record?.photos.orEmpty().map { it.fileName }
+                is RecordEvent.Saved, is RecordEvent.RecallDone -> emptyList()
+            },
+        )
     }
 }
 
@@ -113,4 +158,5 @@ class RecordActions @Inject constructor(
 class RecordEventsViewModel @Inject constructor(private val actions: RecordActions) : ViewModel() {
     val events = actions.events
     fun undo(event: RecordEvent) = viewModelScope.launch { actions.undo(event) }
+    fun discard(event: RecordEvent) = viewModelScope.launch { actions.discard(event) }
 }

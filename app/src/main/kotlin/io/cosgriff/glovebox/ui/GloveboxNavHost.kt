@@ -35,6 +35,7 @@ import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
+import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
@@ -73,6 +74,8 @@ import kotlin.reflect.KClass
  */
 @Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0)
 @Serializable data class RecordDetailRoute(val recordId: Long)
+/** One of a record's photos, full screen; [start] is its place in the grid. */
+@Serializable data class PhotoViewerRoute(val recordId: Long, val start: Int)
 @Serializable data class RecallsRoute(val vehicleId: Long)
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long)
 @Serializable object ArchivedVehiclesRoute
@@ -124,6 +127,9 @@ fun GloveboxNavHost() {
                     else -> null
                 }
                 if (recordId != null) nav.navigate(RecordDetailRoute(recordId)) else recordEvents.undo(event)
+            } else {
+                // Undo wasn't taken: the photo files the event was holding on to can go.
+                recordEvents.discard(event)
             }
         }
     }
@@ -287,8 +293,10 @@ fun GloveboxNavHost() {
                 RecordDetailScreen(
                     onBack = { nav.popBackStack() },
                     onEdit = { vehicleId, recordId -> nav.navigate(LogServiceRoute(vehicleId, recordId)) },
+                    onOpenPhoto = { recordId, index -> nav.navigate(PhotoViewerRoute(recordId, index)) },
                 )
             }
+            composable<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.popBackStack() }) }
             composable<RemindersRoute> {
                 RemindersScreen(
                     onLogIt = { vehicleId, scheduleItemId ->

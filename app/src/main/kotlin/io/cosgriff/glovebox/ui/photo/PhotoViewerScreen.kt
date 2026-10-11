@@ -1,0 +1,222 @@
+package io.cosgriff.glovebox.ui.photo
+
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.photo.RecordPhotoStore
+import io.cosgriff.glovebox.ui.PhotoViewerRoute
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.io.File
+import javax.inject.Inject
+
+@HiltViewModel
+class PhotoViewerViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    service: ServiceDao,
+    private val store: RecordPhotoStore,
+) : ViewModel() {
+    private val route = savedStateHandle.toRoute<PhotoViewerRoute>()
+    val start: Int = route.start
+
+    /** The record's photo files in the order the grid shows them. Null while loading. */
+    val files: StateFlow<List<String>?> = service.observeRecord(route.recordId)
+        .map { record -> record?.photos.orEmpty().map { it.fileName } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** A decrypted copy in the private cache for the share sheet; null if the photo can't be read. */
+    suspend fun shareCopy(fileName: String): File? = store.shareCopy(fileName)
+}
+
+// The viewer is always dark, like the canvas: a receipt is easier to read against black.
+private val Backdrop = Color(0xFF0E1012)
+private val OnBackdrop = Color(0xFFF4F3EF)
+
+/** Design: the receipt viewer on 6a · Service record. */
+@Composable
+fun PhotoViewerScreen(onClose: () -> Unit, vm: PhotoViewerViewModel = hiltViewModel(), loader: PhotoLoaderViewModel = hiltViewModel()) {
+    val files = vm.files.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    if (files.isEmpty()) {
+        // The record, or its last photo, went while the viewer was open.
+        LaunchedEffect(Unit) { onClose() }
+        return
+    }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val pager = rememberPagerState(initialPage = vm.start.coerceIn(0, files.lastIndex)) { files.size }
+    var zoomed by remember { mutableStateOf(false) }
+    var confirmingShare by rememberSaveable { mutableStateOf(false) }
+    var shareFailed by remember { mutableStateOf(false) }
+
+    if (confirmingShare) {
+        AlertDialog(
+            onDismissRequest = { confirmingShare = false },
+            title = { Text("Share this photo?") },
+            text = {
+                Text(
+                    "The app you share it with gets an unencrypted copy, and what it does with it is up to that app. " +
+                        "The copy Glovebox makes for sharing is removed afterwards.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmingShare = false
+                        val name = files[pager.currentPage.coerceIn(0, files.lastIndex)]
+                        scope.launch {
+                            val copy = vm.shareCopy(name)
+                            if (copy == null || !context.share(copy)) shareFailed = true
+                        }
+                    },
+                ) { Text("Share") }
+            },
+            dismissButton = { TextButton(onClick = { confirmingShare = false }) { Text("Cancel") } },
+        )
+    }
+    if (shareFailed) {
+        AlertDialog(
+            onDismissRequest = { shareFailed = false },
+            text = { Text("This photo couldn't be shared.") },
+            confirmButton = { TextButton(onClick = { shareFailed = false }) { Text("OK") } },
+        )
+    }
+
+    Column(Modifier.fillMaxSize().background(Backdrop)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Close", tint = OnBackdrop) }
+            Text(
+                if (files.size == 1) "Photo" else "Photo · ${pager.currentPage + 1} of ${files.size}",
+                Modifier.weight(1f).semantics { heading() },
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = OnBackdrop,
+                textAlign = TextAlign.Center,
+            )
+            IconButton(onClick = { confirmingShare = true }) { Icon(Icons.Outlined.Share, contentDescription = "Share photo", tint = OnBackdrop) }
+        }
+        // Swiping moves between photos only while the one on screen isn't zoomed in.
+        HorizontalPager(state = pager, userScrollEnabled = !zoomed, modifier = Modifier.weight(1f)) { page ->
+            ZoomablePhoto(
+                fileName = files[page],
+                description = "Photo ${page + 1} of ${files.size}",
+                loader = loader,
+                onZoomChange = { if (page == pager.currentPage) zoomed = it },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ZoomablePhoto(fileName: String, description: String, loader: PhotoLoaderViewModel, onZoomChange: (Boolean) -> Unit) {
+    val image by produceState<ImageBitmap?>(null, fileName) { value = loader.full(fileName) }
+    var scale by remember(fileName) { mutableFloatStateOf(1f) }
+    var offset by remember(fileName) { mutableStateOf(Offset.Zero) }
+    val transform = rememberTransformableState { zoomChange, panChange, _ ->
+        scale = (scale * zoomChange).coerceIn(1f, 5f)
+        offset = if (scale == 1f) Offset.Zero else offset + panChange
+        onZoomChange(scale > 1f)
+    }
+    Box(
+        Modifier.fillMaxSize()
+            // One finger pans only once zoomed in; otherwise the swipe is left for the pager.
+            .transformable(transform, canPan = { scale > 1f })
+            .pointerInput(fileName) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        scale = if (scale > 1f) 1f else 2.5f
+                        offset = Offset.Zero
+                        onZoomChange(scale > 1f)
+                    },
+                )
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        image?.let {
+            Image(
+                it,
+                contentDescription = description,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize().graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    translationX = offset.x
+                    translationY = offset.y
+                },
+            )
+        }
+    }
+}
+
+/** False if nothing on the phone can take it. */
+private fun Context.share(copy: File): Boolean {
+    val uri = FileProvider.getUriForFile(this, "$packageName.files", copy)
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "image/jpeg"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    return try {
+        startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    }
+}
