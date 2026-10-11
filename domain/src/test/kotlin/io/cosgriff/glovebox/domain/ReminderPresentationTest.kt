@@ -106,4 +106,72 @@ class ReminderPresentationTest {
         assertEquals(1, up.overdue)
         assertEquals(1, up.dueSoon)
     }
+
+    @Test
+    fun `due soon outranks an item that has merely used more of its interval`() {
+        // 2,600 of 3,000 mi used but 400 mi left: inside the 500 mi lead, so due soon.
+        val soon = status(Interval(3_000, null), odometer = 62_600, id = 1, name = "Oil")
+        // 9,000 of 10,000 mi used (90%), but 1,000 mi left: still fine.
+        val fine = status(Interval(10_000, null), odometer = 69_000, id = 2, name = "Coolant")
+
+        val up = ReminderPresentation.comingUp(listOf(fine, soon))
+
+        assertEquals(listOf("Oil", "Coolant"), up.counting.map { it.first.item.name })
+    }
+
+    @Test
+    fun `attention names the reminder when there is only one`() {
+        val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
+        val soon = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
+        val fine = status(Interval(30_000, null), odometer = 61_000, id = 3, name = "Air filter")
+        val never = status(Interval(5_000, null), lastDate = null, id = 4, name = "Wipers")
+
+        assertEquals(
+            Attention(DueState.OVERDUE, 1, "Rotation"),
+            ReminderPresentation.comingUp(listOf(fine, soon, overdue)).attention,
+        )
+        assertEquals(
+            Attention(DueState.OVERDUE, 2, null),
+            ReminderPresentation.comingUp(listOf(overdue, overdue.copy(item = overdue.item.copy(id = 9, name = "Brakes")))).attention,
+        )
+        assertEquals(Attention(DueState.DUE_SOON, 1, "Oil"), ReminderPresentation.comingUp(listOf(fine, soon)).attention)
+        assertEquals(Attention(DueState.OK, 0, null), ReminderPresentation.comingUp(listOf(fine)).attention)
+        // A vehicle with nothing logged has nothing to report, not nine overdue items.
+        assertNull(ReminderPresentation.comingUp(listOf(never)).attention)
+    }
+
+    @Test
+    fun `next skips what is already overdue`() {
+        val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
+        val soon = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
+        val never = status(Interval(5_000, null), lastDate = null, id = 4, name = "Wipers")
+
+        assertEquals("Oil", ReminderPresentation.comingUp(listOf(overdue, soon, never)).next?.first?.item?.name)
+        assertNull(ReminderPresentation.comingUp(listOf(overdue, never)).next)
+    }
+
+    @Test
+    fun `most urgent merges vehicles, overdue first, and keeps to the limit`() {
+        val truck = ReminderPresentation.comingUp(
+            listOf(
+                status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation"), // overdue
+                status(Interval(30_000, null), odometer = 61_000, id = 2, name = "Air filter"), // fine
+                status(Interval(5_000, null), lastDate = null, id = 3, name = "Wipers"), // never logged
+            ),
+        )
+        val hatch = ReminderPresentation.comingUp(
+            listOf(
+                status(Interval(5_000, null), odometer = 64_800, id = 4, name = "Oil"), // due soon
+                status(Interval(10_000, null), odometer = 65_000, id = 5, name = "Coolant"), // fine, half used
+            ),
+        )
+
+        val urgent = ReminderPresentation.mostUrgent(listOf("Truck" to truck, "Hatch" to hatch))
+
+        assertEquals(
+            listOf("Truck" to "Rotation", "Hatch" to "Oil", "Hatch" to "Coolant"),
+            urgent.map { it.vehicle to it.status.item.name },
+        )
+        assertEquals(1, ReminderPresentation.mostUrgent(listOf("Truck" to truck, "Hatch" to hatch), limit = 1).size)
+    }
 }
