@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -20,10 +21,13 @@ data class VehicleEntity(
     val make: String,
     val model: String,
     val trim: String? = null,
+    /** The user picked or typed the trim when adding the vehicle, instead of taking vPIC's as it came. */
+    @ColumnInfo(defaultValue = "0") val trimConfirmed: Boolean = false,
     val engine: String? = null,
     /** vPIC's primary fuel type, e.g. "Gasoline" or "Electric". Null for vehicles added before it was kept. */
     val fuel: String? = null,
     val drivetrain: String? = null,
+    val transmission: String? = null,
     val bodyClass: String? = null,
     val nickname: String? = null,
     val oilSpec: String? = null,
