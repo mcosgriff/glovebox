@@ -75,8 +75,8 @@ service), update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
-Log it).
-To build, roughly in order: snooze, reminder rules, recalls, vehicle home +
+Log it, snooze and skip).
+To build, roughly in order: reminder rules, recalls, vehicle home +
 details (+ mark sold / archive / delete), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
@@ -96,8 +96,13 @@ Notes on what's built:
   remove one so far. The sheet's preview comes from `MileageUpdate.preview`. "Read dash" (camera) and
   the notification entry point are not built.
 - Garage list and Reminders tab share `GarageOverview` (app) for every vehicle's reminders. Reminders
-  groups come from `ReminderPresentation.grouped`; its `Snooze…` and `Rules` buttons wait on those screens.
+  groups come from `ReminderPresentation.grouped`; its `Rules` button waits on that screen.
   `LogServiceRoute.scheduleItemId` opens Log service with that reminder's work ticked.
+- A snooze (`Snooze`, `Snoozing` in `:domain`) lives in `schedule_items.snoozedUntilOdometer/Date` and ends
+  at whichever comes first. It only holds a due reminder back: no service record is written, so the
+  reminder returns with its real overdue distance. "Skip this one" is a snooze to the next interval, and
+  "with the next oil change" stores the oil change's due point at the time of snoozing. A stale snooze
+  on a reminder that isn't due is ignored (`VehicleReminders.statuses`), so nothing clears it on logging.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Schema changes so far are Room auto-migrations (v3); keep exported schemas in `data/schemas`.
