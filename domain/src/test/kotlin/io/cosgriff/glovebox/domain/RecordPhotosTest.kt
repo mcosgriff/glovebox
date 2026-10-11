@@ -41,4 +41,12 @@ class RecordPhotosTest {
         assertEquals(4, RecordPhotos.sampleSize(2000, 1500, 360))
         assertEquals(1, RecordPhotos.sampleSize(2000, 1500, 2000))
     }
+
+    @Test
+    fun `ten photos are enough to earn the size warning`() {
+        assertEquals(0L, RecordPhotos.pdfBytes(0))
+        assertEquals(15_000_000L, RecordPhotos.pdfBytes(10))
+        assertEquals(true, RecordPhotos.pdfBytes(10) / 1_000_000 >= RecordPhotos.LARGE_EXPORT_MB)
+        assertEquals(false, RecordPhotos.pdfBytes(9) / 1_000_000 >= RecordPhotos.LARGE_EXPORT_MB)
+    }
 }

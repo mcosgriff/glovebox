@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
+import androidx.core.graphics.scale
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -63,6 +64,13 @@ class RecordPhotoStore(
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
         val options = BitmapFactory.Options().apply { inSampleSize = RecordPhotos.sampleSize(bounds.outWidth, bounds.outHeight, edge) }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    }
+
+    /** Like [load], but never larger than [edge] on its longest side: a PDF stores every pixel it is given. */
+    suspend fun loadWithin(fileName: String, edge: Int): Bitmap? = withContext(Dispatchers.IO) {
+        val bitmap = load(fileName, edge) ?: return@withContext null
+        val (w, h) = PhotoSizing.fit(bitmap.width, bitmap.height, edge)
+        if (w == bitmap.width) bitmap else bitmap.scale(w, h).also { bitmap.recycle() }
     }
 
     suspend fun delete(fileNames: Collection<String>) = withContext(Dispatchers.IO) {

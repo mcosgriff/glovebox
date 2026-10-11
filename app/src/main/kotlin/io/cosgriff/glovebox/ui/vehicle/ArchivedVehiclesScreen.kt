@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -110,6 +115,8 @@ fun ArchivedVehiclesScreen(
     vm: ArchivedVehiclesViewModel = hiltViewModel(),
 ) {
     val archived = vm.archived.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    var exporting by rememberSaveable { mutableStateOf<Long?>(null) }
+    exporting?.let { id -> ExportSheet(vehicleId = id, onDismiss = { exporting = null }) }
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -144,6 +151,7 @@ fun ArchivedVehiclesScreen(
             ArchivedCard(
                 a,
                 onViewHistory = { onViewHistory(a.vehicle.id) },
+                onExport = { exporting = a.vehicle.id },
                 onMoveBack = { vm.moveBack(a.vehicle) { undo -> onMessage("$name is back in the garage", "Undo", undo) } },
                 onDelete = { onDelete(a.vehicle.id) },
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -153,7 +161,14 @@ fun ArchivedVehiclesScreen(
 }
 
 @Composable
-private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBack: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
+private fun ArchivedCard(
+    a: ArchivedVehicle,
+    onViewHistory: () -> Unit,
+    onExport: () -> Unit,
+    onMoveBack: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier,
+) {
     val scheme = MaterialTheme.colorScheme
     val v = a.vehicle
     Surface(
@@ -202,14 +217,18 @@ private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBa
                 style = MaterialTheme.typography.bodySmall,
                 color = statusColors().soon,
             )
-            OutlinedButton(
-                onClick = onViewHistory,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.5.dp, scheme.onSurface),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text("View history")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("View history" to onViewHistory, "Export" to onExport).forEach { (label, action) ->
+                    OutlinedButton(
+                        onClick = action,
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.5.dp, scheme.onSurface),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                    ) {
+                        Text(label)
+                    }
+                }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(

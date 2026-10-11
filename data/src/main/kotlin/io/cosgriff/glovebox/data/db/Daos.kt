@@ -26,6 +26,10 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE archivedOn IS NULL")
     suspend fun active(): List<VehicleEntity>
 
+    /** Garage first in the order it shows them, then archived vehicles, most recently sold first. */
+    @Query("SELECT * FROM vehicles ORDER BY archivedOn IS NOT NULL, archivedOn DESC, createdOn")
+    suspend fun all(): List<VehicleEntity>
+
     @Query("UPDATE vehicles SET recallsCheckedOn = :date WHERE id = :id")
     suspend fun setRecallsChecked(id: Long, date: LocalDate)
 

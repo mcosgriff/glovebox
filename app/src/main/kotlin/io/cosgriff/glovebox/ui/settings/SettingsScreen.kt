@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.export.ExportSheet
+import io.cosgriff.glovebox.domain.ExportFormat
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +58,9 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
 @Composable
 fun SettingsScreen(onOpenRules: () -> Unit, vm: SettingsViewModel = hiltViewModel()) {
     val s by vm.settings.collectAsStateWithLifecycle()
+    var exporting by rememberSaveable { mutableStateOf<ExportFormat?>(null) }
+    exporting?.let { format -> ExportSheet(vehicleId = null, format = format, onDismiss = { exporting = null }) }
+
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -87,9 +95,27 @@ fun SettingsScreen(onOpenRules: () -> Unit, vm: SettingsViewModel = hiltViewMode
                 Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null)
             }
         }
+        Section("Export") {
+            ExportRow("PDF", "For resale or a shop") { exporting = ExportFormat.PDF }
+            ExportRow("Markdown", "Plain text, .md") { exporting = ExportFormat.MARKDOWN }
+        }
         Section("Units") {
             Segmented(TorqueUnit.entries, s.torqueUnit, { it.symbol }, vm::setTorque)
         }
+    }
+}
+
+@Composable
+private fun ExportRow(title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button, onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null)
     }
 }
 

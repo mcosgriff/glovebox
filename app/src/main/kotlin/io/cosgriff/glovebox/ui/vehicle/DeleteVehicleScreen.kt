@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -159,6 +160,7 @@ fun DeleteVehicleScreen(
     val scheme = MaterialTheme.colorScheme
     var typed by rememberSaveable { mutableStateOf("") }
     var archiving by rememberSaveable { mutableStateOf(false) }
+    var exporting by rememberSaveable { mutableStateOf(false) }
     val confirmed = TypedConfirmation.matches(typed, d.name)
 
     if (archiving) {
@@ -170,8 +172,10 @@ fun DeleteVehicleScreen(
                 vm.archiveInstead(sale, onArchived)
             },
             onDismiss = { archiving = false },
+            onExport = { exporting = true },
         )
     }
+    if (exporting) ExportSheet(vehicleId = d.vehicle.id, onDismiss = { exporting = false })
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         IconButton(onClick = onCancel, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
@@ -228,16 +232,27 @@ fun DeleteVehicleScreen(
                 }
             }
 
-            // Already archived vehicles have nothing gentler left to offer.
-            if (d.vehicle.archivedOn == null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    onClick = { archiving = true },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    onClick = { exporting = true },
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Archive instead")
+                    Text("Export first")
+                }
+                // Already archived vehicles have nothing gentler left to offer.
+                if (d.vehicle.archivedOn == null) {
+                    OutlinedButton(
+                        onClick = { archiving = true },
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.5.dp, scheme.onSurface),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                    ) {
+                        Text("Archive instead")
+                    }
                 }
             }
 

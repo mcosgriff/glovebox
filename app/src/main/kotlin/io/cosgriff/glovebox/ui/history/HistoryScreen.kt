@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.export.ExportSheet
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -129,6 +134,9 @@ fun HistoryScreen(
         filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }
     }
 
+    var exporting by rememberSaveable { mutableStateOf(false) }
+    if (exporting) ExportSheet(vehicleId = state.vehicle?.id, onDismiss = { exporting = false })
+
     Column(Modifier.fillMaxSize()) {
         if (onBack != null) {
             IconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
@@ -139,7 +147,12 @@ fun HistoryScreen(
             Modifier.padding(start = 20.dp, top = if (onBack != null) 0.dp else 16.dp, end = 20.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text("History", style = MaterialTheme.typography.headlineMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("History", Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
+                if (state.vehicle != null) {
+                    OutlinedButton(onClick = { exporting = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Export") }
+                }
+            }
             state.vehicle?.let { v ->
                 Text(
                     "${v.label()} · ${shown.size} ${if (shown.size == 1) "record" else "records"}" + if (vm.archived) " · archived, read-only" else "",

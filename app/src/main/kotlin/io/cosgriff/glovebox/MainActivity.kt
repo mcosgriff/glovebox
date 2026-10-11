@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.ui.export.ExportSaver
+import io.cosgriff.glovebox.domain.ExportFormat
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -47,6 +49,16 @@ class MainActivity : FragmentActivity() {
         pickRecordPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
+    @Inject lateinit var exportSaver: ExportSaver
+
+    // One launcher per file type: the type is fixed when the launcher is made.
+    private val savePdf = registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.PDF.mimeType)) { exportSaver.onDestination(it) }
+    private val saveMarkdown =
+        registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.MARKDOWN.mimeType)) { exportSaver.onDestination(it) }
+    private val launchExportSave: (ExportFormat, String) -> Unit = { format, fileName ->
+        (if (format == ExportFormat.PDF) savePdf else saveMarkdown).launch(fileName)
+    }
+
     private val launchPhotoPicker: () -> Unit = {
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
@@ -56,9 +68,11 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         photoPicker.attach(launchPhotoPicker)
         recordPhotoPicker.attach(launchRecordPhotoPicker) { takeRecordPhoto.launch(it) }
+        exportSaver.attach(launchExportSave)
         // Once per process, and only on a fresh start: a restored activity may have a form with photos attached.
         if (savedInstanceState == null && !swept) {
             swept = true
+            exportSaver.clear()
             lifecycleScope.launch { recordPhotos.sweep() }
         }
         setContent {
@@ -88,6 +102,7 @@ class MainActivity : FragmentActivity() {
     override fun onDestroy() {
         photoPicker.detach(launchPhotoPicker)
         recordPhotoPicker.detach(launchRecordPhotoPicker)
+        exportSaver.detach(launchExportSave)
         super.onDestroy()
     }
 
