@@ -1,0 +1,343 @@
+package io.cosgriff.glovebox.ui.settings
+
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.data.backup.BackupException
+import io.cosgriff.glovebox.data.backup.BackupRestorer
+import io.cosgriff.glovebox.data.backup.BackupSummary
+import io.cosgriff.glovebox.domain.BackupRules
+import io.cosgriff.glovebox.domain.TypedConfirmation
+import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.theme.statusColors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/** A backup file the user picked, copied into the app's cache so it can be read more than once. */
+data class PickedBackup(val file: File, val name: String)
+
+/**
+ * Lets the user pick a backup with Android's file picker. A singleton with its launcher in the
+ * activity, like the other pickers: choosing a file leaves the app, which can lock it. The copy in
+ * the cache is still encrypted; it is removed when the sheet closes and on the next launch.
+ */
+@Singleton
+class RestorePicker @Inject constructor(@ApplicationContext private val context: Context) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var launch: (() -> Unit)? = null
+
+    private val _picked = MutableStateFlow<PickedBackup?>(null)
+    val picked: StateFlow<PickedBackup?> = _picked.asStateFlow()
+
+    private val _problem = MutableStateFlow<String?>(null)
+    val problem: StateFlow<String?> = _problem.asStateFlow()
+
+    private val dir: File get() = File(context.cacheDir, "restore").apply { mkdirs() }
+
+    fun attach(launcher: () -> Unit) {
+        launch = launcher
+    }
+
+    fun detach(launcher: () -> Unit) {
+        if (launch === launcher) launch = null
+    }
+
+    fun pick() {
+        _problem.value = null
+        launch?.invoke()
+    }
+
+    /** Null when the user backed out. */
+    fun onPicked(uri: Uri?) {
+        if (uri == null) return
+        scope.launch {
+            val copy = File(dir, "backup.tmp")
+            val ok = withContext(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { input -> copy.outputStream().use { input.copyTo(it) } } != null
+                } catch (_: IOException) {
+                    false
+                } catch (_: SecurityException) {
+                    false
+                }
+            }
+            if (ok) _picked.value = PickedBackup(copy, displayName(uri) ?: "Backup file") else _problem.value = "That file couldn't be opened."
+        }
+    }
+
+    fun clear() {
+        _picked.value = null
+        dir.listFiles()?.forEach { it.delete() }
+    }
+
+    private fun displayName(uri: Uri): String? = try {
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        }
+    } catch (_: SecurityException) {
+        null
+    }
+}
+
+@HiltViewModel
+class RestoreViewModel @Inject constructor(private val picker: RestorePicker, private val restorer: BackupRestorer) : ViewModel() {
+    val picked = picker.picked
+    val problem = picker.problem
+
+    var password by mutableStateOf("")
+
+    /** Set once the password has opened the file. */
+    var summary by mutableStateOf<BackupSummary?>(null)
+        private set
+
+    /** Whether there is anything on this phone for the restore to replace. */
+    var replaces by mutableStateOf(false)
+        private set
+    var error by mutableStateOf<String?>(null)
+        private set
+    var checking by mutableStateOf(false)
+        private set
+
+    /** Fraction done while restoring; null when idle. */
+    var progress by mutableStateOf<Float?>(null)
+        private set
+
+    fun pick() = picker.pick()
+
+    fun close() {
+        password = ""
+        summary = null
+        error = null
+        picker.clear()
+    }
+
+    /** Proves the password and reads what the backup holds. Nothing is changed. */
+    fun open() {
+        val backup = picked.value ?: return
+        if (checking) return
+        checking = true
+        error = null
+        viewModelScope.launch {
+            try {
+                summary = restorer.inspect(backup.file, password.toCharArray())
+                replaces = restorer.hasData()
+            } catch (e: BackupException) {
+                error = e.message()
+            } catch (_: IOException) {
+                error = "That file couldn't be read."
+            }
+            checking = false
+        }
+    }
+
+    fun restore(onDone: (BackupSummary) -> Unit) {
+        val backup = picked.value ?: return
+        if (progress != null) return
+        progress = 0f
+        error = null
+        viewModelScope.launch {
+            try {
+                val done = restorer.restore(backup.file, password.toCharArray()) { n, total -> progress = if (total == 0) 1f else n.toFloat() / total }
+                progress = null
+                close()
+                onDone(done)
+            } catch (e: BackupException) {
+                progress = null
+                error = e.message() + " Nothing on this phone was changed."
+            } catch (_: IOException) {
+                progress = null
+                error = "The backup couldn't be read to the end. Nothing on this phone was changed."
+            }
+        }
+    }
+
+    private fun BackupException.message(): String = when (reason) {
+        BackupException.Reason.WRONG_PASSWORD -> "That password doesn't open this backup."
+        BackupException.Reason.DAMAGED -> "This backup is damaged and can't be restored."
+        BackupException.Reason.INCOMPLETE -> "This backup is incomplete: the file was cut short, perhaps by an interrupted copy or download."
+        BackupException.Reason.NEWER_VERSION -> "This backup was made by a newer version of Glovebox. Update the app, then restore it."
+        BackupException.Reason.NOT_A_BACKUP -> "That isn't a Glovebox backup file."
+    }
+}
+
+/** Design: the restore sheet on 0a · First-run welcome. Shown whenever a backup file has been picked. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hiltViewModel()) {
+    val picked = vm.picked.collectAsStateWithLifecycle().value ?: return
+    val scheme = MaterialTheme.colorScheme
+    var show by remember { mutableStateOf(false) }
+    var typed by remember { mutableStateOf("") }
+    val summary = vm.summary
+    val busy = vm.checking || vm.progress != null
+
+    ModalBottomSheet(
+        onDismissRequest = { if (vm.progress == null) vm.close() },
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = scheme.background,
+    ) {
+        Column(
+            Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text("Restore from backup", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(picked.name, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = scheme.onSurfaceVariant)
+
+            OutlinedTextField(
+                value = vm.password,
+                onValueChange = { vm.password = it },
+                label = { Text("Backup password") },
+                singleLine = true,
+                // Once the file is open the password is fixed; changing it would mean checking again.
+                enabled = summary == null && !busy,
+                visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
+                trailingIcon = {
+                    IconButton(onClick = { show = !show }) {
+                        Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = if (show) "Hide password" else "Show password")
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            vm.error?.let {
+                Text(it, Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = scheme.error)
+            }
+
+            if (summary == null) {
+                Text("We can't recover a forgotten password.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            } else {
+                Text(
+                    BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos) +
+                        (summary.createdOn?.let { ", backed up ${it.format(longDate)}." } ?: "."),
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                if (vm.replaces) {
+                    Surface(color = scheme.errorContainer, contentColor = scheme.onSurface, shape = RoundedCornerShape(14.dp), border = BorderStroke(1.5.dp, scheme.error)) {
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("This replaces everything on this phone", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(
+                                "The vehicles, records and photos here now are removed and the backup's take their place. It can't be undone.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = statusColors().soon,
+                            )
+                            OutlinedTextField(
+                                value = typed,
+                                onValueChange = { typed = it },
+                                label = { Text("Type ${BackupRules.REPLACE_WORD} to confirm") },
+                                singleLine = true,
+                                enabled = !busy,
+                                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+            }
+
+            vm.progress?.let { p ->
+                Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth())
+                    Text("Restoring. Keep the app open.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = vm::close,
+                    enabled = vm.progress == null,
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Text("Cancel", color = scheme.onSurface)
+                }
+                if (summary == null) {
+                    Button(
+                        onClick = vm::open,
+                        enabled = vm.password.isNotEmpty() && !busy,
+                        modifier = Modifier.weight(2f).height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                    ) {
+                        Text(if (vm.checking) "Checking…" else "Open backup")
+                    }
+                } else {
+                    val confirmed = !vm.replaces || TypedConfirmation.matches(typed, BackupRules.REPLACE_WORD)
+                    Button(
+                        onClick = { vm.restore(onRestored) },
+                        enabled = confirmed && !busy,
+                        modifier = Modifier.weight(2f).height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = if (vm.replaces) ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError) else ButtonDefaults.buttonColors(),
+                    ) {
+                        Text(if (vm.progress != null) "Restoring…" else if (vm.replaces) "Replace and restore" else "Restore")
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.ui.settings.RestorePicker
+import io.cosgriff.glovebox.data.backup.BackupRestorer
 import io.cosgriff.glovebox.data.backup.BackupFormat
 import io.cosgriff.glovebox.notify.PendingDestination
 import io.cosgriff.glovebox.notify.Destination
@@ -69,6 +71,13 @@ class MainActivity : FragmentActivity() {
         }.launch(fileName)
     }
 
+    @Inject lateinit var restorePicker: RestorePicker
+    @Inject lateinit var restorer: BackupRestorer
+
+    // Any file type: a backup's type is "octet-stream", and cloud apps report all sorts of things for it.
+    private val openBackup = registerForActivityResult(ActivityResultContracts.OpenDocument()) { restorePicker.onPicked(it) }
+    private val launchBackupPicker: () -> Unit = { openBackup.launch(arrayOf("*/*")) }
+
     private val launchPhotoPicker: () -> Unit = {
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
@@ -81,11 +90,18 @@ class MainActivity : FragmentActivity() {
         photoPicker.attach(launchPhotoPicker)
         recordPhotoPicker.attach(launchRecordPhotoPicker) { takeRecordPhoto.launch(it) }
         exportSaver.attach(launchExportSave)
+        restorePicker.attach(launchBackupPicker)
         // Once per process, and only on a fresh start: a restored activity may have a form with photos attached.
         if (savedInstanceState == null && !swept) {
             swept = true
             exportSaver.clear()
-            lifecycleScope.launch { recordPhotos.sweep() }
+            lifecycleScope.launch {
+                // A restore that was cut off after replacing the database still has photos to move in;
+                // that has to happen before the sweep, which would see them as missing.
+                restorer.finishInterrupted()
+                restorePicker.clear()
+                recordPhotos.sweep()
+            }
         }
         setContent {
             val settings by settingsRepo.settings.collectAsStateWithLifecycle(initialValue = null)
@@ -121,6 +137,7 @@ class MainActivity : FragmentActivity() {
         photoPicker.detach(launchPhotoPicker)
         recordPhotoPicker.detach(launchRecordPhotoPicker)
         exportSaver.detach(launchExportSave)
+        restorePicker.detach(launchBackupPicker)
         super.onDestroy()
     }
 

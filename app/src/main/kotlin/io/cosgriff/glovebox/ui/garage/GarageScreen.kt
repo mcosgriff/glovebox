@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -91,6 +92,7 @@ fun GarageScreen(
     onOpenVehicle: (vehicleId: Long) -> Unit,
     onSeeReminders: () -> Unit,
     onOpenArchive: () -> Unit,
+    onRestore: () -> Unit,
     vm: GarageViewModel = hiltViewModel(),
 ) {
     val garage = vm.garage.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -113,7 +115,7 @@ fun GarageScreen(
     val archived by vm.archived.collectAsStateWithLifecycle()
 
     if (garage.vehicles.isEmpty()) {
-        EmptyGarage(onAddVehicle, archived, onOpenArchive)
+        EmptyGarage(onAddVehicle, archived, onOpenArchive, onRestore)
         return
     }
 
@@ -345,7 +347,7 @@ private fun ArchivedRow(count: Int, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: () -> Unit) {
+private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: () -> Unit, onRestore: () -> Unit) {
     Column(
         Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -358,6 +360,8 @@ private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Add a vehicle") }
+        // A new phone starts here: this is how the data from the old one comes back.
+        TextButton(onClick = onRestore, modifier = Modifier.heightIn(min = 48.dp)) { Text("Restore from a backup") }
         // With every vehicle sold, this is the only way back to them.
         if (archived > 0) ArchivedRow(archived, onOpenArchive)
     }

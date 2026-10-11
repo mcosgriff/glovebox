@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.settings.RestoreViewModel
+import io.cosgriff.glovebox.ui.settings.RestoreSheet
+import io.cosgriff.glovebox.domain.BackupRules
 import io.cosgriff.glovebox.ui.settings.BackupScreen
 import io.cosgriff.glovebox.ui.settings.NotificationsScreen
 import io.cosgriff.glovebox.notify.DestinationViewModel
@@ -165,6 +168,7 @@ fun GloveboxNavHost() {
         }
     }
 
+    val restore: RestoreViewModel = hiltViewModel()
     val exportResults: ExportResultsViewModel = hiltViewModel()
     LaunchedEffect(Unit) { exportResults.results.collect { snackbar.showSnackbar(it) } }
 
@@ -184,6 +188,14 @@ fun GloveboxNavHost() {
         nav.popBackStack<GarageRoute>(inclusive = false)
         showMessage("$name moved to Archived vehicles", "Undo", undo)
     }
+
+    // Shown whenever a backup file has been picked, from whichever screen started it.
+    RestoreSheet(
+        onRestored = { summary ->
+            nav.popBackStack<GarageRoute>(inclusive = false)
+            showNote("Restored ${BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos)}")
+        },
+    )
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -220,6 +232,7 @@ fun GloveboxNavHost() {
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
                     onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
                     onOpenArchive = { nav.navigate(ArchivedVehiclesRoute) },
+                    onRestore = { restore.pick() },
                     onSeeReminders = {
                         nav.navigate(RemindersRoute) {
                             popUpTo(nav.graph.findStartDestination().id) { saveState = true }
@@ -350,7 +363,7 @@ fun GloveboxNavHost() {
                     onOpenBackup = { nav.navigate(BackupRoute) },
                 )
             }
-            composable<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }) }
+            composable<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
             composable<NotificationsRoute> {
                 NotificationsScreen(onBack = { nav.popBackStack() }, onOpenRules = { nav.navigate(ReminderRulesRoute) })
             }
