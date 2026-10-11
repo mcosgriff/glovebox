@@ -69,6 +69,27 @@ class SettingsRepository(private val context: Context) {
     // Facts about this phone, not choices: they mean nothing on the phone a backup is restored to.
     private val deviceOnly = setOf(Keys.lastBackup.name, Keys.backupReminded.name)
 
+    // This phone's own security choices. A backup made on a phone with the lock off must not switch it off here.
+    private val keptOnRestore = setOf(Keys.biometric.name, Keys.lockAfter.name, Keys.hideRecents.name)
+
+    /**
+     * Puts back settings read from a backup: name to value, as [raw] wrote them. Security settings
+     * and anything this version doesn't know are left alone.
+     */
+    suspend fun restore(values: Map<String, Any>) {
+        context.dataStore.edit { p ->
+            for ((name, value) in values) {
+                if (name in keptOnRestore || name in deviceOnly) continue
+                when (value) {
+                    is Boolean -> p[booleanPreferencesKey(name)] = value
+                    is Int -> p[intPreferencesKey(name)] = value
+                    is Long -> p[longPreferencesKey(name)] = value
+                    is String -> p[stringPreferencesKey(name)] = value
+                }
+            }
+        }
+    }
+
     /** Every setting as stored, for the backup file. */
     suspend fun raw(): Map<String, Any> = context.dataStore.data.first().asMap().mapKeys { it.key.name }.filterKeys { it !in deviceOnly }
 
