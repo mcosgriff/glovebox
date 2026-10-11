@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
+import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
@@ -51,8 +52,11 @@ import kotlin.reflect.KClass
 @Serializable object AddVehicleRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 @Serializable data class VehicleHomeRoute(val vehicleId: Long)
-/** [recordId] 0 logs a new record; otherwise that record is edited. */
-@Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0)
+/**
+ * [recordId] 0 logs a new record; otherwise that record is edited. [scheduleItemId] ticks that
+ * reminder's work to start with (new records only).
+ */
+@Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0)
 @Serializable data class RecordDetailRoute(val recordId: Long)
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
@@ -169,7 +173,14 @@ fun GloveboxNavHost() {
                     onEdit = { vehicleId, recordId -> nav.navigate(LogServiceRoute(vehicleId, recordId)) },
                 )
             }
-            composable<RemindersRoute> { PlaceholderScreen("Reminders", "What's due across all vehicles.") }
+            composable<RemindersRoute> {
+                RemindersScreen(
+                    onLogIt = { vehicleId, scheduleItemId ->
+                        nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
+                    },
+                    onAddVehicle = { nav.navigate(AddVehicleRoute) },
+                )
+            }
             composable<SettingsRoute> { SettingsScreen() }
         }
     }

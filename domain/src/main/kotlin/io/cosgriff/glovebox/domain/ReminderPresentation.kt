@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.domain
 
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 /** The one figure shown for a reminder: the limit that is closest to deciding it. */
@@ -45,6 +46,9 @@ data class ComingUp(
 
 /** [count] reminders in [state]; [only] names the reminder when there is exactly one. */
 data class Attention(val state: DueState, val count: Int, val only: String?)
+
+/** Sections of the Reminders tab, in the order they are shown. */
+enum class ReminderGroup { OVERDUE, NEXT_30_DAYS, LATER, NOT_LOGGED }
 
 /** A reminder shown outside its vehicle's own screen, so it carries the vehicle along. */
 data class UrgentItem<V>(val vehicle: V, val status: ItemStatus, val progress: ReminderProgress)
@@ -96,6 +100,41 @@ object ReminderPresentation {
             .sortedWith(compareBy(urgency) { it.second })
             .take(limit)
             .map { (vehicle, item) -> UrgentItem(vehicle, item.first, item.second) }
+
+    /**
+     * Where a reminder goes on the Reminders tab. "Next 30 days" takes anything already due soon
+     * and anything expected within 30 days — by date, or by mileage at the current driving pace.
+     */
+    fun group(s: ItemStatus, today: LocalDate): ReminderGroup = when {
+        s.lastDone == null -> ReminderGroup.NOT_LOGGED
+        s.status.state == DueState.OVERDUE -> ReminderGroup.OVERDUE
+        s.status.state == DueState.DUE_SOON -> ReminderGroup.NEXT_30_DAYS
+        s.status.estimatedDueDate?.let { !it.isAfter(today.plusDays(30)) } == true -> ReminderGroup.NEXT_30_DAYS
+        else -> ReminderGroup.LATER
+    }
+
+    /**
+     * Every vehicle's reminders by section, empty sections left out. Overdue is most urgent first;
+     * the rest run soonest first, with reminders that have no date estimate after those that do.
+     */
+    fun <V> grouped(vehicles: List<Pair<V, ComingUp>>, today: LocalDate): Map<ReminderGroup, List<UrgentItem<V>>> {
+        val counting = vehicles.flatMap { (vehicle, up) -> up.counting.map { vehicle to it } }
+            .sortedWith(compareBy(urgency) { it.second })
+            .map { (vehicle, item) -> UrgentItem(vehicle, item.first, item.second) }
+        val notLogged = vehicles.flatMap { (vehicle, up) ->
+            up.notLogged.map { UrgentItem(vehicle, it, ReminderProgress(DueHeadline.NotLogged, null)) }
+        }
+        val byGroup = (counting + notLogged).groupBy { group(it.status, today) }
+        return ReminderGroup.entries.mapNotNull { g ->
+            val items = byGroup[g] ?: return@mapNotNull null
+            g to when (g) {
+                // Stable sorts: ties keep the urgency order from above.
+                ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER ->
+                    items.sortedWith(compareBy(nullsLast()) { it.status.status.estimatedDueDate })
+                else -> items
+            }
+        }.toMap()
+    }
 
     /** Overdue, then due soon, then whatever has used the most of its interval. */
     private val urgency: Comparator<Pair<ItemStatus, ReminderProgress>> =

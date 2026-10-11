@@ -222,6 +222,8 @@ class LogServiceViewModel @Inject constructor(
                 customItems = custom
             }
 
+            if (!editing) optionFor[route.scheduleItemId]?.let { selected = setOf(it.id) }
+
             categoryId = categories.firstOrNull { c -> c.options.any { it.id in selected } }?.id ?: categories.first().id
             data = LogServiceData(
                 vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
