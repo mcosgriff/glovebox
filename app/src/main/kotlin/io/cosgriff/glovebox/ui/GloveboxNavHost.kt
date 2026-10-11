@@ -365,6 +365,7 @@ fun GloveboxNavHost() {
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onOpenBackup = { nav.navigate(BackupRoute) },
                     onDeleteAll = { nav.navigate(DeleteAllRoute) },
+                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                 )
             }
             composable<DeleteAllRoute> {

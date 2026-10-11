@@ -87,12 +87,13 @@ make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), rece
 recalls, mileage check-in) with their settings screen, encrypted backup (create, monthly reminder, restore), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
-(theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
+(grouped cards: theme, biometrics, lock delay, hide in recents, reminder rule, schedule, torque units,
+notifications, recall checks, backup, export, delete all data), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: finish Settings (#25), about (#26), unlock screen (#27), fonts and dark pass (#28), History
+To build: distance units (km display, #93), about (#26), unlock screen (#27), fonts and dark pass (#28), History
 and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
@@ -216,6 +217,12 @@ Notes on what's built:
   `DataWipe` removes it with the rest of the settings. Its buttons save the two choices, then hand over through
   `Destination.AddVehicle` or `RestorePicker.pick()`. Notifications off there turns every kind off in
   Settings; the lock switch is disabled, and says why, on a phone with no screen lock (`canLockApp`).
+- Settings rows that lead nowhere are left out, not shown dead: `Distance units` (odometers are stored
+  and shown in miles everywhere; km needs every mileage field and label converted) and `About Glovebox`
+  (#26). `Maintenance schedule` opens the only vehicle's schedule, or asks which when there are several,
+  and is absent with none. `Lock the app` (`LockDelay`, stored as `lockAfterSeconds`, -1 = on restart)
+  shows only while the lock is on and the phone has a screen lock. The privacy line says what is really
+  sent: a VIN, or a year, make and model.
 - Delete all data (`DeleteAllScreen`, from the bottom of Settings): typing DELETE enables the button,
   which then asks for the fingerprint or screen lock (`confirmWithScreenLock`); a phone with no screen
   lock has only the typed word, and the screen says so (`DeleteAll` in `:domain`). `DataWipe.deleteEverything`
