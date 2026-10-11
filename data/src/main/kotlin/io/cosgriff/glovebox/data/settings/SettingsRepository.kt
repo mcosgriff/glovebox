@@ -33,6 +33,8 @@ data class Settings(
     val notices: NoticePrefs = NoticePrefs(),
     /** How often NHTSA is asked about recalls without the user asking. */
     val recallCadence: RecallCadence = RecallCadence.WEEKLY,
+    /** The first-run welcome has been shown, or wasn't needed. */
+    val welcomeSeen: Boolean = false,
     /** When a backup file was last saved from this phone; null = never. */
     val lastBackupOn: LocalDate? = null,
     val backupReminder: Boolean = true,
@@ -61,13 +63,14 @@ class SettingsRepository(private val context: Context) {
         val notifyMinute = intPreferencesKey("notify_minute")
         val mileageCadence = stringPreferencesKey("mileage_cadence")
         val recallCadence = stringPreferencesKey("recall_cadence")
+        val welcomeSeen = booleanPreferencesKey("welcome_seen")
         val lastBackup = longPreferencesKey("last_backup_on")
         val backupReminder = booleanPreferencesKey("backup_reminder")
         val backupReminded = longPreferencesKey("backup_reminded_on")
     }
 
     // Facts about this phone, not choices: they mean nothing on the phone a backup is restored to.
-    private val deviceOnly = setOf(Keys.lastBackup.name, Keys.backupReminded.name)
+    private val deviceOnly = setOf(Keys.lastBackup.name, Keys.backupReminded.name, Keys.welcomeSeen.name)
 
     // This phone's own security choices. A backup made on a phone with the lock off must not switch it off here.
     private val keptOnRestore = setOf(Keys.biometric.name, Keys.lockAfter.name, Keys.hideRecents.name)
@@ -113,6 +116,7 @@ class SettingsRepository(private val context: Context) {
                 mileageCadence = p[Keys.mileageCadence]?.let { runCatching { MileageCadence.valueOf(it) }.getOrNull() } ?: d.notices.mileageCadence,
             ),
             recallCadence = p[Keys.recallCadence]?.let { runCatching { RecallCadence.valueOf(it) }.getOrNull() } ?: d.recallCadence,
+            welcomeSeen = p[Keys.welcomeSeen] ?: d.welcomeSeen,
             lastBackupOn = p[Keys.lastBackup]?.let(LocalDate::ofEpochDay),
             backupReminder = p[Keys.backupReminder] ?: d.backupReminder,
             backupRemindedOn = p[Keys.backupReminded]?.let(LocalDate::ofEpochDay),
@@ -139,6 +143,7 @@ class SettingsRepository(private val context: Context) {
         it[Keys.mileageCadence] = prefs.mileageCadence.name
     }
     suspend fun setRecallCadence(cadence: RecallCadence) = context.dataStore.edit { it[Keys.recallCadence] = cadence.name }
+    suspend fun setWelcomeSeen() = context.dataStore.edit { it[Keys.welcomeSeen] = true }
     suspend fun setLastBackup(date: LocalDate) = context.dataStore.edit { it[Keys.lastBackup] = date.toEpochDay() }
     suspend fun setBackupReminder(on: Boolean) = context.dataStore.edit { it[Keys.backupReminder] = on }
     suspend fun setBackupReminded(date: LocalDate) = context.dataStore.edit { it[Keys.backupReminded] = date.toEpochDay() }

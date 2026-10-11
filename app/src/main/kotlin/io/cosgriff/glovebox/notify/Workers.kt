@@ -187,7 +187,7 @@ class DestinationViewModel @Inject constructor(private val holder: PendingDestin
     suspend fun take(): Destination? {
         val to = holder.take() ?: return null
         val vehicleId = when (to) {
-            Destination.Reminders, Destination.Backup -> return to
+            Destination.Reminders, Destination.Backup, Destination.AddVehicle -> return to
             is Destination.Recalls -> to.vehicleId
             is Destination.UpdateMileage -> to.vehicleId
         }

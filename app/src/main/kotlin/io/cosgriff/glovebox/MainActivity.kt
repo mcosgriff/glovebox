@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.ui.welcome.WelcomeScreen
+import io.cosgriff.glovebox.ui.welcome.WelcomeAction
+import io.cosgriff.glovebox.ui.welcome.FirstRun
 import io.cosgriff.glovebox.ui.settings.RestorePicker
 import io.cosgriff.glovebox.data.backup.BackupRestorer
 import io.cosgriff.glovebox.data.backup.BackupFormat
@@ -56,6 +59,7 @@ class MainActivity : FragmentActivity() {
     }
 
     @Inject lateinit var exportSaver: ExportSaver
+    @Inject lateinit var firstRun: FirstRun
     @Inject lateinit var pendingDestination: PendingDestination
 
     // One launcher per file type: the type is fixed when the launcher is made.
@@ -117,9 +121,25 @@ class MainActivity : FragmentActivity() {
             // here, which puts the user back where they were once they unlock.
             val place = rememberSaveableStateHolder()
 
+            val welcome by firstRun.needsWelcome.collectAsStateWithLifecycle()
+
             GloveboxTheme(mode = settings?.theme ?: Settings().theme) {
                 when {
-                    settings == null -> Unit // first frame while DataStore loads
+                    settings == null || welcome == null -> Unit // first frames while DataStore and the database load
+                    // Before the lock: there is nothing on the phone to protect yet, and the lock is one of the things being chosen.
+                    welcome == true -> WelcomeScreen(
+                        onDone = { choice, then ->
+                            lifecycleScope.launch {
+                                firstRun.finish(choice)
+                                // They have just set the lock up; asking for a fingerprint straight away would only get in the way.
+                                appLock.unlock()
+                                when (then) {
+                                    WelcomeAction.ADD_VEHICLE -> pendingDestination.set(Destination.AddVehicle)
+                                    WelcomeAction.RESTORE -> restorePicker.pick()
+                                }
+                            }
+                        },
+                    )
                     locked && settings?.biometricLock == true -> LockScreen(onUnlocked = appLock::unlock)
                     else -> place.SaveableStateProvider(APP_SCREENS) { GloveboxNavHost() }
                 }
