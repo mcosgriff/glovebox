@@ -48,6 +48,13 @@ object ScheduleTemplates {
         if (engine) add(ScheduleTemplateItem("spark-plugs", "Spark plugs", Interval(100_000, null)))
     }
 
+    /**
+     * The typical items a vehicle's schedule doesn't have yet, tracked or not. [haveKeys] are the
+     * template keys of its items; the user's own items have none and never count as a match.
+     */
+    fun missing(drivetrain: String?, fuel: String?, haveKeys: Collection<String?>): List<ScheduleTemplateItem> =
+        generic(drivetrain, fuel).filter { it.key !in haveKeys }
+
     /** vPIC says "Electric" for battery-electric cars; hybrids report their combustion fuel as primary. */
     fun isElectric(fuel: String?): Boolean = fuel?.trim().equals("Electric", ignoreCase = true)
 

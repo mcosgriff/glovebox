@@ -196,7 +196,6 @@ fun GloveboxNavHost() {
                 VehicleDetailsScreen(
                     onBack = { nav.popBackStack() },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
-                    onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                     onArchived = onArchived,
                     onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },

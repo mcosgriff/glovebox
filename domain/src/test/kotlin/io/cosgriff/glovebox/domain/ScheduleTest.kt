@@ -77,4 +77,13 @@ class ScheduleTest {
         assertEquals(full, ScheduleTemplates.generic(null, fuel = null).map { it.key })
         assertTrue("oil" in full)
     }
+
+    @Test
+    fun `missing lists the typical items a schedule doesn't have`() {
+        val all = ScheduleTemplates.generic(null).map { it.key }
+        // Only the user's own item so far: everything typical is still on offer.
+        assertEquals(all, ScheduleTemplates.missing(null, null, listOf(null)).map { it.key })
+        assertEquals(all - "oil", ScheduleTemplates.missing(null, null, listOf("oil", null)).map { it.key })
+        assertTrue(ScheduleTemplates.missing(null, null, all).isEmpty())
+    }
 }

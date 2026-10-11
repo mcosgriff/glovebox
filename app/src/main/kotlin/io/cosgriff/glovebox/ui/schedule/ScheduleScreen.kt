@@ -14,12 +14,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -54,6 +56,7 @@ import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ScheduleSummaries
+import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.ServiceLog
@@ -80,6 +83,8 @@ data class ScheduleState(
     val templateKeys: Map<String, String?>,
     val logs: Map<String, ItemLog>,
     val defaultRule: DueRule,
+    /** Typical items this schedule doesn't have, e.g. after a skipped setup. */
+    val missing: List<ScheduleTemplateItem>,
 ) {
     val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null }.map { it.tracked to it.useSevere }).use
 }
@@ -144,6 +149,7 @@ class ScheduleViewModel @Inject constructor(
                 )
             },
             defaultRule = s.defaultRule,
+            missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, items.map { it.templateKey }),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -185,6 +191,30 @@ class ScheduleViewModel @Inject constructor(
     /** Normal or severe for every item that has a severe interval. */
     fun chooseSevereUse(severe: Boolean) = viewModelScope.launch {
         entities.values.filter { it.useSevere != severe }.forEach { schedule.update(it.copy(useSevere = severe)) }
+    }
+
+    /**
+     * Adds the typical items the schedule lacks, unticked: the user picks which to track, so a
+     * dozen "not logged yet" reminders don't appear at once.
+     */
+    fun addMissing() = viewModelScope.launch {
+        val s = state.value ?: return@launch
+        val severe = s.use == DrivingUse.SEVERE
+        schedule.insertAll(
+            s.missing.map {
+                ScheduleItemEntity(
+                    vehicleId = vehicleId,
+                    name = it.name,
+                    templateKey = it.key,
+                    intervalMiles = it.normal.miles,
+                    intervalMonths = it.normal.months,
+                    severeMiles = it.severe?.miles,
+                    severeMonths = it.severe?.months,
+                    useSevere = severe,
+                    tracked = false,
+                )
+            },
+        )
     }
 
     private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
@@ -310,6 +340,25 @@ fun ScheduleScreen(
                     TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text("+ Add your own item")
                     }
+                }
+            }
+
+            // A schedule that began with the user's own items can still pick up the typical ones.
+            if (state.items.isNotEmpty() && state.missing.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(
+                        onClick = vm::addMissing,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) {
+                        val n = state.missing.size
+                        Text(if (n == 1) "Add 1 typical item" else "Add $n typical items")
+                    }
+                    Text(
+                        state.missing.joinToString(", ") { it.name } + ". They're added unticked, so tick the ones to track.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 

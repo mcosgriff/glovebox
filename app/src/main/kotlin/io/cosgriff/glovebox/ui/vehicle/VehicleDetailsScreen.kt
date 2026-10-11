@@ -222,7 +222,6 @@ class VehicleDetailsViewModel @Inject constructor(
 fun VehicleDetailsScreen(
     onBack: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
-    onSetUpSchedule: (vehicleId: Long) -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
     /** The vehicle has gone to the archive; [undo] brings it back. */
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
@@ -383,8 +382,8 @@ fun VehicleDetailsScreen(
                 LinkRow(
                     title = "Maintenance schedule",
                     detail = schedule?.text() ?: "Not set up yet",
-                    // A vehicle whose setup was skipped starts it here.
-                    onClick = { if (schedule == null) onSetUpSchedule(v.id) else onOpenSchedule(v.id) },
+                    // An empty schedule offers the typical one, or adding items one at a time.
+                    onClick = { onOpenSchedule(v.id) },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 val open = details.recalls
