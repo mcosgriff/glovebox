@@ -272,10 +272,15 @@ private fun RecallLookup.text(): String? = when (this) {
 }
 
 @Composable
-fun AddVehicleScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: AddVehicleViewModel = hiltViewModel()) {
+fun AddVehicleScreen(
+    onSaved: (vehicleId: Long) -> Unit,
+    onBack: () -> Unit,
+    onNoVin: () -> Unit,
+    vm: AddVehicleViewModel = hiltViewModel(),
+) {
     val decoded = vm.decoded
     if (decoded == null) {
-        VinEntry(vm, onBack)
+        VinEntry(vm, onBack, onNoVin)
     } else {
         BackHandler(onBack = vm::backToVin)
         ConfirmVehicle(vm, decoded, onSaved)
@@ -284,7 +289,7 @@ fun AddVehicleScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm:
 
 /** Design: 1 · Add vehicle (VIN). */
 @Composable
-private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit) {
+private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -378,6 +383,9 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit) {
                 if (vm.decoding) CircularProgressIndicator(Modifier.size(24.dp)) else Text("Decode VIN", style = MaterialTheme.typography.titleMedium)
             }
             vm.error?.let { Text(it, color = scheme.error) }
+            TextButton(onClick = onNoVin, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text("No VIN? Enter year, make and model manually")
+            }
         }
     }
 }

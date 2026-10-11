@@ -17,6 +17,8 @@ import java.time.LocalDate
 data class VehicleEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val vin: String?,
+    /** Added without a VIN decode: every detail is the user's own, even if a VIN is filled in later. */
+    @ColumnInfo(defaultValue = "0") val enteredByHand: Boolean = false,
     val year: Int,
     val make: String,
     val model: String,

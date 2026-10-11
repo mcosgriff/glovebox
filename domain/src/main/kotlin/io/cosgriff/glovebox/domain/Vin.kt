@@ -16,6 +16,12 @@ object Vin {
     fun isWellFormed(vin: String): Boolean =
         vin.length == 17 && vin.all { it in transliteration } // excludes I, O, Q
 
+    /**
+     * Loose enough for a VIN typed in after the fact: older vehicles have shorter serial numbers,
+     * and 17-character VINs from outside North America needn't pass the check digit.
+     */
+    fun isPlausible(vin: String): Boolean = vin.length in 5..17 && vin.all { it in 'A'..'Z' || it in '0'..'9' }
+
     fun hasValidCheckDigit(vin: String): Boolean {
         if (!isWellFormed(vin)) return false
         val sum = vin.indices.sumOf { i -> transliteration.getValue(vin[i]) * weights[i] }

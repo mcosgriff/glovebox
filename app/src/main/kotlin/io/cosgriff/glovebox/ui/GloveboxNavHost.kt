@@ -31,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.garage.GarageScreen
+import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
@@ -57,6 +58,7 @@ import kotlin.reflect.KClass
 @Serializable object RemindersRoute
 @Serializable object SettingsRoute
 @Serializable object AddVehicleRoute
+@Serializable object ManualAddRoute
 @Serializable object ReminderRulesRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
@@ -231,7 +233,19 @@ fun GloveboxNavHost() {
             composable<AddVehicleRoute> {
                 AddVehicleScreen(
                     onBack = { nav.popBackStack() },
+                    onNoVin = { nav.navigate(ManualAddRoute) },
                     onSaved = { vehicleId ->
+                        nav.navigate(ScheduleSetupRoute(vehicleId)) {
+                            popUpTo<AddVehicleRoute> { inclusive = true }
+                        }
+                    },
+                )
+            }
+            composable<ManualAddRoute> {
+                ManualAddScreen(
+                    onBack = { nav.popBackStack() },
+                    onSaved = { vehicleId ->
+                        // Both add screens go, so Back from the schedule lands on the garage.
                         nav.navigate(ScheduleSetupRoute(vehicleId)) {
                             popUpTo<AddVehicleRoute> { inclusive = true }
                         }
