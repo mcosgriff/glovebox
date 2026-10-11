@@ -70,3 +70,10 @@ private fun days(n: Long): String = when {
     n <= 60 -> "$n days"
     else -> "${n / 30} months"
 }
+
+fun DueRule.ruleLabel(): String = when (this) {
+    DueRule.WHICHEVER_FIRST -> "Whichever comes first"
+    DueRule.WHICHEVER_LAST -> "Whichever comes last"
+    DueRule.MILEAGE_ONLY -> "Mileage only"
+    DueRule.TIME_ONLY -> "Time only"
+}

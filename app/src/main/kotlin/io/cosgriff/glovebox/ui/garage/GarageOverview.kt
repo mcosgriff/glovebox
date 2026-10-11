@@ -61,7 +61,7 @@ class GarageOverview @Inject constructor(
                 val entries = recordsBy[v.id].orEmpty().map { it.toEntry() }
                 val updates = readingsBy[v.id].orEmpty().map { OdometerReading(it.date, it.odometer) }
                 val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule) }
-                val statuses = VehicleReminders.statuses(tracked, entries, updates, today)
+                val statuses = VehicleReminders.statuses(tracked, entries, updates, today, s.lead)
                 val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
                 GarageVehicle(
                     vehicle = v,

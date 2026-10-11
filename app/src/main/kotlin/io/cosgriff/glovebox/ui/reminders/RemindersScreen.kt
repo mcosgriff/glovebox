@@ -24,6 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +88,7 @@ private val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy
 fun RemindersScreen(
     onLogIt: (vehicleId: Long, scheduleItemId: Long) -> Unit,
     onAddVehicle: () -> Unit,
+    onOpenRules: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: RemindersViewModel = hiltViewModel(),
@@ -125,12 +128,23 @@ fun RemindersScreen(
 
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
-            Text(
-                "Reminders",
-                Modifier.padding(top = 16.dp, bottom = 4.dp).semantics { heading() },
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(Modifier.padding(top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Reminders",
+                    Modifier.weight(1f).semantics { heading() },
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                OutlinedButton(
+                    onClick = onOpenRules,
+                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Reminder rules" },
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                ) {
+                    Text("Rules")
+                }
+            }
         }
 
         if (garage.vehicles.size > 1) {

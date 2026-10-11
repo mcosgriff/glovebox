@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -73,6 +75,7 @@ import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.VehicleHomeRoute
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toTracked
@@ -121,8 +124,8 @@ class VehicleHomeViewModel @Inject constructor(
             vehicle = vehicle,
             odometer = VehicleReminders.currentOdometer(entries, updates),
             defaultRule = s.defaultRule,
-            comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now())),
-            inputs = ReminderInputs(tracked, entries, updates),
+            comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), s.lead)),
+            inputs = ReminderInputs(tracked, entries, updates, s.lead),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -142,6 +145,7 @@ class VehicleHomeViewModel @Inject constructor(
 fun VehicleHomeScreen(
     onBack: () -> Unit,
     onLogService: (vehicleId: Long) -> Unit,
+    onOpenRules: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
@@ -184,11 +188,10 @@ fun VehicleHomeScreen(
                 if (up.counting.isNotEmpty()) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("Coming up", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(
-                            home.defaultRule.label(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        TextButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(home.defaultRule.ruleLabel(), style = MaterialTheme.typography.bodySmall)
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                        }
                     }
                     WhiteCard {
                         up.counting.forEachIndexed { i, (status, progress) ->
@@ -358,9 +361,3 @@ private fun ItemStatus.detail(progress: ReminderProgress): String {
     return listOfNotNull(every, lastText, estimate).joinToString(" · ")
 }
 
-private fun DueRule.label(): String = when (this) {
-    DueRule.WHICHEVER_FIRST -> "Whichever comes first"
-    DueRule.WHICHEVER_LAST -> "Whichever comes last"
-    DueRule.MILEAGE_ONLY -> "Mileage only"
-    DueRule.TIME_ONLY -> "Time only"
-}

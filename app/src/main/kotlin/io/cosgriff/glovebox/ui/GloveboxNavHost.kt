@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
+import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
@@ -50,6 +51,7 @@ import kotlin.reflect.KClass
 @Serializable object RemindersRoute
 @Serializable object SettingsRoute
 @Serializable object AddVehicleRoute
+@Serializable object ReminderRulesRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 @Serializable data class VehicleHomeRoute(val vehicleId: Long)
 /**
@@ -153,6 +155,7 @@ fun GloveboxNavHost() {
                 VehicleHomeScreen(
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
+                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onMessage = showMessage,
                 )
             }
@@ -182,10 +185,12 @@ fun GloveboxNavHost() {
                         nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
                     },
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
+                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onMessage = showMessage,
                 )
             }
-            composable<SettingsRoute> { SettingsScreen() }
+            composable<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
+            composable<SettingsRoute> { SettingsScreen(onOpenRules = { nav.navigate(ReminderRulesRoute) }) }
         }
     }
 }
