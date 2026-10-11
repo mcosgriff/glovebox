@@ -93,7 +93,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, last piece of #25), about (#26), unlock screen (#27), fonts and dark pass (#28), History
+To build: distance units (km display, #93), about (#26), unlock screen (#27), fonts and dark pass (#28), History
 and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
