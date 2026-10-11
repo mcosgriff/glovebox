@@ -1,23 +1,23 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
 agp = "9.4.1"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 ksp = "2.3.12"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 
 core-ktx = "1.19.1"
-activity-compose = "1.10.1"
-lifecycle = "2.9.2"
+activity-compose = "1.13.0"
+lifecycle = "2.11.0"
 navigation = "2.10.2"
 compose-bom = "2026.09.00"
 biometric = "1.1.0"
 fragment = "1.9.1"
-datastore = "1.1.7"
+datastore = "1.2.1"
 work = "2.12.0"
 
 room = "2.8.5"
-sqlite = "2.5.2"
+sqlite = "2.7.1"
 sqlcipher = "4.19.1"
 tink = "1.23.0"
 ktor = "3.6.0"

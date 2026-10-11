@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import io.cosgriff.glovebox.domain.DueRule
@@ -13,7 +14,9 @@ import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.TorqueUnit
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
@@ -30,6 +33,11 @@ data class Settings(
     val notices: NoticePrefs = NoticePrefs(),
     /** How often NHTSA is asked about recalls without the user asking. */
     val recallCadence: RecallCadence = RecallCadence.WEEKLY,
+    /** When a backup file was last saved from this phone; null = never. */
+    val lastBackupOn: LocalDate? = null,
+    val backupReminder: Boolean = true,
+    /** When the backup reminder last went out. */
+    val backupRemindedOn: LocalDate? = null,
 )
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -53,7 +61,16 @@ class SettingsRepository(private val context: Context) {
         val notifyMinute = intPreferencesKey("notify_minute")
         val mileageCadence = stringPreferencesKey("mileage_cadence")
         val recallCadence = stringPreferencesKey("recall_cadence")
+        val lastBackup = longPreferencesKey("last_backup_on")
+        val backupReminder = booleanPreferencesKey("backup_reminder")
+        val backupReminded = longPreferencesKey("backup_reminded_on")
     }
+
+    // Facts about this phone, not choices: they mean nothing on the phone a backup is restored to.
+    private val deviceOnly = setOf(Keys.lastBackup.name, Keys.backupReminded.name)
+
+    /** Every setting as stored, for the backup file. */
+    suspend fun raw(): Map<String, Any> = context.dataStore.data.first().asMap().mapKeys { it.key.name }.filterKeys { it !in deviceOnly }
 
     val settings: Flow<Settings> = context.dataStore.data.map { p ->
         val d = Settings()
@@ -75,6 +92,9 @@ class SettingsRepository(private val context: Context) {
                 mileageCadence = p[Keys.mileageCadence]?.let { runCatching { MileageCadence.valueOf(it) }.getOrNull() } ?: d.notices.mileageCadence,
             ),
             recallCadence = p[Keys.recallCadence]?.let { runCatching { RecallCadence.valueOf(it) }.getOrNull() } ?: d.recallCadence,
+            lastBackupOn = p[Keys.lastBackup]?.let(LocalDate::ofEpochDay),
+            backupReminder = p[Keys.backupReminder] ?: d.backupReminder,
+            backupRemindedOn = p[Keys.backupReminded]?.let(LocalDate::ofEpochDay),
         )
     }
 
@@ -98,4 +118,7 @@ class SettingsRepository(private val context: Context) {
         it[Keys.mileageCadence] = prefs.mileageCadence.name
     }
     suspend fun setRecallCadence(cadence: RecallCadence) = context.dataStore.edit { it[Keys.recallCadence] = cadence.name }
+    suspend fun setLastBackup(date: LocalDate) = context.dataStore.edit { it[Keys.lastBackup] = date.toEpochDay() }
+    suspend fun setBackupReminder(on: Boolean) = context.dataStore.edit { it[Keys.backupReminder] = on }
+    suspend fun setBackupReminded(date: LocalDate) = context.dataStore.edit { it[Keys.backupReminded] = date.toEpochDay() }
 }
