@@ -230,6 +230,7 @@ fun GloveboxNavHost() {
             composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
             composable<AddVehicleRoute> {
                 AddVehicleScreen(
+                    onBack = { nav.popBackStack() },
                     onSaved = { vehicleId ->
                         nav.navigate(ScheduleSetupRoute(vehicleId)) {
                             popUpTo<AddVehicleRoute> { inclusive = true }
