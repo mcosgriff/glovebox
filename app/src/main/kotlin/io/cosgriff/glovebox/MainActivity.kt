@@ -8,6 +8,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,11 +49,16 @@ class MainActivity : FragmentActivity() {
                 if (settings?.biometricLock == false) appLock.unlock()
             }
 
+            // The lock screen takes the app's screens out of composition, so nothing of them (sheets
+            // and dialogs included) is on screen or readable while locked. Their saved state is kept
+            // here, which puts the user back where they were once they unlock.
+            val place = rememberSaveableStateHolder()
+
             GloveboxTheme(mode = settings?.theme ?: Settings().theme) {
                 when {
                     settings == null -> Unit // first frame while DataStore loads
                     locked && settings?.biometricLock == true -> LockScreen(onUnlocked = appLock::unlock)
-                    else -> GloveboxNavHost()
+                    else -> place.SaveableStateProvider(APP_SCREENS) { GloveboxNavHost() }
                 }
             }
         }
@@ -63,7 +69,11 @@ class MainActivity : FragmentActivity() {
         super.onDestroy()
     }
 
-    /** "Hide in recent apps": blocks screenshots and blanks the app-switcher thumbnail. */
+    private companion object {
+        const val APP_SCREENS = "app"
+    }
+
+        /** "Hide in recent apps": blocks screenshots and blanks the app-switcher thumbnail. */
     private fun applySecureFlag(settings: Settings?) {
         if (settings?.hideInRecents != false) {
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
