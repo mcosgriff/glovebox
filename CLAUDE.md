@@ -82,13 +82,14 @@ Mark as sold), archived vehicles (read-only history, move back to garage), delet
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
-make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
+(attach, grid, viewer, share), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
+To build, roughly in order: odometer offset (#73), notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, about.
 
 Notes on what's built:
@@ -150,6 +151,20 @@ Notes on what's built:
   is drawn or readable behind the lock screen. Their saved state is held in a `SaveableStateHolder`, which
   is what returns the user to the same screen after unlocking. Don't swap this for drawing the lock
   screen over a live nav host: sheets and dialogs are separate windows and would sit on top of it.
+- Receipt and parts photos: files are encrypted in `PhotoCrypto.photoDir` by `RecordPhotoStore` and
+  belong to a record through the `photos` table. `RecordPhotoPicker` (app, singleton) owns taking and
+  picking; its launchers are registered in `MainActivity` for the same lock-screen reason as the vehicle
+  photo. A form's new photos are "drafts" held by the picker until the form is saved (`takeDraft`) or
+  left (`discardDraft`).
+- **Photo files are never deleted when a record or photo row is.** Deleting or editing a record removes
+  rows only, so Undo can put them back; the files go in `RecordActions.discard`, which the nav host calls
+  when an Undo snackbar ends untaken. Anything missed (the app closed first) is removed by
+  `RecordPhotoStore.sweep` on the next launch: encrypted files no row points at and older than ten
+  minutes, plus everything in the two plaintext cache folders.
+- A photo is in the clear in only two places, both in the private cache and listed in
+  `res/xml/file_paths.xml`: `capture/` while the camera app writes a new one (deleted as soon as it is
+  encrypted) and `shared/` for the copy handed to the share sheet (emptied before the next share and on
+  launch). Taking a photo needs the camera permission because the app declares it for VIN scanning.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
