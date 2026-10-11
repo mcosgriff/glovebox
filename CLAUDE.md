@@ -83,14 +83,14 @@ name to confirm), torque specs (unit switch, categories, search, add / edit / de
 update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
 make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
-(attach, grid, viewer, share), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+(attach, grid, viewer, share), export as PDF or Markdown, recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 To build, roughly in order: odometer offset (#73), notifications (WorkManager), encrypted backup/restore,
-PDF + Markdown export, welcome/first run, about.
+welcome/first run, about.
 
 Notes on what's built:
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
@@ -165,6 +165,15 @@ Notes on what's built:
   `res/xml/file_paths.xml`: `capture/` while the camera app writes a new one (deleted as soon as it is
   encrypted) and `shared/` for the copy handed to the share sheet (emptied before the next share and on
   launch). Taking a photo needs the camera permission because the app declares it for VIN scanning.
+- Export: `Exports.document` (domain) applies the options once (dates, costs and notes, schedule and
+  recalls, photos), so the Markdown writer (`Exports.markdown`) and the PDF writer (`PdfExport`, app,
+  Android's `PdfDocument`, US Letter) only lay out what they are given. `ExportSheet` is one composable
+  used from History, Settings, Vehicle details' sold sheet, the delete screen and the archive card.
+  The file is written to `cache/export/` and copied to wherever the user picks through `ExportSaver`,
+  whose "save as" launchers live in `MainActivity` (same lock-screen reason as the photo pickers); the
+  working copy is deleted either way. Android's PDF writer stores photos without JPEG compression, so
+  they go in at 1,000 px and the sheet's size figure is an estimate (`RecordPhotos.PDF_BYTES_PER_PHOTO`).
+  An export is not encrypted, and every recall or schedule table carries a note saying what it is.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
@@ -190,12 +199,12 @@ Notes on what's built:
   `RecallRepository` refuses to check them. A final odometer higher than the last reading is logged as an
   `odometer_readings` row dated the sale (`Archive.finalReading`); Undo removes it, "Move back to garage"
   keeps it. Archived history reuses `HistoryScreen` via `ArchivedHistoryRoute`, and `RecordDetail.readOnly`
-  hides Edit and Delete. Export on the archive card waits on export.
+  hides Edit and Delete.
 - Delete vehicle (`DeleteVehicleScreen`) opens from Vehicle details and the archive card, lists what goes
   with counts, and enables the red button once the nickname or model is typed (`TypedConfirmation`). It
   calls `DataWipe.deleteVehicle` and has no Undo. `RecordActions.undo` checks the vehicle still exists, so
-  an Undo snackbar left over from before the delete does nothing instead of failing. `Export first` and the
-  note about saved backup files wait on export and backup.
+  an Undo snackbar left over from before the delete does nothing instead of failing. The note about saved
+  backup files waits on backup.
 - Torque specs (`TorqueSpecsScreen`) start empty. "Start with common fasteners" adds named rows from
   `TorqueSpecs.common` with no size, value or note: there is no source for factory torque values and none
   may be invented. `torque_specs.category` and `.source` hold `TorqueCategory` and `TorqueSource` names.

@@ -54,6 +54,8 @@ fun MarkAsSoldSheet(
     lastOdometer: Int?,
     onArchive: (Sale) -> Unit,
     onDismiss: () -> Unit,
+    /** Opens the export sheet for this vehicle, as a PDF. */
+    onExport: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     var soldDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
@@ -119,6 +121,15 @@ fun MarkAsSoldSheet(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            OutlinedButton(
+                onClick = onExport,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+            ) {
+                Text("Export service history PDF for the buyer")
+            }
 
             Text(
                 "It moves to Archived vehicles with its full history. Reminders and recall checks stop, " +

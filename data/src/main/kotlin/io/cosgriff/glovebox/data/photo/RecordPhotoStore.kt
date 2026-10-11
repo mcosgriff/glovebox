@@ -65,6 +65,13 @@ class RecordPhotoStore(
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
     }
 
+    /** Like [load], but never larger than [edge] on its longest side: a PDF stores every pixel it is given. */
+    suspend fun loadWithin(fileName: String, edge: Int): Bitmap? = withContext(Dispatchers.IO) {
+        val bitmap = load(fileName, edge) ?: return@withContext null
+        val (w, h) = PhotoSizing.fit(bitmap.width, bitmap.height, edge)
+        if (w == bitmap.width) bitmap else Bitmap.createScaledBitmap(bitmap, w, h, true).also { bitmap.recycle() }
+    }
+
     suspend fun delete(fileNames: Collection<String>) = withContext(Dispatchers.IO) {
         fileNames.forEach { File(crypto.photoDir, it).delete() }
     }

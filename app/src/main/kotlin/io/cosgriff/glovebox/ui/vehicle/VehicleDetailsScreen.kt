@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -242,6 +243,7 @@ fun VehicleDetailsScreen(
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<Spec?>(null) }
     var selling by rememberSaveable { mutableStateOf(false) }
+    var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
 
     if (addingVin) {
@@ -264,8 +266,11 @@ fun VehicleDetailsScreen(
                 vm.markAsSold(sale) { undo -> onArchived(name, undo) }
             },
             onDismiss = { selling = false },
+            onExport = { exporting = true },
         )
     }
+    // Drawn after the sold sheet so it opens on top of it.
+    if (exporting) ExportSheet(vehicleId = v.id, onDismiss = { exporting = false })
     // Seeded once: after that the field is the source of truth and the database follows it.
     var nickname by rememberSaveable { mutableStateOf(v.nickname.orEmpty()) }
 

@@ -31,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
+import io.cosgriff.glovebox.ui.export.ExportResultsViewModel
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
@@ -133,6 +134,9 @@ fun GloveboxNavHost() {
             }
         }
     }
+
+    val exportResults: ExportResultsViewModel = hiltViewModel()
+    LaunchedEffect(Unit) { exportResults.results.collect { snackbar.showSnackbar(it) } }
 
     // For one-off confirmations with a single action, usually Undo.
     val showMessage: (String, String, () -> Unit) -> Unit = { message, actionLabel, onAction ->
