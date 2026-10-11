@@ -5,6 +5,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.LockDelay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -51,8 +52,8 @@ class AppLock @Inject constructor(settingsRepo: SettingsRepository) : DefaultLif
     override fun onStart(owner: LifecycleOwner) {
         val since = backgroundedAt ?: return
         val s = settings.value ?: return
-        if (!s.biometricLock || s.lockAfterSeconds < 0) return
+        if (!s.biometricLock) return
         val elapsedSec = (SystemClock.elapsedRealtime() - since) / 1000
-        if (elapsedSec >= s.lockAfterSeconds) _locked.value = true
+        if (LockDelay.relocks(s.lockAfterSeconds, elapsedSec)) _locked.value = true
     }
 }
