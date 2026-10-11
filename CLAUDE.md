@@ -29,9 +29,11 @@ Keep them green; lint errors fail the build.
 
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests:
   `ReminderEngine` (due status, whichever-first/last, mileage-only/time-only, lead time, pace),
-  `ServiceLog` (last-done derivation), `Torque`/`TorqueUnit`, `Vin`.
+  `ServiceLog` (last-done derivation), `Recalls` (list merge, campaign and component names),
+  `Torque`/`TorqueUnit`, `Vin`.
 - `:data` — Room + SQLCipher, Keystore key management (`DatabaseKeyManager`), Tink photo
-  encryption (`PhotoCrypto`), `NhtsaClient`, `SettingsRepository` (DataStore), `DataWipe`, Hilt module.
+  encryption (`PhotoCrypto`), `NhtsaClient`, `RecallRepository`, `SettingsRepository` (DataStore),
+  `DataWipe`, Hilt module.
 - `:app` — Compose UI, navigation, ViewModels, `AppLock` + `LockScreen`, theme.
 
 ## Decisions — don't change without asking
@@ -75,8 +77,9 @@ service), update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
-Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides).
-To build, roughly in order: recalls, vehicle home +
+Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
+(list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
+To build, roughly in order: vehicle home +
 details (+ mark sold / archive / delete), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
@@ -90,8 +93,8 @@ Notes on what's built:
 - Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
-  vehicles" still returns to it, which is where another vehicle is added. Its recall chips and the
-  archived-vehicles row wait on recalls and archiving.
+  vehicles" still returns to it, which is where another vehicle is added. Its archived-vehicles row
+  waits on archiving.
 - Update mileage adds an `odometer_readings` row dated today; the snackbar's Undo is the only way to
   remove one so far. The sheet's preview comes from `MileageUpdate.preview`. "Read dash" (camera) and
   the notification entry point are not built.
@@ -108,7 +111,20 @@ Notes on what's built:
   only ever uses a real logged service (`RulePreviews`), never sample data, and names no manufacturer.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
-- Schema changes so far are Room auto-migrations (v3); keep exported schemas in `data/schemas`.
+- Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
+  vehicle when its list is a week old (`vehicles.recallsCheckedOn`): once per launch from the garage,
+  and on opening vehicle home or the Recalls screen. A failed check leaves the stored list alone.
+  "No open recalls" is only shown once NHTSA has answered for that vehicle.
+- NHTSA answers HTTP 400 with an empty list when it has no recalls for a vehicle; `NhtsaClient.recalls`
+  reads the body rather than the status. Report dates arrive as day/month/year.
+- `recalls.completedOn` is the user's mark and survives refreshes; a campaign NHTSA drops is deleted only
+  while open. Marking done goes through `RecordActions.completeRecall`, which can add a service record
+  (`recalls.serviceRecordId`) whose line has no schedule item, so it resets no reminder. Mark as open
+  removes that record, with Undo.
+- Manufacturer VIN lookup pages are a short checked list (`Recalls.manufacturerSite`); other makes get
+  NHTSA's lookup. "Find a dealer" hands "<make> dealer" to the maps app. Until Vehicle details exists,
+  the quiet Recalls row at the bottom of vehicle home is the way in when nothing is open.
+- Schema changes so far are Room auto-migrations (v4); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

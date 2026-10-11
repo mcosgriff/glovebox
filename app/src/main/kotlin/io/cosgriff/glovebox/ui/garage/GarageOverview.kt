@@ -1,14 +1,18 @@
 package io.cosgriff.glovebox.ui.garage
 
 import io.cosgriff.glovebox.data.db.OdometerDao
+import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.OpenRecalls
+import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
@@ -26,11 +30,14 @@ data class GarageVehicle(
     val comingUp: ComingUp,
     /** The oil change reminder, which others can be snoozed to; null if it isn't tracked. */
     val oil: ItemStatus?,
+    /** Null until NHTSA has answered for this vehicle, so "No open recalls" is never a guess. */
+    val recalls: OpenRecalls? = null,
 )
 
 data class Garage(val vehicles: List<GarageVehicle>) {
     val overdue: Int get() = vehicles.sumOf { it.comingUp.overdue }
     val dueSoon: Int get() = vehicles.sumOf { it.comingUp.dueSoon }
+    val openRecalls: Int get() = vehicles.sumOf { it.recalls?.count ?: 0 }
 
     /** Only worth showing when there is more than one vehicle to look across. */
     val urgent: List<UrgentItem<VehicleEntity>>
@@ -44,6 +51,7 @@ class GarageOverview @Inject constructor(
     service: ServiceDao,
     odometer: OdometerDao,
     settings: SettingsRepository,
+    recalls: RecallDao,
 ) {
     val garage: Flow<Garage> = combine(
         vehicles.observeActive(),
@@ -69,6 +77,14 @@ class GarageOverview @Inject constructor(
                     comingUp = ReminderPresentation.comingUp(statuses),
                     oil = statuses.firstOrNull { it.item.id == oilId },
                 )
+            },
+        )
+    }.combine(recalls.observeAll()) { garage, all ->
+        val recallsBy = all.groupBy { it.vehicleId }
+        garage.copy(
+            vehicles = garage.vehicles.map { g ->
+                if (g.vehicle.recallsCheckedOn == null) g
+                else g.copy(recalls = Recalls.open(recallsBy[g.vehicle.id].orEmpty().map { it.toStored() }))
             },
         )
     }

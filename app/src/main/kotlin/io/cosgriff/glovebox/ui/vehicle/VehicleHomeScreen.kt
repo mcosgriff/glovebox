@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,10 +56,13 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
+import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.nhtsa.RecallRepository
+import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.DecidedBy
@@ -67,6 +72,8 @@ import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.OpenRecalls
+import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ReminderProgress
@@ -83,6 +90,7 @@ import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -105,8 +113,19 @@ class VehicleHomeViewModel @Inject constructor(
     service: ServiceDao,
     private val odometer: OdometerDao,
     settings: SettingsRepository,
+    recalls: RecallDao,
+    recallRepository: RecallRepository,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<VehicleHomeRoute>().vehicleId
+
+    init {
+        // Quietly re-checks a recall list that is a week old or was never fetched.
+        viewModelScope.launch { recallRepository.refreshIfStale(vehicleId) }
+    }
+
+    val openRecalls: StateFlow<OpenRecalls> = recalls.observe(vehicleId)
+        .map { list -> Recalls.open(list.map { it.toStored() }) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OpenRecalls(0, null))
 
     /** Null while loading, and if the vehicle no longer exists. Recomputed whenever the log changes. */
     val home: StateFlow<VehicleHome?> = combine(
@@ -146,6 +165,7 @@ fun VehicleHomeScreen(
     onBack: () -> Unit,
     onLogService: (vehicleId: Long) -> Unit,
     onOpenRules: () -> Unit,
+    onOpenRecalls: (vehicleId: Long) -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
@@ -153,6 +173,7 @@ fun VehicleHomeScreen(
     val home = vm.home.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val v = home.vehicle
     val up = home.comingUp
+    val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
     var updatingMileage by rememberSaveable { mutableStateOf(false) }
 
     if (updatingMileage) {
@@ -184,6 +205,8 @@ fun VehicleHomeScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 HeaderCard(v, home.odometer, up, onUpdateMileage = { updatingMileage = true })
+
+                if (openRecalls.count > 0) RecallBanner(openRecalls, onClick = { onOpenRecalls(v.id) })
 
                 if (up.counting.isNotEmpty()) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -234,6 +257,10 @@ fun VehicleHomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+
+                // With nothing open the banner is gone, so this is the way in to the recall list.
+                // TODO: moves to the Recalls row on Vehicle details once that screen exists.
+                if (openRecalls.count == 0) RecallsRow(checked = v.recallsCheckedOn != null, onClick = { onOpenRecalls(v.id) })
             }
         }
 
@@ -282,6 +309,59 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     Text("Update mileage")
                 }
             }
+        }
+    }
+}
+
+/** Design: the tinted strip under the header on 4 · Garage / vehicle home. */
+@Composable
+private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = scheme.primaryContainer,
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.5.dp, scheme.primary),
+    ) {
+        Row(
+            Modifier.heightIn(min = 48.dp).padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(22.dp), tint = statusColors().overdue)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    listOfNotNull(if (open.count == 1) "1 open recall" else "${open.count} open recalls", open.only).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface,
+                )
+                // Not "at a $makeName dealer": NHTSA also lists recalled aftermarket parts for the model.
+                Text("Recall repairs are free of charge", style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
+            }
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = statusColors().overdue)
+        }
+    }
+}
+
+@Composable
+private fun RecallsRow(checked: Boolean, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(onClick = onClick, modifier = Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
+        Row(
+            Modifier.heightIn(min = 52.dp).padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("Recalls", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+            // "No open recalls" is only said once NHTSA has actually answered for this vehicle.
+            Text(
+                if (checked) "No open recalls" else "Not checked yet",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (checked) statusColors().ok else scheme.onSurfaceVariant,
+            )
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
         }
     }
 }

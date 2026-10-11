@@ -37,6 +37,9 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.DecodedVehicle
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
+import io.cosgriff.glovebox.data.nhtsa.RecallRepository
+import io.cosgriff.glovebox.domain.RecallNotice
+import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.Vin
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -47,6 +50,7 @@ class AddVehicleViewModel @Inject constructor(
     private val nhtsa: NhtsaClient,
     private val vehicles: VehicleDao,
     private val odometer: OdometerDao,
+    private val recallRepository: RecallRepository,
 ) : ViewModel() {
     var vin by mutableStateOf("")
         private set
@@ -58,6 +62,10 @@ class AddVehicleViewModel @Inject constructor(
     var error by mutableStateOf<String?>(null)
         private set
 
+    /** What NHTSA lists for the decoded year, make and model. */
+    var recalls by mutableStateOf<RecallLookup>(RecallLookup.NotAsked)
+        private set
+
     val vinValid: Boolean get() = Vin.hasValidCheckDigit(vin)
 
     fun onVinChange(input: String) {
@@ -66,6 +74,7 @@ class AddVehicleViewModel @Inject constructor(
         vin = normalized
         decoded = null
         error = null
+        recalls = RecallLookup.NotAsked
     }
 
     fun decode() = viewModelScope.launch {
@@ -75,6 +84,19 @@ class AddVehicleViewModel @Inject constructor(
             .onSuccess { decoded = it }
             .onFailure { error = "Couldn't reach NHTSA. Check your connection, or add the vehicle manually." }
         decoding = false
+        decoded?.let { lookUpRecalls(it) }
+    }
+
+    /** Only the year, make and model are sent. A failure here never blocks adding the vehicle. */
+    private suspend fun lookUpRecalls(d: DecodedVehicle) {
+        val year = d.year ?: 0
+        val make = d.make.orEmpty()
+        val model = d.model.orEmpty()
+        if (!Recalls.canCheck(year, make, model)) return
+        recalls = RecallLookup.Asking
+        val found = runCatching { nhtsa.recalls(year, make, model) }
+        // The VIN may have been edited while NHTSA was answering.
+        if (decoded === d) recalls = found.fold({ RecallLookup.Found(it) }, { RecallLookup.Failed })
     }
 
     fun save(onSaved: (vehicleId: Long) -> Unit) = viewModelScope.launch {
@@ -96,7 +118,27 @@ class AddVehicleViewModel @Inject constructor(
         odometerText.filter(Char::isDigit).toIntOrNull()?.let {
             odometer.insert(OdometerReadingEntity(vehicleId = id, date = today, odometer = it))
         }
+        // Keep the list already on screen; if it never arrived, the garage re-checks later.
+        (recalls as? RecallLookup.Found)?.let { recallRepository.store(id, it.notices, today) }
         onSaved(id)
+    }
+}
+
+sealed interface RecallLookup {
+    data object NotAsked : RecallLookup
+    data object Asking : RecallLookup
+    data object Failed : RecallLookup
+    data class Found(val notices: List<RecallNotice>) : RecallLookup
+}
+
+/** Nothing can be marked done before the vehicle is saved, so every recall found is still open. */
+private fun RecallLookup.text(): String? = when (this) {
+    RecallLookup.NotAsked -> null
+    RecallLookup.Asking -> "Checking…"
+    RecallLookup.Failed -> "Couldn't check"
+    is RecallLookup.Found -> when (val n = notices.map { it.campaign }.filter { it.isNotBlank() }.distinct().size) {
+        0 -> "None found"
+        else -> "$n found · $n open"
     }
 }
 
@@ -147,7 +189,7 @@ fun AddVehicleScreen(onSaved: (vehicleId: Long) -> Unit, vm: AddVehicleViewModel
             }
             vm.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         } else {
-            DecodedCard(d)
+            DecodedCard(d, vm.recalls.text())
             OutlinedTextField(
                 value = vm.odometerText,
                 onValueChange = { vm.odometerText = it },
@@ -170,7 +212,7 @@ fun AddVehicleScreen(onSaved: (vehicleId: Long) -> Unit, vm: AddVehicleViewModel
 }
 
 @Composable
-private fun DecodedCard(d: DecodedVehicle) {
+private fun DecodedCard(d: DecodedVehicle, recalls: String?) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("${d.year ?: ""} ${d.make.orEmpty()} ${d.model.orEmpty()}".trim(), style = MaterialTheme.typography.titleLarge)
@@ -182,6 +224,7 @@ private fun DecodedCard(d: DecodedVehicle) {
                 "Fuel" to d.fuel,
                 "Transmission" to d.transmission,
                 "Built in" to d.plant,
+                "Recalls (NHTSA)" to recalls,
             ).forEach { (k, v) ->
                 if (v != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(k, color = MaterialTheme.colorScheme.onSurfaceVariant)

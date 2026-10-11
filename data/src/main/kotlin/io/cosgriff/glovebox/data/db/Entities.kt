@@ -30,6 +30,8 @@ data class VehicleEntity(
     val odometerOffset: Int = 0,
     val archivedOn: LocalDate? = null,
     val createdOn: LocalDate,
+    /** When NHTSA last answered for this vehicle's recalls; null = never checked. */
+    val recallsCheckedOn: LocalDate? = null,
 )
 
 @Entity(
@@ -129,6 +131,34 @@ data class TorqueSpecEntity(
     /** FACTORY or USER. */
     val source: String = "USER",
     val note: String? = null,
+)
+
+/**
+ * A recall NHTSA lists for the vehicle's year, make and model. [completedOn] is the user's own mark:
+ * NHTSA can't say whether a given VIN was repaired. [serviceRecordId] is the record added when it
+ * was marked done, if there is one.
+ */
+@Entity(
+    tableName = "recalls",
+    foreignKeys = [
+        ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE),
+        ForeignKey(ServiceRecordEntity::class, ["id"], ["serviceRecordId"], onDelete = ForeignKey.SET_NULL),
+    ],
+    indices = [Index("vehicleId", "campaign", unique = true), Index("serviceRecordId")],
+)
+data class RecallEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val vehicleId: Long,
+    /** NHTSA campaign number as sent, e.g. "20V682000". */
+    val campaign: String,
+    val component: String,
+    val summary: String,
+    val consequence: String? = null,
+    val remedy: String? = null,
+    val reportedOn: LocalDate? = null,
+    val firstSeenOn: LocalDate,
+    val completedOn: LocalDate? = null,
+    val serviceRecordId: Long? = null,
 )
 
 data class ServiceRecordWithItems(
