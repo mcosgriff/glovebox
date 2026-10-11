@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.sqlite)
     implementation(libs.sqlcipher.android)
     implementation(libs.tink.android)
+    implementation(libs.bouncycastle)
 
     api(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)

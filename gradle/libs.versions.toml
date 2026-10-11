@@ -24,6 +24,8 @@ ktor = "3.6.0"
 camerax = "1.6.2"
 # Barcode reading. Pure Java with no network code; ML Kit was ruled out because it uploads usage logs.
 zxing = "3.5.4"
+# Argon2id for the backup password. Only the lightweight API is used (no provider), so R8 keeps little of it.
+bouncycastle = "1.86"
 
 hilt = "2.60.1"
 hilt-androidx = "1.4.0"
@@ -70,6 +72,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
