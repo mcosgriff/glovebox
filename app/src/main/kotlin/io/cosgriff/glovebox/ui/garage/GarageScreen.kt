@@ -355,7 +355,7 @@ private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: 
     ) {
         Text("No vehicles yet", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Add one with its VIN and we'll fill in the details, the factory maintenance schedule and any recalls.",
+            "Add one with its VIN and we'll fill in the details, suggest a typical maintenance schedule and look up its recalls.",
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

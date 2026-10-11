@@ -31,15 +31,19 @@ sealed interface Destination {
     /** The Encrypted backup screen. */
     data object Backup : Destination
 
+    /** Add a vehicle. Not from a notification: where the welcome's first button leads. */
+    data object AddVehicle : Destination
+
     fun putInto(intent: Intent) {
         intent.putExtra(KIND, when (this) {
             Reminders -> "reminders"
             is Recalls -> "recalls"
             is UpdateMileage -> "mileage"
             Backup -> "backup"
+            AddVehicle -> "add"
         })
         intent.putExtra(VEHICLE, when (this) {
-            Reminders, Backup -> 0L
+            Reminders, Backup, AddVehicle -> 0L
             is Recalls -> vehicleId
             is UpdateMileage -> vehicleId
         })
@@ -57,6 +61,7 @@ sealed interface Destination {
                 "recalls" -> Recalls(vehicle)
                 "mileage" -> UpdateMileage(vehicle)
                 "backup" -> Backup
+                "add" -> AddVehicle
                 else -> null
             }
         }

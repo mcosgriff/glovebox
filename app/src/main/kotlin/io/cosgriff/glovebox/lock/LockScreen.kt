@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.lock
 
+import android.content.Context
 import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.biometric.BiometricManager
@@ -28,15 +29,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
+// BIOMETRIC_STRONG or DEVICE_CREDENTIAL is unsupported on API 29 and throws.
+private val authenticators: Int
+    get() = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) BIOMETRIC_STRONG else BIOMETRIC_WEAK) or DEVICE_CREDENTIAL
+
+/** False on a phone with no screen lock and no biometrics enrolled: there is nothing to lock the app with. */
+fun Context.canLockApp(): Boolean = BiometricManager.from(this).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+
 @Composable
 fun LockScreen(onUnlocked: () -> Unit) {
     val activity = LocalActivity.current as FragmentActivity
-    // BIOMETRIC_STRONG or DEVICE_CREDENTIAL is unsupported on API 29 and throws.
-    val authenticators =
-        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) BIOMETRIC_STRONG else BIOMETRIC_WEAK) or DEVICE_CREDENTIAL
-    // No screen lock and no biometrics enrolled: there is nothing to gate with, so don't trap the user.
-    val canAuthenticate =
-        BiometricManager.from(activity).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+    // Nothing to gate with, so don't trap the user.
+    val canAuthenticate = activity.canLockApp()
 
     fun prompt() {
         val info = BiometricPrompt.PromptInfo.Builder()

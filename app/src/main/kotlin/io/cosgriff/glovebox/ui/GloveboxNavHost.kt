@@ -164,6 +164,7 @@ fun GloveboxNavHost() {
                 is Destination.Recalls -> nav.navigate(RecallsRoute(to.vehicleId))
                 is Destination.UpdateMileage -> nav.navigate(VehicleHomeRoute(to.vehicleId, updateMileage = true))
                 Destination.Backup -> nav.navigate(BackupRoute) { launchSingleTop = true }
+                Destination.AddVehicle -> nav.navigate(AddVehicleRoute) { launchSingleTop = true }
             }
         }
     }
