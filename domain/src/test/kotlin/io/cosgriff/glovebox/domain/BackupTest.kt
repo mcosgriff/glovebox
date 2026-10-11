@@ -10,9 +10,10 @@ class BackupTest {
     private val today = LocalDate.of(2026, 10, 11)
 
     @Test
-    fun `short passwords are refused however clever`() {
-        assertEquals(PasswordStrength.TOO_SHORT, BackupRules.strength("aB3\$xY9!q"))
-        assertFalse(PasswordStrength.TOO_SHORT.allowed)
+    fun `short passwords rate weak however clever`() {
+        assertEquals(PasswordStrength.WEAK, BackupRules.strength("aB3\$xY9!q"))
+        assertEquals(PasswordStrength.WEAK, BackupRules.strength("password1"))
+        assertEquals(PasswordStrength.WEAK, BackupRules.strength("a"))
     }
 
     @Test
@@ -20,7 +21,6 @@ class BackupTest {
         assertEquals(PasswordStrength.WEAK, BackupRules.strength("aaaaaaaaaaaaaaaaaaaaaaaa"))
         assertEquals(PasswordStrength.WEAK, BackupRules.strength("abababababab"))
         assertEquals(PasswordStrength.WEAK, BackupRules.strength("qwertyuiopas"))
-        assertFalse(PasswordStrength.WEAK.allowed)
     }
 
     @Test
@@ -29,12 +29,11 @@ class BackupTest {
         assertEquals(PasswordStrength.STRONG, BackupRules.strength("purple wagon 42"))
         assertEquals(PasswordStrength.STRONG, BackupRules.strength("correcthorsebattery"))
         assertEquals(PasswordStrength.VERY_STRONG, BackupRules.strength("correct horse battery staple"))
-        assertTrue(PasswordStrength.FAIR.allowed)
     }
 
     @Test
     fun `bars follow the strength`() {
-        assertEquals(listOf(0, 1, 2, 3, 4), PasswordStrength.entries.map { it.bars })
+        assertEquals(listOf(1, 2, 3, 4), PasswordStrength.entries.map { it.bars })
     }
 
     @Test

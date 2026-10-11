@@ -101,7 +101,8 @@ class BackupViewModel @Inject constructor(
 
     val strength: PasswordStrength get() = BackupRules.strength(password)
     val matches: Boolean get() = password == confirm
-    val canCreate: Boolean get() = strength.allowed && matches && progress == null && (contents?.vehicles ?: 0) > 0
+    // Any password the user chooses is accepted; an empty one would be no protection at all.
+    val canCreate: Boolean get() = password.isNotEmpty() && matches && progress == null && (contents?.vehicles ?: 0) > 0
 
     init {
         viewModelScope.launch { contents = writer.contents() }
@@ -315,9 +316,10 @@ private fun PasswordField(
 @Composable
 private fun StrengthMeter(strength: PasswordStrength, typed: Boolean) {
     val scheme = MaterialTheme.colorScheme
-    val color = when {
-        !strength.allowed -> scheme.error
-        strength == PasswordStrength.FAIR -> statusColors().soon
+    // Advice, not a gate: a weak password still makes a backup, so it isn't shown as an error.
+    val color = when (strength) {
+        PasswordStrength.WEAK -> scheme.onPrimaryContainer
+        PasswordStrength.FAIR -> statusColors().soon
         else -> statusColors().ok
     }
     Row(Modifier.clearAndSetSemantics { }, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -327,9 +329,8 @@ private fun StrengthMeter(strength: PasswordStrength, typed: Boolean) {
     }
     Text(
         when {
-            !typed -> "At least ${BackupRules.MIN_PASSWORD_LENGTH} characters. A long phrase works better than a short jumble."
-            strength == PasswordStrength.TOO_SHORT -> "Too short: at least ${BackupRules.MIN_PASSWORD_LENGTH} characters."
-            strength == PasswordStrength.WEAK -> "Weak: too easy to guess. Make it longer or less repetitive."
+            !typed -> "Your choice. A long phrase is harder to guess than a short jumble."
+            strength == PasswordStrength.WEAK -> "Weak: easy to guess if someone gets hold of the file. It will still work."
             else -> strength.label
         },
         Modifier.semantics { liveRegion = LiveRegionMode.Polite },

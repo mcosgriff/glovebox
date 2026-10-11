@@ -115,7 +115,7 @@ text as strings, null as null. Dates are the same integers the database holds (d
 ## Limits and open points
 
 - The password is the whole of the protection. A weak one can be guessed however good the rest
-  is; the app refuses very short ones and shows a strength hint, nothing more.
+  is. The choice is the user's: the app shows a strength hint and refuses only an empty password.
 - File size and the approximate number of photos are visible to anyone holding the file. Nothing
   else is.
 - AES-GCM with a counter nonce is safe for far more blocks than any backup will have.

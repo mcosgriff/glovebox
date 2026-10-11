@@ -3,24 +3,18 @@ package io.cosgriff.glovebox.domain
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-/** How well a backup password would stand up to guessing. A rough guide, not a guarantee. */
+/**
+ * How well a backup password would stand up to guessing. A rough guide shown beside the field,
+ * nothing more: the choice of password is the user's, and none is refused.
+ */
 enum class PasswordStrength(val label: String, val bars: Int) {
-    /** Under [BackupRules.MIN_PASSWORD_LENGTH] characters; a backup can't be made with it. */
-    TOO_SHORT("Too short", 0),
-
-    /** Long enough but easy to guess; a backup can't be made with it either. */
     WEAK("Weak", 1),
     FAIR("Fair", 2),
     STRONG("Strong", 3),
     VERY_STRONG("Very strong", 4),
-    ;
-
-    val allowed: Boolean get() = this >= FAIR
 }
 
 object BackupRules {
-    const val MIN_PASSWORD_LENGTH = 10
-
     /** A backup older than this is worth a reminder. */
     const val REMIND_AFTER_DAYS = 30L
 
@@ -29,8 +23,7 @@ object BackupRules {
      * little, and a password made of very few different characters is weak whatever its length.
      */
     fun strength(password: String): PasswordStrength {
-        if (password.length < MIN_PASSWORD_LENGTH) return PasswordStrength.TOO_SHORT
-        if (password.toSet().size < 6) return PasswordStrength.WEAK
+        if (password.length < 10 || password.toSet().size < 6) return PasswordStrength.WEAK
         val kinds = listOf(password.any(Char::isLowerCase), password.any(Char::isUpperCase), password.any(Char::isDigit), password.any { !it.isLetterOrDigit() }).count { it }
         return when {
             password.length >= 20 -> PasswordStrength.VERY_STRONG
