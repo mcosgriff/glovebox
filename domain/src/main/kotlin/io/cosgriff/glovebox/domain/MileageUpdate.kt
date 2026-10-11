@@ -7,6 +7,7 @@ data class ReminderInputs(
     val items: List<TrackedItem>,
     val entries: List<ServiceEntry>,
     val updates: List<OdometerReading>,
+    val lead: LeadTime = LeadTime(),
 )
 
 /** What saving a new odometer reading would do, shown before the user commits to it. */
@@ -28,7 +29,7 @@ object MileageUpdate {
     fun preview(inputs: ReminderInputs, odometer: Int, today: LocalDate, limit: Int = 2): MileagePreview {
         val readings = ServiceLog.readings(inputs.entries, inputs.updates)
         val last = readings.maxWithOrNull(compareBy<OdometerReading> { it.odometer }.thenBy { it.date })
-        val after = VehicleReminders.statuses(inputs.items, inputs.entries, inputs.updates + OdometerReading(today, odometer), today)
+        val after = VehicleReminders.statuses(inputs.items, inputs.entries, inputs.updates + OdometerReading(today, odometer), today, inputs.lead)
         return MileagePreview(
             last = last,
             delta = last?.let { odometer - it.odometer },
