@@ -14,20 +14,27 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +51,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
+import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -55,7 +63,9 @@ import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.ItemStatus
+import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ReminderProgress
 import io.cosgriff.glovebox.domain.VehicleReminders
@@ -71,6 +81,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -79,6 +90,8 @@ data class VehicleHome(
     val odometer: Int?,
     val defaultRule: DueRule,
     val comingUp: ComingUp,
+    /** Kept so the mileage sheet can show what a new reading would change. */
+    val inputs: ReminderInputs,
 )
 
 @HiltViewModel
@@ -87,7 +100,7 @@ class VehicleHomeViewModel @Inject constructor(
     vehicles: VehicleDao,
     schedule: ScheduleDao,
     service: ServiceDao,
-    odometer: OdometerDao,
+    private val odometer: OdometerDao,
     settings: SettingsRepository,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<VehicleHomeRoute>().vehicleId
@@ -109,19 +122,46 @@ class VehicleHomeViewModel @Inject constructor(
             odometer = VehicleReminders.currentOdometer(entries, updates),
             defaultRule = s.defaultRule,
             comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now())),
+            inputs = ReminderInputs(tracked, entries, updates),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Records today's odometer; [onSaved] gets the new row's id so the caller can offer Undo. */
+    fun saveMileage(miles: Int, onSaved: (readingId: Long) -> Unit) {
+        viewModelScope.launch {
+            onSaved(odometer.insert(OdometerReadingEntity(vehicleId = vehicleId, date = LocalDate.now(), odometer = miles)))
+        }
+    }
+
+    fun undoMileage(readingId: Long) {
+        viewModelScope.launch { odometer.delete(readingId) }
+    }
 }
 
 @Composable
 fun VehicleHomeScreen(
     onBack: () -> Unit,
     onLogService: (vehicleId: Long) -> Unit,
+    /** Shows a message with one action on the app's snackbar. */
+    onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
 ) {
     val home = vm.home.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val v = home.vehicle
     val up = home.comingUp
+    var updatingMileage by rememberSaveable { mutableStateOf(false) }
+
+    if (updatingMileage) {
+        UpdateMileageSheet(
+            vehicleName = "${v.year} ${v.nickname ?: v.model}",
+            preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now()) },
+            onSave = { miles ->
+                updatingMileage = false
+                vm.saveMileage(miles) { id -> onMessage("Mileage updated · ${miles.asMiles()}", "Undo") { vm.undoMileage(id) } }
+            },
+            onDismiss = { updatingMileage = false },
+        )
+    }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -139,7 +179,7 @@ fun VehicleHomeScreen(
                 Modifier.padding(start = 20.dp, top = 4.dp, end = 20.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                HeaderCard(v, home.odometer, up)
+                HeaderCard(v, home.odometer, up, onUpdateMileage = { updatingMileage = true })
 
                 if (up.counting.isNotEmpty()) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -206,7 +246,7 @@ fun VehicleHomeScreen(
 }
 
 @Composable
-private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp) {
+private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateMileage: () -> Unit) {
     WhiteCard(padding = PaddingValues(18.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -221,13 +261,23 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp) {
                 }
                 StatusPill(up)
             }
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Odometer", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(
-                    odometer?.asMiles() ?: "Not recorded",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontFamily = FontFamily.Monospace,
-                )
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("Odometer", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        odometer?.asMiles() ?: "Not recorded",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontFamily = FontFamily.Monospace,
+                    )
+                }
+                OutlinedButton(
+                    onClick = onUpdateMileage,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                ) {
+                    Text("Update mileage")
+                }
             }
         }
     }

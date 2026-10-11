@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,6 +39,7 @@ import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeScreen
 import io.cosgriff.glovebox.ui.settings.SettingsScreen
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -74,6 +76,7 @@ fun GloveboxNavHost() {
     // Service log changes are announced here so Undo works whichever screen the user lands on.
     val recordEvents: RecordEventsViewModel = hiltViewModel()
     val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         recordEvents.events.collect { event ->
             val (message, action) = when (event) {
@@ -138,6 +141,12 @@ fun GloveboxNavHost() {
                 VehicleHomeScreen(
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
+                    onMessage = { message, actionLabel, onAction ->
+                        scope.launch {
+                            val result = snackbar.showSnackbar(message, actionLabel = actionLabel, duration = SnackbarDuration.Long)
+                            if (result == SnackbarResult.ActionPerformed) onAction()
+                        }
+                    },
                 )
             }
             composable<AddVehicleRoute> {

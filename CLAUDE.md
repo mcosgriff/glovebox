@@ -71,11 +71,11 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 
 Done in code: unlock, empty garage, garage list (status chip, next reminder, across-all strip; opens the
 vehicle directly when there is only one), vehicle home (Coming up + Log
-service), add vehicle via
+service), update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units). Placeholder: Reminders.
-To build, roughly in order: Reminders tab + snooze, update-mileage sheet, recalls, vehicle home +
+To build, roughly in order: Reminders tab + snooze, recalls, vehicle home +
 details (+ mark sold / archive / delete), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
@@ -91,6 +91,9 @@ Notes on what's built:
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
   vehicles" still returns to it, which is where another vehicle is added. Its recall chips and the
   archived-vehicles row wait on recalls and archiving.
+- Update mileage adds an `odometer_readings` row dated today; the snackbar's Undo is the only way to
+  remove one so far. The sheet's preview comes from `MileageUpdate.preview`. "Read dash" (camera) and
+  the notification entry point are not built.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Schema changes so far are Room auto-migrations (v3); keep exported schemas in `data/schemas`.
