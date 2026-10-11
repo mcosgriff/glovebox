@@ -25,12 +25,14 @@ class Converters {
         ServiceRecordItemEntity::class,
         PhotoEntity::class,
         TorqueSpecEntity::class,
+        RecallEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
         AutoMigration(from = 2, to = 3), // service_record_items.catalogId
+        AutoMigration(from = 3, to = 4), // recalls, vehicles.recallsCheckedOn
     ],
 )
 @TypeConverters(Converters::class)
@@ -40,6 +42,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun schedule(): ScheduleDao
     abstract fun odometer(): OdometerDao
     abstract fun torque(): TorqueDao
+    abstract fun recalls(): RecallDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"

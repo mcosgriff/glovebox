@@ -10,7 +10,10 @@ import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
+import io.cosgriff.glovebox.data.db.RecallDao
+import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
+import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -37,6 +40,7 @@ object DataModule {
     @Provides fun scheduleDao(db: GloveboxDatabase) = db.schedule()
     @Provides fun odometerDao(db: GloveboxDatabase) = db.odometer()
     @Provides fun torqueDao(db: GloveboxDatabase) = db.torque()
+    @Provides fun recallDao(db: GloveboxDatabase) = db.recalls()
 
     @Provides @Singleton
     fun settings(@ApplicationContext c: Context) = SettingsRepository(c)
@@ -58,4 +62,8 @@ object DataModule {
 
     @Provides @Singleton
     fun nhtsa(http: HttpClient) = NhtsaClient(http)
+
+    @Provides @Singleton
+    fun recallRepository(nhtsa: NhtsaClient, vehicles: VehicleDao, recalls: RecallDao) =
+        RecallRepository(nhtsa, vehicles, recalls)
 }

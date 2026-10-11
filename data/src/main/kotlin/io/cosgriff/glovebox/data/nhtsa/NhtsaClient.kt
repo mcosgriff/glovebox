@@ -1,9 +1,15 @@
 package io.cosgriff.glovebox.data.nhtsa
 
+import io.cosgriff.glovebox.domain.RecallNotice
+import io.cosgriff.glovebox.domain.Recalls
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -31,15 +37,6 @@ data class DecodedVehicle(
     /** vPIC "0" means a clean decode; anything else is a partial decode or a warning. */
     val errorCode: String?,
     val errorText: String?,
-)
-
-data class Recall(
-    val campaign: String,
-    val component: String,
-    val summary: String,
-    val consequence: String?,
-    val remedy: String?,
-    val reportedOn: String?,
 )
 
 /**
@@ -80,23 +77,34 @@ class NhtsaClient(private val http: HttpClient) {
         )
     }
 
-    /** Recalls by year/make/model. NHTSA's public API can't confirm whether a specific VIN was repaired. */
-    suspend fun recalls(year: Int, make: String, model: String): List<Recall> {
-        val body: JsonObject = http.get("$RECALLS/recalls/recallsByVehicle") {
+    /**
+     * Recalls by year/make/model. NHTSA's public API can't confirm whether a specific VIN was repaired.
+     * Throws if NHTSA can't be reached or answers with anything but a list.
+     */
+    suspend fun recalls(year: Int, make: String, model: String): List<RecallNotice> {
+        val response = http.get("$RECALLS/recalls/recallsByVehicle") {
+            // NHTSA answers 400 with an empty list when it has nothing for the vehicle, so the
+            // status alone can't be trusted; the body has to be a list either way.
+            expectSuccess = false
             parameter("make", make)
             parameter("model", model)
             parameter("modelYear", year)
-        }.body()
-        return body["results"]?.jsonArray.orEmpty().map { el ->
+        }
+        if (!response.status.isSuccess() && response.status != HttpStatusCode.BadRequest) {
+            throw ResponseException(response, "NHTSA recalls: ${response.status}")
+        }
+        val results = response.body<JsonObject>()["results"]?.jsonArray
+            ?: throw ResponseException(response, "NHTSA recalls: no results list")
+        return results.map { el ->
             val o = el.jsonObject
-            fun f(key: String) = o[key]?.jsonPrimitive?.contentOrNull
-            Recall(
+            fun f(key: String) = o[key]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+            RecallNotice(
                 campaign = f("NHTSACampaignNumber").orEmpty(),
                 component = f("Component").orEmpty(),
                 summary = f("Summary").orEmpty(),
                 consequence = f("Consequence"),
                 remedy = f("Remedy"),
-                reportedOn = f("ReportReceivedDate"),
+                reportedOn = Recalls.parseReportDate(f("ReportReceivedDate")),
             )
         }
     }

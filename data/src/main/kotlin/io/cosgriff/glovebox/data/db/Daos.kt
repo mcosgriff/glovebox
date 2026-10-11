@@ -20,10 +20,16 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     fun observe(id: Long): Flow<VehicleEntity?>
 
+    @Query("SELECT * FROM vehicles WHERE id = :id")
+    suspend fun byId(id: Long): VehicleEntity?
+
+    @Query("UPDATE vehicles SET recallsCheckedOn = :date WHERE id = :id")
+    suspend fun setRecallsChecked(id: Long, date: LocalDate)
+
     @Insert suspend fun insert(vehicle: VehicleEntity): Long
     @Update suspend fun update(vehicle: VehicleEntity)
 
-    /** Cascades to readings, schedule, records, record items, photos rows and torque specs. */
+    /** Cascades to readings, schedule, records, record items, photos rows, torque specs and recalls. */
     @Delete suspend fun delete(vehicle: VehicleEntity)
 
     @Query("SELECT p.fileName FROM photos p JOIN service_records r ON p.recordId = r.id WHERE r.vehicleId = :vehicleId")
@@ -122,4 +128,44 @@ interface TorqueDao {
     @Insert suspend fun insert(spec: TorqueSpecEntity): Long
     @Update suspend fun update(spec: TorqueSpecEntity)
     @Delete suspend fun delete(spec: TorqueSpecEntity)
+}
+
+@Dao
+interface RecallDao {
+    @Query("SELECT * FROM recalls WHERE vehicleId = :vehicleId")
+    fun observe(vehicleId: Long): Flow<List<RecallEntity>>
+
+    /** Every vehicle's recalls, for screens that summarise the whole garage. */
+    @Query("SELECT * FROM recalls")
+    fun observeAll(): Flow<List<RecallEntity>>
+
+    @Query("SELECT * FROM recalls WHERE vehicleId = :vehicleId")
+    suspend fun recallsFor(vehicleId: Long): List<RecallEntity>
+
+    @Query("SELECT * FROM recalls WHERE id = :id")
+    suspend fun byId(id: Long): RecallEntity?
+
+    @Query("SELECT id FROM recalls WHERE serviceRecordId = :recordId")
+    suspend fun idsLinkedTo(recordId: Long): List<Long>
+
+    /** [completedOn] null marks it open again. */
+    @Query("UPDATE recalls SET completedOn = :completedOn, serviceRecordId = :recordId WHERE id = :id")
+    suspend fun setDone(id: Long, completedOn: LocalDate?, recordId: Long?)
+
+    @Query("UPDATE recalls SET serviceRecordId = :recordId WHERE id IN (:ids)")
+    suspend fun linkRecord(ids: List<Long>, recordId: Long)
+
+    @Insert suspend fun insertAll(recalls: List<RecallEntity>)
+    @Update suspend fun updateAll(recalls: List<RecallEntity>)
+
+    @Query("DELETE FROM recalls WHERE id IN (:ids)")
+    suspend fun delete(ids: List<Long>)
+
+    /** One refresh, applied whole or not at all. */
+    @Transaction
+    suspend fun apply(added: List<RecallEntity>, updated: List<RecallEntity>, withdrawn: List<Long>) {
+        insertAll(added)
+        updateAll(updated)
+        delete(withdrawn)
+    }
 }
