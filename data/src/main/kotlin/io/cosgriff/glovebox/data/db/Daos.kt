@@ -99,7 +99,10 @@ interface OdometerDao {
     @Query("SELECT * FROM odometer_readings WHERE vehicleId = :vehicleId ORDER BY date")
     suspend fun readingsFor(vehicleId: Long): List<OdometerReadingEntity>
 
-    @Insert suspend fun insert(reading: OdometerReadingEntity)
+    @Insert suspend fun insert(reading: OdometerReadingEntity): Long
+
+    @Query("DELETE FROM odometer_readings WHERE id = :id")
+    suspend fun delete(id: Long)
 }
 
 @Dao
