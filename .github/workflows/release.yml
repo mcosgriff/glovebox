@@ -1,5 +1,7 @@
-# Push a tag like v0.1.0 → builds a signed release APK and attaches it to a GitHub Release,
+# Builds a signed release APK for a tag like v0.1.0 and attaches it to that tag's GitHub Release,
 # with a SHA-256 checksum and a build-provenance attestation.
+# Normally started by release-please.yml when its release PR is merged; pushing a v* tag by hand
+# also works.
 # Obtainium watches the Releases page of this repo.
 # This workflow sees the signing key, so every action is pinned to a commit SHA
 # (Dependabot keeps the pins current).
@@ -8,6 +10,7 @@ name: release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch: # run against a v* tag (release-please.yml does this)
 
 permissions:
   contents: write      # create the GitHub Release
@@ -16,6 +19,8 @@ permissions:
 
 jobs:
   build:
+    # Only ever build a release from a version tag.
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     # The signing secrets live in this environment, which requires approval and only accepts v* tags.
     environment: release

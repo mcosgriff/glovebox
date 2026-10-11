@@ -7,8 +7,11 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-// CI passes -PversionName=1.2.0 -PversionCode=<run number>; local builds use the defaults.
-val appVersionName = (findProperty("versionName") as String?) ?: "0.1.0"
+// CI passes -PversionName=1.2.0 -PversionCode=<run number>. Local builds use version.txt, which the
+// release PR keeps current.
+val appVersionName = (findProperty("versionName") as String?)
+    ?: rootProject.file("version.txt").takeIf { it.exists() }?.readText()?.trim()?.takeIf { it.isNotEmpty() }
+    ?: "0.1.0"
 val appVersionCode = (findProperty("versionCode") as String?)?.toInt() ?: 1
 
 android {
