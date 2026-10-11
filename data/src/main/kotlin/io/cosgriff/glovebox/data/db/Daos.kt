@@ -29,6 +29,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET recallsCheckedOn = :date WHERE id = :id")
     suspend fun setRecallsChecked(id: Long, date: LocalDate)
 
+    /** [date] is the day it was sold; null moves it back to the garage. */
+    @Query("UPDATE vehicles SET archivedOn = :date WHERE id = :id")
+    suspend fun setArchived(id: Long, date: LocalDate?)
+
     // Single-column writes, so an edit never puts back a stale copy of the rest of the row.
     @Query("UPDATE vehicles SET nickname = :nickname WHERE id = :id")
     suspend fun setNickname(id: Long, nickname: String?)

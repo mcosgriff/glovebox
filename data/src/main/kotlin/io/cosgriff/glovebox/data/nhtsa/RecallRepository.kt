@@ -50,7 +50,8 @@ class RecallRepository(
 
     private suspend fun fetchAndStore(vehicleId: Long, today: LocalDate, onlyIfStale: Boolean): RecallRefresh? {
         val v = vehicles.byId(vehicleId) ?: return RecallRefresh.CannotCheck
-        if (!Recalls.canCheck(v.year, v.make, v.model)) return RecallRefresh.CannotCheck
+        // Archived vehicles are never sent to NHTSA again.
+        if (v.archivedOn != null || !Recalls.canCheck(v.year, v.make, v.model)) return RecallRefresh.CannotCheck
         if (onlyIfStale && !Recalls.isStale(v.recallsCheckedOn, today)) return null
         val fetched = try {
             nhtsa.recalls(v.year, v.make, v.model)
