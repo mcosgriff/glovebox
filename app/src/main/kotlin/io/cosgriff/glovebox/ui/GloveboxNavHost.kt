@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.settings.NotificationsScreen
+import io.cosgriff.glovebox.notify.DestinationViewModel
+import io.cosgriff.glovebox.notify.Destination
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
@@ -65,10 +68,12 @@ import kotlin.reflect.KClass
 @Serializable object ManualAddRoute
 @Serializable object ScanVinRoute
 @Serializable object ReminderRulesRoute
+@Serializable object NotificationsRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
 @Serializable data class ScheduleRoute(val vehicleId: Long)
-@Serializable data class VehicleHomeRoute(val vehicleId: Long)
+/** [updateMileage] opens the Update mileage sheet straight away, for the mileage check-in notification. */
+@Serializable data class VehicleHomeRoute(val vehicleId: Long, val updateMileage: Boolean = false)
 /**
  * [recordId] 0 logs a new record; otherwise that record is edited. [scheduleItemId] ticks that
  * reminder's work to start with (new records only).
@@ -131,6 +136,28 @@ fun GloveboxNavHost() {
             } else {
                 // Undo wasn't taken: the photo files the event was holding on to can go.
                 recordEvents.discard(event)
+            }
+        }
+    }
+
+    // A tapped notification's destination. This host only exists once the app is unlocked, so nothing
+    // is shown before then; the destination waits in PendingDestination until it is.
+    val destinations: DestinationViewModel = hiltViewModel()
+    LaunchedEffect(Unit) {
+        // Collected, not keyed on: taking the destination clears it, and an effect keyed on it would
+        // cancel itself mid-lookup. On a cold start that lookup waits for the database to open.
+        destinations.pending.collect { waiting ->
+            if (waiting == null) return@collect
+            when (val to = destinations.take()) {
+                null -> Unit
+                Destination.Reminders -> nav.navigate(RemindersRoute) {
+                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+                // Opened over the Garage tab, so Back from either lands there.
+                is Destination.Recalls -> nav.navigate(RecallsRoute(to.vehicleId))
+                is Destination.UpdateMileage -> nav.navigate(VehicleHomeRoute(to.vehicleId, updateMileage = true))
             }
         }
     }
@@ -308,11 +335,17 @@ fun GloveboxNavHost() {
                     },
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
+                    onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onMessage = showMessage,
                 )
             }
             composable<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
-            composable<SettingsRoute> { SettingsScreen(onOpenRules = { nav.navigate(ReminderRulesRoute) }) }
+            composable<SettingsRoute> {
+                SettingsScreen(onOpenRules = { nav.navigate(ReminderRulesRoute) }, onOpenNotifications = { nav.navigate(NotificationsRoute) })
+            }
+            composable<NotificationsRoute> {
+                NotificationsScreen(onBack = { nav.popBackStack() }, onOpenRules = { nav.navigate(ReminderRulesRoute) })
+            }
         }
     }
 }

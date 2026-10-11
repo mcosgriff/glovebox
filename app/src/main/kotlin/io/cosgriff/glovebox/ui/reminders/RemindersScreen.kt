@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Surface
+import io.cosgriff.glovebox.notify.Notifier
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +76,7 @@ import javax.inject.Inject
 import kotlin.math.abs
 
 @HiltViewModel
-class RemindersViewModel @Inject constructor(overview: GarageOverview, private val schedule: ScheduleDao) : ViewModel() {
+class RemindersViewModel @Inject constructor(overview: GarageOverview, private val schedule: ScheduleDao, val notifier: Notifier) : ViewModel() {
     /** Null while loading. */
     val garage: StateFlow<Garage?> = overview.garage.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -89,6 +94,7 @@ fun RemindersScreen(
     onLogIt: (vehicleId: Long, scheduleItemId: Long) -> Unit,
     onAddVehicle: () -> Unit,
     onOpenRules: () -> Unit,
+    onOpenNotifications: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: RemindersViewModel = hiltViewModel(),
@@ -153,6 +159,31 @@ fun RemindersScreen(
                     VehicleChip("All vehicles", selected = shown.size > 1) { filterId = 0 }
                     garage.vehicles.forEach { g ->
                         VehicleChip(g.vehicle.shortName(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
+                    }
+                }
+            }
+        }
+
+        // The moment reminders exist is the moment being told about them is worth something.
+        if (groups.isNotEmpty() && !vm.notifier.allowed) {
+            item {
+                Surface(
+                    onClick = onOpenNotifications,
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(Modifier.heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Notifications are off", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Turn them on to be told when these come due.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

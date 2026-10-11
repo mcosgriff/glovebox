@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.RecallCadence
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.AlertDialog
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import io.cosgriff.glovebox.domain.ExportFormat
 import androidx.compose.runtime.setValue
@@ -53,13 +58,48 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
     fun setBiometric(on: Boolean) = viewModelScope.launch { repo.setBiometricLock(on) }
     fun setHideInRecents(on: Boolean) = viewModelScope.launch { repo.setHideInRecents(on) }
     fun setTorque(u: TorqueUnit) = viewModelScope.launch { repo.setTorqueUnit(u) }
+    fun setRecallCadence(c: RecallCadence) = viewModelScope.launch { repo.setRecallCadence(c) }
 }
 
 @Composable
-fun SettingsScreen(onOpenRules: () -> Unit, vm: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(onOpenRules: () -> Unit, onOpenNotifications: () -> Unit, vm: SettingsViewModel = hiltViewModel()) {
     val s by vm.settings.collectAsStateWithLifecycle()
     var exporting by rememberSaveable { mutableStateOf<ExportFormat?>(null) }
     exporting?.let { format -> ExportSheet(vehicleId = null, format = format, onDismiss = { exporting = null }) }
+    var pickingRecalls by rememberSaveable { mutableStateOf(false) }
+    if (pickingRecalls) {
+        AlertDialog(
+            onDismissRequest = { pickingRecalls = false },
+            title = { Text("Check for new recalls") },
+            text = {
+                Column {
+                    RecallCadence.entries.forEach { c ->
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
+                                selected = c == s.recallCadence,
+                                role = Role.RadioButton,
+                                onClick = {
+                                    vm.setRecallCadence(c)
+                                    pickingRecalls = false
+                                },
+                            ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            RadioButton(selected = c == s.recallCadence, onClick = null)
+                            Text(c.label)
+                        }
+                    }
+                    Text(
+                        "Only the year, make and model are sent to NHTSA. With Never, recalls are checked only when you tap Refresh.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = { pickingRecalls = false }) { Text("Cancel") } },
+        )
+    }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -94,6 +134,12 @@ fun SettingsScreen(onOpenRules: () -> Unit, vm: SettingsViewModel = hiltViewMode
                 }
                 Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null)
             }
+        }
+        Section("Notifications") {
+            val n = s.notices
+            val on = listOf(n.serviceDue, n.overdue, n.recalls, n.mileage).count { it }
+            ExportRow("Notifications", if (on == 0) "Off" else "$on of 4 kinds on", onOpenNotifications)
+            ExportRow("Check for new recalls", s.recallCadence.label) { pickingRecalls = true }
         }
         Section("Export") {
             ExportRow("PDF", "For resale or a shop") { exporting = ExportFormat.PDF }

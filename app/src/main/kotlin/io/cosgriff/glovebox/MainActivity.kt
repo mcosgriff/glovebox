@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.notify.PendingDestination
+import io.cosgriff.glovebox.notify.Destination
+import android.content.Intent
 import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.domain.ExportFormat
 import android.os.Bundle
@@ -50,6 +53,7 @@ class MainActivity : FragmentActivity() {
     }
 
     @Inject lateinit var exportSaver: ExportSaver
+    @Inject lateinit var pendingDestination: PendingDestination
 
     // One launcher per file type: the type is fixed when the launcher is made.
     private val savePdf = registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.PDF.mimeType)) { exportSaver.onDestination(it) }
@@ -66,6 +70,8 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Only a fresh launch carries a new tap; a restored activity would replay an old one.
+        if (savedInstanceState == null) pendingDestination.set(Destination.from(intent))
         photoPicker.attach(launchPhotoPicker)
         recordPhotoPicker.attach(launchRecordPhotoPicker) { takeRecordPhoto.launch(it) }
         exportSaver.attach(launchExportSave)
@@ -97,6 +103,12 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    /** A notification tapped while the app is already open. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        pendingDestination.set(Destination.from(intent))
     }
 
     override fun onDestroy() {
