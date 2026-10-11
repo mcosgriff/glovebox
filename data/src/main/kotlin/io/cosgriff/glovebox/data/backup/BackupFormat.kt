@@ -26,6 +26,9 @@ object BackupFormat {
     val MAGIC: ByteArray = "GLOVEBOX".toByteArray(Charsets.US_ASCII)
     const val FILE_EXTENSION = "glovebox"
 
+    /** A backup is opaque bytes; no app should offer to open it. */
+    const val MIME_TYPE = "application/octet-stream"
+
     const val KDF_ARGON2ID = 1
     const val SALT_BYTES = 16
     const val NONCE_PREFIX_BYTES = 4

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.domain.RecallCadence
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.TextButton
@@ -62,7 +63,12 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
 }
 
 @Composable
-fun SettingsScreen(onOpenRules: () -> Unit, onOpenNotifications: () -> Unit, vm: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onOpenRules: () -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenBackup: () -> Unit,
+    vm: SettingsViewModel = hiltViewModel(),
+) {
     val s by vm.settings.collectAsStateWithLifecycle()
     var exporting by rememberSaveable { mutableStateOf<ExportFormat?>(null) }
     exporting?.let { format -> ExportSheet(vehicleId = null, format = format, onDismiss = { exporting = null }) }
@@ -140,6 +146,13 @@ fun SettingsScreen(onOpenRules: () -> Unit, onOpenNotifications: () -> Unit, vm:
             val on = listOf(n.serviceDue, n.overdue, n.recalls, n.mileage).count { it }
             ExportRow("Notifications", if (on == 0) "Off" else "$on of 4 kinds on", onOpenNotifications)
             ExportRow("Check for new recalls", s.recallCadence.label) { pickingRecalls = true }
+        }
+        Section("Your data") {
+            ExportRow(
+                "Encrypted backup",
+                s.lastBackupOn?.let { "Last backup ${it.format(longDate)}" } ?: "Never backed up · password-protected file you keep",
+                onOpenBackup,
+            )
         }
         Section("Export") {
             ExportRow("PDF", "For resale or a shop") { exporting = ExportFormat.PDF }

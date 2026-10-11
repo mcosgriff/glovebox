@@ -224,7 +224,7 @@ fun DeleteVehicleScreen(
                         HorizontalDivider(color = scheme.outlineVariant)
                     }
                     Text(
-                        "This can't be undone.",
+                        "This can't be undone. Backup files you've already saved aren't changed.",
                         Modifier.padding(vertical = 10.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,

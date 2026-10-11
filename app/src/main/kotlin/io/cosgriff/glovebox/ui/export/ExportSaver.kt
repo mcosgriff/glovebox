@@ -17,7 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Hands a finished export to Android's "save as" screen and copies it to wherever the user picks.
+ * Hands a finished export or backup to Android's "save as" screen and copies it to wherever the user picks.
  * The app itself needs no storage permission.
  *
  * A singleton, with its launchers in the activity, for the same reason as the photo pickers:
@@ -27,8 +27,10 @@ import javax.inject.Singleton
 @Singleton
 class ExportSaver @Inject constructor(@ApplicationContext private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launch: ((format: ExportFormat, fileName: String) -> Unit)? = null
-    private var pending: Pair<File, String>? = null
+    private var launch: ((mimeType: String, fileName: String) -> Unit)? = null
+    private var pending: Pending? = null
+
+    private class Pending(val file: File, val name: String, val done: String, val onSaved: suspend () -> Unit)
 
     private val _results = Channel<String>(Channel.BUFFERED)
 
@@ -38,11 +40,11 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     /** Exports are written here, in the clear, only until they have been copied out. */
     private val dir: File get() = File(context.cacheDir, "export").apply { mkdirs() }
 
-    fun attach(launcher: (ExportFormat, String) -> Unit) {
+    fun attach(launcher: (mimeType: String, fileName: String) -> Unit) {
         launch = launcher
     }
 
-    fun detach(launcher: (ExportFormat, String) -> Unit) {
+    fun detach(launcher: (mimeType: String, fileName: String) -> Unit) {
         if (launch === launcher) launch = null
     }
 
@@ -53,31 +55,44 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     }
 
     /** Asks where to put [file], suggesting [fileName]. */
-    fun save(file: File, fileName: String, format: ExportFormat) {
+    fun save(file: File, fileName: String, format: ExportFormat) = save(file, fileName, format.mimeType, "Exported $fileName") {}
+
+    /**
+     * Asks where to put [file], suggesting [fileName]. [onSaved] runs only once the copy has
+     * succeeded, and [done] is then shown to the user.
+     */
+    fun save(file: File, fileName: String, mimeType: String, done: String, onSaved: suspend () -> Unit) {
         val launcher = launch
         if (launcher == null) {
             file.delete()
             return
         }
-        pending = file to fileName
-        launcher(format, fileName)
+        pending = Pending(file, fileName, done, onSaved)
+        launcher(mimeType, fileName)
     }
 
     /** [destination] is null when the user backed out. Either way the working copy goes. */
     fun onDestination(destination: Uri?) {
-        val (file, name) = pending ?: return
+        val p = pending ?: return
         pending = null
         scope.launch {
             val saved = destination != null && withContext(Dispatchers.IO) {
                 try {
-                    context.contentResolver.openOutputStream(destination)?.use { out -> file.inputStream().use { it.copyTo(out) } } != null
+                    context.contentResolver.openOutputStream(destination)?.use { out -> p.file.inputStream().use { it.copyTo(out) } } != null
                 } catch (_: IOException) {
                     false
                 } finally {
-                    file.delete()
+                    p.file.delete()
                 }
             }
-            if (destination == null) file.delete() else _results.send(if (saved) "Exported $name" else "Couldn't save the export")
+            when {
+                destination == null -> p.file.delete()
+                saved -> {
+                    p.onSaved()
+                    _results.send(p.done)
+                }
+                else -> _results.send("Couldn't save ${p.name}")
+            }
         }
     }
 

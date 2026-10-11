@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.domain.BackupRules
 import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -83,6 +84,13 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         // The log is kept even if Android won't show anything, so allowing notifications later doesn't release a backlog.
         deps.noticeLog().write(decision.log)
         decision.notices.forEach(deps.notifier()::post)
+
+        // Sold vehicles count here: their history is still worth keeping.
+        val hasData = deps.vehicles().all().isNotEmpty()
+        if (settings.backupReminder && BackupRules.shouldRemind(hasData, settings.lastBackupOn, settings.backupRemindedOn, today)) {
+            deps.settings().setBackupReminded(today)
+            deps.notifier().postBackupReminder(never = settings.lastBackupOn == null)
+        }
         return Result.success()
     }
 }
@@ -179,7 +187,7 @@ class DestinationViewModel @Inject constructor(private val holder: PendingDestin
     suspend fun take(): Destination? {
         val to = holder.take() ?: return null
         val vehicleId = when (to) {
-            Destination.Reminders -> return to
+            Destination.Reminders, Destination.Backup -> return to
             is Destination.Recalls -> to.vehicleId
             is Destination.UpdateMileage -> to.vehicleId
         }

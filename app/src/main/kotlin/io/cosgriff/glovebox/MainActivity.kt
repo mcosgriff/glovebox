@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.data.backup.BackupFormat
 import io.cosgriff.glovebox.notify.PendingDestination
 import io.cosgriff.glovebox.notify.Destination
 import android.content.Intent
@@ -59,8 +60,13 @@ class MainActivity : FragmentActivity() {
     private val savePdf = registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.PDF.mimeType)) { exportSaver.onDestination(it) }
     private val saveMarkdown =
         registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.MARKDOWN.mimeType)) { exportSaver.onDestination(it) }
-    private val launchExportSave: (ExportFormat, String) -> Unit = { format, fileName ->
-        (if (format == ExportFormat.PDF) savePdf else saveMarkdown).launch(fileName)
+    private val saveBackup = registerForActivityResult(ActivityResultContracts.CreateDocument(BackupFormat.MIME_TYPE)) { exportSaver.onDestination(it) }
+    private val launchExportSave: (String, String) -> Unit = { mimeType, fileName ->
+        when (mimeType) {
+            ExportFormat.PDF.mimeType -> savePdf
+            ExportFormat.MARKDOWN.mimeType -> saveMarkdown
+            else -> saveBackup
+        }.launch(fileName)
     }
 
     private val launchPhotoPicker: () -> Unit = {

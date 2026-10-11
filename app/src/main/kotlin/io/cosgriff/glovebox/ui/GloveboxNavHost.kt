@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.settings.BackupScreen
 import io.cosgriff.glovebox.ui.settings.NotificationsScreen
 import io.cosgriff.glovebox.notify.DestinationViewModel
 import io.cosgriff.glovebox.notify.Destination
@@ -69,6 +70,7 @@ import kotlin.reflect.KClass
 @Serializable object ScanVinRoute
 @Serializable object ReminderRulesRoute
 @Serializable object NotificationsRoute
+@Serializable object BackupRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
 @Serializable data class ScheduleRoute(val vehicleId: Long)
@@ -158,6 +160,7 @@ fun GloveboxNavHost() {
                 // Opened over the Garage tab, so Back from either lands there.
                 is Destination.Recalls -> nav.navigate(RecallsRoute(to.vehicleId))
                 is Destination.UpdateMileage -> nav.navigate(VehicleHomeRoute(to.vehicleId, updateMileage = true))
+                Destination.Backup -> nav.navigate(BackupRoute) { launchSingleTop = true }
             }
         }
     }
@@ -341,8 +344,13 @@ fun GloveboxNavHost() {
             }
             composable<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
             composable<SettingsRoute> {
-                SettingsScreen(onOpenRules = { nav.navigate(ReminderRulesRoute) }, onOpenNotifications = { nav.navigate(NotificationsRoute) })
+                SettingsScreen(
+                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
+                    onOpenNotifications = { nav.navigate(NotificationsRoute) },
+                    onOpenBackup = { nav.navigate(BackupRoute) },
+                )
             }
+            composable<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }) }
             composable<NotificationsRoute> {
                 NotificationsScreen(onBack = { nav.popBackStack() }, onOpenRules = { nav.navigate(ReminderRulesRoute) })
             }
