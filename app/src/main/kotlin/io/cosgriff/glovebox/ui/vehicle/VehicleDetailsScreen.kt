@@ -79,6 +79,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -117,6 +118,7 @@ data class VehicleDetails(
     val schedule: ScheduleSummary?,
     /** Null until NHTSA has answered for this vehicle. */
     val recalls: OpenRecalls?,
+    val torqueSpecs: Int,
 )
 
 /** The user-entered rows under "What it takes". */
@@ -143,6 +145,7 @@ class VehicleDetailsViewModel @Inject constructor(
     recalls: RecallDao,
     service: ServiceDao,
     odometer: OdometerDao,
+    torque: TorqueDao,
     private val photos: VehiclePhotoStore,
     private val picker: VehiclePhotoPicker,
     private val archiver: VehicleArchiver,
@@ -154,12 +157,14 @@ class VehicleDetailsViewModel @Inject constructor(
         vehicles.observe(vehicleId),
         schedule.observeAll(vehicleId),
         recalls.observe(vehicleId),
-    ) { vehicle, items, list ->
+        torque.observe(vehicleId),
+    ) { vehicle, items, list, specs ->
         if (vehicle == null) return@combine null
         VehicleDetails(
             vehicle = vehicle,
             schedule = items.takeIf { it.isNotEmpty() }?.let { all -> ScheduleSummaries.of(all.map { it.tracked to it.useSevere }) },
             recalls = if (vehicle.recallsCheckedOn == null) null else Recalls.open(list.map { it.toStored() }),
+            torqueSpecs = specs.size,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -221,6 +226,7 @@ fun VehicleDetailsScreen(
     /** The vehicle has gone to the archive; [undo] brings it back. */
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
     onDelete: (vehicleId: Long) -> Unit,
+    onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -366,6 +372,12 @@ fun VehicleDetailsScreen(
             }
 
             Card {
+                LinkRow(
+                    title = "Torque & fastener specs",
+                    detail = "Socket sizes and torque · " + if (details.torqueSpecs == 0) "none saved yet" else "${details.torqueSpecs} saved",
+                    onClick = { onOpenTorqueSpecs(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 val schedule = details.schedule
                 LinkRow(
                     title = "Maintenance schedule",
