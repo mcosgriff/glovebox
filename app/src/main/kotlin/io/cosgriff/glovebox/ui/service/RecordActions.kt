@@ -9,6 +9,7 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.domain.Recalls
 import kotlinx.coroutines.channels.Channel
@@ -37,7 +38,11 @@ sealed interface RecordEvent {
  * "last done" is derived from the log.
  */
 @Singleton
-class RecordActions @Inject constructor(private val service: ServiceDao, private val recalls: RecallDao) {
+class RecordActions @Inject constructor(
+    private val service: ServiceDao,
+    private val recalls: RecallDao,
+    private val vehicles: VehicleDao,
+) {
     private val _events = Channel<RecordEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
@@ -83,9 +88,12 @@ class RecordActions @Inject constructor(private val service: ServiceDao, private
 
     suspend fun undo(event: RecordEvent) {
         when (event) {
-            is RecordEvent.Edited -> service.replaceWithItems(event.previous.record, event.previous.items)
+            is RecordEvent.Edited ->
+                if (vehicles.byId(event.previous.record.vehicleId) != null) {
+                    service.replaceWithItems(event.previous.record, event.previous.items)
+                }
             // TODO: once photos exist, a deleted record's photo files must outlive the Undo window.
-            is RecordEvent.Deleted -> recalls.linkRecord(event.recallIds, restore(event.record))
+            is RecordEvent.Deleted -> restore(event.record)?.let { recalls.linkRecord(event.recallIds, it) }
             is RecordEvent.RecallDone -> if (event.recordId == null) recalls.setDone(event.recallId, null, null)
             is RecordEvent.RecallReopened ->
                 recalls.setDone(event.recall.id, event.recall.completedOn, event.record?.let { restore(it) })
@@ -93,8 +101,11 @@ class RecordActions @Inject constructor(private val service: ServiceDao, private
         }
     }
 
-    private suspend fun restore(record: ServiceRecordWithItems): Long =
-        service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
+    /** Null if the vehicle was deleted while the snackbar was up: there is nothing to put the record back on. */
+    private suspend fun restore(record: ServiceRecordWithItems): Long? {
+        if (vehicles.byId(record.record.vehicleId) == null) return null
+        return service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
+    }
 }
 
 /** Lets the nav host listen for log changes and run Undo. */

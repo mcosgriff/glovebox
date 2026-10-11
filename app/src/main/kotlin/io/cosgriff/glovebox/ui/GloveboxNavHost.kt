@@ -38,6 +38,7 @@ import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
+import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
@@ -66,6 +67,7 @@ import kotlin.reflect.KClass
 @Serializable data class RecallsRoute(val vehicleId: Long)
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long)
 @Serializable object ArchivedVehiclesRoute
+@Serializable data class DeleteVehicleRoute(val vehicleId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
 
@@ -120,6 +122,15 @@ fun GloveboxNavHost() {
             val result = snackbar.showSnackbar(message, actionLabel = actionLabel, duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) onAction()
         }
+    }
+
+    // For plain confirmations with nothing to undo.
+    val showNote: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+
+    // A vehicle that left the garage takes its home and details screens with it.
+    val onArchived: (String, () -> Unit) -> Unit = { name, undo ->
+        nav.popBackStack<GarageRoute>(inclusive = false)
+        showMessage("$name moved to Archived vehicles", "Undo", undo)
     }
 
     Scaffold(
@@ -181,17 +192,25 @@ fun GloveboxNavHost() {
                     onBack = { nav.popBackStack() },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
                     onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
-                    onArchived = { name, undo ->
-                        // Its home and details screens are gone with it.
+                    onArchived = onArchived,
+                    onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
+                )
+            }
+            composable<DeleteVehicleRoute> {
+                DeleteVehicleScreen(
+                    onCancel = { nav.popBackStack() },
+                    onDeleted = { name ->
                         nav.popBackStack<GarageRoute>(inclusive = false)
-                        showMessage("$name moved to Archived vehicles", "Undo", undo)
+                        showNote("$name and all its data deleted")
                     },
+                    onArchived = onArchived,
                 )
             }
             composable<ArchivedVehiclesRoute> {
                 ArchivedVehiclesScreen(
                     onBack = { nav.popBackStack() },
                     onViewHistory = { vehicleId -> nav.navigate(ArchivedHistoryRoute(vehicleId)) },
+                    onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
                     onMessage = showMessage,
                 )
             }
