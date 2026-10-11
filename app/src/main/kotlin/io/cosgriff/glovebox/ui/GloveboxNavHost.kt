@@ -40,6 +40,7 @@ import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
+import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsScreen
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeScreen
 import io.cosgriff.glovebox.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ import kotlin.reflect.KClass
 @Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0)
 @Serializable data class RecordDetailRoute(val recordId: Long)
 @Serializable data class RecallsRoute(val vehicleId: Long)
+@Serializable data class VehicleDetailsRoute(val vehicleId: Long)
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -165,7 +167,15 @@ fun GloveboxNavHost() {
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
+                    onOpenDetails = { vehicleId -> nav.navigate(VehicleDetailsRoute(vehicleId)) },
                     onMessage = showMessage,
+                )
+            }
+            composable<VehicleDetailsRoute> {
+                VehicleDetailsScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
+                    onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
                 )
             }
             composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }

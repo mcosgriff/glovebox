@@ -14,6 +14,7 @@ import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
+import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -41,6 +42,10 @@ object DataModule {
     @Provides fun odometerDao(db: GloveboxDatabase) = db.odometer()
     @Provides fun torqueDao(db: GloveboxDatabase) = db.torque()
     @Provides fun recallDao(db: GloveboxDatabase) = db.recalls()
+
+    @Provides @Singleton
+    fun vehiclePhotos(@ApplicationContext c: Context, photos: PhotoCrypto, vehicles: VehicleDao) =
+        VehiclePhotoStore(c, photos, vehicles)
 
     @Provides @Singleton
     fun settings(@ApplicationContext c: Context) = SettingsRepository(c)

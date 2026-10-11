@@ -25,7 +25,11 @@ data class VehicleEntity(
     val bodyClass: String? = null,
     val nickname: String? = null,
     val oilSpec: String? = null,
+    val oilFilter: String? = null,
     val tireSize: String? = null,
+    val wiperBlades: String? = null,
+    /** Name of the vehicle's own encrypted photo in PhotoCrypto.photoDir. */
+    val photoFile: String? = null,
     /** Miles to add to the displayed odometer after a cluster replacement. */
     val odometerOffset: Int = 0,
     val archivedOn: LocalDate? = null,

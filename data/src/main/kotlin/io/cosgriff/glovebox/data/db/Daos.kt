@@ -29,6 +29,25 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET recallsCheckedOn = :date WHERE id = :id")
     suspend fun setRecallsChecked(id: Long, date: LocalDate)
 
+    // Single-column writes, so an edit never puts back a stale copy of the rest of the row.
+    @Query("UPDATE vehicles SET nickname = :nickname WHERE id = :id")
+    suspend fun setNickname(id: Long, nickname: String?)
+
+    @Query("UPDATE vehicles SET oilSpec = :value WHERE id = :id")
+    suspend fun setOilSpec(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET oilFilter = :value WHERE id = :id")
+    suspend fun setOilFilter(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET tireSize = :value WHERE id = :id")
+    suspend fun setTireSize(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET wiperBlades = :value WHERE id = :id")
+    suspend fun setWiperBlades(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET photoFile = :fileName WHERE id = :id")
+    suspend fun setPhotoFile(id: Long, fileName: String?)
+
     @Insert suspend fun insert(vehicle: VehicleEntity): Long
     @Update suspend fun update(vehicle: VehicleEntity)
 
@@ -93,6 +112,10 @@ interface ScheduleDao {
 
     @Query("SELECT * FROM schedule_items WHERE tracked = 1 ORDER BY name")
     fun observeAllTracked(): Flow<List<ScheduleItemEntity>>
+
+    /** Tracked and untracked. */
+    @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
+    fun observeAll(vehicleId: Long): Flow<List<ScheduleItemEntity>>
 
     /** Tracked and untracked. */
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")

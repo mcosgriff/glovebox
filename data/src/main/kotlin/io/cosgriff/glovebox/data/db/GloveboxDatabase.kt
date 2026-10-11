@@ -27,12 +27,13 @@ class Converters {
         TorqueSpecEntity::class,
         RecallEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
         AutoMigration(from = 2, to = 3), // service_record_items.catalogId
         AutoMigration(from = 3, to = 4), // recalls, vehicles.recallsCheckedOn
+        AutoMigration(from = 4, to = 5), // vehicles.oilFilter, wiperBlades, photoFile
     ],
 )
 @TypeConverters(Converters::class)

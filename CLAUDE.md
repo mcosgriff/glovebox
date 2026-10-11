@@ -73,14 +73,14 @@ Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehic
 
 Done in code: unlock, empty garage, garage list (status chip, next reminder, across-all strip; opens the
 vehicle directly when there is only one), vehicle home (Coming up + Log
-service), update-mileage sheet (with Undo), add vehicle via
+service), vehicle details (photo, nickname, from the VIN, what it takes, schedule and recalls rows),
+update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: vehicle home +
-details (+ mark sold / archive / delete), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
+To build, roughly in order: mark sold / archive / delete vehicle, odometer offset, torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
 
@@ -122,9 +122,19 @@ Notes on what's built:
   (`recalls.serviceRecordId`) whose line has no schedule item, so it resets no reminder. Mark as open
   removes that record, with Undo.
 - Manufacturer VIN lookup pages are a short checked list (`Recalls.manufacturerSite`); other makes get
-  NHTSA's lookup. "Find a dealer" hands "<make> dealer" to the maps app. Until Vehicle details exists,
-  the quiet Recalls row at the bottom of vehicle home is the way in when nothing is open.
-- Schema changes so far are Room auto-migrations (v4); keep exported schemas in `data/schemas`.
+  NHTSA's lookup. "Find a dealer" hands "<make> dealer" to the maps app. With nothing open, the way in
+  is the Recalls row on Vehicle details.
+- Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
+  column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
+  a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead:
+  torque specs, Mark as sold, Delete vehicle, and Odometer offset (`vehicles.odometerOffset` exists but
+  nothing applies it). Maintenance schedule only links to setup when the vehicle has no items.
+- The vehicle photo is picked with the system photo picker (no permission), redrawn as a JPEG of at most
+  1600 px, which drops its metadata, and encrypted by `VehiclePhotoStore` into `PhotoCrypto.photoDir`
+  (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
+  `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
+  the nav host.
+- Schema changes so far are Room auto-migrations (v5); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

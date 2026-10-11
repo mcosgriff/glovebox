@@ -11,7 +11,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * Encrypts receipt and parts photos at rest with Tink streaming AEAD.
+ * Encrypts receipt, parts and vehicle photos at rest with Tink streaming AEAD.
  * The Tink keyset is itself encrypted by a separate Android Keystore key.
  */
 class PhotoCrypto(private val context: Context) {

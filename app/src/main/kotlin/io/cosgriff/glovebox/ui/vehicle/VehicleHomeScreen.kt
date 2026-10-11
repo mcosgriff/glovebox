@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -31,6 +33,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -166,6 +169,7 @@ fun VehicleHomeScreen(
     onLogService: (vehicleId: Long) -> Unit,
     onOpenRules: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
+    onOpenDetails: (vehicleId: Long) -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
@@ -190,13 +194,23 @@ fun VehicleHomeScreen(
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            TextButton(
-                onClick = onBack,
-                contentPadding = PaddingValues(start = 8.dp, end = 12.dp),
-                modifier = Modifier.padding(start = 8.dp, top = 12.dp).heightIn(min = 48.dp),
-            ) {
-                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = null)
-                Text("All vehicles", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleSmall)
+            Row(Modifier.fillMaxWidth().padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(
+                    onClick = onBack,
+                    contentPadding = PaddingValues(start = 8.dp, end = 12.dp),
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = null)
+                    Text("All vehicles", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleSmall)
+                }
+                Spacer(Modifier.weight(1f))
+                OutlinedIconButton(
+                    onClick = { onOpenDetails(v.id) },
+                    modifier = Modifier.size(48.dp),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+                ) {
+                    Icon(Icons.Outlined.MoreVert, contentDescription = "Vehicle details")
+                }
             }
 
             Column(
@@ -257,10 +271,6 @@ fun VehicleHomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-
-                // With nothing open the banner is gone, so this is the way in to the recall list.
-                // TODO: moves to the Recalls row on Vehicle details once that screen exists.
-                if (openRecalls.count == 0) RecallsRow(checked = v.recallsCheckedOn != null, onClick = { onOpenRecalls(v.id) })
             }
         }
 
@@ -341,27 +351,6 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
                 Text("Recall repairs are free of charge", style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
             }
             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = statusColors().overdue)
-        }
-    }
-}
-
-@Composable
-private fun RecallsRow(checked: Boolean, onClick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(onClick = onClick, modifier = Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
-        Row(
-            Modifier.heightIn(min = 52.dp).padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text("Recalls", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-            // "No open recalls" is only said once NHTSA has actually answered for this vehicle.
-            Text(
-                if (checked) "No open recalls" else "Not checked yet",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (checked) statusColors().ok else scheme.onSurfaceVariant,
-            )
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
         }
     }
 }
