@@ -80,6 +80,17 @@ class ReminderPresentationTest {
     }
 
     @Test
+    fun `pace uses the highest reading when several share the last day`() {
+        val start = today.minusDays(100)
+        val readings = listOf(
+            OdometerReading(today, 62_000),
+            OdometerReading(start, 60_000),
+            OdometerReading(today, 61_500), // earlier the same day
+        )
+        assertEquals(20.0, ReminderEngine.milesPerDay(readings)!!, 1e-9)
+    }
+
+    @Test
     fun `coming up puts overdue first, then the most used, and lists never-logged apart`() {
         val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
         val soon = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
