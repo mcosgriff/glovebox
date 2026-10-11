@@ -220,6 +220,7 @@ fun VehicleDetailsScreen(
     onSetUpSchedule: (vehicleId: Long) -> Unit,
     /** The vehicle has gone to the archive; [undo] brings it back. */
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
+    onDelete: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -401,12 +402,19 @@ fun VehicleDetailsScreen(
                     Text("Mark as sold")
                 }
                 Text(
-                    "Sold vehicles move to an archive with their full history.",
+                    "Sold vehicles move to an archive with their full history. Delete removes everything for good.",
                     Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
+                TextButton(
+                    onClick = { onDelete(v.id) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text("Delete vehicle and all its data", fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

@@ -104,6 +104,7 @@ class ArchivedVehiclesViewModel @Inject constructor(
 fun ArchivedVehiclesScreen(
     onBack: () -> Unit,
     onViewHistory: (vehicleId: Long) -> Unit,
+    onDelete: (vehicleId: Long) -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: ArchivedVehiclesViewModel = hiltViewModel(),
@@ -144,6 +145,7 @@ fun ArchivedVehiclesScreen(
                 a,
                 onViewHistory = { onViewHistory(a.vehicle.id) },
                 onMoveBack = { vm.moveBack(a.vehicle) { undo -> onMessage("$name is back in the garage", "Undo", undo) } },
+                onDelete = { onDelete(a.vehicle.id) },
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
         }
@@ -151,7 +153,7 @@ fun ArchivedVehiclesScreen(
 }
 
 @Composable
-private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBack: () -> Unit, modifier: Modifier) {
+private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBack: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val v = a.vehicle
     Surface(
@@ -209,12 +211,22 @@ private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBa
             ) {
                 Text("View history")
             }
-            TextButton(
-                onClick = onMoveBack,
-                modifier = Modifier.heightIn(min = 48.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp),
-            ) {
-                Text("Move back to garage", fontWeight = FontWeight.SemiBold)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(
+                    onClick = onMoveBack,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp),
+                ) {
+                    Text("Move back to garage", fontWeight = FontWeight.SemiBold)
+                }
+                TextButton(
+                    onClick = onDelete,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp),
+                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
+                ) {
+                    Text("Delete", fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }
