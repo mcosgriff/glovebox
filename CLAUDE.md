@@ -77,7 +77,8 @@ service), vehicle details (photo, nickname, from the VIN, what it takes, schedul
 Mark as sold), archived vehicles (read-only history, move back to garage), delete vehicle (counts, type the
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo), add vehicle via
-VIN (VIN entry, then a confirm screen where decoded values can be corrected), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
+make and model from NHTSA's lists or typed), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
@@ -85,7 +86,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 To build, roughly in order: odometer offset (#73), VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
-PDF + Markdown export, welcome/first run, manual add (no VIN), about.
+PDF + Markdown export, welcome/first run, about.
 
 Notes on what's built:
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
@@ -94,7 +95,13 @@ Notes on what's built:
   a vehicle is never saved without a real year, make and model, so an unidentified VIN has to be fixed or
   filled in by hand. vPIC trims that list several ("SR5/SR5 Premium") are offered as choices, and
   `vehicles.trimConfirmed` records that the user picked or typed one. The vehicle is saved before the
-  schedule screen, so Back from there keeps it. The Scan and no-VIN buttons wait on those screens.
+  schedule screen, so Back from there keeps it. The Scan button waits on that screen.
+- Add without a VIN (`ManualAddScreen`) picks year, make and model. Makes come from vPIC's car, truck and
+  MPV lists and models from make + year; `NhtsaClient.makes` sends nothing about the vehicle and `.models`
+  only the make and year. Every picker also takes typed text, which is the only way in when the lists
+  can't be loaded. Such a vehicle has `vin` null and `enteredByHand` true; a VIN or older serial number
+  can be added from Vehicle details (`Vin.isPlausible`), which doesn't decode it or change the details.
+  The drivetrain is never preselected.
 - The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
   not manufacturer data — there is no source for factory schedules.
 - After setup the schedule lives on `ScheduleScreen` (from Vehicle details). It writes straight to
@@ -173,7 +180,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v7); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v8); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
