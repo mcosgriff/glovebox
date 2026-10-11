@@ -28,14 +28,18 @@ sealed interface Destination {
     /** The vehicle's home with the Update mileage sheet open. */
     data class UpdateMileage(val vehicleId: Long) : Destination
 
+    /** The Encrypted backup screen. */
+    data object Backup : Destination
+
     fun putInto(intent: Intent) {
         intent.putExtra(KIND, when (this) {
             Reminders -> "reminders"
             is Recalls -> "recalls"
             is UpdateMileage -> "mileage"
+            Backup -> "backup"
         })
         intent.putExtra(VEHICLE, when (this) {
-            Reminders -> 0L
+            Reminders, Backup -> 0L
             is Recalls -> vehicleId
             is UpdateMileage -> vehicleId
         })
@@ -52,6 +56,7 @@ sealed interface Destination {
                 "reminders" -> Reminders
                 "recalls" -> Recalls(vehicle)
                 "mileage" -> UpdateMileage(vehicle)
+                "backup" -> Backup
                 else -> null
             }
         }
@@ -85,9 +90,23 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         }
     }
 
+    /** [never] when no backup has ever been made from this phone. */
+    fun postBackupReminder(never: Boolean) {
+        if (!allowed) return
+        show(
+            Shown(
+                Channel.BACKUP,
+                if (never) "Your Glovebox data isn't backed up" else "Time for a fresh Glovebox backup",
+                "A backup file is the only way to move to a new phone or recover after a reset.",
+                Destination.Backup,
+            ),
+            id = Channel.BACKUP.ordinal * 1_000_000,
+        )
+    }
+
     fun post(notice: Notice) {
         if (!allowed) return
-        val (channel, title, text, destination) = when (notice) {
+        val shown = when (notice) {
             is Notice.ServiceDue -> Shown(
                 Channel.SERVICE_DUE,
                 "${notice.vehicleName}: service coming due",
@@ -114,7 +133,11 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
             )
         }
         // One per vehicle and kind: a newer one replaces the older instead of piling up.
-        val id = channel.ordinal * 1_000_000 + (notice.vehicleId % 1_000_000).toInt()
+        show(shown, id = shown.channel.ordinal * 1_000_000 + (notice.vehicleId % 1_000_000).toInt())
+    }
+
+    private fun show(what: Shown, id: Int) {
+        val (channel, title, text, destination) = what
         val open = PendingIntent.getActivity(
             context,
             id,
@@ -150,5 +173,6 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         OVERDUE("overdue", "Overdue nudges", "Once a week until it's logged or snoozed", "A service is overdue", NotificationManager.IMPORTANCE_DEFAULT),
         RECALLS("recalls", "New recalls", "When NHTSA lists a recall that wasn't on file", "A new recall was found", NotificationManager.IMPORTANCE_HIGH),
         MILEAGE("mileage", "Mileage check-in", "A prompt to update the odometer", "Time to update the odometer", NotificationManager.IMPORTANCE_LOW),
+        BACKUP("backup", "Backup reminder", "When your last backup is more than a month old", "Time to back up", NotificationManager.IMPORTANCE_LOW),
     }
 }
