@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -37,6 +38,7 @@ import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
+import io.cosgriff.glovebox.ui.scan.ScanVinScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
@@ -59,6 +61,7 @@ import kotlin.reflect.KClass
 @Serializable object SettingsRoute
 @Serializable object AddVehicleRoute
 @Serializable object ManualAddRoute
+@Serializable object ScanVinRoute
 @Serializable object ReminderRulesRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
@@ -77,6 +80,8 @@ import kotlin.reflect.KClass
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
+
+private const val SCANNED_VIN = "scannedVin"
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -230,14 +235,28 @@ fun GloveboxNavHost() {
                 )
             }
             composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
-            composable<AddVehicleRoute> {
+            composable<AddVehicleRoute> { entry ->
+                // The scanner hands its VIN back through this entry's saved state.
+                val scannedVin by entry.savedStateHandle.getStateFlow<String?>(SCANNED_VIN, null).collectAsStateWithLifecycle()
                 AddVehicleScreen(
                     onBack = { nav.popBackStack() },
                     onNoVin = { nav.navigate(ManualAddRoute) },
+                    onScan = { nav.navigate(ScanVinRoute) },
+                    scannedVin = scannedVin,
+                    onScannedVinUsed = { entry.savedStateHandle[SCANNED_VIN] = null },
                     onSaved = { vehicleId ->
                         nav.navigate(ScheduleSetupRoute(vehicleId)) {
                             popUpTo<AddVehicleRoute> { inclusive = true }
                         }
+                    },
+                )
+            }
+            composable<ScanVinRoute> {
+                ScanVinScreen(
+                    onClose = { nav.popBackStack() },
+                    onUseVin = { vin ->
+                        nav.previousBackStackEntry?.savedStateHandle?.set(SCANNED_VIN, vin)
+                        nav.popBackStack()
                     },
                 )
             }

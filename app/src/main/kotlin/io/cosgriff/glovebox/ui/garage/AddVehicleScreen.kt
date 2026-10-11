@@ -24,8 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -38,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -146,6 +149,12 @@ class AddVehicleViewModel @Inject constructor(
         if (normalized == vin) return // e.g. an 18th character typed
         vin = normalized
         error = null
+    }
+
+    /** A scanned VIN has already passed its check digit, so it goes straight to NHTSA. */
+    fun useScanned(scanned: String) {
+        onVinChange(scanned)
+        if (vinValid && !decoding) decode()
     }
 
     fun decode() = viewModelScope.launch {
@@ -276,11 +285,21 @@ fun AddVehicleScreen(
     onSaved: (vehicleId: Long) -> Unit,
     onBack: () -> Unit,
     onNoVin: () -> Unit,
+    onScan: () -> Unit,
+    /** A VIN the scanner just handed back; it is decoded straight away. */
+    scannedVin: String?,
+    onScannedVinUsed: () -> Unit,
     vm: AddVehicleViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(scannedVin) {
+        if (scannedVin != null) {
+            vm.useScanned(scannedVin)
+            onScannedVinUsed()
+        }
+    }
     val decoded = vm.decoded
     if (decoded == null) {
-        VinEntry(vm, onBack, onNoVin)
+        VinEntry(vm, onBack, onNoVin, onScan)
     } else {
         BackHandler(onBack = vm::backToVin)
         ConfirmVehicle(vm, decoded, onSaved)
@@ -289,7 +308,7 @@ fun AddVehicleScreen(
 
 /** Design: 1 · Add vehicle (VIN). */
 @Composable
-private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () -> Unit) {
+private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () -> Unit, onScan: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -304,6 +323,23 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                     "We look it up with NHTSA's VIN decoder and fill in year, make, model, drivetrain and engine for you.",
                     color = scheme.onSurfaceVariant,
                 )
+            }
+
+            Button(
+                onClick = onScan,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                // Canvas: solid ink, so the orange stays for Decode VIN.
+                colors = ButtonDefaults.buttonColors(containerColor = scheme.secondary, contentColor = scheme.onSecondary),
+            ) {
+                Icon(Icons.Outlined.QrCodeScanner, contentDescription = null, modifier = Modifier.padding(end = 10.dp).size(22.dp))
+                Text("Scan VIN barcode", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
+                Text("or type it", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -355,7 +391,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Where to find it", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     listOf(
-                        "Driver's door jamb sticker",
+                        "Driver's door jamb sticker — has a scannable barcode",
                         "Base of the windshield, driver's side",
                         "Registration or insurance card",
                     ).forEachIndexed { i, place ->
