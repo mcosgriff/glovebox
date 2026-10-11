@@ -62,6 +62,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -94,6 +95,7 @@ import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
+import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.toEntry
@@ -208,6 +210,9 @@ class VehicleDetailsViewModel @Inject constructor(
 
     fun pickPhoto() = picker.pick(vehicleId)
 
+    /** For a vehicle added without one. The details the user entered are kept as they are. */
+    fun setVin(vin: String) = viewModelScope.launch { vehicles.setVin(vehicleId, vin) }
+
     /** [onArchived] gets the Undo, which still works after this screen has closed. */
     fun markAsSold(sale: Sale, onArchived: (undo: () -> Unit) -> Unit) = viewModelScope.launch {
         val receipt = archiver.archive(vehicleId, sale, lastOdometer.value)
@@ -237,6 +242,17 @@ fun VehicleDetailsScreen(
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<Spec?>(null) }
     var selling by rememberSaveable { mutableStateOf(false) }
+    var addingVin by rememberSaveable { mutableStateOf(false) }
+
+    if (addingVin) {
+        VinDialog(
+            onSave = {
+                vm.setVin(it)
+                addingVin = false
+            },
+            onDismiss = { addingVin = false },
+        )
+    }
     val name = v.nickname ?: v.model
 
     if (selling) {
@@ -308,8 +324,27 @@ fun VehicleDetailsScreen(
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel(if (v.vin != null) "FROM THE VIN" else "VEHICLE")
+                SectionLabel(if (v.enteredByHand) "VEHICLE" else "FROM THE VIN")
                 Card {
+                    if (v.vin == null) {
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { addingVin = true }),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text("VIN", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "Add",
+                                Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.End,
+                            )
+                            Chevron()
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
                     val rows = listOfNotNull(
                         v.vin?.let { Triple("VIN", it, true) },
                         Triple("Vehicle", VehicleText.title(v.year, v.make, v.model, v.trim), false),
@@ -334,7 +369,7 @@ fun VehicleDetailsScreen(
                     }
                     Text(
                         when {
-                            v.vin == null -> "Entered by you"
+                            v.enteredByHand -> "Entered by you"
                             v.trimConfirmed -> "Source: NHTSA vPIC, decoded from the VIN · trim confirmed by you"
                             else -> "Source: NHTSA vPIC, decoded from the VIN"
                         },
@@ -550,6 +585,38 @@ private fun Chevron() {
         contentDescription = null,
         modifier = Modifier.size(18.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    var text by rememberSaveable { mutableStateOf("") }
+    val plausible = Vin.isPlausible(text)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add the VIN") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = Vin.normalize(it).take(17) },
+                label = { Text("VIN or serial number") },
+                supportingText = {
+                    Text(
+                        when {
+                            text.length == 17 && Vin.hasValidCheckDigit(text) -> "17 / 17 ✓ check digit"
+                            text.length == 17 -> "The check digit doesn't match. That's normal for some imports; otherwise re-check it."
+                            plausible -> "${text.length} characters. Fine for an older vehicle; newer ones have 17."
+                            else -> "Letters and digits only, 5 to 17 characters."
+                        },
+                    )
+                },
+                singleLine = true,
+                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
+            )
+        },
+        confirmButton = { TextButton(onClick = { onSave(text) }, enabled = plausible) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
 

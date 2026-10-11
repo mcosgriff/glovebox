@@ -28,4 +28,14 @@ class TorqueAndVinTest {
         assertFalse(Vin.isWellFormed("1M8GDM9AXKP04278O")) // letter O not allowed
         assertEquals("JTEBU5JR4K5612345", Vin.normalize(" jtebu5jr4k5612345 "))
     }
+
+    @Test
+    fun `a VIN added later only has to look like one`() {
+        assertTrue(Vin.isPlausible("1M8GDM9AXKP042788"))
+        assertTrue(Vin.isPlausible("1M8GDM9A1KP042788")) // wrong check digit: fine for an import
+        assertTrue(Vin.isPlausible("WP0ZZZ91Z")) // pre-1981 serial
+        assertFalse(Vin.isPlausible("AB12"))
+        assertFalse(Vin.isPlausible("1M8GDM9AXKP0427889"))
+        assertFalse(Vin.isPlausible("1m8-gdm9a"))
+    }
 }
