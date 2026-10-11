@@ -86,6 +86,8 @@ data class WorkLine(
 data class RecordDetail(
     val record: ServiceRecordWithItems,
     val vehicleName: String,
+    /** The vehicle is archived: its records can be read but not edited or deleted. */
+    val readOnly: Boolean,
     val lines: List<WorkLine>,
     /** Reminders that roll back if this record is deleted, already worded for display. */
     val deleteImpact: List<String>,
@@ -117,6 +119,7 @@ class RecordDetailViewModel @Inject constructor(
         RecordDetail(
             record = r,
             vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            readOnly = vehicle?.archivedOn != null,
             lines = r.items.map { item ->
                 val reminder = item.scheduleItemId?.let(tracked::get)
                 val latest = reminder != null && LogEdits.isLatestFor(reminder.id, entry, entries)
@@ -158,8 +161,10 @@ fun RecordDetailScreen(
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
             Text("Service record", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
-            OutlinedButton(onClick = { onEdit(record.vehicleId, record.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                Text("Edit")
+            if (!detail.readOnly) {
+                OutlinedButton(onClick = { onEdit(record.vehicleId, record.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text("Edit")
+                }
             }
         }
 
@@ -218,12 +223,20 @@ fun RecordDetailScreen(
                 }
             }
 
-            OutlinedButton(
-                onClick = { confirmingDelete = true },
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) { Text("Delete record") }
+            if (detail.readOnly) {
+                Text(
+                    "This vehicle is archived, so its records can't be changed. Move it back to the garage to edit them.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                OutlinedButton(
+                    onClick = { confirmingDelete = true },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Text("Delete record") }
+            }
         }
     }
 

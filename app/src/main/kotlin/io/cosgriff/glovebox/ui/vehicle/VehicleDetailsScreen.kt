@@ -24,12 +24,14 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -74,20 +76,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
+import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.domain.DrivingUse
+import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.Recalls
+import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
+import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -133,8 +141,11 @@ class VehicleDetailsViewModel @Inject constructor(
     private val vehicles: VehicleDao,
     schedule: ScheduleDao,
     recalls: RecallDao,
+    service: ServiceDao,
+    odometer: OdometerDao,
     private val photos: VehiclePhotoStore,
     private val picker: VehiclePhotoPicker,
+    private val archiver: VehicleArchiver,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<VehicleDetailsRoute>().vehicleId
 
@@ -162,6 +173,11 @@ class VehicleDetailsViewModel @Inject constructor(
     val photoFailed: StateFlow<Boolean> = picker.failedFor.map { it == vehicleId }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    /** The highest reading so far, which a sale's final odometer starts from. */
+    val lastOdometer: StateFlow<Int?> = combine(service.observeRecords(vehicleId), odometer.observe(vehicleId)) { records, readings ->
+        VehicleReminders.currentOdometer(records.map { it.toEntry() }, readings.map { OdometerReading(it.date, it.odometer) })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     private val nicknameEdits = MutableStateFlow<String?>(null)
 
     init {
@@ -187,6 +203,12 @@ class VehicleDetailsViewModel @Inject constructor(
 
     fun pickPhoto() = picker.pick(vehicleId)
 
+    /** [onArchived] gets the Undo, which still works after this screen has closed. */
+    fun markAsSold(sale: Sale, onArchived: (undo: () -> Unit) -> Unit) = viewModelScope.launch {
+        val receipt = archiver.archive(vehicleId, sale, lastOdometer.value)
+        onArchived { archiver.undo(receipt) }
+    }
+
     fun removePhoto() = viewModelScope.launch { photos.remove(vehicleId) }
 }
 
@@ -196,6 +218,8 @@ fun VehicleDetailsScreen(
     onBack: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
     onSetUpSchedule: (vehicleId: Long) -> Unit,
+    /** The vehicle has gone to the archive; [undo] brings it back. */
+    onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -203,7 +227,22 @@ fun VehicleDetailsScreen(
     val photo by vm.photo.collectAsStateWithLifecycle()
     val photoFailed by vm.photoFailed.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
+    val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<Spec?>(null) }
+    var selling by rememberSaveable { mutableStateOf(false) }
+    val name = v.nickname ?: v.model
+
+    if (selling) {
+        MarkAsSoldSheet(
+            vehicleName = name,
+            lastOdometer = lastOdometer,
+            onArchive = { sale ->
+                selling = false
+                vm.markAsSold(sale) { undo -> onArchived(name, undo) }
+            },
+            onDismiss = { selling = false },
+        )
+    }
     // Seeded once: after that the field is the source of truth and the database follows it.
     var nickname by rememberSaveable { mutableStateOf(v.nickname.orEmpty()) }
 
@@ -348,6 +387,25 @@ fun VehicleDetailsScreen(
                         else -> MaterialTheme.colorScheme.onPrimaryContainer
                     },
                     onClick = { onOpenRecalls(v.id) },
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { selling = true },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                ) {
+                    Text("Mark as sold")
+                }
+                Text(
+                    "Sold vehicles move to an archive with their full history.",
+                    Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
         }

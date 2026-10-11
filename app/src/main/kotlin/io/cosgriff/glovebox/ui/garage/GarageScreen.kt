@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.Attention
 import io.cosgriff.glovebox.domain.ComingUp
@@ -64,12 +65,17 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: RecallRepository) : ViewModel() {
+class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: RecallRepository, vehicles: VehicleDao) : ViewModel() {
+    /** How many vehicles are in the archive. */
+    val archived: StateFlow<Int> = vehicles.observeArchived().map { it.size }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
     init {
         // Once per launch: re-check any vehicle whose recall list is a week old or was never fetched.
         viewModelScope.launch { recalls.refreshStale() }
@@ -84,6 +90,7 @@ fun GarageScreen(
     onAddVehicle: () -> Unit,
     onOpenVehicle: (vehicleId: Long) -> Unit,
     onSeeReminders: () -> Unit,
+    onOpenArchive: () -> Unit,
     vm: GarageViewModel = hiltViewModel(),
 ) {
     val garage = vm.garage.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -103,8 +110,10 @@ fun GarageScreen(
     }
     if (skipList || leaving) return
 
+    val archived by vm.archived.collectAsStateWithLifecycle()
+
     if (garage.vehicles.isEmpty()) {
-        EmptyGarage(onAddVehicle)
+        EmptyGarage(onAddVehicle, archived, onOpenArchive)
         return
     }
 
@@ -117,6 +126,9 @@ fun GarageScreen(
         val urgent = garage.urgent
         if (urgent.isNotEmpty()) {
             item { AcrossAll(garage.vehicles.size, urgent, onSeeReminders) }
+        }
+        if (archived > 0) {
+            item { ArchivedRow(archived, onOpenArchive) }
         }
         item { Spacer(Modifier.height(6.dp)) }
     }
@@ -321,7 +333,19 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
 private fun DueHeadline.remaining(): String = text().removePrefix("In ")
 
 @Composable
-private fun EmptyGarage(onAddVehicle: () -> Unit) {
+private fun ArchivedRow(count: Int, onClick: () -> Unit) {
+    val color = statusColors().soon
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Archived vehicles · $count", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp), tint = color)
+    }
+}
+
+@Composable
+private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: () -> Unit) {
     Column(
         Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -334,5 +358,7 @@ private fun EmptyGarage(onAddVehicle: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Add a vehicle") }
+        // With every vehicle sold, this is the only way back to them.
+        if (archived > 0) ArchivedRow(archived, onOpenArchive)
     }
 }

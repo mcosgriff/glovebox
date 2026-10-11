@@ -37,6 +37,7 @@ import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
+import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
@@ -64,6 +65,9 @@ import kotlin.reflect.KClass
 @Serializable data class RecordDetailRoute(val recordId: Long)
 @Serializable data class RecallsRoute(val vehicleId: Long)
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long)
+@Serializable object ArchivedVehiclesRoute
+/** One archived vehicle's history, read-only. */
+@Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -152,6 +156,7 @@ fun GloveboxNavHost() {
                 GarageScreen(
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
                     onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
+                    onOpenArchive = { nav.navigate(ArchivedVehiclesRoute) },
                     onSeeReminders = {
                         nav.navigate(RemindersRoute) {
                             popUpTo(nav.graph.findStartDestination().id) { saveState = true }
@@ -176,6 +181,24 @@ fun GloveboxNavHost() {
                     onBack = { nav.popBackStack() },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
                     onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
+                    onArchived = { name, undo ->
+                        // Its home and details screens are gone with it.
+                        nav.popBackStack<GarageRoute>(inclusive = false)
+                        showMessage("$name moved to Archived vehicles", "Undo", undo)
+                    },
+                )
+            }
+            composable<ArchivedVehiclesRoute> {
+                ArchivedVehiclesScreen(
+                    onBack = { nav.popBackStack() },
+                    onViewHistory = { vehicleId -> nav.navigate(ArchivedHistoryRoute(vehicleId)) },
+                    onMessage = showMessage,
+                )
+            }
+            composable<ArchivedHistoryRoute> {
+                HistoryScreen(
+                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
+                    onBack = { nav.popBackStack() },
                 )
             }
             composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }

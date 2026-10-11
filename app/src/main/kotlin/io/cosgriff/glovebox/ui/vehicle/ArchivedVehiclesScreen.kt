@@ -1,0 +1,221 @@
+package io.cosgriff.glovebox.ui.vehicle
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.OdometerDao
+import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.domain.VehicleText
+import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.theme.statusColors
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class ArchivedVehicle(
+    val vehicle: VehicleEntity,
+    /** The highest reading on record; null if the vehicle never had one. */
+    val finalOdometer: Int?,
+    val records: Int,
+    /** Receipt and parts photos across its records. */
+    val photos: Int,
+)
+
+@HiltViewModel
+class ArchivedVehiclesViewModel @Inject constructor(
+    vehicles: VehicleDao,
+    service: ServiceDao,
+    odometer: OdometerDao,
+    private val archiver: VehicleArchiver,
+) : ViewModel() {
+    /** Most recently sold first. Null while loading. */
+    val archived: StateFlow<List<ArchivedVehicle>?> = combine(
+        vehicles.observeArchived(),
+        service.observeAllRecords(),
+        odometer.observeAll(),
+    ) { list, records, readings ->
+        val recordsBy = records.groupBy { it.record.vehicleId }
+        val readingsBy = readings.groupBy { it.vehicleId }
+        list.map { v ->
+            val mine = recordsBy[v.id].orEmpty()
+            ArchivedVehicle(
+                vehicle = v,
+                finalOdometer = VehicleReminders.currentOdometer(
+                    mine.map { it.toEntry() },
+                    readingsBy[v.id].orEmpty().map { OdometerReading(it.date, it.odometer) },
+                ),
+                records = mine.size,
+                photos = mine.sumOf { it.photos.size },
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** [onMoved] gets the Undo, which archives it again with the same sold date. */
+    fun moveBack(v: VehicleEntity, onMoved: (undo: () -> Unit) -> Unit) = viewModelScope.launch {
+        val soldOn = v.archivedOn ?: return@launch
+        archiver.moveBack(v.id)
+        onMoved { archiver.archiveAgain(v.id, soldOn) }
+    }
+}
+
+/** Design: 4f · Archived vehicles. */
+@Composable
+fun ArchivedVehiclesScreen(
+    onBack: () -> Unit,
+    onViewHistory: (vehicleId: Long) -> Unit,
+    /** Shows a message with one action on the app's snackbar. */
+    onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
+    vm: ArchivedVehiclesViewModel = hiltViewModel(),
+) {
+    val archived = vm.archived.collectAsStateWithLifecycle().value ?: return // first frame while loading
+
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                Text(
+                    "Archived vehicles",
+                    Modifier.padding(start = 8.dp).semantics { heading() },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+        item {
+            Text(
+                if (archived.isEmpty()) {
+                    "Nothing is archived. Mark a vehicle as sold from its details to move it here."
+                } else {
+                    "Sold or retired vehicles keep their full history here. They don't get reminders or recall checks."
+                },
+                Modifier.padding(horizontal = 20.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        items(archived, key = { it.vehicle.id }) { a ->
+            val name = a.vehicle.nickname ?: a.vehicle.model
+            ArchivedCard(
+                a,
+                onViewHistory = { onViewHistory(a.vehicle.id) },
+                onMoveBack = { vm.moveBack(a.vehicle) { undo -> onMessage("$name is back in the garage", "Undo", undo) } },
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArchivedCard(a: ArchivedVehicle, onViewHistory: () -> Unit, onMoveBack: () -> Unit, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val v = a.vehicle
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = scheme.surface,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, scheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(start = 18.dp, top = 18.dp, end = 18.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        VehicleText.title(v.year, v.make, v.model, trim = null),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        listOfNotNull(
+                            v.nickname,
+                            v.archivedOn?.let { "Sold ${it.format(longDate)}" },
+                            a.finalOdometer?.let { "final ${it.asMiles()}" },
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                }
+                Surface(color = scheme.surfaceVariant, shape = CircleShape) {
+                    Text(
+                        "SOLD",
+                        Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = statusColors().soon,
+                    )
+                }
+            }
+            Text(
+                listOfNotNull(
+                    if (a.records == 1) "1 service record" else "${a.records} service records",
+                    when (a.photos) {
+                        0 -> null
+                        1 -> "1 photo"
+                        else -> "${a.photos} photos"
+                    },
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = statusColors().soon,
+            )
+            OutlinedButton(
+                onClick = onViewHistory,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.5.dp, scheme.onSurface),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+            ) {
+                Text("View history")
+            }
+            TextButton(
+                onClick = onMoveBack,
+                modifier = Modifier.heightIn(min = 48.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp),
+            ) {
+                Text("Move back to garage", fontWeight = FontWeight.SemiBold)
+            }
+        }
+    }
+}
