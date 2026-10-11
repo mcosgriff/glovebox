@@ -314,6 +314,7 @@ fun VehicleDetailsScreen(
                         v.vin?.let { Triple("VIN", it, true) },
                         Triple("Vehicle", VehicleText.title(v.year, v.make, v.model, v.trim), false),
                         v.drivetrain?.let { Triple("Drivetrain", it, false) },
+                        v.transmission?.let { Triple("Transmission", it, false) },
                         v.engine?.let { Triple("Engine", it, false) },
                         v.bodyClass?.let { Triple("Body", it, false) },
                     )
@@ -332,7 +333,11 @@ fun VehicleDetailsScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     Text(
-                        if (v.vin != null) "Source: NHTSA vPIC, decoded from the VIN" else "Entered by you",
+                        when {
+                            v.vin == null -> "Entered by you"
+                            v.trimConfirmed -> "Source: NHTSA vPIC, decoded from the VIN · trim confirmed by you"
+                            else -> "Source: NHTSA vPIC, decoded from the VIN"
+                        },
                         Modifier.padding(vertical = 10.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
