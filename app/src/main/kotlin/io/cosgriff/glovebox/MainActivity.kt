@@ -73,7 +73,7 @@ class MainActivity : FragmentActivity() {
         const val APP_SCREENS = "app"
     }
 
-        /** "Hide in recent apps": blocks screenshots and blanks the app-switcher thumbnail. */
+    /** "Hide in recent apps": blocks screenshots and blanks the app-switcher thumbnail. */
     private fun applySecureFlag(settings: Settings?) {
         if (settings?.hideInRecents != false) {
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
