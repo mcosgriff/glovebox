@@ -33,6 +33,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET archivedOn = :date WHERE id = :id")
     suspend fun setArchived(id: Long, date: LocalDate?)
 
+    /** Every vehicle's own photo file, archived vehicles included. */
+    @Query("SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL")
+    suspend fun allPhotoFiles(): List<String>
+
     /** For a vehicle added without one. */
     @Query("UPDATE vehicles SET vin = :vin WHERE id = :id")
     suspend fun setVin(id: Long, vin: String)
@@ -111,6 +115,21 @@ interface ServiceDao {
     }
 
     @Delete suspend fun deleteRecord(record: ServiceRecordEntity)
+
+    @Insert suspend fun insertPhotos(photos: List<PhotoEntity>)
+
+    @Query("DELETE FROM photos WHERE id IN (:ids)")
+    suspend fun deletePhotos(ids: List<Long>)
+
+    @Query("DELETE FROM photos WHERE recordId = :recordId")
+    suspend fun clearPhotos(recordId: Long)
+
+    @Query("SELECT COUNT(*) FROM photos WHERE recordId = :recordId")
+    suspend fun photoCount(recordId: Long): Int
+
+    /** Every receipt and parts photo file any record points at. */
+    @Query("SELECT fileName FROM photos")
+    suspend fun allPhotoFiles(): List<String>
 }
 
 @Dao

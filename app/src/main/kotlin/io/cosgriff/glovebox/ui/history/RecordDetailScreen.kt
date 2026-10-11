@@ -1,5 +1,13 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
+import io.cosgriff.glovebox.ui.photo.PhotoThumb
+import io.cosgriff.glovebox.ui.photo.PhotoTarget
+import io.cosgriff.glovebox.ui.photo.AttachMenu
+import io.cosgriff.glovebox.domain.RecordPhotos
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -102,7 +110,16 @@ class RecordDetailViewModel @Inject constructor(
     private val service: ServiceDao,
     settings: SettingsRepository,
     private val actions: RecordActions,
+    private val photoPicker: RecordPhotoPicker,
 ) : ViewModel() {
+    val photoProblem: StateFlow<String?> = photoPicker.problem
+
+    private val photoRoom: Int get() = RecordPhotos.room(detail.value?.record?.photos?.size ?: 0)
+
+    /** Added to the record straight away; there is no form to save here. */
+    fun takePhoto() = photoPicker.capture(PhotoTarget.Record(recordId), photoRoom)
+    fun choosePhotos() = photoPicker.pick(PhotoTarget.Record(recordId), photoRoom)
+
     private val recordId = savedStateHandle.toRoute<RecordDetailRoute>().recordId
 
     /** Null while loading and after the record is deleted. */
@@ -151,6 +168,7 @@ class RecordDetailViewModel @Inject constructor(
 fun RecordDetailScreen(
     onBack: () -> Unit,
     onEdit: (vehicleId: Long, recordId: Long) -> Unit,
+    onOpenPhoto: (recordId: Long, index: Int) -> Unit,
     vm: RecordDetailViewModel = hiltViewModel(),
 ) {
     val detail = vm.detail.collectAsStateWithLifecycle().value ?: return
@@ -223,6 +241,46 @@ fun RecordDetailScreen(
                 }
             }
 
+            val photos = detail.record.photos
+            // An archived vehicle's record shows its photos but can't take more.
+            if (photos.isNotEmpty() || !detail.readOnly) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel("RECEIPTS & PHOTOS")
+                    val canAdd = !detail.readOnly && photos.size < RecordPhotos.MAX_PER_RECORD
+                    // Three to a row, as on the canvas; the Add tile takes the next free place.
+                    (photos.indices.toList() + listOfNotNull((-1).takeIf { canAdd })).chunked(3).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            row.forEach { i ->
+                                if (i >= 0) {
+                                    PhotoThumb(
+                                        photos[i].fileName,
+                                        "Photo ${i + 1} of ${photos.size}",
+                                        Modifier.weight(1f).aspectRatio(1f),
+                                        onClick = { onOpenPhoto(record.id, i) },
+                                    )
+                                } else {
+                                    AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos, modifier = Modifier.weight(1f).aspectRatio(1f)) { open ->
+                                        OutlinedButton(
+                                            onClick = open,
+                                            modifier = Modifier.fillMaxSize(),
+                                            shape = RoundedCornerShape(12.dp),
+                                            contentPadding = PaddingValues(4.dp),
+                                        ) { Text("+ Add") }
+                                    }
+                                }
+                            }
+                            repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
+                    val problem by vm.photoProblem.collectAsStateWithLifecycle()
+                    Text(
+                        problem ?: "Photos are stored encrypted with the record.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (problem != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
             if (detail.readOnly) {
                 Text(
                     "This vehicle is archived, so its records can't be changed. Move it back to the garage to edit them.",
@@ -250,10 +308,18 @@ fun RecordDetailScreen(
                     Text("Delete this service record?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     val n = detail.lines.size
                     Text(
-                        "${record.date.format(longDate)} · ${record.odometer.asMiles()} · $n ${if (n == 1) "item" else "items"}",
+                        listOfNotNull(
+                            record.date.format(longDate),
+                            record.odometer.asMiles(),
+                            "$n ${if (n == 1) "item" else "items"}",
+                            RecordPhotos.countLabel(detail.record.photos.size),
+                        ).joinToString(" · "),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                if (detail.record.photos.isNotEmpty()) {
+                    Text("Its receipt and parts photos are deleted too.", style = MaterialTheme.typography.bodyMedium)
                 }
                 if (detail.deleteImpact.isEmpty()) {
                     Text("No reminders change.", style = MaterialTheme.typography.bodyMedium)

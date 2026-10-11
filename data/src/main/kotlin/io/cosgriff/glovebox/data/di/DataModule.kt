@@ -11,9 +11,11 @@ import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.RecallDao
+import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
+import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.ktor.client.HttpClient
@@ -46,6 +48,10 @@ object DataModule {
     @Provides @Singleton
     fun vehiclePhotos(@ApplicationContext c: Context, photos: PhotoCrypto, vehicles: VehicleDao) =
         VehiclePhotoStore(c, photos, vehicles)
+
+    @Provides @Singleton
+    fun recordPhotos(@ApplicationContext c: Context, photos: PhotoCrypto, service: ServiceDao, vehicles: VehicleDao) =
+        RecordPhotoStore(c, photos, service, vehicles)
 
     @Provides @Singleton
     fun settings(@ApplicationContext c: Context) = SettingsRepository(c)

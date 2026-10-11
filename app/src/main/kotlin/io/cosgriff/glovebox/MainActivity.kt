@@ -11,14 +11,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.lock.AppLock
 import io.cosgriff.glovebox.lock.LockScreen
 import io.cosgriff.glovebox.ui.GloveboxNavHost
+import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import io.cosgriff.glovebox.ui.vehicle.VehiclePhotoPicker
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 // FragmentActivity (not plain ComponentActivity) because BiometricPrompt needs it.
@@ -32,6 +37,16 @@ class MainActivity : FragmentActivity() {
     // Registered here, not in a screen, so the answer still arrives if the app locked meanwhile.
     private val pickPhoto = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { photoPicker.onPicked(it) }
 
+    @Inject lateinit var recordPhotoPicker: RecordPhotoPicker
+    @Inject lateinit var recordPhotos: RecordPhotoStore
+
+    private val pickRecordPhotos =
+        registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(RecordPhotos.MAX_PER_RECORD)) { recordPhotoPicker.onPicked(it) }
+    private val takeRecordPhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { recordPhotoPicker.onCaptured(it) }
+    private val launchRecordPhotoPicker: () -> Unit = {
+        pickRecordPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
     private val launchPhotoPicker: () -> Unit = {
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
@@ -40,6 +55,12 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         photoPicker.attach(launchPhotoPicker)
+        recordPhotoPicker.attach(launchRecordPhotoPicker) { takeRecordPhoto.launch(it) }
+        // Once per process, and only on a fresh start: a restored activity may have a form with photos attached.
+        if (savedInstanceState == null && !swept) {
+            swept = true
+            lifecycleScope.launch { recordPhotos.sweep() }
+        }
         setContent {
             val settings by settingsRepo.settings.collectAsStateWithLifecycle(initialValue = null)
             val locked by appLock.locked.collectAsStateWithLifecycle()
@@ -66,11 +87,15 @@ class MainActivity : FragmentActivity() {
 
     override fun onDestroy() {
         photoPicker.detach(launchPhotoPicker)
+        recordPhotoPicker.detach(launchRecordPhotoPicker)
         super.onDestroy()
     }
 
     private companion object {
         const val APP_SCREENS = "app"
+
+        /** The orphaned-photo sweep has run in this process. */
+        var swept = false
     }
 
     /** "Hide in recent apps": blocks screenshots and blanks the app-switcher thumbnail. */

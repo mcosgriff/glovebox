@@ -1,5 +1,13 @@
 package io.cosgriff.glovebox.ui.service
 
+import java.util.UUID
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,6 +74,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
@@ -80,12 +89,17 @@ import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.ServiceEntry
+import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.WorkCategory
 import io.cosgriff.glovebox.domain.WorkOption
 import io.cosgriff.glovebox.ui.LogServiceRoute
+import io.cosgriff.glovebox.ui.photo.AttachMenu
+import io.cosgriff.glovebox.ui.photo.PhotoTarget
+import io.cosgriff.glovebox.ui.photo.PhotoThumb
+import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -122,7 +136,38 @@ class LogServiceViewModel @Inject constructor(
     odometer: OdometerDao,
     settings: SettingsRepository,
     private val actions: RecordActions,
+    private val photoPicker: RecordPhotoPicker,
 ) : ViewModel() {
+    /** Names this form to the photo picker, which holds its new photos until it is saved or left. */
+    private val photoKey = UUID.randomUUID().toString()
+
+    /** Photos attached on this form and not yet saved, as file names. */
+    val newPhotos: StateFlow<List<String>> = photoPicker.drafts.map { it[photoKey].orEmpty() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val photoProblem: StateFlow<String?> = photoPicker.problem
+
+    /** Photos the record being edited already has, less any taken off on this form. */
+    var keptPhotos by mutableStateOf(emptyList<PhotoEntity>())
+        private set
+    private var removedPhotoIds = emptySet<Long>()
+
+    val photoRoom: Int get() = RecordPhotos.room(keptPhotos.size + newPhotos.value.size)
+
+    fun takePhoto() = photoPicker.capture(PhotoTarget.Draft(photoKey), photoRoom)
+    fun choosePhotos() = photoPicker.pick(PhotoTarget.Draft(photoKey), photoRoom)
+    fun removeNewPhoto(fileName: String) = photoPicker.removeDraft(photoKey, fileName)
+
+    /** The row goes when the form is saved; until then Back leaves the record as it was. */
+    fun removeKeptPhoto(photo: PhotoEntity) {
+        keptPhotos = keptPhotos - photo
+        removedPhotoIds = removedPhotoIds + photo.id
+    }
+
+    /** Leaving without saving: the photos attached here were never the record's. */
+    override fun onCleared() {
+        photoPicker.discardDraft(photoKey)
+    }
+
     private val route = savedStateHandle.toRoute<LogServiceRoute>()
     private val vehicleId = route.vehicleId
     val editing: Boolean = route.recordId != 0L
@@ -212,6 +257,7 @@ class LogServiceViewModel @Inject constructor(
                 shopName = r.shopName.orEmpty()
                 costText = r.costCents?.let { String.format(Locale.US, "%d.%02d", it / 100, it % 100) }.orEmpty()
                 notes = r.notes.orEmpty()
+                keptPhotos = original.photos
                 val ticked = mutableSetOf<String>()
                 val custom = mutableListOf<String>()
                 original.items.forEach { item ->
@@ -281,7 +327,8 @@ class LogServiceViewModel @Inject constructor(
                     catalogId = it.id.takeIf { id -> id in catalogIds },
                 )
             } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
-            if (d.original != null) actions.replace(d.original, record, items) else actions.add(record, items)
+            val added = photoPicker.takeDraft(photoKey)
+            if (d.original != null) actions.replace(d.original, record, items, added, removedPhotoIds) else actions.add(record, items, added)
             onDone()
         }
     }
@@ -513,6 +560,8 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            PhotosField(vm)
+
             // The fields with problems may be scrolled out of view, so repeat what's missing here.
             val missing = listOfNotNull(
                 "the odometer reading".takeIf { vm.odometer == null },
@@ -549,6 +598,55 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                 addingCustom = false
             },
             onDismiss = { addingCustom = false },
+        )
+    }
+}
+
+/** Design: the "Receipt / photo" row on 5 · Log service. */
+@Composable
+private fun PhotosField(vm: LogServiceViewModel) {
+    val scheme = MaterialTheme.colorScheme
+    val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
+    val problem by vm.photoProblem.collectAsStateWithLifecycle()
+    val count = vm.keptPhotos.size + newPhotos.size
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Receipt / photo" + (RecordPhotos.countLabel(count)?.let { " · $it" } ?: ""),
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.labelLarge,
+                color = scheme.onSurfaceVariant,
+            )
+            AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos) { open ->
+                OutlinedButton(
+                    onClick = open,
+                    enabled = vm.photoRoom > 0,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Icon(Icons.Outlined.AttachFile, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp))
+                    Text("Attach")
+                }
+            }
+        }
+        if (count > 0) {
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                vm.keptPhotos.forEachIndexed { i, photo ->
+                    PhotoThumb(photo.fileName, "photo ${i + 1}", Modifier.size(96.dp), onRemove = { vm.removeKeptPhoto(photo) })
+                }
+                newPhotos.forEachIndexed { i, name ->
+                    PhotoThumb(name, "photo ${vm.keptPhotos.size + i + 1}", Modifier.size(96.dp), onRemove = { vm.removeNewPhoto(name) })
+                }
+            }
+        }
+        Text(
+            problem ?: if (vm.photoRoom == 0) {
+                "That's the most a record holds (${RecordPhotos.MAX_PER_RECORD})."
+            } else {
+                "Stored encrypted with the record. The copy in your gallery, if there is one, isn't touched."
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = if (problem != null) scheme.error else scheme.onSurfaceVariant,
         )
     }
 }
