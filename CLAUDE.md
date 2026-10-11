@@ -75,14 +75,14 @@ Done in code: unlock, empty garage, garage list (status chip, next reminder, acr
 vehicle directly when there is only one), vehicle home (Coming up + Log
 service), vehicle details (photo, nickname, from the VIN, what it takes, schedule and recalls rows,
 Mark as sold), archived vehicles (read-only history, move back to garage), delete vehicle (counts, type the
-name to confirm),
+name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo), add vehicle via
 VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), torque specs, VIN scanning (CameraX + ML Kit bundled barcode,
+To build, roughly in order: odometer offset (#73), VIN scanning (CameraX + ML Kit bundled barcode,
 Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, manual add (no VIN), about.
 
@@ -132,7 +132,7 @@ Notes on what's built:
 - Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
   column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
   a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead:
-  torque specs and Odometer offset (`vehicles.odometerOffset` exists but
+  Odometer offset (`vehicles.odometerOffset` exists but
   nothing applies it). Maintenance schedule only links to setup when the vehicle has no items.
 - Archiving is only `vehicles.archivedOn` (the sold date), set through `VehicleArchiver` (app); nothing is
   deleted. Screens that list the garage read `observeActive`, so archived vehicles get no reminders, and
@@ -145,6 +145,12 @@ Notes on what's built:
   calls `DataWipe.deleteVehicle` and has no Undo. `RecordActions.undo` checks the vehicle still exists, so
   an Undo snackbar left over from before the delete does nothing instead of failing. `Export first` and the
   note about saved backup files wait on export and backup.
+- Torque specs (`TorqueSpecsScreen`) start empty. "Start with common fasteners" adds named rows from
+  `TorqueSpecs.common` with no size, value or note: there is no source for factory torque values and none
+  may be invented. `torque_specs.category` and `.source` hold `TorqueCategory` and `TorqueSource` names.
+  `FACTORY` means the user says they copied the value from the factory service manual, and is only kept
+  while the row has a value. Torque is typed in any unit (`TorqueSpecs.parse`, capped at 1,000 N·m) and
+  stored in N·m. The unit switch starts at the Settings unit and doesn't change it.
 - The vehicle photo is picked with the system photo picker (no permission), redrawn as a JPEG of at most
   1600 px, which drops its metadata, and encrypted by `VehiclePhotoStore` into `PhotoCrypto.photoDir`
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
