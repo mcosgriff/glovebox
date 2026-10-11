@@ -160,6 +160,7 @@ interface TorqueDao {
     fun observe(vehicleId: Long): Flow<List<TorqueSpecEntity>>
 
     @Insert suspend fun insert(spec: TorqueSpecEntity): Long
+    @Insert suspend fun insertAll(specs: List<TorqueSpecEntity>)
     @Update suspend fun update(spec: TorqueSpecEntity)
     @Delete suspend fun delete(spec: TorqueSpecEntity)
 }

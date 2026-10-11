@@ -45,6 +45,7 @@ import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsScreen
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeScreen
 import io.cosgriff.glovebox.ui.settings.SettingsScreen
+import io.cosgriff.glovebox.ui.torque.TorqueSpecsScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -68,6 +69,7 @@ import kotlin.reflect.KClass
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long)
 @Serializable object ArchivedVehiclesRoute
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long)
+@Serializable data class TorqueSpecsRoute(val vehicleId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
 
@@ -194,8 +196,10 @@ fun GloveboxNavHost() {
                     onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
                     onArchived = onArchived,
                     onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
+                    onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
                 )
             }
+            composable<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }
             composable<DeleteVehicleRoute> {
                 DeleteVehicleScreen(
                     onCancel = { nav.popBackStack() },
