@@ -9,6 +9,7 @@ import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withTranslation
 import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportVehicle
@@ -127,10 +128,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
             room(h)
             var x = LEFT
             layouts.forEachIndexed { i, l ->
-                canvas.save()
-                canvas.translate(x, y + 3f)
-                l.draw(canvas)
-                canvas.restore()
+                canvas.withTranslation(x, y + 3f) { l.draw(this) }
                 x += widths[i]
             }
             y += h
@@ -166,10 +164,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
     }
 
     private fun draw(l: StaticLayout, x: Float) {
-        canvas.save()
-        canvas.translate(x, y)
-        l.draw(canvas)
-        canvas.restore()
+        canvas.withTranslation(x, y) { l.draw(this) }
     }
 
     private fun layout(text: String, paint: TextPaint, width: Float = WIDTH): StaticLayout =

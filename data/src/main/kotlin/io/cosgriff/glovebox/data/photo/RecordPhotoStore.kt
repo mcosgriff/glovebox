@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
+import androidx.core.graphics.scale
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -69,7 +70,7 @@ class RecordPhotoStore(
     suspend fun loadWithin(fileName: String, edge: Int): Bitmap? = withContext(Dispatchers.IO) {
         val bitmap = load(fileName, edge) ?: return@withContext null
         val (w, h) = PhotoSizing.fit(bitmap.width, bitmap.height, edge)
-        if (w == bitmap.width) bitmap else Bitmap.createScaledBitmap(bitmap, w, h, true).also { bitmap.recycle() }
+        if (w == bitmap.width) bitmap else bitmap.scale(w, h).also { bitmap.recycle() }
     }
 
     suspend fun delete(fileNames: Collection<String>) = withContext(Dispatchers.IO) {
