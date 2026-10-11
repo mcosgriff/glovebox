@@ -110,6 +110,7 @@ class AddVehicleViewModel @Inject constructor(
                 model = d.model ?: "Unknown",
                 trim = d.trim,
                 engine = listOfNotNull(d.displacementL?.let { "${it}L" }, d.cylinders?.let { "$it-cyl" }).joinToString(" ").ifEmpty { null },
+                fuel = d.fuel,
                 drivetrain = d.driveType,
                 bodyClass = d.bodyClass,
                 createdOn = today,

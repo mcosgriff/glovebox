@@ -70,4 +70,22 @@ class HistoryTest {
         assertNull(ServiceCatalog.categoryOf(null))
         assertNull(ServiceCatalog.categoryOf("nope"))
     }
+
+    @Test
+    fun `last entry is the visit last done comes from`() {
+        val entries = listOf(
+            ServiceEntry(1, LocalDate.of(2026, 1, 5), 60_000, setOf(7L)),
+            ServiceEntry(2, LocalDate.of(2026, 8, 1), 66_000, setOf(7L, 8L)),
+            ServiceEntry(3, LocalDate.of(2026, 9, 1), 67_000, setOf(8L)),
+        )
+        assertEquals(2L, ServiceLog.lastEntry(7, entries)?.id)
+        assertEquals(null, ServiceLog.lastEntry(9, entries))
+    }
+
+    @Test
+    fun `resetters name the log lines that reset a reminder`() {
+        assertEquals(listOf("Oil & filter change"), ServiceCatalog.resetters("oil"))
+        assertEquals(emptyList<String>(), ServiceCatalog.resetters(null))
+        assertEquals(emptyList<String>(), ServiceCatalog.resetters("not-a-key"))
+    }
 }

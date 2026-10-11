@@ -114,7 +114,7 @@ class ScheduleSetupViewModel @Inject constructor(
         viewModelScope.launch {
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
-            items = ScheduleTemplates.generic(v?.drivetrain).map {
+            items = ScheduleTemplates.generic(v?.drivetrain, v?.fuel).map {
                 DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
             }
         }

@@ -23,12 +23,14 @@ object ScheduleTemplates {
      * say so and point the user at their owner's manual. Every value is editable.
      *
      * [drivetrain] is the vPIC drive type (e.g. "4WD/4-Wheel Drive/4x4"); it only decides whether
-     * differential / transfer case fluid is suggested.
+     * differential / transfer case fluid is suggested. [fuel] is vPIC's primary fuel type; a
+     * battery-electric vehicle has no engine oil, engine air filter or spark plugs to suggest.
      */
-    fun generic(drivetrain: String?): List<ScheduleTemplateItem> = buildList {
-        add(ScheduleTemplateItem("oil", "Engine oil & filter", Interval(7_500, 12), Interval(5_000, 6)))
+    fun generic(drivetrain: String?, fuel: String? = null): List<ScheduleTemplateItem> = buildList {
+        val engine = !isElectric(fuel)
+        if (engine) add(ScheduleTemplateItem("oil", "Engine oil & filter", Interval(7_500, 12), Interval(5_000, 6)))
         add(ScheduleTemplateItem("rotation", "Tire rotation", Interval(5_000, 6)))
-        add(ScheduleTemplateItem("engine-air", "Engine air filter", Interval(30_000, null), Interval(15_000, null)))
+        if (engine) add(ScheduleTemplateItem("engine-air", "Engine air filter", Interval(30_000, null), Interval(15_000, null)))
         add(ScheduleTemplateItem("cabin-air", "Cabin air filter", Interval(15_000, 12)))
         add(ScheduleTemplateItem("brake-inspect", "Brake inspection", Interval(15_000, 12)))
         add(ScheduleTemplateItem("brake-fluid", "Brake fluid", Interval(null, 36)))
@@ -42,9 +44,12 @@ object ScheduleTemplates {
             )
             DriveKind.OTHER -> Unit
         }
-        add(ScheduleTemplateItem("coolant", "Engine coolant", Interval(100_000, 120)))
-        add(ScheduleTemplateItem("spark-plugs", "Spark plugs", Interval(100_000, null)))
+        add(ScheduleTemplateItem("coolant", if (engine) "Engine coolant" else "Coolant", Interval(100_000, 120)))
+        if (engine) add(ScheduleTemplateItem("spark-plugs", "Spark plugs", Interval(100_000, null)))
     }
+
+    /** vPIC says "Electric" for battery-electric cars; hybrids report their combustion fuel as primary. */
+    fun isElectric(fuel: String?): Boolean = fuel?.trim().equals("Electric", ignoreCase = true)
 
     private enum class DriveKind { FOUR_OR_ALL_WHEEL, REAR, OTHER }
 
