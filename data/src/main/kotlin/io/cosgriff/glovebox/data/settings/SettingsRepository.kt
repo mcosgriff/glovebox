@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.TorqueUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,6 +21,8 @@ data class Settings(
     val lockAfterSeconds: Int = 0,
     val hideInRecents: Boolean = true,
     val defaultRule: DueRule = DueRule.WHICHEVER_FIRST,
+    /** How early a reminder starts counting as due soon. */
+    val lead: LeadTime = LeadTime(),
     val torqueUnit: TorqueUnit = TorqueUnit.FOOT_POUND,
 )
 
@@ -33,6 +36,8 @@ class SettingsRepository(private val context: Context) {
         val lockAfter = intPreferencesKey("lock_after_seconds")
         val hideRecents = booleanPreferencesKey("hide_in_recents")
         val rule = stringPreferencesKey("default_rule")
+        val leadMiles = intPreferencesKey("lead_miles")
+        val leadDays = intPreferencesKey("lead_days")
         val torque = stringPreferencesKey("torque_unit")
     }
 
@@ -44,6 +49,7 @@ class SettingsRepository(private val context: Context) {
             lockAfterSeconds = p[Keys.lockAfter] ?: d.lockAfterSeconds,
             hideInRecents = p[Keys.hideRecents] ?: d.hideInRecents,
             defaultRule = p[Keys.rule]?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: d.defaultRule,
+            lead = LeadTime(p[Keys.leadMiles] ?: d.lead.miles, p[Keys.leadDays] ?: d.lead.days),
             torqueUnit = p[Keys.torque]?.let { runCatching { TorqueUnit.valueOf(it) }.getOrNull() } ?: d.torqueUnit,
         )
     }
@@ -53,5 +59,9 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLockAfterSeconds(s: Int) = context.dataStore.edit { it[Keys.lockAfter] = s }
     suspend fun setHideInRecents(on: Boolean) = context.dataStore.edit { it[Keys.hideRecents] = on }
     suspend fun setDefaultRule(rule: DueRule) = context.dataStore.edit { it[Keys.rule] = rule.name }
+    suspend fun setLeadTime(lead: LeadTime) = context.dataStore.edit {
+        it[Keys.leadMiles] = lead.miles
+        it[Keys.leadDays] = lead.days
+    }
     suspend fun setTorqueUnit(unit: TorqueUnit) = context.dataStore.edit { it[Keys.torque] = unit.name }
 }

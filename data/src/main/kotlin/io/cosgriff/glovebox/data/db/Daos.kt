@@ -85,6 +85,10 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
     suspend fun allFor(vehicleId: Long): List<ScheduleItemEntity>
 
+    /** [rule] is a DueRule name; null goes back to the default rule. */
+    @Query("UPDATE schedule_items SET ruleOverride = :rule WHERE id = :id")
+    suspend fun setRuleOverride(id: Long, rule: String?)
+
     /** Both null clears the snooze. */
     @Query("UPDATE schedule_items SET snoozedUntilOdometer = :odometer, snoozedUntilDate = :date WHERE id = :id")
     suspend fun setSnooze(id: Long, odometer: Int?, date: LocalDate?)

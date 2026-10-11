@@ -177,7 +177,8 @@ class LogServiceViewModel @Inject constructor(
         viewModelScope.launch {
             val vehicle = vehicles.observe(vehicleId).first()
             val items = schedule.allFor(vehicleId)
-            val defaultRule = settings.settings.first().defaultRule
+            val prefs = settings.settings.first()
+            val defaultRule = prefs.defaultRule
             val records = service.recordsFor(vehicleId)
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
             val entries = records.map { it.toEntry() }
@@ -191,7 +192,7 @@ class LogServiceViewModel @Inject constructor(
             val due = if (editing) {
                 emptyList()
             } else {
-                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now())
+                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), prefs.lead)
                     // Never-logged items count as due, but offering all of them would bury the form on a
                     // new vehicle; they can still be ticked in the categories below.
                     .filter { it.lastDone != null && it.status.state != DueState.OK }
