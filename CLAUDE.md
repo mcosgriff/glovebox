@@ -101,7 +101,10 @@ Notes on what's built:
   schedule screen, so Back from there keeps it.
 - VIN scanning (`ScanVinScreen`): CameraX's `LifecycleCameraController` feeds frames at about 1080p to
   `VinBarcodeReader`, which takes the luminance plane, turns it upright (a 1D reader only scans along
-  rows) and asks ZXing for a Code 39 or QR code. `VinScan.vin` accepts only a 17-character run that passes
+  rows), cuts out a band across the middle where the guide is, and asks ZXing for a Code 39 or QR code.
+  The camera starts at 2x zoom so the phone can sit back far enough to focus. If a frame can't be read it
+  is tried again after `evenOut`: for 1D barcodes ZXing uses one black/white threshold per row whichever
+  binarizer is chosen, so a barcode half in shadow fails without it (a test pins this). `VinScan.vin` accepts only a 17-character run that passes
   the check digit; it deliberately doesn't slide a window along longer text, which would match by chance
   about one time in eleven. Frames are never stored. The VIN goes back to the add screen through the nav
   entry's saved state and is decoded at once. The scanner keeps the canvas's dark colours in both themes.

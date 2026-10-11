@@ -70,4 +70,59 @@ class VinBarcodeReaderTest {
         val (pixels, w, h) = frame(vin, BarcodeFormat.CODE_39, 900, 160)
         assertEquals(vin, reader.read(pixels, w, h))
     }
+
+    @Test
+    fun `the middle of a frame is cut out`() {
+        // 4 wide, 4 high, numbered row by row.
+        val pixels = ByteArray(16) { it.toByte() }
+        val (out, w, h) = VinBarcodeReader.centre(pixels, 4, 4, 0.5, 0.5)
+        assertEquals(2 to 2, w to h)
+        assertEquals(listOf<Byte>(5, 6, 9, 10), out.toList())
+        val (all, aw, ah) = VinBarcodeReader.centre(pixels, 4, 4, 1.0, 1.0)
+        assertEquals(4 to 4, aw to ah)
+        assertEquals(pixels.toList(), all.toList())
+    }
+
+    @Test
+    fun `a barcode inside the guide band is read from the band alone`() {
+        // The barcode in the middle of a tall frame, as when it is lined up with the guide.
+        val (barcode, bw, bh) = frame(vin, BarcodeFormat.CODE_39, 800, 160, margin = 20)
+        val w = 1080
+        val h = 1920
+        val pixels = ByteArray(w * h) { 0xFF.toByte() }
+        val left = (w - bw) / 2
+        val top = (h - bh) / 2
+        for (y in 0 until bh) System.arraycopy(barcode, y * bw, pixels, (top + y) * w + left, bw)
+        // Clutter outside the band that would otherwise be in the reader's way.
+        for (y in 0 until 300) for (x in 0 until w) pixels[y * w + x] = if ((x / 7 + y / 5) % 2 == 0) 0 else 0xFF.toByte()
+        val (band, gw, gh) = VinBarcodeReader.centre(pixels, w, h, 0.8, 0.3)
+        assertEquals(vin, VinBarcodeReader().read(band, gw, gh))
+    }
+
+    @Test
+    fun `a barcode half in shadow is still read`() {
+        val (pixels, w, h) = frame(vin, BarcodeFormat.CODE_39, 900, 160)
+        // Darken the right-hand side the way a door frame's shadow would: white drops to mid grey, black stays black.
+        val shaded = ByteArray(pixels.size) { i ->
+            val x = i % w
+            val v = pixels[i].toInt() and 0xFF
+            (if (x > w / 2) v * 110 / 255 else v).toByte()
+        }
+        assertEquals(vin, VinBarcodeReader().read(shaded, w, h))
+    }
+
+    @Test
+    fun `evening out makes bars black on white whatever the light`() {
+        // One row: bright background with a dark bar, then the same in shadow at under half the brightness.
+        val row = intArrayOf(250, 250, 20, 20, 250, 250, 250, 250, 100, 100, 8, 8, 100, 100, 100, 100)
+        val out = VinBarcodeReader.evenOut(ByteArray(row.size) { row[it].toByte() }, row.size, 1, radius = 3).map { it.toInt() and 0xFF }
+        assertEquals(listOf(255, 255, 0, 0, 255, 255), out.subList(0, 6))
+        assertEquals(listOf(255, 255, 0, 0, 255, 255), out.subList(8, 14))
+    }
+
+    @Test
+    fun `an empty area stays white when evened out`() {
+        val flat = ByteArray(64) { 120 }
+        assertEquals(List(64) { 255 }, VinBarcodeReader.evenOut(flat, 64, 1).map { it.toInt() and 0xFF })
+    }
 }

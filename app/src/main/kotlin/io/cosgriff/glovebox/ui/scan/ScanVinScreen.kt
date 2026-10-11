@@ -78,6 +78,14 @@ private val OnScrimMuted = Color(0xFFB9B6AE)
 private val Guide = Color(0xFFFDBA74)
 private val Ink = Color(0xFF17191C)
 
+// The part of the frame that is read: a band across the middle, comfortably larger than the guide
+// box drawn over it, since the preview is cropped to fill the screen and the two don't line up exactly.
+private const val GUIDE_WIDTH = 0.8
+private const val GUIDE_HEIGHT = 0.3
+
+/** Door-jamb barcodes are small; zoomed in, the phone can sit far enough back to focus on one. */
+private const val START_ZOOM = 2f
+
 /** Design: 2 · Scan VIN. Frames are read on the phone; nothing is saved or sent. */
 @Composable
 fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
@@ -149,6 +157,18 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
         }
     }
     LaunchedEffect(torch) { controller.enableTorch(torch) }
+    // Zoom in once the camera is up and says how far it can go. Pinch still changes it afterwards.
+    DisposableEffect(controller, lifecycleOwner) {
+        var zoomed = false
+        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> { state ->
+            if (!zoomed && state != null) {
+                zoomed = true
+                controller.setZoomRatio(START_ZOOM.coerceIn(state.minZoomRatio, state.maxZoomRatio))
+            }
+        }
+        controller.zoomState.observe(lifecycleOwner, observer)
+        onDispose { controller.zoomState.removeObserver(observer) }
+    }
 
     AndroidView(
         factory = { ctx ->
@@ -196,7 +216,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Scrim.copy(alpha = 0.55f), RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp),
             )
-            // A guide for the eye only: the whole frame is searched.
+            // Only a band across the middle of the frame is read; this box sits inside it.
             Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
             Text(
                 if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR",
@@ -308,7 +328,8 @@ private fun VinBarcodeReader.read(image: ImageProxy): String? {
         buffer.get(pixels, row * width, width)
     }
     val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, image.imageInfo.rotationDegrees)
-    return read(upright, w, h)
+    val (guide, gw, gh) = VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
+    return read(guide, gw, gh)
 }
 
 private fun Context.hasCamera(): Boolean =
