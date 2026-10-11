@@ -84,13 +84,13 @@ update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
 make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
 (attach, grid, viewer, share), export as PDF or Markdown, notifications (service due, overdue, new
-recalls, mileage check-in) with their settings screen, recommended schedule after decode (+ edit item, add own), maintenance schedule after
+recalls, mileage check-in) with their settings screen, encrypted backup (create and monthly reminder), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), encrypted backup/restore,
+To build, roughly in order: odometer offset (#73), restore from a backup,
 welcome/first run, about.
 
 Notes on what's built:
@@ -191,6 +191,15 @@ Notes on what's built:
   before unlock. Collect that flow; don't key an effect on it (taking it clears it, and a keyed effect
   cancels its own vehicle lookup on a cold start). Each kind has its own channel, and the lock-screen
   version of a notification says only what kind it is.
+- Backup: the file format is specified in `docs/backup-format.md` and implemented in
+  `data/.../backup/BackupFormat.kt`, plain JVM code with its tests in `BackupFormatTest`. Change the two
+  together, and never change how a version-1 file is read. Argon2id (BouncyCastle's lightweight API,
+  64 MiB, 3 passes) turns the password into a key; the contents are AES-256-GCM in 64 KiB blocks bound to
+  the header, their position and whether they are the last. `BackupWriter` reads every table generically
+  from SQLite, so new columns are backed up without touching it, and re-encrypts photos out from under
+  this phone's key. The password is never stored. The last-backup date is recorded only after Android's
+  "save as" has really written the file (`ExportSaver.save` with `onSaved`). The reminder is part of
+  `DailyCheckWorker` (`BackupRules.shouldRemind`). Restore is not built; the reader half of the format is.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
@@ -220,8 +229,7 @@ Notes on what's built:
 - Delete vehicle (`DeleteVehicleScreen`) opens from Vehicle details and the archive card, lists what goes
   with counts, and enables the red button once the nickname or model is typed (`TypedConfirmation`). It
   calls `DataWipe.deleteVehicle` and has no Undo. `RecordActions.undo` checks the vehicle still exists, so
-  an Undo snackbar left over from before the delete does nothing instead of failing. The note about saved
-  backup files waits on backup.
+  an Undo snackbar left over from before the delete does nothing instead of failing.
 - Torque specs (`TorqueSpecsScreen`) start empty. "Start with common fasteners" adds named rows from
   `TorqueSpecs.common` with no size, value or note: there is no source for factory torque values and none
   may be invented. `torque_specs.category` and `.source` hold `TorqueCategory` and `TorqueSource` names.
