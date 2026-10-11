@@ -7,8 +7,10 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
+import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderPresentation
+import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.service.toEntry
@@ -18,7 +20,13 @@ import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 import javax.inject.Inject
 
-data class GarageVehicle(val vehicle: VehicleEntity, val odometer: Int?, val comingUp: ComingUp)
+data class GarageVehicle(
+    val vehicle: VehicleEntity,
+    val odometer: Int?,
+    val comingUp: ComingUp,
+    /** The oil change reminder, which others can be snoozed to; null if it isn't tracked. */
+    val oil: ItemStatus?,
+)
 
 data class Garage(val vehicles: List<GarageVehicle>) {
     val overdue: Int get() = vehicles.sumOf { it.comingUp.overdue }
@@ -53,10 +61,13 @@ class GarageOverview @Inject constructor(
                 val entries = recordsBy[v.id].orEmpty().map { it.toEntry() }
                 val updates = readingsBy[v.id].orEmpty().map { OdometerReading(it.date, it.odometer) }
                 val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule) }
+                val statuses = VehicleReminders.statuses(tracked, entries, updates, today)
+                val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
                 GarageVehicle(
                     vehicle = v,
                     odometer = VehicleReminders.currentOdometer(entries, updates),
-                    comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, today)),
+                    comingUp = ReminderPresentation.comingUp(statuses),
+                    oil = statuses.firstOrNull { it.item.id == oilId },
                 )
             },
         )

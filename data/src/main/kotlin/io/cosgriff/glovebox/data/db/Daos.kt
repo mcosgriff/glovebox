@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface VehicleDao {
@@ -83,6 +84,10 @@ interface ScheduleDao {
     /** Tracked and untracked. */
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
     suspend fun allFor(vehicleId: Long): List<ScheduleItemEntity>
+
+    /** Both null clears the snooze. */
+    @Query("UPDATE schedule_items SET snoozedUntilOdometer = :odometer, snoozedUntilDate = :date WHERE id = :id")
+    suspend fun setSnooze(id: Long, odometer: Int?, date: LocalDate?)
 
     @Insert suspend fun insertAll(items: List<ScheduleItemEntity>)
     @Update suspend fun update(item: ScheduleItemEntity)

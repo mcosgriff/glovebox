@@ -13,6 +13,9 @@ sealed interface DueHeadline {
 
     /** Positive = days left, zero or negative = due / overdue. */
     data class Days(val remaining: Long) : DueHeadline
+
+    /** Held back by the user; shown in place of how overdue it is. */
+    data class Snoozed(val snooze: Snooze) : DueHeadline
 }
 
 /** [fraction] is how much of the interval has been used, 0..1; null when never logged. */
@@ -29,7 +32,8 @@ data class ComingUp(
     val dueSoon: Int get() = counting.count { it.first.status.state == DueState.DUE_SOON }
 
     /** The soonest reminder that isn't overdue yet — the "Next:" line on a garage card. */
-    val next: Pair<ItemStatus, ReminderProgress>? get() = counting.firstOrNull { it.first.status.state != DueState.OVERDUE }
+    val next: Pair<ItemStatus, ReminderProgress>?
+        get() = counting.firstOrNull { it.first.status.state != DueState.OVERDUE && it.first.snooze == null }
 
     /** The one status worth a chip on a garage card; null when nothing has been logged yet. */
     val attention: Attention?
@@ -63,6 +67,7 @@ object ReminderPresentation {
     fun progress(s: ItemStatus): ReminderProgress {
         val last = s.lastDone ?: return ReminderProgress(DueHeadline.NotLogged, null)
         val status = s.status
+        s.snooze?.let { return ReminderProgress(DueHeadline.Snoozed(it), null) }
 
         val miles = status.milesRemaining?.let { left ->
             val total = s.item.interval.miles!!
@@ -93,10 +98,10 @@ object ReminderPresentation {
 
     /**
      * The reminders closest to due across several vehicles, most urgent first. Never-logged
-     * reminders are left out, as they are from every other count.
+     * and snoozed reminders are left out.
      */
     fun <V> mostUrgent(vehicles: List<Pair<V, ComingUp>>, limit: Int = 3): List<UrgentItem<V>> =
-        vehicles.flatMap { (vehicle, up) -> up.counting.map { vehicle to it } }
+        vehicles.flatMap { (vehicle, up) -> up.counting.filter { it.first.snooze == null }.map { vehicle to it } }
             .sortedWith(compareBy(urgency) { it.second })
             .take(limit)
             .map { (vehicle, item) -> UrgentItem(vehicle, item.first, item.second) }
@@ -107,6 +112,7 @@ object ReminderPresentation {
      */
     fun group(s: ItemStatus, today: LocalDate): ReminderGroup = when {
         s.lastDone == null -> ReminderGroup.NOT_LOGGED
+        s.snooze != null -> ReminderGroup.LATER
         s.status.state == DueState.OVERDUE -> ReminderGroup.OVERDUE
         s.status.state == DueState.DUE_SOON -> ReminderGroup.NEXT_30_DAYS
         s.status.estimatedDueDate?.let { !it.isAfter(today.plusDays(30)) } == true -> ReminderGroup.NEXT_30_DAYS
@@ -130,7 +136,10 @@ object ReminderPresentation {
             g to when (g) {
                 // Stable sorts: ties keep the urgency order from above.
                 ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER ->
-                    items.sortedWith(compareBy(nullsLast()) { it.status.status.estimatedDueDate })
+                    items.sortedWith(
+                        compareBy<UrgentItem<V>> { it.status.snooze != null }
+                            .thenBy(nullsLast()) { it.status.status.estimatedDueDate },
+                    )
                 else -> items
             }
         }.toMap()
@@ -139,6 +148,7 @@ object ReminderPresentation {
     /** Overdue, then due soon, then whatever has used the most of its interval. */
     private val urgency: Comparator<Pair<ItemStatus, ReminderProgress>> =
         compareByDescending<Pair<ItemStatus, ReminderProgress>> { it.first.status.state.ordinal }
+            .thenBy { it.first.snooze != null } // snoozed goes after everything still counting down
             .thenByDescending { it.second.fraction ?: 0.0 }
             .thenBy { it.first.item.name }
 }

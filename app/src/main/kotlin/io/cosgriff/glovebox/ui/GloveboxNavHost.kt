@@ -98,6 +98,14 @@ fun GloveboxNavHost() {
         }
     }
 
+    // For one-off confirmations with a single action, usually Undo.
+    val showMessage: (String, String, () -> Unit) -> Unit = { message, actionLabel, onAction ->
+        scope.launch {
+            val result = snackbar.showSnackbar(message, actionLabel = actionLabel, duration = SnackbarDuration.Long)
+            if (result == SnackbarResult.ActionPerformed) onAction()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
@@ -145,12 +153,7 @@ fun GloveboxNavHost() {
                 VehicleHomeScreen(
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
-                    onMessage = { message, actionLabel, onAction ->
-                        scope.launch {
-                            val result = snackbar.showSnackbar(message, actionLabel = actionLabel, duration = SnackbarDuration.Long)
-                            if (result == SnackbarResult.ActionPerformed) onAction()
-                        }
-                    },
+                    onMessage = showMessage,
                 )
             }
             composable<AddVehicleRoute> {
@@ -179,6 +182,7 @@ fun GloveboxNavHost() {
                         nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
                     },
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
+                    onMessage = showMessage,
                 )
             }
             composable<SettingsRoute> { SettingsScreen() }
