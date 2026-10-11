@@ -90,8 +90,11 @@ setup (track / untrack, edit, add, last done and next due), Log service, History
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-First-run welcome (lock and notification choices, add a vehicle or restore).
-To build, roughly in order: odometer offset (#73), about.
+First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
+DELETE, then the phone's screen lock).
+To build: finish Settings (#25), about (#26), unlock screen (#27), fonts and dark pass (#28), History
+and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
+(#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
@@ -213,6 +216,14 @@ Notes on what's built:
   `DataWipe` removes it with the rest of the settings. Its buttons save the two choices, then hand over through
   `Destination.AddVehicle` or `RestorePicker.pick()`. Notifications off there turns every kind off in
   Settings; the lock switch is disabled, and says why, on a phone with no screen lock (`canLockApp`).
+- Delete all data (`DeleteAllScreen`, from the bottom of Settings): typing DELETE enables the button,
+  which then asks for the fingerprint or screen lock (`confirmWithScreenLock`); a phone with no screen
+  lock has only the typed word, and the screen says so (`DeleteAll` in `:domain`). `DataWipe.deleteEverything`
+  writes a marker file first, destroys both Keystore keys, then deletes the database, photos, settings and
+  cache; the app then restarts its process and lands on the welcome. `DataWipe.finishInterrupted` runs
+  in `GloveboxApp.onCreate` before Hilt builds anything and completes a wipe the process didn't survive:
+  without it a database whose key is gone could never be opened. Anything new the app stores on disk has
+  to be added to `DataWipe.erase`.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a

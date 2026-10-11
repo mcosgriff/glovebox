@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.settings.DeleteAllScreen
 import io.cosgriff.glovebox.ui.settings.RestoreViewModel
 import io.cosgriff.glovebox.ui.settings.RestoreSheet
 import io.cosgriff.glovebox.domain.BackupRules
@@ -74,6 +75,7 @@ import kotlin.reflect.KClass
 @Serializable object ReminderRulesRoute
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
+@Serializable object DeleteAllRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
 @Serializable data class ScheduleRoute(val vehicleId: Long)
@@ -362,7 +364,11 @@ fun GloveboxNavHost() {
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onOpenBackup = { nav.navigate(BackupRoute) },
+                    onDeleteAll = { nav.navigate(DeleteAllRoute) },
                 )
+            }
+            composable<DeleteAllRoute> {
+                DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
             }
             composable<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
             composable<NotificationsRoute> {

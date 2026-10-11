@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import androidx.compose.ui.text.font.FontWeight
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.domain.RecallCadence
 import androidx.compose.foundation.selection.selectable
@@ -67,6 +68,7 @@ fun SettingsScreen(
     onOpenRules: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenBackup: () -> Unit,
+    onDeleteAll: () -> Unit,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
     val s by vm.settings.collectAsStateWithLifecycle()
@@ -160,6 +162,17 @@ fun SettingsScreen(
         }
         Section("Units") {
             Segmented(TorqueUnit.entries, s.torqueUnit, { it.symbol }, vm::setTorque)
+        }
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDeleteAll),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Delete all data",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.error,
+            )
         }
     }
 }

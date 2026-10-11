@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.lock
 
+import io.cosgriff.glovebox.domain.ScreenLock
 import android.content.Context
 import android.os.Build
 import androidx.activity.compose.LocalActivity
@@ -35,6 +36,28 @@ private val authenticators: Int
 
 /** False on a phone with no screen lock and no biometrics enrolled: there is nothing to lock the app with. */
 fun Context.canLockApp(): Boolean = BiometricManager.from(this).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+
+fun Context.screenLock(): ScreenLock = when {
+    !canLockApp() -> ScreenLock.NONE
+    BiometricManager.from(this).canAuthenticate(BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS -> ScreenLock.BIOMETRIC
+    else -> ScreenLock.CREDENTIAL
+}
+
+/** Asks for the fingerprint, face or screen lock before something drastic. Cancelling does nothing. */
+fun FragmentActivity.confirmWithScreenLock(title: String, subtitle: String, onConfirmed: () -> Unit) {
+    val info = BiometricPrompt.PromptInfo.Builder()
+        .setTitle(title)
+        .setSubtitle(subtitle)
+        .setAllowedAuthenticators(authenticators)
+        .build()
+    BiometricPrompt(
+        this,
+        ContextCompat.getMainExecutor(this),
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onConfirmed()
+        },
+    ).authenticate(info)
+}
 
 @Composable
 fun LockScreen(onUnlocked: () -> Unit) {
