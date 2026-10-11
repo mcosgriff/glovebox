@@ -21,7 +21,9 @@ Keep them green; lint errors fail the build.
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
 - `./gradlew build` — everything.
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
-- Release: push a tag `vX.Y.Z`; `.github/workflows/release.yml` builds a signed APK. See README.
+- Release: merge the release PR that `release-please` keeps open (version and changelog come from the
+  Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
+  APK after approval. See README.
 
 ## Modules
 

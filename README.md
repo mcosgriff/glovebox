@@ -39,8 +39,12 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
    Environment secrets), not as repository secrets:
    - `KEYSTORE_B64` — `base64 -i glovebox-release.jks | pbcopy`
    - `KEYSTORE_PASSWORD`, `KEY_ALIAS` (`glovebox`), `KEY_PASSWORD`
-3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`, then approve the waiting `release` run in
-   the Actions tab. Release tags can't be moved or deleted afterwards.
+3. Release: merge the open **release PR** (title `chore(main): release X.Y.Z`). The
+   `release-please` workflow keeps it up to date from the Conventional Commits on `main` — `fix:` bumps
+   the patch version, `feat:` the minor, a breaking change (`feat!:` / `BREAKING CHANGE:`) the major —
+   and it updates `CHANGELOG.md` and `version.txt`. Merging tags `vX.Y.Z`, creates the GitHub Release
+   and starts the signed build; approve the waiting `release` run in the Actions tab. Release tags
+   can't be moved or deleted afterwards. (Pushing a `v*` tag by hand still works.)
 4. In Obtainium, add the GitHub repo URL. (Private repo: add a GitHub token in Obtainium's settings.)
 
 `applicationId` (`io.cosgriff.glovebox`) must never change after the first release.
