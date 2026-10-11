@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.data.settings.ThemeMode
 private val Light = lightColorScheme(
     primary = Color(0xFFC2410C),
     onPrimary = Color(0xFFFFFFFF),
+    inversePrimary = Color(0xFFF08A4B), // snackbar actions sit on a dark bar
     primaryContainer = Color(0xFFFBE9DF),
     onPrimaryContainer = Color(0xFF9A3412),
     secondary = Color(0xFF17191C),
@@ -41,6 +42,7 @@ private val Light = lightColorScheme(
 private val Dark = darkColorScheme(
     primary = Color(0xFFF08A4B),
     onPrimary = Color(0xFF17191C),
+    inversePrimary = Color(0xFFC2410C),
     primaryContainer = Color(0xFF3A2418),
     onPrimaryContainer = Color(0xFFFDBA74),
     secondary = Color(0xFFEDEBE6),

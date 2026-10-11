@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -42,10 +43,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.DueHeadline
+import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.ReminderGroup
 import io.cosgriff.glovebox.domain.ReminderPresentation
+import io.cosgriff.glovebox.domain.Snooze
+import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.garage.Garage
@@ -56,6 +61,7 @@ import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -63,9 +69,14 @@ import javax.inject.Inject
 import kotlin.math.abs
 
 @HiltViewModel
-class RemindersViewModel @Inject constructor(overview: GarageOverview) : ViewModel() {
+class RemindersViewModel @Inject constructor(overview: GarageOverview, private val schedule: ScheduleDao) : ViewModel() {
     /** Null while loading. */
     val garage: StateFlow<Garage?> = overview.garage.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Null ends the snooze. */
+    fun setSnooze(scheduleItemId: Long, snooze: Snooze?) {
+        viewModelScope.launch { schedule.setSnooze(scheduleItemId, snooze?.untilOdometer, snooze?.untilDate) }
+    }
 }
 
 private val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.US)
@@ -75,6 +86,8 @@ private val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy
 fun RemindersScreen(
     onLogIt: (vehicleId: Long, scheduleItemId: Long) -> Unit,
     onAddVehicle: () -> Unit,
+    /** Shows a message with one action on the app's snackbar. */
+    onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: RemindersViewModel = hiltViewModel(),
 ) {
     val garage = vm.garage.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -82,6 +95,33 @@ fun RemindersScreen(
     var filterId by rememberSaveable { mutableLongStateOf(0L) }
     val shown = garage.vehicles.filter { it.vehicle.id == filterId }.ifEmpty { garage.vehicles }
     val groups = ReminderPresentation.grouped(shown.map { it.vehicle to it.comingUp }, LocalDate.now())
+
+    // The reminder whose snooze sheet is open; 0 = none. Looked up again each time so it stays current.
+    var snoozingId by rememberSaveable { mutableLongStateOf(0L) }
+    val snoozing = groups.values.flatten().firstOrNull { it.status.item.id == snoozingId && it.status.lastDone != null }
+    if (snoozing != null) {
+        val item = snoozing.status.item
+        val owner = garage.vehicles.first { it.vehicle.id == snoozing.vehicle.id }
+        val apply = { snooze: Snooze, verb: String ->
+            val before = item.snooze
+            snoozingId = 0
+            vm.setSnooze(item.id, snooze)
+            onMessage("${item.name} $verb until ${snooze.until()}", "Undo") { vm.setSnooze(item.id, before) }
+        }
+        SnoozeSheet(
+            reminder = snoozing,
+            subtitle = listOfNotNull("${snoozing.vehicle.year} ${snoozing.vehicle.shortName()}", snoozing.due()).joinToString(" · "),
+            options = Snoozing.options(snoozing.status, owner.odometer, LocalDate.now(), owner.oil),
+            skip = Snoozing.skip(snoozing.status, owner.odometer, LocalDate.now()),
+            onSnooze = { apply(it, "snoozed") },
+            onSkip = { apply(it, "skipped") },
+            onAlreadyDone = {
+                snoozingId = 0
+                onLogIt(snoozing.vehicle.id, item.id)
+            },
+            onDismiss = { snoozingId = 0 },
+        )
+    }
 
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
@@ -120,14 +160,25 @@ fun RemindersScreen(
                 }
             }
             items(reminders, key = { "${group.name}-${it.status.item.id}" }) { r ->
-                ReminderCard(group, r, onLogIt = { onLogIt(r.vehicle.id, r.status.item.id) })
+                ReminderCard(
+                    group = group,
+                    r = r,
+                    onLogIt = { onLogIt(r.vehicle.id, r.status.item.id) },
+                    onSnooze = { snoozingId = r.status.item.id },
+                    onEndSnooze = {
+                        val item = r.status.item
+                        val before = item.snooze
+                        vm.setSnooze(item.id, null)
+                        onMessage("${item.name} is no longer snoozed", "Undo") { vm.setSnooze(item.id, before) }
+                    },
+                )
             }
         }
         item { Spacer(Modifier.height(8.dp)) }
     }
 }
 
-private fun VehicleEntity.shortName(): String = nickname ?: model
+internal fun VehicleEntity.shortName(): String = nickname ?: model
 
 @Composable
 private fun groupColor(group: ReminderGroup): Color = when (group) {
@@ -154,7 +205,13 @@ private fun GroupHeader(group: ReminderGroup) {
 }
 
 @Composable
-private fun ReminderCard(group: ReminderGroup, r: UrgentItem<VehicleEntity>, onLogIt: () -> Unit) {
+private fun ReminderCard(
+    group: ReminderGroup,
+    r: UrgentItem<VehicleEntity>,
+    onLogIt: () -> Unit,
+    onSnooze: () -> Unit,
+    onEndSnooze: () -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
     Card(
         Modifier.fillMaxWidth(),
@@ -191,8 +248,26 @@ private fun ReminderCard(group: ReminderGroup, r: UrgentItem<VehicleEntity>, onL
                         Text(it, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = groupColor(group))
                     }
                 }
-                Button(onClick = onLogIt, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), shape = buttonShape) {
-                    Text("Log it")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = onLogIt, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = buttonShape) {
+                        Text("Log it")
+                    }
+                    // Snoozing only does something to a reminder that is due; one that is snoozed can be woken.
+                    val second = when {
+                        r.status.snooze != null -> "End snooze" to onEndSnooze
+                        r.status.status.state != DueState.OK -> "Snooze…" to onSnooze
+                        else -> null
+                    }
+                    second?.let { (label, action) ->
+                        Button(
+                            onClick = action,
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                            shape = buttonShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
+                        ) {
+                            Text(label)
+                        }
+                    }
                 }
             }
         }
@@ -203,7 +278,7 @@ private fun ReminderCard(group: ReminderGroup, r: UrgentItem<VehicleEntity>, onL
 private fun String.every(): String = if (" / " in this) this else "every $this"
 
 /** "3,312 mi over", "in 640 mi", "in 12 days", "Mar 2027" */
-private fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.headline) {
+internal fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.headline) {
     DueHeadline.NotLogged -> null
     is DueHeadline.Miles -> when {
         h.remaining < 0 -> "${abs(h.remaining).asMiles()} over"
