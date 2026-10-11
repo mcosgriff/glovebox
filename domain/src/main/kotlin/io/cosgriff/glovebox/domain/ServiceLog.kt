@@ -18,10 +18,13 @@ object ServiceLog {
      * record automatically rolls reminders back — there is no stored value to fix up.
      */
     fun lastDone(itemId: Long, entries: List<ServiceEntry>): LastDone? =
+        lastEntry(itemId, entries)?.let { LastDone(it.date, it.odometer) }
+
+    /** The visit [lastDone] comes from, for linking back to its record. */
+    fun lastEntry(itemId: Long, entries: List<ServiceEntry>): ServiceEntry? =
         entries
             .filter { itemId in it.itemIds }
             .maxWithOrNull(compareBy<ServiceEntry> { it.date }.thenBy { it.odometer })
-            ?.let { LastDone(it.date, it.odometer) }
 
     /** Readings usable for pace estimation, from records plus standalone mileage updates. */
     fun readings(entries: List<ServiceEntry>, updates: List<OdometerReading>): List<OdometerReading> =

@@ -36,6 +36,7 @@ import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
+import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
 import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
@@ -58,6 +59,8 @@ import kotlin.reflect.KClass
 @Serializable object AddVehicleRoute
 @Serializable object ReminderRulesRoute
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
+/** A vehicle's schedule once it has been set up. */
+@Serializable data class ScheduleRoute(val vehicleId: Long)
 @Serializable data class VehicleHomeRoute(val vehicleId: Long)
 /**
  * [recordId] 0 logs a new record; otherwise that record is edited. [scheduleItemId] ticks that
@@ -193,7 +196,7 @@ fun GloveboxNavHost() {
                 VehicleDetailsScreen(
                     onBack = { nav.popBackStack() },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
-                    onSetUpSchedule = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
+                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                     onArchived = onArchived,
                     onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
@@ -236,6 +239,13 @@ fun GloveboxNavHost() {
             }
             composable<LogServiceRoute> { LogServiceScreen(onDone = { nav.popBackStack() }) }
             composable<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
+            composable<ScheduleRoute> {
+                ScheduleScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
+                    onSetUp = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
+                )
+            }
             composable<HistoryRoute> {
                 HistoryScreen(onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
             }

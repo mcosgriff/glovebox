@@ -60,4 +60,30 @@ class ScheduleTest {
         assertNull(IntervalInput.parse("7.5", ""))
         assertNull(IntervalInput.parse("99999999999", ""))
     }
+
+    @Test
+    fun `an electric vehicle is not offered engine items`() {
+        val keys = ScheduleTemplates.generic("AWD/All-Wheel Drive", fuel = "Electric").map { it.key }
+        assertFalse("oil" in keys)
+        assertFalse("engine-air" in keys)
+        assertFalse("spark-plugs" in keys)
+        assertTrue(keys.containsAll(listOf("rotation", "cabin-air", "brake-fluid", "coolant")))
+    }
+
+    @Test
+    fun `hybrids and unknown fuel keep the full list`() {
+        val full = ScheduleTemplates.generic(null).map { it.key }
+        assertEquals(full, ScheduleTemplates.generic(null, fuel = "Gasoline").map { it.key })
+        assertEquals(full, ScheduleTemplates.generic(null, fuel = null).map { it.key })
+        assertTrue("oil" in full)
+    }
+
+    @Test
+    fun `missing lists the typical items a schedule doesn't have`() {
+        val all = ScheduleTemplates.generic(null).map { it.key }
+        // Only the user's own item so far: everything typical is still on offer.
+        assertEquals(all, ScheduleTemplates.missing(null, null, listOf(null)).map { it.key })
+        assertEquals(all - "oil", ScheduleTemplates.missing(null, null, listOf("oil", null)).map { it.key })
+        assertTrue(ScheduleTemplates.missing(null, null, all).isEmpty())
+    }
 }

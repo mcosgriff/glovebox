@@ -37,3 +37,7 @@ fun Money.format(cents: Long): String =
 
 fun ServiceCatalog.categoryOf(catalogId: String?): CatalogCategory? =
     catalogId?.let { id -> categories.firstOrNull { c -> c.items.any { it.id == id } } }
+
+/** The Log service lines that reset the reminder made from [templateKey], as the user sees them there. */
+fun ServiceCatalog.resetters(templateKey: String?): List<String> =
+    if (templateKey == null) emptyList() else categories.flatMap { it.items }.filter { it.resets == templateKey }.map { it.label }

@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -114,7 +116,7 @@ class ScheduleSetupViewModel @Inject constructor(
         viewModelScope.launch {
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
-            items = ScheduleTemplates.generic(v?.drivetrain).map {
+            items = ScheduleTemplates.generic(v?.drivetrain, v?.fuel).map {
                 DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
             }
         }
@@ -230,30 +232,7 @@ fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltVie
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("HOW DO YOU DRIVE IT?")
-                // Canvas: the chosen side is solid ink.
-                val colors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = MaterialTheme.colorScheme.secondary,
-                    activeContentColor = MaterialTheme.colorScheme.onSecondary,
-                )
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    SegmentedButton(
-                        selected = !vm.severeUse,
-                        onClick = { vm.chooseSevereUse(false) },
-                        shape = SegmentedButtonDefaults.itemShape(0, 2),
-                        colors = colors,
-                    ) { Text("Normal") }
-                    SegmentedButton(
-                        selected = vm.severeUse,
-                        onClick = { vm.chooseSevereUse(true) },
-                        shape = SegmentedButtonDefaults.itemShape(1, 2),
-                        colors = colors,
-                    ) { Text("Severe") }
-                }
-                Text(
-                    "Normal: commuting, highway. Severe: towing, off-road, dusty roads, mostly short trips.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                DrivingUseSwitch(severe = vm.severeUse, onPick = vm::chooseSevereUse)
             }
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -293,7 +272,7 @@ fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltVie
 }
 
 @Composable
-private fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) {
+internal fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
             Modifier.weight(1f)
@@ -326,6 +305,35 @@ private fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) {
         }
         IconButton(onClick = onEdit) {
             Icon(Icons.Outlined.Edit, contentDescription = "Edit ${item.name}")
+        }
+    }
+}
+
+/**
+ * Canvas: Normal / Severe with what each means inside the button, the chosen side solid ink.
+ * [severe] null selects neither, for a schedule whose items differ.
+ */
+@Composable
+internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Unit) {
+    val colors = SegmentedButtonDefaults.colors(
+        activeContainerColor = MaterialTheme.colorScheme.secondary,
+        activeContentColor = MaterialTheme.colorScheme.onSecondary,
+    )
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().height(64.dp)) {
+        listOf(false to ("Normal" to "Commuting, highway"), true to ("Severe" to "Towing, off-road, dusty")).forEachIndexed { i, (value, text) ->
+            SegmentedButton(
+                selected = severe == value,
+                onClick = { onPick(value) },
+                shape = SegmentedButtonDefaults.itemShape(i, 2, baseShape = RoundedCornerShape(14.dp)),
+                colors = colors,
+                icon = {},
+                modifier = Modifier.fillMaxHeight(),
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text.first, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(text.second, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                }
+            }
         }
     }
 }

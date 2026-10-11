@@ -77,7 +77,8 @@ service), vehicle details (photo, nickname, from the VIN, what it takes, schedul
 Mark as sold), archived vehicles (read-only history, move back to garage), delete vehicle (counts, type the
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo), add vehicle via
-VIN (decode + save), recommended schedule after decode (+ edit item, add own), Log service, History
+VIN (decode + save), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
@@ -89,6 +90,15 @@ PDF + Markdown export, welcome/first run, manual add (no VIN), about.
 Notes on what's built:
 - The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
   not manufacturer data — there is no source for factory schedules.
+- After setup the schedule lives on `ScheduleScreen` (from Vehicle details). It writes straight to
+  `schedule_items`: a tick is `tracked`, and an edit keeps whatever the editor doesn't show, such as a
+  snooze. `ScheduleItemEditor` is shared with setup; `ItemHistory` adds LAST DONE (derived from the log,
+  linking to the record) and NEXT DUE, which follows the interval as it is typed. The pace estimate is
+  shown only for the saved interval and rule. An empty schedule offers setup or adding an item; one that
+  lacks typical items (`ScheduleTemplates.missing`) offers to add them unticked. Never send a vehicle that
+  already has items back through setup: it inserts every item again.
+- `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
+  `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
   (`ServiceCatalog`); the user's own schedule items appear under "Your items".
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
@@ -133,7 +143,7 @@ Notes on what's built:
   column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
   a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead:
   Odometer offset (`vehicles.odometerOffset` exists but
-  nothing applies it). Maintenance schedule only links to setup when the vehicle has no items.
+  nothing applies it). Maintenance schedule always opens `ScheduleScreen`.
 - Archiving is only `vehicles.archivedOn` (the sold date), set through `VehicleArchiver` (app); nothing is
   deleted. Screens that list the garage read `observeActive`, so archived vehicles get no reminders, and
   `RecallRepository` refuses to check them. A final odometer higher than the last reading is logged as an
@@ -156,7 +166,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v5); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v6); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

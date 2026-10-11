@@ -21,6 +21,8 @@ data class VehicleEntity(
     val model: String,
     val trim: String? = null,
     val engine: String? = null,
+    /** vPIC's primary fuel type, e.g. "Gasoline" or "Electric". Null for vehicles added before it was kept. */
+    val fuel: String? = null,
     val drivetrain: String? = null,
     val bodyClass: String? = null,
     val nickname: String? = null,
