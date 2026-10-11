@@ -51,7 +51,6 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 
 ## Next up
 
-- CameraX + ML Kit VIN barcode scanning (`AddVehicleScreen` TODO)
 - Recommended schedule seeding after decode, Log service, History, Reminders tab
 - WorkManager: daily reminder check, weekly recall check, mileage check-in notifications
 - Encrypted backup / restore, PDF and Markdown export
