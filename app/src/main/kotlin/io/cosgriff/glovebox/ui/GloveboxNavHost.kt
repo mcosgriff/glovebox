@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
+import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
@@ -60,6 +61,7 @@ import kotlin.reflect.KClass
  */
 @Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0)
 @Serializable data class RecordDetailRoute(val recordId: Long)
+@Serializable data class RecallsRoute(val vehicleId: Long)
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -89,13 +91,19 @@ fun GloveboxNavHost() {
                 is RecordEvent.Saved -> "Service saved · reminders updated" to "View"
                 is RecordEvent.Edited -> "Changes saved · reminders updated" to "Undo"
                 is RecordEvent.Deleted -> "Record deleted · reminders updated" to "Undo"
+                is RecordEvent.RecallDone ->
+                    if (event.recordId != null) "Recall marked done · added to Service history" to "View" else "Recall marked done" to "Undo"
+                is RecordEvent.RecallReopened ->
+                    if (event.record != null) "Recall marked open · service record removed" to "Undo" else "Recall marked open" to "Undo"
             }
             val result = snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) {
-                when (event) {
-                    is RecordEvent.Saved -> nav.navigate(RecordDetailRoute(event.recordId))
-                    else -> recordEvents.undo(event)
+                val recordId = when (event) {
+                    is RecordEvent.Saved -> event.recordId
+                    is RecordEvent.RecallDone -> event.recordId
+                    else -> null
                 }
+                if (recordId != null) nav.navigate(RecordDetailRoute(recordId)) else recordEvents.undo(event)
             }
         }
     }
@@ -156,9 +164,11 @@ fun GloveboxNavHost() {
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
+                    onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
                     onMessage = showMessage,
                 )
             }
+            composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
             composable<AddVehicleRoute> {
                 AddVehicleScreen(
                     onSaved = { vehicleId ->

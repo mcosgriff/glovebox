@@ -52,10 +52,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.Attention
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueState
+import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.text
@@ -63,10 +65,16 @@ import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GarageViewModel @Inject constructor(overview: GarageOverview) : ViewModel() {
+class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: RecallRepository) : ViewModel() {
+    init {
+        // Once per launch: re-check any vehicle whose recall list is a week old or was never fetched.
+        viewModelScope.launch { recalls.refreshStale() }
+    }
+
     /** Null while loading. Recomputed whenever a log, schedule or mileage changes. */
     val garage: StateFlow<Garage?> = overview.garage.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }
@@ -136,13 +144,18 @@ private fun Header(garage: Garage, onAddVehicle: () -> Unit) {
     }
 }
 
-/** "2 vehicles · 1 overdue" — never-logged reminders aren't counted. */
+/** "2 vehicles · 1 overdue · 1 open recall" — never-logged reminders aren't counted. */
 private fun Garage.subtitle(): String = listOfNotNull(
     if (vehicles.size == 1) "1 vehicle" else "${vehicles.size} vehicles",
     when {
         overdue > 0 -> "$overdue overdue"
         dueSoon > 0 -> "$dueSoon due soon"
         else -> null
+    },
+    when (openRecalls) {
+        0 -> null
+        1 -> "1 open recall"
+        else -> "$openRecalls open recalls"
     },
 ).joinToString(" · ")
 
@@ -178,7 +191,12 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
                     color = if (g.odometer == null) scheme.onSurfaceVariant else scheme.onSurface,
                 )
             }
-            g.comingUp.attention?.let { FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AttentionChip(it) } }
+            if (g.comingUp.attention != null || g.recalls != null) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    g.comingUp.attention?.let { AttentionChip(it) }
+                    g.recalls?.let { RecallChip(it) }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(g.comingUp.nextLine(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 Icon(
@@ -206,6 +224,25 @@ private fun AttentionChip(a: Attention) {
             Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = if (a.state == DueState.OVERDUE) FontWeight.Bold else FontWeight.SemiBold,
+            color = content,
+        )
+    }
+}
+
+@Composable
+private fun RecallChip(open: OpenRecalls) {
+    val scheme = MaterialTheme.colorScheme
+    val (text, container, content) = when (open.count) {
+        0 -> Triple("No open recalls", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        1 -> Triple("1 open recall", scheme.primaryContainer, scheme.onPrimaryContainer)
+        else -> Triple("${open.count} open recalls", scheme.primaryContainer, scheme.onPrimaryContainer)
+    }
+    Surface(color = container, shape = CircleShape) {
+        Text(
+            text,
+            Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
             color = content,
         )
     }
