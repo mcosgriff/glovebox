@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.data.DataWipe
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import io.cosgriff.glovebox.data.settings.SettingsRepository
@@ -22,6 +23,8 @@ class GloveboxApp : Application() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
+        // Before Hilt builds anything: a "Delete all data" that was cut short must finish before the database is opened.
+        DataWipe.finishInterrupted(this)
         super.onCreate()
         notifier.createChannels()
         // The background jobs follow the settings: scheduled on first launch, and again whenever one changes.

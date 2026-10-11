@@ -26,10 +26,34 @@ class DataWipe(
      * The caller must restart the app process afterwards (e.g. relaunch to the welcome screen).
      */
     fun deleteEverything() {
-        db.close()
-        keys.destroy()
-        photos.destroy()
-        context.deleteDatabase(GloveboxDatabase.FILE_NAME)
-        File(context.filesDir, "datastore").deleteRecursively()
+        // Written first, so a wipe cut short is finished on the next launch instead of leaving a
+        // database behind whose key is gone, which the app could never open again.
+        marker(context).createNewFile()
+        runCatching { db.close() }
+        erase(context, keys, photos)
+    }
+
+    companion object {
+        private fun marker(context: Context) = File(context.noBackupFilesDir, "wipe.pending")
+
+        /**
+         * Finishes a wipe that the process didn't survive. Call it first thing at process start,
+         * before anything opens the database or reads the settings.
+         */
+        fun finishInterrupted(context: Context) {
+            if (marker(context).exists()) erase(context, DatabaseKeyManager(context), PhotoCrypto(context))
+        }
+
+        private fun erase(context: Context, keys: DatabaseKeyManager, photos: PhotoCrypto) {
+            keys.destroy()
+            photos.destroy()
+            context.deleteDatabase(GloveboxDatabase.FILE_NAME)
+            photos.restoreDir.deleteRecursively()
+            // Settings and the notification log.
+            File(context.filesDir, "datastore").deleteRecursively()
+            // Exports, a picked backup file, and photos on their way in or out.
+            context.cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+            marker(context).delete()
+        }
     }
 }
