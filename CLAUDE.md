@@ -50,6 +50,10 @@ Keep them green; lint errors fail the build.
 - **Torque stored in N·m**, converted for display. Odometer stored in miles (km is a display setting later).
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
+- **Barcodes are read with ZXing, not ML Kit.** ML Kit's bundled barcode library depends on Google's
+  log-upload transport (`transport-backend-cct`, `transport-runtime`) plus Firebase and Play Services
+  pieces, which breaks the rule above. ZXing is pure Java with no network code. Check the dependency tree
+  the same way before adding any Google or Firebase library.
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
@@ -78,14 +82,13 @@ Mark as sold), archived vehicles (read-only history, move back to garage), delet
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
-make and model from NHTSA's lists or typed), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), VIN scanning (CameraX + ML Kit bundled barcode,
-Code 39), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
+To build, roughly in order: odometer offset (#73), receipt photos on service records, notifications (WorkManager), encrypted backup/restore,
 PDF + Markdown export, welcome/first run, about.
 
 Notes on what's built:
@@ -95,7 +98,16 @@ Notes on what's built:
   a vehicle is never saved without a real year, make and model, so an unidentified VIN has to be fixed or
   filled in by hand. vPIC trims that list several ("SR5/SR5 Premium") are offered as choices, and
   `vehicles.trimConfirmed` records that the user picked or typed one. The vehicle is saved before the
-  schedule screen, so Back from there keeps it. The Scan button waits on that screen.
+  schedule screen, so Back from there keeps it.
+- VIN scanning (`ScanVinScreen`): CameraX's `LifecycleCameraController` feeds frames at about 1080p to
+  `VinBarcodeReader`, which takes the luminance plane, turns it upright (a 1D reader only scans along
+  rows), cuts out a band across the middle where the guide is, and asks ZXing for a Code 39 or QR code.
+  The camera starts at 2x zoom so the phone can sit back far enough to focus. If a frame can't be read it
+  is tried again after `evenOut`: for 1D barcodes ZXing uses one black/white threshold per row whichever
+  binarizer is chosen, so a barcode half in shadow fails without it (a test pins this). `VinScan.vin` accepts only a 17-character run that passes
+  the check digit; it deliberately doesn't slide a window along longer text, which would match by chance
+  about one time in eleven. Frames are never stored. The VIN goes back to the add screen through the nav
+  entry's saved state and is decoded at once. The scanner keeps the canvas's dark colours in both themes.
 - Add without a VIN (`ManualAddScreen`) picks year, make and model. Makes come from vPIC's car, truck and
   MPV lists and models from make + year; `NhtsaClient.makes` sends nothing about the vehicle and `.models`
   only the make and year. Every picker also takes typed text, which is the only way in when the lists
