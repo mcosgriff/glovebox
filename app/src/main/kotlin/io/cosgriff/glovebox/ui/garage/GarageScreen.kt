@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.garage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,7 +49,7 @@ class GarageViewModel @Inject constructor(vehicles: VehicleDao) : ViewModel() {
 @Composable
 fun GarageScreen(
     onAddVehicle: () -> Unit,
-    onLogService: (vehicleId: Long) -> Unit,
+    onOpenVehicle: (vehicleId: Long) -> Unit,
     vm: GarageViewModel = hiltViewModel(),
 ) {
     val vehicles by vm.active.collectAsStateWithLifecycle()
@@ -63,15 +62,15 @@ fun GarageScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item { Text("Garage", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(top = 16.dp)) }
-            items(vehicles!!, key = { it.id }) { v -> VehicleCard(v, odometers[v.id], onLogService = { onLogService(v.id) }) }
+            items(vehicles!!, key = { it.id }) { v -> VehicleCard(v, odometers[v.id], onClick = { onOpenVehicle(v.id) }) }
             item { Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth()) { Text("Add a vehicle") } }
         }
     }
 }
 
 @Composable
-private fun VehicleCard(v: VehicleEntity, odometer: Int?, onLogService: () -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
+private fun VehicleCard(v: VehicleEntity, odometer: Int?, onClick: () -> Unit) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("${v.year} ${v.nickname ?: v.model}", style = MaterialTheme.typography.titleLarge)
             Text(
@@ -90,7 +89,6 @@ private fun VehicleCard(v: VehicleEntity, odometer: Int?, onLogService: () -> Un
                         fontFamily = FontFamily.Monospace,
                     )
                 }
-                Button(onClick = onLogService, modifier = Modifier.heightIn(min = 48.dp)) { Text("Log service") }
             }
         }
     }

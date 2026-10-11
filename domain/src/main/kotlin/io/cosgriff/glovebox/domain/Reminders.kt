@@ -142,7 +142,8 @@ object ReminderEngine {
      */
     fun milesPerDay(readings: List<OdometerReading>): Double? {
         if (readings.size < 2) return null
-        val sorted = readings.sortedBy { it.date }
+        // Several readings can share a day (a mileage update and a service); the highest one counts.
+        val sorted = readings.sortedWith(compareBy<OdometerReading> { it.date }.thenBy { it.odometer })
         val first = sorted.first()
         val last = sorted.last()
         val days = ChronoUnit.DAYS.between(first.date, last.date)
