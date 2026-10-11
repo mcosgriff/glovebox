@@ -26,7 +26,28 @@ data class ComingUp(
 ) {
     val overdue: Int get() = counting.count { it.first.status.state == DueState.OVERDUE }
     val dueSoon: Int get() = counting.count { it.first.status.state == DueState.DUE_SOON }
+
+    /** The soonest reminder that isn't overdue yet — the "Next:" line on a garage card. */
+    val next: Pair<ItemStatus, ReminderProgress>? get() = counting.firstOrNull { it.first.status.state != DueState.OVERDUE }
+
+    /** The one status worth a chip on a garage card; null when nothing has been logged yet. */
+    val attention: Attention?
+        get() = when {
+            overdue > 0 -> attention(DueState.OVERDUE, overdue)
+            dueSoon > 0 -> attention(DueState.DUE_SOON, dueSoon)
+            counting.isNotEmpty() -> Attention(DueState.OK, 0, null)
+            else -> null
+        }
+
+    private fun attention(state: DueState, count: Int) =
+        Attention(state, count, counting.first { it.first.status.state == state }.first.item.name.takeIf { count == 1 })
 }
+
+/** [count] reminders in [state]; [only] names the reminder when there is exactly one. */
+data class Attention(val state: DueState, val count: Int, val only: String?)
+
+/** A reminder shown outside its vehicle's own screen, so it carries the vehicle along. */
+data class UrgentItem<V>(val vehicle: V, val status: ItemStatus, val progress: ReminderProgress)
 
 object ReminderPresentation {
 
@@ -61,13 +82,24 @@ object ReminderPresentation {
     fun comingUp(statuses: List<ItemStatus>): ComingUp {
         val (logged, never) = statuses.partition { it.lastDone != null }
         return ComingUp(
-            counting = logged.map { it to progress(it) }
-                .sortedWith(
-                    compareBy<Pair<ItemStatus, ReminderProgress>> { it.first.status.state != DueState.OVERDUE }
-                        .thenByDescending { it.second.fraction ?: 0.0 }
-                        .thenBy { it.first.item.name },
-                ),
+            counting = logged.map { it to progress(it) }.sortedWith(urgency),
             notLogged = never.sortedBy { it.item.name },
         )
     }
+
+    /**
+     * The reminders closest to due across several vehicles, most urgent first. Never-logged
+     * reminders are left out, as they are from every other count.
+     */
+    fun <V> mostUrgent(vehicles: List<Pair<V, ComingUp>>, limit: Int = 3): List<UrgentItem<V>> =
+        vehicles.flatMap { (vehicle, up) -> up.counting.map { vehicle to it } }
+            .sortedWith(compareBy(urgency) { it.second })
+            .take(limit)
+            .map { (vehicle, item) -> UrgentItem(vehicle, item.first, item.second) }
+
+    /** Overdue, then due soon, then whatever has used the most of its interval. */
+    private val urgency: Comparator<Pair<ItemStatus, ReminderProgress>> =
+        compareByDescending<Pair<ItemStatus, ReminderProgress>> { it.first.status.state.ordinal }
+            .thenByDescending { it.second.fraction ?: 0.0 }
+            .thenBy { it.first.item.name }
 }

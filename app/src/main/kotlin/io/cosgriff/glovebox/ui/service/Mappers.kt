@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
@@ -11,6 +12,7 @@ import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.nextDueAfter
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.abs
 
 val longDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US)
 
@@ -34,3 +36,25 @@ fun NextDue.text(): String = listOfNotNull(odometer?.asMiles(), date?.format(lon
 fun ReminderChange.text(): String =
     after?.let { "${item.name} — next due ${item.interval.nextDueAfter(it).text()}" }
         ?: "${item.name} — back to not logged yet"
+
+/** "In 1,688 mi", "Overdue 12 days" */
+fun DueHeadline.text(): String = when (this) {
+    DueHeadline.NotLogged -> "Not logged yet"
+    is DueHeadline.Miles -> when {
+        remaining < 0 -> "Overdue ${abs(remaining).asMiles()}"
+        remaining == 0 -> "Due now"
+        else -> "In ${remaining.asMiles()}"
+    }
+    is DueHeadline.Days -> when {
+        remaining < 0 -> "Overdue ${days(abs(remaining))}"
+        remaining == 0L -> "Due today"
+        else -> "In ${days(remaining)}"
+    }
+}
+
+/** Days up to two months, then whole months — "In 151 days" is harder to picture than "In 5 months". */
+private fun days(n: Long): String = when {
+    n == 1L -> "1 day"
+    n <= 60 -> "$n days"
+    else -> "${n / 30} months"
+}

@@ -125,6 +125,13 @@ fun GloveboxNavHost() {
                 GarageScreen(
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
                     onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
+                    onSeeReminders = {
+                        nav.navigate(RemindersRoute) {
+                            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable<VehicleHomeRoute> {

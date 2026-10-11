@@ -63,6 +63,7 @@ import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.VehicleHomeRoute
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.statusColors
@@ -72,7 +73,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlin.math.abs
 
 data class VehicleHome(
     val vehicle: VehicleEntity,
@@ -294,27 +294,6 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
     ) {
         Column(Modifier.padding(padding)) { content() }
     }
-}
-
-private fun DueHeadline.text(): String = when (this) {
-    DueHeadline.NotLogged -> "Not logged yet"
-    is DueHeadline.Miles -> when {
-        remaining < 0 -> "Overdue ${abs(remaining).asMiles()}"
-        remaining == 0 -> "Due now"
-        else -> "In ${remaining.asMiles()}"
-    }
-    is DueHeadline.Days -> when {
-        remaining < 0 -> "Overdue ${days(abs(remaining))}"
-        remaining == 0L -> "Due today"
-        else -> "In ${days(remaining)}"
-    }
-}
-
-/** Days up to two months, then whole months — "In 151 days" is harder to picture than "In 5 months". */
-private fun days(n: Long): String = when {
-    n == 1L -> "1 day"
-    n <= 60 -> "$n days"
-    else -> "${n / 30} months"
 }
 
 /** "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026" */
