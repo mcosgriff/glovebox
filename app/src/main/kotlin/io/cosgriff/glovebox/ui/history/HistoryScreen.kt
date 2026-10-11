@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +30,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -42,6 +47,7 @@ import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -69,22 +75,38 @@ data class HistoryState(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class HistoryViewModel @Inject constructor(vehicles: VehicleDao, service: ServiceDao) : ViewModel() {
+class HistoryViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    vehicles: VehicleDao,
+    service: ServiceDao,
+) : ViewModel() {
+    /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
+    private val archivedId: Long? = savedStateHandle.get<Long>("vehicleId")
+    val archived: Boolean get() = archivedId != null
+
     private val chosenVehicle = MutableStateFlow<Long?>(null)
 
     /** Category id to show, or null for all. */
     var filter by mutableStateOf<String?>(null)
 
-    val state: StateFlow<HistoryState?> =
-        combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
-            list to (list.firstOrNull { it.id == chosen } ?: list.firstOrNull())
-        }.flatMapLatest { (list, vehicle) ->
-            if (vehicle == null) {
-                flowOf(HistoryState(list, null, emptyList()))
-            } else {
-                service.observeRecords(vehicle.id).map { HistoryState(list, vehicle, it) }
+    private val source: Flow<HistoryState> =
+        if (archivedId != null) {
+            combine(vehicles.observe(archivedId), service.observeRecords(archivedId)) { vehicle, records ->
+                HistoryState(listOfNotNull(vehicle), vehicle, records)
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        } else {
+            combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
+                list to (list.firstOrNull { it.id == chosen } ?: list.firstOrNull())
+            }.flatMapLatest { (list, vehicle) ->
+                if (vehicle == null) {
+                    flowOf(HistoryState(list, null, emptyList()))
+                } else {
+                    service.observeRecords(vehicle.id).map { HistoryState(list, vehicle, it) }
+                }
+            }
+        }
+
+    val state: StateFlow<HistoryState?> = source.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun chooseVehicle(id: Long) {
         chosenVehicle.value = id
@@ -93,7 +115,12 @@ class HistoryViewModel @Inject constructor(vehicles: VehicleDao, service: Servic
 }
 
 @Composable
-fun HistoryScreen(onOpenRecord: (recordId: Long) -> Unit, vm: HistoryViewModel = hiltViewModel()) {
+fun HistoryScreen(
+    onOpenRecord: (recordId: Long) -> Unit,
+    /** Shown as a back arrow; the History tab itself has none. */
+    onBack: (() -> Unit)? = null,
+    vm: HistoryViewModel = hiltViewModel(),
+) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
@@ -103,11 +130,19 @@ fun HistoryScreen(onOpenRecord: (recordId: Long) -> Unit, vm: HistoryViewModel =
     }
 
     Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(start = 20.dp, top = 16.dp, end = 20.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (onBack != null) {
+            IconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+            }
+        }
+        Column(
+            Modifier.padding(start = 20.dp, top = if (onBack != null) 0.dp else 16.dp, end = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Text("History", style = MaterialTheme.typography.headlineMedium)
             state.vehicle?.let { v ->
                 Text(
-                    "${v.label()} · ${shown.size} ${if (shown.size == 1) "record" else "records"}",
+                    "${v.label()} · ${shown.size} ${if (shown.size == 1) "record" else "records"}" + if (vm.archived) " · archived, read-only" else "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -132,6 +167,7 @@ fun HistoryScreen(onOpenRecord: (recordId: Long) -> Unit, vm: HistoryViewModel =
 
         when {
             state.vehicle == null -> EmptyNote("Add a vehicle in the Garage to start its service history.")
+            state.records.isEmpty() && vm.archived -> EmptyNote("No service records were logged for this vehicle.")
             state.records.isEmpty() -> EmptyNote("No service records yet. Use Log service in the Garage to add the first one.")
             else -> LazyColumn(
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
