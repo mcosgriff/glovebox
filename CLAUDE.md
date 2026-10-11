@@ -109,6 +109,10 @@ Notes on what's built:
 - Reminder rules: the default rule and lead time (`Settings.lead`) live in DataStore; pass `lead` to
   every `VehicleReminders.statuses` call. Overrides are `schedule_items.ruleOverride`. The preview card
   only ever uses a real logged service (`RulePreviews`), never sample data, and names no manufacturer.
+- While locked, the app's screens are out of composition (`MainActivity`), so no screen, sheet or dialog
+  is drawn or readable behind the lock screen. Their saved state is held in a `SaveableStateHolder`, which
+  is what returns the user to the same screen after unlocking. Don't swap this for drawing the lock
+  screen over a live nav host: sheets and dialogs are separate windows and would sit on top of it.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
