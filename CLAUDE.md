@@ -84,13 +84,13 @@ update-mileage sheet (with Undo), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
 make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
 (attach, grid, viewer, share), export as PDF or Markdown, notifications (service due, overdue, new
-recalls, mileage check-in) with their settings screen, encrypted backup (create and monthly reminder), recommended schedule after decode (+ edit item, add own), maintenance schedule after
+recalls, mileage check-in) with their settings screen, encrypted backup (create, monthly reminder, restore), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (theme, biometrics, hide in recents, torque units), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
-To build, roughly in order: odometer offset (#73), restore from a backup,
+To build, roughly in order: odometer offset (#73),
 welcome/first run, about.
 
 Notes on what's built:
@@ -199,7 +199,14 @@ Notes on what's built:
   from SQLite, so new columns are backed up without touching it, and re-encrypts photos out from under
   this phone's key. The password is never stored. The last-backup date is recorded only after Android's
   "save as" has really written the file (`ExportSaver.save` with `onSaved`). The reminder is part of
-  `DailyCheckWorker` (`BackupRules.shouldRemind`). Restore is not built; the reader half of the format is.
+  `DailyCheckWorker` (`BackupRules.shouldRemind`).
+- Restore (`BackupRestorer`) is all or nothing: the whole file is read and authenticated first, with
+  photos staged under this phone's key in `PhotoCrypto.restoreDir`; then every table is replaced in one
+  Room transaction (foreign keys deferred, rows inserted by whatever columns the backup has); then the
+  staged photos are moved in. `finishInterrupted` completes that last step on launch if the app died in
+  between, and must run before the orphan sweep. App-lock settings are never restored. The sheet lives at
+  the nav host and shows whenever `RestorePicker` holds a picked file, so it survives the app locking
+  while the file picker is open. Replacing existing data is confirmed by typing REPLACE.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a

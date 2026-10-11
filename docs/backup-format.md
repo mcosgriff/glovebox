@@ -13,8 +13,10 @@ The code is `data/.../backup/BackupFormat.kt` (the file itself, plain JVM code w
 - Every photo the database points at: receipt and parts photos, and each vehicle's own photo.
   They are stored on the phone under a device-bound key, so each is decrypted and written into
   the backup under the backup's key.
-- The settings worth carrying to another phone (theme, reminder rule and lead time, units,
-  notification choices). Device security settings travel too and can be changed after a restore.
+- The settings (theme, reminder rule and lead time, units, notification choices). The app-lock
+  settings are in the file as well, but a restore leaves them as they are on the phone being
+  restored to: a backup made with the lock off must not switch it off somewhere else. When the
+  last backup was made, and when the reminder last went out, are not in the file at all.
 
 Nothing else: no keys, no cached exports, no logs.
 
@@ -111,6 +113,23 @@ text as strings, null as null. Dates are the same integers the database holds (d
 | A later block doesn't open, or blocks are out of order | Damaged |
 | Ends before the last block | Incomplete |
 | Entries end without the closing `0` | Damaged |
+
+## Restoring
+
+`BackupRestorer` reads the whole file before it changes anything, so a damaged or incomplete
+backup leaves the phone as it was. Then:
+
+1. Photos are encrypted under this phone's key into a staging folder as they are read.
+2. Every table is emptied and refilled in one database transaction.
+3. The old photos are removed and the staged ones moved into place.
+4. Settings are put back, apart from the app-lock ones.
+
+If the app dies between steps 2 and 3, the next launch finishes step 3: staged photos the
+database points at are moved in, and any others are removed.
+
+A backup whose `schemaVersion` is higher than the app's is refused as "made by a newer version".
+One from an older schema is accepted: its rows are inserted using the columns they have, and
+newer columns take their defaults.
 
 ## Limits and open points
 
