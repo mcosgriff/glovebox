@@ -131,9 +131,6 @@ data class TorqueSpecEntity(
     val note: String? = null,
 )
 
-/** Latest known odometer for a vehicle, from mileage updates and service records. */
-data class VehicleOdometer(val vehicleId: Long, val odometer: Int)
-
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
     @Relation(parentColumn = "id", entityColumn = "recordId") val items: List<ServiceRecordItemEntity>,
