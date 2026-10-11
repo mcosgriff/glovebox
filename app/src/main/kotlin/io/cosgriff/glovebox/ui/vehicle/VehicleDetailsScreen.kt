@@ -223,6 +223,7 @@ fun VehicleDetailsScreen(
     onBack: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
     onSetUpSchedule: (vehicleId: Long) -> Unit,
+    onOpenSchedule: (vehicleId: Long) -> Unit,
     /** The vehicle has gone to the archive; [undo] brings it back. */
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
     onDelete: (vehicleId: Long) -> Unit,
@@ -382,8 +383,8 @@ fun VehicleDetailsScreen(
                 LinkRow(
                     title = "Maintenance schedule",
                     detail = schedule?.text() ?: "Not set up yet",
-                    // Until a set-up schedule can be reopened, only a skipped setup leads anywhere.
-                    onClick = if (schedule == null) ({ onSetUpSchedule(v.id) }) else null,
+                    // A vehicle whose setup was skipped starts it here.
+                    onClick = { if (schedule == null) onSetUpSchedule(v.id) else onOpenSchedule(v.id) },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 val open = details.recalls
