@@ -1,16 +1,22 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
+import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.nextDueAfter
+import io.cosgriff.glovebox.domain.readings
+import io.cosgriff.glovebox.domain.toDash
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -30,8 +36,20 @@ fun ScheduleItemEntity.toTracked(defaultRule: DueRule): TrackedItem? {
     return TrackedItem(id, name, Interval(miles, months), rule, snooze)
 }
 
-fun ServiceRecordWithItems.toEntry(): ServiceEntry =
-    ServiceEntry(record.id, record.date, record.odometer, items.mapNotNull { it.scheduleItemId }.toSet())
+/** Null unless the vehicle has had its instrument cluster replaced. */
+fun VehicleEntity.clusterSwap(): ClusterSwap? {
+    val on = clusterSwappedOn ?: return null
+    val start = clusterStartReading ?: return null
+    return ClusterSwap(on, odometerOffset, start)
+}
+
+/** The odometer is in dash terms (see [ClusterSwap]); `record.odometer` stays as it was typed. */
+fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?): ServiceEntry =
+    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, items.mapNotNull { it.scheduleItemId }.toSet()))
+
+/** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
+fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =
+    swap.readings(map { OdometerReading(it.date, it.odometer) })
 
 /** "73,412 mi or Apr 10, 2027" */
 fun NextDue.text(): String = listOfNotNull(odometer?.asMiles(), date?.format(longDate)).joinToString(" or ")

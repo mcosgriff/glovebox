@@ -68,7 +68,7 @@ import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.LeadTimeInput
-import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.ReminderEngine
 import io.cosgriff.glovebox.domain.RulePreview
 import io.cosgriff.glovebox.domain.RulePreviews
@@ -77,7 +77,9 @@ import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -93,6 +95,8 @@ data class PreviewSource(
     val title: String,
     val interval: Interval,
     val last: LastDone,
+    /** [last] as the odometer read that day; differs only for a service before a cluster replacement. */
+    val lastRead: LastDone,
     val odometer: Int,
     val milesPerDay: Double?,
 )
@@ -131,16 +135,18 @@ class ReminderRulesViewModel @Inject constructor(
         val preview = mine.sortedBy { it.templateKey != Snoozing.OIL_TEMPLATE_KEY }.firstNotNullOfOrNull { item ->
             val miles = (if (item.useSevere) item.severeMiles ?: item.intervalMiles else item.intervalMiles) ?: return@firstNotNullOfOrNull null
             val months = (if (item.useSevere) item.severeMonths ?: item.intervalMonths else item.intervalMonths) ?: return@firstNotNullOfOrNull null
-            val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry() }
+            val swap = active.firstOrNull { it.id == item.vehicleId }?.clusterSwap()
+            val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry(swap) }
             val last = ServiceLog.lastDone(item.id, entries) ?: return@firstNotNullOfOrNull null
             val all = ServiceLog.readings(
                 entries,
-                readings.filter { it.vehicleId == item.vehicleId }.map { OdometerReading(it.date, it.odometer) },
+                readings.filter { it.vehicleId == item.vehicleId }.toReadings(swap),
             )
             PreviewSource(
                 title = if (several) "${item.name} · ${names[item.vehicleId]}" else item.name,
                 interval = Interval(miles, months),
                 last = last,
+                lastRead = swap.asReadOn(last),
                 odometer = all.maxOf { it.odometer },
                 milesPerDay = ReminderEngine.milesPerDay(all),
             )
@@ -331,7 +337,7 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
             )
             Text(
                 "Every ${source.interval.miles!!.asMiles()} or ${source.interval.months} months · " +
-                    "last done ${source.last.date.format(longDate)} at ${source.last.odometer.asMiles()}",
+                    "last done ${source.last.date.format(longDate)} at ${source.lastRead.odometer.asMiles()}",
                 style = MaterialTheme.typography.bodySmall,
             )
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

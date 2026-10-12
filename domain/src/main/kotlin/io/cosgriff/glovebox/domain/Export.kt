@@ -51,9 +51,11 @@ data class ExportVehicle(
     val title: String,
     val nickname: String?,
     val vin: String?,
-    /** The highest reading on record. */
+    /** The highest reading on record, as the dash shows it. */
     val odometer: Int?,
     val soldOn: LocalDate?,
+    /** Set when the instrument cluster was replaced; record readings are as they were read at the time. */
+    val clusterSwap: ClusterSwap? = null,
     /** Every record; [Exports.document] narrows them to the chosen dates. */
     val records: List<ExportRecord>,
     val schedule: List<ExportScheduleLine>,
@@ -121,6 +123,16 @@ object Exports {
 
     fun date(date: LocalDate): String = date.format(longDate)
 
+    /** The vehicle's real mileage, where a replaced cluster makes it differ from the dash. */
+    fun actualMileage(vehicle: ExportVehicle): Int? = vehicle.clusterSwap?.let { swap -> vehicle.odometer?.let { swap.actual(it) } }
+
+    /** Said wherever readings from two clusters appear together, so the jump isn't taken for tampering. */
+    fun clusterNote(swap: ClusterSwap): String {
+        val by = miles(kotlin.math.abs(swap.offset))
+        return "Replaced ${date(swap.on)}. Readings from that date are the replacement's, which shows $by " +
+            "${if (swap.offset < 0) "more" else "less"} than the vehicle has covered; earlier readings are the original's."
+    }
+
     /** "4 records · $1,234.56 total" */
     fun summary(vehicle: ExportVehicle): String = listOfNotNull(
         if (vehicle.records.size == 1) "1 record" else "${vehicle.records.size} records",
@@ -146,6 +158,8 @@ object Exports {
             v.nickname?.let { append("- Nickname: ${text(it)}\n") }
             v.vin?.let { append("- VIN: `$it`\n") }
             v.odometer?.let { append("- Odometer: ${miles(it)} (highest reading on record)\n") }
+            actualMileage(v)?.let { append("- Actual mileage: ${miles(it)}\n") }
+            v.clusterSwap?.let { append("- Instrument cluster: ${clusterNote(it)}\n") }
             v.soldOn?.let { append("- Sold: ${date(it)}\n") }
             append("- Period: ${datesLabel(doc.options.dates, today)}\n")
             append("- ${summary(v)}\n")

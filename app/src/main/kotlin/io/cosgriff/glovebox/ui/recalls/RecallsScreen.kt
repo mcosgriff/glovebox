@@ -74,13 +74,14 @@ import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.nhtsa.toStored
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.RecallsRoute
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -130,7 +131,7 @@ class RecallsViewModel @Inject constructor(
         RecallsState(
             vehicle = vehicle,
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
-            odometer = VehicleReminders.currentOdometer(records.map { it.toEntry() }, readings.map { OdometerReading(it.date, it.odometer) }),
+            odometer = vehicle.clusterSwap().let { swap -> VehicleReminders.currentOdometer(records.map { it.toEntry(swap) }, readings.toReadings(swap)) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 

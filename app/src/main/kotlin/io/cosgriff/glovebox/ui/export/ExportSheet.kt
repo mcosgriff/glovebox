@@ -72,7 +72,7 @@ import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
 import io.cosgriff.glovebox.domain.Exports
-import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
@@ -81,7 +81,9 @@ import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -137,8 +139,9 @@ class ExportViewModel @Inject constructor(
 
     private suspend fun exportVehicle(v: VehicleEntity, rule: io.cosgriff.glovebox.domain.DueRule): ExportVehicle {
         val records = service.recordsFor(v.id)
-        val entries = records.map { it.toEntry() }
-        val readings = odometer.readingsFor(v.id).map { OdometerReading(it.date, it.odometer) }
+        val swap = v.clusterSwap()
+        val entries = records.map { it.toEntry(swap) }
+        val readings = odometer.readingsFor(v.id).toReadings(swap)
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         return ExportVehicle(
             title = VehicleText.title(v.year, v.make, v.model, v.trim),
@@ -146,6 +149,7 @@ class ExportViewModel @Inject constructor(
             vin = v.vin,
             odometer = VehicleReminders.currentOdometer(entries, readings),
             soldOn = v.archivedOn,
+            clusterSwap = swap,
             records = records.map { r ->
                 ExportRecord(
                     date = r.record.date,
@@ -159,7 +163,8 @@ class ExportViewModel @Inject constructor(
             },
             schedule = schedule.allFor(v.id).filter { it.tracked }.mapNotNull { item ->
                 val tracked = item.toTracked(rule) ?: return@mapNotNull null
-                ExportScheduleLine(item.name, tracked.interval.label(), ServiceLog.lastDone(item.id, entries))
+                // As the odometer read that day, to match the record it comes from.
+                ExportScheduleLine(item.name, tracked.interval.label(), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
                 ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), stored.getValue(r.id).completedOn)

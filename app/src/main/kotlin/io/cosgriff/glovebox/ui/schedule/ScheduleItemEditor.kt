@@ -235,8 +235,10 @@ private fun NumberField(label: String, value: String, onChange: (String) -> Unit
 
 /** What the service log says about an item that is already being tracked. */
 data class ItemHistory(
-    /** Null when the item has never been logged. */
+    /** Null when the item has never been logged. In dash terms, which is what the next due point is counted from. */
     val lastDone: LastDone?,
+    /** [lastDone] as the odometer read that day; differs only for a service before a cluster replacement. */
+    val lastRead: LastDone? = lastDone,
     /** Opens the record [lastDone] comes from. */
     val onOpenRecord: (() -> Unit)?,
     /** The Log service lines that reset this reminder. */
@@ -285,7 +287,7 @@ private fun LastDoneCard(history: ItemHistory) {
             border = BorderStroke(1.dp, scheme.outlineVariant),
         ) {
             Column(Modifier.padding(horizontal = 16.dp)) {
-                val last = history.lastDone
+                val last = history.lastRead
                 Row(
                     Modifier.fillMaxWidth()
                         .heightIn(min = 52.dp)

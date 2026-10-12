@@ -75,7 +75,9 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.MileageUpdate
-import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.actual
+import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderInputs
@@ -88,7 +90,9 @@ import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
@@ -144,8 +148,9 @@ class VehicleHomeViewModel @Inject constructor(
         settings.settings,
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
-        val entries = records.map { it.toEntry() }
-        val updates = readings.map { OdometerReading(it.date, it.odometer) }
+        val swap = vehicle.clusterSwap()
+        val entries = records.map { it.toEntry(swap) }
+        val updates = readings.toReadings(swap)
         val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }
         VehicleHome(
             vehicle = vehicle,
@@ -238,7 +243,7 @@ fun VehicleHomeScreen(
                     WhiteCard {
                         up.counting.forEachIndexed { i, (status, progress) ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            ReminderRow(status, progress)
+                            ReminderRow(status, progress, v.clusterSwap())
                         }
                     }
                 }
@@ -314,6 +319,15 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                         style = MaterialTheme.typography.headlineSmall,
                         fontFamily = PlexMono,
                     )
+                    // The dash figure is the one to compare with; the vehicle's real mileage goes under it.
+                    val swap = v.clusterSwap()
+                    if (swap != null && odometer != null) {
+                        Text(
+                            "${swap.actual(odometer).asMiles()} actual · cluster replaced",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 OutlinedButton(
                     onClick = onUpdateMileage,
@@ -384,7 +398,7 @@ private fun StatusPill(up: ComingUp) {
 }
 
 @Composable
-private fun ReminderRow(status: ItemStatus, progress: ReminderProgress) {
+private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: ClusterSwap?) {
     val colors = statusColors()
     val color = when (status.status.state) {
         DueState.OVERDUE -> colors.overdue
@@ -397,7 +411,7 @@ private fun ReminderRow(status: ItemStatus, progress: ReminderProgress) {
             Text(progress.headline.text(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
         }
         ProgressBar(progress.fraction ?: 0.0, color)
-        Text(status.detail(progress), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(status.detail(progress, swap), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -426,8 +440,9 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
 }
 
 /** "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026" */
-private fun ItemStatus.detail(progress: ReminderProgress): String {
-    val last = lastDone ?: return ""
+private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?): String {
+    // As it was read at the time, which is what the record says.
+    val last = lastDone?.let { swap.asReadOn(it) } ?: return ""
     val every = "Every ${item.interval.label().replace(" / ", " or ")}"
     val lastText = if (progress.headline is DueHeadline.Days) "last on ${last.date.format(longDate)}" else "last at ${last.odometer.asMiles()}"
     // Only worth an estimate when mileage decides it and the date comes from the driving pace.

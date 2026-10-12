@@ -104,6 +104,21 @@ class ExportTest {
     }
 
     @Test
+    fun `a replaced cluster is explained, with the actual mileage`() {
+        val swapped = truck.copy(odometer = 2_412, clusterSwap = ClusterSwaps.of(LocalDate.of(2026, 9, 1), oldReading = 67_000, newReading = 1_000))
+        val md = Exports.markdown(Exports.document(listOf(swapped), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertTrue(md.contains("- Odometer: 2,412 mi (highest reading on record)"))
+        assertTrue(md.contains("- Actual mileage: 68,412 mi"))
+        assertTrue(md.contains("- Instrument cluster: Replaced Sep 1, 2026. Readings from that date are the replacement's, which shows 66,000 mi less"))
+        // Records keep the reading that was on the dash that day.
+        assertTrue(md.contains("### Aug 1, 2026 · 66,000 mi"))
+
+        val plain = Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertFalse(plain.contains("Actual mileage"))
+        assertFalse(plain.contains("Instrument cluster"))
+    }
+
+    @Test
     fun `markdown leaves out what was switched off`() {
         val md = Exports.markdown(
             Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false, scheduleAndRecalls = false), today),
