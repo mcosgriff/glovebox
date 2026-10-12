@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.about.LicenceTextScreen
+import io.cosgriff.glovebox.ui.about.LicencesScreen
+import io.cosgriff.glovebox.ui.about.PrivacyScreen
+import io.cosgriff.glovebox.ui.about.AboutScreen
 import io.cosgriff.glovebox.ui.settings.DeleteAllScreen
 import io.cosgriff.glovebox.ui.settings.RestoreViewModel
 import io.cosgriff.glovebox.ui.settings.RestoreSheet
@@ -76,6 +80,10 @@ import kotlin.reflect.KClass
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
 @Serializable object DeleteAllRoute
+@Serializable object AboutRoute
+@Serializable object PrivacyRoute
+@Serializable object LicencesRoute
+@Serializable data class LicenceTextRoute(val id: String)
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
 @Serializable data class ScheduleRoute(val vehicleId: Long)
@@ -365,9 +373,23 @@ fun GloveboxNavHost() {
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onOpenBackup = { nav.navigate(BackupRoute) },
                     onDeleteAll = { nav.navigate(DeleteAllRoute) },
+                    onOpenAbout = { nav.navigate(AboutRoute) },
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                 )
             }
+            composable<AboutRoute> {
+                AboutScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenPrivacy = { nav.navigate(PrivacyRoute) },
+                    onOpenLicences = { nav.navigate(LicencesRoute) },
+                    onMessage = showNote,
+                )
+            }
+            composable<PrivacyRoute> { PrivacyScreen(onBack = { nav.popBackStack() }) }
+            composable<LicencesRoute> {
+                LicencesScreen(onBack = { nav.popBackStack() }, onOpenLicence = { id -> nav.navigate(LicenceTextRoute(id)) })
+            }
+            composable<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.popBackStack() }, onMessage = showNote) }
             composable<DeleteAllRoute> {
                 DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
             }

@@ -28,6 +28,8 @@ zxing = "3.5.4"
 bouncycastle = "1.86"
 
 hilt = "2.60.1"
+# Build-time only: lists the bundled libraries and their licences for the About screen. No runtime library is added.
+aboutlibraries = "15.2.0"
 hilt-androidx = "1.4.0"
 
 junit = "4.13.2"
@@ -91,3 +93,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }

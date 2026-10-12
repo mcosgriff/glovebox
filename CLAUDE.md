@@ -88,12 +88,13 @@ recalls, mileage check-in) with their settings screen, encrypted backup (create,
 setup (track / untrack, edit, add, last done and next due), Log service, History
 (per-vehicle list, category filters), service record detail, edit and delete with Undo, settings
 (grouped cards: theme, biometrics, lock delay, hide in recents, reminder rule, schedule, torque units,
-notifications, recall checks, backup, export, delete all data), Reminders tab (grouped list, vehicle filter,
+notifications, recall checks, backup, export, delete all data), about (version, data sources, privacy,
+open-source licences), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), about (#26), unlock screen (#27), fonts and dark pass (#28), History
+To build: distance units (km display, #93), unlock screen (#27), fonts and dark pass (#28), History
 and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
@@ -218,11 +219,19 @@ Notes on what's built:
   `Destination.AddVehicle` or `RestorePicker.pick()`. Notifications off there turns every kind off in
   Settings; the lock switch is disabled, and says why, on a phone with no screen lock (`canLockApp`).
 - Settings rows that lead nowhere are left out, not shown dead: `Distance units` (odometers are stored
-  and shown in miles everywhere; km needs every mileage field and label converted) and `About Glovebox`
-  (#26). `Maintenance schedule` opens the only vehicle's schedule, or asks which when there are several,
+  and shown in miles everywhere; km needs every mileage field and label converted) . `Maintenance schedule` opens the only vehicle's schedule, or asks which when there are several,
   and is absent with none. `Lock the app` (`LockDelay`, stored as `lockAfterSeconds`, -1 = on restart)
   shows only while the lock is on and the phone has a screen lock. The privacy line says what is really
   sent: a VIN, or a year, make and model.
+- About (`ui/about`): the version comes from the installed package. `PrivacyScreen` states what is kept,
+  what is sent and what never happens; every line has to stay true of the code, so update it with any
+  change to the network, permissions, backup or export. The copy never names manufacturer data as a source.
+- Open-source licences: the AboutLibraries Gradle plugin (build time only, no runtime library) writes the
+  release dependency list with licence texts to `R.raw.aboutlibraries`; `LicenceCatalog` reads it and
+  `Licences.grouped` (domain) arranges it, so the list can't fall behind the build. A library whose
+  licence is its own (SQLCipher, Bouncy Castle) comes without wording: keep a copy in
+  `app/src/main/assets/licences/<group>_<artifact>.txt` and add one for any new such dependency. The app's
+  own GPL text is copied from the repo's `LICENSE` at build time (`copyAppLicence`).
 - Delete all data (`DeleteAllScreen`, from the bottom of Settings): typing DELETE enables the button,
   which then asks for the fingerprint or screen lock (`confirmWithScreenLock`); a phone with no screen
   lock has only the typed word, and the screen says so (`DeleteAll` in `:domain`). `DataWipe.deleteEverything`
