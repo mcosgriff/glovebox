@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -36,7 +37,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -98,7 +98,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit, onOpenLicences: (
                     Text(
                         listOf(version, "updates via Obtainium").filter { it.isNotEmpty() }.joinToString(" \u00b7 "),
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlexMono,
                         color = scheme.onSurfaceVariant,
                     )
                 }

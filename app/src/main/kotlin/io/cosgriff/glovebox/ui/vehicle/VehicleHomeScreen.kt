@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.graphics.luminance
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -311,7 +312,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     Text(
                         odometer?.asMiles() ?: "Not recorded",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlexMono,
                     )
                 }
                 OutlinedButton(
@@ -364,6 +365,8 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
 private fun StatusPill(up: ComingUp) {
     val scheme = MaterialTheme.colorScheme
     val (text, container, content) = when {
+        // Canvas: a soft tint with dark orange text in light; in dark the tint would vanish into the card, so it is solid.
+        up.overdue > 0 && scheme.background.luminance() < 0.5f -> Triple("${up.overdue} OVERDUE", scheme.onPrimaryContainer, scheme.onPrimary)
         up.overdue > 0 -> Triple("${up.overdue} OVERDUE", scheme.primaryContainer, scheme.onPrimaryContainer)
         up.dueSoon > 0 -> Triple("${up.dueSoon} DUE SOON", scheme.surfaceVariant, scheme.onSurface)
         up.counting.isNotEmpty() -> Triple("UP TO DATE", scheme.tertiaryContainer, scheme.onTertiaryContainer)

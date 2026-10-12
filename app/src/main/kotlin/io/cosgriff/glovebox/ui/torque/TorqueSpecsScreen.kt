@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -378,18 +378,18 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, onClick: () -> Un
                 }
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (torque != null) {
-                        Text(torque.format(unit), style = MaterialTheme.typography.titleLarge, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold)
+                        Text(torque.format(unit), style = MaterialTheme.typography.titleLarge, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                         Text(
                             TorqueUnit.entries.filter { it != unit }.joinToString(" · ") { torque.format(it) },
                             style = MaterialTheme.typography.bodySmall,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,
                         )
                     } else {
                         Text(
                             "Tap to add",
                             style = MaterialTheme.typography.titleSmall,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.SemiBold,
                             color = scheme.onPrimaryContainer,
                         )
@@ -408,7 +408,7 @@ private fun Tag(text: String, container: Color, content: Color, mono: Boolean = 
             text,
             Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             style = MaterialTheme.typography.labelSmall,
-            fontFamily = if (mono) FontFamily.Monospace else null,
+            fontFamily = if (mono) PlexMono else null,
             fontWeight = if (mono) FontWeight.SemiBold else FontWeight.Bold,
             color = content,
         )

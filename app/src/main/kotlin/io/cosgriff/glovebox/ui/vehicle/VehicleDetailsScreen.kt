@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -64,7 +65,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -366,7 +366,7 @@ fun VehicleDetailsScreen(
                                 Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                fontFamily = if (mono) FontFamily.Monospace else null,
+                                fontFamily = if (mono) PlexMono else null,
                                 textAlign = TextAlign.End,
                             )
                         }
@@ -616,7 +616,7 @@ private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
                     )
                 },
                 singleLine = true,
-                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold),
+                textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
             )
         },

@@ -36,12 +36,17 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    // The fonts in res/font are files in this repo, not Maven dependencies, so the generated list can't know them.
+    // Their licence, with IBM's copyright line, is assets/licences/com.ibm_plex.txt.
+    private val fonts = listOf(BundledLibrary("com.ibm:plex", "IBM Plex Sans and IBM Plex Mono (fonts)", null, listOf(FONT_LICENCE)))
+    private val fontLicence = FONT_LICENCE to Licence(FONT_LICENCE, "SIL Open Font License 1.1", "https://openfontlicense.org", null)
+
     private val loaded: List<LicenceGroup> by lazy {
         val text = context.resources.openRawResource(R.raw.aboutlibraries).bufferedReader().use { it.readText() }
         val definitions = json.decodeFromString<Definitions>(text)
         Licences.grouped(
-            definitions.libraries.map { BundledLibrary(it.uniqueId, it.name, it.artifactVersion, it.licenses) },
-            definitions.licenses.mapValues { (id, terms) -> Licence(id, terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) },
+            definitions.libraries.map { BundledLibrary(it.uniqueId, it.name, it.artifactVersion, it.licenses) } + fonts,
+            definitions.licenses.mapValues { (id, terms) -> Licence(id, terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) } + fontLicence,
         )
     }
 
@@ -56,6 +61,10 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
         // A library's own licence comes without its wording; the app keeps a copy for each of those.
         val text = group.licence.text ?: group.libraries.singleOrNull()?.let { asset(Licences.assetName(it.id)) }
         LicenceDocument(group.name, group.licence.url, text)
+    }
+
+    private companion object {
+        const val FONT_LICENCE = "OFL-1.1"
     }
 
     private fun asset(name: String): String? = try {

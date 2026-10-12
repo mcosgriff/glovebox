@@ -72,7 +72,6 @@ import io.cosgriff.glovebox.ui.export.ExportSheet
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
-import io.cosgriff.glovebox.ui.theme.LocalStatusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -252,8 +251,8 @@ fun SettingsScreen(
             Divider()
             Row(Modifier.padding(vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Surface(
-                    color = if (dark) Color(0xFF123B36) else Color(0xFFDDEFEC),
-                    contentColor = LocalStatusColors.current.ok,
+                    color = scheme.tertiaryContainer,
+                    contentColor = scheme.onTertiaryContainer,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.size(36.dp),
                 ) {

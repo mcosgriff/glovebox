@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -52,7 +53,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -349,7 +349,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                     onValueChange = vm::onVinChange,
                     label = { Text("Vehicle Identification Number") },
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold),
+                    textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     shape = RoundedCornerShape(14.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
                     isError = complete && !vm.vinValid,
@@ -369,7 +369,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                             else -> "Check digit doesn't match"
                         },
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.SemiBold,
                         color = when {
                             !complete -> scheme.onSurfaceVariant
@@ -398,7 +398,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             Surface(color = scheme.primaryContainer, shape = RoundedCornerShape(8.dp), modifier = Modifier.size(28.dp)) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("${i + 1}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = scheme.primary)
+                                    Text("${i + 1}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = scheme.onPrimaryContainer)
                                 }
                             }
                             Text(place, style = MaterialTheme.typography.bodyMedium, color = statusColors().soon)
@@ -488,7 +488,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 border = BorderStroke(1.dp, scheme.outlineVariant),
             ) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(d.vin, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = scheme.onSurfaceVariant)
+                    Text(d.vin, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
                     Text(
                         if (identified) VehicleText.title(vm.year ?: 0, vm.make, vm.model, trim = null) else "Enter year, make and model",
                         style = MaterialTheme.typography.headlineMedium,
@@ -553,7 +553,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     onValueChange = vm::onOdometerChange,
                     label = { Text("Odometer (mi)") },
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f),
