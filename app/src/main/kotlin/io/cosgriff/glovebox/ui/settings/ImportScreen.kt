@@ -448,7 +448,7 @@ class ImportViewModel @Inject constructor(
         val items = file.items
         val rows = milestones.tableFor(vehicleId)
         val byId = rows.associateBy { it.milestone.id }
-        val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+        val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
         // A table repeats one way or not at all; a file that says otherwise goes no further.
         MilestoneImport.repeatConflict(file.repeatsEveryMiles, saved, vehicle.milestonesRepeatEveryMiles)?.let { return ImportPreview.Refused(it) }
         val plan = MilestoneImport.plan(items, saved)

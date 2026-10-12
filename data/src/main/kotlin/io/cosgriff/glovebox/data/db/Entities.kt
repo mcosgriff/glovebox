@@ -227,12 +227,17 @@ data class MilestoneJobEntity(
     val name: String,
     /** A CatalogItem id, when the job is one of Glovebox's own service lines. */
     val service: String? = null,
+    /** Where the job comes in its milestone, from 0. Rows from before this was kept are all 0 and fall back to the order they were added. */
+    @ColumnInfo(defaultValue = "0") val position: Int = 0,
 )
 
 data class MilestoneWithJobs(
     @Embedded val milestone: MilestoneEntity,
     @Relation(parentColumn = "id", entityColumn = "milestoneId") val jobs: List<MilestoneJobEntity>,
-)
+) {
+    /** The jobs in the order the user gave them; a relation comes in no particular order. */
+    val ordered: List<MilestoneJobEntity> get() = jobs.sortedWith(compareBy({ it.position }, { it.id }))
+}
 
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
