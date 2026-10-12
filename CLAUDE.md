@@ -230,6 +230,17 @@ Notes on what's built:
   tables. "Remove this table" deletes it and the generated view returns. Import matches on `atMiles`;
   a replace keeps the row and swaps its months and jobs. Backup and restore carry the tables without
   change, because both go table by table from SQLite.
+- A table that repeats (#113): `repeatsEveryMiles` sits beside `items` in the file, the one field a
+  kind has of its own (`ImportFormat.ownKeys`), and is the length of the whole cycle, never less than
+  the highest `atMiles`. It is kept in `vehicles.milestonesRepeatEveryMiles`, written only by
+  `MilestoneDao.applyImport` and cleared by `deleteTable`; it means nothing while the vehicle has no
+  table. `MilestoneImport.milestones(table, every, current, more)` lays the cycles out: the table as
+  written, then on to the sixth point past the odometer, with "Show further ahead" adding more, and it
+  is matched with `status(continues = true)`. A repeat has `Milestone.repeatOf` and **no `orMonths`**,
+  which is the vehicle's age the first time round; nothing is worked out for later rounds. **A vehicle's
+  table repeats one way or not at all:** a file whose `repeatsEveryMiles` isn't the saved table's is
+  refused whole (`MilestoneImport.repeatConflict`), in either mode, and the user removes the table to
+  change it. That is what keeps the cycle from ever being shorter than the saved table.
 - Every `ImportKind` is now built, so there is no "not yet" path; a new kind needs one again only if it
   is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
@@ -432,7 +443,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v13); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v14); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
