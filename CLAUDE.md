@@ -210,6 +210,7 @@ Notes on what's built:
   time, and there is deliberately no tick-box. The list is generated from tracked items that have a mileage
   interval (`Milestones.generate`): every multiple is a point and items on the same point share a card. It
   starts at the vehicle's earliest logged job and runs a few points past the odometer, more on request.
+  A run of three or more past milestones with nothing logged is folded into one row (`Milestones.folded`).
   Matching (`Milestones.status`): a logged job belongs to the first of that job's milestones at or after
   the mileage it was done at, so an oil change at 48,000 shows under 50,000 as completed there, and of two
   in one stretch the later is shown. A job nothing matches is listed with no status. Milestone mileages are

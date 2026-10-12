@@ -101,6 +101,30 @@ object Milestones {
         }
     }
 
+    /**
+     * The list as it is shown: a run of [minRun] or more past milestones with nothing logged against
+     * any of them is folded into one row, so a vehicle with a long gap in its records isn't a screen
+     * of empty cards. Each inner list is one row; a single-element list is an ordinary milestone.
+     */
+    fun folded(statuses: List<MilestoneStatus>, minRun: Int = 3): List<List<MilestoneStatus>> {
+        val rows = mutableListOf<List<MilestoneStatus>>()
+        var run = mutableListOf<MilestoneStatus>()
+        fun flush() {
+            if (run.size >= minRun) rows += run else run.forEach { rows += listOf(it) }
+            run = mutableListOf()
+        }
+        for (s in statuses) {
+            if (s.place == MilestonePlace.PAST && s.jobs.none { it.done != null }) {
+                run += s
+            } else {
+                flush()
+                rows += listOf(s)
+            }
+        }
+        flush()
+        return rows
+    }
+
     private val latest = compareBy<JobDone> { it.date }.thenBy { it.actualMiles }
 
     /**

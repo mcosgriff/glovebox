@@ -155,9 +155,12 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     val list = rememberLazyListState()
     // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
     var placed by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(state.milestones.isNotEmpty()) {
-        if (!placed && state.milestones.isNotEmpty()) {
-            val next = state.milestones.indexOfFirst { it.place == MilestonePlace.NEXT }
+    val rows = Milestones.folded(state.milestones)
+    // Runs the user has opened, by their first milestone.
+    var opened by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    LaunchedEffect(rows.isNotEmpty()) {
+        if (!placed && rows.isNotEmpty()) {
+            val next = rows.indexOfFirst { it.first().place == MilestonePlace.NEXT }
             if (next > 0) list.scrollToItem(next + HEADER_ITEMS)
             placed = true
         }
@@ -197,7 +200,29 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     )
                 }
             }
-            items(state.milestones, key = { it.milestone.atMiles }) { m -> MilestoneCard(m, state.current, state.swap, onOpenRecord) }
+            rows.forEach { row ->
+                val first = row.first().milestone.atMiles
+                if (row.size == 1 || first in opened) {
+                    items(row, key = { it.milestone.atMiles }) { m -> MilestoneCard(m, state.current, state.swap, onOpenRecord) }
+                } else {
+                    item(key = "gap-$first") {
+                        // Nothing was logged against any of these; one line says so in place of a card each.
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Show them", onClick = { opened = opened + first }),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                "${first.asMiles()} to ${row.last().milestone.atMiles.asMiles()} · ${row.size} milestones with nothing logged",
+                                Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                            Text("Show", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                        }
+                    }
+                }
+            }
             if (state.milestones.isNotEmpty()) {
                 item {
                     OutlinedButton(

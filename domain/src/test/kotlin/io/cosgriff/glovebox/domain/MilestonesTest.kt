@@ -144,4 +144,23 @@ class MilestonesTest {
         assertEquals(49_001, Milestones.startFor(emptyList(), 49_000))
         assertEquals(1, Milestones.startFor(emptyList(), null))
     }
+
+    @Test
+    fun `a long run of past milestones with nothing logged is folded into one row`() {
+        val list = Milestones.generate(listOf(oil), from = 10_000, current = 52_000, ahead = 2)
+        val status = Milestones.status(list, listOf(done(1, 10_000), done(1, 48_000)), 52_000, continues = true)
+        val rows = Milestones.folded(status)
+        assertEquals(
+            // 10,000 done; 15,000 to 45,000 empty; 50,000 done; 55,000 next; 60,000 ahead.
+            listOf(listOf(10_000), listOf(15_000, 20_000, 25_000, 30_000, 35_000, 40_000, 45_000), listOf(50_000), listOf(55_000), listOf(60_000)),
+            rows.map { row -> row.map { it.milestone.atMiles } },
+        )
+    }
+
+    @Test
+    fun `a short gap is left as it is, and milestones ahead are never folded`() {
+        val list = Milestones.generate(listOf(oil), from = 40_000, current = 52_000, ahead = 4)
+        val status = Milestones.status(list, listOf(done(1, 40_000)), 52_000, continues = true)
+        assertTrue(Milestones.folded(status).all { it.size == 1 })
+    }
 }
