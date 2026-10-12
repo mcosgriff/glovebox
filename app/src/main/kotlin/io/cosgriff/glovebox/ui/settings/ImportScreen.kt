@@ -533,7 +533,7 @@ private fun ResultCard(r: ImportResult, onOpen: () -> Unit) {
                 listOf(r.added to "added", r.filled to "filled in", r.replaced to "replaced with the file's values").filter { it.first > 0 }.forEach { (n, what) ->
                     Text("${rows(n)} $what", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
                 }
-                if (r.unchanged > 0) Text("${rows(r.unchanged)} left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                if (r.unchanged > 0) Text(rows(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
             }
         }
         Button(onClick = onOpen, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See torque specs") }
