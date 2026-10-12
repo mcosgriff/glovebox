@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.aboutlibraries)
 }
 
 // CI passes -PversionName=1.2.0 -PversionCode=<run number>. Local builds use version.txt, which the
@@ -74,6 +75,33 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+/** Puts the repository's LICENSE into the app's assets, so the About screen shows the same text the repo carries. */
+abstract class CopyAppLicence : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val licence: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val target = outputDir.get().asFile.resolve("licences/glovebox.txt")
+        target.parentFile.mkdirs()
+        licence.get().asFile.copyTo(target, overwrite = true)
+    }
+}
+
+val copyAppLicence = tasks.register<CopyAppLicence>("copyAppLicence") {
+    licence.set(rootProject.layout.projectDirectory.file("LICENSE"))
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(copyAppLicence, CopyAppLicence::outputDir)
+    }
 }
 
 dependencies {

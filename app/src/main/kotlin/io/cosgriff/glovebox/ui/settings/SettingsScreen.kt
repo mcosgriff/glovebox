@@ -108,6 +108,7 @@ fun SettingsScreen(
     onOpenNotifications: () -> Unit,
     onOpenBackup: () -> Unit,
     onDeleteAll: () -> Unit,
+    onOpenAbout: () -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
@@ -330,6 +331,21 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
+        }
+
+        Surface(
+            Modifier.fillMaxWidth(),
+            color = scheme.surface,
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, scheme.outlineVariant),
+        ) {
+            Row(
+                Modifier.heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onOpenAbout).padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("About Glovebox", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
+            }
         }
     }
 }
