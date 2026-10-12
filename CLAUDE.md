@@ -100,7 +100,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), navigation map (#32), mileage readings (#64, #65), odometer offset
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -169,6 +169,14 @@ Notes on what's built:
   a phone with only a screen lock, and "Use screen lock instead" only on Android 11+, where Android can ask
   for the screen lock alone. Errors go through `Unlock.message`; a cancel says nothing. With the screen
   lock allowed as a fallback, Android handles too many failed tries itself by switching to the PIN.
+- Navigation (checked against `design/screens/NavMap.png`): four tabs, each keeping its own screens
+  (`saveState` / `restoreState`); the fourth is labelled Settings, because it opens Settings and not a
+  menu. System Back from a tab goes to Garage, then leaves the app. A notification's destination is pushed
+  over whichever tab is showing, so Back returns there. Add a destination with `screen<Route>` in
+  `GloveboxNavHost`, never `composable<Route>`: screens draw no background of their own, and `screen` puts
+  the page colour behind them so nothing shows through during a held back swipe. Predictive back is
+  switched on in the manifest. Screen state that should survive Android restarting the app goes in
+  `rememberSaveable` or a `SavedStateHandle`, as History's vehicle and category choice do.
 - While locked, the app's screens are out of composition (`MainActivity`), so no screen, sheet or dialog
   is drawn or readable behind the lock screen. Their saved state is held in a `SaveableStateHolder`, which
   is what returns the user to the same screen after unlocking. Don't swap this for drawing the lock

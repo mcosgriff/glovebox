@@ -91,7 +91,7 @@ data class HistoryState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
     service: ServiceDao,
     private val actions: RecordActions,
@@ -100,10 +100,18 @@ class HistoryViewModel @Inject constructor(
     private val archivedId: Long? = savedStateHandle.get<Long>("vehicleId")
     val archived: Boolean get() = archivedId != null
 
-    private val chosenVehicle = MutableStateFlow<Long?>(null)
+    // Both choices are kept in the saved state, so the tab comes back as it was left even if Android
+    // had to restart the app in between.
+    private val chosenVehicle: StateFlow<Long?> = savedStateHandle.getStateFlow(CHOSEN_VEHICLE, null)
 
     /** Category id to show, or null for all. */
-    var filter by mutableStateOf<String?>(null)
+    var filter by mutableStateOf(savedStateHandle.get<String>(FILTER))
+        private set
+
+    fun chooseFilter(categoryId: String?) {
+        filter = categoryId
+        savedStateHandle[FILTER] = categoryId
+    }
 
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
@@ -133,8 +141,7 @@ class HistoryViewModel @Inject constructor(
             viewModelScope.launch {
                 actions.focus.collect { focus ->
                     if (focus != null) {
-                        chosenVehicle.value = focus.vehicleId
-                        filter = null
+                        chooseVehicle(focus.vehicleId)
                     }
                 }
             }
@@ -142,8 +149,13 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun chooseVehicle(id: Long) {
-        chosenVehicle.value = id
-        filter = null
+        savedStateHandle[CHOSEN_VEHICLE] = id
+        chooseFilter(null)
+    }
+
+    private companion object {
+        const val CHOSEN_VEHICLE = "chosenVehicle"
+        const val FILTER = "filter"
     }
 
     /** History is being left: the mark has been seen, and the next visit starts wherever the user left it. */
@@ -211,9 +223,9 @@ fun HistoryScreen(
         }
         if (categories.isNotEmpty()) {
             ChipRow {
-                Chip("All", selected = filter == null) { vm.filter = null }
+                Chip("All", selected = filter == null) { vm.chooseFilter(null) }
                 categories.forEach { c ->
-                    Chip(c.label, selected = filter == c.id) { vm.filter = c.id }
+                    Chip(c.label, selected = filter == c.id) { vm.chooseFilter(c.id) }
                 }
             }
         }

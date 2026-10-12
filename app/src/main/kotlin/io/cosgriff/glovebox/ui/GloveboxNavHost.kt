@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui
 
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavBackStackEntry
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedContentScope
 import io.cosgriff.glovebox.domain.LogEdits
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.collectLatest
@@ -70,6 +77,7 @@ import io.cosgriff.glovebox.ui.torque.TorqueSpecsScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.milliseconds
 
 // Type-safe routes. Matches the navigation map on the design canvas.
 @Serializable object GarageRoute
@@ -107,6 +115,16 @@ import kotlin.reflect.KClass
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
+
+/**
+ * A destination with the page colour behind it. Screens draw no background of their own, and without
+ * one the screen underneath shows through while a back swipe is held or a transition runs.
+ */
+private inline fun <reified T : Any> NavGraphBuilder.screen(
+    noinline content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
+) = composable<T> { entry ->
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) { content(entry) }
+}
 
 private const val SCANNED_VIN = "scannedVin"
 private const val CONFIRM_DELETE = "confirmDelete"
@@ -158,7 +176,7 @@ fun GloveboxNavHost() {
                 val result = if (recordId != null) {
                     snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long)
                 } else {
-                    withTimeoutOrNull(LogEdits.UNDO_SECONDS * 1000L) {
+                    withTimeoutOrNull((LogEdits.UNDO_SECONDS * 1000L).milliseconds) {
                         snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Indefinite)
                     }
                 }
@@ -273,7 +291,7 @@ fun GloveboxNavHost() {
         },
     ) { padding ->
         NavHost(nav, startDestination = GarageRoute, modifier = Modifier.padding(padding)) {
-            composable<GarageRoute> {
+            screen<GarageRoute> {
                 GarageScreen(
                     onAddVehicle = { nav.navigate(AddVehicleRoute) },
                     onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
@@ -288,7 +306,7 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<VehicleHomeRoute> {
+            screen<VehicleHomeRoute> {
                 VehicleHomeScreen(
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
@@ -298,7 +316,7 @@ fun GloveboxNavHost() {
                     onMessage = showMessage,
                 )
             }
-            composable<VehicleDetailsRoute> {
+            screen<VehicleDetailsRoute> {
                 VehicleDetailsScreen(
                     onBack = { nav.popBackStack() },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
@@ -308,8 +326,8 @@ fun GloveboxNavHost() {
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
                 )
             }
-            composable<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }
-            composable<DeleteVehicleRoute> {
+            screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }
+            screen<DeleteVehicleRoute> {
                 DeleteVehicleScreen(
                     onCancel = { nav.popBackStack() },
                     onDeleted = { name ->
@@ -319,7 +337,7 @@ fun GloveboxNavHost() {
                     onArchived = onArchived,
                 )
             }
-            composable<ArchivedVehiclesRoute> {
+            screen<ArchivedVehiclesRoute> {
                 ArchivedVehiclesScreen(
                     onBack = { nav.popBackStack() },
                     onViewHistory = { vehicleId -> nav.navigate(ArchivedHistoryRoute(vehicleId)) },
@@ -327,14 +345,14 @@ fun GloveboxNavHost() {
                     onMessage = showMessage,
                 )
             }
-            composable<ArchivedHistoryRoute> {
+            screen<ArchivedHistoryRoute> {
                 HistoryScreen(
                     onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
                     onBack = { nav.popBackStack() },
                 )
             }
-            composable<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
-            composable<AddVehicleRoute> { entry ->
+            screen<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
+            screen<AddVehicleRoute> { entry ->
                 // The scanner hands its VIN back through this entry's saved state.
                 val scannedVin by entry.savedStateHandle.getStateFlow<String?>(SCANNED_VIN, null).collectAsStateWithLifecycle()
                 AddVehicleScreen(
@@ -350,7 +368,7 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<ScanVinRoute> {
+            screen<ScanVinRoute> {
                 ScanVinScreen(
                     onClose = { nav.popBackStack() },
                     onUseVin = { vin ->
@@ -359,7 +377,7 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<ManualAddRoute> {
+            screen<ManualAddRoute> {
                 ManualAddScreen(
                     onBack = { nav.popBackStack() },
                     onSaved = { vehicleId ->
@@ -370,7 +388,7 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<LogServiceRoute> {
+            screen<LogServiceRoute> {
                 LogServiceScreen(
                     onDone = { nav.popBackStack() },
                     onAdded = {
@@ -384,18 +402,18 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
-            composable<ScheduleRoute> {
+            screen<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
+            screen<ScheduleRoute> {
                 ScheduleScreen(
                     onBack = { nav.popBackStack() },
                     onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
                     onSetUp = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
                 )
             }
-            composable<HistoryRoute> {
+            screen<HistoryRoute> {
                 HistoryScreen(onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
             }
-            composable<RecordDetailRoute> { entry ->
+            screen<RecordDetailRoute> { entry ->
                 val confirmDelete by entry.savedStateHandle.getStateFlow(CONFIRM_DELETE, false).collectAsStateWithLifecycle()
                 RecordDetailScreen(
                     onBack = { nav.popBackStack() },
@@ -409,8 +427,8 @@ fun GloveboxNavHost() {
                     onOpenPhoto = { recordId, index -> nav.navigate(PhotoViewerRoute(recordId, index)) },
                 )
             }
-            composable<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.popBackStack() }) }
-            composable<RemindersRoute> {
+            screen<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.popBackStack() }) }
+            screen<RemindersRoute> {
                 RemindersScreen(
                     onLogIt = { vehicleId, scheduleItemId ->
                         nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
@@ -421,8 +439,8 @@ fun GloveboxNavHost() {
                     onMessage = showMessage,
                 )
             }
-            composable<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
-            composable<SettingsRoute> {
+            screen<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
+            screen<SettingsRoute> {
                 SettingsScreen(
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
@@ -432,7 +450,7 @@ fun GloveboxNavHost() {
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                 )
             }
-            composable<AboutRoute> {
+            screen<AboutRoute> {
                 AboutScreen(
                     onBack = { nav.popBackStack() },
                     onOpenPrivacy = { nav.navigate(PrivacyRoute) },
@@ -440,16 +458,16 @@ fun GloveboxNavHost() {
                     onMessage = showNote,
                 )
             }
-            composable<PrivacyRoute> { PrivacyScreen(onBack = { nav.popBackStack() }) }
-            composable<LicencesRoute> {
+            screen<PrivacyRoute> { PrivacyScreen(onBack = { nav.popBackStack() }) }
+            screen<LicencesRoute> {
                 LicencesScreen(onBack = { nav.popBackStack() }, onOpenLicence = { id -> nav.navigate(LicenceTextRoute(id)) })
             }
-            composable<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.popBackStack() }, onMessage = showNote) }
-            composable<DeleteAllRoute> {
+            screen<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.popBackStack() }, onMessage = showNote) }
+            screen<DeleteAllRoute> {
                 DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
             }
-            composable<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
-            composable<NotificationsRoute> {
+            screen<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
+            screen<NotificationsRoute> {
                 NotificationsScreen(onBack = { nav.popBackStack() }, onOpenRules = { nav.navigate(ReminderRulesRoute) })
             }
         }
