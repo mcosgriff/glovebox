@@ -5,8 +5,37 @@ data class CatalogItem(val id: String, val label: String, val resets: String? = 
 
 data class CatalogCategory(val id: String, val label: String, val items: List<CatalogItem>)
 
-/** A schedule item as the catalog needs to see it. */
-data class ScheduleRef(val id: Long, val name: String, val templateKey: String?, val tracked: Boolean)
+/**
+ * A schedule item as the catalog needs to see it. [service] is the [CatalogItem] id one of the
+ * user's own items answers to, if they said so; a typical item answers through its [templateKey].
+ */
+data class ScheduleRef(val id: Long, val name: String, val templateKey: String?, val tracked: Boolean, val service: String? = null)
+
+/**
+ * Which schedule items a line of logged work counts for.
+ *
+ * A line counts for the item it was saved against, and, when it is one of the catalog's lines, for
+ * every item that answers to that line: the typical item the line resets, and any of the user's own
+ * items set to it. So one tick of "Oil & filter change" counts for both, and it is worked out from
+ * the log each time, never stored: linking an item to a service makes past work count straight away.
+ */
+object ServiceLinks {
+    /** Catalog item id -> the schedule items that answer to it. */
+    fun answering(schedule: List<ScheduleRef>): Map<String, Set<Long>> {
+        val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
+        val out = mutableMapOf<String, MutableSet<Long>>()
+        ServiceCatalog.categories.flatMap { it.items }.forEach { item ->
+            item.resets?.let(byKey::get)?.let { out.getOrPut(item.id) { mutableSetOf() } += it.id }
+        }
+        // Only the user's own items carry a service; on a typical item it would be ignored.
+        schedule.filter { it.templateKey == null && it.service != null }.forEach { out.getOrPut(it.service!!) { mutableSetOf() } += it.id }
+        return out
+    }
+
+    /** [lines] are each line's (schedule item it was saved against, catalog item it was picked from). */
+    fun itemIds(lines: List<Pair<Long?, String?>>, answering: Map<String, Set<Long>>): Set<Long> =
+        lines.flatMap { (itemId, catalogId) -> listOfNotNull(itemId) + catalogId?.let(answering::get).orEmpty() }.toSet()
+}
 
 /** One tickable line on the Log service screen. [scheduleItemId] is the reminder it resets, if any. */
 data class WorkOption(val id: String, val label: String, val scheduleItemId: Long? = null)
@@ -112,20 +141,24 @@ object ServiceCatalog {
     )
 
     /**
-     * The catalog for one vehicle. Catalog lines are linked to the vehicle's schedule item with the
-     * matching template key; tracked schedule items the catalog doesn't cover (the user's own) are
-     * listed first under "Your items" so they can be logged too.
+     * The catalog for one vehicle. A catalog line is linked to the typical item with the matching
+     * template key, or failing that to one of the user's own items that answers to it. Tracked
+     * items no catalog line covers are listed first under "Your items" so they can be logged too;
+     * an item that answers to a catalog line is logged through that line and isn't listed twice.
+     *
+     * [WorkOption.scheduleItemId] is the one item the line is saved against. Which reminders the
+     * line counts for is wider than that: see [ServiceLinks].
      */
     fun forVehicle(schedule: List<ScheduleRef>): List<WorkCategory> {
         val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
-        val linked = mutableSetOf<Long>()
+        val answering = ServiceLinks.answering(schedule)
+        val linked = answering.values.flatten().toMutableSet()
         val fromCatalog = categories.map { c ->
             WorkCategory(
                 c.id, c.label,
                 c.items.map { item ->
-                    val target = item.resets?.let(byKey::get)
-                    target?.let { linked += it.id }
-                    WorkOption(item.id, item.label, target?.id)
+                    val target = item.resets?.let(byKey::get)?.id ?: answering[item.id]?.minOrNull()
+                    WorkOption(item.id, item.label, target)
                 },
             )
         }

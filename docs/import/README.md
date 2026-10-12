@@ -230,7 +230,8 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
   "everyMiles": 7500,
   "everyMonths": 12,
   "severe": { "everyMiles": 5000, "everyMonths": 6 },
-  "rule": "whichever-first"
+  "rule": "whichever-first",
+  "service": "oil"
 }
 ```
 
@@ -241,22 +242,26 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
 | `everyMonths` | one of the two | Whole months, 1 to 600. Write years as months: 3 years is `36` |
 | `severe` | no | The interval for hard use, if it differs: `everyMiles`, `everyMonths` or both |
 | `rule` | no | `whichever-first`, `whichever-last`, `mileage-only` or `time-only`. Left out, the item follows the rule you chose in Settings |
+| `service` | no | Which of Glovebox's own service lines resets this item. The values are the same as for [`service-history`](#service-history) |
 
 - **Where they go:** each item becomes one of *your own* schedule items, tracked from the start, the
   same as "+ Add your own item". The typical items Glovebox suggested are never changed or removed
   by an import.
 - **Matching:** an item in the file matches one of your own items with the same name, ignoring
   capitals. It never matches a typical item, even one with the same name.
-- **Same or different:** the interval, the severe interval and the rule.
-- **Replace matching** changes only those three things. Whether the item is tracked, a snooze, which
+- **Same or different:** the interval, the severe interval, the rule and the service.
+- **Replace matching** changes only those four things. Whether the item is tracked, a snooze, which
   of its intervals is in use and every service logged against it stay as they are.
 - **Two reminders for one job:** if a typical item you are tracking has the same name as an item in
-  the file, the preview says so and offers to stop tracking the typical one. That is your choice;
-  left alone, both stay. A stopped item keeps its history and can be switched back on.
+  the file, or is the one the file's `service` resets, the preview says so and offers to stop
+  tracking the typical one. That is your choice; left alone, both stay, and logging that service
+  resets both. A stopped item keeps its history and can be switched back on.
 - **When it was last done isn't part of this file.** New items start as "Not logged yet"; after the
   import the app offers "When were these last done?", or import a `service-history` file.
-- **Logging work against them:** your own items are listed under "Your items" when you log a
-  service. The built-in lines (such as "Oil & filter change") reset the typical items, not these.
+- **Logging work against them:** an item with a `service` is reset by ticking that built-in line
+  when you log a service ("Oil & filter change" for `oil`), and work already in your history under
+  that line counts for it straight away. An item without one is listed under "Your items" and is
+  logged there. You can set or change this later on the item, in the Maintenance schedule.
 - The same job can't appear twice in a file under names that differ only in capitals (this is the
   rule the schema can't state).
 

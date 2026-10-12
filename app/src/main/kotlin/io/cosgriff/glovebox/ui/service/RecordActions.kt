@@ -87,7 +87,7 @@ class RecordActions @Inject constructor(
      */
     suspend fun addLastDone(vehicleId: Long, item: ScheduleItemEntity, date: LocalDate, odometer: Int) {
         // Filed under the catalog line that resets this reminder, so History puts it in the right category.
-        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = item.id, label = item.name, catalogId = ServiceCatalog.lineFor(item.templateKey)?.id)
+        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = item.id, label = item.name, catalogId = ServiceCatalog.lineFor(item.templateKey, item.service)?.id)
         service.insertWithItems(
             ServiceRecordEntity(vehicleId = vehicleId, date = date, odometer = odometer, diy = true, enteredAsLastDone = true),
             listOf(line),

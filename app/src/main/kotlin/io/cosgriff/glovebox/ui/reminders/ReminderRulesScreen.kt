@@ -88,6 +88,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 /** A real, logged service with both intervals, used as the worked example. */
@@ -136,7 +137,7 @@ class ReminderRulesViewModel @Inject constructor(
             val miles = (if (item.useSevere) item.severeMiles ?: item.intervalMiles else item.intervalMiles) ?: return@firstNotNullOfOrNull null
             val months = (if (item.useSevere) item.severeMonths ?: item.intervalMonths else item.intervalMonths) ?: return@firstNotNullOfOrNull null
             val swap = active.firstOrNull { it.id == item.vehicleId }?.clusterSwap()
-            val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry(swap) }
+            val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry(swap, mine.filter { m -> m.vehicleId == item.vehicleId }.answering()) }
             val last = ServiceLog.lastDone(item.id, entries) ?: return@firstNotNullOfOrNull null
             val all = ServiceLog.readings(
                 entries,

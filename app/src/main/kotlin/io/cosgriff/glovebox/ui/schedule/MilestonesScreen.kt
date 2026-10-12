@@ -85,6 +85,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Locale
+import io.cosgriff.glovebox.ui.service.answering
+import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class MilestonesState(
@@ -132,7 +134,7 @@ class MilestonesViewModel @Inject constructor(
     ) { vehicle, items, (records, readings, rows), s, count ->
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap) }
+        val entries = records.map { it.toEntry(swap, items.answering()) }
         val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }.filter { it.interval.miles != null }
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
@@ -143,7 +145,7 @@ class MilestonesViewModel @Inject constructor(
             val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
             // A logged line completes a job by its catalog service, or by being called the same thing.
             val done = records.flatMap { r ->
-                val e = r.toEntry(swap)
+                val e = r.toEntry(swap, NoLinks)
                 r.items.flatMap { line ->
                     MilestoneImport.doneKeys(line.label, line.catalogId).map { JobDone(it, e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
                 }

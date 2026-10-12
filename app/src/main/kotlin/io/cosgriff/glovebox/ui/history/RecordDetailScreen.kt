@@ -82,6 +82,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class WorkLine(
@@ -128,13 +129,14 @@ class RecordDetailViewModel @Inject constructor(
     val detail: StateFlow<RecordDetail?> = service.observeRecord(recordId).mapLatest { r ->
         if (r == null) return@mapLatest null
         val vehicle = vehicles.observe(r.record.vehicleId).first()
-        val tracked = schedule.allFor(r.record.vehicleId)
+        val items = schedule.allFor(r.record.vehicleId)
+        val tracked = items
             .filter { it.tracked }
             .mapNotNull { it.toTracked(settings.settings.first().defaultRule) }
             .associateBy { it.id }
         val swap = vehicle?.clusterSwap()
-        val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry(swap) }
-        val entry = r.toEntry(swap)
+        val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry(swap, items.answering()) }
+        val entry = r.toEntry(swap, items.answering())
 
         RecordDetail(
             record = r,

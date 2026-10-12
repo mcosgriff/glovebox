@@ -90,6 +90,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 /** A vehicle that can be exported, with everything about it read once when the sheet opens. */
@@ -140,7 +141,8 @@ class ExportViewModel @Inject constructor(
     private suspend fun exportVehicle(v: VehicleEntity, rule: io.cosgriff.glovebox.domain.DueRule): ExportVehicle {
         val records = service.recordsFor(v.id)
         val swap = v.clusterSwap()
-        val entries = records.map { it.toEntry(swap) }
+        val items = schedule.allFor(v.id)
+        val entries = records.map { it.toEntry(swap, items.answering()) }
         val readings = odometer.readingsFor(v.id).toReadings(swap)
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         return ExportVehicle(
@@ -163,7 +165,7 @@ class ExportViewModel @Inject constructor(
                     imported = r.record.imported,
                 )
             },
-            schedule = schedule.allFor(v.id).filter { it.tracked }.mapNotNull { item ->
+            schedule = items.filter { it.tracked }.mapNotNull { item ->
                 val tracked = item.toTracked(rule) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
                 ExportScheduleLine(item.name, tracked.interval.label(), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })

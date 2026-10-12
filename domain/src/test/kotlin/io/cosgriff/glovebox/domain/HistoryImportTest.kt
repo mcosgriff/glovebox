@@ -132,4 +132,14 @@ class HistoryImportTest {
         val after = HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, before, schedule, swap)
         assertTrue(HistoryImport.backwards(after, swap.readings(emptyList())).isEmpty())
     }
+
+    @Test
+    fun `an imported service line counts for the user's own item that answers to it, as well as the typical one`() {
+        val both = schedule + ScheduleRef(4, "Oil change", null, tracked = true, service = "oil")
+        assertEquals(setOf(1L, 4L), HistoryImport.itemIds(file(), both))
+        // With no typical oil item, the line is saved against the user's own.
+        val onlyMine = listOf(ScheduleRef(4, "Oil change", null, tracked = true, service = "oil"))
+        assertEquals(4L, HistoryImport.resolve(ImportedWork("Oil & filter change", "oil"), onlyMine).scheduleItemId)
+        assertEquals(setOf(4L), HistoryImport.itemIds(file(), onlyMine))
+    }
 }

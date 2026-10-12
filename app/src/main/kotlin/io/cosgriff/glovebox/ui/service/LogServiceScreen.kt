@@ -131,6 +131,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Locale
+import io.cosgriff.glovebox.domain.ServiceLinks
 import javax.inject.Inject
 
 /** A tracked reminder that's due, offered as a one-tap chip. [optionId] is the tick box it sets. */
@@ -152,6 +153,8 @@ data class LogServiceData(
      * is typed belongs to whichever cluster was in on the form's date, and is saved as typed.
      */
     val swap: ClusterSwap?,
+    /** Which schedule items answer to which catalog line, for previewing what an edit moves. */
+    val answering: Map<String, Set<Long>>,
     /** What the user wrote on Vehicle details, for the hints beside the lines. */
     val specs: VehicleSpecs,
     /** The record being edited; null when logging a new one. */
@@ -244,7 +247,8 @@ class LogServiceViewModel @Inject constructor(
                 id = original.record.id,
                 date = date,
                 odometer = d.swap.toDash(odometer ?: original.record.odometer, date),
-                itemIds = selectedOptions.mapNotNull { it.scheduleItemId }.toSet(),
+                // As it would be saved: against one item, and counting for every item that answers to the line.
+                itemIds = ServiceLinks.itemIds(selectedOptions.map { it.scheduleItemId to it.id.takeIf { id -> id in d.answering } }, d.answering),
             )
             return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
         }
@@ -258,12 +262,15 @@ class LogServiceViewModel @Inject constructor(
             val records = service.recordsFor(vehicleId)
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
             val swap = vehicle?.clusterSwap()
-            val entries = records.map { it.toEntry(swap) }
+            val entries = records.map { it.toEntry(swap, items.answering()) }
             val others = entries.filter { it.id != original?.record?.id }
             val updates = odometer.readingsFor(vehicleId).toReadings(swap)
-            val categories = ServiceCatalog.forVehicle(items.map { ScheduleRef(it.id, it.name, it.templateKey, it.tracked) })
+            val categories = ServiceCatalog.forVehicle(items.map { it.toRef() })
             val options = categories.flatMap { it.options }
-            val optionFor = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
+            val answering = items.answering()
+            // The line to tick for a reminder: the one saved against it, or the catalog line it answers to.
+            val optionFor: Map<Long?, WorkOption> = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId } +
+                options.flatMap { o -> answering[o.id].orEmpty().map { id -> id to o } }
             val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule) }
 
             val due = if (editing) {
@@ -313,6 +320,7 @@ class LogServiceViewModel @Inject constructor(
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
                 swap = swap,
+                answering = answering,
                 specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
                 original = original,
             )

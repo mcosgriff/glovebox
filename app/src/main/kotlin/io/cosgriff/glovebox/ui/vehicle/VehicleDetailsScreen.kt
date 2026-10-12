@@ -116,6 +116,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class VehicleDetails(
@@ -191,7 +192,7 @@ class VehicleDetailsViewModel @Inject constructor(
         odometer.observe(vehicleId),
     ) { vehicle, records, readings ->
         val swap = vehicle?.clusterSwap()
-        VehicleReminders.currentOdometer(records.map { it.toEntry(swap) }, readings.toReadings(swap))
+        VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)

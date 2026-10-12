@@ -86,6 +86,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class LastDoneState(
@@ -123,7 +124,7 @@ class LastDoneViewModel @Inject constructor(
         if (vehicle == null) return@combine null
         entities = items.associateBy { it.id }
         val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap) }
+        val entries = records.map { it.toEntry(swap, items.answering()) }
         LastDoneState(
             vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
             rows = LastDoneEntries.rows(

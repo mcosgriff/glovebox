@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -73,9 +74,10 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val vehicles = deps.vehicles().active().map { v ->
             val records = deps.service().recordsFor(v.id)
             val swap = v.clusterSwap()
-            val entries = records.map { it.toEntry(swap) }
+            val items = deps.schedule().allFor(v.id)
+            val entries = records.map { it.toEntry(swap, items.answering()) }
             val updates = deps.odometer().readingsFor(v.id).toReadings(swap)
-            val tracked = deps.schedule().allFor(v.id).filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule) }
+            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule) }
             NoticeVehicle(
                 id = v.id,
                 name = "${v.year} ${v.nickname ?: v.model}",

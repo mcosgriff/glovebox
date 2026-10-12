@@ -102,6 +102,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class VehicleHome(
@@ -149,7 +150,7 @@ class VehicleHomeViewModel @Inject constructor(
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap) }
+        val entries = records.map { it.toEntry(swap, items.answering()) }
         val updates = readings.toReadings(swap)
         val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }
         VehicleHome(

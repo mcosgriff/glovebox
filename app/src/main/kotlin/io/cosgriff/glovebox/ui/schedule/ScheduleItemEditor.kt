@@ -57,6 +57,7 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.IntervalInput
 import io.cosgriff.glovebox.domain.label
+import io.cosgriff.glovebox.domain.ServiceCatalog
 import java.util.Locale
 
 /**
@@ -79,6 +80,7 @@ fun ScheduleItemEditor(
     var severe by remember(item.key) { mutableStateOf(item.severe) }
     var useSevere by remember(item.key) { mutableStateOf(item.useSevere && item.severe != null) }
     var rule by remember(item.key) { mutableStateOf(item.rule) }
+    var service by remember(item.key) { mutableStateOf(item.service) }
     // A new item starts blank: the interval is the user's to say, not ours to guess.
     var milesText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.miles.asText()) }
     var monthsText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.months.asText()) }
@@ -118,6 +120,7 @@ fun ScheduleItemEditor(
                                 severe = if (useSevere) interval else severe,
                                 useSevere = useSevere,
                                 rule = rule,
+                                service = service,
                             ),
                         )
                     }
@@ -185,6 +188,9 @@ fun ScheduleItemEditor(
             }
 
             RuleDropdown(rule, defaultRule, onPick = { rule = it })
+
+            // The typical items already answer to their own service line; this is for the user's.
+            if (item.own) ServiceDropdown(service, onPick = { service = it })
 
             if (history != null) {
                 LastDoneCard(history)
@@ -276,6 +282,63 @@ private fun RuleDropdown(rule: DueRule?, defaultRule: DueRule, onPick: (DueRule?
                 )
             }
         }
+    }
+}
+
+/**
+ * Which built-in line on Log service resets one of the user's own items. With one chosen, ticking
+ * that line counts for this item (and for the typical item it resets, if that is tracked too), and
+ * work already logged under it counts from the moment this is saved.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ServiceDropdown(service: String?, onPick: (String?) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val lines = remember { ServiceCatalog.categories.flatMap { c -> c.items.map { it to c.label } } }
+    val chosen = lines.firstOrNull { it.first.id == service }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
+            OutlinedTextField(
+                value = chosen?.first?.label ?: "This item, under Your items",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Logging this resets it") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
+                modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            )
+            ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                DropdownMenuItem(
+                    text = { Text("This item, under Your items") },
+                    onClick = {
+                        onPick(null)
+                        open = false
+                    },
+                )
+                lines.forEach { (line, category) ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(line.label)
+                                Text(category, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        },
+                        onClick = {
+                            onPick(line.id)
+                            open = false
+                        },
+                    )
+                }
+            }
+        }
+        Text(
+            if (chosen == null) {
+                "Pick one of Glovebox's service lines if this is the same job, and logging that line will count for this item."
+            } else {
+                "Ticking \"${chosen.first.label}\" when you log a service counts for this item, including the times it is already in your history."
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

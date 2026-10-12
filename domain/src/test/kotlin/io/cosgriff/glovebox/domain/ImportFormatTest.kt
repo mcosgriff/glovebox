@@ -144,6 +144,7 @@ class ImportFormatTest {
 
         schema = Json.parseToJsonElement(File(docs, "schema/interval-schedule.schema.json").readText())
         assertEquals(ScheduleImport.rules.keys, enum("\$defs", "item", "properties", "rule", "enum"))
+        assertEquals(HistoryImport.services.keys, enum("\$defs", "item", "properties", "service", "enum"))
         assertEquals(ScheduleImport.MAX_NAME, int("\$defs", "item", "properties", "name", "maxLength"))
         assertEquals(ScheduleImport.MAX_MILES, int("\$defs", "miles", "maximum"))
         assertEquals(ScheduleImport.MAX_MONTHS, int("\$defs", "months", "maximum"))
@@ -223,10 +224,10 @@ class ImportFormatTest {
         val items = (ImportFormat.parse(file.readText()) as ImportFile.IntervalSchedule).items
         assertEquals(
             listOf(
-                ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6), DueRule.WHICHEVER_FIRST),
-                ImportedScheduleItem("Rotate tires", Interval(5_000, null)),
+                ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6), DueRule.WHICHEVER_FIRST, "oil"),
+                ImportedScheduleItem("Rotate tires", Interval(5_000, null), service = "rotation"),
                 ImportedScheduleItem("Brake fluid flush", Interval(null, 36)),
-                ImportedScheduleItem("Grease driveshaft", Interval(15_000, null), Interval(5_000, null), DueRule.MILEAGE_ONLY),
+                ImportedScheduleItem("Grease driveshaft", Interval(15_000, null), Interval(5_000, null), DueRule.MILEAGE_ONLY, "driveshaft"),
             ),
             items,
         )

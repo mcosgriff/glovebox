@@ -10,6 +10,8 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.ScheduleRef
+import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.Snooze
@@ -43,9 +45,21 @@ fun VehicleEntity.clusterSwap(): ClusterSwap? {
     return ClusterSwap(on, odometerOffset, start)
 }
 
-/** The odometer is in dash terms (see [ClusterSwap]); `record.odometer` stays as it was typed. */
-fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?): ServiceEntry =
-    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, items.mapNotNull { it.scheduleItemId }.toSet()))
+fun ScheduleItemEntity.toRef(): ScheduleRef = ScheduleRef(id, name, templateKey, tracked, service)
+
+/** Which of these schedule items answer to which built-in service line: see [ServiceLinks]. */
+fun List<ScheduleItemEntity>.answering(): Map<String, Set<Long>> = ServiceLinks.answering(map { it.toRef() })
+
+/** For a caller that only wants the readings out of the log and doesn't care which reminders a line counts for. */
+val NoLinks: Map<String, Set<Long>> = emptyMap()
+
+/**
+ * The odometer is in dash terms (see [ClusterSwap]); `record.odometer` stays as it was typed.
+ * [answering] is the vehicle's own ([answering] above): a line counts for the item it was saved
+ * against and for every item that answers to the catalog line it was picked from.
+ */
+fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
+    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
 
 /** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
 fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =

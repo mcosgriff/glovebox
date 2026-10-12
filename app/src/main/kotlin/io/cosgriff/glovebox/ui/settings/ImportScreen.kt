@@ -126,6 +126,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import io.cosgriff.glovebox.ui.service.answering
+import io.cosgriff.glovebox.ui.service.toRef
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -415,6 +417,7 @@ class ImportViewModel @Inject constructor(
                     severeMiles = it.severe?.miles,
                     severeMonths = it.severe?.months,
                     ruleOverride = it.rule?.name,
+                    service = it.service,
                 )
             }
             // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
@@ -426,6 +429,7 @@ class ImportViewModel @Inject constructor(
                     severeMiles = item.severe?.miles,
                     severeMonths = item.severe?.months,
                     ruleOverride = item.rule?.name,
+                    service = item.service,
                 )
             }
             val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
@@ -463,7 +467,7 @@ class ImportViewModel @Inject constructor(
         val records = service.recordsFor(vehicle.id)
         val byId = records.associateBy { it.record.id }
         val rows = schedule.allFor(vehicle.id)
-        val refs = rows.map { ScheduleRef(it.id, it.name, it.templateKey, it.tracked) }
+        val refs = rows.map { it.toRef() }
         val saved = records.map { r ->
             SavedRecord(
                 id = r.record.id,
@@ -479,7 +483,7 @@ class ImportViewModel @Inject constructor(
             )
         }
         val plan = HistoryImport.plan(items, saved, refs)
-        val before = records.map { it.toEntry(swap) }
+        val before = records.map { it.toEntry(swap, rows.answering()) }
         // A sold vehicle has no reminders to move.
         val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) }
         fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
@@ -552,6 +556,7 @@ class ImportViewModel @Inject constructor(
         rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
         templateKey = templateKey,
         tracked = tracked,
+        service = service,
     )
 
     private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
@@ -565,10 +570,11 @@ private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, soc
 private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
 
 /** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
-private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?): String = listOfNotNull(
+private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?): String = listOfNotNull(
     normal?.let { "Every ${it.label().replace(" / ", " or ")}" } ?: "No interval",
     severe?.let { "severe ${it.label().replace(" / ", " or ")}" },
     rule?.ruleLabel()?.lowercase(),
+    HistoryImport.services[service]?.let { "reset by \"${it.label}\"" },
 ).joinToString(" · ")
 
 /** "Oil & filter change, Tire rotation · Corner Garage · $62.50" */
@@ -582,8 +588,8 @@ private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName
 private fun describe(work: List<TableJob>, orMonths: Int?): String =
     listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
 
-private fun ImportedScheduleItem.describe() = describe(normal, severe, rule)
-private fun SavedScheduleItem.describe() = describe(normal, severe, rule)
+private fun ImportedScheduleItem.describe() = describe(normal, severe, rule, service)
+private fun SavedScheduleItem.describe() = describe(normal, severe, rule, service)
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 
