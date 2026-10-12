@@ -187,6 +187,9 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "A PDF or Markdown export is not encrypted. Anyone who has the file can read it.",
                     "Deleting all data in Settings does not touch files you have already saved elsewhere.",
                 ),
+                "Files you import" to listOf(
+                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. The file is not copied or kept, and nothing is sent anywhere.",
+                ),
                 "When you leave the app" to listOf(
                     "A manufacturer's recall page, Find a dealer and the source code open in your browser or maps app. What those do is up to them.",
                     "Sharing a photo or saving a file hands it to the app you choose.",

@@ -106,6 +106,7 @@ fun SettingsScreen(
     onOpenRules: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenImport: () -> Unit,
     onDeleteAll: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
@@ -315,6 +316,24 @@ fun SettingsScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ExportButton("PDF", "For resale or a shop", Modifier.weight(1f)) { exporting = ExportFormat.PDF }
                         ExportButton("Markdown", "Plain text, .md", Modifier.weight(1f)) { exporting = ExportFormat.MARKDOWN }
+                    }
+                }
+                // Needs a vehicle to import into; with none there is nowhere for it to lead.
+                if (vehicles.isNotEmpty()) {
+                    Divider()
+                    Column(
+                        Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenImport).padding(vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Import", style = MaterialTheme.typography.bodyLarge)
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
+                        }
+                        Text(
+                            "Torque specs from a JSON file \u00b7 nothing of yours changes unless you say so",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
                     }
                 }
                 Divider()

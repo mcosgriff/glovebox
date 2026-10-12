@@ -1,8 +1,13 @@
 package io.cosgriff.glovebox.domain
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersion
+import com.networknt.schema.InputFormat
+import com.networknt.schema.SchemaRegistry
+import com.networknt.schema.SpecificationVersion
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -12,10 +17,10 @@ import java.io.File
 class ImportFormatTest {
     // Gradle runs a module's tests from the module's folder.
     private val docs = File("../docs/import")
-    private val torqueSchema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)
+    private val torqueSchema = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12)
         .getSchema(File(docs, "schema/torque-specs.schema.json").readText())
 
-    private fun schemaAccepts(file: File): Boolean = torqueSchema.validate(ObjectMapper().readTree(file)).isEmpty()
+    private fun schemaAccepts(file: File): Boolean = torqueSchema.validate(file.readText(), InputFormat.JSON).isEmpty()
     private fun examples(folder: String): List<File> = File(docs, "examples/$folder").listFiles { f -> f.extension == "json" }!!.sortedBy { it.name }
 
     private fun torque(items: String) = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "torque-specs", "items": $items }""")
@@ -109,14 +114,16 @@ class ImportFormatTest {
 
     @Test
     fun `the schema's lists match the app's`() {
-        val spec = ObjectMapper().readTree(File(docs, "schema/torque-specs.schema.json")).at("/\$defs")
-        fun enum(path: String) = spec.at(path).map { it.asText() }.toSet()
-        assertEquals(TorqueImport.categories.keys, enum("/spec/properties/category/enum"))
-        assertEquals(TorqueImport.sources.keys, enum("/spec/properties/source/enum"))
-        assertEquals(TorqueImport.units.keys, enum("/torque/properties/unit/enum"))
-        assertEquals(VehicleText.MAX_SPEC, spec.at("/spec/properties/name/maxLength").asInt())
-        assertEquals(TorqueImport.MAX_SOCKET, spec.at("/spec/properties/socket/maxLength").asInt())
-        assertEquals(TorqueImport.MAX_NOTE, spec.at("/spec/properties/note/maxLength").asInt())
-        assertEquals(TorqueImport.MAX_ITEMS, ObjectMapper().readTree(File(docs, "schema/torque-specs.schema.json")).at("/properties/items/maxItems").asInt())
+        val schema = Json.parseToJsonElement(File(docs, "schema/torque-specs.schema.json").readText())
+        fun at(vararg path: String): JsonElement = path.fold(schema) { e, key -> e.jsonObject.getValue(key) }
+        fun enum(vararg path: String) = at(*path).jsonArray.map { it.jsonPrimitive.content }.toSet()
+        fun int(vararg path: String) = at(*path).jsonPrimitive.content.toInt()
+        assertEquals(TorqueImport.categories.keys, enum("\$defs", "spec", "properties", "category", "enum"))
+        assertEquals(TorqueImport.sources.keys, enum("\$defs", "spec", "properties", "source", "enum"))
+        assertEquals(TorqueImport.units.keys, enum("\$defs", "torque", "properties", "unit", "enum"))
+        assertEquals(VehicleText.MAX_SPEC, int("\$defs", "spec", "properties", "name", "maxLength"))
+        assertEquals(TorqueImport.MAX_SOCKET, int("\$defs", "spec", "properties", "socket", "maxLength"))
+        assertEquals(TorqueImport.MAX_NOTE, int("\$defs", "spec", "properties", "note", "maxLength"))
+        assertEquals(TorqueImport.MAX_ITEMS, int("properties", "items", "maxItems"))
     }
 }

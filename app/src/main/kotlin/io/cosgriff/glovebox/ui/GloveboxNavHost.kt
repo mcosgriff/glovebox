@@ -19,6 +19,7 @@ import io.cosgriff.glovebox.ui.settings.RestoreViewModel
 import io.cosgriff.glovebox.ui.settings.RestoreSheet
 import io.cosgriff.glovebox.domain.BackupRules
 import io.cosgriff.glovebox.ui.settings.BackupScreen
+import io.cosgriff.glovebox.ui.settings.ImportScreen
 import io.cosgriff.glovebox.ui.settings.NotificationsScreen
 import io.cosgriff.glovebox.notify.DestinationViewModel
 import io.cosgriff.glovebox.notify.Destination
@@ -91,6 +92,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable object ReminderRulesRoute
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
+/** Adds data from a JSON file the user picks to one vehicle. */
+@Serializable object ImportRoute
 @Serializable object DeleteAllRoute
 @Serializable object AboutRoute
 @Serializable object PrivacyRoute
@@ -459,6 +462,7 @@ fun GloveboxNavHost() {
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onOpenBackup = { nav.navigate(BackupRoute) },
+                    onOpenImport = { nav.navigate(ImportRoute) },
                     onDeleteAll = { nav.navigate(DeleteAllRoute) },
                     onOpenAbout = { nav.navigate(AboutRoute) },
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
@@ -479,6 +483,9 @@ fun GloveboxNavHost() {
             screen<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.popBackStack() }, onMessage = showNote) }
             screen<DeleteAllRoute> {
                 DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
+            }
+            screen<ImportRoute> {
+                ImportScreen(onBack = { nav.popBackStack() }, onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) })
             }
             screen<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
             screen<NotificationsRoute> {
