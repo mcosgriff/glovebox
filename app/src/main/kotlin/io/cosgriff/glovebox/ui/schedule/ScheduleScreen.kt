@@ -194,7 +194,7 @@ class ScheduleViewModel @Inject constructor(
     /** A date and mileage for the saved item [item], which starts its reminder counting. */
     fun enterLastDone(item: DraftItem, date: LocalDate, odometer: Int) = viewModelScope.launch {
         val entity = entities[item.key] ?: return@launch
-        actions.addLastDone(vehicleId, entity.id, entity.name, date, odometer)
+        actions.addLastDone(vehicleId, entity, date, odometer)
     }
 
     fun saveEdit(item: DraftItem) {

@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
@@ -18,6 +19,8 @@ import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
+import io.cosgriff.glovebox.domain.ServiceCatalog
+import io.cosgriff.glovebox.domain.lineFor
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -82,10 +85,12 @@ class RecordActions @Inject constructor(
      * A bare "last done" for one schedule item: a record with that one line, flagged as such. It is
      * entered on the spot where its result shows, so there is no snackbar and History isn't opened.
      */
-    suspend fun addLastDone(vehicleId: Long, scheduleItemId: Long, name: String, date: LocalDate, odometer: Int) {
+    suspend fun addLastDone(vehicleId: Long, item: ScheduleItemEntity, date: LocalDate, odometer: Int) {
+        // Filed under the catalog line that resets this reminder, so History puts it in the right category.
+        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = item.id, label = item.name, catalogId = ServiceCatalog.lineFor(item.templateKey)?.id)
         service.insertWithItems(
             ServiceRecordEntity(vehicleId = vehicleId, date = date, odometer = odometer, diy = true, enteredAsLastDone = true),
-            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = scheduleItemId, label = name)),
+            listOf(line),
         )
     }
 

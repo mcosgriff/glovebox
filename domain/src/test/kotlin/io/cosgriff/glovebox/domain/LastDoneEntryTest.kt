@@ -70,4 +70,11 @@ class LastDoneEntryTest {
         assertEquals("Entered as last done · just added", LogEdits.who(true, null, RecordMark.ADDED, true))
         assertEquals("DIY", LogEdits.who(true, null, null))
     }
+
+    @Test
+    fun `a last done is filed under the line that resets the reminder`() {
+        assertEquals(Snoozing.OIL_TEMPLATE_KEY, ServiceCatalog.lineFor(Snoozing.OIL_TEMPLATE_KEY)?.resets)
+        // The user's own items have no catalog line.
+        assertNull(ServiceCatalog.lineFor(null))
+    }
 }

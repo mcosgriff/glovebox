@@ -57,6 +57,7 @@ import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
@@ -109,6 +110,8 @@ class LastDoneViewModel @Inject constructor(
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<LastDoneRoute>().vehicleId
 
+    private var entities: Map<Long, ScheduleItemEntity> = emptyMap()
+
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<LastDoneState?> = combine(
         vehicles.observe(vehicleId),
@@ -118,6 +121,7 @@ class LastDoneViewModel @Inject constructor(
         settings.settings,
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
+        entities = items.associateBy { it.id }
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap) }
         LastDoneState(
@@ -134,7 +138,7 @@ class LastDoneViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun save(row: LastDoneRow, date: LocalDate, odometer: Int) = viewModelScope.launch {
-        actions.addLastDone(vehicleId, row.item.id, row.item.name, date, odometer)
+        entities[row.item.id]?.let { actions.addLastDone(vehicleId, it, date, odometer) }
     }
 }
 
