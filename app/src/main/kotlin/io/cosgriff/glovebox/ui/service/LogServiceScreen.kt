@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
+import androidx.compose.material3.ButtonDefaults
+import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.util.UUID
 import kotlinx.coroutines.flow.stateIn
@@ -336,7 +338,15 @@ class LogServiceViewModel @Inject constructor(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel()) {
+fun LogServiceScreen(
+    /** Closed, or an edit saved: back to where it was opened from. */
+    onDone: () -> Unit,
+    /** A new service saved. */
+    onAdded: () -> Unit,
+    /** "Delete this record" on the edit form: the changes are dropped and the record's screen asks to confirm. */
+    onDeleteInstead: () -> Unit,
+    vm: LogServiceViewModel = hiltViewModel(),
+) {
     val data = vm.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
     var addingCustom by remember { mutableStateOf(false) }
@@ -382,17 +392,22 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                         )
                     }
                 }
-                val odometerNote = when {
-                    vm.showErrors && vm.odometer == null -> "Enter the odometer reading in whole miles." to true
-                    vm.belowEarlierReading -> "That's lower than an earlier reading — double-check it." to true
-                    data.lastOdometer != null -> "Last recorded: ${String.format(Locale.US, "%,d", data.lastOdometer)} mi" to false
-                    else -> null
-                }
-                odometerNote?.let { (text, warn) ->
+                LogEdits.odometerNote(
+                    entered = vm.odometer,
+                    original = data.original?.record?.odometer,
+                    date = vm.date,
+                    readings = data.readings,
+                    lastOdometer = data.lastOdometer,
+                    showErrors = vm.showErrors,
+                )?.let { note ->
                     Text(
-                        text,
+                        note.text,
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (warn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = when (note.tone) {
+                            NoteTone.WARNING -> MaterialTheme.colorScheme.error
+                            NoteTone.CHANGED -> MaterialTheme.colorScheme.onPrimaryContainer
+                            NoteTone.PLAIN -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     )
                 }
             }
@@ -575,8 +590,15 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            Button(onClick = { vm.save(onDone) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+            Button(onClick = { vm.save(if (vm.editing) onDone else onAdded) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
                 Text(if (vm.editing) "Save changes" else "Save service")
+            }
+            if (vm.editing) {
+                TextButton(
+                    onClick = onDeleteInstead,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Delete this record") }
             }
         }
     }

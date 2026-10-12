@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.service
 
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,12 +17,16 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.Recalls
+import io.cosgriff.glovebox.domain.RecordMark
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/** The vehicle History should show next, and the record to mark in it: one just added, or just restored. */
+data class HistoryFocus(val vehicleId: Long, val recordId: Long? = null, val mark: RecordMark? = null)
 
 sealed interface RecordEvent {
     data class Saved(val recordId: Long) : RecordEvent
@@ -54,10 +61,20 @@ class RecordActions @Inject constructor(
     private val _events = Channel<RecordEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
+    private val _focus = MutableStateFlow<HistoryFocus?>(null)
+
+    /** Set by a save, a delete or a restore, which all end on the History list. Cleared once History has shown it. */
+    val focus: StateFlow<HistoryFocus?> = _focus.asStateFlow()
+
+    fun clearFocus() {
+        _focus.value = null
+    }
+
     /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
     suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, photoFiles: List<String> = emptyList()) {
         val id = service.insertWithItems(record, items)
         service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
+        _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
 
@@ -83,6 +100,7 @@ class RecordActions @Inject constructor(
         // The recall stays marked done; only its link to this record goes.
         val recallIds = recalls.idsLinkedTo(record.record.id)
         service.deleteRecord(record.record)
+        _focus.value = HistoryFocus(record.record.vehicleId)
         _events.send(RecordEvent.Deleted(record, recallIds))
     }
 
@@ -110,21 +128,35 @@ class RecordActions @Inject constructor(
         _events.send(RecordEvent.RecallReopened(recall, record))
     }
 
-    suspend fun undo(event: RecordEvent) {
-        when (event) {
-            is RecordEvent.Edited ->
-                if (vehicles.byId(event.previous.record.vehicleId) != null) {
-                    service.replaceWithItems(event.previous.record, event.previous.items)
-                    service.clearPhotos(event.previous.record.id)
-                    service.insertPhotos(event.previous.photos.map { it.copy(id = 0) })
-                    photos.delete(event.addedPhotos)
-                }
-            is RecordEvent.Deleted -> restore(event.record)?.let { recalls.linkRecord(event.recallIds, it) }
-            is RecordEvent.RecallDone -> if (event.recordId == null) recalls.setDone(event.recallId, null, null)
-            is RecordEvent.RecallReopened ->
-                recalls.setDone(event.recall.id, event.recall.completedOn, event.record?.let { restore(it) })
-            is RecordEvent.Saved -> Unit
+    /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */
+    suspend fun undo(event: RecordEvent): Boolean = when (event) {
+        is RecordEvent.Edited ->
+            if (vehicles.byId(event.previous.record.vehicleId) != null) {
+                service.replaceWithItems(event.previous.record, event.previous.items)
+                service.clearPhotos(event.previous.record.id)
+                service.insertPhotos(event.previous.photos.map { it.copy(id = 0) })
+                photos.delete(event.addedPhotos)
+                true
+            } else {
+                false
+            }
+        is RecordEvent.Deleted -> {
+            val id = restore(event.record)
+            if (id != null) {
+                recalls.linkRecord(event.recallIds, id)
+                _focus.value = HistoryFocus(event.record.record.vehicleId, id, RecordMark.RESTORED)
+            }
+            id != null
         }
+        is RecordEvent.RecallDone -> {
+            if (event.recordId == null) recalls.setDone(event.recallId, null, null)
+            true
+        }
+        is RecordEvent.RecallReopened -> {
+            recalls.setDone(event.recall.id, event.recall.completedOn, event.record?.let { restore(it) })
+            true
+        }
+        is RecordEvent.Saved -> true
     }
 
     /** Null if the vehicle was deleted while the snackbar was up: there is nothing to put the record back on. */
@@ -157,6 +189,7 @@ class RecordActions @Inject constructor(
 @HiltViewModel
 class RecordEventsViewModel @Inject constructor(private val actions: RecordActions) : ViewModel() {
     val events = actions.events
-    fun undo(event: RecordEvent) = viewModelScope.launch { actions.undo(event) }
+    /** [onUndone] runs only if there was still something to undo it on. */
+    fun undo(event: RecordEvent, onUndone: () -> Unit) = viewModelScope.launch { if (actions.undo(event)) onUndone() }
     fun discard(event: RecordEvent) = viewModelScope.launch { actions.discard(event) }
 }
