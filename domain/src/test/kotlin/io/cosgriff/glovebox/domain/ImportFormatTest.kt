@@ -13,6 +13,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.time.LocalDate
 
 class ImportFormatTest {
     // Gradle runs a module's tests from the module's folder.
@@ -100,8 +101,8 @@ class ImportFormatTest {
 
     @Test
     fun `a kind that is specified but not built says so`() {
-        val file = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "service-history", "items": [] }""")
-        assertEquals(ImportFile.NotYet(ImportKind.SERVICE_HISTORY), file)
+        val file = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "milestone-schedule", "items": [] }""")
+        assertEquals(ImportFile.NotYet(ImportKind.MILESTONE_SCHEDULE), file)
         // Every kind that is built has a schema, a valid example and both folders of bad ones.
         for (kind in kinds) assertTrue(File(docs, "examples/$kind.json").isFile)
     }
@@ -143,6 +144,72 @@ class ImportFormatTest {
         assertEquals(ScheduleImport.MAX_MILES, int("\$defs", "miles", "maximum"))
         assertEquals(ScheduleImport.MAX_MONTHS, int("\$defs", "months", "maximum"))
         assertEquals(ScheduleImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+
+        schema = Json.parseToJsonElement(File(docs, "schema/service-history.schema.json").readText())
+        // Every line the Log service screen offers, and nothing else.
+        assertEquals(HistoryImport.services.keys, enum("\$defs", "work", "properties", "service", "enum"))
+        assertEquals(HistoryImport.MAX_LABEL, int("\$defs", "work", "properties", "label", "maxLength"))
+        assertEquals(HistoryImport.MAX_SHOP, int("\$defs", "doneBy", "properties", "name", "maxLength"))
+        assertEquals(HistoryImport.MAX_NOTES, int("\$defs", "record", "properties", "notes", "maxLength"))
+        assertEquals(HistoryImport.MAX_ODOMETER, int("\$defs", "record", "properties", "odometer", "maximum"))
+        assertEquals(HistoryImport.MAX_WORK, int("\$defs", "record", "properties", "work", "maxItems"))
+        assertEquals(HistoryImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+    }
+
+    private fun history(items: String) =
+        ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "service-history", "items": $items }""", LocalDate.of(2026, 10, 12))
+
+    @Test
+    fun `the history example is accepted by the schema and by the app`() {
+        val file = File(docs, "examples/service-history.json")
+        assertTrue(schemaAccepts("service-history", file))
+        val items = (ImportFormat.parse(file.readText()) as ImportFile.ServiceHistory).items
+        assertEquals(3, items.size)
+        assertEquals(
+            ImportedRecord(
+                date = LocalDate.of(2024, 3, 1),
+                odometer = 41_000,
+                work = listOf(ImportedWork("Oil & filter change", "oil"), ImportedWork("Tire rotation", "rotation"), ImportedWork("Replaced left tail lamp")),
+                diy = false,
+                shopName = "Corner Garage",
+                costCents = 6_250,
+                notes = "0W-20, 6.2 qt\nNew drain plug gasket",
+            ),
+            items[0],
+        )
+        assertEquals(41_000L, items[1].costCents)
+        assertEquals(null, items[1].shopName)
+        assertTrue(items[2].diy)
+    }
+
+    @Test
+    fun `a record is of work already done, on a real date`() {
+        val line = """"odometer": 41000, "work": [ { "label": "Oil change" } ], "doneBy": { "type": "diy" }"""
+        assertEquals(listOf("items[0].date: is in the future; a record is of work already done"), errors(history("""[ { "date": "2026-10-13", $line } ]""")))
+        assertTrue(history("""[ { "date": "2026-10-12", $line } ]""") is ImportFile.ServiceHistory)
+        assertEquals(listOf("items[0].date: must be a real date written as \"YYYY-MM-DD\""), errors(history("""[ { "date": "2024-02-30", $line } ]""")))
+        assertEquals(listOf("items[0].date: must be a real date written as \"YYYY-MM-DD\""), errors(history("""[ { "date": "3/1/2024", $line } ]""")))
+    }
+
+    @Test
+    fun `one visit is one record`() {
+        val record = """{ "date": "2024-03-01", "odometer": 41000, "work": [ { "label": "Oil change" } ], "doneBy": { "type": "diy" } }"""
+        assertEquals(
+            listOf("items[1]: has the same date and odometer as items[0]; put the work of one visit in one record"),
+            errors(history("[ $record, $record ]")),
+        )
+    }
+
+    @Test
+    fun `cost is dollars as text and only a shop has a name`() {
+        fun one(extra: String) = history("""[ { "date": "2024-03-01", "odometer": 41000, "work": [ { "label": "Oil change" } ], $extra } ]""")
+        assertEquals(125_000L, (one(""""doneBy": { "type": "diy" }, "cost": "1250"""") as ImportFile.ServiceHistory).items.single().costCents)
+        assertEquals(650L, (one(""""doneBy": { "type": "diy" }, "cost": "6.5"""") as ImportFile.ServiceHistory).items.single().costCents)
+        assertTrue(one(""""doneBy": { "type": "diy" }, "cost": 62.5""") is ImportFile.Invalid)
+        assertEquals(
+            listOf("items[0].doneBy.name: only a shop has a name; leave it out for \"diy\""),
+            errors(one(""""doneBy": { "type": "diy", "name": "Me" }""")),
+        )
     }
 
     @Test

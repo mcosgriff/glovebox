@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "service-history",
+  "items": [
+    {
+      "date": "2024-03-01",
+      "odometer": 41000,
+      "work": [
+        {
+          "label": "Oil & filter change",
+          "service": "oil"
+        },
+        {
+          "label": "Tire rotation",
+          "service": "rotation"
+        },
+        {
+          "label": "Replaced left tail lamp"
+        }
+      ],
+      "doneBy": {
+        "type": "shop",
+        "name": "Corner Garage"
+      },
+      "cost": "62.50",
+      "notes": "0W-20, 6.2 qt\nNew drain plug gasket"
+    },
+    {
+      "date": "2023-09-12",
+      "odometer": 36150,
+      "work": [
+        {
+          "label": "Front pads",
+          "service": "front-pads"
+        },
+        {
+          "label": "Brake fluid flush",
+          "service": "brake-fluid"
+        }
+      ],
+      "doneBy": {
+        "type": "shop"
+      },
+      "cost": "410"
+    },
+    {
+      "date": "2023-04-02",
+      "odometer": 31800,
+      "work": [
+        {
+          "label": "Cabin air filter",
+          "service": "cabin-air"
+        }
+      ],
+      "doneBy": {
+        "type": "diy"
+      }
+    }
+  ]
+}

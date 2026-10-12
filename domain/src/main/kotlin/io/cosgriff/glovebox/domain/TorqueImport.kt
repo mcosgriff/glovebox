@@ -99,6 +99,6 @@ object TorqueImport {
             key = { key(it.name, it.category) },
             existingKey = { key(it.name, it.category) },
             same = { i, e -> i.socket == e.socket && sameTorque(i.torque, e.torque) && i.note == e.note && (i.torque == null || i.source == e.source) },
-            blank = { it.socket == null && it.torque == null && it.note == null },
+            blank = { _, e -> e.socket == null && e.torque == null && e.note == null },
         )
 }
