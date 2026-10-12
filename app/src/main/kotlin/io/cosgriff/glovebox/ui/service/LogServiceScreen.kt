@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.util.UUID
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
@@ -60,7 +61,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -375,7 +375,7 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                             onValueChange = { vm.odometerText = it },
                             singleLine = true,
                             isError = vm.showErrors && vm.odometer == null,
-                            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace),
+                            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth(),
@@ -543,7 +543,7 @@ fun LogServiceScreen(onDone: () -> Unit, vm: LogServiceViewModel = hiltViewModel
                 } else {
                     null
                 },
-                textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace),
+                textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),

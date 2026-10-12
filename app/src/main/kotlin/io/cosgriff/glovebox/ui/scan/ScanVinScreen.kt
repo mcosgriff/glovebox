@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -59,7 +60,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -246,7 +246,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                             color = statusColors().ok,
                         )
                     }
-                    Text(vin, style = MaterialTheme.typography.titleLarge, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold)
+                    Text(vin, style = MaterialTheme.typography.titleLarge, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
                             onClick = {

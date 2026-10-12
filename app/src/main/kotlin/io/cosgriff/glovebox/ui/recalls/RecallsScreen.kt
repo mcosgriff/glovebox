@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -49,7 +50,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -338,7 +338,7 @@ private fun SummaryCard(
                     )
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("$open", fontFamily = FontFamily.Monospace, fontSize = 40.sp, fontWeight = FontWeight.SemiBold, color = accent)
+                        Text("$open", fontFamily = PlexMono, fontSize = 40.sp, fontWeight = FontWeight.SemiBold, color = accent)
                         Text(
                             when (open) {
                                 0 -> "open recalls — all clear"
@@ -431,7 +431,7 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
                     "NHTSA ${Recalls.campaignLabel(recall.campaign)}",
                     Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlexMono,
                     fontWeight = FontWeight.SemiBold,
                     color = body,
                 )

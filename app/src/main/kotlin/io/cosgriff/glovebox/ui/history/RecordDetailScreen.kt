@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.photo.PhotoThumb
 import io.cosgriff.glovebox.ui.photo.PhotoTarget
@@ -43,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -376,6 +376,6 @@ private fun WhiteCard(content: @Composable () -> Unit) {
 private fun Stat(label: String, value: String, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace)
+        Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono)
     }
 }

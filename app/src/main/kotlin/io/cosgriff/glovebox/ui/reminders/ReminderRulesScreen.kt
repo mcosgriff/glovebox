@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,7 +49,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -414,7 +414,7 @@ private fun LimitBar(label: String, date: String, fraction: Double, deciding: Bo
                 fontWeight = FontWeight.SemiBold,
                 color = if (deciding) scheme.primary else scheme.onSurface,
             )
-            Text(date, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
+            Text(date, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
         }
         // Decorative: the label and date beside it carry the meaning.
         Box(Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(scheme.outlineVariant).clearAndSetSemantics { }) {

@@ -70,7 +70,13 @@ accent `#C2410C` (on-accent white), accent-soft `#FBE9DF`/`#9A3412`, ok `#0F766E
 danger `#B42318`. Dark: ground `#121416`, surface `#1C1F23`, ink `#EDEBE6`, muted `#A5A9AF`,
 accent `#F08A4B` (on-accent `#17191C`), accent-soft `#3A2418`/`#FDBA74`, ok `#5EEAD4`, danger `#F97066`.
 Light mode shows importance with tints (soft orange = needs attention, solid orange = most urgent),
-not black panels. Fonts: IBM Plex Sans + IBM Plex Mono (numbers, VINs) — not bundled yet.
+not black panels. Fonts: IBM Plex Sans + IBM Plex Mono, bundled in `res/font` and set in `Theme.kt`
+(`PlexSans` through `MaterialTheme.typography`, `PlexMono` by name for mileage, VINs, torque and other
+figures). Never use `FontFamily.Monospace`. Their licence (OFL 1.1) is `assets/licences/com.ibm_plex.txt`
+and is listed on the licences screen by hand in `LicenceCatalog`, since fonts aren't Maven dependencies.
+Accent text on the soft-orange tint is `onPrimaryContainer`, not `primary` (4.4:1 in light, below the
+4.5:1 text needs); `primary` there is fine for icons and large figures. Colours that Material doesn't name
+come from `statusColors()`. In dark the urgent pill is solid (`onPrimaryContainer` behind dark text).
 Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehicle name / DELETE).
 
 ## Screens (canvas board → status)
@@ -94,7 +100,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), fonts and dark pass (#28), History
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), History
 and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 

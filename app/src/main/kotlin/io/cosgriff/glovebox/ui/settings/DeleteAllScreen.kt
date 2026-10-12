@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.LocalActivity
@@ -44,7 +45,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -171,14 +171,14 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                     Text(
                         buildAnnotatedString {
                             append("Type ")
-                            withStyle(SpanStyle(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold)) { append(DeleteAll.WORD) }
+                            withStyle(SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)) { append(DeleteAll.WORD) }
                             append(" to confirm")
                         },
                     )
                 },
                 singleLine = true,
                 enabled = !vm.deleting,
-                textStyle = TextStyle(fontFamily = FontFamily.Monospace),
+                textStyle = TextStyle(fontFamily = PlexMono),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = if (confirmed) scheme.error else scheme.primary,

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.theme
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -65,6 +70,47 @@ private val Dark = darkColorScheme(
     errorContainer = Color(0xFF3B1714),
 )
 
+/** IBM Plex Sans, bundled in `res/font`: all running text. */
+val PlexSans = FontFamily(
+    Font(R.font.ibm_plex_sans_regular, FontWeight.Normal),
+    Font(R.font.ibm_plex_sans_medium, FontWeight.Medium),
+    Font(R.font.ibm_plex_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.ibm_plex_sans_bold, FontWeight.Bold),
+)
+
+/** IBM Plex Mono: numbers that are read digit by digit or compared in a column (mileage, VINs, torque, dates in lists). */
+val PlexMono = FontFamily(
+    Font(R.font.ibm_plex_mono_regular, FontWeight.Normal),
+    Font(R.font.ibm_plex_mono_medium, FontWeight.Medium),
+    Font(R.font.ibm_plex_mono_semibold, FontWeight.SemiBold),
+    // The design never sets mono heavier than semibold.
+    Font(R.font.ibm_plex_mono_semibold, FontWeight.Bold),
+)
+
+/**
+ * Material's type scale in Plex Sans. Sizes and line heights stay Material's, which the screens were
+ * laid out against; titles and labels are a step heavier, as the canvas draws them.
+ */
+private val GloveboxTypography = Typography().run {
+    copy(
+        displayLarge = displayLarge.copy(fontFamily = PlexSans),
+        displayMedium = displayMedium.copy(fontFamily = PlexSans),
+        displaySmall = displaySmall.copy(fontFamily = PlexSans),
+        headlineLarge = headlineLarge.copy(fontFamily = PlexSans),
+        headlineMedium = headlineMedium.copy(fontFamily = PlexSans, fontWeight = FontWeight.SemiBold),
+        headlineSmall = headlineSmall.copy(fontFamily = PlexSans, fontWeight = FontWeight.SemiBold),
+        titleLarge = titleLarge.copy(fontFamily = PlexSans, fontWeight = FontWeight.SemiBold),
+        titleMedium = titleMedium.copy(fontFamily = PlexSans),
+        titleSmall = titleSmall.copy(fontFamily = PlexSans),
+        bodyLarge = bodyLarge.copy(fontFamily = PlexSans),
+        bodyMedium = bodyMedium.copy(fontFamily = PlexSans),
+        bodySmall = bodySmall.copy(fontFamily = PlexSans),
+        labelLarge = labelLarge.copy(fontFamily = PlexSans, fontWeight = FontWeight.SemiBold),
+        labelMedium = labelMedium.copy(fontFamily = PlexSans),
+        labelSmall = labelSmall.copy(fontFamily = PlexSans),
+    )
+}
+
 /** Status colors that Material's scheme doesn't name. */
 @Immutable
 data class StatusColors(val overdue: Color, val soon: Color, val ok: Color)
@@ -80,12 +126,9 @@ fun GloveboxTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () ->
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    // TODO: bundle IBM Plex Sans / Mono (res/font) and set them here to match the design.
-    MaterialTheme(
-        colorScheme = if (dark) Dark else Light,
-        typography = Typography(),
-        content = content,
-    )
+    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = GloveboxTypography) {
+        CompositionLocalProvider(LocalStatusColors provides statusColors(), content = content)
+    }
 }
 
 @Composable

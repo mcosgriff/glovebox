@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,7 +101,7 @@ fun UpdateMileageSheet(
                     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             String.format(Locale.US, "%,d", miles ?: 0),
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlexMono,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = if (miles == null) scheme.onSurfaceVariant else scheme.onSurface,
@@ -208,7 +208,7 @@ private fun DigitKey(digit: Char, modifier: Modifier, onClick: () -> Unit) {
 
 @Composable
 private fun KeyLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, modifier, fontFamily = FontFamily.Monospace, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+    Text(text, modifier, fontFamily = PlexMono, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
 }
 
 /** [label] is what a screen reader says when the key's face isn't a word or a digit. */
