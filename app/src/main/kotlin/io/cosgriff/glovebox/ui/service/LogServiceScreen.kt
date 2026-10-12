@@ -1,5 +1,24 @@
 package io.cosgriff.glovebox.ui.service
 
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.Box
+import io.cosgriff.glovebox.domain.VehicleSpecs
 import androidx.compose.material3.ButtonDefaults
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -125,6 +144,8 @@ data class LogServiceData(
     /** Readings to sanity-check the odometer against; excludes the record being edited. */
     val readings: List<OdometerReading>,
     val lastOdometer: Int?,
+    /** What the user wrote on Vehicle details, for the hints beside the lines. */
+    val specs: VehicleSpecs,
     /** The record being edited; null when logging a new one. */
     val original: ServiceRecordWithItems?,
 )
@@ -282,6 +303,7 @@ class LogServiceViewModel @Inject constructor(
                 entries = entries,
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
+                specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
                 original = original,
             )
         }
@@ -371,24 +393,32 @@ fun LogServiceScreen(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        OutlinedButton(
+                        FieldLabel("Date")
+                        // Drawn as the odometer field's twin; it opens the date picker instead of the keyboard.
+                        Surface(
                             onClick = { pickingDate = true },
+                            modifier = Modifier.fillMaxWidth().height(56.dp).semantics { role = Role.Button },
                             shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                        ) { Text(vm.date.format(longDate), color = MaterialTheme.colorScheme.onSurface) }
+                            color = MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        ) {
+                            Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
+                                Text(vm.date.format(longDate), style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                            }
+                        }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Odometer (mi)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        FieldLabel("Odometer (mi)")
                         OutlinedTextField(
                             value = vm.odometerText,
                             onValueChange = { vm.odometerText = it },
                             singleLine = true,
                             isError = vm.showErrors && vm.odometer == null,
-                            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
+                            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth(),
+                            colors = fieldColors(),
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
                         )
                     }
                 }
@@ -417,10 +447,28 @@ fun LogServiceScreen(
                     SectionLabel("DUE NOW · ONE TAP")
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         data.due.forEach { s ->
+                            val on = s.optionId in vm.selected
                             FilterChip(
-                                selected = s.optionId in vm.selected,
+                                selected = on,
                                 onClick = { vm.toggle(s.optionId) },
-                                label = { Text(s.label) },
+                                // Canvas: "+" offers it, a tick and the soft tint show it is on the list.
+                                label = { Text((if (on) "\u2713 " else "+ ") + s.label, fontWeight = FontWeight.SemiBold) },
+                                shape = CircleShape,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    labelColor = MaterialTheme.colorScheme.onSurface,
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = on,
+                                    borderColor = MaterialTheme.colorScheme.outline,
+                                    selectedBorderColor = MaterialTheme.colorScheme.primary,
+                                    borderWidth = 1.5.dp,
+                                    selectedBorderWidth = 1.5.dp,
+                                ),
+                                modifier = Modifier.heightIn(min = 40.dp),
                             )
                         }
                     }
@@ -446,13 +494,16 @@ fun LogServiceScreen(
 
                 Card(
                     Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        val intervals = remember(data) { data.tracked.associate { it.id to it.interval } }
                         data.categories.first { it.id == vm.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
-                                hint = if (option.scheduleItemId != null) "Resets reminder" else null,
+                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs),
                                 checked = option.id in vm.selected,
                                 onToggle = { vm.toggle(option.id) },
                             )
@@ -476,10 +527,10 @@ fun LogServiceScreen(
             ) {
                 val labels = data.categories.flatMap { it.options }.filter { it.id in vm.selected }.map { it.label } + vm.customItems
                 Text(
-                    if (labels.isEmpty()) {
-                        "0 items · Pick what was done above"
-                    } else {
-                        "${labels.size} ${if (labels.size == 1) "item" else "items"} · ${labels.joinToString(", ")}"
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("${labels.size} ${if (labels.size == 1) "item" else "items"}") }
+                        append(" \u00b7 ")
+                        append(if (labels.isEmpty()) "Pick what was done above" else labels.joinToString(", "))
                     },
                     Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodyMedium,
@@ -524,12 +575,14 @@ fun LogServiceScreen(
                         onClick = { vm.diy = true },
                         shape = SegmentedButtonDefaults.itemShape(0, 2),
                         colors = colors,
+                        icon = {}, // canvas: the solid fill is the mark
                     ) { Text("I did (DIY)") }
                     SegmentedButton(
                         selected = !vm.diy,
                         onClick = { vm.diy = false },
                         shape = SegmentedButtonDefaults.itemShape(1, 2),
                         colors = colors,
+                        icon = {},
                     ) { Text("A shop") }
                 }
                 if (!vm.diy) {
@@ -546,39 +599,26 @@ fun LogServiceScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = vm.costText,
-                onValueChange = { vm.costText = it },
-                label = { Text("Total cost (optional)") },
-                prefix = { Text("$") },
-                singleLine = true,
-                isError = !vm.costValid,
-                supportingText = if (!vm.costValid) {
-                    { Text("Enter an amount like 45.99") }
-                } else {
-                    null
-                },
-                textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            CostAndPhotos(vm)
 
-            OutlinedTextField(
-                value = vm.notes,
-                onValueChange = { vm.notes = it },
-                label = { Text("Notes (optional)") },
-                placeholder = { Text("Part numbers, oil brand, torque specs…") },
-                minLines = 3,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            PhotosField(vm)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                FieldLabel("Notes (part numbers, oil brand, torque specs\u2026)")
+                OutlinedTextField(
+                    value = vm.notes,
+                    onValueChange = { vm.notes = it },
+                    placeholder = { Text("Optional") },
+                    minLines = 3,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = fieldColors(),
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Notes" },
+                )
+            }
 
             // The fields with problems may be scrolled out of view, so repeat what's missing here.
             val missing = listOfNotNull(
+                // The picker refuses future days, so this is only ever a form left open across a clock change.
+                "a date that isn't in the future".takeIf { vm.date.isAfter(LocalDate.now()) },
                 "the odometer reading".takeIf { vm.odometer == null },
                 "at least one item".takeIf { vm.itemCount == 0 },
                 "a valid cost".takeIf { !vm.costValid },
@@ -590,7 +630,11 @@ fun LogServiceScreen(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            Button(onClick = { vm.save(if (vm.editing) onDone else onAdded) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+            Button(
+                onClick = { vm.save(if (vm.editing) onDone else onAdded) },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
                 Text(if (vm.editing) "Save changes" else "Save service")
             }
             if (vm.editing) {
@@ -624,32 +668,79 @@ fun LogServiceScreen(
     }
 }
 
-/** Design: the "Receipt / photo" row on 5 · Log service. */
+/** The small label above a field, as the canvas draws them. */
 @Composable
-private fun PhotosField(vm: LogServiceViewModel) {
+private fun FieldLabel(text: String) {
+    Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+/** Canvas: fields are white (or the dark surface) boxes on the page colour. */
+@Composable
+private fun fieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    errorContainerColor = MaterialTheme.colorScheme.surface,
+)
+
+/** Design: "Total cost" beside "Receipt / photo" on 5 · Log service, with the attached photos under them. */
+@Composable
+private fun CostAndPhotos(vm: LogServiceViewModel) {
     val scheme = MaterialTheme.colorScheme
     val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
     val problem by vm.photoProblem.collectAsStateWithLifecycle()
     val count = vm.keptPhotos.size + newPhotos.size
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "Receipt / photo" + (RecordPhotos.countLabel(count)?.let { " · $it" } ?: ""),
-                Modifier.weight(1f),
-                style = MaterialTheme.typography.labelLarge,
-                color = scheme.onSurfaceVariant,
-            )
-            AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos) { open ->
-                OutlinedButton(
-                    onClick = open,
-                    enabled = vm.photoRoom > 0,
-                    modifier = Modifier.heightIn(min = 48.dp),
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                FieldLabel("Total cost")
+                OutlinedTextField(
+                    value = vm.costText,
+                    onValueChange = { vm.costText = it },
+                    placeholder = { Text("0.00", fontFamily = PlexMono) },
+                    prefix = { Text("$", fontFamily = PlexMono) },
+                    singleLine = true,
+                    isError = !vm.costValid,
+                    textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     shape = RoundedCornerShape(12.dp),
-                ) {
-                    Icon(Icons.Outlined.AttachFile, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp))
-                    Text("Attach")
+                    colors = fieldColors(),
+                    modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = "Total cost, optional" },
+                )
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                FieldLabel("Receipt / photo")
+                AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
+                    val enabled = vm.photoRoom > 0
+                    val ink = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
+                    val dash = if (enabled) scheme.outline else scheme.outlineVariant
+                    Row(
+                        Modifier.fillMaxWidth().height(56.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .drawBehind {
+                                // Twice the width, because the outer half is clipped away.
+                                drawRoundRect(
+                                    color = dash,
+                                    cornerRadius = CornerRadius(12.dp.toPx()),
+                                    style = Stroke(width = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))),
+                                )
+                            }
+                            .clickable(enabled = enabled, role = Role.Button, onClick = open),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp), tint = ink)
+                        Text(
+                            RecordPhotos.countLabel(count)?.let { "Attach \u00b7 $it" } ?: "Attach",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = ink,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
+        }
+        if (!vm.costValid) {
+            Text("Enter the cost as an amount like 45.99, or leave it empty.", style = MaterialTheme.typography.bodySmall, color = scheme.error)
         }
         if (count > 0) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -665,7 +756,7 @@ private fun PhotosField(vm: LogServiceViewModel) {
             problem ?: if (vm.photoRoom == 0) {
                 "That's the most a record holds (${RecordPhotos.MAX_PER_RECORD})."
             } else {
-                "Stored encrypted with the record. The copy in your gallery, if there is one, isn't touched."
+                "Photos are stored encrypted with the record. The copy in your gallery, if there is one, isn't touched."
             },
             style = MaterialTheme.typography.bodySmall,
             color = if (problem != null) scheme.error else scheme.onSurfaceVariant,
@@ -713,11 +804,14 @@ private fun CheckRow(label: String, hint: String?, checked: Boolean, onToggle: (
         Checkbox(checked = checked, onCheckedChange = null, modifier = Modifier.padding(horizontal = 8.dp))
         Text(label, Modifier.weight(1f))
         if (hint != null) {
+            // The user's own note may be long; the line's name keeps its room.
             Text(
                 hint,
-                Modifier.padding(end = 8.dp),
+                Modifier.padding(end = 8.dp).widthIn(max = 150.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

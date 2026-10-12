@@ -100,8 +100,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), Log service
-polish (#31), navigation map (#32), mileage readings (#64, #65), odometer offset
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -141,6 +140,11 @@ Notes on what's built:
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
   (`ServiceCatalog`); the user's own schedule items appear under "Your items".
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
+- Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
+  prefilled, because a prefilled reading gets saved untouched and every reminder is then counted from the
+  wrong mileage. The note on the right of each line comes from `ServiceCatalog.hint`: what the user wrote
+  on Vehicle details for that job (oil, tire size, wiper blades), otherwise the reminder's interval.
+  Future dates are refused by the date picker itself, typed or tapped.
 - Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
