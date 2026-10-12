@@ -105,7 +105,7 @@ First-run welcome (lock and notification choices, add a vehicle or restore), del
 DELETE, then the phone's screen lock). Odometer offset (instrument cluster replacement: date and the two
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
-JSON file, with a preview and a choice about rows that differ).
+or a by-interval maintenance schedule from a JSON file, with a preview and a choice about what differs).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
@@ -173,6 +173,18 @@ Notes on what's built:
   written to disk, which is why `DataWipe` knows nothing about it and what the privacy screen says.
   Torque rows match on category and name ignoring case; a file's caps are whole figures per unit
   (`TorqueImport.maxIn`) so the schema can state them exactly.
+- A new kind of import is: a schema, a valid example, `examples/invalid/<kind>/` and
+  `examples/beyond-schema/<kind>/`, a reader and plan in `:domain`, a case in `ImportFormat.parse` and
+  `supported`, and a `...Preview` function in `ImportViewModel` that turns the plan into a `PlanView`
+  (words only) with a `write` lambda. The page itself is kind-agnostic.
+- Schedule import (`ScheduleImport`, kind `interval-schedule`): every item becomes the user's own
+  `schedule_items` row (no `templateKey`, tracked). Matching is by name against the user's own items
+  only; a typical item (`templateKey` set) is never matched, so it can't be replaced. Replace writes
+  only the interval, severe interval and rule (`ruleOverride`), keeping `tracked`, `useSevere`, a snooze
+  and the item's records. A tracked typical item with the same name as a file item is a "double"
+  (`ScheduleImport.doubles`): the page offers, unticked by default, to stop tracking it, which is the one
+  thing an import may change on a typical item and only because the user ticked it. The file has no
+  last-done and no link to a catalog service; the result card offers "When were these last done?".
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
