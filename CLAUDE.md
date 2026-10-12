@@ -107,8 +107,8 @@ readings, from Vehicle details). "When were these last done?" (a date and mileag
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
-screen).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
+screen; the user's own table is built and edited there).
+To build: distance units (km display, #93), writing a milestone table out as a file (#118), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -221,7 +221,7 @@ Notes on what's built:
   miles really covered: with a cluster replacement everything is placed by `swap.actual`, and the dash
   figure is shown beside it.
 - The user's own milestone table (`MilestoneImport`, kind `milestone-schedule`, tables `milestones` and
-  `milestone_jobs`, both cascading from `vehicles`): imported from a file, never edited in the app. When a
+  `milestone_jobs`, both cascading from `vehicles`): imported from a file or typed in the app (below). When a
   vehicle has one, the Milestones screen shows it **in place of** the generated view, with
   `status(continues = false)`, since a table simply ends and a job's last milestone takes whatever comes
   after the one before it. A job is the same job across milestones, and is completed by logged work, by
@@ -241,6 +241,22 @@ Notes on what's built:
   table repeats one way or not at all:** a file whose `repeatsEveryMiles` isn't the saved table's is
   refused whole (`MilestoneImport.repeatConflict`), in either mode, and the user removes the table to
   change it. That is what keeps the cycle from ever being shorter than the saved table.
+- The table is built and edited on the Milestones screen (#114, `MilestoneEditor`, `MilestoneEdits` in
+  `:domain`): "Make my own table" under the generated view, then "Add a milestone", "Edit this milestone"
+  on an open card (a repeat opens the milestone it repeats) and a row for whether the table repeats.
+  **A table typed in the app keeps exactly the rules of one read from a file, from the same code:**
+  `MilestoneImport`'s limits and its `repeated`, `nameKey` and `cycleCovers`, which the reader and
+  `MilestoneEdits.check` / `.repeat` both call, and a test runs the same values through both. A form only
+  trims the space round a name. So a milestone can't be added past the end of a cycle, and the cycle
+  can't be set shorter than the table. Decided there: a table starts **empty**, never as a copy of the
+  generated milestones (those go on for ever and a copy would freeze an arbitrary stretch of them); a
+  job's service is picked from the catalog and **never suggested from its name**; deleting a milestone
+  or the table is a **confirmation, with no Undo** (nothing else hangs off these rows); Close and Back
+  ask before discarding a changed form. The table exists once its first milestone is saved, and deleting
+  the last one removes it (`MilestoneDao.deleteMilestone`). Jobs keep the user's order in
+  `milestone_jobs.position`; read them through `MilestoneWithJobs.ordered`. The screen calls it "your
+  own milestone table" however it arrived: where a table came from is not stored. Writing a table back
+  out as an import file is #118.
 - Every `ImportKind` is now built, so there is no "not yet" path; a new kind needs one again only if it
   is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
@@ -443,7 +459,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v14); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v15); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

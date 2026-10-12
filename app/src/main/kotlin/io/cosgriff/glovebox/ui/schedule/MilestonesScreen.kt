@@ -1,6 +1,5 @@
 package io.cosgriff.glovebox.ui.schedule
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -327,7 +326,6 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     // Below everything the list remembers, so it is where it was left when the editor closes.
     val editing = vm.editing
     if (editing != null) {
-        BackHandler(onBack = vm::closeEditor)
         MilestoneEditor(
             draft = editing,
             others = state.table.filter { it.id != editing.id }.map { it.atMiles },

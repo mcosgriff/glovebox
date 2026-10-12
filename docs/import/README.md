@@ -348,6 +348,10 @@ whole:
   **Replace matching** replaces those and nothing else.
 - **Removing it:** "Remove this table" on the Milestones screen deletes the whole table and brings
   back the milestones built from your schedule.
+- **Changing it in the app:** an imported table can be edited on the Milestones screen afterwards
+  (add, edit or delete a milestone, change whether it repeats), and a table can be typed in there
+  from nothing. The app holds a typed table to the same rules as this file. Jobs are kept in the
+  order the file lists them.
 - Within one milestone a `name`, and a `service`, can each appear only once; no two milestones
   can have the same `atMiles`; and `repeatsEveryMiles` can't be less than the highest `atMiles`
   (these are the rules the schema can't state).

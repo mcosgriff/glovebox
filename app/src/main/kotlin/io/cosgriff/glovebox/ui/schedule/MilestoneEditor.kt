@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -97,6 +98,32 @@ fun MilestoneEditor(
     }
     var showErrors by remember(draft) { mutableStateOf(false) }
     var deleting by remember(draft) { mutableStateOf(false) }
+    var discarding by remember(draft) { mutableStateOf(false) }
+    val initial = remember(draft) { Triple(milesText, monthsText, jobs.toList()) }
+
+    // A milestone can be a lot of typing, so Close and Back ask before throwing it away.
+    fun close() {
+        if (Triple(milesText, monthsText, jobs.toList()) == initial) onClose() else discarding = true
+    }
+    BackHandler(onBack = ::close)
+
+    if (discarding) {
+        AlertDialog(
+            onDismissRequest = { discarding = false },
+            title = { Text(if (isNew) "Discard this milestone?" else "Discard your changes?") },
+            text = { Text(if (isNew) "What you have typed hasn't been saved." else "The milestone stays as it was.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        discarding = false
+                        onClose()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
+                ) { Text("Discard") }
+            },
+            dismissButton = { TextButton(onClick = { discarding = false }) { Text("Keep editing") } },
+        )
+    }
 
     val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles)
     val problems = (checked as? MilestoneEdit.Refused)?.problems?.takeIf { showErrors } ?: MilestoneProblems()
@@ -128,15 +155,16 @@ fun MilestoneEditor(
         )
     }
 
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
+    Column(Modifier.fillMaxSize().imePadding()) {
+        // Save stays put above the form: a milestone with many jobs is a long scroll.
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
+            IconButton(onClick = ::close) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
             Text(if (isNew) "Add milestone" else "Edit milestone", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
             Button(onClick = { if (checked is MilestoneEdit.Ok) onSave(checked.milestone) else showErrors = true }) { Text("Save") }
         }
 
         Column(
-            Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             if (startsTable) {
@@ -151,12 +179,12 @@ fun MilestoneEditor(
                 SectionLabel("DUE AT")
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     NumberField("Miles", milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
-                    NumberField("Or months (optional)", monthsText, { monthsText = it }, problems.months != null, Modifier.weight(1f))
+                    NumberField("Or months", monthsText, { monthsText = it }, problems.months != null, Modifier.weight(1f))
                 }
                 val wrong = listOfNotNull(problems.miles, problems.months)
                 if (wrong.isEmpty()) {
                     Text(
-                        "Miles the vehicle has covered, as your manual gives them. Months are the vehicle's age, shown for reference." +
+                        "Miles the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
                             (repeatsEveryMiles?.let { " The table repeats every ${it.asMiles()}, so this comes round again each time." } ?: ""),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
