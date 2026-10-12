@@ -1,0 +1,1 @@
+{ "glovebox": "import", "version": 1, "kind": "torque-specs", "vehicle": "4Runner", "items": [ { "name": "Lug nuts", "category": "wheels" } ] }

@@ -9,5 +9,10 @@ kotlin {
 }
 
 dependencies {
+    // Reads import files as a JSON tree (ImportFormat). Pure Kotlin, like everything here.
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
+    // Test only: checks the import examples against the published JSON Schemas, so the schemas and
+    // ImportFormat can't drift apart. Never ships in the app.
+    testImplementation(libs.json.schema.validator)
 }
