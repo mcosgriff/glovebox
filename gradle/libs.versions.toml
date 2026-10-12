@@ -33,6 +33,7 @@ aboutlibraries = "15.2.0"
 hilt-androidx = "1.4.0"
 
 junit = "4.13.2"
+jsonSchemaValidator = "3.0.8"
 turbine = "1.2.1"
 
 [libraries]
@@ -82,6 +83,7 @@ hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.re
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-androidx" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "jsonSchemaValidator" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]

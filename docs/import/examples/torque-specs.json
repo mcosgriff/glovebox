@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/torque-specs.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "torque-specs",
+  "items": [
+    {
+      "name": "Lug nuts",
+      "category": "wheels",
+      "socket": "21 mm",
+      "torque": { "value": 100, "unit": "ft-lb" },
+      "source": "factory-manual",
+      "note": "Star pattern, re-check after 50 mi"
+    },
+    {
+      "name": "Oil drain plug",
+      "category": "engine",
+      "socket": "14 mm",
+      "torque": { "value": 40, "unit": "Nm" }
+    },
+    {
+      "name": "Valve cover bolts",
+      "category": "engine",
+      "torque": { "value": 90, "unit": "in-lb" },
+      "source": "own"
+    },
+    {
+      "name": "Skid plate bolts",
+      "category": "other",
+      "socket": "12 mm"
+    }
+  ]
+}

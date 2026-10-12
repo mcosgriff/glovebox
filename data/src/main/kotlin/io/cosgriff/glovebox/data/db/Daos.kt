@@ -202,9 +202,20 @@ interface TorqueDao {
     @Query("SELECT * FROM torque_specs WHERE vehicleId = :vehicleId ORDER BY category, name")
     fun observe(vehicleId: Long): Flow<List<TorqueSpecEntity>>
 
+    @Query("SELECT * FROM torque_specs WHERE vehicleId = :vehicleId")
+    suspend fun specsFor(vehicleId: Long): List<TorqueSpecEntity>
+
     @Insert suspend fun insert(spec: TorqueSpecEntity): Long
     @Insert suspend fun insertAll(specs: List<TorqueSpecEntity>)
     @Update suspend fun update(spec: TorqueSpecEntity)
+    @Update suspend fun updateAll(specs: List<TorqueSpecEntity>)
+
+    /** One import, applied whole or not at all. Nothing is ever deleted by one. */
+    @Transaction
+    suspend fun applyImport(added: List<TorqueSpecEntity>, replaced: List<TorqueSpecEntity>) {
+        insertAll(added)
+        updateAll(replaced)
+    }
     @Delete suspend fun delete(spec: TorqueSpecEntity)
 }
 

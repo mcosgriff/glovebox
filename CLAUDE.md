@@ -104,7 +104,8 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock). Odometer offset (instrument cluster replacement: date and the two
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
-schedule setup, the Maintenance schedule screen and vehicle home).
+schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
+JSON file, with a preview and a choice about rows that differ).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
@@ -150,6 +151,28 @@ Notes on what's built:
   doesn't open History, because it is entered where its result shows. Setup's dropdown has two choices,
   entering them as they come up or going on to the list; the canvas's "import from a dealer record" and
   "assume everything was done on schedule" are deliberately not built.
+- Import (`docs/import/`, `ImportFormat` and `TorqueImport` in `:domain`, `ImportScreen` and `ImportPicker`
+  in app): the user picks a vehicle and a JSON file, and the file's items are added to that vehicle.
+  `docs/import/README.md` and the JSON Schemas in `docs/import/schema/` are the specification, as
+  `docs/backup-format.md` is for backups. **Change the schema, the Kotlin reader and the example files
+  together, and never change how a version-1 file is read.** `ImportFormatTest` runs every file in
+  `examples/invalid/` through both the schema (a test-only validator) and `ImportFormat`, and checks the
+  schema's enums and caps against the Kotlin constants, so they can't drift. A rule a schema can't state
+  goes in `examples/beyond-schema/` and in the README. The format is strict on purpose: unknown fields,
+  `null`, stray spaces and out-of-range values refuse the file, nothing is repaired, and every error is
+  reported with its path (`items[3].torque.unit`). The app ships no JSON Schema library; `:domain` reads
+  the file as a JSON tree with kotlinx.serialization. A file never names a vehicle. Four kinds are
+  specified (`ImportKind`); only `ImportFormat.supported` are built, and a good file of another kind says
+  so. The Settings row names the kinds that work and is absent with no vehicles.
+- What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
+  a name), same and differs before anything is written, and the page shows that. "Add new only" is the
+  default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import
+  never deletes, is one transaction (`TorqueDao.applyImport`), has no Undo, and only ever writes the
+  user's own rows: nothing Glovebox supplies may be changed by one (that will matter for #76's bundled
+  lists and for template schedule items). The picked file is read into memory, capped at 2 MB, and never
+  written to disk, which is why `DataWipe` knows nothing about it and what the privacy screen says.
+  Torque rows match on category and name ignoring case; a file's caps are whole figures per unit
+  (`TorqueImport.maxIn`) so the schema can state them exactly.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
