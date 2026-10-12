@@ -127,6 +127,14 @@ class ExportTest {
     }
 
     @Test
+    fun `an imported record says so`() {
+        val imported = oil.copy(imported = true)
+        val md = Exports.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertEquals(1, Regex(Regex.escape(Exports.IMPORTED_NOTE)).findAll(md).count())
+        assertTrue(md.contains("Done by: DIY · Cost: $62.50\n\n${Exports.IMPORTED_NOTE}"))
+    }
+
+    @Test
     fun `markdown leaves out what was switched off`() {
         val md = Exports.markdown(
             Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false, scheduleAndRecalls = false), today),

@@ -41,6 +41,8 @@ data class ExportRecord(
     val photoFiles: List<String> = emptyList(),
     /** A bare date and mileage the owner gave afterwards; [doneBy] means nothing for it. */
     val enteredAsLastDone: Boolean = false,
+    /** Came from a file the owner imported, not logged in the app at the time. */
+    val imported: Boolean = false,
 )
 
 data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?)
@@ -152,6 +154,9 @@ object Exports {
     /** Said in place of who did the work, for a record that is only a date and mileage given afterwards. */
     const val LAST_DONE_NOTE = "Entered by the owner as when this was last done; not logged at the time."
 
+    /** Said on a record that came from an import file. */
+    const val IMPORTED_NOTE = "Imported by the owner from a file; not logged in Glovebox at the time."
+
     /** Said under any schedule: the intervals are the owner's settings, not factory data. */
     const val SCHEDULE_NOTE = "Intervals are the ones the owner set in Glovebox, not the manufacturer's schedule."
 
@@ -178,6 +183,7 @@ object Exports {
                 append("\n" + if (r.enteredAsLastDone) LAST_DONE_NOTE else "Done by: ${text(r.doneBy)}")
                 r.costCents?.let { append(" · Cost: ${Money.format(it)}") }
                 append("\n")
+                if (r.imported) append("\n$IMPORTED_NOTE\n")
                 r.notes?.let { notes -> append("\n" + notes.lines().joinToString("\n") { "> ${text(it)}" } + "\n") }
                 append("\n")
             }

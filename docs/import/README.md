@@ -16,7 +16,7 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
 |---|---|---|---|
 | `torque-specs` | Fasteners with socket sizes and torque values | [`torque-specs.schema.json`](schema/torque-specs.schema.json) | Yes |
 | `interval-schedule` | A schedule with one repeating interval per job | [`interval-schedule.schema.json`](schema/interval-schedule.schema.json) | Yes |
-| `service-history` | Maintenance done before you used Glovebox | to come (#103) | Not yet |
+| `service-history` | Maintenance done before you used Glovebox | [`service-history.schema.json`](schema/service-history.schema.json) | Yes |
 | `milestone-schedule` | A schedule by mileage point, as an owner's manual prints it | to come (#105) | Not yet |
 
 ## The shape of every file
@@ -83,7 +83,8 @@ After a file passes, the app shows what it would do before it does anything:
 
 - **New** — nothing on the vehicle matches. These are added.
 - **Fills in** — matches a row of yours that is only a name, with nothing entered yet. These are
-  filled in, since nothing is lost. (Torque specs only.)
+  filled in, since nothing is lost. For service history, the same goes for a bare "last done" you
+  entered, when the file's record for that visit resets the same reminders.
 - **Already the same** — matches something of yours that says the same. Left alone.
 - **Different from yours** — matches something of yours that says something else. Listed with your
   value beside the file's.
@@ -100,6 +101,8 @@ Either way:
 - It is **all or nothing**. If any part can't be saved, none of it is.
 - What it adds is **your own data**, the same as if you had typed it. It never changes anything
   Glovebox itself supplies.
+- Torque specs and schedules go into a vehicle in your garage. Service history can also go into a
+  vehicle you have sold.
 - There is no Undo. The result screen says exactly what was added, filled in and replaced.
 
 ## Privacy
@@ -143,6 +146,76 @@ phones, use the encrypted backup instead (Settings → Backup).
 - **Same or different:** socket, torque (compared as a wrench setting, whichever units were used),
   note and, where there is a torque, source.
 
+## `service-history`
+
+[`schema/service-history.schema.json`](schema/service-history.schema.json) ·
+[`examples/service-history.json`](examples/service-history.json) · up to 1000 records
+
+Maintenance that was done before you kept it in Glovebox: a dealer printout typed up, a spreadsheet,
+another app's export. One record per visit.
+
+```json
+{
+  "date": "2024-03-01",
+  "odometer": 41000,
+  "work": [
+    { "label": "Oil & filter change", "service": "oil" },
+    { "label": "Replaced left tail lamp" }
+  ],
+  "doneBy": { "type": "shop", "name": "Corner Garage" },
+  "cost": "62.50",
+  "notes": "0W-20, 6.2 qt"
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `date` | yes | `YYYY-MM-DD`, a real date, not in the future |
+| `odometer` | yes | Whole miles, 1 to 9999999: what the dash read that day |
+| `work` | yes | 1 to 30 lines, each with a `label` (up to 80 characters) and optionally a `service` |
+| `doneBy` | yes | `{ "type": "diy" }` or `{ "type": "shop" }`, the shop optionally with a `name` (up to 60 characters) |
+| `cost` | no | Dollars as text in quotes, at most two decimals: `"62.50"`. Text, so nothing is rounded |
+| `notes` | no | Up to 1000 characters; line breaks are allowed |
+
+`service` says which of Glovebox's own service lines a line of work is, and it is what makes a line
+count for a reminder. The values, by the category History files them under:
+
+| Category | `service` values |
+|---|---|
+| Oil & engine | `oil`, `engine-air`, `spark-plugs`, `belt`, `pcv` |
+| Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat` |
+| Brakes | `front-pads`, `rear-pads`, `rotors`, `brake-fluid`, `brake-inspect` |
+| Fluids | `coolant`, `trans-fluid`, `power-steering`, `washer` |
+| Driveline | `diff-fluid`, `driveshaft`, `cv-axle` |
+| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `bulbs` |
+| Inspection | `multi-point`, `emissions`, `recall` |
+| Other | `accessory`, `body`, `detail` |
+
+- **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
+  it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
+  `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A line
+  *without* a `service` resets one of your own schedule items if its `label` is that item's name
+  (ignoring capitals). Any other line is history only. The preview lists every reminder that would
+  move before you import.
+- An older record never moves a reminder that a newer service has already set: the last time a job
+  was done is always the most recent one in the log.
+- **Matching:** a record in the file matches a record on the vehicle with the same date and the same
+  odometer. Two records in one file can't share both (one visit is one record; this, and the date
+  not being in the future, are the rules the schema can't state).
+- **Same or different:** the work lines (in any order, ignoring capitals), who did it, the cost and
+  the notes.
+- **Replace matching** replaces those four things. Photos on your record stay, and so does a recall
+  it was the work for.
+- **Readings that don't fit:** a record whose odometer is lower than an earlier reading, or higher
+  than a later one, is pointed out in the preview. It doesn't stop the import; one of the two
+  readings is wrong and it may not be the file's.
+- **Marked as imported:** these records say "imported" in History, on the record's screen and in
+  exports, so they are never taken for something logged in the app at the time.
+- **Mileage:** imported readings count towards the vehicle's odometer and driving pace like any
+  other. If the instrument cluster was replaced and you have set an odometer offset, write each
+  reading as the dash showed it on that day; Glovebox converts.
+- No photos or receipts in version 1.
+
 ## `interval-schedule`
 
 [`schema/interval-schedule.schema.json`](schema/interval-schedule.schema.json) ·
@@ -181,7 +254,7 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
   the file, the preview says so and offers to stop tracking the typical one. That is your choice;
   left alone, both stay. A stopped item keeps its history and can be switched back on.
 - **When it was last done isn't part of this file.** New items start as "Not logged yet"; after the
-  import the app offers "When were these last done?".
+  import the app offers "When were these last done?", or import a `service-history` file.
 - **Logging work against them:** your own items are listed under "Your items" when you log a
   service. The built-in lines (such as "Oil & filter change") reset the typical items, not these.
 - The same job can't appear twice in a file under names that differ only in capitals (this is the

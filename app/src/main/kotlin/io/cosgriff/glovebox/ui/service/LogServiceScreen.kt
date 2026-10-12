@@ -354,6 +354,8 @@ class LogServiceViewModel @Inject constructor(
                 notes = notes.trim().takeIf { it.isNotEmpty() },
                 // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
                 enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
+                // Nor does correcting an imported record make it one that was logged here.
+                imported = d.original?.record?.imported ?: false,
             )
             val items = selectedOptions.map {
                 ServiceRecordItemEntity(

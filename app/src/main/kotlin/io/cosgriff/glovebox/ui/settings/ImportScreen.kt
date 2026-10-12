@@ -54,15 +54,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
+import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
+import io.cosgriff.glovebox.domain.ImportedRecord
+import io.cosgriff.glovebox.domain.LogEdits
+import io.cosgriff.glovebox.domain.Money
+import io.cosgriff.glovebox.domain.SavedRecord
+import io.cosgriff.glovebox.domain.ScheduleRef
+import io.cosgriff.glovebox.domain.asReadOn
+import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.ImportFormat
 import io.cosgriff.glovebox.domain.ImportKind
 import io.cosgriff.glovebox.domain.ImportMode
@@ -79,7 +92,15 @@ import io.cosgriff.glovebox.domain.TorqueImport
 import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.service.RecordActions
+import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
+import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
@@ -202,6 +223,10 @@ data class PlanView(
     val caution: String,
     /** Typical schedule items being tracked under a name the file also uses; empty for other kinds. */
     val doubles: List<String> = emptyList(),
+    /** Service history only: the reminders whose last done moves, for each choice the user can make. */
+    val moves: Map<ImportMode, List<String>> = emptyMap(),
+    /** Things worth a second look that don't stop the import. */
+    val warnings: List<String> = emptyList(),
 ) {
     fun changes(mode: ImportMode): Int = new.size + fills.size + if (mode == ImportMode.REPLACE_MATCHING) differs.size else 0
     fun count(n: Int): String = if (n == 1) "1 $noun" else "$n ${noun}s"
@@ -215,6 +240,9 @@ sealed interface ImportPreview {
     /** A good file, but there are several vehicles and none has been chosen. */
     data object NeedsVehicle : ImportPreview
 
+    /** A good file that can't go into the chosen vehicle; [why] says so. */
+    data class Refused(val why: String) : ImportPreview
+
     /** [write] saves it in one transaction; `stopDoubles` also stops tracking [PlanView.doubles]. */
     class Ready(val view: PlanView, val write: suspend (mode: ImportMode, stopDoubles: Boolean) -> Unit) : ImportPreview
 }
@@ -224,6 +252,8 @@ data class ImportResult(
     val noun: String,
     val vehicleId: Long,
     val vehicleName: String,
+    /** The vehicle is sold; its history has its own screen. */
+    val archived: Boolean,
     val added: Int,
     val filled: Int,
     val replaced: Int,
@@ -239,9 +269,13 @@ class ImportViewModel @Inject constructor(
     settings: SettingsRepository,
     private val torque: TorqueDao,
     private val schedule: ScheduleDao,
+    private val service: ServiceDao,
+    private val odometer: OdometerDao,
+    private val actions: RecordActions,
     private val picker: ImportPicker,
 ) : ViewModel() {
-    val vehicles: StateFlow<List<VehicleEntity>?> = vehicles.observeActive()
+    /** The garage, then sold vehicles: those can still take service history. */
+    val vehicles: StateFlow<List<VehicleEntity>?> = combine(vehicles.observeActive(), vehicles.observeArchived()) { active, sold -> active + sold }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val picked: StateFlow<PickedImport?> = picker.picked
@@ -260,16 +294,27 @@ class ImportViewModel @Inject constructor(
     val result: StateFlow<ImportResult?> = _result.asStateFlow()
 
     /** Null with no file picked. Worked out afresh for each file and vehicle; nothing is written by it. */
-    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, settings.settings.map { it.torqueUnit }) { file, id, unit -> Triple(file, id, unit) }
-        .mapLatest { (file, id, unit) ->
-            when (file) {
-                null -> null
-                is ImportFile.Invalid -> ImportPreview.Invalid(file)
-                is ImportFile.NotYet -> ImportPreview.NotYet(file.kind.label)
-                is ImportFile.TorqueSpecs -> if (id == null) ImportPreview.NeedsVehicle else torquePreview(id, file.items, unit)
-                is ImportFile.IntervalSchedule -> if (id == null) ImportPreview.NeedsVehicle else schedulePreview(id, file.items)
+    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, this.vehicles, settings.settings) { file, id, list, s ->
+        Triple(file, list.orEmpty().firstOrNull { it.id == id }, s)
+    }.mapLatest { (file, vehicle, s) ->
+        when (file) {
+            null -> null
+            is ImportFile.Invalid -> ImportPreview.Invalid(file)
+            is ImportFile.NotYet -> ImportPreview.NotYet(file.kind.label)
+            else -> when {
+                vehicle == null -> ImportPreview.NeedsVehicle
+                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file.items, s)
+                // A sold vehicle gets no reminders and isn't being worked on.
+                vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
+                file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
+                file is ImportFile.IntervalSchedule -> schedulePreview(vehicle.id, file.items)
+                else -> null
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Points the History tab at [vehicleId] before the user is sent there. */
+    fun showHistory(vehicleId: Long) = actions.showIn(vehicleId)
 
     fun chooseVehicle(id: Long) {
         chosenVehicle.value = id
@@ -290,6 +335,7 @@ class ImportViewModel @Inject constructor(
             noun = view.noun,
             vehicleId = vehicleId,
             vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            archived = vehicle?.archivedOn != null,
             added = view.new.size,
             filled = view.fills.size,
             replaced = replaced,
@@ -382,6 +428,82 @@ class ImportViewModel @Inject constructor(
         }
     }
 
+    private suspend fun historyPreview(vehicle: VehicleEntity, items: List<ImportedRecord>, s: Settings): ImportPreview {
+        val swap = vehicle.clusterSwap()
+        val records = service.recordsFor(vehicle.id)
+        val byId = records.associateBy { it.record.id }
+        val rows = schedule.allFor(vehicle.id)
+        val refs = rows.map { ScheduleRef(it.id, it.name, it.templateKey, it.tracked) }
+        val saved = records.map { r ->
+            SavedRecord(
+                id = r.record.id,
+                date = r.record.date,
+                odometer = r.record.odometer,
+                labels = r.items.map { it.label },
+                itemIds = r.items.mapNotNull { it.scheduleItemId }.toSet(),
+                diy = r.record.diy,
+                shopName = r.record.shopName,
+                costCents = r.record.costCents,
+                notes = r.record.notes,
+                enteredAsLastDone = r.record.enteredAsLastDone,
+            )
+        }
+        val plan = HistoryImport.plan(items, saved, refs)
+        val before = records.map { it.toEntry(swap) }
+        // A sold vehicle has no reminders to move.
+        val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) }
+        fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
+        val odd = HistoryImport.backwards(after(ImportMode.ADD_NEW), odometer.readingsFor(vehicle.id).toReadings(swap))
+        val view = PlanView(
+            kind = ImportKind.SERVICE_HISTORY,
+            noun = "record",
+            total = plan.total,
+            new = plan.new.map { PlanLine(it.title(), it.describe()) },
+            fills = plan.fills.map { PlanLine(it.first.title(), it.first.describe()) },
+            differs = plan.differs.map { (item, mine) -> PlanLine(item.title(), item.describe(), mine.describe()) },
+            same = plan.same.size,
+            caution = "Imported records are marked as imported in History and in exports.",
+            moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text() } },
+            warnings = odd.map { e ->
+                // As it is written in the file, which is how the user will look for it.
+                "${e.date.format(longDate)} · ${swap.asReadOn(e.odometer, e.date).asMiles()} doesn't fit the readings around it. Check the date and the odometer."
+            },
+        )
+        return ImportPreview.Ready(view) { mode, _ ->
+            fun lines(r: ImportedRecord) = r.work.map { line ->
+                val w = HistoryImport.resolve(line, refs)
+                ServiceRecordItemEntity(recordId = 0, scheduleItemId = w.scheduleItemId, label = w.label, catalogId = w.catalogId)
+            }
+            val added = plan.new.map { r ->
+                ServiceRecordEntity(
+                    vehicleId = vehicle.id,
+                    date = r.date,
+                    odometer = r.odometer,
+                    diy = r.diy,
+                    shopName = r.shopName,
+                    costCents = r.costCents,
+                    notes = r.notes,
+                    imported = true,
+                ) to lines(r)
+            }
+            // Same record, same id: its photos and any recall it was the work for stay with it.
+            val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
+                byId[mine.id]?.record?.copy(
+                    diy = item.diy,
+                    shopName = item.shopName,
+                    costCents = item.costCents,
+                    notes = item.notes,
+                    enteredAsLastDone = false,
+                    imported = true,
+                )?.let { it to lines(item) }
+            }
+            actions.applyImport(added, replaced)
+            finish(view, vehicle.id, mode)
+        }
+    }
+
+    private fun ImportedRecord.title() = "${date.format(longDate)} · ${odometer.asMiles()}"
+
     private fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
         id = id,
         name = name,
@@ -419,6 +541,13 @@ private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?): Stri
     rule?.ruleLabel()?.lowercase(),
 ).joinToString(" · ")
 
+/** "Oil & filter change, Tire rotation · Corner Garage · $62.50" */
+private fun describe(labels: List<String>, who: String, costCents: Long?): String =
+    listOfNotNull(labels.joinToString(", "), who, costCents?.let(Money::format)).joinToString(" · ")
+
+private fun ImportedRecord.describe() = describe(work.map { it.label }, LogEdits.who(diy, shopName, null), costCents)
+private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName, null, enteredAsLastDone), costCents)
+
 private fun ImportedScheduleItem.describe() = describe(normal, severe, rule)
 private fun SavedScheduleItem.describe() = describe(normal, severe, rule)
 
@@ -432,6 +561,8 @@ fun ImportScreen(
     onOpenSchedule: (vehicleId: Long) -> Unit,
     /** "When were these last done?", offered after a schedule import. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
+    /** After a history import. A sold vehicle's history is its own screen. */
+    onOpenHistory: (vehicleId: Long, archived: Boolean) -> Unit,
     vm: ImportViewModel = hiltViewModel(),
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -470,7 +601,7 @@ fun ImportScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Add torque specs or a maintenance schedule to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
+                    "Add service history, a maintenance schedule or torque specs to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
@@ -499,6 +630,13 @@ fun ImportScreen(
                             Text("See the schedule")
                         }
                     }
+                    ImportKind.SERVICE_HISTORY -> Button(
+                        onClick = {
+                            vm.showHistory(r.vehicleId)
+                            onOpenHistory(r.vehicleId, r.archived)
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                    ) { Text("See history") }
                     else -> Button(onClick = { onOpenTorqueSpecs(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See torque specs") }
                 }
                 OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
@@ -516,7 +654,7 @@ fun ImportScreen(
                                 if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
                                 Choice(
                                     title = "${v.year} ${v.nickname ?: v.model}",
-                                    detail = listOfNotNull(v.trim, v.engine).joinToString(" · ").ifEmpty { null },
+                                    detail = listOfNotNull("Sold".takeIf { v.archivedOn != null }, v.trim, v.engine).joinToString(" · ").ifEmpty { null },
                                     selected = v.id == vehicleId,
                                     onClick = { vm.chooseVehicle(v.id) },
                                 )
@@ -545,12 +683,9 @@ fun ImportScreen(
             when (val p = preview) {
                 null -> Unit
                 is ImportPreview.Invalid -> ErrorsCard(p.file)
-                is ImportPreview.NotYet -> Text(
-                    "This is a ${p.kindLabel.lowercase()} file. This version of Glovebox imports " +
-                        ImportFormat.supported.joinToString(" and ") { it.label.lowercase() + if (it.label.endsWith("s")) "" else "s" } + " only.",
-                    color = scheme.onSurface,
-                )
+                is ImportPreview.NotYet -> Text("This is a ${p.kindLabel.lowercase()} file, which this version of Glovebox can't import yet.", color = scheme.onSurface)
                 ImportPreview.NeedsVehicle -> Text("The file is fine. Choose which vehicle it goes into.", color = scheme.onSurface)
+                is ImportPreview.Refused -> Text(p.why, color = scheme.onSurface)
                 is ImportPreview.Ready -> {
                     val view = p.view
                     PlanCard(view)
@@ -571,6 +706,7 @@ fun ImportScreen(
                         }
                     }
                     if (view.doubles.isNotEmpty()) DoublesCard(view.doubles, stopDoubles) { stopDoubles = it }
+                    view.moves[mode].orEmpty().takeIf { it.isNotEmpty() }?.let { MovesCard(it) }
                     val changes = view.changes(mode)
                     if (changes == 0) {
                         Text(
@@ -615,6 +751,10 @@ private fun PlanCard(view: PlanView) {
                 Group("${view.differs.size} different from yours", "Left alone unless you choose to replace them", view.differs, color = scheme.onPrimaryContainer)
                 if (view.same > 0) {
                     Text("${view.same} already the same · left alone", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                }
+                view.warnings.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.error) }
+                if (view.warnings.size > SHOWN) {
+                    Text("and ${view.warnings.size - SHOWN} more like that", style = MaterialTheme.typography.bodySmall, color = scheme.error)
                 }
                 Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
@@ -678,6 +818,20 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
         )
+    }
+}
+
+/** Which reminders count from a different service once the import is in, as the delete sheet lists them. */
+@Composable
+private fun MovesCard(moves: List<String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionLabel("REMINDERS THAT WILL MOVE")
+        Card {
+            Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                moves.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                if (moves.size > SHOWN) Text("and ${moves.size - SHOWN} more", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }
 

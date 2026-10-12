@@ -97,6 +97,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         }
         lines.forEach { text(it, body) }
         text(if (r.enteredAsLastDone) Exports.LAST_DONE_NOTE else "Done by ${r.doneBy}", small, before = 2f)
+        if (r.imported) text(Exports.IMPORTED_NOTE, small, before = 2f)
         r.notes?.let { text(it, body, before = 3f, indent = 10f) }
         r.photoFiles.forEach { photo(it) }
         gap(6f)

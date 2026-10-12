@@ -266,7 +266,7 @@ private fun RecordCard(r: ServiceRecordWithItems, mark: RecordMark?, onClick: ()
             Text(r.items.joinToString(", ") { it.label })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    LogEdits.who(r.record.diy, r.record.shopName, mark, r.record.enteredAsLastDone),
+                    LogEdits.who(r.record.diy, r.record.shopName, mark, r.record.enteredAsLastDone, r.record.imported),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

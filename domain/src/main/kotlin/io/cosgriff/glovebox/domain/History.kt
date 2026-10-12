@@ -70,14 +70,16 @@ object LogEdits {
 
     /**
      * Who did the work, as the History list says it; a record just added or restored says so. A bare
-     * "last done" ([enteredAsLastDone]) doesn't say who, so it says what it is instead.
+     * "last done" ([enteredAsLastDone]) doesn't say who, so it says what it is instead, and a record
+     * that came from an import file ([imported]) is marked as one.
      */
-    fun who(diy: Boolean, shopName: String?, mark: RecordMark?, enteredAsLastDone: Boolean = false): String {
-        val who = when {
+    fun who(diy: Boolean, shopName: String?, mark: RecordMark?, enteredAsLastDone: Boolean = false, imported: Boolean = false): String {
+        val by = when {
             enteredAsLastDone -> LastDoneEntries.TAG
             diy -> "DIY"
             else -> shopName?.trim()?.takeIf { it.isNotEmpty() } ?: "Shop"
         }
+        val who = if (imported) "$by \u00b7 imported" else by
         return when (mark) {
             RecordMark.ADDED -> "$who \u00b7 just added"
             RecordMark.RESTORED -> "$who \u00b7 restored"

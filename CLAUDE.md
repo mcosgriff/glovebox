@@ -105,7 +105,8 @@ First-run welcome (lock and notification choices, add a vehicle or restore), del
 DELETE, then the phone's screen lock). Odometer offset (instrument cluster replacement: date and the two
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
-or a by-interval maintenance schedule from a JSON file, with a preview and a choice about what differs).
+a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
+about what differs).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
@@ -185,6 +186,21 @@ Notes on what's built:
   (`ScheduleImport.doubles`): the page offers, unticked by default, to stop tracking it, which is the one
   thing an import may change on a typical item and only because the user ticked it. The file has no
   last-done and no link to a catalog service; the result card offers "When were these last done?".
+- History import (`HistoryImport`, kind `service-history`): each item is a service record with
+  `service_records.imported` set, written through `RecordActions.applyImport` (no snackbar; the Import
+  page shows its own result). A line's optional `service` is a `CatalogItem` id: it files the line under
+  that category and resets the schedule item whose `templateKey` the catalog item `resets`. A line without
+  one resets one of the user's own items when its label is that item's name (`HistoryImport.resolve`).
+  The schema's `service` enum is generated from the catalog and a test holds them equal, so **adding a
+  catalog item means adding it to `service-history.schema.json` and the README table.** Records match on
+  date and odometer. A matching bare last done (#78) counts as a fill, replaced in either mode, only when
+  the imported record resets every reminder it did; otherwise it is a difference. A replace keeps the
+  record's id, so its photos and recall link stay, and clears `enteredAsLastDone`. The preview lists the
+  reminders that move for the chosen mode (`LogEdits.reminderChanges` over `HistoryImport.entriesAfter`)
+  and warns about readings that don't fit the ones around them (`HistoryImport.backwards`), both in dash
+  terms. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
+  `today` passed to `ImportFormat.parse`. An imported record says "· imported" after who did it
+  (`LogEdits.who`) and carries `Exports.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
@@ -375,7 +391,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v10); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v11); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
