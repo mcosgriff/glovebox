@@ -107,8 +107,8 @@ readings, from Vehicle details). "When were these last done?" (a date and mileag
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
-screen; the user's own table is built and edited there).
-To build: distance units (km display, #93), writing a milestone table out as a file (#118), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
+screen; the user's own table is built and edited there, and saved from there as an import file).
+To build: distance units (km display, #93), writing a schedule or torque specs out as a file (#120), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -255,8 +255,15 @@ Notes on what's built:
   ask before discarding a changed form. The table exists once its first milestone is saved, and deleting
   the last one removes it (`MilestoneDao.deleteMilestone`). Jobs keep the user's order in
   `milestone_jobs.position`; read them through `MilestoneWithJobs.ordered`. The screen calls it "your
-  own milestone table" however it arrived: where a table came from is not stored. Writing a table back
-  out as an import file is #118.
+  own milestone table" however it arrived: where a table came from is not stored.
+- "Save as an import file" on the Milestones screen (#118, `MilestoneExport` in `:domain`) writes the
+  user's table as a `milestone-schedule` file: the table, `repeatsEveryMiles` when it repeats, each job's
+  `service`, and a `$schema` line. **It must always be a file the app itself accepts:**
+  `MilestoneExportTest` puts tables through `MilestoneExport.file`, then `ImportFormat.parse` and the
+  published schema, so change the writer with the format. Like every import file it names no vehicle and
+  carries nothing of the service log; only the suggested file name has the year, make and model. It goes
+  out through `ExportSaver` (`cache/export/`, deleted either way), unencrypted, and the privacy screen
+  says so. The schedule and torque specs don't have this yet (#120).
 - Every `ImportKind` is now built, so there is no "not yet" path; a new kind needs one again only if it
   is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.

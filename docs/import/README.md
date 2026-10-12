@@ -352,6 +352,10 @@ whole:
   (add, edit or delete a milestone, change whether it repeats), and a table can be typed in there
   from nothing. The app holds a typed table to the same rules as this file. Jobs are kept in the
   order the file lists them.
+- **Getting it back out:** "Save as an import file" on the Milestones screen writes the vehicle's
+  table as a file of this kind, with `repeatsEveryMiles` if it repeats, to keep or to give to
+  someone with the same model. The file holds the table only: nothing about the vehicle it came
+  from or the work done on it. It isn't encrypted.
 - Within one milestone a `name`, and a `service`, can each appear only once; no two milestones
   can have the same `atMiles`; and `repeatsEveryMiles` can't be less than the highest `atMiles`
   (these are the rules the schema can't state).
