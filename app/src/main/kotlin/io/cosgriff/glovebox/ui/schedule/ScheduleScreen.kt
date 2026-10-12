@@ -75,6 +75,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import androidx.compose.runtime.saveable.rememberSaveable
 import io.cosgriff.glovebox.ui.service.RecordActions
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.foundation.layout.size
 import javax.inject.Inject
 
 /**
@@ -373,12 +377,29 @@ fun ScheduleScreen(
                 }
                 // A tracked item that repeats by mileage is all the milestones view needs.
                 if (state.items.any { it.tracked && it.active.miles != null }) {
-                    OutlinedButton(
-                        onClick = { onOpenMilestones(v.id) },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) {
-                        Text("See it by mileage: milestones")
+                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .heightIn(min = 60.dp)
+                                .clickable(role = Role.Button, onClick = { onOpenMilestones(v.id) })
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text("Milestones", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    "This schedule by mileage, with what was done",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
                 SectionLabel("$tracked OF ${state.items.size} TRACKED")

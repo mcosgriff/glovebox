@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -75,6 +77,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import java.util.Locale
 import javax.inject.Inject
 
 data class MilestonesState(
@@ -156,8 +159,38 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
     var placed by rememberSaveable { mutableStateOf(false) }
     val rows = Milestones.folded(state.milestones)
-    // Runs the user has opened, by their first milestone.
-    var opened by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    // Open or closed is the user's once they touch it: a card they tapped, or everything through the two
+    // buttons. Until then only the next milestone is open, so the screen reads as a list of mileages.
+    var all by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    var openedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    var closedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    // Runs of empty milestones the user has unfolded, by their first milestone.
+    var openedRuns by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    fun isOpen(m: MilestoneStatus): Boolean {
+        val at = m.milestone.atMiles
+        return when {
+            at in openedCards -> true
+            at in closedCards -> false
+            else -> all ?: (m.place == MilestonePlace.NEXT)
+        }
+    }
+    fun toggle(m: MilestoneStatus) {
+        val at = m.milestone.atMiles
+        if (isOpen(m)) {
+            openedCards = openedCards - at
+            closedCards = closedCards + at
+        } else {
+            closedCards = closedCards - at
+            openedCards = openedCards + at
+        }
+    }
+    fun setAll(open: Boolean) {
+        all = open
+        openedCards = emptyList()
+        closedCards = emptyList()
+        // Expanding everything unfolds the empty runs too; collapsing puts them back.
+        openedRuns = if (open) rows.filter { it.size > 1 }.map { it.first().milestone.atMiles } else emptyList()
+    }
     LaunchedEffect(rows.isNotEmpty()) {
         if (!placed && rows.isNotEmpty()) {
             val next = rows.indexOfFirst { it.first().place == MilestonePlace.NEXT }
@@ -200,20 +233,38 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     )
                 }
             }
+            // Always there, even with nothing to build from, so HEADER_ITEMS holds.
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("Expand all" to true, "Collapse all" to false).forEach { (label, open) ->
+                        OutlinedButton(
+                            onClick = { setAll(open) },
+                            enabled = state.milestones.isNotEmpty(),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+            }
             rows.forEach { row ->
                 val first = row.first().milestone.atMiles
-                if (row.size == 1 || first in opened) {
-                    items(row, key = { it.milestone.atMiles }) { m -> MilestoneCard(m, state.current, state.swap, onOpenRecord) }
+                if (row.size == 1 || first in openedRuns) {
+                    items(row, key = { it.milestone.atMiles }) { m ->
+                        MilestoneCard(m, state.current, state.swap, open = isOpen(m), onToggle = { toggle(m) }, onOpenRecord = onOpenRecord)
+                    }
                 } else {
                     item(key = "gap-$first") {
                         // Nothing was logged against any of these; one line says so in place of a card each.
                         Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Show them", onClick = { opened = opened + first }),
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Show them", onClick = { openedRuns = openedRuns + first }),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                "${first.asMiles()} to ${row.last().milestone.atMiles.asMiles()} · ${row.size} milestones with nothing logged",
+                                "${String.format(Locale.US, "%,d", first)} to ${row.last().milestone.atMiles.asMiles()} · ${row.size} with nothing logged",
                                 Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
@@ -239,29 +290,55 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     }
 }
 
-/** Items in the list before the first milestone, for scrolling to one. */
-private const val HEADER_ITEMS = 1
+/** Items in the list before the first milestone (the introduction and the two buttons), for scrolling to one. */
+private const val HEADER_ITEMS = 2
 
+/**
+ * One milestone. The header is always shown and opens or closes the jobs under it; closed, it says
+ * how many jobs there are and how many the log has, so a list of closed cards is still worth reading.
+ */
 @Composable
-private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?, onOpenRecord: (Long) -> Unit) {
+private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?, open: Boolean, onToggle: () -> Unit, onOpenRecord: (Long) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val next = m.place == MilestonePlace.NEXT
+    val completed = m.jobs.count { it.done != null }
+    // Filled and borderless like the cards on the schedule it opens from; the next one is outlined in the accent.
     Surface(
         Modifier.fillMaxWidth(),
         color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(if (next) 1.5.dp else 1.dp, if (next) scheme.primary else scheme.outlineVariant),
+        shape = RoundedCornerShape(12.dp),
+        border = if (next) BorderStroke(1.5.dp, scheme.primary) else null,
     ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    m.milestone.atMiles.asMiles(),
-                    Modifier.weight(1f).semantics { heading() },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (m.place == MilestonePlace.PAST) scheme.onSurfaceVariant else scheme.onSurface,
-                )
+        Column {
+            Row(
+                Modifier.fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .clickable(role = Role.Button, onClickLabel = if (open) "Collapse" else "Expand", onClick = onToggle)
+                    .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        m.milestone.atMiles.asMiles(),
+                        Modifier.semantics { heading() },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontFamily = PlexMono,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (m.place == MilestonePlace.PAST) scheme.onSurfaceVariant else scheme.onSurface,
+                    )
+                    Text(
+                        listOfNotNull(
+                            if (m.jobs.size == 1) "1 job" else "${m.jobs.size} jobs",
+                            "$completed completed".takeIf { completed > 0 },
+                            // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
+                            swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
+                                ?.let { "${(m.milestone.atMiles - it.offset).asMiles()} on the dash" },
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (completed > 0) statusColors().ok else scheme.onSurfaceVariant,
+                    )
+                }
                 if (next) {
                     Surface(color = scheme.primaryContainer, shape = CircleShape) {
                         Text(
@@ -273,14 +350,19 @@ private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?,
                         )
                     }
                 }
+                Icon(
+                    if (open) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = scheme.onSurfaceVariant,
+                )
             }
-            // With a replaced cluster the dash never shows this figure, so say what it will show.
-            if (swap != null && m.place != MilestonePlace.PAST && m.milestone.atMiles - swap.offset > 0) {
-                Text("${(m.milestone.atMiles - swap.offset).asMiles()} on the dash", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-            }
-            m.jobs.forEachIndexed { i, job ->
-                if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                JobRow(job, onOpenRecord)
+            if (open) {
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
+                    m.jobs.forEach { job ->
+                        HorizontalDivider(color = scheme.outlineVariant)
+                        JobRow(job, onOpenRecord)
+                    }
+                }
             }
         }
     }
@@ -292,7 +374,7 @@ private fun JobRow(job: MilestoneJobStatus, onOpenRecord: (Long) -> Unit) {
     val done = job.done
     Row(
         Modifier.fillMaxWidth()
-            .heightIn(min = if (done == null) 32.dp else 48.dp)
+            .heightIn(min = 48.dp)
             .then(done?.let { d -> Modifier.clickable(role = Role.Button, onClickLabel = "Open the record", onClick = { onOpenRecord(d.recordId) }) } ?: Modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -211,6 +211,9 @@ Notes on what's built:
   interval (`Milestones.generate`): every multiple is a point and items on the same point share a card. It
   starts at the vehicle's earliest logged job and runs a few points past the odometer, more on request.
   A run of three or more past milestones with nothing logged is folded into one row (`Milestones.folded`).
+  Each card collapses to its mileage and a count ("4 jobs · 1 completed"); only the next one starts open,
+  and "Expand all" / "Collapse all" set every card and unfold or refold the empty runs. Cards are filled
+  and borderless like the schedule screen's, with the next one outlined in the accent.
   Matching (`Milestones.status`): a logged job belongs to the first of that job's milestones at or after
   the mileage it was done at, so an oil change at 48,000 shows under 50,000 as completed there, and of two
   in one stretch the later is shown. A job nothing matches is listed with no status. Milestone mileages are
