@@ -270,6 +270,8 @@ fun ScheduleScreen(
     onSetUp: (vehicleId: Long) -> Unit,
     /** The "When were these last done?" list. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
+    /** The same schedule laid out by mileage. */
+    onOpenMilestones: (vehicleId: Long) -> Unit,
     vm: ScheduleViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -367,6 +369,16 @@ fun ScheduleScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                    }
+                }
+                // A tracked item that repeats by mileage is all the milestones view needs.
+                if (state.items.any { it.tracked && it.active.miles != null }) {
+                    OutlinedButton(
+                        onClick = { onOpenMilestones(v.id) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) {
+                        Text("See it by mileage: milestones")
                     }
                 }
                 SectionLabel("$tracked OF ${state.items.size} TRACKED")

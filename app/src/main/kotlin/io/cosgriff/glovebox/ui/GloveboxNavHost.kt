@@ -66,6 +66,7 @@ import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.scan.ScanVinScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
 import io.cosgriff.glovebox.ui.schedule.LastDoneScreen
+import io.cosgriff.glovebox.ui.schedule.MilestonesScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
 import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
@@ -104,6 +105,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class ScheduleRoute(val vehicleId: Long)
 /** "When were these last done?": a date and mileage for reminders that have never been logged. */
 @Serializable data class LastDoneRoute(val vehicleId: Long)
+/** The schedule laid out by mileage, with what the log says was done at each point. */
+@Serializable data class MilestonesRoute(val vehicleId: Long)
 /** [updateMileage] opens the Update mileage sheet straight away, for the mileage check-in notification. */
 @Serializable data class VehicleHomeRoute(val vehicleId: Long, val updateMileage: Boolean = false)
 /**
@@ -416,6 +419,9 @@ fun GloveboxNavHost() {
                     onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) { popUpTo<ScheduleSetupRoute> { inclusive = true } } },
                 )
             }
+            screen<MilestonesRoute> {
+                MilestonesScreen(onBack = { nav.popBackStack() }, onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
+            }
             screen<LastDoneRoute> {
                 LastDoneScreen(onDone = { nav.popBackStack() }, onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
             }
@@ -425,6 +431,7 @@ fun GloveboxNavHost() {
                     onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
                     onSetUp = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
                     onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
+                    onOpenMilestones = { vehicleId -> nav.navigate(MilestonesRoute(vehicleId)) },
                 )
             }
             screen<HistoryRoute> {

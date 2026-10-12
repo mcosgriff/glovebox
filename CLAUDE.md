@@ -106,7 +106,8 @@ DELETE, then the phone's screen lock). Odometer offset (instrument cluster repla
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
-about what differs).
+about what differs). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+screen).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
@@ -202,6 +203,19 @@ Notes on what's built:
   terms. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
   `today` passed to `ImportFormat.parse`. An imported record says "· imported" after who did it
   (`LogEdits.who`) and carries `Exports.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.
+- Milestones (`Milestones` in `:domain`, `MilestonesScreen`): the schedule laid out by mileage, as an
+  owner's manual prints it. **They are a view, never a second source of what is due:** reminders and
+  notifications come only from the interval schedule and the service log, and nothing on that screen
+  creates, moves or silences one. Nothing about them is stored; "completed" is derived from the log each
+  time, and there is deliberately no tick-box. The list is generated from tracked items that have a mileage
+  interval (`Milestones.generate`): every multiple is a point and items on the same point share a card. It
+  starts at the vehicle's earliest logged job and runs a few points past the odometer, more on request.
+  Matching (`Milestones.status`): a logged job belongs to the first of that job's milestones at or after
+  the mileage it was done at, so an oil change at 48,000 shows under 50,000 as completed there, and of two
+  in one stretch the later is shown. A job nothing matches is listed with no status. Milestone mileages are
+  miles really covered: with a cluster replacement everything is placed by `swap.actual`, and the dash
+  figure is shown beside it. `status(continues = false)` is for a table that simply ends (the user's own,
+  #105), where a job's last milestone takes whatever comes after the one before it.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
