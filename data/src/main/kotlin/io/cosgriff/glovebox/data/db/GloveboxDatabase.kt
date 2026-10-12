@@ -26,8 +26,10 @@ class Converters {
         PhotoEntity::class,
         TorqueSpecEntity::class,
         RecallEntity::class,
+        MilestoneEntity::class,
+        MilestoneJobEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -40,6 +42,7 @@ class Converters {
         AutoMigration(from = 8, to = 9), // vehicles.clusterSwappedOn, clusterStartReading
         AutoMigration(from = 9, to = 10), // service_records.enteredAsLastDone
         AutoMigration(from = 10, to = 11), // service_records.imported
+        AutoMigration(from = 11, to = 12), // milestones, milestone_jobs
     ],
 )
 @TypeConverters(Converters::class)
@@ -50,6 +53,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun odometer(): OdometerDao
     abstract fun torque(): TorqueDao
     abstract fun recalls(): RecallDao
+    abstract fun milestones(): MilestoneDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"

@@ -187,6 +187,42 @@ data class RecallEntity(
     val serviceRecordId: Long? = null,
 )
 
+/**
+ * One point of the user's own milestone table, imported from a file: [atMiles] miles really covered,
+ * with the work due there in `milestone_jobs`. Information for the Milestones screen only; nothing
+ * about reminders reads these tables, and whether a job was done is derived from the service log.
+ */
+@Entity(
+    tableName = "milestones",
+    foreignKeys = [ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE)],
+    indices = [Index("vehicleId", "atMiles", unique = true)],
+)
+data class MilestoneEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val vehicleId: Long,
+    val atMiles: Int,
+    /** The vehicle's age at which the same work is due if the mileage isn't reached; shown, not acted on. */
+    val orMonths: Int? = null,
+)
+
+@Entity(
+    tableName = "milestone_jobs",
+    foreignKeys = [ForeignKey(MilestoneEntity::class, ["id"], ["milestoneId"], onDelete = CASCADE)],
+    indices = [Index("milestoneId")],
+)
+data class MilestoneJobEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val milestoneId: Long,
+    val name: String,
+    /** A CatalogItem id, when the job is one of Glovebox's own service lines. */
+    val service: String? = null,
+)
+
+data class MilestoneWithJobs(
+    @Embedded val milestone: MilestoneEntity,
+    @Relation(parentColumn = "id", entityColumn = "milestoneId") val jobs: List<MilestoneJobEntity>,
+)
+
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
     @Relation(parentColumn = "id", entityColumn = "recordId") val items: List<ServiceRecordItemEntity>,

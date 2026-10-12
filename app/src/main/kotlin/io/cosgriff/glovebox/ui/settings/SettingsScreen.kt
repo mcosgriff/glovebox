@@ -330,7 +330,7 @@ fun SettingsScreen(
                             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
                         }
                         Text(
-                            "History, a schedule or torque specs from a JSON file \u00b7 nothing of yours changes unless you say so",
+                            "History, schedules or torque specs from a JSON file \u00b7 nothing of yours changes unless you say so",
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )

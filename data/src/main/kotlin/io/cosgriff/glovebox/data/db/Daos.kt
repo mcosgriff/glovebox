@@ -283,3 +283,40 @@ interface RecallDao {
         delete(withdrawn)
     }
 }
+
+@Dao
+interface MilestoneDao {
+    /** The user's own milestone table, by mileage; empty when they haven't imported one. */
+    @Transaction
+    @Query("SELECT * FROM milestones WHERE vehicleId = :vehicleId ORDER BY atMiles")
+    fun observe(vehicleId: Long): Flow<List<MilestoneWithJobs>>
+
+    @Transaction
+    @Query("SELECT * FROM milestones WHERE vehicleId = :vehicleId ORDER BY atMiles")
+    suspend fun tableFor(vehicleId: Long): List<MilestoneWithJobs>
+
+    @Insert suspend fun insert(milestone: MilestoneEntity): Long
+    @Insert suspend fun insertJobs(jobs: List<MilestoneJobEntity>)
+    @Update suspend fun update(milestone: MilestoneEntity)
+
+    @Query("DELETE FROM milestone_jobs WHERE milestoneId = :milestoneId")
+    suspend fun clearJobs(milestoneId: Long)
+
+    /** Removes the whole table; the Milestones screen then goes back to the view built from the schedule. */
+    @Query("DELETE FROM milestones WHERE vehicleId = :vehicleId")
+    suspend fun deleteTable(vehicleId: Long)
+
+    /** One import, applied whole or not at all. Nothing is deleted by one; a replaced milestone keeps its row. */
+    @Transaction
+    suspend fun applyImport(added: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>, replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>) {
+        added.forEach { (milestone, jobs) ->
+            val id = insert(milestone)
+            insertJobs(jobs.map { it.copy(id = 0, milestoneId = id) })
+        }
+        replaced.forEach { (milestone, jobs) ->
+            update(milestone)
+            clearJobs(milestone.id)
+            insertJobs(jobs.map { it.copy(id = 0, milestoneId = milestone.id) })
+        }
+    }
+}

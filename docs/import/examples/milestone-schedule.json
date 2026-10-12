@@ -1,0 +1,83 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/milestone-schedule.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "milestone-schedule",
+  "items": [
+    {
+      "atMiles": 10000,
+      "orMonths": 12,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "orMonths": 24,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "orMonths": 36,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect drive belts"
+        }
+      ]
+    },
+    {
+      "atMiles": 65000,
+      "work": [
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "orMonths": 120,
+      "work": [
+        {
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Inspect drive belts"
+        }
+      ]
+    }
+  ]
+}

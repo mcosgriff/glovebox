@@ -46,6 +46,7 @@ object DataModule {
     @Provides fun scheduleDao(db: GloveboxDatabase) = db.schedule()
     @Provides fun odometerDao(db: GloveboxDatabase) = db.odometer()
     @Provides fun torqueDao(db: GloveboxDatabase) = db.torque()
+    @Provides fun milestoneDao(db: GloveboxDatabase) = db.milestones()
     @Provides fun recallDao(db: GloveboxDatabase) = db.recalls()
 
     @Provides @Singleton
