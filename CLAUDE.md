@@ -47,6 +47,8 @@ Keep them green; lint errors fail the build.
   `ON DELETE CASCADE` from `vehicles` plus deleting that vehicle's photo files.
 - **"Last done" is never stored.** It's derived from service records (`ServiceLog.lastDone`), so editing
   or deleting a record automatically rolls reminders back. Don't add a cached last-done column.
+  A "last done" the user gives on its own is a service record too, flagged `enteredAsLastDone` (#78).
+  **Nothing is assumed or estimated for the user:** there is no "assume everything was done on schedule".
 - **Torque stored in N·m**, converted for display. Odometer stored in miles (km is a display setting later),
   and as typed from the dash: a cluster replacement converts on read, never by rewriting readings.
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
@@ -101,9 +103,10 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock). Odometer offset (instrument cluster replacement: date and the two
-readings, from Vehicle details).
+readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
+schedule setup, the Maintenance schedule screen and vehicle home).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
-known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
+known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
@@ -137,6 +140,16 @@ Notes on what's built:
   shown only for the saved interval and rule. An empty schedule offers setup or adding an item; one that
   lacks typical items (`ScheduleTemplates.missing`) offers to add them unticked. Never send a vehicle that
   already has items back through setup: it inserts every item again.
+- "When were these last done?" (`LastDoneScreen`, `LastDoneSheet`, `LastDoneEntries` in `:domain`) takes a
+  date and a mileage for one reminder and saves them through `RecordActions.addLastDone` as a service
+  record with that one line and `service_records.enteredAsLastDone` set. Nothing else about reminders
+  changes: last done is still derived from the log, and deleting the record puts the reminder back to
+  "Not logged yet". Such a record says "Entered as last done" in place of who did the work (History, the
+  record's screen), "Entered by you" where a logged one says "From your log", and an export says the owner
+  entered it afterwards. Editing it in the Log service form keeps the flag. It announces nothing and
+  doesn't open History, because it is entered where its result shows. Setup's dropdown has two choices,
+  entering them as they come up or going on to the list; the canvas's "import from a dealer record" and
+  "assume everything was done on schedule" are deliberately not built.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
@@ -327,7 +340,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v9); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v10); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

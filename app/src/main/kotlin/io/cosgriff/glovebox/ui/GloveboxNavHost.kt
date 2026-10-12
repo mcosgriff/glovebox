@@ -64,6 +64,7 @@ import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.scan.ScanVinScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
+import io.cosgriff.glovebox.ui.schedule.LastDoneScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
 import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
@@ -98,6 +99,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class ScheduleSetupRoute(val vehicleId: Long)
 /** A vehicle's schedule once it has been set up. */
 @Serializable data class ScheduleRoute(val vehicleId: Long)
+/** "When were these last done?": a date and mileage for reminders that have never been logged. */
+@Serializable data class LastDoneRoute(val vehicleId: Long)
 /** [updateMileage] opens the Update mileage sheet straight away, for the mileage check-in notification. */
 @Serializable data class VehicleHomeRoute(val vehicleId: Long, val updateMileage: Boolean = false)
 /**
@@ -313,6 +316,7 @@ fun GloveboxNavHost() {
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
                     onOpenDetails = { vehicleId -> nav.navigate(VehicleDetailsRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
                     onMessage = showMessage,
                 )
             }
@@ -402,12 +406,22 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            screen<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
+            screen<ScheduleSetupRoute> {
+                ScheduleSetupScreen(
+                    onDone = { nav.popBackStack() },
+                    // Takes setup's place, so Back from the list doesn't offer the schedule a second time.
+                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) { popUpTo<ScheduleSetupRoute> { inclusive = true } } },
+                )
+            }
+            screen<LastDoneRoute> {
+                LastDoneScreen(onDone = { nav.popBackStack() }, onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
+            }
             screen<ScheduleRoute> {
                 ScheduleScreen(
                     onBack = { nav.popBackStack() },
                     onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
                     onSetUp = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
                 )
             }
             screen<HistoryRoute> {

@@ -207,7 +207,7 @@ fun RecordDetailScreen(
             WhiteCard {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "${detail.vehicleName} · ${if (record.diy) "DIY" else record.shopName ?: "Shop"}",
+                        "${detail.vehicleName} · ${LogEdits.who(record.diy, record.shopName, null, record.enteredAsLastDone)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -79,6 +79,17 @@ class RecordActions @Inject constructor(
     }
 
     /**
+     * A bare "last done" for one schedule item: a record with that one line, flagged as such. It is
+     * entered on the spot where its result shows, so there is no snackbar and History isn't opened.
+     */
+    suspend fun addLastDone(vehicleId: Long, scheduleItemId: Long, name: String, date: LocalDate, odometer: Int) {
+        service.insertWithItems(
+            ServiceRecordEntity(vehicleId = vehicleId, date = date, odometer = odometer, diy = true, enteredAsLastDone = true),
+            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = scheduleItemId, label = name)),
+        )
+    }
+
+    /**
      * [removedPhotoIds] lose their rows now; their files wait for [discard], so Undo can still
      * bring them back.
      */

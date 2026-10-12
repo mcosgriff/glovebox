@@ -241,6 +241,10 @@ data class ItemHistory(
     val lastRead: LastDone? = lastDone,
     /** Opens the record [lastDone] comes from. */
     val onOpenRecord: (() -> Unit)?,
+    /** That record is a bare "last done" the user entered, not a service logged at the time. */
+    val entered: Boolean = false,
+    /** Offered while the item has never been logged: asks for a date and mileage. */
+    val onEnterLastDone: (() -> Unit)? = null,
     /** The Log service lines that reset this reminder. */
     val resetBy: List<String>,
     /** When it is expected to come due at the user's driving pace, for the saved interval and rule. */
@@ -291,7 +295,7 @@ private fun LastDoneCard(history: ItemHistory) {
                 Row(
                     Modifier.fillMaxWidth()
                         .heightIn(min = 52.dp)
-                        .then(history.onOpenRecord?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier),
+                        .then((if (last == null) history.onEnterLastDone else history.onOpenRecord)?.let { Modifier.clickable(role = Role.Button, onClick = it) } ?: Modifier),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -300,8 +304,17 @@ private fun LastDoneCard(history: ItemHistory) {
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                     )
+                    if (last == null && history.onEnterLastDone != null) {
+                        Text("Enter it", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                        Icon(
+                            Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = scheme.onSurfaceVariant,
+                        )
+                    }
                     if (last != null && history.onOpenRecord != null) {
-                        Text("From your log", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        Text(if (history.entered) "Entered by you" else "From your log", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         Icon(
                             Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                             contentDescription = null,

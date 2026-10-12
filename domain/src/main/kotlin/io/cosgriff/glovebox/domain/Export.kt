@@ -39,6 +39,8 @@ data class ExportRecord(
     val costCents: Long?,
     val notes: String?,
     val photoFiles: List<String> = emptyList(),
+    /** A bare date and mileage the owner gave afterwards; [doneBy] means nothing for it. */
+    val enteredAsLastDone: Boolean = false,
 )
 
 data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?)
@@ -147,6 +149,9 @@ object Exports {
     const val RECALL_NOTE = "Recalls are listed by NHTSA for the year, make and model. \"Marked done\" is the owner's own record; " +
         "NHTSA can't confirm a repair for a specific vehicle."
 
+    /** Said in place of who did the work, for a record that is only a date and mileage given afterwards. */
+    const val LAST_DONE_NOTE = "Entered by the owner as when this was last done; not logged at the time."
+
     /** Said under any schedule: the intervals are the owner's settings, not factory data. */
     const val SCHEDULE_NOTE = "Intervals are the ones the owner set in Glovebox, not the manufacturer's schedule."
 
@@ -170,7 +175,7 @@ object Exports {
             v.records.forEach { r ->
                 append("### ${date(r.date)} · ${miles(r.odometer)}\n\n")
                 r.items.forEach { append("- ${text(it)}\n") }
-                append("\nDone by: ${text(r.doneBy)}")
+                append("\n" + if (r.enteredAsLastDone) LAST_DONE_NOTE else "Done by: ${text(r.doneBy)}")
                 r.costCents?.let { append(" · Cost: ${Money.format(it)}") }
                 append("\n")
                 r.notes?.let { notes -> append("\n" + notes.lines().joinToString("\n") { "> ${text(it)}" } + "\n") }

@@ -352,6 +352,8 @@ class LogServiceViewModel @Inject constructor(
                 shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
                 costCents = costText.takeIf { it.isNotBlank() }?.let(Money::parseCents),
                 notes = notes.trim().takeIf { it.isNotEmpty() },
+                // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
+                enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
             )
             val items = selectedOptions.map {
                 ServiceRecordItemEntity(
