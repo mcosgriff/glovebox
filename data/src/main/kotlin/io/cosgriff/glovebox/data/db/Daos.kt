@@ -136,6 +136,16 @@ interface ServiceDao {
 
     @Delete suspend fun deleteRecord(record: ServiceRecordEntity)
 
+    /**
+     * One import, applied whole or not at all. [replaced] records keep their id, and so their photos
+     * and any recall they were the work for; nothing is deleted.
+     */
+    @Transaction
+    suspend fun applyImport(added: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>, replaced: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>) {
+        added.forEach { (record, items) -> insertWithItems(record, items) }
+        replaced.forEach { (record, items) -> replaceWithItems(record, items) }
+    }
+
     @Insert suspend fun insertPhotos(photos: List<PhotoEntity>)
 
     @Query("DELETE FROM photos WHERE id IN (:ids)")

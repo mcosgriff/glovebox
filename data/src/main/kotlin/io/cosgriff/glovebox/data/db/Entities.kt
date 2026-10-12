@@ -107,6 +107,8 @@ data class ServiceRecordEntity(
      * service when the work was done. Shown as such wherever the record appears.
      */
     @ColumnInfo(defaultValue = "0") val enteredAsLastDone: Boolean = false,
+    /** Came from an import file (or was replaced by one), not logged in the app. Shown as such wherever the record appears. */
+    @ColumnInfo(defaultValue = "0") val imported: Boolean = false,
 )
 
 /** One line of work on a record. [scheduleItemId] links it to the reminder it resets, if any. */

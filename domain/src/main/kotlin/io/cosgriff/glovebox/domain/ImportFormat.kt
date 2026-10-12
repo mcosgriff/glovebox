@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
+import java.time.LocalDate
 
 /**
  * What an import file can hold; one kind per file. [id] is the file's `kind`. The format is
@@ -37,6 +38,8 @@ sealed interface ImportFile {
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
 
     data class IntervalSchedule(val items: List<ImportedScheduleItem>) : ImportFile
+
+    data class ServiceHistory(val items: List<ImportedRecord>) : ImportFile
 }
 
 object ImportFormat {
@@ -48,16 +51,16 @@ object ImportFormat {
     const val MAX_ERRORS = 25
 
     /** The kinds this version of the app can import; the rest are specified but not built. */
-    val supported: Set<ImportKind> = setOf(ImportKind.TORQUE_SPECS, ImportKind.INTERVAL_SCHEDULE)
+    val supported: Set<ImportKind> = setOf(ImportKind.TORQUE_SPECS, ImportKind.INTERVAL_SCHEDULE, ImportKind.SERVICE_HISTORY)
 
     private val envelopeKeys = setOf("\$schema", "glovebox", "version", "kind", "items")
 
     /**
      * Reads and checks a whole file. Nothing is taken on trust and nothing is repaired: an unknown
      * field, a wrong type or a value out of range refuses the file, and every problem found is
-     * reported, not just the first.
+     * reported, not just the first. [today] is what "not in the future" is measured against.
      */
-    fun parse(text: String): ImportFile {
+    fun parse(text: String, today: LocalDate = LocalDate.now()): ImportFile {
         val root = try {
             Json.parseToJsonElement(text)
         } catch (_: SerializationException) {
@@ -88,6 +91,10 @@ object ImportFormat {
             ImportKind.INTERVAL_SCHEDULE -> {
                 val items = ScheduleImport.read(envelope.getValue("items"), check)
                 if (check.failed) check.invalid() else ImportFile.IntervalSchedule(items)
+            }
+            ImportKind.SERVICE_HISTORY -> {
+                val items = HistoryImport.read(envelope.getValue("items"), check, today)
+                if (check.failed) check.invalid() else ImportFile.ServiceHistory(items)
             }
             else -> ImportFile.NotYet(kind)
         }
@@ -140,6 +147,22 @@ class ImportCheck {
         }
     }
 
+    /**
+     * Longer text that may run over several lines: 1 to [max] characters, no space or blank line at
+     * either end, and no control characters other than a line break.
+     */
+    fun text(e: JsonElement, path: String, max: Int): String? {
+        if (e !is JsonPrimitive || !e.isString) return null.also { fail(path, "must be text in quotes") }
+        val s = e.content
+        return when {
+            s.isEmpty() -> null.also { fail(path, "must not be empty; leave the field out instead") }
+            s.length > max -> null.also { fail(path, "is ${s.length} characters; the most allowed is $max") }
+            s.first().isWhitespace() || s.last().isWhitespace() -> null.also { fail(path, "must not start or end with a space or a blank line") }
+            s.any { it.isISOControl() && it != '\n' } -> null.also { fail(path, "must not contain tabs or other control characters; line breaks are fine") }
+            else -> s
+        }
+    }
+
     /** One of [values], spelled exactly. */
     fun <T> choice(e: JsonElement, path: String, values: Map<String, T>): T? {
         val s = (e as? JsonPrimitive)?.takeIf { it.isString }?.content
@@ -183,7 +206,7 @@ enum class ImportMode {
 data class ImportPlan<I, E>(
     /** Nothing saved matches these; they are always added. */
     val new: List<I>,
-    /** These match a saved item that has nothing in it yet, so filling it in loses nothing; always done. */
+    /** These match a saved item that says less than the file and loses nothing by taking it; always done. */
     val fills: List<Pair<I, E>>,
     /** These match a saved item that already says the same; never touched. */
     val same: List<Pair<I, E>>,
@@ -210,7 +233,7 @@ object ImportPlans {
         key: (I) -> K,
         existingKey: (E) -> K,
         same: (I, E) -> Boolean,
-        blank: (E) -> Boolean = { false },
+        blank: (I, E) -> Boolean = { _, _ -> false },
     ): ImportPlan<I, E> {
         val saved = existing.groupBy(existingKey).mapValues { it.value.first() }
         val new = mutableListOf<I>()
@@ -222,7 +245,7 @@ object ImportPlans {
             when {
                 match == null -> new += item
                 same(item, match) -> unchanged += item to match
-                blank(match) -> fills += item to match
+                blank(item, match) -> fills += item to match
                 else -> differs += item to match
             }
         }

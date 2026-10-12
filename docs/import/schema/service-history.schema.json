@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
+  "title": "Glovebox import: service history",
+  "description": "Maintenance already done on one vehicle, one record per visit. Format version 1. See docs/import/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "glovebox",
+    "version",
+    "kind",
+    "items"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Optional. Lets an editor check the file as it is typed. Glovebox ignores it.",
+      "$ref": "#/$defs/line",
+      "maxLength": 300
+    },
+    "glovebox": {
+      "const": "import"
+    },
+    "version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "service-history"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "line": {
+      "description": "Text on one line with no space at either end.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\s\\x00-\\x1f\\x7f-\\x9f]([^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f])?$"
+    },
+    "text": {
+      "description": "Text that may run over several lines, with no space or blank line at either end.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\s\\x00-\\x1f\\x7f-\\x9f]([^\\x00-\\x09\\x0b-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f])?$"
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "odometer",
+        "work",
+        "doneBy"
+      ],
+      "properties": {
+        "date": {
+          "description": "The day the work was done, as YYYY-MM-DD. Not in the future. Date and odometer together must be unique in the file.",
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "odometer": {
+          "description": "Whole miles, as the dash read that day.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999999
+        },
+        "work": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/work"
+          }
+        },
+        "doneBy": {
+          "$ref": "#/$defs/doneBy"
+        },
+        "cost": {
+          "description": "Dollars as text, with at most two decimals: \"62.50\". Text, so nothing is rounded.",
+          "type": "string",
+          "pattern": "^\\d{1,9}(\\.\\d{1,2})?$"
+        },
+        "notes": {
+          "$ref": "#/$defs/text",
+          "maxLength": 1000
+        }
+      }
+    },
+    "work": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "description": "What was done, in your words.",
+          "$ref": "#/$defs/line",
+          "maxLength": 80
+        },
+        "service": {
+          "description": "Which of Glovebox's own service lines this is, if it is one. This is what lets the line reset a reminder.",
+          "enum": [
+            "oil",
+            "engine-air",
+            "spark-plugs",
+            "belt",
+            "pcv",
+            "rotation",
+            "balance",
+            "alignment",
+            "new-tires",
+            "flat",
+            "front-pads",
+            "rear-pads",
+            "rotors",
+            "brake-fluid",
+            "brake-inspect",
+            "coolant",
+            "trans-fluid",
+            "power-steering",
+            "washer",
+            "diff-fluid",
+            "driveshaft",
+            "cv-axle",
+            "cabin-air",
+            "wipers",
+            "battery",
+            "bulbs",
+            "multi-point",
+            "emissions",
+            "recall",
+            "accessory",
+            "body",
+            "detail"
+          ]
+        }
+      }
+    },
+    "doneBy": {
+      "description": "Who did the work. Only a shop has a name.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "diy",
+            "shop"
+          ]
+        },
+        "name": {
+          "$ref": "#/$defs/line",
+          "maxLength": 60
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "diy"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "name": false
+        }
+      }
+    }
+  }
+}

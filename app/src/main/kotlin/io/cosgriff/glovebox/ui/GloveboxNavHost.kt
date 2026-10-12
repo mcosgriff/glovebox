@@ -490,6 +490,7 @@ fun GloveboxNavHost() {
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
                     onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
+                    onOpenHistory = { vehicleId, archived -> if (archived) nav.navigate(ArchivedHistoryRoute(vehicleId)) else showHistory() },
                 )
             }
             screen<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
