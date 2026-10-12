@@ -326,7 +326,7 @@ fun ScheduleScreen(
                     onOpenRecord = log?.recordId?.let { id -> { onOpenRecord(id) } },
                     entered = log?.entered == true,
                     onEnterLastDone = { enteringLastDone = true },
-                    resetBy = ServiceCatalog.resetters(state.templateKeys[editing.key], editing.service),
+                    resetBy = if (editing.own) null else ServiceCatalog.resetters(state.templateKeys[editing.key]),
                     estimate = log?.estimate,
                 )
             },

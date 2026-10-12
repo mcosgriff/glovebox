@@ -832,14 +832,14 @@ private fun Group(title: String, detail: String, lines: List<PlanLine>, color: C
 private const val SHOWN = 12
 
 /**
- * A typical item Glovebox suggested is being tracked under a name the file also uses, so there
- * would be two reminders for one job. Stopping the typical one is the user's choice, made here.
+ * A typical item Glovebox suggested is being tracked for a job the file also has (the same name, or
+ * the item the file's service resets), so there would be two reminders for one job. Stopping the typical one is the user's choice, made here.
  */
 @Composable
 private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("ALREADY TRACKED UNDER THE SAME NAME")
+        SectionLabel("ALREADY TRACKED AS A TYPICAL ITEM")
         Card {
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
@@ -855,7 +855,8 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
         }
         Text(
             "Glovebox's typical schedule already has " + (if (names.size == 1) "this" else "these") + ", so you'd get two reminders for one job. " +
-                "Unticked here, both stay. A stopped item keeps its history and can be ticked again on the schedule.",
+                "Unticked here, both stay, and work logged for one that shares a service line counts for both. " +
+                "A stopped item keeps its history and can be ticked again on the schedule.",
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
         )

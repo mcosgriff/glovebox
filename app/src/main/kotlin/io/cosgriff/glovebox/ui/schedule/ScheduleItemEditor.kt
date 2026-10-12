@@ -251,8 +251,8 @@ data class ItemHistory(
     val entered: Boolean = false,
     /** Offered while the item has never been logged: asks for a date and mileage. */
     val onEnterLastDone: (() -> Unit)? = null,
-    /** The Log service lines that reset this reminder. */
-    val resetBy: List<String>,
+    /** The Log service lines that reset this reminder; null for the user's own items, where the picker above the card says it. */
+    val resetBy: List<String>?,
     /** When it is expected to come due at the user's driving pace, for the saved interval and rule. */
     val estimate: LocalDate?,
 )
@@ -386,17 +386,19 @@ private fun LastDoneCard(history: ItemHistory) {
                         )
                     }
                 }
-                HorizontalDivider(color = scheme.outlineVariant)
-                Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        if (history.resetBy.size == 1) "Logging this resets it" else "Logging any of these resets it",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        history.resetBy.joinToString(" · ").ifEmpty { "This item, under Your items in Log service" },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
+                history.resetBy?.let { resetBy ->
+                    HorizontalDivider(color = scheme.outlineVariant)
+                    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            if (resetBy.size == 1) "Logging this resets it" else "Logging any of these resets it",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            resetBy.joinToString(" · ").ifEmpty { "This item, under Your items in Log service" },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
