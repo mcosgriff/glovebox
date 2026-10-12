@@ -10,14 +10,15 @@ import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.ItemStatus
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -66,8 +67,9 @@ class GarageOverview @Inject constructor(
         val today = LocalDate.now()
         Garage(
             active.map { v ->
-                val entries = recordsBy[v.id].orEmpty().map { it.toEntry() }
-                val updates = readingsBy[v.id].orEmpty().map { OdometerReading(it.date, it.odometer) }
+                val swap = v.clusterSwap()
+                val entries = recordsBy[v.id].orEmpty().map { it.toEntry(swap) }
+                val updates = readingsBy[v.id].orEmpty().toReadings(swap)
                 val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule) }
                 val statuses = VehicleReminders.statuses(tracked, entries, updates, today, s.lead)
                 val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id

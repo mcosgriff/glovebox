@@ -47,7 +47,8 @@ Keep them green; lint errors fail the build.
   `ON DELETE CASCADE` from `vehicles` plus deleting that vehicle's photo files.
 - **"Last done" is never stored.** It's derived from service records (`ServiceLog.lastDone`), so editing
   or deleting a record automatically rolls reminders back. Don't add a cached last-done column.
-- **Torque stored in N·m**, converted for display. Odometer stored in miles (km is a display setting later).
+- **Torque stored in N·m**, converted for display. Odometer stored in miles (km is a display setting later),
+  and as typed from the dash: a cluster replacement converts on read, never by rewriting readings.
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
 - **Barcodes are read with ZXing, not ML Kit.** ML Kit's bundled barcode library depends on Google's
@@ -99,9 +100,10 @@ open-source licences), Reminders tab (grouped list, vehicle filter,
 Log it, snooze and skip), reminder rules (default rule, lead time, per-service overrides), recalls
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
-DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65), odometer offset
-(#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
+DELETE, then the phone's screen lock). Odometer offset (instrument cluster replacement: date and the two
+readings, from Vehicle details).
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
+known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
@@ -288,9 +290,22 @@ Notes on what's built:
   is the Recalls row on Vehicle details.
 - Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
   column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
-  a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead:
-  Odometer offset (`vehicles.odometerOffset` exists but
-  nothing applies it). Maintenance schedule always opens `ScheduleScreen`.
+  a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead.
+  Maintenance schedule always opens `ScheduleScreen`.
+- Odometer offset (`ClusterSwap` in `:domain`, `OdometerOffsetSheet`): an instrument cluster replacement is
+  `vehicles.clusterSwappedOn`, `.odometerOffset` (old reading minus new, so it can be negative) and
+  `.clusterStartReading`, in force only when the date and start reading are both set. **Every reading stays
+  stored exactly as typed**, so setting, correcting or removing a swap rewrites no record. Everything
+  computed is in "dash terms", what the cluster now in the dash reads: readings dated before the swap have
+  the offset taken off on the way into `:domain`, which makes due points and the current odometer directly
+  comparable with the dash. So never hand `record.odometer` or an `odometer_readings` row to `:domain`
+  raw: go through `toEntry(swap)` and `toReadings(swap)` (`Mappers.kt`), the second of which also adds the
+  new cluster's first reading. A typed reading compared with those goes through `swap.toDash(value, date)`.
+  A past figure that comes back out of `:domain` (last done) is shown as it was read that day with
+  `swap.asReadOn`; records themselves show what was typed. The swap day belongs to the new cluster.
+  Vehicle home and exports also give the actual mileage (`swap.actual`), and an export explains the jump.
+  Saving a swap clears that vehicle's snoozes that end at a mileage (`VehicleDao.setClusterSwap`).
+  `DailyCheckWorker` passes last done as read, so `NoticeRules.cycle` doesn't change and re-announce.
 - Archiving is only `vehicles.archivedOn` (the sold date), set through `VehicleArchiver` (app); nothing is
   deleted. Screens that list the garage read `observeActive`, so archived vehicles get no reminders, and
   `RecallRepository` refuses to check them. A final odometer higher than the last reading is logged as an
@@ -312,7 +327,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v8); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v9); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

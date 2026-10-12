@@ -63,12 +63,13 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.TypedConfirmation
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.DeleteVehicleRoute
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -123,8 +124,8 @@ class DeleteVehicleViewModel @Inject constructor(
                 recalls = recalls.recallsFor(vehicleId).size,
                 mileageReadings = readings.size,
                 lastOdometer = VehicleReminders.currentOdometer(
-                    records.map { it.toEntry() },
-                    readings.map { OdometerReading(it.date, it.odometer) },
+                    records.map { it.toEntry(v.clusterSwap()) },
+                    readings.toReadings(v.clusterSwap()),
                 ),
             )
         }

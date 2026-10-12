@@ -104,7 +104,10 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
+import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.domain.asReadOn
+import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ScheduleRef
@@ -144,6 +147,11 @@ data class LogServiceData(
     /** Readings to sanity-check the odometer against; excludes the record being edited. */
     val readings: List<OdometerReading>,
     val lastOdometer: Int?,
+    /**
+     * Set when the cluster was replaced. [entries], [readings] and [lastOdometer] are in dash terms; what
+     * is typed belongs to whichever cluster was in on the form's date, and is saved as typed.
+     */
+    val swap: ClusterSwap?,
     /** What the user wrote on Vehicle details, for the hints beside the lines. */
     val specs: VehicleSpecs,
     /** The record being edited; null when logging a new one. */
@@ -221,7 +229,7 @@ class LogServiceViewModel @Inject constructor(
     val belowEarlierReading: Boolean
         get() {
             val odo = odometer ?: return false
-            return ServiceLog.isBelowPreviousReading(odo, date, data?.readings.orEmpty())
+            return ServiceLog.isBelowPreviousReading(data?.swap.toDash(odo, date), date, data?.readings.orEmpty())
         }
 
     private val selectedOptions: List<WorkOption>
@@ -235,7 +243,7 @@ class LogServiceViewModel @Inject constructor(
             val edited = ServiceEntry(
                 id = original.record.id,
                 date = date,
-                odometer = odometer ?: original.record.odometer,
+                odometer = d.swap.toDash(odometer ?: original.record.odometer, date),
                 itemIds = selectedOptions.mapNotNull { it.scheduleItemId }.toSet(),
             )
             return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
@@ -249,9 +257,10 @@ class LogServiceViewModel @Inject constructor(
             val defaultRule = prefs.defaultRule
             val records = service.recordsFor(vehicleId)
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
-            val entries = records.map { it.toEntry() }
+            val swap = vehicle?.clusterSwap()
+            val entries = records.map { it.toEntry(swap) }
             val others = entries.filter { it.id != original?.record?.id }
-            val updates = odometer.readingsFor(vehicleId).map { OdometerReading(it.date, it.odometer) }
+            val updates = odometer.readingsFor(vehicleId).toReadings(swap)
             val categories = ServiceCatalog.forVehicle(items.map { ScheduleRef(it.id, it.name, it.templateKey, it.tracked) })
             val options = categories.flatMap { it.options }
             val optionFor = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
@@ -303,6 +312,7 @@ class LogServiceViewModel @Inject constructor(
                 entries = entries,
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
+                swap = swap,
                 specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
                 original = original,
             )
@@ -426,8 +436,9 @@ fun LogServiceScreen(
                     entered = vm.odometer,
                     original = data.original?.record?.odometer,
                     date = vm.date,
-                    readings = data.readings,
-                    lastOdometer = data.lastOdometer,
+                    // Set beside what is typed, so in terms of the cluster that was in on the form's date.
+                    readings = data.readings.map { it.copy(odometer = data.swap.asReadOn(it.odometer, vm.date)) },
+                    lastOdometer = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) },
                     showErrors = vm.showErrors,
                 )?.let { note ->
                     Text(

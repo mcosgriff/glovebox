@@ -72,6 +72,7 @@ import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -131,8 +132,9 @@ class RecordDetailViewModel @Inject constructor(
             .filter { it.tracked }
             .mapNotNull { it.toTracked(settings.settings.first().defaultRule) }
             .associateBy { it.id }
-        val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry() }
-        val entry = r.toEntry()
+        val swap = vehicle?.clusterSwap()
+        val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry(swap) }
+        val entry = r.toEntry(swap)
 
         RecordDetail(
             record = r,

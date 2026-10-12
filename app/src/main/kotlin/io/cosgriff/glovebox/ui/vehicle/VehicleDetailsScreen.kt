@@ -88,7 +88,8 @@ import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.domain.DrivingUse
-import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.ClusterSwaps
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.Sale
@@ -99,7 +100,9 @@ import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -182,8 +185,13 @@ class VehicleDetailsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     /** The highest reading so far, which a sale's final odometer starts from. */
-    val lastOdometer: StateFlow<Int?> = combine(service.observeRecords(vehicleId), odometer.observe(vehicleId)) { records, readings ->
-        VehicleReminders.currentOdometer(records.map { it.toEntry() }, readings.map { OdometerReading(it.date, it.odometer) })
+    val lastOdometer: StateFlow<Int?> = combine(
+        vehicles.observe(vehicleId),
+        service.observeRecords(vehicleId),
+        odometer.observe(vehicleId),
+    ) { vehicle, records, readings ->
+        val swap = vehicle?.clusterSwap()
+        VehicleReminders.currentOdometer(records.map { it.toEntry(swap) }, readings.toReadings(swap))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)
@@ -207,6 +215,11 @@ class VehicleDetailsViewModel @Inject constructor(
             Spec.TIRES -> vehicles.setTireSize(vehicleId, value)
             Spec.WIPERS -> vehicles.setWiperBlades(vehicleId, value)
         }
+    }
+
+    /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */
+    fun setClusterSwap(swap: ClusterSwap?) = viewModelScope.launch {
+        vehicles.setClusterSwap(vehicleId, swap?.offset ?: 0, swap?.on, swap?.startReading)
     }
 
     fun pickPhoto() = picker.pick(vehicleId)
@@ -245,6 +258,19 @@ fun VehicleDetailsScreen(
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
+    var settingOffset by rememberSaveable { mutableStateOf(false) }
+    val swap = v.clusterSwap()
+
+    if (settingOffset) {
+        OdometerOffsetSheet(
+            current = swap,
+            onSave = {
+                vm.setClusterSwap(it)
+                settingOffset = false
+            },
+            onDismiss = { settingOffset = false },
+        )
+    }
 
     if (addingVin) {
         VinDialog(
@@ -407,6 +433,23 @@ fun VehicleDetailsScreen(
                             )
                             Chevron()
                         }
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { settingOffset = true }),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text("Odometer offset", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            swap?.let { ClusterSwaps.offsetLabel(it.offset) } ?: "None",
+                            Modifier.weight(1f).padding(vertical = 8.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = if (swap != null) PlexMono else null,
+                            textAlign = TextAlign.End,
+                        )
+                        Chevron()
                     }
                 }
                 Text(

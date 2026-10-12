@@ -54,7 +54,7 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
-import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
@@ -63,7 +63,9 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.resetters
 import io.cosgriff.glovebox.ui.ScheduleRoute
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -74,7 +76,8 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 /** What the log says about one schedule item, before it is turned into the editor's [ItemHistory]. */
-data class ItemLog(val lastDone: LastDone?, val recordId: Long?, val estimate: LocalDate?)
+/** [lastDone] is in dash terms; [lastRead] is the same service as the odometer read that day. */
+data class ItemLog(val lastDone: LastDone?, val lastRead: LastDone?, val recordId: Long?, val estimate: LocalDate?)
 
 data class ScheduleState(
     val vehicle: VehicleEntity,
@@ -114,11 +117,12 @@ class ScheduleViewModel @Inject constructor(
         if (vehicle == null) return@combine null
         entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel).associateBy { it.key }
-        val entries = records.map { it.toEntry() }
+        val swap = vehicle.clusterSwap()
+        val entries = records.map { it.toEntry(swap) }
         val statuses = VehicleReminders.statuses(
             items.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) },
             entries,
-            readings.map { OdometerReading(it.date, it.odometer) },
+            readings.toReadings(swap),
             LocalDate.now(),
             s.lead,
         ).associateBy { it.item.id }
@@ -143,6 +147,7 @@ class ScheduleViewModel @Inject constructor(
                 val status = statuses[e.id]?.status
                 e.id.toString() to ItemLog(
                     lastDone = last?.let { LastDone(it.date, it.odometer) },
+                    lastRead = last?.let { swap.asReadOn(LastDone(it.date, it.odometer)) },
                     recordId = last?.id,
                     // Only an estimate when it comes from the driving pace and isn't already past.
                     estimate = status?.estimatedDueDate?.takeIf { status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE },
@@ -262,6 +267,7 @@ fun ScheduleScreen(
             } else {
                 ItemHistory(
                     lastDone = log?.lastDone,
+                    lastRead = log?.lastRead,
                     onOpenRecord = log?.recordId?.let { id -> { onOpenRecord(id) } },
                     resetBy = ServiceCatalog.resetters(state.templateKeys[editing.key]),
                     estimate = log?.estimate,

@@ -38,8 +38,15 @@ data class VehicleEntity(
     val wiperBlades: String? = null,
     /** Name of the vehicle's own encrypted photo in PhotoCrypto.photoDir. */
     val photoFile: String? = null,
-    /** Miles to add to the displayed odometer after a cluster replacement. */
+    /**
+     * An instrument cluster replacement (ClusterSwap in :domain), in force only when [clusterSwappedOn]
+     * and [clusterStartReading] are both set: from that day the dash reads [odometerOffset] miles less
+     * than the old cluster would have. Readings themselves are stored as typed.
+     */
     val odometerOffset: Int = 0,
+    val clusterSwappedOn: LocalDate? = null,
+    /** What the replacement cluster read when it went in. */
+    val clusterStartReading: Int? = null,
     val archivedOn: LocalDate? = null,
     val createdOn: LocalDate,
     /** When NHTSA last answered for this vehicle's recalls; null = never checked. */

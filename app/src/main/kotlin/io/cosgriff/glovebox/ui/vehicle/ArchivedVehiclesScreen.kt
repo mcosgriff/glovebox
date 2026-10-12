@@ -44,12 +44,13 @@ import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.service.asMiles
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -87,8 +88,8 @@ class ArchivedVehiclesViewModel @Inject constructor(
             ArchivedVehicle(
                 vehicle = v,
                 finalOdometer = VehicleReminders.currentOdometer(
-                    mine.map { it.toEntry() },
-                    readingsBy[v.id].orEmpty().map { OdometerReading(it.date, it.odometer) },
+                    mine.map { it.toEntry(v.clusterSwap()) },
+                    readingsBy[v.id].orEmpty().toReadings(v.clusterSwap()),
                 ),
                 records = mine.size,
                 photos = mine.sumOf { it.photos.size },

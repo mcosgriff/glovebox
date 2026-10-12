@@ -27,12 +27,14 @@ import io.cosgriff.glovebox.domain.Notice
 import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.NoticeRules
 import io.cosgriff.glovebox.domain.NoticeVehicle
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.domain.asReadOn
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
@@ -70,13 +72,17 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         // Sold vehicles are in the archive and get no reminders of any kind.
         val vehicles = deps.vehicles().active().map { v ->
             val records = deps.service().recordsFor(v.id)
-            val entries = records.map { it.toEntry() }
-            val updates = deps.odometer().readingsFor(v.id).map { OdometerReading(it.date, it.odometer) }
+            val swap = v.clusterSwap()
+            val entries = records.map { it.toEntry(swap) }
+            val updates = deps.odometer().readingsFor(v.id).toReadings(swap)
             val tracked = deps.schedule().allFor(v.id).filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule) }
             NoticeVehicle(
                 id = v.id,
                 name = "${v.year} ${v.nickname ?: v.model}",
-                statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.lead),
+                // Last done goes in as it was read, so recording a cluster replacement doesn't look like the
+                // service being logged again (NoticeRules.cycle) and announce everything a second time.
+                statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.lead)
+                    .map { s -> s.copy(lastDone = s.lastDone?.let { swap.asReadOn(it) }) },
                 lastReadingOn = ServiceLog.readings(entries, updates).maxOfOrNull { it.date },
             )
         }

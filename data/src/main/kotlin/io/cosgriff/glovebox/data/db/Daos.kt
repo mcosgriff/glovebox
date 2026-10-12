@@ -64,6 +64,22 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET photoFile = :fileName WHERE id = :id")
     suspend fun setPhotoFile(id: Long, fileName: String?)
 
+    @Query("UPDATE vehicles SET odometerOffset = :offset, clusterSwappedOn = :on, clusterStartReading = :startReading WHERE id = :id")
+    suspend fun writeClusterSwap(id: Long, offset: Int, on: LocalDate?, startReading: Int?)
+
+    @Query("UPDATE schedule_items SET snoozedUntilOdometer = NULL, snoozedUntilDate = NULL WHERE vehicleId = :vehicleId AND snoozedUntilOdometer IS NOT NULL")
+    suspend fun clearMileageSnoozes(vehicleId: Long)
+
+    /**
+     * Sets, corrects or (with [on] null) removes the cluster replacement. A snooze that ends at an
+     * odometer reading was worked out on the old footing and would end at the wrong point, so those go.
+     */
+    @Transaction
+    suspend fun setClusterSwap(id: Long, offset: Int, on: LocalDate?, startReading: Int?) {
+        writeClusterSwap(id, offset, on, startReading)
+        clearMileageSnoozes(id)
+    }
+
     @Insert suspend fun insert(vehicle: VehicleEntity): Long
     @Update suspend fun update(vehicle: VehicleEntity)
 
