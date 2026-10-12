@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import androidx.compose.runtime.LaunchedEffect
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.photo.PhotoThumb
@@ -167,6 +168,11 @@ class RecordDetailViewModel @Inject constructor(
 @Composable
 fun RecordDetailScreen(
     onBack: () -> Unit,
+    /** The record is gone; this screen has nothing left to show. */
+    onDeleted: () -> Unit,
+    /** Asked for from the edit form's "Delete this record". */
+    confirmDelete: Boolean,
+    onConfirmDeleteShown: () -> Unit,
     onEdit: (vehicleId: Long, recordId: Long) -> Unit,
     onOpenPhoto: (recordId: Long, index: Int) -> Unit,
     vm: RecordDetailViewModel = hiltViewModel(),
@@ -174,6 +180,12 @@ fun RecordDetailScreen(
     val detail = vm.detail.collectAsStateWithLifecycle().value ?: return
     val record = detail.record.record
     var confirmingDelete by remember { mutableStateOf(false) }
+    LaunchedEffect(confirmDelete) {
+        if (confirmDelete && !detail.readOnly) {
+            confirmingDelete = true
+            onConfirmDeleteShown()
+        }
+    }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -342,6 +354,11 @@ fun RecordDetailScreen(
                         }
                     }
                 }
+                Text(
+                    "You can undo this for ${LogEdits.UNDO_SECONDS} seconds afterwards.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(
                         onClick = { confirmingDelete = false },
@@ -350,7 +367,7 @@ fun RecordDetailScreen(
                     Button(
                         onClick = {
                             confirmingDelete = false
-                            vm.delete(onBack)
+                            vm.delete(onDeleted)
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error,

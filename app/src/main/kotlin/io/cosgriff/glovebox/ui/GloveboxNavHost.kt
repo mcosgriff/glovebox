@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.domain.LogEdits
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.flow.collectLatest
 import io.cosgriff.glovebox.ui.about.LicenceTextScreen
 import io.cosgriff.glovebox.ui.about.LicencesScreen
 import io.cosgriff.glovebox.ui.about.PrivacyScreen
@@ -106,6 +109,7 @@ import kotlin.reflect.KClass
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
 
 private const val SCANNED_VIN = "scannedVin"
+private const val CONFIRM_DELETE = "confirmDelete"
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
 
@@ -129,8 +133,11 @@ fun GloveboxNavHost() {
     val recordEvents: RecordEventsViewModel = hiltViewModel()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    // For plain confirmations with nothing to undo.
+    val showNote: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
     LaunchedEffect(Unit) {
-        recordEvents.events.collect { event ->
+        // Latest only: a newer change replaces the bar for an older one, whose Undo is then gone.
+        recordEvents.events.collectLatest { event ->
             val (message, action) = when (event) {
                 is RecordEvent.Saved -> "Service saved · reminders updated" to "View"
                 is RecordEvent.Edited -> "Changes saved · reminders updated" to "Undo"
@@ -140,17 +147,38 @@ fun GloveboxNavHost() {
                 is RecordEvent.RecallReopened ->
                     if (event.record != null) "Recall marked open · service record removed" to "Undo" else "Recall marked open" to "Undo"
             }
-            val result = snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long)
-            if (result == SnackbarResult.ActionPerformed) {
-                val recordId = when (event) {
-                    is RecordEvent.Saved -> event.recordId
-                    is RecordEvent.RecallDone -> event.recordId
-                    else -> null
+            val recordId = when (event) {
+                is RecordEvent.Saved -> event.recordId
+                is RecordEvent.RecallDone -> event.recordId
+                else -> null
+            }
+            var undone = false
+            try {
+                // An Undo stays up longer than a snackbar normally does; the delete sheet says for how long.
+                val result = if (recordId != null) {
+                    snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long)
+                } else {
+                    withTimeoutOrNull(LogEdits.UNDO_SECONDS * 1000L) {
+                        snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Indefinite)
+                    }
                 }
-                if (recordId != null) nav.navigate(RecordDetailRoute(recordId)) else recordEvents.undo(event)
-            } else {
-                // Undo wasn't taken: the photo files the event was holding on to can go.
-                recordEvents.discard(event)
+                if (result == SnackbarResult.ActionPerformed) {
+                    if (recordId != null) {
+                        nav.navigate(RecordDetailRoute(recordId))
+                    } else {
+                        undone = true
+                        recordEvents.undo(event) {
+                            when (event) {
+                                is RecordEvent.Deleted -> showNote("Record restored \u00b7 reminders updated")
+                                is RecordEvent.Edited -> showNote("Changes undone \u00b7 reminders updated")
+                                else -> Unit
+                            }
+                        }
+                    }
+                }
+            } finally {
+                // Undo wasn't taken, or can no longer be: the photo files the event was holding on to can go.
+                if (!undone) recordEvents.discard(event)
             }
         }
     }
@@ -191,8 +219,15 @@ fun GloveboxNavHost() {
         }
     }
 
-    // For plain confirmations with nothing to undo.
-    val showNote: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+
+    // A saved or deleted record ends on the History list, which RecordActions.focus points at the right vehicle.
+    // The tab the user was on keeps its screens for when they go back to it.
+    val showHistory: () -> Unit = {
+        nav.navigate(HistoryRoute) {
+            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+        }
+    }
 
     // A vehicle that left the garage takes its home and details screens with it.
     val onArchived: (String, () -> Unit) -> Unit = { name, undo ->
@@ -335,7 +370,20 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            composable<LogServiceRoute> { LogServiceScreen(onDone = { nav.popBackStack() }) }
+            composable<LogServiceRoute> {
+                LogServiceScreen(
+                    onDone = { nav.popBackStack() },
+                    onAdded = {
+                        nav.popBackStack()
+                        showHistory()
+                    },
+                    onDeleteInstead = {
+                        // Editing is only reached from the record's own screen, which has the confirmation.
+                        nav.previousBackStackEntry?.savedStateHandle?.set(CONFIRM_DELETE, true)
+                        nav.popBackStack()
+                    },
+                )
+            }
             composable<ScheduleSetupRoute> { ScheduleSetupScreen(onDone = { nav.popBackStack() }) }
             composable<ScheduleRoute> {
                 ScheduleScreen(
@@ -347,9 +395,16 @@ fun GloveboxNavHost() {
             composable<HistoryRoute> {
                 HistoryScreen(onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
             }
-            composable<RecordDetailRoute> {
+            composable<RecordDetailRoute> { entry ->
+                val confirmDelete by entry.savedStateHandle.getStateFlow(CONFIRM_DELETE, false).collectAsStateWithLifecycle()
                 RecordDetailScreen(
                     onBack = { nav.popBackStack() },
+                    onDeleted = {
+                        nav.popBackStack()
+                        showHistory()
+                    },
+                    confirmDelete = confirmDelete,
+                    onConfirmDeleteShown = { entry.savedStateHandle[CONFIRM_DELETE] = false },
                     onEdit = { vehicleId, recordId -> nav.navigate(LogServiceRoute(vehicleId, recordId)) },
                     onOpenPhoto = { recordId, index -> nav.navigate(PhotoViewerRoute(recordId, index)) },
                 )

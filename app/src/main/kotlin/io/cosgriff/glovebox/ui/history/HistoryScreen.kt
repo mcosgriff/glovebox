@@ -1,5 +1,15 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.domain.RecordMark
+import io.cosgriff.glovebox.ui.service.HistoryFocus
+import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.ui.service.RecordActions
+import io.cosgriff.glovebox.domain.LogEdits
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.BorderStroke
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.ui.Alignment
@@ -84,6 +94,7 @@ class HistoryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
     service: ServiceDao,
+    private val actions: RecordActions,
 ) : ViewModel() {
     /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
     private val archivedId: Long? = savedStateHandle.get<Long>("vehicleId")
@@ -113,10 +124,30 @@ class HistoryViewModel @Inject constructor(
 
     val state: StateFlow<HistoryState?> = source.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** The record to mark as just added or just restored, if it is in the list showing. */
+    val fresh: StateFlow<HistoryFocus?> = actions.focus.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    init {
+        // A save, delete or restore lands here: show that vehicle, with every category, so the record is in view.
+        if (archivedId == null) {
+            viewModelScope.launch {
+                actions.focus.collect { focus ->
+                    if (focus != null) {
+                        chosenVehicle.value = focus.vehicleId
+                        filter = null
+                    }
+                }
+            }
+        }
+    }
+
     fun chooseVehicle(id: Long) {
         chosenVehicle.value = id
         filter = null
     }
+
+    /** History is being left: the mark has been seen, and the next visit starts wherever the user left it. */
+    fun focusSeen() = actions.clearFocus()
 }
 
 @Composable
@@ -134,6 +165,9 @@ fun HistoryScreen(
         filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }
     }
 
+    val fresh by vm.fresh.collectAsStateWithLifecycle()
+    DisposableEffect(Unit) { onDispose { vm.focusSeen() } }
+
     var exporting by rememberSaveable { mutableStateOf(false) }
     if (exporting) ExportSheet(vehicleId = state.vehicle?.id, onDismiss = { exporting = false })
 
@@ -150,7 +184,13 @@ fun HistoryScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("History", Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
                 if (state.vehicle != null) {
-                    OutlinedButton(onClick = { exporting = true }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Export") }
+                    OutlinedButton(
+                        onClick = { exporting = true },
+                        modifier = Modifier.heightIn(min = 48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) { Text("Export \u00b7 PDF / MD") }
                 }
             }
             state.vehicle?.let { v ->
@@ -186,28 +226,35 @@ fun HistoryScreen(
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(shown, key = { it.record.id }) { r -> RecordCard(r, onClick = { onOpenRecord(r.record.id) }) }
+                items(shown, key = { it.record.id }) { r ->
+                    RecordCard(r, mark = fresh?.mark?.takeIf { r.record.id == fresh?.recordId }, onClick = { onOpenRecord(r.record.id) })
+                }
             }
         }
     }
 }
 
 @Composable
-private fun RecordCard(r: ServiceRecordWithItems, onClick: () -> Unit) {
+private fun RecordCard(r: ServiceRecordWithItems, mark: RecordMark?, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val fresh = mark != null
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = scheme.surface),
+        // Canvas: the record just added, or just restored, is outlined in the accent.
+        border = BorderStroke(if (fresh) 1.5.dp else 1.dp, if (fresh) scheme.primary else scheme.outlineVariant),
     ) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(r.record.date.format(longDate), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                Text(r.record.odometer.asMiles(), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono)
+                Text(r.record.odometer.asMiles(), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
             }
             Text(r.items.joinToString(", ") { it.label })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    if (r.record.diy) "DIY" else r.record.shopName ?: "Shop",
+                    LogEdits.who(r.record.diy, r.record.shopName, mark),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -232,9 +279,17 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) },
+        label = { Text(label, fontWeight = FontWeight.SemiBold) },
+        shape = CircleShape,
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = selected,
+            borderColor = MaterialTheme.colorScheme.outlineVariant,
+            borderWidth = 1.5.dp,
+        ),
         // Canvas: the chosen filter is solid ink.
         colors = FilterChipDefaults.filterChipColors(
+            containerColor = MaterialTheme.colorScheme.surface,
             selectedContainerColor = MaterialTheme.colorScheme.secondary,
             selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
         ),

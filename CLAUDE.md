@@ -100,8 +100,8 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), History
-and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), Log service
+polish (#31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -254,6 +254,13 @@ Notes on what's built:
   to be added to `DataWipe.erase`.
 - All service-log writes go through `RecordActions` (app), which emits the events behind the
   nav-host snackbar and its Undo. Editing reuses the Log service screen (`LogServiceRoute.recordId`).
+- A new service, a delete and a restore all end on the History list (`showHistory` in the nav host), and
+  `RecordActions.focus` tells History which vehicle to show and which record to outline ("just added" /
+  "restored"); History clears it when it is left. An edit returns to the record. The edit form's "Delete
+  this record" goes back to the record's screen, which owns the confirmation sheet.
+- An Undo bar stays for `LogEdits.UNDO_SECONDS` (30), and the delete sheet says so. Events are collected
+  with `collectLatest`: a newer change replaces the bar for an older one, and whatever ends a bar without
+  Undo (timeout, replacement, the app locking) discards the photo files it was holding.
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a
   vehicle when its list is a week old (`vehicles.recallsCheckedOn`): once per launch from the garage,
   and on opening vehicle home or the Recalls screen. A failed check leaves the stored list alone.
