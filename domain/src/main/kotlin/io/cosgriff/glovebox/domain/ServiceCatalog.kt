@@ -13,7 +13,26 @@ data class WorkOption(val id: String, val label: String, val scheduleItemId: Lon
 
 data class WorkCategory(val id: String, val label: String, val options: List<WorkOption>)
 
+/** What the user has written down on Vehicle details. Any of it may be missing. */
+data class VehicleSpecs(val oil: String? = null, val tireSize: String? = null, val wiperBlades: String? = null)
+
 object ServiceCatalog {
+    /**
+     * The small note on the right of a Log service line: what this vehicle takes for the job, where
+     * the user has written it down, otherwise how often the reminder it resets comes round.
+     * [interval] is that reminder's, when the line resets a tracked one. Null when there is nothing
+     * worth saying. Nothing here is looked up: it is all the user's own data.
+     */
+    fun hint(optionId: String, interval: Interval?, specs: VehicleSpecs): String? {
+        val spec = when (optionId) {
+            "oil" -> specs.oil
+            "new-tires" -> specs.tireSize
+            "wipers" -> specs.wiperBlades
+            else -> null
+        }?.trim()?.takeIf { it.isNotEmpty() }
+        return spec ?: interval?.let { "Every ${it.label()}" }
+    }
+
     const val YOUR_ITEMS = "yours"
 
     /** Each template key is reset by at most one catalog item, so a reminder maps to one tick box. */
