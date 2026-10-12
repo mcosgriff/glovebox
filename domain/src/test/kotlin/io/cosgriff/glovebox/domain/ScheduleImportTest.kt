@@ -60,4 +60,20 @@ class ScheduleImportTest {
         assertEquals(1, plan.changes(ImportMode.ADD_NEW))
         assertEquals(2, plan.changes(ImportMode.REPLACE_MATCHING))
     }
+
+    @Test
+    fun `the service an item answers to is part of whether it is the same`() {
+        val item = file("Oil change").copy(service = "oil")
+        assertEquals(1, ScheduleImport.plan(listOf(item), listOf(own(1, "Oil change"))).differs.size)
+        assertEquals(1, ScheduleImport.plan(listOf(item), listOf(own(1, "Oil change").copy(service = "oil"))).same.size)
+    }
+
+    @Test
+    fun `a tracked typical item the file's service resets is a double, whatever it is called`() {
+        val existing = listOf(typical(1, "oil", "Engine oil & filter"), typical(2, "rotation", "Tire rotation"))
+        val items = listOf(file("Oil change").copy(service = "oil"), file("Wash underbody"))
+        assertEquals(listOf(1L), ScheduleImport.doubles(items, existing).map { it.id })
+        // A service with no typical item behind it doubles nothing.
+        assertTrue(ScheduleImport.doubles(listOf(file("Wipers").copy(service = "wipers")), existing).isEmpty())
+    }
 }

@@ -121,17 +121,25 @@ object HistoryImport {
 
     /**
      * What an imported line is filed under and which reminder it resets. A line with a `service`
-     * resets the typical item that service resets, exactly as ticking it on Log service does. A line
-     * without one resets one of the user's own items if its label is that item's name.
+     * is saved against the item ticking it on Log service would be: the typical item that service
+     * resets, or failing that one of the user's own that answers to it. A line without one resets
+     * one of the user's own items if its label is that item's name.
+     *
+     * This is only the item the line is saved against; [itemIds] is everything it counts for.
      */
     fun resolve(line: ImportedWork, schedule: List<ScheduleRef>): ResolvedWork {
         val target = if (line.service != null) {
             services[line.service]?.resets?.let { key -> schedule.firstOrNull { it.templateKey == key } }
+                ?: schedule.filter { it.templateKey == null && it.service == line.service }.minByOrNull { it.id }
         } else {
             schedule.firstOrNull { it.templateKey == null && it.name.trim().equals(line.label, ignoreCase = true) }
         }
         return ResolvedWork(line.label, line.service, target?.id)
     }
+
+    /** Every schedule item [record] would count for once imported. */
+    fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
+        ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
 
     private fun labels(labels: List<String>): List<String> = labels.map { it.trim().lowercase(Locale.US) }.sorted()
 
@@ -150,7 +158,7 @@ object HistoryImport {
                 !e.enteredAsLastDone && labels(i.work.map { it.label }) == labels(e.labels) &&
                     i.diy == e.diy && i.shopName == e.shopName && i.costCents == e.costCents && i.notes == e.notes
             },
-            blank = { i, e -> e.enteredAsLastDone && i.work.mapNotNull { resolve(it, schedule).scheduleItemId }.toSet().containsAll(e.itemIds) },
+            blank = { i, e -> e.enteredAsLastDone && itemIds(i, schedule).containsAll(e.itemIds) },
         )
 
     /** The log as it would stand after the import, for working out which reminders move. Dash terms in, dash terms out. */
@@ -161,7 +169,7 @@ object HistoryImport {
         schedule: List<ScheduleRef>,
         swap: ClusterSwap?,
     ): List<ServiceEntry> {
-        fun ids(r: ImportedRecord) = r.work.mapNotNull { resolve(it, schedule).scheduleItemId }.toSet()
+        fun ids(r: ImportedRecord) = itemIds(r, schedule)
         val replaced = plan.replaced(mode).associate { (item, saved) -> saved.id to ids(item) }
         val kept = before.map { e -> replaced[e.id]?.let { e.copy(itemIds = it) } ?: e }
         // Ids below zero: not saved yet, and never equal to a real record's.

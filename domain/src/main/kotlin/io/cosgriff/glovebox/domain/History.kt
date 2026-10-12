@@ -98,10 +98,15 @@ fun Money.format(cents: Long): String =
 fun ServiceCatalog.categoryOf(catalogId: String?): CatalogCategory? =
     catalogId?.let { id -> categories.firstOrNull { c -> c.items.any { it.id == id } } }
 
-/** The Log service line a bare "last done" for the reminder made from [templateKey] stands for; null for the user's own items. */
-fun ServiceCatalog.lineFor(templateKey: String?): CatalogItem? =
-    if (templateKey == null) null else categories.flatMap { it.items }.firstOrNull { it.resets == templateKey }
+/**
+ * The Log service line a bare "last done" stands for: the one that resets the typical item made
+ * from [templateKey], or the one the user's own item answers to ([service]). Null for an item no
+ * line covers.
+ */
+fun ServiceCatalog.lineFor(templateKey: String?, service: String? = null): CatalogItem? {
+    val items = categories.flatMap { it.items }
+    return if (templateKey != null) items.firstOrNull { it.resets == templateKey } else items.firstOrNull { it.id == service }
+}
 
-/** The Log service lines that reset the reminder made from [templateKey], as the user sees them there. */
-fun ServiceCatalog.resetters(templateKey: String?): List<String> =
-    if (templateKey == null) emptyList() else categories.flatMap { it.items }.filter { it.resets == templateKey }.map { it.label }
+/** The Log service lines that reset a reminder, as the user sees them there: see [lineFor]. */
+fun ServiceCatalog.resetters(templateKey: String?, service: String? = null): List<String> = listOfNotNull(lineFor(templateKey, service)?.label)

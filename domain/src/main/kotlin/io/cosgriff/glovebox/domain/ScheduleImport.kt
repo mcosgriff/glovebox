@@ -10,6 +10,8 @@ data class ImportedScheduleItem(
     val normal: Interval,
     val severe: Interval? = null,
     val rule: DueRule? = null,
+    /** The built-in service line that resets it, as a [CatalogItem] id; null when it is logged under "Your items". */
+    val service: String? = null,
 )
 
 /**
@@ -24,6 +26,7 @@ data class SavedScheduleItem(
     val rule: DueRule?,
     val templateKey: String?,
     val tracked: Boolean,
+    val service: String? = null,
 )
 
 /** The `interval-schedule` kind: `docs/import/schema/interval-schedule.schema.json`. */
@@ -41,7 +44,7 @@ object ScheduleImport {
     )
 
     private val intervalKeys = setOf("everyMiles", "everyMonths")
-    private val itemKeys = intervalKeys + setOf("name", "severe", "rule")
+    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service")
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
@@ -53,9 +56,10 @@ object ScheduleImport {
             val normal = interval(o, path, check)
             val severe = o["severe"]?.let { s -> check.obj(s, "$path.severe", intervalKeys)?.let { interval(it, "$path.severe", check) } }
             val rule = o["rule"]?.let { check.choice(it, "$path.rule", rules) }
+            val service = o["service"]?.let { check.choice(it, "$path.service", HistoryImport.services.mapValues { s -> s.key }) }
             if (name == null || normal == null) return@mapIndexedNotNull null
             seen.put(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
-            ImportedScheduleItem(name, normal, severe, rule)
+            ImportedScheduleItem(name, normal, severe, rule, service)
         }
     }
 
@@ -84,16 +88,18 @@ object ScheduleImport {
             existing = existing.filter { it.templateKey == null },
             key = { key(it.name) },
             existingKey = { key(it.name) },
-            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule },
+            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule && i.service == e.service },
         )
 
     /**
-     * Typical items being tracked that have the same name as something in the file. After the
-     * import there would be two reminders for one job, so the user is offered the choice to stop
-     * tracking these. Only `tracked` would change, and only if they say so.
+     * Typical items being tracked that are the same job as something in the file: the same name,
+     * or the item the file's `service` resets. After the import there would be two reminders for one
+     * job, so the user is offered the choice to stop tracking these. Only `tracked` would change,
+     * and only if they say so; left alone, both stay and both are reset by the same logged work.
      */
     fun doubles(items: List<ImportedScheduleItem>, existing: List<SavedScheduleItem>): List<SavedScheduleItem> {
         val names = items.map { key(it.name) }.toSet()
-        return existing.filter { it.templateKey != null && it.tracked && key(it.name) in names }
+        val keys = items.mapNotNull { it.service?.let(HistoryImport.services::get)?.resets }.toSet()
+        return existing.filter { it.templateKey != null && it.tracked && (key(it.name) in names || it.templateKey in keys) }
     }
 }

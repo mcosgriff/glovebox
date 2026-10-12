@@ -72,6 +72,7 @@ import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 /** What deleting the vehicle takes with it, counted when the screen opens. */
@@ -124,7 +125,7 @@ class DeleteVehicleViewModel @Inject constructor(
                 recalls = recalls.recallsFor(vehicleId).size,
                 mileageReadings = readings.size,
                 lastOdometer = VehicleReminders.currentOdometer(
-                    records.map { it.toEntry(v.clusterSwap()) },
+                    records.map { it.toEntry(v.clusterSwap(), NoLinks) },
                     readings.toReadings(v.clusterSwap()),
                 ),
             )

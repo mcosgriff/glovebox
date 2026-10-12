@@ -184,8 +184,10 @@ Notes on what's built:
   only the interval, severe interval and rule (`ruleOverride`), keeping `tracked`, `useSevere`, a snooze
   and the item's records. A tracked typical item with the same name as a file item is a "double"
   (`ScheduleImport.doubles`): the page offers, unticked by default, to stop tracking it, which is the one
-  thing an import may change on a typical item and only because the user ticked it. The file has no
-  last-done and no link to a catalog service; the result card offers "When were these last done?".
+  thing an import may change on a typical item and only because the user ticked it. A file item's optional
+  `service` sets `schedule_items.service`, is part of same-or-different, and makes the typical item that
+  service resets a double too. The file has no last-done; the result card offers "When were these last
+  done?".
 - History import (`HistoryImport`, kind `service-history`): each item is a service record with
   `service_records.imported` set, written through `RecordActions.applyImport` (no snackbar; the Import
   page shows its own result). A line's optional `service` is a `CatalogItem` id: it files the line under
@@ -232,8 +234,18 @@ Notes on what's built:
   is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
-- Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
-  (`ServiceCatalog`); the user's own schedule items appear under "Your items".
+- Which reminders a logged line counts for is **derived, never stored** (`ServiceLinks` in `:domain`): the
+  item the line was saved against (`service_record_items.scheduleItemId`), plus every item that answers to
+  the catalog line it was picked from (`catalogId`). A typical item answers through
+  `schedule_items.templateKey` matching `CatalogItem.resets`; one of the user's own answers through
+  `schedule_items.service`, a `CatalogItem` id set in the schedule item editor or by an import. So one tick
+  of "Oil & filter change" resets the typical item and the user's "Oil change" alike, and pointing an item
+  at a service makes work already in the log count at once. **Never read `scheduleItemId` on its own to
+  decide what a record resets:** go through `toEntry(swap, items.answering())` (`Mappers.kt`), or
+  `HistoryImport.itemIds` for a record not saved yet. `NoLinks` is for callers that only want readings.
+  `service` is ignored on a typical item, and `templateKey` still means "Glovebox's own", which is what
+  keeps imports from touching those. On Log service an item that answers to a catalog line is logged
+  through that line and isn't also listed under "Your items".
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
 - Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
   prefilled, because a prefilled reading gets saved untouched and every reminder is then counted from the
@@ -420,7 +432,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v12); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v13); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

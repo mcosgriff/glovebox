@@ -8,11 +8,30 @@
       "name": "Oil change",
       "everyMiles": 7500,
       "everyMonths": 12,
-      "severe": { "everyMiles": 5000, "everyMonths": 6 },
-      "rule": "whichever-first"
+      "severe": {
+        "everyMiles": 5000,
+        "everyMonths": 6
+      },
+      "rule": "whichever-first",
+      "service": "oil"
     },
-    { "name": "Rotate tires", "everyMiles": 5000 },
-    { "name": "Brake fluid flush", "everyMonths": 36 },
-    { "name": "Grease driveshaft", "everyMiles": 15000, "severe": { "everyMiles": 5000 }, "rule": "mileage-only" }
+    {
+      "name": "Rotate tires",
+      "everyMiles": 5000,
+      "service": "rotation"
+    },
+    {
+      "name": "Brake fluid flush",
+      "everyMonths": 36
+    },
+    {
+      "name": "Grease driveshaft",
+      "everyMiles": 15000,
+      "severe": {
+        "everyMiles": 5000
+      },
+      "rule": "mileage-only",
+      "service": "driveshaft"
+    }
   ]
 }

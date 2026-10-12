@@ -57,6 +57,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class ArchivedVehicle(
@@ -88,7 +89,7 @@ class ArchivedVehiclesViewModel @Inject constructor(
             ArchivedVehicle(
                 vehicle = v,
                 finalOdometer = VehicleReminders.currentOdometer(
-                    mine.map { it.toEntry(v.clusterSwap()) },
+                    mine.map { it.toEntry(v.clusterSwap(), NoLinks) },
                     readingsBy[v.id].orEmpty().toReadings(v.clusterSwap()),
                 ),
                 records = mine.size,

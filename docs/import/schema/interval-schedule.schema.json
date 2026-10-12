@@ -5,21 +5,34 @@
   "description": "Jobs that each repeat at their own interval, for one vehicle. Format version 1. See docs/import/README.md.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["glovebox", "version", "kind", "items"],
+  "required": [
+    "glovebox",
+    "version",
+    "kind",
+    "items"
+  ],
   "properties": {
     "$schema": {
       "description": "Optional. Lets an editor check the file as it is typed. Glovebox ignores it.",
       "$ref": "#/$defs/line",
       "maxLength": 300
     },
-    "glovebox": { "const": "import" },
-    "version": { "const": 1 },
-    "kind": { "const": "interval-schedule" },
+    "glovebox": {
+      "const": "import"
+    },
+    "version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "interval-schedule"
+    },
     "items": {
       "type": "array",
       "minItems": 1,
       "maxItems": 200,
-      "items": { "$ref": "#/$defs/item" }
+      "items": {
+        "$ref": "#/$defs/item"
+      }
     }
   },
   "$defs": {
@@ -44,29 +57,103 @@
     "item": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
-      "anyOf": [{ "required": ["everyMiles"] }, { "required": ["everyMonths"] }],
+      "required": [
+        "name"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "everyMiles"
+          ]
+        },
+        {
+          "required": [
+            "everyMonths"
+          ]
+        }
+      ],
       "properties": {
         "name": {
           "description": "The job. Must be unique in the file, ignoring case.",
           "$ref": "#/$defs/line",
           "maxLength": 60
         },
-        "everyMiles": { "$ref": "#/$defs/miles" },
-        "everyMonths": { "$ref": "#/$defs/months" },
+        "everyMiles": {
+          "$ref": "#/$defs/miles"
+        },
+        "everyMonths": {
+          "$ref": "#/$defs/months"
+        },
         "severe": {
           "description": "The interval for hard use (towing, off-road, dust, short trips), if it differs.",
           "type": "object",
           "additionalProperties": false,
-          "anyOf": [{ "required": ["everyMiles"] }, { "required": ["everyMonths"] }],
+          "anyOf": [
+            {
+              "required": [
+                "everyMiles"
+              ]
+            },
+            {
+              "required": [
+                "everyMonths"
+              ]
+            }
+          ],
           "properties": {
-            "everyMiles": { "$ref": "#/$defs/miles" },
-            "everyMonths": { "$ref": "#/$defs/months" }
+            "everyMiles": {
+              "$ref": "#/$defs/miles"
+            },
+            "everyMonths": {
+              "$ref": "#/$defs/months"
+            }
           }
         },
         "rule": {
           "description": "Which interval decides when it is due. Left out, the item follows the rule chosen in Settings.",
-          "enum": ["whichever-first", "whichever-last", "mileage-only", "time-only"]
+          "enum": [
+            "whichever-first",
+            "whichever-last",
+            "mileage-only",
+            "time-only"
+          ]
+        },
+        "service": {
+          "description": "Which of Glovebox's own service lines resets this item, if one does. Logging that line then counts for this item; left out, the item is logged under \"Your items\".",
+          "enum": [
+            "oil",
+            "engine-air",
+            "spark-plugs",
+            "belt",
+            "pcv",
+            "rotation",
+            "balance",
+            "alignment",
+            "new-tires",
+            "flat",
+            "front-pads",
+            "rear-pads",
+            "rotors",
+            "brake-fluid",
+            "brake-inspect",
+            "coolant",
+            "trans-fluid",
+            "power-steering",
+            "washer",
+            "diff-fluid",
+            "driveshaft",
+            "cv-axle",
+            "cabin-air",
+            "wipers",
+            "battery",
+            "bulbs",
+            "multi-point",
+            "emissions",
+            "recall",
+            "accessory",
+            "body",
+            "detail"
+          ]
         }
       }
     }

@@ -90,6 +90,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class RecallsState(
@@ -131,7 +132,7 @@ class RecallsViewModel @Inject constructor(
         RecallsState(
             vehicle = vehicle,
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
-            odometer = vehicle.clusterSwap().let { swap -> VehicleReminders.currentOdometer(records.map { it.toEntry(swap) }, readings.toReadings(swap)) },
+            odometer = vehicle.clusterSwap().let { swap -> VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap)) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 

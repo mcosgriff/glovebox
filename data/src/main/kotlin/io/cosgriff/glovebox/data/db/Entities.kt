@@ -84,6 +84,11 @@ data class ScheduleItemEntity(
     /** Null = use the app-wide default rule. Stores DueRule.name. */
     val ruleOverride: String? = null,
     val tracked: Boolean = true,
+    /**
+     * For the user's own items only: the CatalogItem id of the built-in service line that resets it.
+     * Null means it is logged under "Your items". Typical items answer through [templateKey] instead.
+     */
+    val service: String? = null,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

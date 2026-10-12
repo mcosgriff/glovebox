@@ -87,6 +87,10 @@ data class DraftItem(
     val tracked: Boolean = true,
     /** The suggestion this came from; null for items the user added. */
     val template: ScheduleTemplateItem? = null,
+    /** One the user added, not one of the typical items Glovebox suggested. Only these can be pointed at a service line. */
+    val own: Boolean = template == null,
+    /** For the user's own: the CatalogItem id of the built-in service line that resets it; null = logged under "Your items". */
+    val service: String? = null,
 ) {
     val active: Interval get() = if (useSevere) severe ?: normal else normal
     val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
@@ -188,6 +192,7 @@ class ScheduleSetupViewModel @Inject constructor(
                     useSevere = it.useSevere,
                     ruleOverride = it.rule?.name,
                     tracked = it.tracked,
+                    service = it.service.takeIf { _ -> it.own },
                 )
             },
         )

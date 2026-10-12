@@ -81,6 +81,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.foundation.layout.size
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import kotlinx.coroutines.flow.map
+import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 /**
@@ -139,7 +140,7 @@ class ScheduleViewModel @Inject constructor(
         entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel).associateBy { it.key }
         val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap) }
+        val entries = records.map { it.toEntry(swap, items.answering()) }
         val updates = readings.toReadings(swap)
         val entered = records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet()
         val statuses = VehicleReminders.statuses(
@@ -162,6 +163,8 @@ class ScheduleViewModel @Inject constructor(
                     rule = e.ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
                     tracked = e.tracked,
                     template = e.templateKey?.let(templates::get),
+                    own = e.templateKey == null,
+                    service = e.service,
                 )
             },
             templateKeys = items.associate { it.id.toString() to it.templateKey },
@@ -266,6 +269,8 @@ class ScheduleViewModel @Inject constructor(
         useSevere = useSevere,
         ruleOverride = rule?.name,
         tracked = tracked,
+        // Never on a typical item: those answer through their template key.
+        service = service.takeIf { entity.templateKey == null },
     )
 
     private companion object {
@@ -321,7 +326,7 @@ fun ScheduleScreen(
                     onOpenRecord = log?.recordId?.let { id -> { onOpenRecord(id) } },
                     entered = log?.entered == true,
                     onEnterLastDone = { enteringLastDone = true },
-                    resetBy = ServiceCatalog.resetters(state.templateKeys[editing.key]),
+                    resetBy = if (editing.own) null else ServiceCatalog.resetters(state.templateKeys[editing.key]),
                     estimate = log?.estimate,
                 )
             },
