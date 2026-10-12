@@ -108,7 +108,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: distance units (km display, #93), writing a schedule or torque specs out as a file (#120), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -263,7 +263,19 @@ Notes on what's built:
   published schema, so change the writer with the format. Like every import file it names no vehicle and
   carries nothing of the service log; only the suggested file name has the year, make and model. It goes
   out through `ExportSaver` (`cache/export/`, deleted either way), unencrypted, and the privacy screen
-  says so. The schedule and torque specs don't have this yet (#120).
+  says so.
+- The Maintenance schedule and Torque specs have the same row (#120, `ScheduleExport`, `TorqueExport`,
+  `ImportFiles` in `:domain`; `SaveAsImportFile` and `ExportSaver.saveImportFile` in app, which Milestones
+  uses too). **A schedule file holds every tracked item, typical as well as the user's own,** each typical
+  one with the `service` line that resets it; imported, they become that owner's own items and
+  `ScheduleImport.doubles` offers to stop the typical ones. It carries no `useSevere`, snooze or last
+  done. A torque file holds every row, values in the Settings unit to two decimals (in N·m where the
+  unit's whole-figure cap is in the way), and `source` only beside a value. **The screens are looser
+  than the format** (an interval has no upper limit, two torque rows can share a name), so
+  `ImportFiles.sift` puts each item through the kind's own reader before writing it; what the reader
+  refuses is left out (`WrittenFile.leftOut`) and listed in a dialog before anything is saved, never
+  dropped quietly and never repaired. Service history deliberately has no such file: the export and the
+  backup are for it. A new writer goes the same way and gets a round-trip test in `ImportFilesTest`.
 - Every `ImportKind` is now built, so there is no "not yet" path; a new kind needs one again only if it
   is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
