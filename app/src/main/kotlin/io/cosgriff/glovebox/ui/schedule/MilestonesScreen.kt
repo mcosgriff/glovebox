@@ -52,13 +52,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.JobDone
+import io.cosgriff.glovebox.domain.MilestoneEdits
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.MilestoneJobStatus
 import io.cosgriff.glovebox.domain.SavedMilestone
@@ -99,8 +103,8 @@ data class MilestonesState(
     val hasMileageItems: Boolean,
     /** True when these are the user's own imported table, shown in place of the view built from the schedule. */
     val fromTable: Boolean,
-    /** How many milestones the user's table has as written; a table that repeats shows more than that. */
-    val tableSize: Int = 0,
+    /** The user's table as written, by mileage; a table that repeats shows more milestones than this. Empty with no table. */
+    val table: List<SavedMilestone> = emptyList(),
     /** The length of the cycle when the user's table starts again after its last milestone; null when it ends. */
     val repeatsEveryMiles: Int? = null,
 )
@@ -146,7 +150,7 @@ class MilestonesViewModel @Inject constructor(
         val name = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}"
         if (rows.isNotEmpty()) {
             // The user's own table is shown as it is, in place of the view built from the schedule.
-            val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+            val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
             // A logged line completes a job by its catalog service, or by being called the same thing.
             val done = records.flatMap { r ->
                 val e = r.toEntry(swap, NoLinks)
@@ -164,7 +168,7 @@ class MilestonesViewModel @Inject constructor(
                 swap = swap,
                 hasMileageItems = true,
                 fromTable = true,
-                tableSize = saved.size,
+                table = saved,
                 repeatsEveryMiles = every,
             )
         }
@@ -186,6 +190,41 @@ class MilestonesViewModel @Inject constructor(
 
     /** Takes the user's table away; the screen goes back to the view built from the schedule. */
     fun removeTable() = viewModelScope.launch { table.deleteTable(vehicleId) }
+
+    /** The milestone open in the editor; null while the list is showing. */
+    var editing by mutableStateOf<MilestoneDraft?>(null)
+        private set
+
+    fun addMilestone() {
+        editing = MilestoneDraft(id = null, atMiles = null, orMonths = null, jobs = emptyList())
+    }
+
+    /** Opens the table's milestone at [atMiles]; a repeat is edited through the one it repeats. */
+    fun edit(atMiles: Int) {
+        editing = state.value?.table?.firstOrNull { it.atMiles == atMiles }?.let { MilestoneDraft(it.id, it.atMiles, it.orMonths, it.work) }
+    }
+
+    fun closeEditor() {
+        editing = null
+    }
+
+    /** [milestone] has been through MilestoneEdits; this only writes it. */
+    fun save(draft: MilestoneDraft, milestone: ImportedMilestone) {
+        editing = null
+        viewModelScope.launch {
+            table.save(
+                MilestoneEntity(id = draft.id ?: 0, vehicleId = vehicleId, atMiles = milestone.atMiles, orMonths = milestone.orMonths),
+                milestone.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) },
+            )
+        }
+    }
+
+    fun delete(draft: MilestoneDraft) {
+        editing = null
+        draft.id?.let { id -> viewModelScope.launch { table.deleteMilestone(vehicleId, id) } }
+    }
+
+    fun setRepeat(everyMiles: Int?) = viewModelScope.launch { table.setRepeat(vehicleId, everyMiles) }
 
     fun showMore() {
         ahead.value += Milestones.MORE
@@ -246,6 +285,19 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         }
     }
 
+    var repeating by rememberSaveable { mutableStateOf(false) }
+    if (repeating && state.table.isNotEmpty()) {
+        MilestoneRepeatDialog(
+            repeatsEveryMiles = state.repeatsEveryMiles,
+            lastMiles = state.table.maxOf { it.atMiles },
+            onSave = {
+                repeating = false
+                vm.setRepeat(it)
+            },
+            onDismiss = { repeating = false },
+        )
+    }
+
     var removing by rememberSaveable { mutableStateOf(false) }
     if (removing) {
         AlertDialog(
@@ -253,9 +305,9 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             title = { Text("Remove your milestone table?") },
             text = {
                 Text(
-                    "The ${if (state.tableSize == 1) "milestone" else "${state.tableSize} milestones"} you imported " +
-                        "${if (state.tableSize == 1) "goes" else "go"}, and this screen goes back to the ones built from your schedule. " +
-                        "Your service history and reminders aren't touched. To get the table back, import the file again.",
+                    "${if (state.table.size == 1) "Its one milestone goes" else "All ${state.table.size} of its milestones go"}, " +
+                        "and this screen goes back to the ones built from your schedule. " +
+                        "Your service history and reminders aren't touched. This can't be undone: to get the table back you would type it in or import it again.",
                 )
             },
             confirmButton = {
@@ -269,6 +321,22 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             },
             dismissButton = { TextButton(onClick = { removing = false }) { Text("Cancel") } },
         )
+    }
+
+    // Below everything the list remembers, so it is where it was left when the editor closes.
+    val editing = vm.editing
+    if (editing != null) {
+        MilestoneEditor(
+            draft = editing,
+            others = state.table.filter { it.id != editing.id }.map { it.atMiles },
+            repeatsEveryMiles = state.repeatsEveryMiles,
+            startsTable = state.table.isEmpty(),
+            endsTable = state.table.size == 1,
+            onSave = { vm.save(editing, it) },
+            onDelete = { vm.delete(editing) },
+            onClose = vm::closeEditor,
+        )
+        return
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -292,9 +360,9 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             item {
                 Text(
                     if (state.fromTable) {
-                        "The milestone table you imported, with what your log says was done. " +
+                        "Your own milestone table, with what your log says was done. " +
                             (state.repeatsEveryMiles?.let { "It repeats every ${it.asMiles()}, so after its last milestone it starts again from the first. " } ?: "") +
-                            "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones in your file; Glovebox hasn't checked them."
+                            "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn't checked them."
                     } else {
                         "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
                             "It's a guide: the Reminders tab is what tells you something is due. The intervals are the ones you set, not the manufacturer's."
@@ -331,7 +399,14 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 val first = row.first().milestone.atMiles
                 if (row.size == 1 || first in openedRuns) {
                     items(row, key = { it.milestone.atMiles }) { m ->
-                        MilestoneCard(m, state.current, state.swap, open = isOpen(m), onToggle = { toggle(m) }, onOpenRecord = onOpenRecord)
+                        MilestoneCard(
+                            m, state.current, state.swap,
+                            open = isOpen(m),
+                            onToggle = { toggle(m) },
+                            onOpenRecord = onOpenRecord,
+                            // Only the user's own table can be edited; a repeat is the milestone it repeats.
+                            onEdit = if (state.fromTable) ({ vm.edit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
+                        )
                     }
                 } else {
                     item(key = "gap-$first") {
@@ -367,12 +442,59 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             }
             if (state.fromTable) {
                 item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (MilestoneEdits.canAdd(state.table.size)) {
+                            OutlinedButton(
+                                onClick = vm::addMilestone,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                            ) {
+                                Text("Add a milestone")
+                            }
+                        }
+                        Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
+                            Row(
+                                Modifier.heightIn(min = 56.dp)
+                                    .clickable(role = Role.Button, onClickLabel = "Change how the table repeats", onClick = { repeating = true })
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(state.repeatsEveryMiles?.let { "Repeats every ${it.asMiles()}" } ?: "Doesn't repeat", style = MaterialTheme.typography.bodyLarge)
+                                    Text(
+                                        if (state.repeatsEveryMiles != null) "After the last milestone it starts again from the first" else "The table ends at its last milestone",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = scheme.onSurfaceVariant,
+                                    )
+                                }
+                                Text("Change", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                            }
+                        }
+                    }
+                }
+                item {
                     TextButton(
                         onClick = { removing = true },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                     ) {
                         Text("Remove this table", fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            if (!state.fromTable) {
+                item {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextButton(onClick = vm::addMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Text("Make my own table", fontWeight = FontWeight.SemiBold)
+                        }
+                        Text(
+                            "Type in the table from your owner's manual, a milestone at a time. It is then shown here in place of these.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -388,7 +510,15 @@ private const val HEADER_ITEMS = 2
  * how many jobs there are and how many the log has, so a list of closed cards is still worth reading.
  */
 @Composable
-private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?, open: Boolean, onToggle: () -> Unit, onOpenRecord: (Long) -> Unit) {
+private fun MilestoneCard(
+    m: MilestoneStatus,
+    current: Int?,
+    swap: ClusterSwap?,
+    open: Boolean,
+    onToggle: () -> Unit,
+    onOpenRecord: (Long) -> Unit,
+    onEdit: (() -> Unit)?,
+) {
     val scheme = MaterialTheme.colorScheme
     val next = m.place == MilestonePlace.NEXT
     val completed = m.jobs.count { it.done != null }
@@ -453,6 +583,12 @@ private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?,
                     m.jobs.forEach { job ->
                         HorizontalDivider(color = scheme.outlineVariant)
                         JobRow(job, onOpenRecord)
+                    }
+                    if (onEdit != null) {
+                        HorizontalDivider(color = scheme.outlineVariant)
+                        TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(m.milestone.repeatOf?.let { "Edit the ${it.asMiles()} milestone" } ?: "Edit this milestone")
+                        }
                     }
                 }
             }

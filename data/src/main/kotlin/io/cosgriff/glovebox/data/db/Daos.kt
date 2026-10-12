@@ -309,6 +309,30 @@ interface MilestoneDao {
     @Query("UPDATE vehicles SET milestonesRepeatEveryMiles = :everyMiles WHERE id = :vehicleId")
     suspend fun setRepeat(vehicleId: Long, everyMiles: Int?)
 
+    @Query("DELETE FROM milestones WHERE id = :milestoneId")
+    suspend fun deleteById(milestoneId: Long)
+
+    @Query("SELECT COUNT(*) FROM milestones WHERE vehicleId = :vehicleId")
+    suspend fun count(vehicleId: Long): Int
+
+    /**
+     * A milestone typed in the app: a new one when [milestone] has no id, otherwise that row with its
+     * mileage, months and jobs as they now stand. [jobs] are in the user's order.
+     */
+    @Transaction
+    suspend fun save(milestone: MilestoneEntity, jobs: List<MilestoneJobEntity>) {
+        val id = if (milestone.id == 0L) insert(milestone) else milestone.id.also { update(milestone) }
+        clearJobs(id)
+        insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = id, position = i) })
+    }
+
+    /** Deletes one milestone. The last one takes the table with it, and so that it repeats. */
+    @Transaction
+    suspend fun deleteMilestone(vehicleId: Long, milestoneId: Long) {
+        deleteById(milestoneId)
+        if (count(vehicleId) == 0) setRepeat(vehicleId, null)
+    }
+
     /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
     @Transaction
     suspend fun deleteTable(vehicleId: Long) {
@@ -330,12 +354,12 @@ interface MilestoneDao {
         setRepeat(vehicleId, repeatsEveryMiles)
         added.forEach { (milestone, jobs) ->
             val id = insert(milestone)
-            insertJobs(jobs.map { it.copy(id = 0, milestoneId = id) })
+            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = id, position = i) })
         }
         replaced.forEach { (milestone, jobs) ->
             update(milestone)
             clearJobs(milestone.id)
-            insertJobs(jobs.map { it.copy(id = 0, milestoneId = milestone.id) })
+            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = milestone.id, position = i) })
         }
     }
 }

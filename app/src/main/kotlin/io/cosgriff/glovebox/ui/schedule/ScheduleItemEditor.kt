@@ -226,7 +226,7 @@ fun ScheduleItemEditor(
 }
 
 @Composable
-private fun NumberField(label: String, value: String, onChange: (String) -> Unit, isError: Boolean, modifier: Modifier) {
+internal fun NumberField(label: String, value: String, onChange: (String) -> Unit, isError: Boolean, modifier: Modifier) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
