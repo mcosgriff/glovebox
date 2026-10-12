@@ -26,6 +26,12 @@
     "kind": {
       "const": "milestone-schedule"
     },
+    "repeatsEveryMiles": {
+      "description": "Optional. The length of the whole cycle in whole miles, for a table that starts again after its last milestone: a milestone at 10000 with 120000 here comes round again at 130000, 250000 and so on. Must be at least the highest atMiles in the file. Leave it out for a table that ends.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
     "items": {
       "description": "In any order; Glovebox shows them by mileage. No two may have the same atMiles.",
       "type": "array",

@@ -17,6 +17,10 @@ data class SavedMilestone(val id: Long, val atMiles: Int, val work: List<TableJo
  * user copied from their manual: mileage points, each with the work due there. It is shown on the
  * Milestones screen in place of the view built from the schedule and is information only; nothing
  * here creates a reminder.
+ *
+ * A table either ends at its last milestone or repeats: `repeatsEveryMiles`, beside `items`, is the
+ * length of the whole cycle, so every milestone at mileage `a` comes round again at `a` plus that,
+ * and again, with the same work. It belongs to the table as a whole, never to one milestone.
  */
 object MilestoneImport {
     const val MAX_ITEMS = 200
@@ -24,6 +28,9 @@ object MilestoneImport {
     const val MAX_NAME = 80
     const val MAX_MILES = 1_000_000
     const val MAX_MONTHS = 600
+
+    /** The file's field for a table that repeats. */
+    const val REPEATS = "repeatsEveryMiles"
 
     private val itemKeys = setOf("atMiles", "orMonths", "work")
 
@@ -41,6 +48,20 @@ object MilestoneImport {
             if (at == null || work == null || ("orMonths" in o && months == null)) return@mapIndexedNotNull null
             ImportedMilestone(at, work, months)
         }.sortedBy { it.atMiles }
+    }
+
+    /**
+     * The length of the cycle. It can't be shorter than the table, or a repeat of an early milestone
+     * would land among the later ones; that is the rule a schema can't state.
+     */
+    fun repeats(e: JsonElement, items: List<ImportedMilestone>, check: ImportCheck): Int? {
+        val every = check.int(e, REPEATS, 1, MAX_MILES) ?: return null
+        val last = items.maxOfOrNull { it.atMiles } ?: return every
+        if (every < last) {
+            check.fail(REPEATS, "is $every, less than the highest atMiles in the file ($last); it is the length of the whole cycle, so it can't be shorter than the table")
+            return null
+        }
+        return every
     }
 
     private fun work(e: JsonElement, path: String, check: ImportCheck): List<TableJob>? {
@@ -72,9 +93,57 @@ object MilestoneImport {
     fun doneKeys(label: String, catalogId: String?): List<String> =
         listOfNotNull(catalogId?.let { "service:$it" }, "name:${label.trim().lowercase(Locale.US)}")
 
-    /** The saved table as the Milestones screen takes it. */
+    /** The saved table as the Milestones screen takes it, for a table that ends where it ends. */
     fun milestones(table: List<SavedMilestone>): List<Milestone> =
         table.sortedBy { it.atMiles }.map { m -> Milestone(m.atMiles, m.work.map { MilestoneJob(jobKey(it), it.name) }, m.orMonths) }
+
+    /**
+     * A table that repeats every [every] miles, laid out as far as the screen shows it: the whole
+     * table as written, and after it the same milestones again at their mileage plus [every], plus
+     * twice that, and so on. It runs to the [Milestones.AHEAD]th point past [current] or the end of
+     * the table as written, whichever is further, and [more] points beyond that.
+     *
+     * A repeat carries [Milestone.repeatOf] and no `orMonths`: that is the vehicle's age when the
+     * milestone first comes due, and the file doesn't say how old it will be the next time round.
+     * Only the newest [Milestones.MAX_POINTS] are built.
+     */
+    fun milestones(table: List<SavedMilestone>, every: Int, current: Int?, more: Int = 0): List<Milestone> {
+        val base = milestones(table)
+        if (base.isEmpty() || every < base.last().atMiles) return base
+        val n = base.size.toLong()
+        val now = (current ?: 0).coerceAtLeast(0)
+        // Every earlier cycle is wholly behind the odometer, and of this one the points up to where it has got.
+        val passed = now / every * n + base.count { it.atMiles <= now % every }
+        val end = maxOf(n, passed + Milestones.AHEAD) + more.coerceAtLeast(0)
+        return (maxOf(0L, end - Milestones.MAX_POINTS) until end).mapNotNull { index ->
+            val cycle = index / n
+            val m = base[(index % n).toInt()]
+            val at = m.atMiles + cycle * every
+            when {
+                at > Int.MAX_VALUE -> null
+                cycle == 0L -> m
+                else -> Milestone(at.toInt(), m.jobs, repeatOf = m.atMiles)
+            }
+        }
+    }
+
+    /**
+     * Why a file can't go into a vehicle that already has a table, or null when it can. A table
+     * repeats one way or not at all, so a file that says otherwise than the saved table is refused
+     * whole, whichever [ImportMode] would have been chosen: nothing here is settled by guessing
+     * which of the two the user means. Removing the table and importing again is how it is changed.
+     */
+    fun repeatConflict(fileRepeats: Int?, saved: List<SavedMilestone>, savedRepeats: Int?): String? {
+        if (saved.isEmpty() || fileRepeats == savedRepeats) return null
+        fun says(every: Int?) = every?.let { "repeats every ${String.format(Locale.US, "%,d", it)} miles" } ?: "doesn't repeat"
+        return "The milestone table on this vehicle ${says(savedRepeats)}, and this file's ${says(fileRepeats)}. " +
+            "To change that, remove the table on the Milestones screen and import this file again; to add to the table as it is, make the file say the same."
+    }
+
+    /** Said on the Import page before and after: whether the table goes on past its last milestone. */
+    fun repeatNote(every: Int?): String = every?.let {
+        "This table repeats every ${String.format(Locale.US, "%,d", it)} miles: after its last milestone it starts again from the first."
+    } ?: "This table ends at its last milestone; it doesn't repeat."
 
     private fun lines(work: List<TableJob>) = work.map { it.name.trim().lowercase(Locale.US) to it.service }.toSet()
 

@@ -35,6 +35,9 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
   a higher version than the app knows is refused as made for a newer version. A version-1 file will
   always stay readable.
 - `kind` says what `items` holds. One kind per file.
+- These are the only fields beside `items`, except where a kind adds one of its own
+  (`milestone-schedule` has `repeatsEveryMiles`). A kind's own field in another kind's file is an
+  unknown field.
 - `"$schema"` may be added so an editor checks the file as you type (see below). Glovebox ignores it.
 - **The file never names a vehicle.** You pick the vehicle in the app, so a file can be passed
   between owners of the same model, and it carries no VIN.
@@ -290,6 +293,23 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
 | `orMonths` | no | The vehicle's age in whole months at which the same work is due if the mileage isn't reached, 1 to 600. Shown for information |
 | `work` | yes | 1 to 30 lines, each with a `name` (up to 80 characters) and optionally a `service` |
 
+One optional field goes beside `items`, not inside a milestone, because it is about the table as a
+whole:
+
+```json
+{
+  "glovebox": "import",
+  "version": 1,
+  "kind": "milestone-schedule",
+  "repeatsEveryMiles": 120000,
+  "items": [ ... ]
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `repeatsEveryMiles` | no | The length of the whole cycle in whole miles, 1 to 1000000, and at least the highest `atMiles` in the file. Leave it out for a table that ends |
+
 - **It is information, not reminders.** The table is shown on the Milestones screen (from a
   vehicle's Maintenance schedule) in place of the milestones Glovebox builds from your schedule. It
   never creates, changes or silences a reminder: those still come from your schedule items and your
@@ -300,12 +320,26 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
   is the job's `name`, ignoring capitals. A job nothing in the log matches is simply listed.
 - **Which milestone a service lands on:** the first milestone listing that job at or after the
   mileage it was done at. Oil changed at 48,000 shows under 50,000. After a job's last milestone,
-  later work still shows under that last one.
+  later work still shows under that last one; in a table that repeats there is no last one, so it
+  shows under the job's milestone in the next round.
 - **The same job at several milestones** should have the same `service`, or exactly the same
   `name`, at each: that is how Glovebox knows it is one job repeating.
 - **Order doesn't matter** in the file; milestones are shown by mileage.
-- **The table ends where your file ends.** There is no "repeat every" in version 1: write out as
-  many milestones as you want to see.
+- **The table ends where your file ends, unless it says it repeats.** Many manuals end with "after
+  120,000 miles, repeat from the beginning". `repeatsEveryMiles` says that: every milestone at
+  mileage *a* is due again at *a* + 120,000, *a* + 240,000 and so on, with the same work, and the
+  Milestones screen keeps going ("Show further ahead"). The number is the length of the whole
+  cycle, not the gap after the last row. For a table that runs 10,000 to 120,000 and then starts
+  again at 130,000 it is 120000; if the table stops at 100,000 and still starts again at 130,000 it
+  is 120000 too. It can't be less than the highest `atMiles`.
+- **`orMonths` is not repeated.** It is the vehicle's age when a milestone first comes due, and the
+  file doesn't say how old the vehicle will be the next time round, so a repeat shows the mileage
+  and the work only.
+- **Repeating is all or nothing for a vehicle's table.** The first file imported into a vehicle
+  decides whether its table repeats and how often. A later file for the same vehicle has to say the
+  same (the same `repeatsEveryMiles`, or none if the table doesn't repeat); one that says otherwise
+  is refused before anything is offered, whichever of "Add new only" and "Replace matching" you
+  would have picked. To change how a table repeats, remove it and import the corrected file.
 - **Mileage is miles the vehicle has really covered,** as a manual means it. If the instrument
   cluster was replaced and you have set an odometer offset, the screen also shows what the dash will
   read at each milestone.
@@ -314,8 +348,9 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
   **Replace matching** replaces those and nothing else.
 - **Removing it:** "Remove this table" on the Milestones screen deletes the whole table and brings
   back the milestones built from your schedule.
-- Within one milestone a `name`, and a `service`, can each appear only once; and no two milestones
-  can have the same `atMiles` (these are the rules the schema can't state).
+- Within one milestone a `name`, and a `service`, can each appear only once; no two milestones
+  can have the same `atMiles`; and `repeatsEveryMiles` can't be less than the highest `atMiles`
+  (these are the rules the schema can't state).
 
 **Someone else's file is someone else's numbers.** Check intervals against your owner's manual and
 every torque value against your service manual before you rely on them.

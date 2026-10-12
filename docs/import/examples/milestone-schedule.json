@@ -3,6 +3,7 @@
   "glovebox": "import",
   "version": 1,
   "kind": "milestone-schedule",
+  "repeatsEveryMiles": 120000,
   "items": [
     {
       "atMiles": 10000,

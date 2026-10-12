@@ -8,8 +8,9 @@ data class MilestoneJob(val key: String, val name: String)
 /**
  * A mileage point with the work listed there, the way an owner's manual prints a schedule.
  * [atMiles] is miles the vehicle has really covered, not what a replaced cluster reads.
+ * [repeatOf] is set on a later round of a table that repeats: the mileage it is written at in the table.
  */
-data class Milestone(val atMiles: Int, val jobs: List<MilestoneJob>, val orMonths: Int? = null)
+data class Milestone(val atMiles: Int, val jobs: List<MilestoneJob>, val orMonths: Int? = null, val repeatOf: Int? = null)
 
 /** One time a job was logged. [actualMiles] places it among the milestones; [readMiles] is what the dash said that day. */
 data class JobDone(val key: String, val date: LocalDate, val actualMiles: Int, val readMiles: Int, val recordId: Long)
@@ -70,9 +71,9 @@ object Milestones {
      * 50,000, and of two in that stretch the later is shown. Every service lands on exactly one
      * milestone for its job.
      *
-     * [continues] says the series goes on past the end of [milestones], as a generated one does:
-     * work logged beyond a job's last point shown then belongs to a point further on, and is left
-     * out. For a table that simply ends, it belongs to the job's last milestone.
+     * [continues] says the series goes on past the end of [milestones], as a generated one and a
+     * table that repeats do: work logged beyond a job's last point shown then belongs to a point
+     * further on, and is left out. For a table that simply ends, it belongs to the job's last milestone.
      *
      * [current] is the vehicle's actual mileage; null for a vehicle with no reading yet.
      */
