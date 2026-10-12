@@ -236,6 +236,8 @@ data class PlanView(
     val moves: Map<ImportMode, List<String>> = emptyMap(),
     /** Things worth a second look that don't stop the import. */
     val warnings: List<String> = emptyList(),
+    /** Something true of the file as a whole, said before the import and again after it. */
+    val note: String? = null,
 ) {
     fun changes(mode: ImportMode): Int = new.size + fills.size + if (mode == ImportMode.REPLACE_MATCHING) differs.size else 0
     fun count(n: Int): String = if (n == 1) "1 $noun" else "$n ${noun}s"
@@ -267,6 +269,8 @@ data class ImportResult(
     val unchanged: Int,
     /** Typical schedule items the user chose to stop tracking. */
     val stopped: Int = 0,
+    /** [PlanView.note], said again now that it is saved. */
+    val note: String? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -315,7 +319,7 @@ class ImportViewModel @Inject constructor(
                 vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
                 file is ImportFile.IntervalSchedule -> schedulePreview(vehicle.id, file.items)
-                file is ImportFile.MilestoneSchedule -> milestonePreview(vehicle.id, file.items)
+                file is ImportFile.MilestoneSchedule -> milestonePreview(vehicle, file)
                 else -> null
             }
         }
@@ -349,6 +353,7 @@ class ImportViewModel @Inject constructor(
             replaced = replaced,
             unchanged = view.same + view.differs.size - replaced,
             stopped = stopped,
+            note = view.note,
         )
         picker.clear()
     }
@@ -438,10 +443,14 @@ class ImportViewModel @Inject constructor(
         }
     }
 
-    private suspend fun milestonePreview(vehicleId: Long, items: List<ImportedMilestone>): ImportPreview {
+    private suspend fun milestonePreview(vehicle: VehicleEntity, file: ImportFile.MilestoneSchedule): ImportPreview {
+        val vehicleId = vehicle.id
+        val items = file.items
         val rows = milestones.tableFor(vehicleId)
         val byId = rows.associateBy { it.milestone.id }
         val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+        // A table repeats one way or not at all; a file that says otherwise goes no further.
+        MilestoneImport.repeatConflict(file.repeatsEveryMiles, saved, vehicle.milestonesRepeatEveryMiles)?.let { return ImportPreview.Refused(it) }
         val plan = MilestoneImport.plan(items, saved)
         val view = PlanView(
             kind = ImportKind.MILESTONE_SCHEDULE,
@@ -452,12 +461,13 @@ class ImportViewModel @Inject constructor(
             differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asMiles(), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
             same = plan.same.size,
             caution = "Milestones are for reference on the Milestones screen. They don't create or change reminders, and they are your figures, not the manufacturer's.",
+            note = MilestoneImport.repeatNote(file.repeatsEveryMiles),
         )
         return ImportPreview.Ready(view) { mode, _ ->
             fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
             val added = plan.new.map { MilestoneEntity(vehicleId = vehicleId, atMiles = it.atMiles, orMonths = it.orMonths) to jobs(it) }
             val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to jobs(item) } }
-            milestones.applyImport(added, replaced)
+            milestones.applyImport(vehicleId, file.repeatsEveryMiles, added, replaced)
             finish(view, vehicleId, mode)
         }
     }
@@ -797,6 +807,7 @@ private fun PlanCard(view: PlanView) {
                 if (view.warnings.size > SHOWN) {
                     Text("and ${view.warnings.size - SHOWN} more like that", style = MaterialTheme.typography.bodySmall, color = scheme.error)
                 }
+                view.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
@@ -918,6 +929,7 @@ private fun ResultCard(r: ImportResult) {
                 if (r.unchanged > 0) {
                     Text(count(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
+                r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant) }
             }
         }
     }

@@ -1,0 +1,1 @@
+{"glovebox": "import", "version": 1, "kind": "interval-schedule", "repeatsEveryMiles": 120000, "items": [{"name": "Rotate tires", "everyMiles": 5000}]}

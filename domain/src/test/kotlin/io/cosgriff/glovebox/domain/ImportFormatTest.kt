@@ -255,7 +255,9 @@ class ImportFormatTest {
     fun `the milestone example is accepted by the schema and by the app`() {
         val file = File(docs, "examples/milestone-schedule.json")
         assertTrue(schemaAccepts("milestone-schedule", file))
-        val items = (ImportFormat.parse(file.readText()) as ImportFile.MilestoneSchedule).items
+        val parsed = ImportFormat.parse(file.readText()) as ImportFile.MilestoneSchedule
+        val items = parsed.items
+        assertEquals(120_000, parsed.repeatsEveryMiles)
         assertEquals(listOf(10_000, 20_000, 30_000, 65_000, 100_000), items.map { it.atMiles })
         assertEquals(ImportedMilestone(65_000, listOf(TableJob("Replace spark plugs", "spark-plugs"))), items[3])
         assertEquals(36, items[2].orMonths)
@@ -285,6 +287,27 @@ class ImportFormatTest {
     }
 
     @Test
+    fun `a table may say it repeats, with a cycle no shorter than the table`() {
+        fun table(repeats: String) = ImportFormat.parse(
+            """{ "glovebox": "import", "version": 1, "kind": "milestone-schedule", "repeatsEveryMiles": $repeats, "items": [ { "atMiles": 60000, "work": [ { "name": "A" } ] }, { "atMiles": 30000, "work": [ { "name": "B" } ] } ] }""",
+        )
+        assertEquals(null, (milestones("""[ { "atMiles": 30000, "work": [ { "name": "A" } ] } ]""") as ImportFile.MilestoneSchedule).repeatsEveryMiles)
+        assertEquals(60_000, (table("60000") as ImportFile.MilestoneSchedule).repeatsEveryMiles)
+        assertEquals(
+            listOf("repeatsEveryMiles: is 59999, less than the highest atMiles in the file (60000); it is the length of the whole cycle, so it can't be shorter than the table"),
+            errors(table("59999")),
+        )
+        assertEquals(listOf("repeatsEveryMiles: must be from 1 to 1000000"), errors(table("0")))
+        assertEquals(listOf("repeatsEveryMiles: must be a whole number, without quotes"), errors(table("null")))
+    }
+
+    @Test
+    fun `only a milestone file has a repeat`() {
+        val file = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "interval-schedule", "repeatsEveryMiles": 120000, "items": [ { "name": "Oil change", "everyMiles": 7500 } ] }""")
+        assertEquals(listOf("repeatsEveryMiles: isn't a field Glovebox knows; remove it or check the spelling"), errors(file))
+    }
+
+    @Test
     fun `the milestone schema's lists match the app's`() {
         val schema = Json.parseToJsonElement(File(docs, "schema/milestone-schedule.schema.json").readText())
         fun at(vararg path: String): JsonElement = path.fold(schema) { e, key -> e.jsonObject.getValue(key) }
@@ -295,5 +318,6 @@ class ImportFormatTest {
         assertEquals(MilestoneImport.MAX_MONTHS, int("\$defs", "milestone", "properties", "orMonths", "maximum"))
         assertEquals(MilestoneImport.MAX_WORK, int("\$defs", "milestone", "properties", "work", "maxItems"))
         assertEquals(MilestoneImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+        assertEquals(MilestoneImport.MAX_MILES, int("properties", MilestoneImport.REPEATS, "maximum"))
     }
 }

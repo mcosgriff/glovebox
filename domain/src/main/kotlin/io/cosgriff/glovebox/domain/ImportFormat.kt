@@ -38,7 +38,8 @@ sealed interface ImportFile {
 
     data class ServiceHistory(val items: List<ImportedRecord>) : ImportFile
 
-    data class MilestoneSchedule(val items: List<ImportedMilestone>) : ImportFile
+    /** [repeatsEveryMiles] is the length of the cycle when the table starts again after its last milestone; null when it simply ends. */
+    data class MilestoneSchedule(val items: List<ImportedMilestone>, val repeatsEveryMiles: Int? = null) : ImportFile
 }
 
 object ImportFormat {
@@ -54,6 +55,12 @@ object ImportFormat {
 
     private val envelopeKeys = setOf("\$schema", "glovebox", "version", "kind", "items")
 
+    /** Fields beside `items` that only one kind has. In any other kind's file they are unknown fields, and refuse it. */
+    private fun ownKeys(kind: ImportKind?): Set<String> = when (kind) {
+        ImportKind.MILESTONE_SCHEDULE -> setOf(MilestoneImport.REPEATS)
+        else -> emptySet()
+    }
+
     /**
      * Reads and checks a whole file. Nothing is taken on trust and nothing is repaired: an unknown
      * field, a wrong type or a value out of range refuses the file, and every problem found is
@@ -66,7 +73,10 @@ object ImportFormat {
             return ImportFile.Invalid(listOf(ImportError("", "This isn't a JSON file, or it has a mistake such as a missing comma or quote.")))
         }
         val check = ImportCheck()
-        val envelope = check.obj(root, "", envelopeKeys, required = setOf("glovebox", "version", "kind", "items")) ?: return check.invalid()
+        // Which fields may sit beside `items` depends on the kind, so that is looked at first; it is checked properly below.
+        val named = ((root as? JsonObject)?.get("kind") as? JsonPrimitive)?.takeIf { it.isString }?.content
+        val allowed = envelopeKeys + ownKeys(ImportKind.entries.firstOrNull { it.id == named })
+        val envelope = check.obj(root, "", allowed, required = setOf("glovebox", "version", "kind", "items")) ?: return check.invalid()
 
         envelope["\$schema"]?.let { check.string(it, "\$schema", max = 300) }
         envelope["glovebox"]?.let { if (check.string(it, "glovebox", max = 20) != "import") check.fail("glovebox", "must be \"import\"") }
@@ -96,7 +106,8 @@ object ImportFormat {
             }
             ImportKind.MILESTONE_SCHEDULE -> {
                 val items = MilestoneImport.read(envelope.getValue("items"), check)
-                if (check.failed) check.invalid() else ImportFile.MilestoneSchedule(items)
+                val repeats = envelope[MilestoneImport.REPEATS]?.let { MilestoneImport.repeats(it, items, check) }
+                if (check.failed) check.invalid() else ImportFile.MilestoneSchedule(items, repeats)
             }
         }
     }
