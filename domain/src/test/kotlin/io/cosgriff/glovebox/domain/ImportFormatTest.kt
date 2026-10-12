@@ -17,11 +17,14 @@ import java.io.File
 class ImportFormatTest {
     // Gradle runs a module's tests from the module's folder.
     private val docs = File("../docs/import")
-    private val torqueSchema = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12)
-        .getSchema(File(docs, "schema/torque-specs.schema.json").readText())
+    private val kinds = ImportFormat.supported.map { it.id }
+    private val schemas = kinds.associateWith {
+        SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12).getSchema(File(docs, "schema/$it.schema.json").readText())
+    }
 
-    private fun schemaAccepts(file: File): Boolean = torqueSchema.validate(file.readText(), InputFormat.JSON).isEmpty()
+    private fun schemaAccepts(kind: String, file: File): Boolean = schemas.getValue(kind).validate(file.readText(), InputFormat.JSON).isEmpty()
     private fun examples(folder: String): List<File> = File(docs, "examples/$folder").listFiles { f -> f.extension == "json" }!!.sortedBy { it.name }
+    private fun schedule(items: String) = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "interval-schedule", "items": $items }""")
 
     private fun torque(items: String) = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "torque-specs", "items": $items }""")
     private fun errors(file: ImportFile): List<String> = (file as ImportFile.Invalid).errors.map { it.toString() }
@@ -29,7 +32,7 @@ class ImportFormatTest {
     @Test
     fun `the published example is accepted by the schema and by the app`() {
         val file = File(docs, "examples/torque-specs.json")
-        assertTrue(schemaAccepts(file))
+        assertTrue(schemaAccepts("torque-specs", file))
         val parsed = ImportFormat.parse(file.readText()) as ImportFile.TorqueSpecs
         assertEquals(listOf("Lug nuts", "Oil drain plug", "Valve cover bolts", "Skid plate bolts"), parsed.items.map { it.name })
         assertEquals(TorqueSource.FACTORY, parsed.items[0].source)
@@ -40,19 +43,25 @@ class ImportFormatTest {
 
     @Test
     fun `every invalid example is refused by both the schema and the app`() {
-        val files = examples("invalid")
-        assertTrue("the invalid examples are missing", files.size > 20)
-        for (file in files) {
-            assertFalse("the schema accepts ${file.name}", schemaAccepts(file))
-            assertTrue("the app accepts ${file.name}", ImportFormat.parse(file.readText()) is ImportFile.Invalid)
+        for (kind in kinds) {
+            val files = examples("invalid/$kind")
+            assertTrue("the invalid examples for $kind are missing", files.size > 15)
+            for (file in files) {
+                assertFalse("the schema accepts $kind/${file.name}", schemaAccepts(kind, file))
+                assertTrue("the app accepts $kind/${file.name}", ImportFormat.parse(file.readText()) is ImportFile.Invalid)
+            }
         }
     }
 
     @Test
     fun `rules the schema can't state are still enforced by the app`() {
-        for (file in examples("beyond-schema")) {
-            assertTrue("${file.name} belongs in invalid", schemaAccepts(file))
-            assertTrue("the app accepts ${file.name}", ImportFormat.parse(file.readText()) is ImportFile.Invalid)
+        for (kind in kinds) {
+            val files = examples("beyond-schema/$kind")
+            assertTrue(files.isNotEmpty())
+            for (file in files) {
+                assertTrue("$kind/${file.name} belongs in invalid", schemaAccepts(kind, file))
+                assertTrue("the app accepts $kind/${file.name}", ImportFormat.parse(file.readText()) is ImportFile.Invalid)
+            }
         }
     }
 
@@ -93,6 +102,8 @@ class ImportFormatTest {
     fun `a kind that is specified but not built says so`() {
         val file = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "service-history", "items": [] }""")
         assertEquals(ImportFile.NotYet(ImportKind.SERVICE_HISTORY), file)
+        // Every kind that is built has a schema, a valid example and both folders of bad ones.
+        for (kind in kinds) assertTrue(File(docs, "examples/$kind.json").isFile)
     }
 
     @Test
@@ -114,7 +125,7 @@ class ImportFormatTest {
 
     @Test
     fun `the schema's lists match the app's`() {
-        val schema = Json.parseToJsonElement(File(docs, "schema/torque-specs.schema.json").readText())
+        var schema = Json.parseToJsonElement(File(docs, "schema/torque-specs.schema.json").readText())
         fun at(vararg path: String): JsonElement = path.fold(schema) { e, key -> e.jsonObject.getValue(key) }
         fun enum(vararg path: String) = at(*path).jsonArray.map { it.jsonPrimitive.content }.toSet()
         fun int(vararg path: String) = at(*path).jsonPrimitive.content.toInt()
@@ -125,5 +136,44 @@ class ImportFormatTest {
         assertEquals(TorqueImport.MAX_SOCKET, int("\$defs", "spec", "properties", "socket", "maxLength"))
         assertEquals(TorqueImport.MAX_NOTE, int("\$defs", "spec", "properties", "note", "maxLength"))
         assertEquals(TorqueImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+
+        schema = Json.parseToJsonElement(File(docs, "schema/interval-schedule.schema.json").readText())
+        assertEquals(ScheduleImport.rules.keys, enum("\$defs", "item", "properties", "rule", "enum"))
+        assertEquals(ScheduleImport.MAX_NAME, int("\$defs", "item", "properties", "name", "maxLength"))
+        assertEquals(ScheduleImport.MAX_MILES, int("\$defs", "miles", "maximum"))
+        assertEquals(ScheduleImport.MAX_MONTHS, int("\$defs", "months", "maximum"))
+        assertEquals(ScheduleImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+    }
+
+    @Test
+    fun `the schedule example is accepted by the schema and by the app`() {
+        val file = File(docs, "examples/interval-schedule.json")
+        assertTrue(schemaAccepts("interval-schedule", file))
+        val items = (ImportFormat.parse(file.readText()) as ImportFile.IntervalSchedule).items
+        assertEquals(
+            listOf(
+                ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6), DueRule.WHICHEVER_FIRST),
+                ImportedScheduleItem("Rotate tires", Interval(5_000, null)),
+                ImportedScheduleItem("Brake fluid flush", Interval(null, 36)),
+                ImportedScheduleItem("Grease driveshaft", Interval(15_000, null), Interval(5_000, null), DueRule.MILEAGE_ONLY),
+            ),
+            items,
+        )
+    }
+
+    @Test
+    fun `a schedule item needs an interval, in whole miles or months`() {
+        assertEquals(listOf("items[0]: needs \"everyMiles\", \"everyMonths\" or both"), errors(schedule("""[ { "name": "Oil change" } ]""")))
+        assertEquals(listOf("items[0].everyMiles: must be a whole number, without quotes"), errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500.5 } ]""")))
+        assertEquals(listOf("items[0].everyMonths: must be from 1 to 600"), errors(schedule("""[ { "name": "Oil change", "everyMonths": 0 } ]""")))
+        assertEquals(listOf("items[0].severe: needs \"everyMiles\", \"everyMonths\" or both"), errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500, "severe": {} } ]""")))
+        // A whole number written with a decimal point is still a whole number, to the schema as well.
+        assertTrue(schedule("""[ { "name": "Oil change", "everyMiles": 7500.0 } ]""") is ImportFile.IntervalSchedule)
+    }
+
+    @Test
+    fun `the same job twice in a schedule file is refused`() {
+        val twice = schedule("""[ { "name": "Oil change", "everyMiles": 7500 }, { "name": "oil CHANGE", "everyMonths": 12 } ]""")
+        assertEquals(listOf("items[1].name: \"oil CHANGE\" is already in this file, at items[0]"), errors(twice))
     }
 }

@@ -6,16 +6,16 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
 - `schema/` — one [JSON Schema](https://json-schema.org/) per kind of import. The schema is the rule
   book: if a file passes it, its shape is right.
 - `examples/` — a valid file of each kind to copy from. All values are made up.
-- `examples/invalid/` — files that must be refused, one mistake each. They are what the app's tests
-  run; they are also a quick way to see what a rule means.
-- `examples/beyond-schema/` — the few rules a schema can't state, which the app still enforces.
+- `examples/invalid/<kind>/` — files that must be refused, one mistake each. They are what the app's
+  tests run; they are also a quick way to see what a rule means.
+- `examples/beyond-schema/<kind>/` — the few rules a schema can't state, which the app still enforces.
 
 ## What can be imported
 
 | `kind` | What it is | Schema | In the app |
 |---|---|---|---|
 | `torque-specs` | Fasteners with socket sizes and torque values | [`torque-specs.schema.json`](schema/torque-specs.schema.json) | Yes |
-| `interval-schedule` | A schedule with one repeating interval per job | to come (#104) | Not yet |
+| `interval-schedule` | A schedule with one repeating interval per job | [`interval-schedule.schema.json`](schema/interval-schedule.schema.json) | Yes |
 | `service-history` | Maintenance done before you used Glovebox | to come (#103) | Not yet |
 | `milestone-schedule` | A schedule by mileage point, as an owner's manual prints it | to come (#105) | Not yet |
 
@@ -83,7 +83,7 @@ After a file passes, the app shows what it would do before it does anything:
 
 - **New** — nothing on the vehicle matches. These are added.
 - **Fills in** — matches a row of yours that is only a name, with nothing entered yet. These are
-  filled in, since nothing is lost.
+  filled in, since nothing is lost. (Torque specs only.)
 - **Already the same** — matches something of yours that says the same. Left alone.
 - **Different from yours** — matches something of yours that says something else. Listed with your
   value beside the file's.
@@ -143,5 +143,49 @@ phones, use the encrypted backup instead (Settings → Backup).
 - **Same or different:** socket, torque (compared as a wrench setting, whichever units were used),
   note and, where there is a torque, source.
 
-**Someone else's file is someone else's numbers.** Check every value against your service manual
-before you put a wrench on it.
+## `interval-schedule`
+
+[`schema/interval-schedule.schema.json`](schema/interval-schedule.schema.json) ·
+[`examples/interval-schedule.json`](examples/interval-schedule.json) · up to 200 items
+
+One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000, brake fluid every
+3 years.
+
+```json
+{
+  "name": "Oil change",
+  "everyMiles": 7500,
+  "everyMonths": 12,
+  "severe": { "everyMiles": 5000, "everyMonths": 6 },
+  "rule": "whichever-first"
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `name` | yes | 1 to 60 characters, unique in the file ignoring capitals |
+| `everyMiles` | one of the two | Whole miles, 1 to 500000 |
+| `everyMonths` | one of the two | Whole months, 1 to 600. Write years as months: 3 years is `36` |
+| `severe` | no | The interval for hard use, if it differs: `everyMiles`, `everyMonths` or both |
+| `rule` | no | `whichever-first`, `whichever-last`, `mileage-only` or `time-only`. Left out, the item follows the rule you chose in Settings |
+
+- **Where they go:** each item becomes one of *your own* schedule items, tracked from the start, the
+  same as "+ Add your own item". The typical items Glovebox suggested are never changed or removed
+  by an import.
+- **Matching:** an item in the file matches one of your own items with the same name, ignoring
+  capitals. It never matches a typical item, even one with the same name.
+- **Same or different:** the interval, the severe interval and the rule.
+- **Replace matching** changes only those three things. Whether the item is tracked, a snooze, which
+  of its intervals is in use and every service logged against it stay as they are.
+- **Two reminders for one job:** if a typical item you are tracking has the same name as an item in
+  the file, the preview says so and offers to stop tracking the typical one. That is your choice;
+  left alone, both stay. A stopped item keeps its history and can be switched back on.
+- **When it was last done isn't part of this file.** New items start as "Not logged yet"; after the
+  import the app offers "When were these last done?".
+- **Logging work against them:** your own items are listed under "Your items" when you log a
+  service. The built-in lines (such as "Oil & filter change") reset the typical items, not these.
+- The same job can't appear twice in a file under names that differ only in capitals (this is the
+  rule the schema can't state).
+
+**Someone else's file is someone else's numbers.** Check intervals against your owner's manual and
+every torque value against your service manual before you rely on them.

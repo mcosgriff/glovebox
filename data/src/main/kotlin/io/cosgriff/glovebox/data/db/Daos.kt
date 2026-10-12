@@ -178,6 +178,21 @@ interface ScheduleDao {
 
     @Insert suspend fun insertAll(items: List<ScheduleItemEntity>)
     @Update suspend fun update(item: ScheduleItemEntity)
+    @Update suspend fun updateAll(items: List<ScheduleItemEntity>)
+
+    @Query("UPDATE schedule_items SET tracked = 0 WHERE id IN (:ids)")
+    suspend fun stopTracking(ids: List<Long>)
+
+    /**
+     * One import, applied whole or not at all. Nothing is deleted by one; [stopped] are typical items
+     * the user chose to stop tracking because the file has the same job.
+     */
+    @Transaction
+    suspend fun applyImport(added: List<ScheduleItemEntity>, replaced: List<ScheduleItemEntity>, stopped: List<Long>) {
+        insertAll(added)
+        updateAll(replaced)
+        stopTracking(stopped)
+    }
 }
 
 @Dao

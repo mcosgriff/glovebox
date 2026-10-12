@@ -485,7 +485,12 @@ fun GloveboxNavHost() {
                 DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
             }
             screen<ImportRoute> {
-                ImportScreen(onBack = { nav.popBackStack() }, onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) })
+                ImportScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
+                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
+                )
             }
             screen<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
             screen<NotificationsRoute> {

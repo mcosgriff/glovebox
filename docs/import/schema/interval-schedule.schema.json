@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/interval-schedule.schema.json",
+  "title": "Glovebox import: maintenance schedule by interval",
+  "description": "Jobs that each repeat at their own interval, for one vehicle. Format version 1. See docs/import/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["glovebox", "version", "kind", "items"],
+  "properties": {
+    "$schema": {
+      "description": "Optional. Lets an editor check the file as it is typed. Glovebox ignores it.",
+      "$ref": "#/$defs/line",
+      "maxLength": 300
+    },
+    "glovebox": { "const": "import" },
+    "version": { "const": 1 },
+    "kind": { "const": "interval-schedule" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "line": {
+      "description": "Text on one line with no space at either end.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\s\\x00-\\x1f\\x7f-\\x9f]([^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f])?$"
+    },
+    "miles": {
+      "description": "Whole miles between one time and the next.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500000
+    },
+    "months": {
+      "description": "Whole months between one time and the next. Write years as months: 3 years is 36.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "anyOf": [{ "required": ["everyMiles"] }, { "required": ["everyMonths"] }],
+      "properties": {
+        "name": {
+          "description": "The job. Must be unique in the file, ignoring case.",
+          "$ref": "#/$defs/line",
+          "maxLength": 60
+        },
+        "everyMiles": { "$ref": "#/$defs/miles" },
+        "everyMonths": { "$ref": "#/$defs/months" },
+        "severe": {
+          "description": "The interval for hard use (towing, off-road, dust, short trips), if it differs.",
+          "type": "object",
+          "additionalProperties": false,
+          "anyOf": [{ "required": ["everyMiles"] }, { "required": ["everyMonths"] }],
+          "properties": {
+            "everyMiles": { "$ref": "#/$defs/miles" },
+            "everyMonths": { "$ref": "#/$defs/months" }
+          }
+        },
+        "rule": {
+          "description": "Which interval decides when it is due. Left out, the item follows the rule chosen in Settings.",
+          "enum": ["whichever-first", "whichever-last", "mileage-only", "time-only"]
+        }
+      }
+    }
+  }
+}

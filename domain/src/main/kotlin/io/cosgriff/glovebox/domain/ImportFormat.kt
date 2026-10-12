@@ -8,7 +8,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.longOrNull
 
 /**
  * What an import file can hold; one kind per file. [id] is the file's `kind`. The format is
@@ -36,6 +35,8 @@ sealed interface ImportFile {
     data class NotYet(val kind: ImportKind) : ImportFile
 
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
+
+    data class IntervalSchedule(val items: List<ImportedScheduleItem>) : ImportFile
 }
 
 object ImportFormat {
@@ -47,7 +48,7 @@ object ImportFormat {
     const val MAX_ERRORS = 25
 
     /** The kinds this version of the app can import; the rest are specified but not built. */
-    val supported: Set<ImportKind> = setOf(ImportKind.TORQUE_SPECS)
+    val supported: Set<ImportKind> = setOf(ImportKind.TORQUE_SPECS, ImportKind.INTERVAL_SCHEDULE)
 
     private val envelopeKeys = setOf("\$schema", "glovebox", "version", "kind", "items")
 
@@ -83,6 +84,10 @@ object ImportFormat {
             ImportKind.TORQUE_SPECS -> {
                 val items = TorqueImport.read(envelope.getValue("items"), check)
                 if (check.failed) check.invalid() else ImportFile.TorqueSpecs(items)
+            }
+            ImportKind.INTERVAL_SCHEDULE -> {
+                val items = ScheduleImport.read(envelope.getValue("items"), check)
+                if (check.failed) check.invalid() else ImportFile.IntervalSchedule(items)
             }
             else -> ImportFile.NotYet(kind)
         }
@@ -141,9 +146,9 @@ class ImportCheck {
         return values[s] ?: null.also { fail(path, "must be one of ${values.keys.joinToString { "\"$it\"" }}") }
     }
 
-    /** A whole number, written without quotes or a decimal point. */
+    /** A whole number, written without quotes. `7500.0` counts, as it does to a JSON Schema; `7500.5` doesn't. */
     fun int(e: JsonElement, path: String, min: Int, max: Int): Int? {
-        val n = (e as? JsonPrimitive)?.takeIf { !it.isString && it !is JsonNull }?.longOrNull
+        val n = (e as? JsonPrimitive)?.takeIf { !it.isString && it !is JsonNull }?.doubleOrNull?.takeIf { it.isFinite() && it == Math.floor(it) }
             ?: return null.also { fail(path, "must be a whole number, without quotes") }
         if (n < min || n > max) return null.also { fail(path, if (max == Int.MAX_VALUE) "must be $min or more" else "must be from $min to $max") }
         return n.toInt()

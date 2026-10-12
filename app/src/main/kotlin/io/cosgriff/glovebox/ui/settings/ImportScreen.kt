@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -51,23 +54,32 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.data.db.ScheduleDao
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.ImportFile
 import io.cosgriff.glovebox.domain.ImportFormat
+import io.cosgriff.glovebox.domain.ImportKind
 import io.cosgriff.glovebox.domain.ImportMode
-import io.cosgriff.glovebox.domain.ImportPlan
+import io.cosgriff.glovebox.domain.ImportedScheduleItem
 import io.cosgriff.glovebox.domain.ImportedTorqueSpec
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.SavedScheduleItem
 import io.cosgriff.glovebox.domain.SavedTorqueSpec
+import io.cosgriff.glovebox.domain.ScheduleImport
+import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.domain.Torque
 import io.cosgriff.glovebox.domain.TorqueCategory
 import io.cosgriff.glovebox.domain.TorqueImport
 import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
@@ -170,7 +182,30 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
     }
 }
 
-typealias TorquePlan = ImportPlan<ImportedTorqueSpec, SavedTorqueSpec>
+/** One of the file's items as the preview lists it. [yours] is set when it would replace something saved. */
+data class PlanLine(val name: String, val file: String, val yours: String? = null)
+
+/**
+ * A file set against the chosen vehicle, in words: what the page shows whichever kind the file is.
+ * Nothing has been written when this exists.
+ */
+data class PlanView(
+    val kind: ImportKind,
+    /** "row" for torque specs, "item" for a schedule. */
+    val noun: String,
+    val total: Int,
+    val new: List<PlanLine>,
+    val fills: List<PlanLine>,
+    val differs: List<PlanLine>,
+    val same: Int,
+    /** Said under the preview, whatever is in it. */
+    val caution: String,
+    /** Typical schedule items being tracked under a name the file also uses; empty for other kinds. */
+    val doubles: List<String> = emptyList(),
+) {
+    fun changes(mode: ImportMode): Int = new.size + fills.size + if (mode == ImportMode.REPLACE_MATCHING) differs.size else 0
+    fun count(n: Int): String = if (n == 1) "1 $noun" else "$n ${noun}s"
+}
 
 /** What the chosen file comes to for the chosen vehicle. */
 sealed interface ImportPreview {
@@ -179,10 +214,23 @@ sealed interface ImportPreview {
 
     /** A good file, but there are several vehicles and none has been chosen. */
     data object NeedsVehicle : ImportPreview
-    data class Torque(val plan: TorquePlan) : ImportPreview
+
+    /** [write] saves it in one transaction; `stopDoubles` also stops tracking [PlanView.doubles]. */
+    class Ready(val view: PlanView, val write: suspend (mode: ImportMode, stopDoubles: Boolean) -> Unit) : ImportPreview
 }
 
-data class ImportResult(val vehicleId: Long, val vehicleName: String, val added: Int, val filled: Int, val replaced: Int, val unchanged: Int)
+data class ImportResult(
+    val kind: ImportKind,
+    val noun: String,
+    val vehicleId: Long,
+    val vehicleName: String,
+    val added: Int,
+    val filled: Int,
+    val replaced: Int,
+    val unchanged: Int,
+    /** Typical schedule items the user chose to stop tracking. */
+    val stopped: Int = 0,
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -190,13 +238,11 @@ class ImportViewModel @Inject constructor(
     vehicles: VehicleDao,
     settings: SettingsRepository,
     private val torque: TorqueDao,
+    private val schedule: ScheduleDao,
     private val picker: ImportPicker,
 ) : ViewModel() {
     val vehicles: StateFlow<List<VehicleEntity>?> = vehicles.observeActive()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
-    val torqueUnit: StateFlow<TorqueUnit> = settings.settings.map { it.torqueUnit }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TorqueUnit.FOOT_POUND)
 
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
@@ -210,27 +256,20 @@ class ImportViewModel @Inject constructor(
 
     private val parsed = picker.picked.mapLatest { p -> p?.let { withContext(Dispatchers.Default) { ImportFormat.parse(it.text) } } }
 
-    /** Existing rows by id, as they stood when the preview was worked out; what a replace writes over. */
-    private var existing: Map<Long, TorqueSpecEntity> = emptyMap()
-
-    /** Null with no file picked. Worked out afresh for each file and vehicle; nothing is written by it. */
-    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId) { file, id -> file to id }.mapLatest { (file, id) ->
-        when (file) {
-            null -> null
-            is ImportFile.Invalid -> ImportPreview.Invalid(file)
-            is ImportFile.NotYet -> ImportPreview.NotYet(file.kind.label)
-            is ImportFile.TorqueSpecs -> if (id == null) {
-                ImportPreview.NeedsVehicle
-            } else {
-                val rows = torque.specsFor(id)
-                existing = rows.associateBy { it.id }
-                ImportPreview.Torque(TorqueImport.plan(file.items, rows.map { it.toSaved() }))
-            }
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
     private val _result = MutableStateFlow<ImportResult?>(null)
     val result: StateFlow<ImportResult?> = _result.asStateFlow()
+
+    /** Null with no file picked. Worked out afresh for each file and vehicle; nothing is written by it. */
+    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, settings.settings.map { it.torqueUnit }) { file, id, unit -> Triple(file, id, unit) }
+        .mapLatest { (file, id, unit) ->
+            when (file) {
+                null -> null
+                is ImportFile.Invalid -> ImportPreview.Invalid(file)
+                is ImportFile.NotYet -> ImportPreview.NotYet(file.kind.label)
+                is ImportFile.TorqueSpecs -> if (id == null) ImportPreview.NeedsVehicle else torquePreview(id, file.items, unit)
+                is ImportFile.IntervalSchedule -> if (id == null) ImportPreview.NeedsVehicle else schedulePreview(id, file.items)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun chooseVehicle(id: Long) {
         chosenVehicle.value = id
@@ -241,40 +280,106 @@ class ImportViewModel @Inject constructor(
         picker.pick()
     }
 
-    fun clear() {
-        _result.value = null
+    fun import(preview: ImportPreview.Ready, mode: ImportMode, stopDoubles: Boolean) = viewModelScope.launch { preview.write(mode, stopDoubles) }
+
+    private fun finish(view: PlanView, vehicleId: Long, mode: ImportMode, stopped: Int = 0) {
+        val vehicle = vehicles.value?.firstOrNull { it.id == vehicleId }
+        val replaced = if (mode == ImportMode.REPLACE_MATCHING) view.differs.size else 0
+        _result.value = ImportResult(
+            kind = view.kind,
+            noun = view.noun,
+            vehicleId = vehicleId,
+            vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            added = view.new.size,
+            filled = view.fills.size,
+            replaced = replaced,
+            unchanged = view.same + view.differs.size - replaced,
+            stopped = stopped,
+        )
         picker.clear()
     }
 
-    /** Writes [plan] in one transaction. Rows the file doesn't mention are never touched. */
-    fun import(plan: TorquePlan, mode: ImportMode) = viewModelScope.launch {
-        val id = vehicleId.value ?: return@launch
-        val vehicle = vehicles.value?.firstOrNull { it.id == id } ?: return@launch
-        val added = plan.new.map {
-            TorqueSpecEntity(
-                vehicleId = id,
-                name = it.name,
-                category = it.category.name,
-                socketSize = it.socket,
-                newtonMeters = it.torque?.newtonMeters,
-                source = it.source.name,
-                note = it.note,
-            )
-        }
-        // The saved row keeps its own name and category: they are what matched, give or take capitals.
-        val replaced = plan.replaced(mode).mapNotNull { (item, saved) ->
-            existing[saved.id]?.copy(socketSize = item.socket, newtonMeters = item.torque?.newtonMeters, source = item.source.name, note = item.note)
-        }
-        torque.applyImport(added, replaced)
-        _result.value = ImportResult(
-            vehicleId = id,
-            vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
-            added = added.size,
-            filled = plan.fills.size,
-            replaced = replaced.size - plan.fills.size,
-            unchanged = plan.total - added.size - replaced.size,
+    private suspend fun torquePreview(vehicleId: Long, items: List<ImportedTorqueSpec>, unit: TorqueUnit): ImportPreview {
+        val rows = torque.specsFor(vehicleId)
+        // As they stood when the preview was worked out; what a replace writes over.
+        val byId = rows.associateBy { it.id }
+        val plan = TorqueImport.plan(items, rows.map { it.toSaved() })
+        val view = PlanView(
+            kind = ImportKind.TORQUE_SPECS,
+            noun = "row",
+            total = plan.total,
+            new = plan.new.map { PlanLine(it.name, it.describe(unit)) },
+            fills = plan.fills.map { PlanLine(it.first.name, it.first.describe(unit)) },
+            differs = plan.differs.map { (item, saved) -> PlanLine(saved.name, item.describe(unit), saved.describe(unit)) },
+            same = plan.same.size,
+            caution = "Check every value against your service manual, whoever wrote the file.",
         )
-        picker.clear()
+        return ImportPreview.Ready(view) { mode, _ ->
+            val added = plan.new.map {
+                TorqueSpecEntity(
+                    vehicleId = vehicleId,
+                    name = it.name,
+                    category = it.category.name,
+                    socketSize = it.socket,
+                    newtonMeters = it.torque?.newtonMeters,
+                    source = it.source.name,
+                    note = it.note,
+                )
+            }
+            // The saved row keeps its own name and category: they are what matched, give or take capitals.
+            val replaced = plan.replaced(mode).mapNotNull { (item, saved) ->
+                byId[saved.id]?.copy(socketSize = item.socket, newtonMeters = item.torque?.newtonMeters, source = item.source.name, note = item.note)
+            }
+            torque.applyImport(added, replaced)
+            finish(view, vehicleId, mode)
+        }
+    }
+
+    private suspend fun schedulePreview(vehicleId: Long, items: List<ImportedScheduleItem>): ImportPreview {
+        val rows = schedule.allFor(vehicleId)
+        val byId = rows.associateBy { it.id }
+        val saved = rows.map { it.toSaved() }
+        val plan = ScheduleImport.plan(items, saved)
+        val doubles = ScheduleImport.doubles(items, saved)
+        val view = PlanView(
+            kind = ImportKind.INTERVAL_SCHEDULE,
+            noun = "item",
+            total = plan.total,
+            new = plan.new.map { PlanLine(it.name, it.describe()) },
+            fills = emptyList(),
+            differs = plan.differs.map { (item, mine) -> PlanLine(mine.name, item.describe(), mine.describe()) },
+            same = plan.same.size,
+            caution = "These are the file's intervals, not the manufacturer's. Check them against your owner's manual.",
+            doubles = doubles.map { it.name },
+        )
+        return ImportPreview.Ready(view) { mode, stopDoubles ->
+            // The user's own items, tracked from the start, exactly like "+ Add your own item".
+            val added = plan.new.map {
+                ScheduleItemEntity(
+                    vehicleId = vehicleId,
+                    name = it.name,
+                    intervalMiles = it.normal.miles,
+                    intervalMonths = it.normal.months,
+                    severeMiles = it.severe?.miles,
+                    severeMonths = it.severe?.months,
+                    ruleOverride = it.rule?.name,
+                )
+            }
+            // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
+            // every record linked to the item stay as they are.
+            val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
+                byId[mine.id]?.copy(
+                    intervalMiles = item.normal.miles,
+                    intervalMonths = item.normal.months,
+                    severeMiles = item.severe?.miles,
+                    severeMonths = item.severe?.months,
+                    ruleOverride = item.rule?.name,
+                )
+            }
+            val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
+            schedule.applyImport(added, replaced, stop)
+            finish(view, vehicleId, mode, stop.size)
+        }
     }
 
     private fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
@@ -286,13 +391,49 @@ class ImportViewModel @Inject constructor(
         source = TorqueSource.of(source),
         note = note,
     )
+
+    private fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
+        id = id,
+        name = name,
+        normal = interval(intervalMiles, intervalMonths),
+        severe = interval(severeMiles, severeMonths),
+        rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
+        templateKey = templateKey,
+        tracked = tracked,
+    )
+
+    private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 }
+
+/** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
+private fun describe(torque: Torque?, socket: String?, note: String?, unit: TorqueUnit): String =
+    listOfNotNull(torque?.format(unit), socket, note).joinToString(" · ").ifEmpty { "Name only" }
+
+private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY) " · factory manual" else ""
+private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
+
+/** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
+private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?): String = listOfNotNull(
+    normal?.let { "Every ${it.label().replace(" / ", " or ")}" } ?: "No interval",
+    severe?.let { "severe ${it.label().replace(" / ", " or ")}" },
+    rule?.ruleLabel()?.lowercase(),
+).joinToString(" · ")
+
+private fun ImportedScheduleItem.describe() = describe(normal, severe, rule)
+private fun SavedScheduleItem.describe() = describe(normal, severe, rule)
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 
 /** Settings → Import. The format, and what an import may and may not change, are in `docs/import/README.md`. */
 @Composable
-fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Unit, vm: ImportViewModel = hiltViewModel()) {
+fun ImportScreen(
+    onBack: () -> Unit,
+    onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
+    onOpenSchedule: (vehicleId: Long) -> Unit,
+    /** "When were these last done?", offered after a schedule import. */
+    onEnterLastDone: (vehicleId: Long) -> Unit,
+    vm: ImportViewModel = hiltViewModel(),
+) {
     val scheme = MaterialTheme.colorScheme
     val vehicles = vm.vehicles.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val vehicleId by vm.vehicleId.collectAsStateWithLifecycle()
@@ -300,19 +441,18 @@ fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Uni
     val problem by vm.problem.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
-    val unit by vm.torqueUnit.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     var mode by rememberSaveable(picked?.name) { mutableStateOf(ImportMode.ADD_NEW) }
+    var stopDoubles by rememberSaveable(picked?.name) { mutableStateOf(false) }
     var confirming by rememberSaveable { mutableStateOf(false) }
 
-    val plan = (preview as? ImportPreview.Torque)?.plan
-    if (confirming && plan != null) {
+    val ready = preview as? ImportPreview.Ready
+    if (confirming && ready != null) {
         ReplaceDialog(
-            plan = plan,
-            unit = unit,
+            view = ready.view,
             onConfirm = {
                 confirming = false
-                vm.import(plan, ImportMode.REPLACE_MATCHING)
+                vm.import(ready, ImportMode.REPLACE_MATCHING, stopDoubles)
             },
             onDismiss = { confirming = false },
         )
@@ -330,7 +470,7 @@ fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Uni
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Add torque specs to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
+                    "Add torque specs or a maintenance schedule to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
@@ -344,7 +484,23 @@ fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Uni
             }
 
             result?.let { r ->
-                ResultCard(r, onOpen = { onOpenTorqueSpecs(r.vehicleId) })
+                ResultCard(r)
+                when (r.kind) {
+                    ImportKind.INTERVAL_SCHEDULE -> {
+                        if (r.added > 0) {
+                            Button(onClick = { onEnterLastDone(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Enter when these were last done") }
+                            Text(
+                                "New items start as \"Not logged yet\". If you know when any were last done, say so and their reminders start counting.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                        OutlinedButton(onClick = { onOpenSchedule(r.vehicleId) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
+                            Text("See the schedule")
+                        }
+                    }
+                    else -> Button(onClick = { onOpenTorqueSpecs(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See torque specs") }
+                }
                 OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
                     Text("Import another file")
                 }
@@ -390,45 +546,48 @@ fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Uni
                 null -> Unit
                 is ImportPreview.Invalid -> ErrorsCard(p.file)
                 is ImportPreview.NotYet -> Text(
-                    "This is a ${p.kindLabel.lowercase()} file. This version of Glovebox imports torque specs only.",
+                    "This is a ${p.kindLabel.lowercase()} file. This version of Glovebox imports " +
+                        ImportFormat.supported.joinToString(" and ") { it.label.lowercase() + if (it.label.endsWith("s")) "" else "s" } + " only.",
                     color = scheme.onSurface,
                 )
                 ImportPreview.NeedsVehicle -> Text("The file is fine. Choose which vehicle it goes into.", color = scheme.onSurface)
-                is ImportPreview.Torque -> {
-                    PlanCard(p.plan, unit)
-                    if (p.plan.differs.isNotEmpty()) {
+                is ImportPreview.Ready -> {
+                    val view = p.view
+                    PlanCard(view)
+                    if (view.differs.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SectionLabel("ROWS THAT DIFFER FROM YOURS")
+                            SectionLabel("${view.noun.uppercase()}S THAT DIFFER FROM YOURS")
                             Card {
                                 Column(Modifier.selectableGroup()) {
                                     Choice("Add new only", "Yours stay exactly as they are", mode == ImportMode.ADD_NEW) { mode = ImportMode.ADD_NEW }
                                     HorizontalDivider(color = scheme.outlineVariant)
                                     Choice(
                                         "Replace matching",
-                                        rows(p.plan.differs.size) + " of yours " + (if (p.plan.differs.size == 1) "takes" else "take") + " the file's values",
+                                        view.count(view.differs.size) + " of yours " + (if (view.differs.size == 1) "takes" else "take") + " the file's values",
                                         mode == ImportMode.REPLACE_MATCHING,
                                     ) { mode = ImportMode.REPLACE_MATCHING }
                                 }
                             }
                         }
                     }
-                    val changes = p.plan.changes(mode)
+                    if (view.doubles.isNotEmpty()) DoublesCard(view.doubles, stopDoubles) { stopDoubles = it }
+                    val changes = view.changes(mode)
                     if (changes == 0) {
                         Text(
-                            if (p.plan.differs.isEmpty()) {
+                            if (view.differs.isEmpty()) {
                                 "Nothing to import: everything in this file is already on the vehicle."
                             } else {
-                                "Nothing to import unless you replace the rows that differ."
+                                "Nothing to import unless you replace the ${view.noun}s that differ."
                             },
                             color = scheme.onSurface,
                         )
                     } else {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Button(
-                                onClick = { if (mode == ImportMode.REPLACE_MATCHING && p.plan.differs.isNotEmpty()) confirming = true else vm.import(p.plan, mode) },
+                                onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles) },
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                             ) {
-                                Text("Import ${rows(changes)}")
+                                Text("Import ${view.count(changes)}")
                             }
                             Text(
                                 "Nothing on the vehicle is deleted. There is no Undo, so check the list above.",
@@ -444,45 +603,27 @@ fun ImportScreen(onBack: () -> Unit, onOpenTorqueSpecs: (vehicleId: Long) -> Uni
     }
 }
 
-private fun rows(n: Int): String = if (n == 1) "1 row" else "$n rows"
-
-/** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
-private fun describe(torque: Torque?, socket: String?, note: String?, unit: TorqueUnit): String =
-    listOfNotNull(torque?.format(unit), socket, note).joinToString(" · ").ifEmpty { "Name only" }
-
-private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY) " · factory manual" else ""
-private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
-
 @Composable
-private fun PlanCard(plan: TorquePlan, unit: TorqueUnit) {
+private fun PlanCard(view: PlanView) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("TORQUE SPECS · ${plan.total} IN THE FILE")
+        SectionLabel("${view.kind.label.uppercase()} · ${view.total} IN THE FILE")
         Card {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Group("${plan.new.size} new", "Added to the vehicle", plan.new.map { it.name to it.describe(unit) })
-                Group("${plan.fills.size} fill in a row you left empty", "Yours has only a name so far", plan.fills.map { it.first.name to it.first.describe(unit) })
-                Group(
-                    "${plan.differs.size} different from yours",
-                    "Left alone unless you choose to replace them",
-                    plan.differs.map { (item, saved) -> saved.name to "Yours: ${saved.describe(unit)}\nFile: ${item.describe(unit)}" },
-                    color = scheme.onPrimaryContainer,
-                )
-                if (plan.same.isNotEmpty()) {
-                    Text("${plan.same.size} already the same · left alone", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                Group("${view.new.size} new", "Added to the vehicle", view.new)
+                Group("${view.fills.size} fill in a ${view.noun} you left empty", "Yours has only a name so far", view.fills)
+                Group("${view.differs.size} different from yours", "Left alone unless you choose to replace them", view.differs, color = scheme.onPrimaryContainer)
+                if (view.same > 0) {
+                    Text("${view.same} already the same · left alone", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
-                Text(
-                    "Check every value against your service manual, whoever wrote the file.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
+                Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
     }
 }
 
 @Composable
-private fun Group(title: String, detail: String, lines: List<Pair<String, String>>, color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface) {
+private fun Group(title: String, detail: String, lines: List<PlanLine>, color: Color = MaterialTheme.colorScheme.onSurface) {
     if (lines.isEmpty()) return
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -490,18 +631,55 @@ private fun Group(title: String, detail: String, lines: List<Pair<String, String
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = color)
             Text(detail, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         }
-        lines.take(SHOWN).forEach { (name, what) ->
+        lines.take(SHOWN).forEach { line ->
             Column {
-                Text(name, style = MaterialTheme.typography.bodyMedium)
-                Text(what, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
+                Text(line.name, style = MaterialTheme.typography.bodyMedium)
+                line.yours?.let { Text("Yours: $it", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant) }
+                Text(
+                    if (line.yours == null) line.file else "File: ${line.file}",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = PlexMono,
+                    color = scheme.onSurfaceVariant,
+                )
             }
         }
         if (lines.size > SHOWN) Text("and ${lines.size - SHOWN} more", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
-/** Long files are summarised on the page; the confirmation for a replace lists every row it changes. */
+/** Long files are summarised on the page; the confirmation for a replace lists everything it changes. */
 private const val SHOWN = 12
+
+/**
+ * A typical item Glovebox suggested is being tracked under a name the file also uses, so there
+ * would be two reminders for one job. Stopping the typical one is the user's choice, made here.
+ */
+@Composable
+private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionLabel("ALREADY TRACKED UNDER THE SAME NAME")
+        Card {
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Checkbox(checked = stop, onCheckedChange = null)
+                Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(if (names.size == 1) "Stop tracking the typical item" else "Stop tracking the ${names.size} typical items", style = MaterialTheme.typography.bodyLarge)
+                    Text(names.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                }
+            }
+        }
+        Text(
+            "Glovebox's typical schedule already has " + (if (names.size == 1) "this" else "these") + ", so you'd get two reminders for one job. " +
+                "Unticked here, both stay. A stopped item keeps its history and can be ticked again on the schedule.",
+            style = MaterialTheme.typography.bodySmall,
+            color = scheme.onSurfaceVariant,
+        )
+    }
+}
 
 @Composable
 private fun ErrorsCard(file: ImportFile.Invalid) {
@@ -524,35 +702,44 @@ private fun ErrorsCard(file: ImportFile.Invalid) {
 }
 
 @Composable
-private fun ResultCard(r: ImportResult, onOpen: () -> Unit) {
+private fun ResultCard(r: ImportResult) {
     val scheme = MaterialTheme.colorScheme
+    fun count(n: Int) = if (n == 1) "1 ${r.noun}" else "$n ${r.noun}s"
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel("IMPORTED INTO ${r.vehicleName.uppercase()}")
         Card {
             Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(r.added to "added", r.filled to "filled in", r.replaced to "replaced with the file's values").filter { it.first > 0 }.forEach { (n, what) ->
-                    Text("${rows(n)} $what", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+                    Text("${count(n)} $what", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
                 }
-                if (r.unchanged > 0) Text(rows(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                if (r.stopped > 0) {
+                    Text(
+                        (if (r.stopped == 1) "1 typical item" else "${r.stopped} typical items") + " no longer tracked",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = statusColors().ok,
+                    )
+                }
+                if (r.unchanged > 0) {
+                    Text(count(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                }
             }
         }
-        Button(onClick = onOpen, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See torque specs") }
     }
 }
 
 @Composable
-private fun ReplaceDialog(plan: TorquePlan, unit: TorqueUnit, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+private fun ReplaceDialog(view: PlanView, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Replace ${rows(plan.differs.size)} of yours?") },
+        title = { Text("Replace ${view.count(view.differs.size)} of yours?") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                plan.differs.forEach { (item, saved) ->
+                view.differs.forEach { line ->
                     Column {
-                        Text(saved.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                        Text("Yours: ${saved.describe(unit)}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
-                        Text("Becomes: ${item.describe(unit)}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
+                        Text(line.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                        Text("Yours: ${line.yours}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
+                        Text("Becomes: ${line.file}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
                     }
                 }
                 Text("This can't be undone.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
