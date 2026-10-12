@@ -99,6 +99,10 @@ data class MilestonesState(
     val hasMileageItems: Boolean,
     /** True when these are the user's own imported table, shown in place of the view built from the schedule. */
     val fromTable: Boolean,
+    /** How many milestones the user's table has as written; a table that repeats shows more than that. */
+    val tableSize: Int = 0,
+    /** The length of the cycle when the user's table starts again after its last milestone; null when it ends. */
+    val repeatsEveryMiles: Int? = null,
 )
 
 /**
@@ -150,7 +154,19 @@ class MilestonesViewModel @Inject constructor(
                     MilestoneImport.doneKeys(line.label, line.catalogId).map { JobDone(it, e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
                 }
             }
-            return@combine MilestonesState(name, Milestones.status(MilestoneImport.milestones(saved), done, current, continues = false), current, swap, hasMileageItems = true, fromTable = true)
+            // A table that repeats goes on past what is shown, like the view built from the schedule; one that ends doesn't.
+            val every = vehicle.milestonesRepeatEveryMiles?.takeIf { it >= saved.maxOf { m -> m.atMiles } }
+            val list = if (every != null) MilestoneImport.milestones(saved, every, current, more = count - Milestones.AHEAD) else MilestoneImport.milestones(saved)
+            return@combine MilestonesState(
+                vehicleName = name,
+                milestones = Milestones.status(list, done, current, continues = every != null),
+                current = current,
+                swap = swap,
+                hasMileageItems = true,
+                fromTable = true,
+                tableSize = saved.size,
+                repeatsEveryMiles = every,
+            )
         }
         val done = entries.flatMap { e ->
             e.itemIds.filter { it in keys }.map { JobDone(it.toString(), e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
@@ -237,7 +253,8 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             title = { Text("Remove your milestone table?") },
             text = {
                 Text(
-                    "The ${state.milestones.size} milestones you imported go, and this screen goes back to the ones built from your schedule. " +
+                    "The ${if (state.tableSize == 1) "milestone" else "${state.tableSize} milestones"} you imported " +
+                        "${if (state.tableSize == 1) "goes" else "go"}, and this screen goes back to the ones built from your schedule. " +
                         "Your service history and reminders aren't touched. To get the table back, import the file again.",
                 )
             },
@@ -276,6 +293,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 Text(
                     if (state.fromTable) {
                         "The milestone table you imported, with what your log says was done. " +
+                            (state.repeatsEveryMiles?.let { "It repeats every ${it.asMiles()}, so after its last milestone it starts again from the first. " } ?: "") +
                             "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones in your file; Glovebox hasn't checked them."
                     } else {
                         "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
@@ -334,19 +352,8 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     }
                 }
             }
-            if (state.fromTable) {
-                item {
-                    TextButton(
-                        onClick = { removing = true },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                        colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                    ) {
-                        Text("Remove this table", fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
-            // A table ends where the file ends; only the view built from the schedule can go further.
-            if (state.milestones.isNotEmpty() && !state.fromTable) {
+            // A table ends where the file ends unless it repeats; then it can go further, like the view built from the schedule.
+            if (state.milestones.isNotEmpty() && (!state.fromTable || state.repeatsEveryMiles != null)) {
                 item {
                     OutlinedButton(
                         onClick = vm::showMore,
@@ -355,6 +362,17 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                     ) {
                         Text("Show further ahead")
+                    }
+                }
+            }
+            if (state.fromTable) {
+                item {
+                    TextButton(
+                        onClick = { removing = true },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
+                    ) {
+                        Text("Remove this table", fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -404,6 +422,7 @@ private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?,
                             if (m.jobs.size == 1) "1 job" else "${m.jobs.size} jobs",
                             "$completed completed".takeIf { completed > 0 },
                             m.milestone.orMonths?.let { "or $it months" },
+                            m.milestone.repeatOf?.let { "repeat of ${it.asMiles()}" },
                             // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
                             swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
                                 ?.let { "${(m.milestone.atMiles - it.offset).asMiles()} on the dash" },

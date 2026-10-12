@@ -51,6 +51,12 @@ data class VehicleEntity(
     val createdOn: LocalDate,
     /** When NHTSA last answered for this vehicle's recalls; null = never checked. */
     val recallsCheckedOn: LocalDate? = null,
+    /**
+     * The length of the cycle when the user's own milestone table (`milestones`) starts again after
+     * its last row; null for a table that ends. It belongs to the table as a whole, is written only
+     * by an import, and is cleared when the table is removed. Means nothing with no table.
+     */
+    val milestonesRepeatEveryMiles: Int? = null,
 )
 
 @Entity(

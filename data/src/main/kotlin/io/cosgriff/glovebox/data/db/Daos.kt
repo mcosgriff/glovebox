@@ -302,13 +302,32 @@ interface MilestoneDao {
     @Query("DELETE FROM milestone_jobs WHERE milestoneId = :milestoneId")
     suspend fun clearJobs(milestoneId: Long)
 
-    /** Removes the whole table; the Milestones screen then goes back to the view built from the schedule. */
     @Query("DELETE FROM milestones WHERE vehicleId = :vehicleId")
-    suspend fun deleteTable(vehicleId: Long)
+    suspend fun deleteMilestones(vehicleId: Long)
 
-    /** One import, applied whole or not at all. Nothing is deleted by one; a replaced milestone keeps its row. */
+    /** Whether the table repeats is the table's, kept on its vehicle; one column, like every other write to `vehicles`. */
+    @Query("UPDATE vehicles SET milestonesRepeatEveryMiles = :everyMiles WHERE id = :vehicleId")
+    suspend fun setRepeat(vehicleId: Long, everyMiles: Int?)
+
+    /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
     @Transaction
-    suspend fun applyImport(added: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>, replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>) {
+    suspend fun deleteTable(vehicleId: Long) {
+        deleteMilestones(vehicleId)
+        setRepeat(vehicleId, null)
+    }
+
+    /**
+     * One import, applied whole or not at all. Nothing is deleted by one; a replaced milestone keeps its row.
+     * [repeatsEveryMiles] is the file's, which is the saved table's too unless this is the vehicle's first.
+     */
+    @Transaction
+    suspend fun applyImport(
+        vehicleId: Long,
+        repeatsEveryMiles: Int?,
+        added: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
+        replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
+    ) {
+        setRepeat(vehicleId, repeatsEveryMiles)
         added.forEach { (milestone, jobs) ->
             val id = insert(milestone)
             insertJobs(jobs.map { it.copy(id = 0, milestoneId = id) })
