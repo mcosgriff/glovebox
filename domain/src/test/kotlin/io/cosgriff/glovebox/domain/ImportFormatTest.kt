@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.domain
 
 import com.networknt.schema.InputFormat
 import com.networknt.schema.SchemaRegistry
+import com.networknt.schema.SchemaRegistryConfig
 import com.networknt.schema.SpecificationVersion
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -19,9 +20,11 @@ class ImportFormatTest {
     // Gradle runs a module's tests from the module's folder.
     private val docs = File("../docs/import")
     private val kinds = ImportFormat.supported.map { it.id }
-    private val schemas = kinds.associateWith {
-        SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12).getSchema(File(docs, "schema/$it.schema.json").readText())
+    // Formats are checked, as check-jsonschema does by default: "2024-02-30" has the shape of a date and isn't one.
+    private val registry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12) {
+        it.schemaRegistryConfig(SchemaRegistryConfig.builder().formatAssertionsEnabled(true).build())
     }
+    private val schemas = kinds.associateWith { registry.getSchema(File(docs, "schema/$it.schema.json").readText()) }
 
     private fun schemaAccepts(kind: String, file: File): Boolean = schemas.getValue(kind).validate(file.readText(), InputFormat.JSON).isEmpty()
     private fun examples(folder: String): List<File> = File(docs, "examples/$folder").listFiles { f -> f.extension == "json" }!!.sortedBy { it.name }
