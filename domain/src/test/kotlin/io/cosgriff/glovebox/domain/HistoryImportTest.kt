@@ -105,12 +105,22 @@ class HistoryImportTest {
     fun `records that don't fit the readings around them are pointed out`() {
         val before = listOf(ServiceEntry(1, day, 41_000, setOf(1)))
         val items = listOf(
-            file(day.minusMonths(6), 45_000), // higher than a later record
-            file(day.plusMonths(6), 39_000), // lower than an earlier one
+            file(day.minusMonths(6), 45_000), // higher than the records after it
+            file(day.plusMonths(6), 39_000), // lower than the records before it
             file(day.plusMonths(7), 47_000), // fine
         )
         val after = HistoryImport.entriesAfter(HistoryImport.plan(items, listOf(saved(1)), schedule), ImportMode.ADD_NEW, before, schedule, null)
         assertEquals(listOf(45_000, 39_000), HistoryImport.backwards(after, emptyList()).map { it.odometer })
+    }
+
+    @Test
+    fun `one mistyped reading is named, not every record it disagrees with`() {
+        val items = listOf(file(day.minusMonths(14), 43_000), file(day.minusMonths(6), 36_150), file(day, 41_000), file(day.plusMonths(3), 44_000))
+        val after = HistoryImport.entriesAfter(HistoryImport.plan(items, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        assertEquals(listOf(43_000), HistoryImport.backwards(after, emptyList()).map { it.odometer })
+        // Two visits on one day in either order are fine.
+        val sameDay = listOf(file(day, 41_000), file(day, 41_020))
+        assertTrue(HistoryImport.backwards(HistoryImport.entriesAfter(HistoryImport.plan(sameDay, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null), emptyList()).isEmpty())
     }
 
     @Test

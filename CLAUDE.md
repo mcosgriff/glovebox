@@ -197,7 +197,8 @@ Notes on what's built:
   the imported record resets every reminder it did; otherwise it is a difference. A replace keeps the
   record's id, so its photos and recall link stay, and clears `enteredAsLastDone`. The preview lists the
   reminders that move for the chosen mode (`LogEdits.reminderChanges` over `HistoryImport.entriesAfter`)
-  and warns about readings that don't fit the ones around them (`HistoryImport.backwards`), both in dash
+  and warns about readings that don't fit the ones around them (`HistoryImport.backwards`: whatever falls
+  outside the heaviest run of readings that never goes down, saved readings weighing more), both in dash
   terms. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
   `today` passed to `ImportFormat.parse`. An imported record says "· imported" after who did it
   (`LogEdits.who`) and carries `Exports.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.

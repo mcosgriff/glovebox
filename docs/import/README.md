@@ -206,9 +206,9 @@ count for a reminder. The values, by the category History files them under:
   the notes.
 - **Replace matching** replaces those four things. Photos on your record stay, and so does a recall
   it was the work for.
-- **Readings that don't fit:** a record whose odometer is lower than an earlier reading, or higher
-  than a later one, is pointed out in the preview. It doesn't stop the import; one of the two
-  readings is wrong and it may not be the file's.
+- **Readings that don't fit:** an odometer only goes up, so a record whose reading breaks the run
+  of the others (lower than earlier ones, or higher than later ones) is pointed out in the preview.
+  It doesn't stop the import: check the date and the odometer, in the file or on the vehicle.
 - **Marked as imported:** these records say "imported" in History, on the record's screen and in
   exports, so they are never taken for something logged in the app at the time.
 - **Mileage:** imported readings count towards the vehicle's odometer and driving pace like any

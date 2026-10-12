@@ -170,15 +170,39 @@ object HistoryImport {
     }
 
     /**
-     * New records that don't fit the readings around them once the import is in: lower than a reading
-     * dated earlier, or higher than one dated later. Worth a warning, not a block, as on the Log
-     * service form: the other reading may be the wrong one. [after] is in dash terms.
+     * New records that don't fit the readings around them once the import is in. Worth a warning,
+     * not a block, as on the Log service form: one of the readings is wrong and it may not be the
+     * file's. [after] is in dash terms.
+     *
+     * An odometer only goes up, so the readings that agree with each other are the longest run that
+     * never goes down when put in date order; whatever falls outside it is the odd one out. That
+     * names the one mistyped reading, not every record it happens to disagree with. Where it could be
+     * either of two, a reading already on the vehicle is believed over one from the file.
      */
     fun backwards(after: List<ServiceEntry>, updates: List<OdometerReading>): List<ServiceEntry> {
-        val readings = ServiceLog.readings(after, updates)
-        return after.filter { e ->
-            e.id < 0 && readings.any { (it.date.isBefore(e.date) && it.odometer > e.odometer) || (it.date.isAfter(e.date) && it.odometer < e.odometer) }
+        data class Point(val date: LocalDate, val odometer: Int, val entry: ServiceEntry?)
+        val points = (after.map { Point(it.date, it.odometer, it) } + updates.map { Point(it.date, it.odometer, null) })
+            .sortedWith(compareBy<Point> { it.date }.thenBy { it.odometer })
+        if (points.isEmpty()) return emptyList()
+        // Heaviest non-decreasing subsequence, by the plain quadratic method: files are capped well below
+        // where that matters. A saved reading weighs a little more than a new one, which settles ties.
+        fun weight(p: Point) = if (p.entry != null && p.entry.id < 0) 2 else 3
+        val length = IntArray(points.size) { weight(points[it]) }
+        val previous = IntArray(points.size) { -1 }
+        for (i in points.indices) {
+            for (j in 0 until i) {
+                if (points[j].odometer <= points[i].odometer && length[j] + weight(points[i]) > length[i]) {
+                    length[i] = length[j] + weight(points[i])
+                    previous[i] = j
+                }
+            }
         }
-            .sortedBy { it.date }
+        val fits = mutableSetOf<Int>()
+        var at = length.indices.maxByOrNull { length[it] } ?: -1
+        while (at >= 0) {
+            fits += at
+            at = previous[at]
+        }
+        return points.filterIndexed { i, p -> i !in fits && p.entry != null && p.entry.id < 0 }.mapNotNull { it.entry }
     }
 }
