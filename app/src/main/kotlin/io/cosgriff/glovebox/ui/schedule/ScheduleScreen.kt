@@ -79,6 +79,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.foundation.layout.size
+import io.cosgriff.glovebox.data.db.MilestoneDao
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -115,8 +117,13 @@ class ScheduleViewModel @Inject constructor(
     odometer: OdometerDao,
     settings: SettingsRepository,
     private val actions: RecordActions,
+    milestones: MilestoneDao,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<ScheduleRoute>().vehicleId
+
+    /** The user has imported a milestone table of their own, which the Milestones screen shows whatever the schedule holds. */
+    val hasMilestoneTable: StateFlow<Boolean> = milestones.observe(vehicleId).map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     private var entities: Map<String, ScheduleItemEntity> = emptyMap()
 
@@ -279,6 +286,7 @@ fun ScheduleScreen(
     vm: ScheduleViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    val hasMilestoneTable by vm.hasMilestoneTable.collectAsStateWithLifecycle()
 
     val editing = vm.editing
     if (editing != null) {
@@ -354,6 +362,8 @@ fun ScheduleScreen(
                 Button(onClick = { onSetUp(v.id) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
                     Text("Start from a typical schedule")
                 }
+                // An imported table doesn't need a schedule to be worth looking at.
+                if (hasMilestoneTable) MilestonesRow(onClick = { onOpenMilestones(v.id) })
             } else {
                 if (state.items.any { it.severe != null }) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -375,33 +385,8 @@ fun ScheduleScreen(
                         }
                     }
                 }
-                // A tracked item that repeats by mileage is all the milestones view needs.
-                if (state.items.any { it.tracked && it.active.miles != null }) {
-                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                        Row(
-                            Modifier.fillMaxWidth()
-                                .heightIn(min = 60.dp)
-                                .clickable(role = Role.Button, onClick = { onOpenMilestones(v.id) })
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text("Milestones", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                                Text(
-                                    "This schedule by mileage, with what was done",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Icon(
-                                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
+                // A tracked item that repeats by mileage is all the milestones view needs; so is a table of the user's own.
+                if (hasMilestoneTable || state.items.any { it.tracked && it.active.miles != null }) MilestonesRow(onClick = { onOpenMilestones(v.id) })
                 SectionLabel("$tracked OF ${state.items.size} TRACKED")
             }
 
@@ -462,6 +447,31 @@ fun ScheduleScreen(
                     "manufacturer's: check your owner's manual and edit anything that differs.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** The way to the Milestones screen, as a link row like those on Vehicle details. */
+@Composable
+private fun MilestonesRow(onClick: () -> Unit) {
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Row(
+            Modifier.fillMaxWidth()
+                .heightIn(min = 60.dp)
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Milestones", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text("This schedule by mileage, with what was done", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

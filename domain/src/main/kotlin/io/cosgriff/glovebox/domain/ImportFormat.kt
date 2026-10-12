@@ -18,7 +18,7 @@ import java.time.LocalDate
 enum class ImportKind(val id: String, val label: String) {
     SERVICE_HISTORY("service-history", "Service history"),
     INTERVAL_SCHEDULE("interval-schedule", "Maintenance schedule"),
-    MILESTONE_SCHEDULE("milestone-schedule", "Milestone schedule"),
+    MILESTONE_SCHEDULE("milestone-schedule", "Milestones"),
     TORQUE_SPECS("torque-specs", "Torque specs"),
 }
 
@@ -32,14 +32,13 @@ sealed interface ImportFile {
     /** [errors] is capped at [ImportFormat.MAX_ERRORS]; [more] is how many were left off. */
     data class Invalid(val errors: List<ImportError>, val more: Int = 0) : ImportFile
 
-    /** A well-formed file of a kind this version of the app doesn't import yet. */
-    data class NotYet(val kind: ImportKind) : ImportFile
-
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
 
     data class IntervalSchedule(val items: List<ImportedScheduleItem>) : ImportFile
 
     data class ServiceHistory(val items: List<ImportedRecord>) : ImportFile
+
+    data class MilestoneSchedule(val items: List<ImportedMilestone>) : ImportFile
 }
 
 object ImportFormat {
@@ -50,8 +49,8 @@ object ImportFormat {
 
     const val MAX_ERRORS = 25
 
-    /** The kinds this version of the app can import; the rest are specified but not built. */
-    val supported: Set<ImportKind> = setOf(ImportKind.TORQUE_SPECS, ImportKind.INTERVAL_SCHEDULE, ImportKind.SERVICE_HISTORY)
+    /** The kinds this version of the app can import: all of them. */
+    val supported: Set<ImportKind> = ImportKind.entries.toSet()
 
     private val envelopeKeys = setOf("\$schema", "glovebox", "version", "kind", "items")
 
@@ -81,7 +80,6 @@ object ImportFormat {
             ImportKind.entries.firstOrNull { it.id == id } ?: null.also { check.fail("kind", "must be one of ${ImportKind.entries.joinToString { it.id }}") }
         }
         if (kind == null || check.failed) return check.invalid()
-        if (kind !in supported) return ImportFile.NotYet(kind)
 
         return when (kind) {
             ImportKind.TORQUE_SPECS -> {
@@ -96,7 +94,10 @@ object ImportFormat {
                 val items = HistoryImport.read(envelope.getValue("items"), check, today)
                 if (check.failed) check.invalid() else ImportFile.ServiceHistory(items)
             }
-            else -> ImportFile.NotYet(kind)
+            ImportKind.MILESTONE_SCHEDULE -> {
+                val items = MilestoneImport.read(envelope.getValue("items"), check)
+                if (check.failed) check.invalid() else ImportFile.MilestoneSchedule(items)
+            }
         }
     }
 }

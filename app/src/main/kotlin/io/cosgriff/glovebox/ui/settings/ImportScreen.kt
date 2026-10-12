@@ -54,6 +54,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.data.db.MilestoneDao
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -69,7 +72,11 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
+import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.ImportedRecord
+import io.cosgriff.glovebox.domain.MilestoneImport
+import io.cosgriff.glovebox.domain.SavedMilestone
+import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.SavedRecord
@@ -235,8 +242,6 @@ data class PlanView(
 /** What the chosen file comes to for the chosen vehicle. */
 sealed interface ImportPreview {
     data class Invalid(val file: ImportFile.Invalid) : ImportPreview
-    data class NotYet(val kindLabel: String) : ImportPreview
-
     /** A good file, but there are several vehicles and none has been chosen. */
     data object NeedsVehicle : ImportPreview
 
@@ -271,6 +276,7 @@ class ImportViewModel @Inject constructor(
     private val schedule: ScheduleDao,
     private val service: ServiceDao,
     private val odometer: OdometerDao,
+    private val milestones: MilestoneDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
 ) : ViewModel() {
@@ -300,7 +306,6 @@ class ImportViewModel @Inject constructor(
         when (file) {
             null -> null
             is ImportFile.Invalid -> ImportPreview.Invalid(file)
-            is ImportFile.NotYet -> ImportPreview.NotYet(file.kind.label)
             else -> when {
                 vehicle == null -> ImportPreview.NeedsVehicle
                 file is ImportFile.ServiceHistory -> historyPreview(vehicle, file.items, s)
@@ -308,6 +313,7 @@ class ImportViewModel @Inject constructor(
                 vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
                 file is ImportFile.IntervalSchedule -> schedulePreview(vehicle.id, file.items)
+                file is ImportFile.MilestoneSchedule -> milestonePreview(vehicle.id, file.items)
                 else -> null
             }
         }
@@ -425,6 +431,30 @@ class ImportViewModel @Inject constructor(
             val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
             schedule.applyImport(added, replaced, stop)
             finish(view, vehicleId, mode, stop.size)
+        }
+    }
+
+    private suspend fun milestonePreview(vehicleId: Long, items: List<ImportedMilestone>): ImportPreview {
+        val rows = milestones.tableFor(vehicleId)
+        val byId = rows.associateBy { it.milestone.id }
+        val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+        val plan = MilestoneImport.plan(items, saved)
+        val view = PlanView(
+            kind = ImportKind.MILESTONE_SCHEDULE,
+            noun = "milestone",
+            total = plan.total,
+            new = plan.new.map { PlanLine(it.atMiles.asMiles(), describe(it.work, it.orMonths)) },
+            fills = emptyList(),
+            differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asMiles(), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
+            same = plan.same.size,
+            caution = "Milestones are for reference on the Milestones screen. They don't create or change reminders, and they are your figures, not the manufacturer's.",
+        )
+        return ImportPreview.Ready(view) { mode, _ ->
+            fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
+            val added = plan.new.map { MilestoneEntity(vehicleId = vehicleId, atMiles = it.atMiles, orMonths = it.orMonths) to jobs(it) }
+            val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to jobs(item) } }
+            milestones.applyImport(added, replaced)
+            finish(view, vehicleId, mode)
         }
     }
 
@@ -548,6 +578,10 @@ private fun describe(labels: List<String>, who: String, costCents: Long?): Strin
 private fun ImportedRecord.describe() = describe(work.map { it.label }, LogEdits.who(diy, shopName, null), costCents)
 private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName, null, enteredAsLastDone), costCents)
 
+/** "Change oil, Rotate tires · or 12 months" */
+private fun describe(work: List<TableJob>, orMonths: Int?): String =
+    listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
+
 private fun ImportedScheduleItem.describe() = describe(normal, severe, rule)
 private fun SavedScheduleItem.describe() = describe(normal, severe, rule)
 
@@ -561,6 +595,7 @@ fun ImportScreen(
     onOpenSchedule: (vehicleId: Long) -> Unit,
     /** "When were these last done?", offered after a schedule import. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
+    onOpenMilestones: (vehicleId: Long) -> Unit,
     /** After a history import. A sold vehicle's history is its own screen. */
     onOpenHistory: (vehicleId: Long, archived: Boolean) -> Unit,
     vm: ImportViewModel = hiltViewModel(),
@@ -601,7 +636,7 @@ fun ImportScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Add service history, a maintenance schedule or torque specs to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
+                    "Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
@@ -630,6 +665,7 @@ fun ImportScreen(
                             Text("See the schedule")
                         }
                     }
+                    ImportKind.MILESTONE_SCHEDULE -> Button(onClick = { onOpenMilestones(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See milestones") }
                     ImportKind.SERVICE_HISTORY -> Button(
                         onClick = {
                             vm.showHistory(r.vehicleId)
@@ -683,7 +719,6 @@ fun ImportScreen(
             when (val p = preview) {
                 null -> Unit
                 is ImportPreview.Invalid -> ErrorsCard(p.file)
-                is ImportPreview.NotYet -> Text("This is a ${p.kindLabel.lowercase()} file, which this version of Glovebox can't import yet.", color = scheme.onSurface)
                 ImportPreview.NeedsVehicle -> Text("The file is fine. Choose which vehicle it goes into.", color = scheme.onSurface)
                 is ImportPreview.Refused -> Text(p.why, color = scheme.onSurface)
                 is ImportPreview.Ready -> {

@@ -103,11 +103,12 @@ class ImportFormatTest {
     }
 
     @Test
-    fun `a kind that is specified but not built says so`() {
-        val file = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "milestone-schedule", "items": [] }""")
-        assertEquals(ImportFile.NotYet(ImportKind.MILESTONE_SCHEDULE), file)
-        // Every kind that is built has a schema, a valid example and both folders of bad ones.
-        for (kind in kinds) assertTrue(File(docs, "examples/$kind.json").isFile)
+    fun `every kind has a schema, a valid example and both folders of bad ones`() {
+        assertEquals(ImportKind.entries.map { it.id }, kinds)
+        for (kind in kinds) {
+            assertTrue(File(docs, "schema/$kind.schema.json").isFile)
+            assertTrue(File(docs, "examples/$kind.json").isFile)
+        }
     }
 
     @Test
@@ -245,5 +246,53 @@ class ImportFormatTest {
     fun `the same job twice in a schedule file is refused`() {
         val twice = schedule("""[ { "name": "Oil change", "everyMiles": 7500 }, { "name": "oil CHANGE", "everyMonths": 12 } ]""")
         assertEquals(listOf("items[1].name: \"oil CHANGE\" is already in this file, at items[0]"), errors(twice))
+    }
+
+    private fun milestones(items: String) = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "milestone-schedule", "items": $items }""")
+
+    @Test
+    fun `the milestone example is accepted by the schema and by the app`() {
+        val file = File(docs, "examples/milestone-schedule.json")
+        assertTrue(schemaAccepts("milestone-schedule", file))
+        val items = (ImportFormat.parse(file.readText()) as ImportFile.MilestoneSchedule).items
+        assertEquals(listOf(10_000, 20_000, 30_000, 65_000, 100_000), items.map { it.atMiles })
+        assertEquals(ImportedMilestone(65_000, listOf(TableJob("Replace spark plugs", "spark-plugs"))), items[3])
+        assertEquals(36, items[2].orMonths)
+        assertEquals(TableJob("Inspect drive belts"), items[2].work.last())
+    }
+
+    @Test
+    fun `milestones may come in any order and are put in mileage order`() {
+        val file = milestones("""[ { "atMiles": 60000, "work": [ { "name": "A" } ] }, { "atMiles": 30000, "work": [ { "name": "B" } ] } ]""")
+        assertEquals(listOf(30_000, 60_000), (file as ImportFile.MilestoneSchedule).items.map { it.atMiles })
+    }
+
+    @Test
+    fun `one mileage is one milestone, and a job appears once in it`() {
+        assertEquals(
+            listOf("items[1].atMiles: is the same mileage as items[0]; put all the work for one mileage in one milestone"),
+            errors(milestones("""[ { "atMiles": 30000, "work": [ { "name": "A" } ] }, { "atMiles": 30000, "work": [ { "name": "B" } ] } ]""")),
+        )
+        assertEquals(
+            listOf("items[0].work[1].name: \"inspect BELTS\" is already in this milestone, at work[0]"),
+            errors(milestones("""[ { "atMiles": 30000, "work": [ { "name": "Inspect belts" }, { "name": "inspect BELTS" } ] } ]""")),
+        )
+        assertEquals(
+            listOf("items[0].work[1].service: \"rotation\" is already used in this milestone, at work[0]"),
+            errors(milestones("""[ { "atMiles": 30000, "work": [ { "name": "Rotate", "service": "rotation" }, { "name": "Swap", "service": "rotation" } ] } ]""")),
+        )
+    }
+
+    @Test
+    fun `the milestone schema's lists match the app's`() {
+        val schema = Json.parseToJsonElement(File(docs, "schema/milestone-schedule.schema.json").readText())
+        fun at(vararg path: String): JsonElement = path.fold(schema) { e, key -> e.jsonObject.getValue(key) }
+        fun int(vararg path: String) = at(*path).jsonPrimitive.content.toInt()
+        assertEquals(HistoryImport.services.keys, at("\$defs", "job", "properties", "service", "enum").jsonArray.map { it.jsonPrimitive.content }.toSet())
+        assertEquals(MilestoneImport.MAX_NAME, int("\$defs", "job", "properties", "name", "maxLength"))
+        assertEquals(MilestoneImport.MAX_MILES, int("\$defs", "milestone", "properties", "atMiles", "maximum"))
+        assertEquals(MilestoneImport.MAX_MONTHS, int("\$defs", "milestone", "properties", "orMonths", "maximum"))
+        assertEquals(MilestoneImport.MAX_WORK, int("\$defs", "milestone", "properties", "work", "maxItems"))
+        assertEquals(MilestoneImport.MAX_ITEMS, int("properties", "items", "maxItems"))
     }
 }

@@ -17,7 +17,7 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
 | `torque-specs` | Fasteners with socket sizes and torque values | [`torque-specs.schema.json`](schema/torque-specs.schema.json) | Yes |
 | `interval-schedule` | A schedule with one repeating interval per job | [`interval-schedule.schema.json`](schema/interval-schedule.schema.json) | Yes |
 | `service-history` | Maintenance done before you used Glovebox | [`service-history.schema.json`](schema/service-history.schema.json) | Yes |
-| `milestone-schedule` | A schedule by mileage point, as an owner's manual prints it | to come (#105) | Not yet |
+| `milestone-schedule` | A schedule by mileage point, as an owner's manual prints it | [`milestone-schedule.schema.json`](schema/milestone-schedule.schema.json) | Yes |
 
 ## The shape of every file
 
@@ -259,6 +259,58 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
   service. The built-in lines (such as "Oil & filter change") reset the typical items, not these.
 - The same job can't appear twice in a file under names that differ only in capitals (this is the
   rule the schema can't state).
+
+## `milestone-schedule`
+
+[`schema/milestone-schedule.schema.json`](schema/milestone-schedule.schema.json) ·
+[`examples/milestone-schedule.json`](examples/milestone-schedule.json) · up to 200 milestones
+
+A schedule the way an owner's manual prints it: mileage points, each with the work due there.
+
+```json
+{
+  "atMiles": 30000,
+  "orMonths": 36,
+  "work": [
+    { "name": "Replace engine air filter", "service": "engine-air" },
+    { "name": "Rotate tires", "service": "rotation" },
+    { "name": "Inspect drive belts" }
+  ]
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `atMiles` | yes | Whole miles the vehicle has covered, 1 to 1000000. No two milestones in a file may share one |
+| `orMonths` | no | The vehicle's age in whole months at which the same work is due if the mileage isn't reached, 1 to 600. Shown for information |
+| `work` | yes | 1 to 30 lines, each with a `name` (up to 80 characters) and optionally a `service` |
+
+- **It is information, not reminders.** The table is shown on the Milestones screen (from a
+  vehicle's Maintenance schedule) in place of the milestones Glovebox builds from your schedule. It
+  never creates, changes or silences a reminder: those still come from your schedule items and your
+  service log. To get reminders for a job, add it to the schedule (or import an `interval-schedule`).
+- **What counts as done:** the screen shows a job as completed when your log has that work. A job
+  with a `service` is completed by logged work for that service (the values are the same as for
+  [`service-history`](#service-history)). A job without one is completed by logged work whose label
+  is the job's `name`, ignoring capitals. A job nothing in the log matches is simply listed.
+- **Which milestone a service lands on:** the first milestone listing that job at or after the
+  mileage it was done at. Oil changed at 48,000 shows under 50,000. After a job's last milestone,
+  later work still shows under that last one.
+- **The same job at several milestones** should have the same `service`, or exactly the same
+  `name`, at each: that is how Glovebox knows it is one job repeating.
+- **Order doesn't matter** in the file; milestones are shown by mileage.
+- **The table ends where your file ends.** There is no "repeat every" in version 1: write out as
+  many milestones as you want to see.
+- **Mileage is miles the vehicle has really covered,** as a manual means it. If the instrument
+  cluster was replaced and you have set an odometer offset, the screen also shows what the dash will
+  read at each milestone.
+- **Matching:** a milestone in the file matches one already on the vehicle at the same `atMiles`.
+  Same or different is the months and the work lines (in any order, ignoring capitals).
+  **Replace matching** replaces those and nothing else.
+- **Removing it:** "Remove this table" on the Milestones screen deletes the whole table and brings
+  back the milestones built from your schedule.
+- Within one milestone a `name`, and a `service`, can each appear only once; and no two milestones
+  can have the same `atMiles` (these are the rules the schema can't state).
 
 **Someone else's file is someone else's numbers.** Check intervals against your owner's manual and
 every torque value against your service manual before you rely on them.

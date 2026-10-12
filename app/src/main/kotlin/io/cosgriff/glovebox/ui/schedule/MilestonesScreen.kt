@@ -21,7 +21,9 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -56,7 +59,10 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.JobDone
+import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.MilestoneJobStatus
+import io.cosgriff.glovebox.domain.SavedMilestone
+import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.MilestonePlace
 import io.cosgriff.glovebox.domain.MilestoneStatus
 import io.cosgriff.glovebox.domain.Milestones
@@ -77,6 +83,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 
@@ -88,6 +95,8 @@ data class MilestonesState(
     val swap: ClusterSwap?,
     /** False when nothing tracked repeats by mileage, so there is nothing to build milestones from. */
     val hasMileageItems: Boolean,
+    /** True when these are the user's own imported table, shown in place of the view built from the schedule. */
+    val fromTable: Boolean,
 )
 
 /**
@@ -102,13 +111,16 @@ class MilestonesViewModel @Inject constructor(
     service: ServiceDao,
     odometer: OdometerDao,
     settings: SettingsRepository,
+    private val table: MilestoneDao,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<MilestonesRoute>().vehicleId
 
     /** How many milestones past the odometer are shown; "Show more" raises it. */
     private val ahead = MutableStateFlow(savedStateHandle.get<Int>(AHEAD) ?: Milestones.AHEAD)
 
-    private val log = combine(service.observeRecords(vehicleId), odometer.observe(vehicleId)) { records, readings -> records to readings }
+    private val log = combine(service.observeRecords(vehicleId), odometer.observe(vehicleId), table.observe(vehicleId)) { records, readings, rows ->
+        Triple(records, readings, rows)
+    }
 
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<MilestonesState?> = combine(
@@ -117,7 +129,7 @@ class MilestonesViewModel @Inject constructor(
         log,
         settings.settings,
         ahead,
-    ) { vehicle, items, (records, readings), s, count ->
+    ) { vehicle, items, (records, readings, rows), s, count ->
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap) }
@@ -125,20 +137,37 @@ class MilestonesViewModel @Inject constructor(
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = VehicleReminders.currentOdometer(entries, readings.toReadings(swap))?.let { swap.actual(it) }
+        val name = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}"
+        if (rows.isNotEmpty()) {
+            // The user's own table is shown as it is, in place of the view built from the schedule.
+            val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.jobs.sortedBy { it.id }.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+            // A logged line completes a job by its catalog service, or by being called the same thing.
+            val done = records.flatMap { r ->
+                val e = r.toEntry(swap)
+                r.items.flatMap { line ->
+                    MilestoneImport.doneKeys(line.label, line.catalogId).map { JobDone(it, e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
+                }
+            }
+            return@combine MilestonesState(name, Milestones.status(MilestoneImport.milestones(saved), done, current, continues = false), current, swap, hasMileageItems = true, fromTable = true)
+        }
         val done = entries.flatMap { e ->
             e.itemIds.filter { it in keys }.map { JobDone(it.toString(), e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
         }
         val list = Milestones.generate(tracked, Milestones.startFor(done, current), current ?: 0, count)
         MilestonesState(
-            vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
+            vehicleName = name,
             milestones = Milestones.status(list, done, current, continues = true),
             current = current,
             swap = swap,
             hasMileageItems = tracked.isNotEmpty(),
+            fromTable = false,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val handle = savedStateHandle
+
+    /** Takes the user's table away; the screen goes back to the view built from the schedule. */
+    fun removeTable() = viewModelScope.launch { table.deleteTable(vehicleId) }
 
     fun showMore() {
         ahead.value += Milestones.MORE
@@ -199,6 +228,30 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         }
     }
 
+    var removing by rememberSaveable { mutableStateOf(false) }
+    if (removing) {
+        AlertDialog(
+            onDismissRequest = { removing = false },
+            title = { Text("Remove your milestone table?") },
+            text = {
+                Text(
+                    "The ${state.milestones.size} milestones you imported go, and this screen goes back to the ones built from your schedule. " +
+                        "Your service history and reminders aren't touched. To get the table back, import the file again.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        removing = false
+                        vm.removeTable()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
+                ) { Text("Remove") }
+            },
+            dismissButton = { TextButton(onClick = { removing = false }) { Text("Cancel") } },
+        )
+    }
+
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
@@ -219,8 +272,13 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         ) {
             item {
                 Text(
-                    "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
-                        "It's a guide: the Reminders tab is what tells you something is due. The intervals are the ones you set, not the manufacturer's.",
+                    if (state.fromTable) {
+                        "The milestone table you imported, with what your log says was done. " +
+                            "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones in your file; Glovebox hasn't checked them."
+                    } else {
+                        "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
+                            "It's a guide: the Reminders tab is what tells you something is due. The intervals are the ones you set, not the manufacturer's."
+                    },
                     color = scheme.onSurfaceVariant,
                 )
             }
@@ -274,7 +332,19 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     }
                 }
             }
-            if (state.milestones.isNotEmpty()) {
+            if (state.fromTable) {
+                item {
+                    TextButton(
+                        onClick = { removing = true },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
+                    ) {
+                        Text("Remove this table", fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            // A table ends where the file ends; only the view built from the schedule can go further.
+            if (state.milestones.isNotEmpty() && !state.fromTable) {
                 item {
                     OutlinedButton(
                         onClick = vm::showMore,
@@ -331,6 +401,7 @@ private fun MilestoneCard(m: MilestoneStatus, current: Int?, swap: ClusterSwap?,
                         listOfNotNull(
                             if (m.jobs.size == 1) "1 job" else "${m.jobs.size} jobs",
                             "$completed completed".takeIf { completed > 0 },
+                            m.milestone.orMonths?.let { "or $it months" },
                             // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
                             swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
                                 ?.let { "${(m.milestone.atMiles - it.offset).asMiles()} on the dash" },

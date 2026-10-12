@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/milestone-schedule.schema.json",
+  "title": "Glovebox import: maintenance schedule by milestone",
+  "description": "Mileage points with the work due at each, as an owner's manual prints a schedule. Format version 1. See docs/import/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "glovebox",
+    "version",
+    "kind",
+    "items"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Optional. Lets an editor check the file as it is typed. Glovebox ignores it.",
+      "$ref": "#/$defs/line",
+      "maxLength": 300
+    },
+    "glovebox": {
+      "const": "import"
+    },
+    "version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "milestone-schedule"
+    },
+    "items": {
+      "description": "In any order; Glovebox shows them by mileage. No two may have the same atMiles.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/milestone"
+      }
+    }
+  },
+  "$defs": {
+    "line": {
+      "description": "Text on one line with no space at either end.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\s\\x00-\\x1f\\x7f-\\x9f]([^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f])?$"
+    },
+    "milestone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "atMiles",
+        "work"
+      ],
+      "properties": {
+        "atMiles": {
+          "description": "Whole miles the vehicle has covered when this work is due.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "orMonths": {
+          "description": "The vehicle's age in whole months at which the same work is due if the mileage isn't reached. Shown for information.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "work": {
+          "description": "A name, and a service, may each appear only once in a milestone.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/job"
+          }
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "The work, as your manual words it.",
+          "$ref": "#/$defs/line",
+          "maxLength": 80
+        },
+        "service": {
+          "description": "Which of Glovebox's own service lines this is, if it is one. Logged work with that service then shows as completing it.",
+          "enum": [
+            "oil",
+            "engine-air",
+            "spark-plugs",
+            "belt",
+            "pcv",
+            "rotation",
+            "balance",
+            "alignment",
+            "new-tires",
+            "flat",
+            "front-pads",
+            "rear-pads",
+            "rotors",
+            "brake-fluid",
+            "brake-inspect",
+            "coolant",
+            "trans-fluid",
+            "power-steering",
+            "washer",
+            "diff-fluid",
+            "driveshaft",
+            "cv-axle",
+            "cabin-air",
+            "wipers",
+            "battery",
+            "bulbs",
+            "multi-point",
+            "emissions",
+            "recall",
+            "accessory",
+            "body",
+            "detail"
+          ]
+        }
+      }
+    }
+  }
+}

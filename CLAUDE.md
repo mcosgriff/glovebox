@@ -106,7 +106,7 @@ DELETE, then the phone's screen lock). Odometer offset (instrument cluster repla
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
-about what differs). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen).
 To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
@@ -163,9 +163,8 @@ Notes on what's built:
   goes in `examples/beyond-schema/` and in the README. The format is strict on purpose: unknown fields,
   `null`, stray spaces and out-of-range values refuse the file, nothing is repaired, and every error is
   reported with its path (`items[3].torque.unit`). The app ships no JSON Schema library; `:domain` reads
-  the file as a JSON tree with kotlinx.serialization. A file never names a vehicle. Four kinds are
-  specified (`ImportKind`); only `ImportFormat.supported` are built, and a good file of another kind says
-  so. The Settings row names the kinds that work and is absent with no vehicles.
+  the file as a JSON tree with kotlinx.serialization. A file never names a vehicle. There are four kinds
+  (`ImportKind`), all built. The Settings row is absent with no vehicles.
 - What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
   default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import
@@ -218,8 +217,19 @@ Notes on what's built:
   the mileage it was done at, so an oil change at 48,000 shows under 50,000 as completed there, and of two
   in one stretch the later is shown. A job nothing matches is listed with no status. Milestone mileages are
   miles really covered: with a cluster replacement everything is placed by `swap.actual`, and the dash
-  figure is shown beside it. `status(continues = false)` is for a table that simply ends (the user's own,
-  #105), where a job's last milestone takes whatever comes after the one before it.
+  figure is shown beside it.
+- The user's own milestone table (`MilestoneImport`, kind `milestone-schedule`, tables `milestones` and
+  `milestone_jobs`, both cascading from `vehicles`): imported from a file, never edited in the app. When a
+  vehicle has one, the Milestones screen shows it **in place of** the generated view, with
+  `status(continues = false)`, since a table simply ends and a job's last milestone takes whatever comes
+  after the one before it. A job is the same job across milestones, and is completed by logged work, by
+  its `service` (a record line's `catalogId`) or failing that its name (the line's label, ignoring case):
+  `MilestoneImport.jobKey` and `doneKeys`. Nothing about reminders, notifications or exports reads these
+  tables. "Remove this table" deletes it and the generated view returns. Import matches on `atMiles`;
+  a replace keeps the row and swaps its months and jobs. Backup and restore carry the tables without
+  change, because both go table by table from SQLite.
+- Every `ImportKind` is now built, so there is no "not yet" path; a new kind needs one again only if it
+  is specified before it is implemented.
 - `vehicles.fuel` is vPIC's primary fuel type, kept since schema v6; vehicles added earlier have none.
   `ScheduleTemplates.generic` leaves engine oil, the engine air filter and spark plugs out for "Electric".
 - Logged work resets a reminder through `schedule_items.templateKey` matching `CatalogItem.resets`
@@ -410,7 +420,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v11); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v12); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
