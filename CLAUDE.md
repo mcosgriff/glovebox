@@ -94,7 +94,7 @@ Log it, snooze and skip), reminder rules (default rule, lead time, per-service o
 (list, mark done / open, banner on vehicle home, garage chips, row on the decode result).
 First-run welcome (lock and notification choices, add a vehicle or restore), delete all data (type
 DELETE, then the phone's screen lock).
-To build: distance units (km display, #93), unlock screen (#27), fonts and dark pass (#28), History
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), fonts and dark pass (#28), History
 and Log service polish (#30, #31), navigation map (#32), mileage readings (#64, #65), odometer offset
 (#73, model undecided), known torque specs (#76), last done at setup (#78), VIN scan follow-ups (#82, #83).
 
@@ -153,6 +153,12 @@ Notes on what's built:
 - Reminder rules: the default rule and lead time (`Settings.lead`) live in DataStore; pass `lead` to
   every `VehicleReminders.statuses` call. Overrides are `schedule_items.ruleOverride`. The preview card
   only ever uses a real logged service (`RulePreviews`), never sample data, and names no manufacturer.
+- The unlock screen (`LockScreen`) is what sits behind Android's own prompt and what is left when the
+  prompt is dismissed. It asks once on arrival; after a cancel the user taps the ring. What it offers
+  comes from `Unlock.options` (domain): fingerprint wording only where the phone has a sensor, a padlock on
+  a phone with only a screen lock, and "Use screen lock instead" only on Android 11+, where Android can ask
+  for the screen lock alone. Errors go through `Unlock.message`; a cancel says nothing. With the screen
+  lock allowed as a fallback, Android handles too many failed tries itself by switching to the PIN.
 - While locked, the app's screens are out of composition (`MainActivity`), so no screen, sheet or dialog
   is drawn or readable behind the lock screen. Their saved state is held in a `SaveableStateHolder`, which
   is what returns the user to the same screen after unlocking. Don't swap this for drawing the lock
