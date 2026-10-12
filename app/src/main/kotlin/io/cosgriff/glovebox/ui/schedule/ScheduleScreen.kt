@@ -75,6 +75,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import androidx.compose.runtime.saveable.rememberSaveable
 import io.cosgriff.glovebox.ui.service.RecordActions
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.foundation.layout.size
 import javax.inject.Inject
 
 /**
@@ -270,6 +274,8 @@ fun ScheduleScreen(
     onSetUp: (vehicleId: Long) -> Unit,
     /** The "When were these last done?" list. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
+    /** The same schedule laid out by mileage. */
+    onOpenMilestones: (vehicleId: Long) -> Unit,
     vm: ScheduleViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -365,6 +371,33 @@ fun ScheduleScreen(
                                 "Some items are on their severe interval and some aren't. Picking one here sets them all.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+                // A tracked item that repeats by mileage is all the milestones view needs.
+                if (state.items.any { it.tracked && it.active.miles != null }) {
+                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .heightIn(min = 60.dp)
+                                .clickable(role = Role.Button, onClick = { onOpenMilestones(v.id) })
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text("Milestones", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    "This schedule by mileage, with what was done",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
