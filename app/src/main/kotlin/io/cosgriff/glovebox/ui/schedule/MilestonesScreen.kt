@@ -63,6 +63,10 @@ import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.JobDone
 import io.cosgriff.glovebox.domain.MilestoneEdits
+import io.cosgriff.glovebox.domain.MilestoneExport
+import io.cosgriff.glovebox.ui.export.ExportSaver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.MilestoneJobStatus
 import io.cosgriff.glovebox.domain.SavedMilestone
@@ -103,6 +107,8 @@ data class MilestonesState(
     val hasMileageItems: Boolean,
     /** True when these are the user's own imported table, shown in place of the view built from the schedule. */
     val fromTable: Boolean,
+    /** The year, make and model: who else the table would suit, for the name of a file it is saved to. */
+    val model: String = "",
     /** The user's table as written, by mileage; a table that repeats shows more milestones than this. Empty with no table. */
     val table: List<SavedMilestone> = emptyList(),
     /** The length of the cycle when the user's table starts again after its last milestone; null when it ends. */
@@ -122,6 +128,7 @@ class MilestonesViewModel @Inject constructor(
     odometer: OdometerDao,
     settings: SettingsRepository,
     private val table: MilestoneDao,
+    private val saver: ExportSaver,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<MilestonesRoute>().vehicleId
 
@@ -169,6 +176,7 @@ class MilestonesViewModel @Inject constructor(
                 hasMileageItems = true,
                 fromTable = true,
                 table = saved,
+                model = "${vehicle.year} ${vehicle.make} ${vehicle.model}",
                 repeatsEveryMiles = every,
             )
         }
@@ -225,6 +233,21 @@ class MilestonesViewModel @Inject constructor(
     }
 
     fun setRepeat(everyMiles: Int?) = viewModelScope.launch { table.setRepeat(vehicleId, everyMiles) }
+
+    /**
+     * Writes the table out as an import file and hands it to Android's "save as". The file holds the
+     * table and nothing about the vehicle; like every export it is in the clear, and the working copy
+     * is deleted once it has been copied out or the user backs out.
+     */
+    fun saveAsFile() {
+        val s = state.value?.takeIf { it.table.isNotEmpty() } ?: return
+        val name = MilestoneExport.fileName(s.model)
+        viewModelScope.launch {
+            val file = saver.newFile()
+            withContext(Dispatchers.IO) { file.writeText(MilestoneExport.file(s.table, s.repeatsEveryMiles)) }
+            saver.save(file, name, MilestoneExport.MIME_TYPE, "Saved $name") {}
+        }
+    }
 
     fun showMore() {
         ahead.value += Milestones.MORE
@@ -472,6 +495,18 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                                 Text("Change", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
                             }
                         }
+                    }
+                }
+                item {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextButton(onClick = vm::saveAsFile, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Text("Save as an import file", fontWeight = FontWeight.SemiBold)
+                        }
+                        Text(
+                            "A copy to keep, or to pass to someone with the same model. It holds this table and nothing about your vehicle or its history, and it isn't encrypted.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
                     }
                 }
                 item {
