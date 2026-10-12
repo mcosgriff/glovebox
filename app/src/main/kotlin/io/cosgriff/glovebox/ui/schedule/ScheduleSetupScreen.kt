@@ -23,10 +23,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -36,6 +42,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,6 +110,9 @@ class ScheduleSetupViewModel @Inject constructor(
     var severeUse by mutableStateOf(false)
         private set
 
+    /** "Know when these were last done?": true goes on to ask, false leaves them to be logged as they come up. */
+    var enterLastDone by mutableStateOf(false)
+
     /** The item open in the editor. A key that isn't in [items] means a new item. */
     var editing by mutableStateOf<DraftItem?>(null)
         private set
@@ -163,7 +173,7 @@ class ScheduleSetupViewModel @Inject constructor(
     }
 
     /** Unticked items are kept as untracked rows so they can be switched on later. */
-    fun save(onDone: () -> Unit) = viewModelScope.launch {
+    fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
         schedule.insertAll(
             list.map {
@@ -181,12 +191,17 @@ class ScheduleSetupViewModel @Inject constructor(
                 )
             },
         )
-        onDone()
+        onDone(vehicleId)
     }
 }
 
 @Composable
-fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltViewModel()) {
+fun ScheduleSetupScreen(
+    onDone: () -> Unit,
+    /** After tracking, for a user who knows when some were last done: the list that asks. */
+    onEnterLastDone: (vehicleId: Long) -> Unit,
+    vm: ScheduleSetupViewModel = hiltViewModel(),
+) {
     val editing = vm.editing
     if (editing != null) {
         val defaultRule by vm.defaultRule.collectAsStateWithLifecycle()
@@ -257,8 +272,10 @@ fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltVie
                 }
             }
 
+            LastDoneChoice(enterNow = vm.enterLastDone, onPick = { vm.enterLastDone = it })
+
             Button(
-                onClick = { vm.save(onDone) },
+                onClick = { vm.save { vehicleId -> if (vm.enterLastDone) onEnterLastDone(vehicleId) else onDone() } },
                 enabled = count > 0,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
@@ -266,6 +283,40 @@ fun ScheduleSetupScreen(onDone: () -> Unit, vm: ScheduleSetupViewModel = hiltVie
             }
             TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                 Text("Skip — I'll set up reminders myself")
+            }
+        }
+    }
+}
+
+/**
+ * Canvas: "Know when these were last done? (optional)". The canvas also offers importing a dealer
+ * record and assuming everything was done on schedule; neither is built, since both would put
+ * figures in the log that nobody gave.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LastDoneChoice(enterNow: Boolean, onPick: (enterNow: Boolean) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    fun text(now: Boolean) = if (now) "I'll enter the ones I know next" else "I'll enter them as I go"
+    ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
+        OutlinedTextField(
+            value = text(enterNow),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Know when these were last done? (optional)") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+        )
+        ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            listOf(false, true).forEach { now ->
+                DropdownMenuItem(
+                    text = { Text(text(now)) },
+                    onClick = {
+                        onPick(now)
+                        open = false
+                    },
+                )
             }
         }
     }

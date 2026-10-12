@@ -180,6 +180,8 @@ fun VehicleHomeScreen(
     onOpenRules: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
     onOpenDetails: (vehicleId: Long) -> Unit,
+    /** The "When were these last done?" list. */
+    onEnterLastDone: (vehicleId: Long) -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
@@ -252,7 +254,8 @@ fun VehicleHomeScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Not logged yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(
-                            "Log each of these once and its countdown starts from that date and mileage.",
+                            "Log each of these once and its countdown starts from that date and mileage. " +
+                                "If you know when one was last done, you can enter just that.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -272,6 +275,14 @@ fun VehicleHomeScreen(
                                 )
                             }
                         }
+                    }
+                    OutlinedButton(
+                        onClick = { onEnterLastDone(v.id) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) {
+                        Text("Enter when these were last done")
                     }
                 }
 

@@ -119,6 +119,14 @@ class ExportTest {
     }
 
     @Test
+    fun `a last done entered afterwards is not passed off as a logged service`() {
+        val entered = ExportRecord(LocalDate.of(2024, 3, 1), 41_000, listOf("Coolant"), "DIY", null, null, enteredAsLastDone = true)
+        val md = Exports.markdown(Exports.document(listOf(truck.copy(records = listOf(entered, oil))), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertTrue(md.contains("### Mar 1, 2024 · 41,000 mi\n\n- Coolant\n\n${Exports.LAST_DONE_NOTE}\n"))
+        assertTrue(md.contains("Done by: DIY"))
+    }
+
+    @Test
     fun `markdown leaves out what was switched off`() {
         val md = Exports.markdown(
             Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false, scheduleAndRecalls = false), today),

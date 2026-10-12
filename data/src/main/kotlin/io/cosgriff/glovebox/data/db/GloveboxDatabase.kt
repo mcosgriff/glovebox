@@ -27,7 +27,7 @@ class Converters {
         TorqueSpecEntity::class,
         RecallEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -38,6 +38,7 @@ class Converters {
         AutoMigration(from = 6, to = 7), // vehicles.transmission, trimConfirmed
         AutoMigration(from = 7, to = 8), // vehicles.enteredByHand
         AutoMigration(from = 8, to = 9), // vehicles.clusterSwappedOn, clusterStartReading
+        AutoMigration(from = 9, to = 10), // service_records.enteredAsLastDone
     ],
 )
 @TypeConverters(Converters::class)

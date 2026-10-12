@@ -102,6 +102,11 @@ data class ServiceRecordEntity(
     val shopName: String? = null,
     val costCents: Long? = null,
     val notes: String? = null,
+    /**
+     * Given as a bare "last done" (a date and a mileage) to start a reminder counting, not logged as a
+     * service when the work was done. Shown as such wherever the record appears.
+     */
+    @ColumnInfo(defaultValue = "0") val enteredAsLastDone: Boolean = false,
 )
 
 /** One line of work on a record. [scheduleItemId] links it to the reminder it resets, if any. */

@@ -159,6 +159,7 @@ class ExportViewModel @Inject constructor(
                     costCents = r.record.costCents,
                     notes = r.record.notes,
                     photoFiles = r.photos.map { it.fileName },
+                    enteredAsLastDone = r.record.enteredAsLastDone,
                 )
             },
             schedule = schedule.allFor(v.id).filter { it.tracked }.mapNotNull { item ->

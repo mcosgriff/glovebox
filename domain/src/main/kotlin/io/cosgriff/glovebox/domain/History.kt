@@ -68,9 +68,16 @@ object LogEdits {
 
     private fun miles(value: Int): String = String.format(Locale.US, "%,d", value)
 
-    /** Who did the work, as the History list says it; a record just added or restored says so. */
-    fun who(diy: Boolean, shopName: String?, mark: RecordMark?): String {
-        val who = if (diy) "DIY" else shopName?.trim()?.takeIf { it.isNotEmpty() } ?: "Shop"
+    /**
+     * Who did the work, as the History list says it; a record just added or restored says so. A bare
+     * "last done" ([enteredAsLastDone]) doesn't say who, so it says what it is instead.
+     */
+    fun who(diy: Boolean, shopName: String?, mark: RecordMark?, enteredAsLastDone: Boolean = false): String {
+        val who = when {
+            enteredAsLastDone -> LastDoneEntries.TAG
+            diy -> "DIY"
+            else -> shopName?.trim()?.takeIf { it.isNotEmpty() } ?: "Shop"
+        }
         return when (mark) {
             RecordMark.ADDED -> "$who \u00b7 just added"
             RecordMark.RESTORED -> "$who \u00b7 restored"
@@ -88,6 +95,10 @@ fun Money.format(cents: Long): String =
 
 fun ServiceCatalog.categoryOf(catalogId: String?): CatalogCategory? =
     catalogId?.let { id -> categories.firstOrNull { c -> c.items.any { it.id == id } } }
+
+/** The Log service line a bare "last done" for the reminder made from [templateKey] stands for; null for the user's own items. */
+fun ServiceCatalog.lineFor(templateKey: String?): CatalogItem? =
+    if (templateKey == null) null else categories.flatMap { it.items }.firstOrNull { it.resets == templateKey }
 
 /** The Log service lines that reset the reminder made from [templateKey], as the user sees them there. */
 fun ServiceCatalog.resetters(templateKey: String?): List<String> =

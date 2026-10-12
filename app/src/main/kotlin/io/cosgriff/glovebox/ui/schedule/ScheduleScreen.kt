@@ -73,11 +73,16 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import androidx.compose.runtime.saveable.rememberSaveable
+import io.cosgriff.glovebox.ui.service.RecordActions
 import javax.inject.Inject
 
-/** What the log says about one schedule item, before it is turned into the editor's [ItemHistory]. */
-/** [lastDone] is in dash terms; [lastRead] is the same service as the odometer read that day. */
-data class ItemLog(val lastDone: LastDone?, val lastRead: LastDone?, val recordId: Long?, val estimate: LocalDate?)
+/**
+ * What the log says about one schedule item, before it is turned into the editor's [ItemHistory].
+ * [lastDone] is in dash terms; [lastRead] is the same service as the odometer read that day.
+ * [entered] says the record is a bare "last done" and not a logged service.
+ */
+data class ItemLog(val lastDone: LastDone?, val lastRead: LastDone?, val recordId: Long?, val entered: Boolean, val estimate: LocalDate?)
 
 data class ScheduleState(
     val vehicle: VehicleEntity,
@@ -88,6 +93,10 @@ data class ScheduleState(
     val defaultRule: DueRule,
     /** Typical items this schedule doesn't have, e.g. after a skipped setup. */
     val missing: List<ScheduleTemplateItem>,
+    /** The current odometer in dash terms; null for a vehicle with no mileage yet. */
+    val odometer: Int?,
+    /** Tracked reminders that have never been logged. */
+    val notLogged: Int,
 ) {
     val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null }.map { it.tracked to it.useSevere }).use
 }
@@ -101,6 +110,7 @@ class ScheduleViewModel @Inject constructor(
     service: ServiceDao,
     odometer: OdometerDao,
     settings: SettingsRepository,
+    private val actions: RecordActions,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<ScheduleRoute>().vehicleId
 
@@ -119,10 +129,12 @@ class ScheduleViewModel @Inject constructor(
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel).associateBy { it.key }
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap) }
+        val updates = readings.toReadings(swap)
+        val entered = records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet()
         val statuses = VehicleReminders.statuses(
             items.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) },
             entries,
-            readings.toReadings(swap),
+            updates,
             LocalDate.now(),
             s.lead,
         ).associateBy { it.item.id }
@@ -149,12 +161,15 @@ class ScheduleViewModel @Inject constructor(
                     lastDone = last?.let { LastDone(it.date, it.odometer) },
                     lastRead = last?.let { swap.asReadOn(LastDone(it.date, it.odometer)) },
                     recordId = last?.id,
+                    entered = last != null && last.id in entered,
                     // Only an estimate when it comes from the driving pace and isn't already past.
                     estimate = status?.estimatedDueDate?.takeIf { status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE },
                 )
             },
             defaultRule = s.defaultRule,
             missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, items.map { it.templateKey }),
+            odometer = VehicleReminders.currentOdometer(entries, updates),
+            notLogged = statuses.values.count { it.lastDone == null },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -174,6 +189,12 @@ class ScheduleViewModel @Inject constructor(
 
     fun closeEditor() {
         editing = null
+    }
+
+    /** A date and mileage for the saved item [item], which starts its reminder counting. */
+    fun enterLastDone(item: DraftItem, date: LocalDate, odometer: Int) = viewModelScope.launch {
+        val entity = entities[item.key] ?: return@launch
+        actions.addLastDone(vehicleId, entity, date, odometer)
     }
 
     fun saveEdit(item: DraftItem) {
@@ -247,6 +268,8 @@ fun ScheduleScreen(
     onOpenRecord: (recordId: Long) -> Unit,
     /** For a vehicle whose setup was skipped. */
     onSetUp: (vehicleId: Long) -> Unit,
+    /** The "When were these last done?" list. */
+    onEnterLastDone: (vehicleId: Long) -> Unit,
     vm: ScheduleViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -254,6 +277,19 @@ fun ScheduleScreen(
     val editing = vm.editing
     if (editing != null) {
         val log = state.logs[editing.key]
+        var enteringLastDone by rememberSaveable { mutableStateOf(false) }
+        if (enteringLastDone) {
+            LastDoneSheet(
+                itemName = editing.name,
+                currentOdometer = state.odometer,
+                swap = state.vehicle.clusterSwap(),
+                onSave = { date, odometer ->
+                    vm.enterLastDone(editing, date, odometer)
+                    enteringLastDone = false
+                },
+                onDismiss = { enteringLastDone = false },
+            )
+        }
         BackHandler(onBack = vm::closeEditor)
         ScheduleItemEditor(
             item = editing,
@@ -269,6 +305,8 @@ fun ScheduleScreen(
                     lastDone = log?.lastDone,
                     lastRead = log?.lastRead,
                     onOpenRecord = log?.recordId?.let { id -> { onOpenRecord(id) } },
+                    entered = log?.entered == true,
+                    onEnterLastDone = { enteringLastDone = true },
                     resetBy = ServiceCatalog.resetters(state.templateKeys[editing.key]),
                     estimate = log?.estimate,
                 )
@@ -332,6 +370,24 @@ fun ScheduleScreen(
                     }
                 }
                 SectionLabel("$tracked OF ${state.items.size} TRACKED")
+            }
+
+            if (state.notLogged > 0) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(
+                        onClick = { onEnterLastDone(v.id) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) {
+                        Text("Enter when they were last done")
+                    }
+                    Text(
+                        (if (state.notLogged == 1) "1 tracked item hasn't" else "${state.notLogged} tracked items haven't") +
+                            " been logged yet, so there is nothing to count from.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             Card(
