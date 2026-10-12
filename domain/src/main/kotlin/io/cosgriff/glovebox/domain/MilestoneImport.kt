@@ -6,7 +6,7 @@ import java.util.Locale
 /** One line of work at a milestone in the user's own table. [service] is a [CatalogItem] id; null for anything else. */
 data class TableJob(val name: String, val service: String? = null)
 
-/** One milestone from a `milestone-schedule` import file, already checked. */
+/** One milestone from a `milestone-schedule` import file or from the editor ([MilestoneEdits]), already checked. */
 data class ImportedMilestone(val atMiles: Int, val work: List<TableJob>, val orMonths: Int? = null)
 
 /** A saved milestone of the user's own table. */
@@ -34,20 +34,45 @@ object MilestoneImport {
 
     private val itemKeys = setOf("atMiles", "orMonths", "work")
 
+    /**
+     * The rules a table keeps however it is made, shared by the file reader here and the editor
+     * ([MilestoneEdits]): one milestone per mileage, a name and a service once each per milestone,
+     * and a cycle no shorter than the table.
+     *
+     * Of [keys], each entry that says the same as an earlier one, by index, with the index of the
+     * one before it that it repeats. An entry that is null takes no part.
+     */
+    fun <T : Any> repeated(keys: List<T?>): Map<Int, Int> {
+        val seen = mutableMapOf<T, Int>()
+        val out = mutableMapOf<Int, Int>()
+        keys.forEachIndexed { i, key -> if (key != null) seen.put(key, i)?.let { out[i] = it } }
+        return out
+    }
+
+    /** What makes two names in one milestone the same name. */
+    fun nameKey(name: String): String = name.trim().lowercase(Locale.US)
+
+    /** A cycle shorter than the table would put a repeat of an early milestone among the later ones. */
+    fun cycleCovers(everyMiles: Int, lastMiles: Int): Boolean = everyMiles >= lastMiles
+
     /** Any order in the file; the result is in mileage order. */
     fun read(items: JsonElement, check: ImportCheck): List<ImportedMilestone> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
-        val seen = mutableMapOf<Int, Int>()
-        return list.mapIndexedNotNull { i, e ->
+        val ats = arrayOfNulls<Int>(list.size)
+        val read = list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("atMiles", "work")) ?: return@mapIndexedNotNull null
             val at = o["atMiles"]?.let { check.int(it, "$path.atMiles", 1, MAX_MILES) }
             val months = o["orMonths"]?.let { check.int(it, "$path.orMonths", 1, MAX_MONTHS) }
             val work = o["work"]?.let { work(it, "$path.work", check) }
-            if (at != null) seen.put(at, i)?.let { first -> check.fail("$path.atMiles", "is the same mileage as items[$first]; put all the work for one mileage in one milestone") }
+            ats[i] = at
             if (at == null || work == null || ("orMonths" in o && months == null)) return@mapIndexedNotNull null
             ImportedMilestone(at, work, months)
-        }.sortedBy { it.atMiles }
+        }
+        repeated(ats.asList()).forEach { (i, first) ->
+            check.fail("${ImportCheck.at("items", i)}.atMiles", "is the same mileage as items[$first]; put all the work for one mileage in one milestone")
+        }
+        return read.sortedBy { it.atMiles }
     }
 
     /**
@@ -57,7 +82,7 @@ object MilestoneImport {
     fun repeats(e: JsonElement, items: List<ImportedMilestone>, check: ImportCheck): Int? {
         val every = check.int(e, REPEATS, 1, MAX_MILES) ?: return null
         val last = items.maxOfOrNull { it.atMiles } ?: return every
-        if (every < last) {
+        if (!cycleCovers(every, last)) {
             check.fail(REPEATS, "is $every, less than the highest atMiles in the file ($last); it is the length of the whole cycle, so it can't be shorter than the table")
             return null
         }
@@ -67,18 +92,24 @@ object MilestoneImport {
     private fun work(e: JsonElement, path: String, check: ImportCheck): List<TableJob>? {
         val list = check.array(e, path, 1, MAX_WORK) ?: return null
         var ok = true
-        val names = mutableMapOf<String, Int>()
-        val services = mutableMapOf<String, Int>()
+        val names = arrayOfNulls<String>(list.size)
+        val services = arrayOfNulls<String>(list.size)
         val jobs = list.mapIndexedNotNull { i, line ->
             val at = ImportCheck.at(path, i)
             val o = check.obj(line, at, setOf("name", "service"), required = setOf("name"))
             val name = o?.get("name")?.let { check.string(it, "$at.name", MAX_NAME) }
             val service = o?.get("service")?.let { check.choice(it, "$at.service", HistoryImport.services.mapValues { s -> s.key }) }
             if (o == null || name == null || ("service" in o && service == null)) ok = false
-            name?.let { n -> names.put(n.lowercase(Locale.US), i)?.let { first -> check.fail("$at.name", "\"$n\" is already in this milestone, at work[$first]") } }
-            // Two lines for one service would be one job twice: the log couldn't tell them apart.
-            service?.let { s -> services.put(s, i)?.let { first -> check.fail("$at.service", "\"$s\" is already used in this milestone, at work[$first]") } }
+            names[i] = name
+            services[i] = service
             name?.let { TableJob(it, service) }
+        }
+        repeated(names.map { it?.let(::nameKey) }).forEach { (i, first) ->
+            check.fail("${ImportCheck.at(path, i)}.name", "\"${names[i]}\" is already in this milestone, at work[$first]")
+        }
+        // Two lines for one service would be one job twice: the log couldn't tell them apart.
+        repeated(services.asList()).forEach { (i, first) ->
+            check.fail("${ImportCheck.at(path, i)}.service", "\"${services[i]}\" is already used in this milestone, at work[$first]")
         }
         return jobs.takeIf { ok }
     }
@@ -87,11 +118,11 @@ object MilestoneImport {
      * What makes a job the same job at another milestone, and what in the log completes it: its
      * service where it names one, otherwise its name.
      */
-    fun jobKey(job: TableJob): String = job.service?.let { "service:$it" } ?: "name:${job.name.trim().lowercase(Locale.US)}"
+    fun jobKey(job: TableJob): String = job.service?.let { "service:$it" } ?: "name:${nameKey(job.name)}"
 
     /** The keys a logged line of work answers to: its catalog line if it has one, and what it is called. */
     fun doneKeys(label: String, catalogId: String?): List<String> =
-        listOfNotNull(catalogId?.let { "service:$it" }, "name:${label.trim().lowercase(Locale.US)}")
+        listOfNotNull(catalogId?.let { "service:$it" }, "name:${nameKey(label)}")
 
     /** The saved table as the Milestones screen takes it, for a table that ends where it ends. */
     fun milestones(table: List<SavedMilestone>): List<Milestone> =
@@ -145,7 +176,7 @@ object MilestoneImport {
         "This table repeats every ${String.format(Locale.US, "%,d", it)} miles: after its last milestone it starts again from the first."
     } ?: "This table ends at its last milestone; it doesn't repeat."
 
-    private fun lines(work: List<TableJob>) = work.map { it.name.trim().lowercase(Locale.US) to it.service }.toSet()
+    private fun lines(work: List<TableJob>) = work.map { nameKey(it.name) to it.service }.toSet()
 
     /** A milestone in the file matches a saved one at the same mileage. Same means the months and the work lines, in any order. */
     fun plan(items: List<ImportedMilestone>, existing: List<SavedMilestone>): ImportPlan<ImportedMilestone, SavedMilestone> =
