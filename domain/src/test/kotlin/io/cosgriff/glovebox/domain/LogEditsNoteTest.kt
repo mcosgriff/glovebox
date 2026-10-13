@@ -10,7 +10,7 @@ class LogEditsNoteTest {
     private val readings = listOf(OdometerReading(LocalDate.of(2026, 6, 14), 60_100), OdometerReading(LocalDate.of(2026, 11, 1), 70_000))
 
     private fun note(entered: Int?, original: Int? = null, last: Int? = 60_100, errors: Boolean = false) =
-        LogEdits.odometerNote(entered, original, day, readings, last, errors)
+        LogEdits.odometerNote(entered, original, day, readings, last, errors, DistanceUnit.MILES)
 
     @Test
     fun `a new service shows the last recorded reading`() {

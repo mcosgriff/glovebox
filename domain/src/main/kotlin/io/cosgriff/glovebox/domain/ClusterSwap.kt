@@ -67,5 +67,5 @@ object ClusterSwaps {
     }
 
     /** "+120,000 mi", "−2,500 mi": what to add to the dash to get the actual mileage. */
-    fun offsetLabel(offset: Int): String = String.format(Locale.US, "%s%,d mi", if (offset < 0) "−" else "+", abs(offset))
+    fun offsetLabel(offset: Int, unit: DistanceUnit): String = (if (offset < 0) "−" else "+") + unit.format(abs(offset))
 }

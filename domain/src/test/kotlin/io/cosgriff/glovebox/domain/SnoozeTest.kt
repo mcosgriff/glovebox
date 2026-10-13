@@ -82,7 +82,7 @@ class SnoozeTest {
     @Test
     fun `options cover miles, time and the next oil change`() {
         val all = statuses(oil, rotation)
-        val options = Snoozing.options(all.getValue(2), 68_412, today, oil = all.getValue(1))
+        val options = Snoozing.options(all.getValue(2), 68_412, today, oil = all.getValue(1), unit = DistanceUnit.MILES)
 
         assertEquals(
             listOf(
@@ -99,7 +99,7 @@ class SnoozeTest {
     @Test
     fun `no oil change option for the oil change itself, or when it is overdue or missing`() {
         val all = statuses(oil, rotation)
-        fun kinds(item: ItemStatus, oil: ItemStatus?) = Snoozing.options(item, 68_412, today, oil).map { it.kind }
+        fun kinds(item: ItemStatus, oil: ItemStatus?) = Snoozing.options(item, 68_412, today, oil, DistanceUnit.MILES).map { it.kind }
 
         assertFalse(SnoozeKind.NEXT_OIL_CHANGE in kinds(all.getValue(1), all.getValue(1)))
         assertFalse(SnoozeKind.NEXT_OIL_CHANGE in kinds(all.getValue(2), null))
@@ -112,7 +112,7 @@ class SnoozeTest {
         val all = statuses(wipers)
         assertEquals(
             listOf(SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1),
-            Snoozing.options(all.getValue(3), null, today, oil = null).map { it.kind },
+            Snoozing.options(all.getValue(3), null, today, oil = null, unit = DistanceUnit.MILES).map { it.kind },
         )
     }
 
@@ -130,6 +130,6 @@ class SnoozeTest {
 
     @Test
     fun `the generic schedule has the oil change other reminders are snoozed to`() {
-        assertTrue(ScheduleTemplates.generic(null).any { it.key == Snoozing.OIL_TEMPLATE_KEY })
+        assertTrue(ScheduleTemplates.generic(null, null, DistanceUnit.MILES).any { it.key == Snoozing.OIL_TEMPLATE_KEY })
     }
 }

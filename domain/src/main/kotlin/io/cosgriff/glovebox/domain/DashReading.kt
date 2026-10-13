@@ -8,7 +8,7 @@ package io.cosgriff.glovebox.domain
  * the Update mileage sheet and the user saves it or corrects it. Nothing here is saved by itself.
  */
 object DashReading {
-    /** How far past the last reading a number can be and still be taken for the odometer over the others in view. */
+    /** How far past the last reading a number can be and still be taken for the odometer over the others in view. In miles; 320,000 km for a kilometre vehicle. */
     const val FAR_AHEAD = 200_000
 
     /** How many of the last [WINDOW] frames must agree before a reading is offered. */
@@ -53,10 +53,10 @@ object DashReading {
      * With no last reading there is nothing to judge by, so the longest whole number is taken, and
      * one made by joining two is never preferred to one read in a piece.
      */
-    fun pick(text: String, last: Int?): Int? {
+    fun pick(text: String, last: Int?, unit: DistanceUnit): Int? {
         val all = candidates(text)
         if (last != null) {
-            return all.filter { it.value in last..last + FAR_AHEAD }.minWithOrNull(compareBy({ it.value - last }, { it.decimal }))?.value
+            return all.filter { it.value in last..last + unit.scheduled(FAR_AHEAD) }.minWithOrNull(compareBy({ it.value - last }, { it.decimal }))?.value
         }
         return all.filterNot { it.joined }
             .maxWithOrNull(compareBy<Candidate>({ !it.decimal }, { it.value.toString().length }, { it.value }))?.value

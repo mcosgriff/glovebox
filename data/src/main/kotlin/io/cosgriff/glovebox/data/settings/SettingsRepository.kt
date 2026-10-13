@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.MileageCadence
@@ -30,6 +31,11 @@ data class Settings(
     /** How early a reminder starts counting as due soon. */
     val lead: LeadTime = LeadTime(),
     val torqueUnit: TorqueUnit = TorqueUnit.FOOT_POUND,
+    /**
+     * What a vehicle added from now on counts in, until the user says otherwise for it. A vehicle keeps
+     * its own unit (`vehicles.distanceUnit`); changing this changes nothing already in the garage.
+     */
+    val distanceUnit: DistanceUnit = DistanceUnit.MILES,
     val notices: NoticePrefs = NoticePrefs(),
     /** How often NHTSA is asked about recalls without the user asking. */
     val recallCadence: RecallCadence = RecallCadence.WEEKLY,
@@ -55,6 +61,7 @@ class SettingsRepository(private val context: Context) {
         val leadMiles = intPreferencesKey("lead_miles")
         val leadDays = intPreferencesKey("lead_days")
         val torque = stringPreferencesKey("torque_unit")
+        val distance = stringPreferencesKey("distance_unit")
         val notifyDue = booleanPreferencesKey("notify_service_due")
         val notifyOverdue = booleanPreferencesKey("notify_overdue")
         val notifyRecalls = booleanPreferencesKey("notify_recalls")
@@ -106,6 +113,7 @@ class SettingsRepository(private val context: Context) {
             defaultRule = p[Keys.rule]?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: d.defaultRule,
             lead = LeadTime(p[Keys.leadMiles] ?: d.lead.miles, p[Keys.leadDays] ?: d.lead.days),
             torqueUnit = p[Keys.torque]?.let { runCatching { TorqueUnit.valueOf(it) }.getOrNull() } ?: d.torqueUnit,
+            distanceUnit = p[Keys.distance]?.let(DistanceUnit::of) ?: d.distanceUnit,
             notices = NoticePrefs(
                 serviceDue = p[Keys.notifyDue] ?: d.notices.serviceDue,
                 overdue = p[Keys.notifyOverdue] ?: d.notices.overdue,
@@ -128,6 +136,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLockAfterSeconds(s: Int) = context.dataStore.edit { it[Keys.lockAfter] = s }
     suspend fun setHideInRecents(on: Boolean) = context.dataStore.edit { it[Keys.hideRecents] = on }
     suspend fun setDefaultRule(rule: DueRule) = context.dataStore.edit { it[Keys.rule] = rule.name }
+    suspend fun setDistanceUnit(unit: DistanceUnit) = context.dataStore.edit { it[Keys.distance] = unit.name }
     suspend fun setLeadTime(lead: LeadTime) = context.dataStore.edit {
         it[Keys.leadMiles] = lead.miles
         it[Keys.leadDays] = lead.days

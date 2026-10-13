@@ -127,16 +127,16 @@ class MilestoneImportTest {
 
     @Test
     fun `a file that repeats differently from the saved table is refused, and a first import never is`() {
-        assertNull(MilestoneImport.repeatConflict(120_000, emptyList(), null))
-        assertNull(MilestoneImport.repeatConflict(null, emptyList(), 120_000))
-        assertNull(MilestoneImport.repeatConflict(30_000, cycle, 30_000))
-        assertNull(MilestoneImport.repeatConflict(null, cycle, null))
+        assertNull(MilestoneImport.repeatConflict(120_000, emptyList(), null, DistanceUnit.MILES))
+        assertNull(MilestoneImport.repeatConflict(null, emptyList(), 120_000, DistanceUnit.MILES))
+        assertNull(MilestoneImport.repeatConflict(30_000, cycle, 30_000, DistanceUnit.MILES))
+        assertNull(MilestoneImport.repeatConflict(null, cycle, null, DistanceUnit.MILES))
         assertEquals(
-            "The milestone table on this vehicle doesn't repeat, and this file's repeats every 120,000 miles. " +
+            "The milestone table on this vehicle doesn't repeat, and this file's repeats every 120,000 mi. " +
                 "To change that, remove the table on the Milestones screen and import this file again; to add to the table as it is, make the file say the same.",
-            MilestoneImport.repeatConflict(120_000, cycle, null),
+            MilestoneImport.repeatConflict(120_000, cycle, null, DistanceUnit.MILES),
         )
-        assertTrue(MilestoneImport.repeatConflict(null, cycle, 30_000)!!.startsWith("The milestone table on this vehicle repeats every 30,000 miles, and this file's doesn't repeat."))
-        assertTrue(MilestoneImport.repeatConflict(60_000, cycle, 30_000) != null)
+        assertTrue(MilestoneImport.repeatConflict(null, cycle, 30_000, DistanceUnit.MILES)!!.startsWith("The milestone table on this vehicle repeats every 30,000 mi, and this file's doesn't repeat."))
+        assertTrue(MilestoneImport.repeatConflict(60_000, cycle, 30_000, DistanceUnit.MILES) != null)
     }
 }

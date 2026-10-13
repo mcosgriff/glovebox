@@ -10,7 +10,7 @@ import java.time.LocalDate
 class MileageReadingsTest {
     private val jan = LocalDate.of(2026, 1, 10)
     private fun reading(id: Long, miles: Int, days: Long = 0, fromRecord: Boolean = false) = LoggedReading(id, jan.plusDays(days), miles, fromRecord)
-    private fun rows(vararg readings: LoggedReading, swap: ClusterSwap? = null) = MileageReadings.rows(readings.toList(), swap)
+    private fun rows(vararg readings: LoggedReading, swap: ClusterSwap? = null) = MileageReadings.rows(readings.toList(), swap, DistanceUnit.MILES)
     private fun ids(rows: List<ReadingRow>, pick: (ReadingRow) -> Boolean) = rows.filter(pick).map { it.reading.id }
 
     @Test
@@ -57,14 +57,14 @@ class MileageReadingsTest {
     @Test
     fun `an ordinary drive is never questioned, however quick, nor a long gap`() {
         val before = OdometerReading(jan, 84_000)
-        assertFalse(MileageReadings.farAhead(86_500, jan.plusDays(2), before))
-        assertFalse(MileageReadings.farAhead(94_000, jan, before))
-        assertTrue(MileageReadings.farAhead(94_001, jan, before))
+        assertFalse(MileageReadings.farAhead(86_500, jan.plusDays(2), before, DistanceUnit.MILES))
+        assertFalse(MileageReadings.farAhead(94_000, jan, before, DistanceUnit.MILES))
+        assertTrue(MileageReadings.farAhead(94_001, jan, before, DistanceUnit.MILES))
         // Two years of ordinary driving.
-        assertFalse(MileageReadings.farAhead(110_000, jan.plusDays(730), before))
-        assertTrue(MileageReadings.farAhead(849_000, jan.plusDays(730), before))
-        assertFalse(MileageReadings.farAhead(849_000, jan, null))
-        assertFalse(MileageReadings.farAhead(1_000, jan.plusDays(5), before))
+        assertFalse(MileageReadings.farAhead(110_000, jan.plusDays(730), before, DistanceUnit.MILES))
+        assertTrue(MileageReadings.farAhead(849_000, jan.plusDays(730), before, DistanceUnit.MILES))
+        assertFalse(MileageReadings.farAhead(849_000, jan, null, DistanceUnit.MILES))
+        assertFalse(MileageReadings.farAhead(1_000, jan.plusDays(5), before, DistanceUnit.MILES))
     }
 
     @Test
@@ -93,6 +93,6 @@ class MileageReadingsTest {
 
     @Test
     fun `no readings is no rows`() {
-        assertEquals(emptyList<ReadingRow>(), MileageReadings.rows(emptyList(), null))
+        assertEquals(emptyList<ReadingRow>(), MileageReadings.rows(emptyList(), null, DistanceUnit.MILES))
     }
 }

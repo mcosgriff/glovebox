@@ -52,14 +52,14 @@ object ServiceCatalog {
      * [interval] is that reminder's, when the line resets a tracked one. Null when there is nothing
      * worth saying. Nothing here is looked up: it is all the user's own data.
      */
-    fun hint(optionId: String, interval: Interval?, specs: VehicleSpecs): String? {
+    fun hint(optionId: String, interval: Interval?, specs: VehicleSpecs, unit: DistanceUnit): String? {
         val spec = when (optionId) {
             "oil" -> specs.oil
             "new-tires" -> specs.tireSize
             "wipers" -> specs.wiperBlades
             else -> null
         }?.trim()?.takeIf { it.isNotEmpty() }
-        return spec ?: interval?.let { "Every ${it.label()}" }
+        return spec ?: interval?.let { "Every ${it.label(unit)}" }
     }
 
     const val YOUR_ITEMS = "yours"

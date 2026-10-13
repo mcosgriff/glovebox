@@ -11,7 +11,7 @@ class MilestoneEditsTest {
     private val belts = TableJob("Inspect drive belts")
 
     private fun check(miles: String = "30,000", months: String = "", jobs: List<TableJob> = listOf(oil), others: List<Int> = emptyList(), repeats: Int? = null) =
-        MilestoneEdits.check(miles, months, jobs, others, repeats)
+        MilestoneEdits.check(miles, months, jobs, others, repeats, DistanceUnit.MILES)
 
     private fun problems(edit: MilestoneEdit) = (edit as MilestoneEdit.Refused).problems
 
@@ -98,15 +98,15 @@ class MilestoneEditsTest {
 
     @Test
     fun `a table repeats over a cycle no shorter than itself, or ends`() {
-        assertEquals(RepeatEdit.Ok(null), MilestoneEdits.repeat("  ", 100_000))
-        assertEquals(RepeatEdit.Ok(120_000), MilestoneEdits.repeat("120,000", 100_000))
-        assertEquals(RepeatEdit.Ok(100_000), MilestoneEdits.repeat("100000", 100_000))
+        assertEquals(RepeatEdit.Ok(null), MilestoneEdits.repeat("  ", 100_000, DistanceUnit.MILES))
+        assertEquals(RepeatEdit.Ok(120_000), MilestoneEdits.repeat("120,000", 100_000, DistanceUnit.MILES))
+        assertEquals(RepeatEdit.Ok(100_000), MilestoneEdits.repeat("100000", 100_000, DistanceUnit.MILES))
         assertEquals(
             RepeatEdit.Refused("It is the length of the whole cycle, so it can't be less than your last milestone (100,000 mi)"),
-            MilestoneEdits.repeat("99,999", 100_000),
+            MilestoneEdits.repeat("99,999", 100_000, DistanceUnit.MILES),
         )
-        assertTrue(MilestoneEdits.repeat("1,000,001", 100_000) is RepeatEdit.Refused)
-        assertTrue(MilestoneEdits.repeat("often", 100_000) is RepeatEdit.Refused)
+        assertTrue(MilestoneEdits.repeat("1,000,001", 100_000, DistanceUnit.MILES) is RepeatEdit.Refused)
+        assertTrue(MilestoneEdits.repeat("often", 100_000, DistanceUnit.MILES) is RepeatEdit.Refused)
     }
 
     @Test

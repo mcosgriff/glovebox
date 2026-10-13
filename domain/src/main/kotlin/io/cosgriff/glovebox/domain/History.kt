@@ -49,22 +49,23 @@ object LogEdits {
         readings: List<OdometerReading>,
         lastOdometer: Int?,
         showErrors: Boolean,
+        unit: DistanceUnit,
     ): OdometerNote? {
         if (entered == null) {
-            return if (showErrors) OdometerNote("Enter the odometer reading in whole miles.", NoteTone.WARNING) else lastRecorded(lastOdometer)
+            return if (showErrors) OdometerNote("Enter the odometer reading in whole ${unit.plural}.", NoteTone.WARNING) else lastRecorded(lastOdometer, unit)
         }
         // Worth a warning, not a block: the earlier reading may be the wrong one.
         val earlier = readings.filter { !it.date.isAfter(date) && it.odometer > entered }.maxOfOrNull { it.odometer }
         return when {
             earlier != null -> OdometerNote("Lower than an earlier reading (${miles(earlier)}). Double-check it.", NoteTone.WARNING)
-            original == null -> lastRecorded(lastOdometer)
+            original == null -> lastRecorded(lastOdometer, unit)
             entered != original -> OdometerNote("Was ${miles(original)}", NoteTone.CHANGED)
             else -> OdometerNote("Unchanged", NoteTone.PLAIN)
         }
     }
 
-    private fun lastRecorded(lastOdometer: Int?): OdometerNote? =
-        lastOdometer?.let { OdometerNote("Last recorded: ${miles(it)} mi", NoteTone.PLAIN) }
+    private fun lastRecorded(lastOdometer: Int?, unit: DistanceUnit): OdometerNote? =
+        lastOdometer?.let { OdometerNote("Last recorded: ${unit.format(it)}", NoteTone.PLAIN) }
 
     private fun miles(value: Int): String = String.format(Locale.US, "%,d", value)
 

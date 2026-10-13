@@ -57,6 +57,13 @@ data class VehicleEntity(
      * by an import, and is cleared when the table is removed. Means nothing with no table.
      */
     val milestonesRepeatEveryMiles: Int? = null,
+    /**
+     * A DistanceUnit name: what this vehicle's odometer counts in. Every distance stored for the vehicle
+     * (readings, intervals, snooze points, the cluster offset, milestones) is in this unit as it was typed;
+     * column names that say "miles" are older than the choice. Changed only through UnitDao.convert, which
+     * converts those figures in the same transaction.
+     */
+    @ColumnInfo(defaultValue = "MILES") val distanceUnit: String = "MILES",
 )
 
 @Entity(

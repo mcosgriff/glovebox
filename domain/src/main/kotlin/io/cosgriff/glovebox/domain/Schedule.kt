@@ -26,7 +26,13 @@ object ScheduleTemplates {
      * differential / transfer case fluid is suggested. [fuel] is vPIC's primary fuel type; a
      * battery-electric vehicle has no engine oil, engine air filter or spark plugs to suggest.
      */
-    fun generic(drivetrain: String?, fuel: String? = null): List<ScheduleTemplateItem> = buildList {
+    fun generic(drivetrain: String?, fuel: String?, unit: DistanceUnit): List<ScheduleTemplateItem> =
+        inMiles(drivetrain, fuel).map { it.copy(normal = it.normal.scheduledIn(unit), severe = it.severe?.scheduledIn(unit)) }
+
+    /** The list is kept in miles; a kilometre vehicle gets the figures a manual for that market would print (5,000 mi as 8,000 km). */
+    private fun Interval.scheduledIn(unit: DistanceUnit) = copy(miles = miles?.let(unit::scheduled))
+
+    private fun inMiles(drivetrain: String?, fuel: String?): List<ScheduleTemplateItem> = buildList {
         val engine = !isElectric(fuel)
         if (engine) add(ScheduleTemplateItem("oil", "Engine oil & filter", Interval(7_500, 12), Interval(5_000, 6)))
         add(ScheduleTemplateItem("rotation", "Tire rotation", Interval(5_000, 6)))
@@ -52,8 +58,8 @@ object ScheduleTemplates {
      * The typical items a vehicle's schedule doesn't have yet, tracked or not. [haveKeys] are the
      * template keys of its items; the user's own items have none and never count as a match.
      */
-    fun missing(drivetrain: String?, fuel: String?, haveKeys: Collection<String?>): List<ScheduleTemplateItem> =
-        generic(drivetrain, fuel).filter { it.key !in haveKeys }
+    fun missing(drivetrain: String?, fuel: String?, unit: DistanceUnit, haveKeys: Collection<String?>): List<ScheduleTemplateItem> =
+        generic(drivetrain, fuel, unit).filter { it.key !in haveKeys }
 
     /** vPIC says "Electric" for battery-electric cars; hybrids report their combustion fuel as primary. */
     fun isElectric(fuel: String?): Boolean = fuel?.trim().equals("Electric", ignoreCase = true)
@@ -70,9 +76,9 @@ object ScheduleTemplates {
     }
 }
 
-/** "7,500 mi / 12 mo", "30,000 mi" or "36 mo". */
-fun Interval.label(): String = listOfNotNull(
-    miles?.let { String.format(Locale.US, "%,d mi", it) },
+/** "7,500 mi / 12 mo", "30,000 mi" or "36 mo". [unit] is the vehicle's, which is what the interval is in. */
+fun Interval.label(unit: DistanceUnit): String = listOfNotNull(
+    miles?.let(unit::format),
     months?.let { "$it mo" },
 ).joinToString(" / ")
 

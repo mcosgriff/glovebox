@@ -21,12 +21,12 @@ class LastDoneEntryTest {
 
     @Test
     fun `the note shows the latest reading and questions one above it`() {
-        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(null, 68_412, false))
-        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(60_100, 68_412, false))
-        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(70_000, 68_412, false)?.tone)
-        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(null, 68_412, true)?.tone)
+        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(null, 68_412, false, DistanceUnit.MILES))
+        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(60_100, 68_412, false, DistanceUnit.MILES))
+        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(70_000, 68_412, false, DistanceUnit.MILES)?.tone)
+        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(null, 68_412, true, DistanceUnit.MILES)?.tone)
         // A vehicle with no mileage yet has nothing to compare with.
-        assertNull(LastDoneEntries.odometerNote(60_100, null, false))
+        assertNull(LastDoneEntries.odometerNote(60_100, null, false, DistanceUnit.MILES))
     }
 
     @Test

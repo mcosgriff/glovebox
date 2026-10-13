@@ -55,7 +55,7 @@ class MilestoneExportTest {
 
     @Test
     fun `whatever the editor accepts can be written out and read back`() {
-        val typed = (MilestoneEdits.check("1,000,000", "600", listOf(TableJob("  Épaisseur des plaquettes — 3 mm  "), oil), emptyList(), null) as MilestoneEdit.Ok).milestone
+        val typed = (MilestoneEdits.check("1,000,000", "600", listOf(TableJob("  Épaisseur des plaquettes — 3 mm  "), oil), emptyList(), null, DistanceUnit.MILES) as MilestoneEdit.Ok).milestone
         val text = MilestoneExport.file(listOf(SavedMilestone(1, typed.atMiles, typed.work, typed.orMonths)), 1_000_000)
         assertEquals(listOf(typed), back(text).items)
     }

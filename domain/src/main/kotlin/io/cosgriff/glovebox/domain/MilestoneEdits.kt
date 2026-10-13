@@ -42,7 +42,7 @@ object MilestoneEdits {
      * Checks one milestone. [others] are the mileages of the table's other milestones, and
      * [repeatsEveryMiles] the cycle of a table that repeats: a milestone can't sit past the end of it.
      */
-    fun check(milesText: String, monthsText: String, jobs: List<TableJob>, others: List<Int>, repeatsEveryMiles: Int?): MilestoneEdit {
+    fun check(milesText: String, monthsText: String, jobs: List<TableJob>, others: List<Int>, repeatsEveryMiles: Int?, unit: DistanceUnit): MilestoneEdit {
         val miles = OdometerInput.parse(milesText)?.takeIf { it <= MilestoneImport.MAX_MILES }
         val months = monthsText.trim().takeIf { it.isNotEmpty() }?.let { t -> t.toIntOrNull()?.takeIf { it in 1..MilestoneImport.MAX_MONTHS } ?: -1 }
         val names = jobs.map { it.name.trim() }
@@ -64,9 +64,9 @@ object MilestoneEdits {
         val problems = MilestoneProblems(
             miles = when {
                 miles == null -> "Enter the mileage as a whole number from 1 to ${miles(MilestoneImport.MAX_MILES)}"
-                miles in others -> "There is already a milestone at ${miles(miles)} mi. Add the work to that one"
+                miles in others -> "There is already a milestone at ${unit.format(miles)}. Add the work to that one"
                 repeatsEveryMiles != null && !MilestoneImport.cycleCovers(repeatsEveryMiles, miles) ->
-                    "This table repeats every ${miles(repeatsEveryMiles)} mi, so a milestone can't be past that. Change how it repeats first"
+                    "This table repeats every ${unit.format(repeatsEveryMiles)}, so a milestone can't be past that. Change how it repeats first"
                 else -> null
             },
             months = "Enter whole months from 1 to ${MilestoneImport.MAX_MONTHS}, or leave it empty".takeIf { months == -1 },
@@ -88,12 +88,12 @@ object MilestoneEdits {
      * How the table repeats, as typed: empty means it ends at its last milestone. [lastMiles] is the
      * table's highest mileage, which the cycle can't be shorter than.
      */
-    fun repeat(text: String, lastMiles: Int): RepeatEdit {
+    fun repeat(text: String, lastMiles: Int, unit: DistanceUnit): RepeatEdit {
         if (text.isBlank()) return RepeatEdit.Ok(null)
         val every = OdometerInput.parse(text)?.takeIf { it <= MilestoneImport.MAX_MILES }
-            ?: return RepeatEdit.Refused("Enter whole miles from 1 to ${miles(MilestoneImport.MAX_MILES)}, or leave it empty for a table that ends")
+            ?: return RepeatEdit.Refused("Enter whole ${unit.plural} from 1 to ${miles(MilestoneImport.MAX_MILES)}, or leave it empty for a table that ends")
         if (!MilestoneImport.cycleCovers(every, lastMiles)) {
-            return RepeatEdit.Refused("It is the length of the whole cycle, so it can't be less than your last milestone (${miles(lastMiles)} mi)")
+            return RepeatEdit.Refused("It is the length of the whole cycle, so it can't be less than your last milestone (${unit.format(lastMiles)})")
         }
         return RepeatEdit.Ok(every)
     }

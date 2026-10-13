@@ -31,7 +31,7 @@ data class ReadingRow(
  * reading is wrong or changes one: it points, and the user edits or deletes.
  */
 object MileageReadings {
-    /** A jump smaller than this is never questioned, however quickly it came. */
+    /** A jump smaller than this is never questioned, however quickly it came. In miles; a kilometre vehicle gets 16,000 km and 240 km a day. */
     const val FAR_MILES = 10_000
 
     /** More than this a day, every day since the reading before, is more than a vehicle is driven. */
@@ -41,18 +41,18 @@ object MileageReadings {
      * Whether [odometer] on [date] is implausibly far above [before], the reading it follows:
      * worth asking about before it is saved, never refused. Both are in the same terms.
      */
-    fun farAhead(odometer: Int, date: LocalDate, before: OdometerReading?): Boolean {
+    fun farAhead(odometer: Int, date: LocalDate, before: OdometerReading?, unit: DistanceUnit): Boolean {
         if (before == null) return false
         val delta = odometer.toLong() - before.odometer
         val days = ChronoUnit.DAYS.between(before.date, date).coerceAtLeast(1)
-        return delta > FAR_MILES && delta > FAR_MILES_PER_DAY * days
+        return delta > unit.scheduled(FAR_MILES) && delta > unit.scheduled(FAR_MILES_PER_DAY) * days
     }
 
     /**
      * Every reading, newest first, with the current one and the doubtful ones marked. [swap] is the
      * vehicle's cluster replacement: readings are compared in dash terms and shown as typed.
      */
-    fun rows(readings: List<LoggedReading>, swap: ClusterSwap?): List<ReadingRow> {
+    fun rows(readings: List<LoggedReading>, swap: ClusterSwap?, unit: DistanceUnit): List<ReadingRow> {
         // Oldest first, and of two on one day the lower first, as they would have been read.
         val ordered = readings.sortedWith(compareBy<LoggedReading> { it.date }.thenBy { swap.toDash(it.odometer, it.date) })
         val dash = ordered.map { swap.toDash(it.odometer, it.date) }
@@ -67,7 +67,7 @@ object MileageReadings {
                 reading = reading,
                 current = i == current,
                 outOfLine = i !in fits,
-                jump = before?.takeIf { i in fits && farAhead(dash[i], reading.date, it) }?.let { dash[i] - it.odometer },
+                jump = before?.takeIf { i in fits && farAhead(dash[i], reading.date, it, unit) }?.let { dash[i] - it.odometer },
             )
         }.reversed()
     }

@@ -8,6 +8,9 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import io.cosgriff.glovebox.domain.DistanceConversion
+import io.cosgriff.glovebox.domain.DistanceKind
+import io.cosgriff.glovebox.domain.DistanceUnit
 import java.time.LocalDate
 
 @Dao
@@ -369,5 +372,79 @@ interface MilestoneDao {
             clearJobs(milestone.id)
             insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = milestone.id, position = i) })
         }
+    }
+}
+
+/** A row's id and one whole-number column of it. */
+data class IdValue(val id: Long, val value: Int?)
+
+data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?)
+
+/**
+ * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
+ * unit, so the unit can't change without the figures changing with it: [convert] does both in one
+ * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
+ */
+@Dao
+interface UnitDao {
+    @Query("SELECT id, odometer AS value FROM odometer_readings WHERE vehicleId = :vehicleId")
+    suspend fun readings(vehicleId: Long): List<IdValue>
+
+    @Query("UPDATE odometer_readings SET odometer = :value WHERE id = :id")
+    suspend fun setReading(id: Long, value: Int)
+
+    @Query("SELECT id, odometer AS value FROM service_records WHERE vehicleId = :vehicleId")
+    suspend fun records(vehicleId: Long): List<IdValue>
+
+    @Query("UPDATE service_records SET odometer = :value WHERE id = :id")
+    suspend fun setRecord(id: Long, value: Int)
+
+    @Query("SELECT id, intervalMiles, severeMiles, snoozedUntilOdometer FROM schedule_items WHERE vehicleId = :vehicleId")
+    suspend fun schedule(vehicleId: Long): List<ScheduleDistances>
+
+    @Query("UPDATE schedule_items SET intervalMiles = :interval, severeMiles = :severe, snoozedUntilOdometer = :snooze WHERE id = :id")
+    suspend fun setSchedule(id: Long, interval: Int?, severe: Int?, snooze: Int?)
+
+    @Query("SELECT id, atMiles AS value FROM milestones WHERE vehicleId = :vehicleId ORDER BY atMiles")
+    suspend fun milestones(vehicleId: Long): List<IdValue>
+
+    @Query("UPDATE milestones SET atMiles = :value WHERE id = :id")
+    suspend fun setMilestone(id: Long, value: Int)
+
+    @Query("SELECT * FROM vehicles WHERE id = :id")
+    suspend fun vehicle(id: Long): VehicleEntity?
+
+    @Query("UPDATE vehicles SET distanceUnit = :unit, odometerOffset = :offset, clusterStartReading = :start, milestonesRepeatEveryMiles = :repeat WHERE id = :id")
+    suspend fun setVehicle(id: Long, unit: String, offset: Int, start: Int?, repeat: Int?)
+
+    /**
+     * Puts the vehicle and everything stored for it into [to]. Measurements (readings, snooze points,
+     * the cluster offset) are converted exactly; schedule figures (intervals, milestones, how a
+     * milestone table repeats) the way a manual gives them. See DistanceConversion.
+     */
+    @Transaction
+    suspend fun convert(vehicleId: Long, to: DistanceUnit) {
+        val vehicle = vehicle(vehicleId) ?: return
+        val from = DistanceUnit.of(vehicle.distanceUnit)
+        if (from == to) return
+        fun measured(value: Int) = DistanceConversion.convert(value, from, to, DistanceKind.MEASURED)
+        fun scheduled(value: Int) = DistanceConversion.convert(value, from, to, DistanceKind.SCHEDULED)
+
+        readings(vehicleId).forEach { r -> r.value?.let { setReading(r.id, measured(it)) } }
+        records(vehicleId).forEach { r -> r.value?.let { setRecord(r.id, measured(it)) } }
+        schedule(vehicleId).forEach { s ->
+            setSchedule(s.id, s.intervalMiles?.let(::scheduled), s.severeMiles?.let(::scheduled), s.snoozedUntilOdometer?.let(::measured))
+        }
+
+        val table = milestones(vehicleId)
+        val moved = DistanceConversion.milestones(table.map { it.value ?: 0 }, from, to)
+        // One milestone per mileage is enforced row by row, so they are moved in the order that never
+        // steps on a row still waiting: from the top when the figures grow, from the bottom when they shrink.
+        val order = if (to == DistanceUnit.KILOMETERS) table.indices.reversed() else table.indices
+        for (i in order) setMilestone(table[i].id, moved[i])
+        // A cycle is never shorter than its table.
+        val repeat = vehicle.milestonesRepeatEveryMiles?.let { maxOf(scheduled(it), moved.lastOrNull() ?: 0) }
+
+        setVehicle(vehicleId, to.name, measured(vehicle.odometerOffset), vehicle.clusterStartReading?.let(::measured), repeat)
     }
 }
