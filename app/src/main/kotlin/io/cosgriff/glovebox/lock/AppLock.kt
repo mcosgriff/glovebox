@@ -43,7 +43,16 @@ class AppLock @Inject constructor(settingsRepo: SettingsRepository) : DefaultLif
     /** True once settings have loaded and the user has turned biometric lock off. */
     fun lockDisabled(): Boolean = settings.value?.biometricLock == false
 
-    fun unlock() { _locked.value = false }
+    /**
+     * Opens the app. Also forgets when the app last went to the background: on Android 10 the screen
+     * lock is asked for on a system screen that covers the app, so the app counts as having been in
+     * the background while the user was unlocking it, and the answer arrives just before the app is
+     * told it is back. Without this the return would lock again what the answer had just opened.
+     */
+    fun unlock() {
+        backgroundedAt = null
+        _locked.value = false
+    }
 
     override fun onStop(owner: LifecycleOwner) {
         backgroundedAt = SystemClock.elapsedRealtime()
