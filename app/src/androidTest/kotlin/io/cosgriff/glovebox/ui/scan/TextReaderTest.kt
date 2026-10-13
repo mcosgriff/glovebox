@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.cosgriff.glovebox.domain.DashReading
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.VinScan
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -24,15 +25,19 @@ import org.junit.runner.RunWith
  * well a real dash reads through a real camera; only a real dash can.
  */
 @RunWith(AndroidJUnit4::class)
-class DashReaderTest {
-    private val reader = DashReader(InstrumentationRegistry.getInstrumentation().targetContext)
+class TextReaderTest {
+    private val reader = TextReader.digits(InstrumentationRegistry.getInstrumentation().targetContext)
+    private val vinReader = TextReader.vin(InstrumentationRegistry.getInstrumentation().targetContext)
 
     // The size of the band the camera screen reads from a 1080p frame.
     private val width = 864
     private val height = 576
 
     @After
-    fun close() = reader.close()
+    fun close() {
+        reader.close()
+        vinReader.close()
+    }
 
     /** A picture as the camera's greyscale plane would hold it. */
     private fun picture(lit: Boolean, draw: (Canvas, Paint) -> Unit): ByteArray {
@@ -57,7 +62,7 @@ class DashReaderTest {
     }
 
     private fun read(picture: ByteArray): String? {
-        Log.i("DashReaderTest", reader.words(picture, width, height).joinToString { "${it.text}@${it.confidence.toInt()}" })
+        Log.i("TextReaderTest", reader.words(picture, width, height).joinToString { "${it.text}@${it.confidence.toInt()}" })
         return reader.read(picture, width, height)
     }
 
@@ -95,5 +100,31 @@ class DashReaderTest {
         }
         assertNull(DashReading.pick(read(shapes).orEmpty(), last = null, unit = DistanceUnit.MILES))
         assertNull(DashReading.pick(read(ByteArray(width * height) { 120 }).orEmpty(), last = null, unit = DistanceUnit.MILES))
+    }
+
+    private val vin = "1M8GDM9AXKP042788"
+
+    private fun readVin(picture: ByteArray): String? {
+        Log.i("TextReaderTest", vinReader.words(picture, width, height).joinToString { "${it.text}@${it.confidence.toInt()}" })
+        return VinScan.printed(vinReader.read(picture, width, height).orEmpty())
+    }
+
+    @Test
+    fun readsAVinStampedLightOnDark() {
+        // A windshield plate: light characters on black, with nothing else on the line.
+        assertEquals(vin, readVin(text(lit = true, Triple(vin, 64f, 300f))))
+        assertFalse(vinReader.failed)
+    }
+
+    @Test
+    fun readsAVinPrintedOnACard() {
+        // A registration card: dark print on paper, among other lines.
+        val card = text(lit = false, Triple("VEHICLE REGISTRATION", 40f, 140f), Triple("VIN $vin", 52f, 300f), Triple("YEAR 1989", 40f, 440f))
+        assertEquals(vin, readVin(card))
+    }
+
+    @Test
+    fun findsNoVinWhereThereIsNone() {
+        assertNull(readVin(text(lit = false, Triple("VEHICLE REGISTRATION", 40f, 200f), Triple("EXPIRES 06 2027", 48f, 340f))))
     }
 }

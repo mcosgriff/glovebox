@@ -43,4 +43,47 @@ class VinScanTest {
         assertNull(VinScan.vin("https://example.test/"))
         assertNull(VinScan.vin(""))
     }
+
+    @Test
+    fun `a printed VIN is read as it stands`() {
+        assertEquals(vin, VinScan.printed(vin))
+        assertEquals(vin, VinScan.printed("VIN $vin\nGVWR 4500"))
+        assertEquals(vin, VinScan.printed("*$vin*"))
+        assertEquals(vin, VinScan.printed(vin.lowercase()))
+    }
+
+    @Test
+    fun `a letter a VIN can't have is the digit it looks like`() {
+        // 0 read as O or Q, 1 read as I.
+        assertEquals(vin, VinScan.printed("IM8GDM9AXKPO42788"))
+        assertEquals(vin, VinScan.printed("1M8GDM9AXKPQ42788"))
+    }
+
+    @Test
+    fun `a VIN printed in groups is closed up`() {
+        assertEquals(vin, VinScan.printed("1M8 GDM9AX KP042788"))
+        assertEquals(vin, VinScan.printed("VIN: 1M8GDM9AX KP042788, 1989"))
+        // Not across lines.
+        assertNull(VinScan.printed("1M8GDM9AX\nKP042788"))
+    }
+
+    @Test
+    fun `any other misread fails the check digit and nothing is guessed`() {
+        // 8 read as B, 5 for S: not repaired.
+        assertNull(VinScan.printed("1MBGDM9AXKP042788"))
+        assertNull(VinScan.printed("1M8GDM9AXKP04278"))
+        assertNull(VinScan.printed("00$vin"))
+        assertNull(VinScan.printed("MODEL YEAR 1989 GROSS WEIGHT"))
+        assertNull(VinScan.printed(""))
+    }
+
+    @Test
+    fun `a printed VIN is offered once two of the last five frames agree`() {
+        assertNull(VinScan.agreed(listOf(vin)))
+        assertEquals(vin, VinScan.agreed(listOf(vin, null, vin)))
+        assertNull(VinScan.agreed(listOf(vin, null, null, null, null, vin).drop(1)))
+        // A different VIN each time is never offered.
+        assertNull(VinScan.agreed(listOf(vin, "1M8GDM9A1KP042788", null)))
+        assertNull(VinScan.agreed(emptyList()))
+    }
 }

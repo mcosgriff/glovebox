@@ -133,7 +133,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
     }
     DisposableEffect(controller, lifecycleOwner) {
         val executor = Executors.newSingleThreadExecutor()
-        val reader = DashReader(context.applicationContext)
+        val reader = TextReader.digits(context.applicationContext)
         // What each recent frame came to; only ever touched on the analyzer's thread.
         val frames = ArrayDeque<Int?>()
         controller.setImageAnalysisAnalyzer(executor) { image ->

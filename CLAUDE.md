@@ -21,9 +21,12 @@ Keep them green; lint errors fail the build.
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
 - `./gradlew build` — everything.
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
-- `./gradlew :app:connectedDebugAndroidTest` — the few tests that need native code on a device
-  (`app/src/androidTest`, so far the dash reader). Not part of `build` or CI. **It uninstalls the debug app
-  when it finishes, which wipes that app's data on the emulator or phone:** ask first, or back up in the app.
+- On-device tests (`app/src/androidTest`, the few that need native code: so far the text reader). Not
+  part of `build` or CI. Run them with
+  `./gradlew :app:installDebug :app:installDebugAndroidTest` and then
+  `adb shell am instrument -w io.cosgriff.glovebox.debug.test/androidx.test.runner.AndroidJUnitRunner`,
+  which leaves the debug app and its data alone. **Don't use `connectedDebugAndroidTest`: it uninstalls
+  the debug app when it finishes, which wipes that app's data on the emulator or phone.**
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.
@@ -109,7 +112,7 @@ Mark as sold), archived vehicles (read-only history, move back to garage), delet
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
 update-mileage sheet (with Undo, and Read dash: the odometer read by the camera), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
-make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
+make and model from NHTSA's lists or typed), VIN scanning (Code 39, QR and printed VINs), receipt and parts photos
 (attach, grid, viewer, share), export as PDF or Markdown, notifications (service due, overdue, new
 recalls, mileage check-in) with their settings screen, encrypted backup (create, monthly reminder, restore), recommended schedule after decode (+ edit item, add own), maintenance schedule after
 setup (track / untrack, edit, add, last done and next due), Log service, History
@@ -127,7 +130,7 @@ a by-interval maintenance schedule or past service history from a JSON file, wit
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
 To build: kilometres in import files (#126), unlock on Android 10 (untested, #27),
-known torque specs (#76), VIN scan follow-ups (#82, #83).
+known torque specs (#76), VIN scan follow-up (#83).
 
 Notes on what's built:
 - Distance units (#93). The unit is chosen where a vehicle is added (a switch on both paths, starting at
@@ -164,7 +167,14 @@ Notes on what's built:
   is tried again after `evenOut`: for 1D barcodes ZXing uses one black/white threshold per row whichever
   binarizer is chosen, so a barcode half in shadow fails without it (a test pins this). `VinScan.vin` accepts only a 17-character run that passes
   the check digit; it deliberately doesn't slide a window along longer text, which would match by chance
-  about one time in eleven. Frames are never stored. The VIN goes back to the add screen through the nav
+  about one time in eleven. With no barcode in the frame the same band goes to Tesseract
+  (`TextReader.vin`, #82) for a VIN in print, on a windshield plate or a registration card.
+  `VinScan.printed` makes the one repair there is a reason for (a VIN has no I, O or Q, so one read as
+  such is 1 or 0), closes up a VIN printed in groups, and otherwise keeps the barcode's rule: exactly 17
+  characters and a valid check digit, nothing guessed, since trying substitutions until one passed would
+  pass a wrong VIN one time in eleven. A printed VIN is offered only when two of the last five frames
+  read the same one (`VinScan.agreed`); a barcode is taken at once. If the recogniser can't start, the
+  scanner is a barcode scanner as before. Frames are never stored. The VIN goes back to the add screen through the nav
   entry's saved state and is decoded at once. The scanner keeps the canvas's dark colours in both themes.
 - Add without a VIN (`ManualAddScreen`) picks year, make and model. Makes come from vPIC's car, truck and
   MPV lists and models from make + year; `NhtsaClient.makes` sends nothing about the vehicle and `.models`
@@ -355,11 +365,11 @@ Notes on what's built:
   with Undo (`MileageReadingUndo`, `OdometerDao.put`); one from a record opens the record, which is
   where it is edited. Readings are shown as typed and compared in dash terms, like everything else with
   a replaced cluster. The final odometer logged when a vehicle is sold is an ordinary reading here.
-- "Read dash" on that sheet (`ReadDashScreen`, `DashReader`, `DashReading` in `:domain`) points the camera
+- "Read dash" on that sheet (`ReadDashScreen`, `TextReader.digits`, `DashReading` in `:domain`) points the camera
   at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`guideBand()`,
   `NoCamera`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark
   frame is turned into its negative, since most odometers are lit digits on black), words under
-  `DashReader.MIN_CONFIDENCE` are dropped, and `DashReading.pick` chooses the number. **With a last
+  70% confidence are dropped (a VIN keeps every word, since its check digit vouches for it), and `DashReading.pick` chooses the number. **With a last
   reading, only a number from it to 200,000 miles past it is ever offered**; that is what keeps a trip
   meter, the clock or a stray digit read out of the trim from being put forward, and a dash that really
   reads lower is typed by hand. With none, the longest whole number. A reading is shown only when three
@@ -368,7 +378,7 @@ Notes on what's built:
   until it is changed, and nothing is saved until the user taps Save. The reading comes back through the
   vehicle home entry's saved state (`DASH_READING`), as a scanned VIN does. Frames are never stored.
   Tesseract's language file is copied from assets to `cache/tesseract/` on first use, which `DataWipe`
-  already clears with the cache. `DashReaderTest` (on a device) draws readings and checks the engine
+  already clears with the cache. `TextReaderTest` (on a device) draws readings and VINs and checks the engine
   reads them; how well a real cluster reads, seven-segment LCDs above all, is only known from real dashes.
 - Garage list and Reminders tab share `GarageOverview` (app) for every vehicle's reminders. Reminders
   groups come from `ReminderPresentation.grouped`.
