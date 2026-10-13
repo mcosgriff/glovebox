@@ -55,7 +55,7 @@ class MilestoneEditsTest {
         assertEquals(mapOf(0 to "Keep the name to 80 characters"), problems(check(jobs = listOf(TableJob("x".repeat(81))))).jobs)
         assertTrue(check(jobs = listOf(TableJob("x".repeat(80)))) is MilestoneEdit.Ok)
         assertEquals(mapOf(0 to "The name has to be on one line"), problems(check(jobs = listOf(TableJob("Inspect\nbelts")))).jobs)
-        assertEquals("A milestone can have 30 jobs at most", problems(check(jobs = (1..31).map { TableJob("Job $it") })).work)
+        assertEquals("A milestone can have 40 jobs at most", problems(check(jobs = (1..41).map { TableJob("Job $it") })).work)
         assertTrue(check(jobs = (1..30).map { TableJob("Job $it") }) is MilestoneEdit.Ok)
     }
 
@@ -113,8 +113,8 @@ class MilestoneEditsTest {
     fun `a table and a milestone are full at the file's limits`() {
         assertTrue(MilestoneEdits.canAdd(199))
         assertFalse(MilestoneEdits.canAdd(200))
-        assertTrue(MilestoneEdits.canAddJob(29))
-        assertFalse(MilestoneEdits.canAddJob(30))
+        assertTrue(MilestoneEdits.canAddJob(39))
+        assertFalse(MilestoneEdits.canAddJob(40))
     }
 
     @Test

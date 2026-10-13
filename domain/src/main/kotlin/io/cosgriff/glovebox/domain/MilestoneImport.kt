@@ -25,7 +25,7 @@ data class SavedMilestone(val id: Long, val atMiles: Int, val work: List<TableJo
  */
 object MilestoneImport {
     const val MAX_ITEMS = 200
-    const val MAX_WORK = 30
+    const val MAX_WORK = 40
     const val MAX_NAME = 80
     const val MAX_MILES = 1_000_000
     const val MAX_MONTHS = 600
