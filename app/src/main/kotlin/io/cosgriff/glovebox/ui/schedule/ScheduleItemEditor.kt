@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -16,7 +17,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.text.font.FontWeight
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.nextDueAfter
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.theme.statusColors
@@ -70,6 +71,8 @@ fun ScheduleItemEditor(
     item: DraftItem,
     isNew: Boolean,
     defaultRule: DueRule,
+    /** What the vehicle's odometer counts in; the interval is typed and saved in it. */
+    unit: DistanceUnit,
     onSave: (DraftItem) -> Unit,
     onStopTracking: () -> Unit,
     onClose: () -> Unit,
@@ -150,12 +153,12 @@ fun ScheduleItemEditor(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("REPEAT EVERY")
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    NumberField("Miles", milesText, { milesText = it }, showErrors && typed == null, Modifier.weight(1f))
+                    NumberField(unit.title, milesText, { milesText = it }, showErrors && typed == null, Modifier.weight(1f))
                     NumberField("Months", monthsText, { monthsText = it }, showErrors && typed == null, Modifier.weight(1f))
                 }
                 Text(
                     if (showErrors && typed == null) {
-                        "Enter miles, months, or both as whole numbers above zero."
+                        "Enter ${unit.plural}, months, or both as whole numbers above zero."
                     } else {
                         "Leave one blank if it doesn't apply."
                     },
@@ -169,7 +172,7 @@ fun ScheduleItemEditor(
                         Column(Modifier.weight(1f)) {
                             Text("Severe-use interval", style = MaterialTheme.typography.titleSmall)
                             Text(
-                                suggestedSevere?.let { "Typical: ${it.label()} when towing, off-road or in dust" }
+                                suggestedSevere?.let { "Typical: ${it.label(unit)} when towing, off-road or in dust" }
                                     ?: "For towing, off-road or dusty driving",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -193,11 +196,12 @@ fun ScheduleItemEditor(
             if (item.own) ServiceDropdown(service, onPick = { service = it })
 
             if (history != null) {
-                LastDoneCard(history)
+                LastDoneCard(history, unit)
                 NextDueCard(
                     history = history,
                     interval = typed,
                     rule = rule ?: defaultRule,
+                    unit = unit,
                     // The pace estimate was worked out for what is saved, not for what is being typed.
                     showEstimate = typed == item.active && rule == item.rule,
                 )
@@ -343,7 +347,7 @@ private fun ServiceDropdown(service: String?, onPick: (String?) -> Unit) {
 }
 
 @Composable
-private fun LastDoneCard(history: ItemHistory) {
+private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel("LAST DONE")
@@ -363,7 +367,7 @@ private fun LastDoneCard(history: ItemHistory) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        last?.let { "${it.date.format(longDate)} · ${it.odometer.asMiles()}" } ?: "Not logged yet",
+                        last?.let { "${it.date.format(longDate)} · ${it.odometer.asDistance(unit)}" } ?: "Not logged yet",
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                     )
@@ -407,7 +411,7 @@ private fun LastDoneCard(history: ItemHistory) {
 
 /** [interval] is what is in the boxes right now, so the card follows the edit; null while it can't be used. */
 @Composable
-private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule, showEstimate: Boolean) {
+private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule, unit: DistanceUnit, showEstimate: Boolean) {
     val scheme = MaterialTheme.colorScheme
     val last = history.lastDone
     Surface(
@@ -430,7 +434,7 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
                 }
                 interval == null -> Text("Enter an interval above", style = MaterialTheme.typography.titleMedium)
                 else -> {
-                    Text(interval.nextDueAfter(last).text(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(interval.nextDueAfter(last).text(unit), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         listOfNotNull(
                             rule.label().takeIf { interval.miles != null && interval.months != null },

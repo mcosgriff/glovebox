@@ -164,16 +164,16 @@ object MilestoneImport {
      * whole, whichever [ImportMode] would have been chosen: nothing here is settled by guessing
      * which of the two the user means. Removing the table and importing again is how it is changed.
      */
-    fun repeatConflict(fileRepeats: Int?, saved: List<SavedMilestone>, savedRepeats: Int?): String? {
+    fun repeatConflict(fileRepeats: Int?, saved: List<SavedMilestone>, savedRepeats: Int?, unit: DistanceUnit): String? {
         if (saved.isEmpty() || fileRepeats == savedRepeats) return null
-        fun says(every: Int?) = every?.let { "repeats every ${String.format(Locale.US, "%,d", it)} miles" } ?: "doesn't repeat"
+        fun says(every: Int?) = every?.let { "repeats every ${unit.format(it)}" } ?: "doesn't repeat"
         return "The milestone table on this vehicle ${says(savedRepeats)}, and this file's ${says(fileRepeats)}. " +
             "To change that, remove the table on the Milestones screen and import this file again; to add to the table as it is, make the file say the same."
     }
 
     /** Said on the Import page before and after: whether the table goes on past its last milestone. */
-    fun repeatNote(every: Int?): String = every?.let {
-        "This table repeats every ${String.format(Locale.US, "%,d", it)} miles: after its last milestone it starts again from the first."
+    fun repeatNote(every: Int?, unit: DistanceUnit): String = every?.let {
+        "This table repeats every ${unit.format(it)}: after its last milestone it starts again from the first."
     } ?: "This table ends at its last milestone; it doesn't repeat."
 
     private fun lines(work: List<TableJob>) = work.map { nameKey(it.name) to it.service }.toSet()

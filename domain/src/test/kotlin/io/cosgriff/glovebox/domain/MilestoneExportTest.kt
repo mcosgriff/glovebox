@@ -19,7 +19,7 @@ class MilestoneExportTest {
 
     @Test
     fun `what is written out is read back as the same table`() {
-        val file = back(MilestoneExport.file(table, 120_000))
+        val file = back(MilestoneExport.file(table, 120_000, DistanceUnit.MILES))
         assertEquals(120_000, file.repeatsEveryMiles)
         // By mileage, with the jobs in the user's order.
         assertEquals(
@@ -38,7 +38,7 @@ class MilestoneExportTest {
 
     @Test
     fun `a table that ends says nothing about repeating`() {
-        val text = MilestoneExport.file(table, null)
+        val text = MilestoneExport.file(table, null, DistanceUnit.MILES)
         assertFalse(MilestoneImport.REPEATS in text)
         assertEquals(null, back(text).repeatsEveryMiles)
     }
@@ -48,21 +48,21 @@ class MilestoneExportTest {
         val full = (1..MilestoneImport.MAX_ITEMS).map { i ->
             SavedMilestone(i.toLong(), i * 5_000, (1..MilestoneImport.MAX_WORK).map { TableJob("x".repeat(MilestoneImport.MAX_NAME - 2) + "%02d".format(it)) }, MilestoneImport.MAX_MONTHS)
         }
-        val text = MilestoneExport.file(full, MilestoneImport.MAX_MILES)
+        val text = MilestoneExport.file(full, MilestoneImport.MAX_MILES, DistanceUnit.MILES)
         assertTrue(text.toByteArray().size < ImportFormat.MAX_BYTES)
         assertEquals(full.map { ImportedMilestone(it.atMiles, it.work, it.orMonths) }, back(text).items)
     }
 
     @Test
     fun `whatever the editor accepts can be written out and read back`() {
-        val typed = (MilestoneEdits.check("1,000,000", "600", listOf(TableJob("  Épaisseur des plaquettes — 3 mm  "), oil), emptyList(), null) as MilestoneEdit.Ok).milestone
-        val text = MilestoneExport.file(listOf(SavedMilestone(1, typed.atMiles, typed.work, typed.orMonths)), 1_000_000)
+        val typed = (MilestoneEdits.check("1,000,000", "600", listOf(TableJob("  Épaisseur des plaquettes — 3 mm  "), oil), emptyList(), null, DistanceUnit.MILES) as MilestoneEdit.Ok).milestone
+        val text = MilestoneExport.file(listOf(SavedMilestone(1, typed.atMiles, typed.work, typed.orMonths)), 1_000_000, DistanceUnit.MILES)
         assertEquals(listOf(typed), back(text).items)
     }
 
     @Test
     fun `the file passes the published schema and names no vehicle`() {
-        val text = MilestoneExport.file(table, 120_000)
+        val text = MilestoneExport.file(table, 120_000, DistanceUnit.MILES)
         val schema = File("../docs/import/schema/milestone-schedule.schema.json").readText()
         val registry = com.networknt.schema.SchemaRegistry.withDefaultDialect(com.networknt.schema.SpecificationVersion.DRAFT_2020_12)
         assertTrue(registry.getSchema(schema).validate(text, com.networknt.schema.InputFormat.JSON).isEmpty())

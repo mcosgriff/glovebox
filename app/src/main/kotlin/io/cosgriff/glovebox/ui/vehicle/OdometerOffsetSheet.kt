@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,7 @@ import java.time.LocalDate
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OdometerOffsetSheet(current: ClusterSwap?, onSave: (ClusterSwap?) -> Unit, onDismiss: () -> Unit) {
+fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (ClusterSwap?) -> Unit, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     var day by rememberSaveable { mutableLongStateOf((current?.on ?: LocalDate.now()).toEpochDay()) }
     var oldText by rememberSaveable { mutableStateOf(current?.let { ClusterSwaps.oldReading(it).toString() }.orEmpty()) }
@@ -106,14 +107,14 @@ fun OdometerOffsetSheet(current: ClusterSwap?, onSave: (ClusterSwap?) -> Unit, o
             ReadingField(
                 value = oldText,
                 onChange = { oldText = it },
-                label = "Old cluster read (mi)",
-                note = if (showErrors && oldReading == null) "Enter its last reading in whole miles." else "Its last reading before it came out.",
+                label = "Old cluster read (${unit.symbol})",
+                note = if (showErrors && oldReading == null) "Enter its last reading in whole ${unit.plural}." else "Its last reading before it came out.",
                 isError = showErrors && oldReading == null,
             )
             ReadingField(
                 value = newText,
                 onChange = { newText = it },
-                label = "New cluster read (mi)",
+                label = "New cluster read (${unit.symbol})",
                 note = when {
                     same -> "The same as the old one, so there is nothing to offset."
                     showErrors && newReading == null -> "Enter what it read when it went in."
@@ -124,7 +125,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, onSave: (ClusterSwap?) -> Unit, o
 
             if (problems.isEmpty()) {
                 Text(
-                    "Offset ${ClusterSwaps.offsetLabel(oldReading!! - newReading!!)}. Readings dated ${on.format(longDate)} or later " +
+                    "Offset ${ClusterSwaps.offsetLabel(oldReading!! - newReading!!, unit)}. Readings dated ${on.format(longDate)} or later " +
                         "count as the new cluster's, earlier ones as the old one's. Reminders snoozed to a mileage come back.",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,

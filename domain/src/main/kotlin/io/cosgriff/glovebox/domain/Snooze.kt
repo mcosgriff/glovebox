@@ -29,14 +29,21 @@ object Snoozing {
      * What the snooze sheet offers for [item]. Mileage choices need a known odometer; "with the
      * next oil change" needs an oil reminder that has been logged and isn't itself overdue.
      */
-    fun options(item: ItemStatus, currentOdometer: Int?, today: LocalDate, oil: ItemStatus?): List<SnoozeOption> = buildList {
+    fun options(item: ItemStatus, currentOdometer: Int?, today: LocalDate, oil: ItemStatus?, unit: DistanceUnit): List<SnoozeOption> = buildList {
         if (currentOdometer != null) {
-            add(SnoozeOption(SnoozeKind.MILES_500, Snooze(untilOdometer = currentOdometer + 500)))
-            add(SnoozeOption(SnoozeKind.MILES_1000, Snooze(untilOdometer = currentOdometer + 1_000)))
+            add(SnoozeOption(SnoozeKind.MILES_500, Snooze(untilOdometer = currentOdometer + distance(SnoozeKind.MILES_500, unit))))
+            add(SnoozeOption(SnoozeKind.MILES_1000, Snooze(untilOdometer = currentOdometer + distance(SnoozeKind.MILES_1000, unit))))
         }
         add(SnoozeOption(SnoozeKind.WEEKS_2, Snooze(untilDate = today.plusWeeks(2))))
         add(SnoozeOption(SnoozeKind.MONTH_1, Snooze(untilDate = today.plusMonths(1))))
         nextOilChange(item, currentOdometer, today, oil)?.let { add(SnoozeOption(SnoozeKind.NEXT_OIL_CHANGE, it)) }
+    }
+
+    /** How far the two distance choices put a reminder off: 500 and 1,000 mi, or 800 and 1,600 km. Zero for the others. */
+    fun distance(kind: SnoozeKind, unit: DistanceUnit): Int = when (kind) {
+        SnoozeKind.MILES_500 -> unit.scheduled(500)
+        SnoozeKind.MILES_1000 -> unit.scheduled(1_000)
+        else -> 0
     }
 
     private fun nextOilChange(item: ItemStatus, currentOdometer: Int?, today: LocalDate, oil: ItemStatus?): Snooze? {

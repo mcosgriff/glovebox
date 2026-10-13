@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Size
@@ -56,7 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.cosgriff.glovebox.domain.DashReading
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.util.concurrent.Executors
 
@@ -70,10 +71,11 @@ private const val START_ZOOM = 2f
  *
  * A reading is only ever handed back to fill the sheet's field. The user still checks it and saves.
  * [last] is the vehicle's latest known reading in dash terms, which tells the odometer from the
- * other numbers on a cluster.
+ * other numbers on a cluster. [unit] is what the vehicle counts in: the number read is taken to be in
+ * it, whatever the dash is showing.
  */
 @Composable
-fun ReadDashScreen(last: Int?, onClose: () -> Unit, onUse: (miles: Int) -> Unit) {
+fun ReadDashScreen(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (miles: Int) -> Unit) {
     val context = LocalContext.current
     var granted by remember { mutableStateOf(context.hasCamera()) }
     // Set once the user has answered the system prompt with no.
@@ -95,7 +97,7 @@ fun ReadDashScreen(last: Int?, onClose: () -> Unit, onUse: (miles: Int) -> Unit)
 
     Box(Modifier.fillMaxSize().background(Scrim)) {
         if (granted) {
-            Reader(last, onClose, onUse)
+            Reader(last, unit, onClose, onUse)
         } else {
             NoCamera(
                 why = "Glovebox uses the camera here only to read the odometer. The picture is read on this phone and isn't saved or sent anywhere.",
@@ -109,7 +111,7 @@ fun ReadDashScreen(last: Int?, onClose: () -> Unit, onUse: (miles: Int) -> Unit)
 }
 
 @Composable
-private fun Reader(last: Int?, onClose: () -> Unit, onUse: (Int) -> Unit) {
+private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (Int) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     /** A reading enough frames agreed on; reading pauses while it is on screen. */
@@ -147,7 +149,7 @@ private fun Reader(last: Int?, onClose: () -> Unit, onUse: (Int) -> Unit) {
                     unavailable = true
                     return@use
                 }
-                frames.addLast(text?.let { read -> DashReading.pick(read, last) })
+                frames.addLast(text?.let { read -> DashReading.pick(read, last, unit) })
                 while (frames.size > DashReading.WINDOW) frames.removeFirst()
                 DashReading.steady(frames.toList())?.let { steady -> found = steady }
             }
@@ -227,7 +229,7 @@ private fun Reader(last: Int?, onClose: () -> Unit, onUse: (Int) -> Unit) {
                 when {
                     unavailable -> "Reading the dash doesn't work on this phone. Close this and type the reading."
                     last != null -> "Hold it straight on and steady, with the digits filling the box. " +
-                        "It looks for a reading of ${last.asMiles()} or more; if the dash shows less, close this and type it."
+                        "It looks for a reading of ${last.asDistance(unit)} or more; if the dash shows less, close this and type it."
                     else -> "Hold it straight on and steady. Fill the box with the digits and keep other numbers out of it."
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -254,7 +256,7 @@ private fun Reader(last: Int?, onClose: () -> Unit, onUse: (Int) -> Unit) {
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(miles.asMiles(), style = MaterialTheme.typography.headlineMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                    Text(miles.asDistance(unit), style = MaterialTheme.typography.headlineMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
                             onClick = { found = null },

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.runtime.LaunchedEffect
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
@@ -69,7 +71,7 @@ import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.ui.RecordDetailRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.RecordActions
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -97,6 +99,8 @@ data class WorkLine(
 data class RecordDetail(
     val record: ServiceRecordWithItems,
     val vehicleName: String,
+    /** What the vehicle's odometer counts in; the record's reading is in it. */
+    val unit: DistanceUnit,
     /** The vehicle is archived: its records can be read but not edited or deleted. */
     val readOnly: Boolean,
     val lines: List<WorkLine>,
@@ -135,12 +139,14 @@ class RecordDetailViewModel @Inject constructor(
             .mapNotNull { it.toTracked(settings.settings.first().defaultRule) }
             .associateBy { it.id }
         val swap = vehicle?.clusterSwap()
+        val unit = vehicle?.unit ?: DistanceUnit.MILES
         val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry(swap, items.answering()) }
         val entry = r.toEntry(swap, items.answering())
 
         RecordDetail(
             record = r,
             vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            unit = unit,
             readOnly = vehicle?.archivedOn != null,
             lines = r.items.map { item ->
                 val reminder = item.scheduleItemId?.let(tracked::get)
@@ -150,14 +156,14 @@ class RecordDetailViewModel @Inject constructor(
                     category = ServiceCatalog.categoryOf(item.catalogId)?.label,
                     reminderNote = when {
                         reminder == null -> null
-                        latest -> "Next due " + reminder.interval.nextDueAfter(LastDone(entry.date, entry.odometer)).text()
+                        latest -> "Next due " + reminder.interval.nextDueAfter(LastDone(entry.date, entry.odometer)).text(unit)
                         else -> "Done again since"
                     },
                     current = latest,
                 )
             },
             deleteImpact = LogEdits.reminderChanges(tracked.values.toList(), entries, entries.filter { it.id != entry.id })
-                .map { it.text() },
+                .map { it.text(unit) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -215,7 +221,7 @@ fun RecordDetailScreen(
                     )
                     Text(record.date.format(longDate), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     Row {
-                        Stat("Odometer", record.odometer.asMiles(), Modifier.weight(1f))
+                        Stat("Odometer", record.odometer.asDistance(detail.unit), Modifier.weight(1f))
                         Stat("Total cost", record.costCents?.let(Money::format) ?: "Not entered", Modifier.weight(1f))
                     }
                 }
@@ -326,7 +332,7 @@ fun RecordDetailScreen(
                     Text(
                         listOfNotNull(
                             record.date.format(longDate),
-                            record.odometer.asMiles(),
+                            record.odometer.asDistance(detail.unit),
                             "$n ${if (n == 1) "item" else "items"}",
                             RecordPhotos.countLabel(detail.record.photos.size),
                         ).joinToString(" · "),

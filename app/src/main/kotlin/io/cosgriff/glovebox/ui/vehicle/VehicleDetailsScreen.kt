@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.DistanceConversion
+import io.cosgriff.glovebox.data.db.UnitDao
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
@@ -156,6 +160,7 @@ class VehicleDetailsViewModel @Inject constructor(
     private val photos: VehiclePhotoStore,
     private val picker: VehiclePhotoPicker,
     private val archiver: VehicleArchiver,
+    private val units: UnitDao,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<VehicleDetailsRoute>().vehicleId
 
@@ -219,6 +224,9 @@ class VehicleDetailsViewModel @Inject constructor(
     }
 
     /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */
+    /** Changes what the odometer counts in, converting every figure stored for the vehicle with it. */
+    fun convertTo(unit: DistanceUnit) = viewModelScope.launch { units.convert(vehicleId, unit) }
+
     fun setClusterSwap(swap: ClusterSwap?) = viewModelScope.launch {
         vehicles.setClusterSwap(vehicleId, swap?.offset ?: 0, swap?.on, swap?.startReading)
     }
@@ -261,11 +269,41 @@ fun VehicleDetailsScreen(
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
     var settingOffset by rememberSaveable { mutableStateOf(false) }
+    var changingUnit by rememberSaveable { mutableStateOf(false) }
     val swap = v.clusterSwap()
+
+    if (changingUnit) {
+        val to = DistanceUnit.entries.first { it != v.unit }
+        AlertDialog(
+            onDismissRequest = { changingUnit = false },
+            title = { Text("Change this vehicle to ${to.plural}?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("It counts in ${v.unit.plural} now.")
+                    Text(DistanceConversion.explain(v.unit, to))
+                    Text(
+                        "Changing back converts again, and a figure can come back one out. Other vehicles aren't touched.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        changingUnit = false
+                        vm.convertTo(to)
+                    },
+                ) { Text("Convert to ${to.plural}") }
+            },
+            dismissButton = { TextButton(onClick = { changingUnit = false }) { Text("Cancel") } },
+        )
+    }
 
     if (settingOffset) {
         OdometerOffsetSheet(
             current = swap,
+            unit = v.unit,
             onSave = {
                 vm.setClusterSwap(it)
                 settingOffset = false
@@ -289,6 +327,7 @@ fun VehicleDetailsScreen(
         MarkAsSoldSheet(
             vehicleName = name,
             lastOdometer = lastOdometer,
+            unit = v.unit,
             onArchive = { sale ->
                 selling = false
                 vm.markAsSold(sale) { undo -> onArchived(name, undo) }
@@ -444,7 +483,7 @@ fun VehicleDetailsScreen(
                     ) {
                         Text("Odometer offset", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
-                            swap?.let { ClusterSwaps.offsetLabel(it.offset) } ?: "None",
+                            swap?.let { ClusterSwaps.offsetLabel(it.offset, v.unit) } ?: "None",
                             Modifier.weight(1f).padding(vertical = 8.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -490,6 +529,12 @@ fun VehicleDetailsScreen(
                         else -> MaterialTheme.colorScheme.onPrimaryContainer
                     },
                     onClick = { onOpenRecalls(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = "Distance units",
+                    detail = "${v.unit.title} · what the odometer counts in",
+                    onClick = { changingUnit = true },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(

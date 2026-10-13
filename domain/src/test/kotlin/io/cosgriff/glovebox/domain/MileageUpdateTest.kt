@@ -26,7 +26,7 @@ class MileageUpdateTest {
 
     @Test
     fun `delta is measured from the highest reading`() {
-        val p = MileageUpdate.preview(inputs, 68_950, today)
+        val p = MileageUpdate.preview(inputs, 68_950, today, DistanceUnit.MILES)
         assertEquals(OdometerReading(LocalDate.of(2026, 10, 10), 68_412), p.last)
         assertEquals(538, p.delta)
         assertFalse(p.below)
@@ -34,7 +34,7 @@ class MileageUpdateTest {
 
     @Test
     fun `impact lists mileage reminders as they will stand, overdue first`() {
-        val p = MileageUpdate.preview(inputs, 68_950, today)
+        val p = MileageUpdate.preview(inputs, 68_950, today, DistanceUnit.MILES)
         // Brake fluid counts by time and Wipers was never logged, so neither is listed.
         assertEquals(
             listOf("Tire rotation" to -3_850, "Oil & filter" to 1_150),
@@ -44,7 +44,7 @@ class MileageUpdateTest {
 
     @Test
     fun `a lower reading is flagged and changes nothing`() {
-        val p = MileageUpdate.preview(inputs, 68_000, today)
+        val p = MileageUpdate.preview(inputs, 68_000, today, DistanceUnit.MILES)
         assertTrue(p.below)
         assertEquals(-412, p.delta)
         // Reminders still count from the highest reading.
@@ -53,7 +53,7 @@ class MileageUpdateTest {
 
     @Test
     fun `first reading for a vehicle has nothing to compare with`() {
-        val p = MileageUpdate.preview(ReminderInputs(listOf(oil), emptyList(), emptyList()), 12_000, today)
+        val p = MileageUpdate.preview(ReminderInputs(listOf(oil), emptyList(), emptyList()), 12_000, today, DistanceUnit.MILES)
         assertNull(p.last)
         assertNull(p.delta)
         assertFalse(p.below)

@@ -29,7 +29,7 @@ class Converters {
         MilestoneEntity::class,
         MilestoneJobEntity::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -46,6 +46,7 @@ class Converters {
         AutoMigration(from = 12, to = 13), // schedule_items.service
         AutoMigration(from = 13, to = 14), // vehicles.milestonesRepeatEveryMiles
         AutoMigration(from = 14, to = 15), // milestone_jobs.position
+        AutoMigration(from = 15, to = 16), // vehicles.distanceUnit
     ],
 )
 @TypeConverters(Converters::class)
@@ -57,6 +58,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun torque(): TorqueDao
     abstract fun recalls(): RecallDao
     abstract fun milestones(): MilestoneDao
+    abstract fun units(): UnitDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"

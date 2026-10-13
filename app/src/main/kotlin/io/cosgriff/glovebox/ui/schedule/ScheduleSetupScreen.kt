@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -130,7 +132,7 @@ class ScheduleSetupViewModel @Inject constructor(
         viewModelScope.launch {
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
-            items = ScheduleTemplates.generic(v?.drivetrain, v?.fuel).map {
+            items = ScheduleTemplates.generic(v?.drivetrain, v?.fuel, v?.unit ?: DistanceUnit.MILES).map {
                 DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
             }
         }
@@ -215,6 +217,7 @@ fun ScheduleSetupScreen(
             item = editing,
             isNew = vm.isNew(editing),
             defaultRule = defaultRule,
+            unit = vm.vehicle?.unit ?: DistanceUnit.MILES,
             onSave = vm::saveEdit,
             onStopTracking = { vm.stopTracking(editing.key) },
             onClose = vm::closeEditor,
@@ -268,7 +271,7 @@ fun ScheduleSetupScreen(
             ) {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     items.forEach { item ->
-                        ItemRow(item, onToggle = { vm.toggle(item.key) }, onEdit = { vm.edit(item.key) })
+                        ItemRow(item, vm.vehicle?.unit ?: DistanceUnit.MILES, onToggle = { vm.toggle(item.key) }, onEdit = { vm.edit(item.key) })
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
@@ -328,7 +331,7 @@ private fun LastDoneChoice(enterNow: Boolean, onPick: (enterNow: Boolean) -> Uni
 }
 
 @Composable
-internal fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) {
+internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, onEdit: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
             Modifier.weight(1f)
@@ -341,7 +344,7 @@ internal fun ItemRow(item: DraftItem, onToggle: () -> Unit, onEdit: () -> Unit) 
             Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    item.active.label(),
+                    item.active.label(unit),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
                     color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -389,6 +392,29 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
                     Text(text.first, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(text.second, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                 }
+            }
+        }
+    }
+}
+
+/** What a vehicle's odometer counts in. Used where a vehicle is added; changing it later is a conversion, on Vehicle details. */
+@Composable
+internal fun DistanceUnitSwitch(unit: DistanceUnit, onPick: (DistanceUnit) -> Unit, modifier: Modifier = Modifier) {
+    val colors = SegmentedButtonDefaults.colors(
+        activeContainerColor = MaterialTheme.colorScheme.secondary,
+        activeContentColor = MaterialTheme.colorScheme.onSecondary,
+    )
+    SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().height(48.dp)) {
+        DistanceUnit.entries.forEachIndexed { i, u ->
+            SegmentedButton(
+                selected = unit == u,
+                onClick = { onPick(u) },
+                shape = SegmentedButtonDefaults.itemShape(i, DistanceUnit.entries.size, baseShape = RoundedCornerShape(14.dp)),
+                colors = colors,
+                icon = {},
+                modifier = Modifier.fillMaxHeight(),
+            ) {
+                Text(u.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             }
         }
     }

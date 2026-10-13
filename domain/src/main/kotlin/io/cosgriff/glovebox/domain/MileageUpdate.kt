@@ -32,7 +32,7 @@ object MileageUpdate {
     /** Longest odometer the keypad accepts: 9,999,999 mi. */
     const val MAX_DIGITS = 7
 
-    fun preview(inputs: ReminderInputs, odometer: Int, today: LocalDate, limit: Int = 2): MileagePreview {
+    fun preview(inputs: ReminderInputs, odometer: Int, today: LocalDate, unit: DistanceUnit, limit: Int = 2): MileagePreview {
         val readings = ServiceLog.readings(inputs.entries, inputs.updates)
         val last = readings.maxWithOrNull(compareBy<OdometerReading> { it.odometer }.thenBy { it.date })
         val after = VehicleReminders.statuses(inputs.items, inputs.entries, inputs.updates + OdometerReading(today, odometer), today, inputs.lead)
@@ -43,7 +43,7 @@ object MileageUpdate {
             impact = ReminderPresentation.comingUp(after).counting
                 .mapNotNull { (status, progress) -> (progress.headline as? DueHeadline.Miles)?.let { status to it } }
                 .take(limit),
-            far = MileageReadings.farAhead(odometer, today, last),
+            far = MileageReadings.farAhead(odometer, today, last, unit),
         )
     }
 

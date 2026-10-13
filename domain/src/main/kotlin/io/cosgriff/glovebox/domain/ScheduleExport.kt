@@ -20,9 +20,10 @@ import kotlinx.serialization.json.put
  * or when anything was last done: those belong to the vehicle, not the schedule.
  */
 object ScheduleExport {
-    fun file(items: List<SavedScheduleItem>): WrittenFile = ImportFiles.sift(
+    /** [unit] is what the vehicle counts in; the file is in miles ([FileDistances]). */
+    fun file(items: List<SavedScheduleItem>, unit: DistanceUnit): WrittenFile = ImportFiles.sift(
         kind = ImportKind.INTERVAL_SCHEDULE,
-        candidates = items.filter { it.tracked }.map { item -> Triple(item.name.trim(), ScheduleImport.key(item.name), json(item)) },
+        candidates = FileDistances.scheduleOut(items.filter { it.tracked }, unit).map { item -> Triple(item.name.trim(), ScheduleImport.key(item.name), json(item)) },
         max = ScheduleImport.MAX_ITEMS,
         read = { array, check -> ScheduleImport.read(array, check) },
         twice = "another item in the schedule has the same name",

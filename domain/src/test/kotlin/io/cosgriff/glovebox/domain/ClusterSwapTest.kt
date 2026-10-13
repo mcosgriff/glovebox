@@ -105,8 +105,8 @@ class ClusterSwapTest {
         val used = ClusterSwaps.of(swapDay, oldReading = 80_000, newReading = 82_500)
         assertEquals(82_000, used.toDash(79_500, swapDay.minusDays(3)))
         assertEquals(80_100, used.actual(82_600))
-        assertEquals("−2,500 mi", ClusterSwaps.offsetLabel(used.offset))
-        assertEquals("+120,000 mi", ClusterSwaps.offsetLabel(swap.offset))
+        assertEquals("−2,500 mi", ClusterSwaps.offsetLabel(used.offset, DistanceUnit.MILES))
+        assertEquals("+120,000 mi", ClusterSwaps.offsetLabel(swap.offset, DistanceUnit.MILES))
     }
 
     @Test

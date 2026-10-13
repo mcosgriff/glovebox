@@ -14,7 +14,13 @@ import kotlinx.serialization.json.put
  */
 object MilestoneExport {
     /** [table] in any order; the file is in mileage order, with each milestone's jobs in the user's. */
-    fun file(table: List<SavedMilestone>, repeatsEveryMiles: Int?): String = ImportFiles.text(
+    fun file(table: List<SavedMilestone>, repeatsEveryMiles: Int?, unit: DistanceUnit): String {
+        // The file is in miles ([FileDistances]); the table is in the vehicle's unit.
+        val (inMiles, repeats) = FileDistances.milestonesOut(table, repeatsEveryMiles, unit)
+        return text(inMiles, repeats)
+    }
+
+    private fun text(table: List<SavedMilestone>, repeatsEveryMiles: Int?): String = ImportFiles.text(
         kind = ImportKind.MILESTONE_SCHEDULE,
         items = table.sortedBy { it.atMiles }.map { m ->
             buildJsonObject {
@@ -39,8 +45,8 @@ object MilestoneExport {
     )
 
     /** The table as the save row takes it. Nothing is ever left out: the editor and the reader keep the same rules. */
-    fun written(table: List<SavedMilestone>, repeatsEveryMiles: Int?): WrittenFile =
-        WrittenFile(if (table.isEmpty()) null else file(table, repeatsEveryMiles), table.size)
+    fun written(table: List<SavedMilestone>, repeatsEveryMiles: Int?, unit: DistanceUnit): WrittenFile =
+        WrittenFile(if (table.isEmpty()) null else file(table, repeatsEveryMiles, unit), table.size)
 
     /** "glovebox-milestones-2003-honda-accord.json". [model] is the year, make and model: who else the table would suit. */
     fun fileName(model: String): String = ImportFiles.fileName("milestones", model)

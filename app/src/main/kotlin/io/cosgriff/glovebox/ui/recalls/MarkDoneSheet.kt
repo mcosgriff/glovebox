@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,8 @@ import java.time.LocalDate
 fun MarkDoneSheet(
     recall: RecallEntity,
     odometer: Int?,
+    /** What the vehicle's odometer counts in. */
+    unit: DistanceUnit,
     makeName: String,
     onConfirm: (RecallCompletion) -> Unit,
     onDismiss: () -> Unit,
@@ -133,7 +136,7 @@ fun MarkDoneSheet(
                 OutlinedTextField(
                     value = odometerText,
                     onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                    label = { Text("Odometer at the repair (mi)") },
+                    label = { Text("Odometer at the repair (${unit.symbol})") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),

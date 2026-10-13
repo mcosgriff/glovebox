@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.ScheduleExport
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.ui.export.ExportSaver
@@ -135,7 +137,7 @@ class ScheduleViewModel @Inject constructor(
     private var entities: Map<String, ScheduleItemEntity> = emptyMap()
 
     /** The schedule as an import file: every tracked item, as it is saved. */
-    fun written(): WrittenFile = ScheduleExport.file(entities.values.sortedBy { it.id }.map { it.toSaved() })
+    fun written(): WrittenFile = ScheduleExport.file(entities.values.sortedBy { it.id }.map { it.toSaved() }, state.value?.vehicle?.unit ?: DistanceUnit.MILES)
 
     /** [model] is the year, make and model, for the file's suggested name. */
     fun saveAsFile(text: String, model: String) {
@@ -152,7 +154,7 @@ class ScheduleViewModel @Inject constructor(
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
         entities = items.associateBy { it.id.toString() }
-        val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel).associateBy { it.key }
+        val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel, vehicle.unit).associateBy { it.key }
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
         val updates = readings.toReadings(swap)
@@ -162,7 +164,7 @@ class ScheduleViewModel @Inject constructor(
             entries,
             updates,
             LocalDate.now(),
-            s.lead,
+            s.leadFor(vehicle.unit),
         ).associateBy { it.item.id }
         ScheduleState(
             vehicle = vehicle,
@@ -195,7 +197,7 @@ class ScheduleViewModel @Inject constructor(
                 )
             },
             defaultRule = s.defaultRule,
-            missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, items.map { it.templateKey }),
+            missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }),
             odometer = VehicleReminders.currentOdometer(entries, updates),
             notLogged = statuses.values.count { it.lastDone == null },
         )
@@ -316,6 +318,7 @@ fun ScheduleScreen(
                 itemName = editing.name,
                 currentOdometer = state.odometer,
                 swap = state.vehicle.clusterSwap(),
+                unit = state.vehicle.unit,
                 onSave = { date, odometer ->
                     vm.enterLastDone(editing, date, odometer)
                     enteringLastDone = false
@@ -328,6 +331,7 @@ fun ScheduleScreen(
             item = editing,
             isNew = vm.isNew(editing),
             defaultRule = state.defaultRule,
+            unit = state.vehicle.unit,
             onSave = vm::saveEdit,
             onStopTracking = { vm.setTracked(editing, false) },
             onClose = vm::closeEditor,
@@ -433,7 +437,7 @@ fun ScheduleScreen(
             ) {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     state.items.forEach { item ->
-                        ItemRow(item, onToggle = { vm.setTracked(item, !item.tracked) }, onEdit = { vm.edit(item) })
+                        ItemRow(item, state.vehicle.unit, onToggle = { vm.setTracked(item, !item.tracked) }, onEdit = { vm.edit(item) })
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {

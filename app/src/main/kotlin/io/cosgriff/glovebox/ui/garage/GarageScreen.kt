@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.BorderStroke
@@ -61,7 +63,7 @@ import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.UrgentItem
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
@@ -198,7 +200,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
                     )
                 }
                 Text(
-                    g.odometer?.asMiles() ?: "No mileage",
+                    g.odometer?.asDistance(v.unit) ?: "No mileage",
                     style = MaterialTheme.typography.titleMedium,
                     fontFamily = PlexMono,
                     fontWeight = FontWeight.SemiBold,
@@ -212,7 +214,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(g.comingUp.nextLine(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(g.comingUp.nextLine(v.unit), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 Icon(
                     Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
@@ -263,9 +265,9 @@ private fun RecallChip(open: OpenRecalls) {
 }
 
 /** "Next: Oil & filter in 1,688 mi" */
-private fun ComingUp.nextLine(): String {
+private fun ComingUp.nextLine(unit: DistanceUnit): String {
     next?.let { (status, progress) ->
-        return "Next: ${status.item.name} ${progress.headline.text().replaceFirstChar(Char::lowercase)}"
+        return "Next: ${status.item.name} ${progress.headline.text(unit).replaceFirstChar(Char::lowercase)}"
     }
     return when {
         counting.isNotEmpty() -> "Nothing else coming up"
@@ -306,7 +308,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Text(
-                            if (overdue) "Overdue" else item.progress.headline.remaining(),
+                            if (overdue) "Overdue" else item.progress.headline.remaining(item.vehicle.unit),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = if (overdue) statusColors().overdue else statusColors().soon,
@@ -332,7 +334,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
 }
 
 /** "640 mi", "12 days" — "In 640 mi" without the "In", for a right-hand column. */
-private fun DueHeadline.remaining(): String = text().removePrefix("In ")
+private fun DueHeadline.remaining(unit: DistanceUnit): String = text(unit).removePrefix("In ")
 
 @Composable
 private fun ArchivedRow(count: Int, onClick: () -> Unit) {

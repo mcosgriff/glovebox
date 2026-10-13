@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -71,7 +72,7 @@ import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.NoticeRules
 import io.cosgriff.glovebox.notify.Notifier
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -232,7 +233,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     ChoiceRow("Mileage check-in", prefs.mileageCadence.label) { pickingCadence = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
-                    ChoiceRow("How early to remind", "${settings.lead.miles.asMiles()} / ${settings.lead.days} days", onClick = onOpenRules)
+                    ChoiceRow("How early to remind", "${settings.lead.miles.asDistance(settings.distanceUnit)} / ${settings.lead.days} days", onClick = onOpenRules)
                 }
                 Text(
                     "Mileage reminders only work if the odometer is current, so we'll ask you for a quick reading on a schedule. " +

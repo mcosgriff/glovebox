@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -95,10 +96,11 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
     fun setLockDelay(d: LockDelay) = viewModelScope.launch { repo.setLockAfterSeconds(d.seconds) }
     fun setHideInRecents(on: Boolean) = viewModelScope.launch { repo.setHideInRecents(on) }
     fun setTorque(u: TorqueUnit) = viewModelScope.launch { repo.setTorqueUnit(u) }
+    fun setDistance(u: DistanceUnit) = viewModelScope.launch { repo.setDistanceUnit(u) }
     fun setRecallCadence(c: RecallCadence) = viewModelScope.launch { repo.setRecallCadence(c) }
 }
 
-private enum class Picking { TORQUE, RECALLS, SCHEDULE }
+private enum class Picking { TORQUE, RECALLS, SCHEDULE, DISTANCE }
 
 /** Design: 9 · Settings. */
 @Composable
@@ -137,6 +139,16 @@ fun SettingsScreen(
             label = { it.symbol },
             note = "Torque is stored once and converted for display, so switching loses nothing.",
             onPick = vm::setTorque,
+            onDismiss = { picking = null },
+        )
+        Picking.DISTANCE -> ChoiceDialog(
+            title = "Distance units",
+            options = DistanceUnit.entries,
+            selected = s.distanceUnit,
+            label = { it.title },
+            note = "For vehicles you add from now on. Each vehicle keeps its own unit, since that is what its odometer reads: " +
+                "to change one already in the garage, open its Vehicle details.",
+            onPick = vm::setDistance,
             onDismiss = { picking = null },
         )
         Picking.RECALLS -> ChoiceDialog(
@@ -278,6 +290,8 @@ fun SettingsScreen(
                     vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { picking = Picking.SCHEDULE }
                 }
             }
+            Divider()
+            ValueRow("Distance units", s.distanceUnit.title) { picking = Picking.DISTANCE }
             Divider()
             ValueRow("Torque units", s.torqueUnit.symbol) { picking = Picking.TORQUE }
             Divider()

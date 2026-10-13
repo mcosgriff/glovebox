@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.garage
 
+import kotlinx.coroutines.flow.first
+import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -82,7 +86,11 @@ class ManualAddViewModel @Inject constructor(
     private val nhtsa: NhtsaClient,
     private val vehicles: VehicleDao,
     private val odometer: OdometerDao,
+    settings: SettingsRepository,
 ) : ViewModel() {
+    /** What this vehicle's odometer counts in; starts as the unit chosen in Settings. */
+    var unit by mutableStateOf(DistanceUnit.MILES)
+
     var year by mutableStateOf<Int?>(null)
         private set
 
@@ -112,6 +120,7 @@ class ManualAddViewModel @Inject constructor(
     val canSave: Boolean get() = year != null && make.isNotBlank() && model.isNotBlank() && !saving
 
     init {
+        viewModelScope.launch { unit = settings.settings.first().distanceUnit }
         loadMakes()
     }
 
@@ -174,6 +183,7 @@ class ManualAddViewModel @Inject constructor(
                     engine = VehicleText.clean(engine, VehicleText.MAX_SPEC),
                     drivetrain = drivetrain,
                     createdOn = today,
+                    distanceUnit = unit.name,
                 ),
             )
             odometerText.toIntOrNull()?.let {
@@ -304,10 +314,15 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 }
             }
 
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                DistanceUnitSwitch(vm.unit, onPick = { vm.unit = it })
+                Text("What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            }
+
             OutlinedTextField(
                 value = vm.odometerText,
                 onValueChange = vm::onOdometerChange,
-                label = { Text("Odometer (mi)") },
+                label = { Text("Odometer (${vm.unit.symbol})") },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                 shape = RoundedCornerShape(12.dp),

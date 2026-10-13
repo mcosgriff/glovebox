@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -74,7 +76,7 @@ import io.cosgriff.glovebox.domain.RulePreview
 import io.cosgriff.glovebox.domain.RulePreviews
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.Snoozing
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -100,6 +102,8 @@ data class PreviewSource(
     val lastRead: LastDone,
     val odometer: Int,
     val milesPerDay: Double?,
+    /** What that vehicle's odometer counts in. */
+    val unit: DistanceUnit,
 )
 
 /** A tracked reminder as the overrides list shows it. [rule] null = uses the default. */
@@ -108,6 +112,8 @@ data class RuleItem(val id: Long, val label: String, val rule: DueRule?)
 data class ReminderRules(
     val defaultRule: DueRule,
     val lead: LeadTime,
+    /** The unit the lead distance is typed in: the one new vehicles get. */
+    val unit: DistanceUnit,
     val preview: PreviewSource?,
     val items: List<RuleItem>,
 )
@@ -150,12 +156,14 @@ class ReminderRulesViewModel @Inject constructor(
                 lastRead = swap.asReadOn(last),
                 odometer = all.maxOf { it.odometer },
                 milesPerDay = ReminderEngine.milesPerDay(all),
+                unit = active.firstOrNull { it.id == item.vehicleId }?.unit ?: s.distanceUnit,
             )
         }
 
         ReminderRules(
             defaultRule = s.defaultRule,
             lead = s.lead,
+            unit = s.distanceUnit,
             preview = preview,
             items = mine.map { item ->
                 RuleItem(
@@ -223,7 +231,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
 
             PreviewCard(rules.preview, rules.defaultRule)
 
-            LeadTimeFields(rules.lead, onChange = vm::setLead)
+            LeadTimeFields(rules.lead, rules.unit, onChange = vm::setLead)
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionTitle("PER-SERVICE OVERRIDES")
@@ -329,6 +337,7 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
                 )
                 return@Column
             }
+            val unit = source.unit
             val p = RulePreviews.preview(source.interval, source.last, rule, source.odometer, LocalDate.now(), source.milesPerDay)
             Text(
                 "PREVIEW · ${source.title.uppercase(Locale.US)}",
@@ -337,13 +346,13 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
                 color = scheme.onSurfaceVariant,
             )
             Text(
-                "Every ${source.interval.miles!!.asMiles()} or ${source.interval.months} months · " +
-                    "last done ${source.last.date.format(longDate)} at ${source.lastRead.odometer.asMiles()}",
+                "Every ${source.interval.miles!!.asDistance(unit)} or ${source.interval.months} months · " +
+                    "last done ${source.last.date.format(longDate)} at ${source.lastRead.odometer.asDistance(unit)}",
                 style = MaterialTheme.typography.bodySmall,
             )
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LimitBar(
-                    label = "Mileage · ${p.dueAtOdometer.asMiles()}",
+                    label = "Mileage · ${p.dueAtOdometer.asDistance(unit)}",
                     date = when {
                         p.milesFraction >= 1.0 -> "reached"
                         else -> p.mileageDate?.let { "~${it.format(monthYear)}" } ?: "no estimate yet"
@@ -359,7 +368,7 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
                 )
             }
             HorizontalDivider(color = scheme.outlineVariant)
-            val (line, why) = p.nextReminder(rule, source.interval.months!!)
+            val (line, why) = p.nextReminder(rule, source.interval.months!!, unit)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("Next reminder", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 Text(line, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -377,7 +386,7 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
             }
             Text(
                 source.milesPerDay?.let {
-                    "Dates estimated from your average of ~${RulePreviews.milesPerMonth(it).asMiles()}/month"
+                    "Dates estimated from your average of ~${RulePreviews.milesPerMonth(it).asDistance(unit)}/month"
                 } ?: "Mileage dates need two odometer readings at least a week apart.",
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
@@ -387,8 +396,8 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
 }
 
 /** The headline and the reason under it. */
-private fun RulePreview.nextReminder(rule: DueRule, months: Int): Pair<String, String> {
-    val odometer = dueAtOdometer.asMiles()
+private fun RulePreview.nextReminder(rule: DueRule, months: Int, unit: DistanceUnit): Pair<String, String> {
+    val odometer = dueAtOdometer.asDistance(unit)
     val timeDate = dueByDate.format(longDate)
     // "~" marks a date worked out from the driving pace; a limit already reached needs no estimate.
     val mileageDate = mileageDate?.let { if (milesFraction >= 1.0) "Due now" else "~${it.format(longDate)}" }
@@ -403,7 +412,7 @@ private fun RulePreview.nextReminder(rule: DueRule, months: Int): Pair<String, S
         }
         DueRule.WHICHEVER_LAST -> when (decidedBy) {
             DecidedBy.MILEAGE -> mileageDate!! to "Mileage hits last, at $odometer"
-            DecidedBy.TIME -> timeDate to (odometerAtTimeDue?.let { "Time hits last — est. ~${it.asMiles()} by then" } ?: "Time hits last")
+            DecidedBy.TIME -> timeDate to (odometerAtTimeDue?.let { "Time hits last — est. ~${it.asDistance(unit)} by then" } ?: "Time hits last")
             null -> "$odometer and $timeDate" to "Once both have passed — there's no driving pace yet to say which is later"
         }
     }
@@ -436,8 +445,9 @@ private fun LimitBar(label: String, date: String, fraction: Double, deciding: Bo
 }
 
 @Composable
-private fun LeadTimeFields(lead: LeadTime, onChange: (LeadTime) -> Unit) {
-    var miles by rememberSaveable { mutableStateOf(lead.miles.toString()) }
+private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTime) -> Unit) {
+    // Keyed on the unit: changing the default unit converts the saved distance, and the box has to follow.
+    var miles by rememberSaveable(unit) { mutableStateOf(lead.miles.toString()) }
     var days by rememberSaveable { mutableStateOf(lead.days.toString()) }
     // Saved as soon as both boxes hold something valid; otherwise the last good values stay in force.
     val update = { m: String, d: String ->
@@ -452,7 +462,7 @@ private fun LeadTimeFields(lead: LeadTime, onChange: (LeadTime) -> Unit) {
             OutlinedTextField(
                 value = miles,
                 onValueChange = { update(it, days) },
-                label = { Text("Miles before") },
+                label = { Text("${unit.title} before") },
                 singleLine = true,
                 isError = LeadTimeInput.parse(miles, "0") == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -470,9 +480,9 @@ private fun LeadTimeFields(lead: LeadTime, onChange: (LeadTime) -> Unit) {
         }
         Text(
             if (valid) {
-                "A reminder shows as due soon this far ahead of its limit."
+                "A reminder shows as due soon this far ahead of its limit. For a vehicle that counts in the other unit the distance is converted (500 mi is 800 km)."
             } else {
-                "Use whole numbers: up to ${LeadTimeInput.MAX_MILES.asMiles()} and up to ${LeadTimeInput.MAX_DAYS} days. Not saved yet."
+                "Use whole numbers: up to ${LeadTimeInput.MAX_MILES.asDistance(unit)} and up to ${LeadTimeInput.MAX_DAYS} days. Not saved yet."
             },
             style = MaterialTheme.typography.bodySmall,
             color = if (valid) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,

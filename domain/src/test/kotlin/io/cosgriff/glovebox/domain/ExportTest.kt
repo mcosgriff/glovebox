@@ -14,6 +14,7 @@ class ExportTest {
     private val brakes = ExportRecord(LocalDate.of(2025, 3, 15), 52_300, listOf("Front brake pads"), "Corner Garage", 41_000, null, listOf("b.jpg", "c.jpg"))
     private val wipers = ExportRecord(LocalDate.of(2026, 1, 9), 60_100, listOf("Wiper blades"), "DIY", null, null)
     private val truck = ExportVehicle(
+        unit = DistanceUnit.MILES,
         title = "2019 Toyota 4Runner SR5",
         nickname = "Old Blue",
         vin = "1M8GDM9AXKP042788",

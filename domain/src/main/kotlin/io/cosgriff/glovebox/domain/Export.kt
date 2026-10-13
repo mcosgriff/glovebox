@@ -55,6 +55,8 @@ data class ExportVehicle(
     val title: String,
     val nickname: String?,
     val vin: String?,
+    /** What this vehicle's odometer counts in; every distance below is in it. */
+    val unit: DistanceUnit,
     /** The highest reading on record, as the dash shows it. */
     val odometer: Int?,
     val soldOn: LocalDate?,
@@ -123,7 +125,8 @@ object Exports {
         is ExportDates.Custom -> "${dates.from.format(longDate)} to ${dates.to.format(longDate)}"
     }
 
-    fun miles(odometer: Int): String = String.format(Locale.US, "%,d mi", odometer)
+    /** A distance in the vehicle's own unit: "68,412 mi" or "110,099 km". */
+    fun distance(distance: Int, unit: DistanceUnit): String = unit.format(distance)
 
     fun date(date: LocalDate): String = date.format(longDate)
 
@@ -131,8 +134,8 @@ object Exports {
     fun actualMileage(vehicle: ExportVehicle): Int? = vehicle.clusterSwap?.let { swap -> vehicle.odometer?.let { swap.actual(it) } }
 
     /** Said wherever readings from two clusters appear together, so the jump isn't taken for tampering. */
-    fun clusterNote(swap: ClusterSwap): String {
-        val by = miles(kotlin.math.abs(swap.offset))
+    fun clusterNote(swap: ClusterSwap, unit: DistanceUnit): String {
+        val by = distance(kotlin.math.abs(swap.offset), unit)
         return "Replaced ${date(swap.on)}. Readings from that date are the replacement's, which shows $by " +
             "${if (swap.offset < 0) "more" else "less"} than the vehicle has covered; earlier readings are the original's."
     }
@@ -143,7 +146,7 @@ object Exports {
         vehicle.totalCents?.let { "${Money.format(it)} total" },
     ).joinToString(" · ")
 
-    fun lastDone(line: ExportScheduleLine): String = line.lastDone?.let { "${date(it.date)} at ${miles(it.odometer)}" } ?: "Not logged"
+    fun lastDone(line: ExportScheduleLine, unit: DistanceUnit): String = line.lastDone?.let { "${date(it.date)} at ${distance(it.odometer, unit)}" } ?: "Not logged"
 
     fun recallStatus(recall: ExportRecall): String = recall.completedOn?.let { "Marked done ${date(it)}" } ?: "Open"
 
@@ -167,9 +170,9 @@ object Exports {
             append("# Service history: ${text(v.title)}\n\n")
             v.nickname?.let { append("- Nickname: ${text(it)}\n") }
             v.vin?.let { append("- VIN: `$it`\n") }
-            v.odometer?.let { append("- Odometer: ${miles(it)} (highest reading on record)\n") }
-            actualMileage(v)?.let { append("- Actual mileage: ${miles(it)}\n") }
-            v.clusterSwap?.let { append("- Instrument cluster: ${clusterNote(it)}\n") }
+            v.odometer?.let { append("- Odometer: ${distance(it, v.unit)} (highest reading on record)\n") }
+            actualMileage(v)?.let { append("- Actual mileage: ${distance(it, v.unit)}\n") }
+            v.clusterSwap?.let { append("- Instrument cluster: ${clusterNote(it, v.unit)}\n") }
             v.soldOn?.let { append("- Sold: ${date(it)}\n") }
             append("- Period: ${datesLabel(doc.options.dates, today)}\n")
             append("- ${summary(v)}\n")
@@ -178,7 +181,7 @@ object Exports {
             append("\n## Service records\n\n")
             if (v.records.isEmpty()) append("No service records in this period.\n")
             v.records.forEach { r ->
-                append("### ${date(r.date)} · ${miles(r.odometer)}\n\n")
+                append("### ${date(r.date)} · ${distance(r.odometer, v.unit)}\n\n")
                 r.items.forEach { append("- ${text(it)}\n") }
                 append("\n" + if (r.enteredAsLastDone) LAST_DONE_NOTE else "Done by: ${text(r.doneBy)}")
                 r.costCents?.let { append(" · Cost: ${Money.format(it)}") }
@@ -190,7 +193,7 @@ object Exports {
 
             if (v.schedule.isNotEmpty()) {
                 append("## Maintenance schedule\n\n| Item | Every | Last done |\n|---|---|---|\n")
-                v.schedule.forEach { append("| ${cell(it.name)} | ${cell(it.every)} | ${lastDone(it)} |\n") }
+                v.schedule.forEach { append("| ${cell(it.name)} | ${cell(it.every)} | ${lastDone(it, v.unit)} |\n") }
                 append("\n$SCHEDULE_NOTE\n\n")
             }
             if (v.recalls.isNotEmpty()) {

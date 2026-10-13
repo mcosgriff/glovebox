@@ -48,7 +48,13 @@ The format is deliberately strict:
   value quietly dropped.
 - Nothing is repaired. Text must not start or end with a space or contain line breaks, numbers are
   written without quotes, and a field you don't have is left out, not set to `null` or `""`.
-- Units are always written out. Nothing is assumed from context.
+- Units are always written out. Nothing is assumed from context. **Distances in a file are miles**,
+  as the field names say (`everyMiles`, `atMiles`, a record's `odometer`), whatever the vehicle counts
+  in. Imported into a vehicle that counts in kilometres they are converted: odometer readings
+  exactly, intervals and milestones the way a manual printed for both markets gives them (5,000 mi is
+  8,000 km). The Import page shows the converted figures before anything is saved. A file saved from
+  a kilometre vehicle is written in miles the same way, so a kilometre figure that isn't a multiple of
+  8 can come back 1 km different.
 - Every list and every piece of text has a maximum, given in the schema.
 
 ## Checking a file before you import it

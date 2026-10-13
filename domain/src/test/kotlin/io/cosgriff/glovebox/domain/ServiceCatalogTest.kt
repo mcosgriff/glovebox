@@ -20,7 +20,7 @@ class ServiceCatalogTest {
     @Test
     fun `every suggested schedule item can be logged from the catalog`() {
         val resets = catalogItems.mapNotNull { it.resets }.toSet()
-        val templateKeys = (ScheduleTemplates.generic("4WD") + ScheduleTemplates.generic("RWD")).map { it.key }.toSet()
+        val templateKeys = (ScheduleTemplates.generic("4WD", null, DistanceUnit.MILES) + ScheduleTemplates.generic("RWD", null, DistanceUnit.MILES)).map { it.key }.toSet()
         assertEquals(emptySet<String>(), templateKeys - resets)
     }
 

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.Icons
@@ -62,7 +64,7 @@ import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageOverview
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
@@ -115,12 +117,12 @@ fun RemindersScreen(
             val before = item.snooze
             snoozingId = 0
             vm.setSnooze(item.id, snooze)
-            onMessage("${item.name} $verb until ${snooze.until()}", "Undo") { vm.setSnooze(item.id, before) }
+            onMessage("${item.name} $verb until ${snooze.until(snoozing.vehicle.unit)}", "Undo") { vm.setSnooze(item.id, before) }
         }
         SnoozeSheet(
             reminder = snoozing,
             subtitle = listOfNotNull("${snoozing.vehicle.year} ${snoozing.vehicle.shortName()}", snoozing.due()).joinToString(" · "),
-            options = Snoozing.options(snoozing.status, owner.odometer, LocalDate.now(), owner.oil),
+            options = Snoozing.options(snoozing.status, owner.odometer, LocalDate.now(), owner.oil, snoozing.vehicle.unit),
             skip = Snoozing.skip(snoozing.status, owner.odometer, LocalDate.now()),
             onSnooze = { apply(it, "snoozed") },
             onSkip = { apply(it, "skipped") },
@@ -268,7 +270,7 @@ private fun ReminderCard(
             Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(r.status.item.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Text(
-                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.label().every()}",
+                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.label(r.vehicle.unit).every()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -326,9 +328,9 @@ private fun String.every(): String = if (" / " in this) this else "every $this"
 internal fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.headline) {
     DueHeadline.NotLogged -> null
     is DueHeadline.Miles -> when {
-        h.remaining < 0 -> "${abs(h.remaining).asMiles()} over"
+        h.remaining < 0 -> "${abs(h.remaining).asDistance(vehicle.unit)} over"
         h.remaining == 0 -> "due now"
-        else -> "in ${h.remaining.asMiles()}"
+        else -> "in ${h.remaining.asDistance(vehicle.unit)}"
     }
     is DueHeadline.Days -> when {
         h.remaining < 0 -> "${days(abs(h.remaining))} over"
@@ -336,7 +338,7 @@ internal fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.h
         h.remaining <= 60 -> "in ${days(h.remaining)}"
         else -> status.status.dueByDate?.format(monthYear) ?: "in ${days(h.remaining)}"
     }
-    is DueHeadline.Snoozed -> "Snoozed until ${h.snooze.until()}"
+    is DueHeadline.Snoozed -> "Snoozed until ${h.snooze.until(vehicle.unit)}"
 }
 
 private fun days(n: Long): String = if (n == 1L) "1 day" else "$n days"
