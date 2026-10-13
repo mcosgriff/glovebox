@@ -26,6 +26,7 @@ android {
         targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -53,6 +54,12 @@ android {
         debug {
             applicationIdSuffix = ".debug"
         }
+    }
+
+    androidResources {
+        // DashReader asks how long Tesseract's language file is before copying it out, which Android
+        // can only answer for an asset stored as it is.
+        noCompress += "traineddata"
     }
 
     compileOptions {
@@ -129,6 +136,9 @@ dependencies {
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
     implementation(libs.zxing.core)
+    implementation(libs.tesseract4android)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.junit)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)

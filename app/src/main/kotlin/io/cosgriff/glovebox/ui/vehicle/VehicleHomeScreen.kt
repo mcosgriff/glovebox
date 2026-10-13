@@ -183,6 +183,11 @@ fun VehicleHomeScreen(
     onOpenDetails: (vehicleId: Long) -> Unit,
     /** The "When were these last done?" list. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
+    /** Opens the camera to read the odometer; [last] is the latest known reading. */
+    onReadDash: (last: Int?) -> Unit,
+    /** What the camera read, until [onDashReadingUsed] says the sheet has taken it. */
+    dashReading: Int?,
+    onDashReadingUsed: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: VehicleHomeViewModel = hiltViewModel(),
@@ -202,6 +207,9 @@ fun VehicleHomeScreen(
                 vm.saveMileage(miles) { id -> onMessage("Mileage updated · ${miles.asMiles()}", "Undo") { vm.undoMileage(id) } }
             },
             onDismiss = { updatingMileage = false },
+            onReadDash = { onReadDash(home.odometer) },
+            dashReading = dashReading,
+            onDashReadingUsed = onDashReadingUsed,
         )
     }
 

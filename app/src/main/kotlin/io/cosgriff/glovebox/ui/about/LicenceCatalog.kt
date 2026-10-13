@@ -41,12 +41,25 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
     private val fonts = listOf(BundledLibrary("com.ibm:plex", "IBM Plex Sans and IBM Plex Mono (fonts)", null, listOf(FONT_LICENCE)))
     private val fontLicence = FONT_LICENCE to Licence(FONT_LICENCE, "SIL Open Font License 1.1", "https://openfontlicense.org", null)
 
+    // Tesseract4Android is published without licence details, so the generated list has it under none. It is
+    // Apache 2.0, as are the Tesseract engine and the language file in assets/tessdata; the image libraries
+    // built into it have their own terms, kept in assets/licences/cz.adaptech.tesseract4android_tesseract4android.txt.
+    private val tesseract = BundledLibrary(
+        TESSERACT,
+        "Tesseract4Android (Tesseract OCR, Leptonica, libjpeg, libpng and English language data)",
+        null,
+        listOf(APACHE, TESSERACT_BUNDLED),
+    )
+    private val tesseractLicence = TESSERACT_BUNDLED to Licence(TESSERACT_BUNDLED, "Leptonica, libjpeg and libpng licences", null, null)
+
     private val loaded: List<LicenceGroup> by lazy {
         val text = context.resources.openRawResource(R.raw.aboutlibraries).bufferedReader().use { it.readText() }
         val definitions = json.decodeFromString<Definitions>(text)
         Licences.grouped(
-            definitions.libraries.map { BundledLibrary(it.uniqueId, it.name, it.artifactVersion, it.licenses) } + fonts,
-            definitions.licenses.mapValues { (id, terms) -> Licence(id, terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) } + fontLicence,
+            definitions.libraries.map {
+                if (it.uniqueId == TESSERACT) tesseract.copy(version = it.artifactVersion) else BundledLibrary(it.uniqueId, it.name, it.artifactVersion, it.licenses)
+            } + fonts,
+            definitions.licenses.mapValues { (id, terms) -> Licence(id, terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) } + fontLicence + tesseractLicence,
         )
     }
 
@@ -65,6 +78,9 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
 
     private companion object {
         const val FONT_LICENCE = "OFL-1.1"
+        const val TESSERACT = "cz.adaptech.tesseract4android:tesseract4android"
+        const val TESSERACT_BUNDLED = "tesseract4android-bundled"
+        const val APACHE = "Apache-2.0"
     }
 
     private fun asset(name: String): String? = try {

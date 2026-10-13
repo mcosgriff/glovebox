@@ -5,7 +5,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,16 +16,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,9 +64,22 @@ fun UpdateMileageSheet(
     preview: (miles: Int) -> MileagePreview,
     onSave: (miles: Int) -> Unit,
     onDismiss: () -> Unit,
+    /** Opens the camera to read the odometer off the dash. The sheet comes back with [dashReading] set. */
+    onReadDash: () -> Unit,
+    dashReading: Int?,
+    onDashReadingUsed: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     var digits by rememberSaveable { mutableStateOf("") }
+    // What the camera read, while it is still what is in the field. It only fills the field: the user saves it or changes it.
+    var fromDash by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(dashReading) {
+        if (dashReading != null) {
+            digits = dashReading.toString()
+            fromDash = digits
+            onDashReadingUsed()
+        }
+    }
     val miles = digits.toIntOrNull()
     // With nothing typed, preview the current reading so the sheet can still say what the last one was.
     val shown = preview(miles ?: 0)
@@ -123,6 +141,15 @@ fun UpdateMileageSheet(
                 }
             }
 
+            if (fromDash != null && fromDash == digits) {
+                Text(
+                    "Read from the dash by the camera. Check it against the odometer before you save.",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = scheme.onPrimaryContainer,
+                )
+            }
+
             shown.impactLine(typed = miles != null)?.let {
                 Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp)) {
                     Text(
@@ -149,24 +176,39 @@ fun UpdateMileageSheet(
                 }
             }
 
-            Button(
-                onClick = { miles?.let(onSave) },
-                enabled = miles != null,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = if (low) {
-                    ButtonDefaults.buttonColors(containerColor = scheme.onSurfaceVariant, contentColor = scheme.surface)
-                } else {
-                    ButtonDefaults.buttonColors()
-                },
-            ) {
-                Text(
-                    when {
-                        miles == null -> "Enter the odometer reading"
-                        low -> "Save anyway"
-                        else -> "Save ${miles.asMiles()}"
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(
+                    onClick = onReadDash,
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.5.dp, scheme.onSurface),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                ) {
+                    Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp))
+                    Text("Read dash", maxLines = 1)
+                }
+                Button(
+                    onClick = { miles?.let(onSave) },
+                    enabled = miles != null,
+                    modifier = Modifier.weight(2f).height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                    colors = if (low) {
+                        ButtonDefaults.buttonColors(containerColor = scheme.onSurfaceVariant, contentColor = scheme.surface)
+                    } else {
+                        ButtonDefaults.buttonColors()
                     },
-                )
+                ) {
+                    Text(
+                        when {
+                            miles == null -> "Enter the reading"
+                            low -> "Save anyway"
+                            else -> "Save ${miles.asMiles()}"
+                        },
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }

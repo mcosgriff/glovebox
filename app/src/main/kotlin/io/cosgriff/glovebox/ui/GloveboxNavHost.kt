@@ -63,6 +63,8 @@ import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
+import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.scan.ReadDashScreen
 import io.cosgriff.glovebox.ui.scan.ScanVinScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
 import io.cosgriff.glovebox.ui.schedule.LastDoneScreen
@@ -90,6 +92,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable object AddVehicleRoute
 @Serializable object ManualAddRoute
 @Serializable object ScanVinRoute
+
+/** [last] is the vehicle's latest known reading in dash terms, to tell the odometer from the other numbers in view. */
+@Serializable data class ReadDashRoute(val last: Int? = null)
 @Serializable object ReminderRulesRoute
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
@@ -136,6 +141,7 @@ private inline fun <reified T : Any> NavGraphBuilder.screen(
 }
 
 private const val SCANNED_VIN = "scannedVin"
+private const val DASH_READING = "dashReading"
 private const val CONFIRM_DELETE = "confirmDelete"
 
 private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
@@ -315,8 +321,23 @@ fun GloveboxNavHost() {
                     },
                 )
             }
-            screen<VehicleHomeRoute> {
+            screen<ReadDashRoute> { entry ->
+                ReadDashScreen(
+                    last = entry.toRoute<ReadDashRoute>().last,
+                    onClose = { nav.popBackStack() },
+                    onUse = { miles ->
+                        nav.previousBackStackEntry?.savedStateHandle?.set(DASH_READING, miles)
+                        nav.popBackStack()
+                    },
+                )
+            }
+            screen<VehicleHomeRoute> { entry ->
+                // What the camera read comes back through this entry's saved state, as a scanned VIN does.
+                val dashReading by entry.savedStateHandle.getStateFlow<Int?>(DASH_READING, null).collectAsStateWithLifecycle()
                 VehicleHomeScreen(
+                    onReadDash = { last -> nav.navigate(ReadDashRoute(last)) },
+                    dashReading = dashReading,
+                    onDashReadingUsed = { entry.savedStateHandle[DASH_READING] = null },
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
