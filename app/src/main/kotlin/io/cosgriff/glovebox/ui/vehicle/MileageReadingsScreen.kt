@@ -1,0 +1,370 @@
+package io.cosgriff.glovebox.ui.vehicle
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.OdometerDao
+import io.cosgriff.glovebox.data.db.OdometerReadingEntity
+import io.cosgriff.glovebox.data.db.ServiceDao
+import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.LoggedReading
+import io.cosgriff.glovebox.domain.MileageReadings
+import io.cosgriff.glovebox.domain.MileageUpdate
+import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.domain.ReadingRow
+import io.cosgriff.glovebox.ui.MileageReadingsRoute
+import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.service.DatePickerSheet
+import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.theme.PlexMono
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import javax.inject.Inject
+import javax.inject.Singleton
+
+data class MileageReadingsState(
+    val vehicleName: String,
+    /** Newest first: the standalone readings and the ones logged with a service record. */
+    val rows: List<ReadingRow>,
+    val swap: ClusterSwap?,
+)
+
+/** Puts a reading back as it was. A singleton with its own scope because Undo can be tapped after the screen has closed. */
+@Singleton
+class MileageReadingUndo @Inject constructor(private val odometer: OdometerDao, private val vehicles: VehicleDao) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    fun restore(reading: OdometerReadingEntity) {
+        scope.launch {
+            // The vehicle itself may have been deleted since.
+            if (vehicles.byId(reading.vehicleId) != null) odometer.put(reading)
+        }
+    }
+}
+
+@HiltViewModel
+class MileageReadingsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    vehicles: VehicleDao,
+    service: ServiceDao,
+    private val odometer: OdometerDao,
+    private val undo: MileageReadingUndo,
+) : ViewModel() {
+    private val vehicleId = savedStateHandle.toRoute<MileageReadingsRoute>().vehicleId
+
+    private var entities: Map<Long, OdometerReadingEntity> = emptyMap()
+
+    /** Null while loading, and if the vehicle no longer exists. */
+    val state: StateFlow<MileageReadingsState?> = combine(
+        vehicles.observe(vehicleId),
+        odometer.observe(vehicleId),
+        service.observeRecords(vehicleId),
+    ) { vehicle, readings, records ->
+        if (vehicle == null) return@combine null
+        entities = readings.associateBy { it.id }
+        val swap = vehicle.clusterSwap()
+        MileageReadingsState(
+            vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
+            // Everything as typed; MileageReadings puts it in dash terms to compare.
+            rows = MileageReadings.rows(
+                readings.map { LoggedReading(it.id, it.date, it.odometer) } +
+                    records.map { LoggedReading(it.record.id, it.record.date, it.record.odometer, fromRecord = true) },
+                swap,
+            ),
+            swap = swap,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** [onDone] gets the Undo, which puts the old date and value back. */
+    fun correct(id: Long, date: LocalDate, miles: Int, onDone: (undo: () -> Unit) -> Unit) = viewModelScope.launch {
+        val old = entities[id] ?: return@launch
+        if (old.date == date && old.odometer == miles) return@launch
+        odometer.correct(id, date, miles)
+        onDone { undo.restore(old) }
+    }
+
+    /** [onDone] gets the Undo. */
+    fun delete(id: Long, onDone: (reading: OdometerReadingEntity, undo: () -> Unit) -> Unit) = viewModelScope.launch {
+        val old = entities[id] ?: return@launch
+        odometer.delete(id)
+        onDone(old) { undo.restore(old) }
+    }
+}
+
+/**
+ * Every odometer reading on a vehicle, so a wrong one can be found and put right after the Undo for
+ * it has gone. No rendering on the canvas; follows the screens round it. Readings typed on the Update
+ * mileage sheet (and the final odometer logged when a vehicle is sold) are corrected or deleted here;
+ * one logged with a service is corrected on its record, which this links to.
+ */
+@Composable
+fun MileageReadingsScreen(
+    onBack: () -> Unit,
+    onOpenRecord: (recordId: Long) -> Unit,
+    /** Shows a message with one action on the app's snackbar. */
+    onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
+    vm: MileageReadingsViewModel = hiltViewModel(),
+) {
+    val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    val scheme = MaterialTheme.colorScheme
+    // The reading's id, so the sheet survives the list changing under it.
+    var editing by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    state.rows.firstOrNull { !it.reading.fromRecord && it.reading.id == editing }?.let { row ->
+        ReadingSheet(
+            reading = row.reading,
+            onSave = { date, miles ->
+                editing = null
+                vm.correct(row.reading.id, date, miles) { undo -> onMessage("Reading corrected · ${miles.asMiles()}", "Undo", undo) }
+            },
+            onDelete = {
+                editing = null
+                vm.delete(row.reading.id) { old, undo -> onMessage("Reading deleted · ${old.odometer.asMiles()}", "Undo", undo) }
+            },
+            onDismiss = { editing = null },
+        )
+    }
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            Column(Modifier.padding(start = 8.dp)) {
+                Text("Mileage readings", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Text(state.vehicleName, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            }
+        }
+
+        Column(
+            Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Text(
+                "The odometer is the highest reading here, and mileage reminders count from it. If one was typed wrong, tap it to correct or delete it. " +
+                    "A reading logged with a service is corrected on its record.",
+                color = scheme.onSurfaceVariant,
+            )
+            if (state.swap != null) {
+                Text(
+                    "The instrument cluster was replaced on ${state.swap.on.format(longDate)}. Readings are shown as they were typed; ones from before that day were on the old cluster.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+
+            if (state.rows.isEmpty()) {
+                Text("No readings yet. Update the mileage from the vehicle's page, or log a service.", color = scheme.onSurface)
+            } else {
+                val doubtful = state.rows.count { it.outOfLine || it.jump != null }
+                SectionLabel(
+                    (if (state.rows.size == 1) "1 READING" else "${state.rows.size} READINGS") +
+                        if (doubtful > 0) " · $doubtful TO CHECK" else "",
+                )
+                Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = scheme.surface)) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                        state.rows.forEachIndexed { i, row ->
+                            if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
+                            ReadingLine(row, onClick = { if (row.reading.fromRecord) onOpenRecord(row.reading.id) else editing = row.reading.id })
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadingLine(row: ReadingRow, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val reading = row.reading
+    Row(
+        Modifier.fillMaxWidth()
+            .heightIn(min = 60.dp)
+            .clickable(role = Role.Button, onClickLabel = if (reading.fromRecord) "Open the record" else "Correct or delete", onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(reading.odometer.asMiles(), style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                if (row.current) {
+                    Surface(color = scheme.primaryContainer, shape = CircleShape) {
+                        Text(
+                            "ODOMETER",
+                            Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = scheme.onPrimaryContainer,
+                        )
+                    }
+                }
+            }
+            Text(
+                reading.date.format(longDate) + " · " + if (reading.fromRecord) "logged with a service" else "mileage update",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+            )
+            // Says which one to look at, never that it is wrong: only the user knows what the dash read.
+            val doubt = when {
+                row.outOfLine -> "Doesn't fit the readings around it. An odometer only goes up, so check this one."
+                row.jump != null -> "${row.jump?.asMiles()} more than the reading before it. Check a digit hasn't slipped."
+                else -> null
+            }
+            doubt?.let { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = scheme.error) }
+        }
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+    }
+}
+
+/** Corrects one standalone reading's value or date, or deletes it. What is typed is saved as typed. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReadingSheet(reading: LoggedReading, onSave: (date: LocalDate, miles: Int) -> Unit, onDelete: () -> Unit, onDismiss: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    var day by rememberSaveable { mutableLongStateOf(reading.date.toEpochDay()) }
+    var text by rememberSaveable { mutableStateOf(reading.odometer.toString()) }
+    var pickingDate by rememberSaveable { mutableStateOf(false) }
+    var showErrors by rememberSaveable { mutableStateOf(false) }
+    val date = LocalDate.ofEpochDay(day)
+    val miles = OdometerInput.parse(text)
+    val problem = MileageReadings.problem(miles, date, LocalDate.now())
+
+    if (pickingDate) {
+        DatePickerSheet(
+            initial = date,
+            onPick = {
+                day = it.toEpochDay()
+                pickingDate = false
+            },
+            onDismiss = { pickingDate = false },
+        )
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = scheme.background,
+    ) {
+        Column(
+            Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text("Correct a reading", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(
+                "Was ${reading.odometer.asMiles()} on ${reading.date.format(longDate)}. Reminders are worked out again from whatever you save.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
+                label = { Text("Odometer (mi)") },
+                supportingText = problem?.takeIf { showErrors }?.let { { Text(it) } },
+                isError = showErrors && problem != null,
+                singleLine = true,
+                textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            OutlinedButton(
+                onClick = { pickingDate = true },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+            ) {
+                Text("Date · ${date.format(longDate)}")
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f).height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.5.dp, scheme.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = { if (miles != null && problem == null) onSave(date, miles) else showErrors = true },
+                    modifier = Modifier.weight(2f).height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Text("Save")
+                }
+            }
+
+            // Deleting is undone from the snackbar, so it asks nothing first.
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) {
+                Text("Delete this reading", fontWeight = FontWeight.SemiBold)
+            }
+        }
+    }
+}

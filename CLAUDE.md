@@ -116,9 +116,9 @@ DELETE, then the phone's screen lock). Odometer offset (instrument cluster repla
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
-about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#65),
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), 
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -312,8 +312,21 @@ Notes on what's built:
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
   vehicles" still returns to it, which is where another vehicle is added.
-- Update mileage adds an `odometer_readings` row dated today; the snackbar's Undo is the only way to
-  remove one so far. The sheet's preview comes from `MileageUpdate.preview`.
+- Update mileage adds an `odometer_readings` row dated today, with Undo on the snackbar. The sheet's
+  preview comes from `MileageUpdate.preview`. A reading further above the last one than a vehicle is
+  driven in the time (`MileageReadings.farAhead`: over 10,000 miles and over 150 a day) turns Save into
+  "Save anyway" with a line saying why, as a lower one already did. It is a question, never a block.
+- Mileage readings (#65, `MileageReadingsScreen` from Vehicle details, `MileageReadings` in `:domain`)
+  lists every reading newest first: the standalone ones and those logged with a service record. **The
+  odometer is the highest reading on record, so one slipped digit becomes the odometer and makes every
+  mileage reminder overdue;** this screen is where that is found and fixed after the Undo has gone. The
+  row the odometer comes from is tagged, and two kinds are marked to check: one outside the longest run
+  that never goes down (of two equal runs, the one ending later is believed), and one that is `farAhead`
+  of the reading before it. **Nothing is ever decided wrong or changed for the user:** the wording is
+  "check this one". A standalone reading opens a sheet to correct its value or date, or delete it, each
+  with Undo (`MileageReadingUndo`, `OdometerDao.put`); one from a record opens the record, which is
+  where it is edited. Readings are shown as typed and compared in dash terms, like everything else with
+  a replaced cluster. The final odometer logged when a vehicle is sold is an ordinary reading here.
 - "Read dash" on that sheet (`ReadDashScreen`, `DashReader`, `DashReading` in `:domain`) points the camera
   at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`guideBand()`,
   `NoCamera`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark

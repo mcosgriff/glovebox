@@ -20,6 +20,12 @@ data class MileagePreview(
     val below: Boolean,
     /** The mileage-counted reminders closest to due once the reading is saved, most urgent first. */
     val impact: List<Pair<ItemStatus, DueHeadline.Miles>>,
+    /**
+     * Further above [last] than a vehicle is driven in the time ([MileageReadings.farAhead]): a slipped
+     * digit, most likely. Worth asking about before saving, not a block. The highest reading becomes the
+     * odometer, so this is the mistake that makes every mileage reminder overdue.
+     */
+    val far: Boolean = false,
 )
 
 object MileageUpdate {
@@ -37,6 +43,7 @@ object MileageUpdate {
             impact = ReminderPresentation.comingUp(after).counting
                 .mapNotNull { (status, progress) -> (progress.headline as? DueHeadline.Miles)?.let { status to it } }
                 .take(limit),
+            far = MileageReadings.farAhead(odometer, today, last),
         )
     }
 

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -220,6 +221,13 @@ interface OdometerDao {
 
     @Query("DELETE FROM odometer_readings WHERE id = :id")
     suspend fun delete(id: Long)
+
+    /** Puts a reading back as it was: a deleted one returns under its own id, a corrected one gets its old date and value. */
+    @Upsert suspend fun put(reading: OdometerReadingEntity)
+
+    /** Corrects a reading that was typed wrong, or dated wrong. */
+    @Query("UPDATE odometer_readings SET date = :date, odometer = :odometer WHERE id = :id")
+    suspend fun correct(id: Long, date: LocalDate, odometer: Int)
 }
 
 @Dao

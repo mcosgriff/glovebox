@@ -247,6 +247,7 @@ fun VehicleDetailsScreen(
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
     onDelete: (vehicleId: Long) -> Unit,
     onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
+    onOpenReadings: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -489,6 +490,12 @@ fun VehicleDetailsScreen(
                         else -> MaterialTheme.colorScheme.onPrimaryContainer
                     },
                     onClick = { onOpenRecalls(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = "Mileage readings",
+                    detail = "Every odometer reading · fix or delete a wrong one",
+                    onClick = { onOpenReadings(v.id) },
                 )
             }
 
