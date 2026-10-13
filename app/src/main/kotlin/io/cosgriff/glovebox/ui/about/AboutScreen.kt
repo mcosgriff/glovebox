@@ -1,5 +1,18 @@
 package io.cosgriff.glovebox.ui.about
 
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import javax.inject.Inject
+import io.cosgriff.glovebox.ui.torque.KnownSpecCatalog
+import io.cosgriff.glovebox.domain.KnownSpecList
+import dagger.hilt.android.lifecycle.HiltViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.ViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.getValue
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -75,7 +88,15 @@ internal fun AboutCard(content: @Composable ColumnScope.() -> Unit) {
 
 /** Design: 9c · About. */
 @Composable
-fun AboutScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit, onOpenLicences: () -> Unit, onMessage: (String) -> Unit) {
+fun AboutScreen(
+    onBack: () -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenLicences: () -> Unit,
+    onMessage: (String) -> Unit,
+    vm: KnownListsViewModel = hiltViewModel(),
+) {
+    // The torque lists that ship with the app, each credited to where it came from.
+    val known by vm.lists.collectAsStateWithLifecycle()
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val version = remember { context.versionName() }
@@ -111,8 +132,13 @@ fun AboutScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit, onOpenLicences: (
                     HorizontalDivider(color = scheme.outlineVariant)
                     Source("NHTSA recalls", "Recalls by year, make and model")
                     HorizontalDivider(color = scheme.outlineVariant)
-                    // No manufacturer data: the schedule is a general starter list and torque specs are typed in.
+                    // No manufacturer data: the schedule is a general starter list and torque specs are typed in,
+                    // or come from a named list that is offered for its model and tagged to double-check.
                     Source("Maintenance schedules & specs", "Typical intervals to start from, and your own entries")
+                    known.forEach { list ->
+                        HorizontalDivider(color = scheme.outlineVariant)
+                        Source(list.source.name, "Reference torque values offered for the ${list.title}. ${list.source.note}")
+                    }
                 }
                 Text(
                     "Intervals and torque specs are for reference. Check your owner's or service manual before relying on them.",
@@ -216,4 +242,10 @@ fun PrivacyScreen(onBack: () -> Unit) {
             }
         }
     }
+}
+
+/** The bundled torque lists, for crediting their sources on the About screen. */
+@HiltViewModel
+class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog) : ViewModel() {
+    val lists: StateFlow<List<KnownSpecList>> = flow { emit(catalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }

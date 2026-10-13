@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.domain.KnownSpecs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -65,6 +66,8 @@ private const val MAX_NOTE = 140
 @Composable
 fun SpecEditorSheet(
     spec: TorqueSpecEntity?,
+    /** Where the bundled list this row started from came from; null for a row that never came from one. */
+    listSource: String?,
     unit: TorqueUnit,
     startCategory: TorqueCategory,
     onSave: (SpecDraft) -> Unit,
@@ -81,6 +84,9 @@ fun SpecEditorSheet(
     var torqueText by rememberSaveable { mutableStateOf(stored?.let { TorqueSpecs.editText(it, unit) }.orEmpty()) }
     var factory by rememberSaveable { mutableStateOf(spec?.source?.let(TorqueSource::of) == TorqueSource.FACTORY) }
     var note by rememberSaveable { mutableStateOf(spec?.note.orEmpty()) }
+    // A value from a bundled list that nobody has checked yet. Either switch below clears the tag.
+    val reference = spec?.source?.let(TorqueSource::of) == TorqueSource.REFERENCE
+    var checked by rememberSaveable { mutableStateOf(false) }
 
     val torque = TorqueSpecs.parse(torqueText, entryUnit)
     val torqueBad = torqueText.isNotBlank() && torque == null
@@ -148,6 +154,25 @@ fun SpecEditorSheet(
                 UnitSwitch(entryUnit, onPick = { entryUnitName = it.name }, modifier = Modifier.fillMaxWidth())
             }
 
+            if (reference) {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = checked, role = Role.Switch, onValueChange = { checked = it }),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("I've checked this value", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            "It is from $listSource and nobody has checked it for you. Switch this on once a service or repair manual agrees, " +
+                                "and it becomes your entry. If the figure is wrong, change it above.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = checked, onCheckedChange = null)
+                }
+            }
+
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = factory, role = Role.Switch, onValueChange = { factory = it }),
                 verticalAlignment = Alignment.CenterVertically,
@@ -182,8 +207,8 @@ fun SpecEditorSheet(
                             category = TorqueCategory.valueOf(categoryName),
                             socketSize = VehicleText.clean(size, 30),
                             torque = torque,
-                            // A source only means something once there is a value.
-                            source = if (factory && torque != null) TorqueSource.FACTORY else TorqueSource.USER,
+                            // A source only means something once there is a value; a reference value stays one until vouched for or changed.
+                            source = KnownSpecs.sourceAfterEdit(spec?.source?.let(TorqueSource::of), stored, torque, fromFactoryManual = factory, checked = checked),
                             note = VehicleText.clean(note, MAX_NOTE),
                         ),
                     )

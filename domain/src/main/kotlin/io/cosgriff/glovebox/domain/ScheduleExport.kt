@@ -57,13 +57,22 @@ object ScheduleExport {
  * closer than [TorqueImport] needs to call it the same setting when the file is read back.
  */
 object TorqueExport {
-    fun file(rows: List<SavedTorqueSpec>, unit: TorqueUnit): WrittenFile = ImportFiles.sift(
-        kind = ImportKind.TORQUE_SPECS,
-        candidates = rows.map { row -> Triple(row.name.trim(), TorqueImport.key(row.name, row.category), json(row, unit)) },
-        max = TorqueImport.MAX_ITEMS,
-        read = { array, check -> TorqueImport.read(array, check) },
-        twice = "another row in the same category has the same name",
-    )
+    fun file(rows: List<SavedTorqueSpec>, unit: TorqueUnit): WrittenFile {
+        // A reference value from a bundled list is somebody else's figure that the user hasn't checked. A
+        // file has no way to say so (it knows "factory-manual" and "own"), and would pass it on as the
+        // user's own. It is left out, and said, until they confirm it or make it theirs.
+        val (unchecked, own) = rows.partition { it.source == TorqueSource.REFERENCE && it.torque != null }
+        val written = ImportFiles.sift(
+            kind = ImportKind.TORQUE_SPECS,
+            candidates = own.map { row -> Triple(row.name.trim(), TorqueImport.key(row.name, row.category), json(row, unit)) },
+            max = TorqueImport.MAX_ITEMS,
+            read = { array, check -> TorqueImport.read(array, check) },
+            twice = "another row in the same category has the same name",
+        )
+        return written.copy(leftOut = unchecked.map { LeftOut(it.name.trim(), UNCHECKED) } + written.leftOut)
+    }
+
+    const val UNCHECKED = "it is a reference value you haven't confirmed; check it against the service manual and edit the row first"
 
     private fun json(row: SavedTorqueSpec, unit: TorqueUnit): JsonObject = buildJsonObject {
         put("name", row.name.trim())

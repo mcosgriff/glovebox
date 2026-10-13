@@ -134,7 +134,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: known torque specs (#76), VIN scan follow-up (#83).
+To build: a first bundled torque list from a source that may be shipped (#76), VIN scan follow-up (#83).
 
 Notes on what's built:
 - Distance units (#93). The unit is chosen where a vehicle is added (a switch on both paths, starting at
@@ -224,8 +224,8 @@ Notes on what's built:
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
   default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import
   never deletes, is one transaction (`TorqueDao.applyImport`), has no Undo, and only ever writes the
-  user's own rows: nothing Glovebox supplies may be changed by one (that will matter for #76's bundled
-  lists and for template schedule items). The picked file is read into memory, capped at 2 MB, and never
+  user's own rows: nothing Glovebox supplies may be changed by one (typical schedule items; a bundled
+  torque list itself is an asset, and a row added from one is the user's row from then on). The picked file is read into memory, capped at 2 MB, and never
   written to disk, which is why `DataWipe` knows nothing about it and what the privacy screen says.
   Torque rows match on category and name ignoring case; a file's caps are whole figures per unit
   (`TorqueImport.maxIn`) so the schema can state them exactly.
@@ -559,23 +559,51 @@ Notes on what's built:
   calls `DataWipe.deleteVehicle` and has no Undo. `RecordActions.undo` checks the vehicle still exists, so
   an Undo snackbar left over from before the delete does nothing instead of failing.
 - Torque specs (`TorqueSpecsScreen`) start empty. "Start with common fasteners" adds named rows from
-  `TorqueSpecs.common` with no size, value or note: there is no source for factory torque values and none
-  may be invented. `torque_specs.category` and `.source` hold `TorqueCategory` and `TorqueSource` names.
+  `TorqueSpecs.common` with no size, value or note: Glovebox has no factory torque values and none may be
+  invented. The only values it ships are in a named list (next note). `torque_specs.category` and `.source` hold `TorqueCategory` and `TorqueSource` names.
   `FACTORY` means the user says they copied the value from the factory service manual, and is only kept
   while the row has a value. Torque is typed in any unit (`TorqueSpecs.parse`, capped at 1,000 N·m) and
   stored in N·m. The unit switch starts at the Settings unit and doesn't change it.
+- Known torque specs (#76, `KnownSpecs` in `:domain`, `KnownSpecCatalog` in app, `docs/known-specs.md`).
+  **The rule is: a torque value ships only as part of a list that names its source, records why Glovebox
+  may ship it, and whose every value is tagged to double-check. None is Glovebox's and none is presented
+  as the manufacturer's.** A list is a file in `assets/known-specs/`: an id, the make, model and year range
+  it is for, its source (name, optional URL, the day it was copied, a sentence on what kind of source it
+  is, and `basis`) and items written exactly as in a `torque-specs` import file, read by the same strict
+  reader. **No list ships yet, and the folder doesn't exist.** A 4Runner list copied from an enthusiast
+  site was built and then taken out before merging: the site gave no permission to reuse its table, the
+  app may one day be sold, and two of its figures were disputed by its own readers. **`basis` has to be a
+  real answer** (written permission, or values the maintainer took from a manual they have); "it was on a
+  website" is not one. Don't add rows from a source that doesn't state units, and don't correct a figure
+  from memory: leave it out or note the dispute. `KnownSpecsTest` holds every file in the folder to these
+  rules and tests the logic on a made-up model with made-up values.
+- `KnownSpecs.match` offers a list only for its make, model and years; no near misses. "Add known specs for
+  …" is shown on Torque specs while the list has something the vehicle lacks, with `KnownSpecs.offer` saying
+  whose values they are every time. `KnownSpecs.plan` adds new rows and fills rows that are only a name; a
+  row the user has put anything in is never written over, and there is no "replace". Every value arrives as
+  `TorqueSource.REFERENCE` (tag DOUBLE-CHECK) with `torque_specs.knownList` set to the list's id.
+  `knownList` is permanent: the row always says "Started from the … list", whatever happens to it later.
+  The tag clears through the editor (`KnownSpecs.sourceAfterEdit`): "I've checked this value" or a changed
+  figure makes it YOUR ENTRY, "From the factory service manual" makes it FACTORY MANUAL. The first of those
+  exists because few owners have the factory manual. Editing the
+  socket or note alone clears nothing. A row saved through the editor keeps `knownList` (the view model
+  copies the stored row). An unconfirmed reference value is left out of a saved import file and listed as
+  such (`TorqueExport`), since a file would pass it on as the user's own. Once added, a row is the user's:
+  an import may replace it like any other, and it keeps `knownList`. The list's source is credited on the
+  About screen from the catalog.
 - The vehicle photo is picked with the system photo picker (no permission), redrawn as a JPEG of at most
   1600 px, which drops its metadata, and encrypted by `VehiclePhotoStore` into `PhotoCrypto.photoDir`
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v15); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v17); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
 - Business logic goes in `:domain` with a test; ViewModels stay thin.
 - Never show placeholder data as if real; mark sample values clearly.
-- Torque/interval reference values are user-verified; UI says "check your service manual".
+- Torque/interval reference values are user-verified; UI says "check your service manual". A bundled torque
+  value is the one exception to "user-entered", and it is tagged DOUBLE-CHECK until the user has checked it.
 - Any Python helper scripts: use `uv run` with inline script dependencies.
 - Public repo: never commit real personal data (VINs, records, photos), keystores, `local.properties`
   or `.idea/`. Test fixtures use made-up values.
