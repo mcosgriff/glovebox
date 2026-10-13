@@ -118,7 +118,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), 
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
