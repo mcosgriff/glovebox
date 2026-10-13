@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.lock
 
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.app.KeyguardManager
+import android.app.Activity
 import io.cosgriff.glovebox.domain.ScreenLock
 import android.content.Context
 import android.os.Build
@@ -71,20 +76,57 @@ fun Context.screenLock(): ScreenLock = when {
     else -> ScreenLock.CREDENTIAL
 }
 
-/** Asks for the fingerprint, face or screen lock before something drastic. Cancelling does nothing. */
-fun FragmentActivity.confirmWithScreenLock(title: String, subtitle: String, onConfirmed: () -> Unit) {
-    val info = BiometricPrompt.PromptInfo.Builder()
-        .setTitle(title)
-        .setSubtitle(subtitle)
-        .setAllowedAuthenticators(authenticators)
-        .build()
-    BiometricPrompt(
-        this,
-        ContextCompat.getMainExecutor(this),
-        object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onConfirmed()
-        },
-    ).authenticate(info)
+/**
+ * Asks Android for the fingerprint, face or screen lock, for unlocking the app and before something
+ * drastic. Returns the function that asks; `screenLockOnly` skips the biometric where Android can
+ * (11 and later). [onError] is not called for a finger that isn't recognised: Android says so in its
+ * own prompt and lets them try again.
+ *
+ * **Android 10 goes a different way, on purpose.** There the biometric prompt can't offer the screen
+ * lock itself; the system puts its own confirm-credentials screen in front, the app's activity
+ * stops, and androidx.biometric (1.1.0) cancels the check when it sees the stop. The user taps
+ * "Use PIN", enters it correctly, and nothing comes back: with a finger that won't read they could
+ * never get in. So on Android 10 that same system screen is opened directly and answered as an
+ * ordinary activity result. It still offers the fingerprint first, with the screen lock beside it.
+ */
+@Composable
+fun rememberScreenLockCheck(
+    title: String,
+    subtitle: String,
+    onPassed: () -> Unit,
+    onError: (error: UnlockError, systemMessage: String?) -> Unit = { _, _ -> },
+): (screenLockOnly: Boolean) -> Unit {
+    val activity = LocalActivity.current as FragmentActivity
+    val passed by rememberUpdatedState(onPassed)
+    val failed by rememberUpdatedState(onError)
+    val systemScreen = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        // Anything but OK is the user backing out; Android has already said whatever else there was to say.
+        if (result.resultCode == Activity.RESULT_OK) passed() else failed(UnlockError.CANCELLED, null)
+    }
+    return remember(activity, title, subtitle) {
+        { screenLockOnly ->
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                @Suppress("DEPRECATION") // Deprecated for the prompt that doesn't work here; see above.
+                val intent = activity.getSystemService(KeyguardManager::class.java)?.createConfirmDeviceCredentialIntent(title, subtitle)
+                // Null when the phone has no screen lock, which callers have already ruled out.
+                if (intent != null) systemScreen.launch(intent) else failed(UnlockError.UNAVAILABLE, null)
+            } else {
+                val info = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(title)
+                    .setSubtitle(subtitle)
+                    .setAllowedAuthenticators(if (screenLockOnly) DEVICE_CREDENTIAL else authenticators) // PIN fallback
+                    .build()
+                BiometricPrompt(
+                    activity,
+                    ContextCompat.getMainExecutor(activity),
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = passed()
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) = failed(unlockError(errorCode), errString.toString())
+                    },
+                ).authenticate(info)
+            }
+        }
+    }
 }
 
 private fun unlockError(code: Int): UnlockError = when (code) {
@@ -118,25 +160,16 @@ fun LockScreen(onUnlocked: () -> Unit) {
     val options = Unlock.options(lock, fingerprintSensor, screenLockAlone)
     var message by rememberSaveable { mutableStateOf<String?>(null) }
 
+    val check = rememberScreenLockCheck(
+        title = "Unlock Glovebox",
+        subtitle = "Your data is locked and encrypted",
+        onPassed = onUnlocked,
+        onError = { error, systemMessage -> message = Unlock.message(error, activity.screenLock(), systemMessage) },
+    )
+
     fun prompt(screenLockOnly: Boolean = false) {
         message = null
-        val info = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Unlock Glovebox")
-            .setSubtitle("Your data is locked and encrypted")
-            .setAllowedAuthenticators(if (screenLockOnly) DEVICE_CREDENTIAL else authenticators) // PIN fallback
-            .build()
-        BiometricPrompt(
-            activity,
-            ContextCompat.getMainExecutor(activity),
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onUnlocked()
-
-                // A finger that isn't recognised is not an error: Android says so in its own prompt and lets them try again.
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    message = Unlock.message(unlockError(errorCode), activity.screenLock(), errString.toString())
-                }
-            },
-        ).authenticate(info)
+        check(screenLockOnly)
     }
 
     // Nothing to gate with, so don't trap the user. Otherwise ask once on arrival; after that it is up to them.

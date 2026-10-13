@@ -60,7 +60,7 @@ import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.domain.DeleteAll
 import io.cosgriff.glovebox.domain.ScreenLock
 import io.cosgriff.glovebox.domain.TypedConfirmation
-import io.cosgriff.glovebox.lock.confirmWithScreenLock
+import io.cosgriff.glovebox.lock.rememberScreenLockCheck
 import io.cosgriff.glovebox.lock.screenLock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,6 +104,8 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
     val confirmed = TypedConfirmation.matches(typed, DeleteAll.WORD)
 
     fun wipe() = vm.delete { activity.restartFromScratch() }
+    // Cancelling does nothing: the button is still there.
+    val confirm = rememberScreenLockCheck("Delete everything in Glovebox", "This can't be undone", onPassed = ::wipe)
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         IconButton(onClick = onCancel, enabled = !vm.deleting, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
@@ -191,7 +193,7 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
             Button(
                 onClick = {
                     if (DeleteAll.asksForScreenLock(lock)) {
-                        activity.confirmWithScreenLock("Delete everything in Glovebox", "This can't be undone", ::wipe)
+                        confirm(false)
                     } else {
                         wipe()
                     }

@@ -134,8 +134,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: unlock on Android 10 (untested, #27),
-known torque specs (#76), VIN scan follow-up (#83).
+To build: known torque specs (#76), VIN scan follow-up (#83).
 
 Notes on what's built:
 - Distance units (#93). The unit is chosen where a vehicle is added (a switch on both paths, starting at
@@ -405,6 +404,16 @@ Notes on what's built:
   a phone with only a screen lock, and "Use screen lock instead" only on Android 11+, where Android can ask
   for the screen lock alone. Errors go through `Unlock.message`; a cancel says nothing. With the screen
   lock allowed as a fallback, Android handles too many failed tries itself by switching to the PIN.
+- The check itself is `rememberScreenLockCheck` (`LockScreen.kt`), used for unlocking and for Delete all
+  data. On Android 11 and later it is androidx's `BiometricPrompt`. **On Android 10 it opens the system's
+  confirm-credentials screen directly** (`KeyguardManager.createConfirmDeviceCredentialIntent`) and takes
+  the answer as an activity result: with `BiometricPrompt` there, the system screen stops the activity,
+  androidx.biometric 1.1.0 cancels the check on the stop, and a correct PIN after "Use PIN" unlocked
+  nothing. That screen still offers the fingerprint first. Because it covers the app, the app counts as
+  backgrounded while the user unlocks it, and the answer arrives just before the app hears it is back, so
+  `AppLock.unlock()` also forgets when the app was backgrounded; otherwise the return locks it again.
+  Don't move Android 10 back to `BiometricPrompt` without testing the PIN fallback on an API 29 emulator
+  (`Pixel_API_29`): fingerprint, "Use PIN", too many wrong fingers, cancel, and PIN with no fingerprint.
 - Navigation (checked against `design/screens/NavMap.png`): four tabs, each keeping its own screens
   (`saveState` / `restoreState`); the fourth is labelled Settings, because it opens Settings and not a
   menu. System Back from a tab goes to Garage, then leaves the app. A notification's destination is pushed
