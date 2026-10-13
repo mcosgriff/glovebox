@@ -51,7 +51,7 @@ fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: S
                         if (text == null) {
                             "An import file is stricter than this screen. Change these and try again."
                         } else {
-                            "An import file is stricter than this screen. The other ${file.count} can be saved without " +
+                            "An import file is stricter than this screen. The other ${if (file.count == 1) "one" else file.count.toString()} can be saved without " +
                                 (if (file.leftOut.size == 1) "it" else "them") + ", or change these first."
                         },
                         style = MaterialTheme.typography.bodySmall,
