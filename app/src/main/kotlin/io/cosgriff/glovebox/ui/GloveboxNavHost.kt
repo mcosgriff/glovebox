@@ -65,6 +65,7 @@ import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import androidx.navigation.toRoute
 import io.cosgriff.glovebox.ui.scan.ReadDashScreen
+import io.cosgriff.glovebox.ui.vehicle.MileageReadingsScreen
 import io.cosgriff.glovebox.ui.scan.ScanVinScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleScreen
 import io.cosgriff.glovebox.ui.schedule.LastDoneScreen
@@ -92,6 +93,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable object AddVehicleRoute
 @Serializable object ManualAddRoute
 @Serializable object ScanVinRoute
+@Serializable data class MileageReadingsRoute(val vehicleId: Long)
 
 /** [last] is the vehicle's latest known reading in dash terms, to tell the odometer from the other numbers in view. */
 @Serializable data class ReadDashRoute(val last: Int? = null)
@@ -355,6 +357,14 @@ fun GloveboxNavHost() {
                     onArchived = onArchived,
                     onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
+                    onOpenReadings = { vehicleId -> nav.navigate(MileageReadingsRoute(vehicleId)) },
+                )
+            }
+            screen<MileageReadingsRoute> {
+                MileageReadingsScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
+                    onMessage = showMessage,
                 )
             }
             screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }

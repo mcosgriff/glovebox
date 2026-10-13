@@ -84,6 +84,7 @@ fun UpdateMileageSheet(
     // With nothing typed, preview the current reading so the sheet can still say what the last one was.
     val shown = preview(miles ?: 0)
     val low = miles != null && shown.below
+    val far = miles != null && shown.far
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -107,7 +108,7 @@ fun UpdateMileageSheet(
             Surface(
                 color = scheme.surface,
                 shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(2.dp, if (low) scheme.error else scheme.onSurface),
+                border = BorderStroke(2.dp, if (low || far) scheme.error else scheme.onSurface),
             ) {
                 Column(
                     Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).semantics(mergeDescendants = true) {
@@ -194,7 +195,7 @@ fun UpdateMileageSheet(
                     modifier = Modifier.weight(2f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp),
-                    colors = if (low) {
+                    colors = if (low || far) {
                         ButtonDefaults.buttonColors(containerColor = scheme.onSurfaceVariant, contentColor = scheme.surface)
                     } else {
                         ButtonDefaults.buttonColors()
@@ -203,7 +204,7 @@ fun UpdateMileageSheet(
                     Text(
                         when {
                             miles == null -> "Enter the reading"
-                            low -> "Save anyway"
+                            low || far -> "Save anyway"
                             else -> "Save ${miles.asMiles()}"
                         },
                         maxLines = 1,
@@ -223,7 +224,7 @@ private fun MileagePreview.deltaLine(typed: Boolean): Pair<String, Tone>? {
     val delta = delta
     return when {
         !typed || delta == null -> lastText to Tone.PLAIN
-        below -> lastText to Tone.BAD
+        below || far -> lastText to Tone.BAD
         else -> "+${delta.asMiles()} since ${last.date.format(shortDate)}" to Tone.GOOD
     }
 }
@@ -232,6 +233,9 @@ private fun MileagePreview.deltaLine(typed: Boolean): Pair<String, Tone>? {
 private fun MileagePreview.impactLine(typed: Boolean): String? = when {
     !typed -> null
     below -> "That's lower than the last reading, so reminders will keep counting from ${last?.odometer?.asMiles()}. " +
+        "Check the number before saving."
+    // Said in place of what it would do to the reminders: if the number is wrong, those are wrong too.
+    far -> "That's ${delta?.asMiles()} more than the last reading. If a digit has slipped, every mileage reminder would count from it. " +
         "Check the number before saving."
     impact.isEmpty() -> null
     else -> impact.joinToString(" · ", postfix = ".") { (status, headline) ->
