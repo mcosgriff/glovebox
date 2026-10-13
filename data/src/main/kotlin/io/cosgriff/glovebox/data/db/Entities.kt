@@ -172,9 +172,14 @@ data class TorqueSpecEntity(
     val socketSize: String? = null,
     /** Canonical storage in N·m; null = not entered yet. */
     val newtonMeters: Double? = null,
-    /** FACTORY or USER. */
+    /** A TorqueSource name: FACTORY, USER, or REFERENCE for a value from a bundled list the user hasn't confirmed. */
     val source: String = "USER",
     val note: String? = null,
+    /**
+     * The id of the bundled list (KnownSpecs) this row was added from, and stays set whatever happens to
+     * the row afterwards: a value that began as somebody else's reference figure always says so.
+     */
+    val knownList: String? = null,
 )
 
 /**

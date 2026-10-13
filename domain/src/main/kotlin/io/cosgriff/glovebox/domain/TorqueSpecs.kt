@@ -24,6 +24,12 @@ enum class TorqueSource {
 
     /** Anything else the user entered. */
     USER,
+
+    /**
+     * From a list bundled with the app ([KnownSpecs]) and not yet checked by the user: shown as
+     * DOUBLE-CHECK. It is somebody else's figure, never Glovebox's and never the manufacturer's.
+     */
+    REFERENCE,
     ;
 
     companion object {
@@ -39,8 +45,8 @@ object TorqueSpecs {
     const val MAX_NEWTON_METERS = 1_000.0
 
     /**
-     * Names only. There is no source for factory torque values, so these start empty and the user
-     * fills them in from the service manual.
+     * Names only. Glovebox has no factory torque values, so these start empty and the user fills
+     * them in from the service manual. (Values come only from a named list: see [KnownSpecs].)
      */
     val common: List<TorqueTemplate> = listOf(
         TorqueTemplate("Oil drain plug", TorqueCategory.ENGINE),

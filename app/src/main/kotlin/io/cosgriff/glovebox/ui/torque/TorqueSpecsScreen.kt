@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.torque
 
+import kotlinx.coroutines.flow.flow
+import io.cosgriff.glovebox.domain.KnownSpecs
+import io.cosgriff.glovebox.domain.KnownSpecPlan
+import io.cosgriff.glovebox.domain.KnownSpecList
+import io.cosgriff.glovebox.domain.ImportedTorqueSpec
 import io.cosgriff.glovebox.domain.TorqueExport
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.ui.export.ExportSaver
@@ -86,6 +91,10 @@ data class TorqueSpecsState(
     val specs: List<TorqueSpecEntity>,
     /** The unit chosen in Settings, which this screen starts in. */
     val settingsUnit: TorqueUnit,
+    /** The bundled list for this model, with what adding it would do; null when there is none or nothing is left to add. */
+    val known: Pair<KnownSpecList, KnownSpecPlan>? = null,
+    /** Bundled list id to the name of its source, for the line on a row that came from one. */
+    val knownSources: Map<String, String> = emptyMap(),
 ) {
     /** Only the categories in use get a chip. */
     val categories: List<TorqueCategory> get() = TorqueCategory.entries.filter { c -> specs.any { TorqueCategory.of(it.category) == c } }
@@ -112,6 +121,7 @@ class TorqueSpecsViewModel @Inject constructor(
     settings: SettingsRepository,
     private val undo: TorqueSpecUndo,
     private val saver: ExportSaver,
+    catalog: KnownSpecCatalog,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<TorqueSpecsRoute>().vehicleId
 
@@ -120,12 +130,19 @@ class TorqueSpecsViewModel @Inject constructor(
         vehicles.observe(vehicleId),
         torque.observe(vehicleId),
         settings.settings,
-    ) { vehicle, specs, s ->
+        flow { emit(catalog.lists()) },
+    ) { vehicle, specs, s, lists ->
         if (vehicle == null) return@combine null
+        // Offered only for the model a list is for, and only while it has something this vehicle lacks.
+        val known = KnownSpecs.match(lists, vehicle.year, vehicle.make, vehicle.model)
+            ?.let { list -> list to KnownSpecs.plan(list, specs.map { it.toSaved() }) }
+            ?.takeIf { it.second.changes > 0 }
         TorqueSpecsState(
             vehicle = vehicle,
             specs = specs.sortedWith(compareBy<TorqueSpecEntity> { TorqueCategory.of(it.category).ordinal }.thenBy { it.name.lowercase() }),
             settingsUnit = s.torqueUnit,
+            known = known,
+            knownSources = lists.associate { it.id to it.source.name },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -137,11 +154,10 @@ class TorqueSpecsViewModel @Inject constructor(
         viewModelScope.launch { saver.saveImportFile(text, TorqueExport.fileName("${v.year} ${v.make} ${v.model}")) }
     }
 
-    /** [draft] with id 0 is a new spec. */
+    /** [draft] with id 0 is a new spec. An edit keeps what the editor doesn't show: that the row came from a bundled list. */
     fun save(draft: SpecDraft) = viewModelScope.launch {
-        val entity = TorqueSpecEntity(
-            id = draft.id,
-            vehicleId = vehicleId,
+        val before = state.value?.specs?.firstOrNull { it.id == draft.id && draft.id != 0L }
+        val entity = (before ?: TorqueSpecEntity(vehicleId = vehicleId, name = draft.name, category = draft.category.name)).copy(
             name = draft.name,
             category = draft.category.name,
             socketSize = draft.socketSize,
@@ -149,7 +165,31 @@ class TorqueSpecsViewModel @Inject constructor(
             source = draft.source.name,
             note = draft.note,
         )
-        if (draft.id == 0L) torque.insert(entity) else torque.update(entity)
+        if (before == null) torque.insert(entity) else torque.update(entity)
+    }
+
+    /**
+     * Adds the bundled list's values: new rows, and rows that were only a name. Every value arrives as a
+     * reference to double-check, marked for good with the list it came from. A row the user has put
+     * anything in is never touched.
+     */
+    fun addKnown() = viewModelScope.launch {
+        val (list, _) = state.value?.known ?: return@launch
+        val rows = torque.specsFor(vehicleId)
+        // Worked out again from what is saved now, in case the list on screen was stale.
+        val plan = KnownSpecs.plan(list, rows.map { it.toSaved() })
+        val byId = rows.associateBy { it.id }
+        fun TorqueSpecEntity.from(item: ImportedTorqueSpec) = copy(
+            socketSize = item.socket,
+            newtonMeters = item.torque?.newtonMeters,
+            source = TorqueSource.REFERENCE.name,
+            note = item.note,
+            knownList = list.id,
+        )
+        torque.applyImport(
+            plan.new.map { TorqueSpecEntity(vehicleId = vehicleId, name = it.name, category = it.category.name).from(it) },
+            plan.fills.mapNotNull { (item, saved) -> byId[saved.id]?.from(item) },
+        )
     }
 
     /** [onDeleted] gets the Undo. */
@@ -196,6 +236,7 @@ fun TorqueSpecsScreen(
         if (id == 0L || spec != null) {
             SpecEditorSheet(
                 spec = spec,
+                listSource = spec?.knownList?.let { state.knownSources[it] ?: "a reference list" },
                 unit = unit,
                 startCategory = category ?: TorqueCategory.ENGINE,
                 onSave = {
@@ -263,6 +304,7 @@ fun TorqueSpecsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
+                    state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = vm::addKnown) }
                 }
             }
         } else {
@@ -301,7 +343,13 @@ fun TorqueSpecsScreen(
                 }
             }
             items(shown, key = { it.id }) { spec ->
-                SpecCard(spec, unit, onClick = { editing = spec.id }, modifier = Modifier.padding(horizontal = 20.dp))
+                SpecCard(
+                    spec,
+                    unit,
+                    listSource = spec.knownList?.let { state.knownSources[it] ?: "a reference list" },
+                    onClick = { editing = spec.id },
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
             }
         }
 
@@ -321,6 +369,7 @@ fun TorqueSpecsScreen(
                         Text("Add the common fasteners that are missing")
                     }
                 }
+                if (state.specs.isNotEmpty()) state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = vm::addKnown) }
                 Text(
                     "Enter torque in any unit — it converts automatically. Always check the factory service manual; " +
                         "a wrong torque on lug nuts or drain plugs can cause damage.",
@@ -373,9 +422,10 @@ internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     )
 }
 
+/** [listSource] names where the bundled list this row started from came from; null for a row that never came from one. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, onClick: () -> Unit, modifier: Modifier) {
+private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: String?, onClick: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val torque = spec.newtonMeters?.let(::Torque)
     Surface(
@@ -393,6 +443,8 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, onClick: () -> Un
                         spec.socketSize?.let { Tag(it, scheme.surfaceVariant, statusColors().soon, mono = true) }
                         when {
                             torque == null -> Tag("NEEDS VALUE", scheme.primaryContainer, scheme.onPrimaryContainer)
+                            // Somebody else's figure, not yet checked: the loudest tag on the screen.
+                            TorqueSource.of(spec.source) == TorqueSource.REFERENCE -> Tag("DOUBLE-CHECK", scheme.primary, scheme.onPrimary)
                             TorqueSource.of(spec.source) == TorqueSource.FACTORY -> Tag("FACTORY MANUAL", scheme.tertiaryContainer, scheme.onTertiaryContainer)
                             else -> Tag("YOUR ENTRY", scheme.surfaceVariant, statusColors().soon)
                         }
@@ -419,7 +471,30 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, onClick: () -> Un
                 }
             }
             spec.note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = statusColors().soon) }
+            // Stays for good, whatever the tag above says now: this row began as somebody else's figure.
+            listSource?.let { Text("Started from the $it list", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
         }
+    }
+}
+
+/**
+ * The offer of a bundled list. It says whose values they are and that each is to be checked, every
+ * time it is shown: a torque figure from a website is not one from the manual.
+ */
+@Composable
+private fun KnownOffer(list: KnownSpecList, plan: KnownSpecPlan, onAdd: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedButton(
+            onClick = onAdd,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+            shape = RoundedCornerShape(14.dp),
+            border = BorderStroke(1.5.dp, scheme.onSurface),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+        ) {
+            Text("Add known specs for the ${list.title}")
+        }
+        Text(KnownSpecs.offer(list, plan), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
