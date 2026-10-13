@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.garage
 
+import kotlinx.coroutines.flow.first
+import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -97,7 +101,15 @@ class AddVehicleViewModel @Inject constructor(
     private val vehicles: VehicleDao,
     private val odometer: OdometerDao,
     private val recallRepository: RecallRepository,
+    settings: SettingsRepository,
 ) : ViewModel() {
+    /** What this vehicle's odometer counts in; starts as the unit chosen in Settings. */
+    var unit by mutableStateOf(DistanceUnit.MILES)
+
+    init {
+        viewModelScope.launch { unit = settings.settings.first().distanceUnit }
+    }
+
     var vin by mutableStateOf("")
         private set
     var decoding by mutableStateOf(false)
@@ -250,6 +262,7 @@ class AddVehicleViewModel @Inject constructor(
                     transmission = fields[DecodedField.TRANSMISSION],
                     bodyClass = fields[DecodedField.BODY],
                     createdOn = today,
+                    distanceUnit = unit.name,
                 ),
             )
             odometerText.toIntOrNull()?.let {
@@ -537,6 +550,14 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 }
             }
 
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                DistanceUnitSwitch(vm.unit, onPick = { vm.unit = it })
+                Text(
+                    "What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
             val ambiguous = vm.trimChoices.size > 1
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
@@ -551,7 +572,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 OutlinedTextField(
                     value = vm.odometerText,
                     onValueChange = vm::onOdometerChange,
-                    label = { Text("Odometer (mi)") },
+                    label = { Text("Odometer (${vm.unit.symbol})") },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     shape = RoundedCornerShape(12.dp),

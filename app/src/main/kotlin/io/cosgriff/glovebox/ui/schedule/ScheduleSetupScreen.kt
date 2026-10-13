@@ -397,6 +397,29 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
     }
 }
 
+/** What a vehicle's odometer counts in. Used where a vehicle is added; changing it later is a conversion, on Vehicle details. */
+@Composable
+internal fun DistanceUnitSwitch(unit: DistanceUnit, onPick: (DistanceUnit) -> Unit, modifier: Modifier = Modifier) {
+    val colors = SegmentedButtonDefaults.colors(
+        activeContainerColor = MaterialTheme.colorScheme.secondary,
+        activeContentColor = MaterialTheme.colorScheme.onSecondary,
+    )
+    SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().height(48.dp)) {
+        DistanceUnit.entries.forEachIndexed { i, u ->
+            SegmentedButton(
+                selected = unit == u,
+                onClick = { onPick(u) },
+                shape = SegmentedButtonDefaults.itemShape(i, DistanceUnit.entries.size, baseShape = RoundedCornerShape(14.dp)),
+                colors = colors,
+                icon = {},
+                modifier = Modifier.fillMaxHeight(),
+            ) {
+                Text(u.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            }
+        }
+    }
+}
+
 @Composable
 internal fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(text, modifier, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)

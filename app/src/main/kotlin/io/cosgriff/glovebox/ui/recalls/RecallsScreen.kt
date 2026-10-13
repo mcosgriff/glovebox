@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -191,6 +192,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
         MarkDoneSheet(
             recall = recall,
             odometer = state.odometer,
+            unit = v.unit,
             makeName = state.makeName,
             onConfirm = {
                 marking = null

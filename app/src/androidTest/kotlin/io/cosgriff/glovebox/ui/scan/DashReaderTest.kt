@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.cosgriff.glovebox.domain.DashReading
+import io.cosgriff.glovebox.domain.DistanceUnit
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -64,24 +65,24 @@ class DashReaderTest {
     fun readsLitDigitsOnADarkDisplay() {
         val read = read(text(lit = true, Triple("93412", 150f, 330f)))
         assertFalse(reader.failed)
-        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = 93_000))
+        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = 93_000, unit = DistanceUnit.MILES))
     }
 
     @Test
     fun readsDarkDigitsOnALightDisplay() {
-        assertEquals(128_540, DashReading.pick(read(text(lit = false, Triple("128540", 130f, 330f))).orEmpty(), last = null))
+        assertEquals(128_540, DashReading.pick(read(text(lit = false, Triple("128540", 130f, 330f))).orEmpty(), last = null, unit = DistanceUnit.MILES))
     }
 
     @Test
     fun readsAReadingWithAComma() {
-        assertEquals(93_412, DashReading.pick(read(text(lit = true, Triple("93,412", 140f, 330f))).orEmpty(), last = 93_000))
+        assertEquals(93_412, DashReading.pick(read(text(lit = true, Triple("93,412", 140f, 330f))).orEmpty(), last = 93_000, unit = DistanceUnit.MILES))
     }
 
     @Test
     fun tellsTheOdometerFromATripMeterAboveIt() {
         val read = read(text(lit = true, Triple("345.6", 90f, 200f), Triple("93412", 130f, 400f)))
-        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = 93_000))
-        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = null))
+        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = 93_000, unit = DistanceUnit.MILES))
+        assertEquals(93_412, DashReading.pick(read.orEmpty(), last = null, unit = DistanceUnit.MILES))
     }
 
     @Test
@@ -92,7 +93,7 @@ class DashReaderTest {
             paint.strokeWidth = 6f
             for (i in 0 until 12) canvas.drawLine(0f, i * 48f, width.toFloat(), i * 40f + 30, paint)
         }
-        assertNull(DashReading.pick(read(shapes).orEmpty(), last = null))
-        assertNull(DashReading.pick(read(ByteArray(width * height) { 120 }).orEmpty(), last = null))
+        assertNull(DashReading.pick(read(shapes).orEmpty(), last = null, unit = DistanceUnit.MILES))
+        assertNull(DashReading.pick(read(ByteArray(width * height) { 120 }).orEmpty(), last = null, unit = DistanceUnit.MILES))
     }
 }
