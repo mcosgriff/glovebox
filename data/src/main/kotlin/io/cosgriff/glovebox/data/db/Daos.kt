@@ -320,6 +320,9 @@ interface MilestoneDao {
     @Query("UPDATE vehicles SET milestonesRepeatEveryMiles = :everyMiles WHERE id = :vehicleId")
     suspend fun setRepeat(vehicleId: Long, everyMiles: Int?)
 
+    @Query("UPDATE vehicles SET milestonesKnownList = :list WHERE id = :vehicleId")
+    suspend fun setKnownList(vehicleId: Long, list: String?)
+
     @Query("DELETE FROM milestones WHERE id = :milestoneId")
     suspend fun deleteById(milestoneId: Long)
 
@@ -341,7 +344,10 @@ interface MilestoneDao {
     @Transaction
     suspend fun deleteMilestone(vehicleId: Long, milestoneId: Long) {
         deleteById(milestoneId)
-        if (count(vehicleId) == 0) setRepeat(vehicleId, null)
+        if (count(vehicleId) == 0) {
+            setRepeat(vehicleId, null)
+            setKnownList(vehicleId, null)
+        }
     }
 
     /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
@@ -349,6 +355,18 @@ interface MilestoneDao {
     suspend fun deleteTable(vehicleId: Long) {
         deleteMilestones(vehicleId)
         setRepeat(vehicleId, null)
+        setKnownList(vehicleId, null)
+    }
+
+    /**
+     * A bundled schedule's table, for a vehicle that has none: the rows, and which list they came from.
+     * Does nothing if a table has appeared meanwhile, since a table is never written over by a list.
+     */
+    @Transaction
+    suspend fun addKnown(vehicleId: Long, list: String, table: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>) {
+        if (count(vehicleId) > 0) return
+        applyImport(vehicleId, null, table, emptyList())
+        setKnownList(vehicleId, list)
     }
 
     /**

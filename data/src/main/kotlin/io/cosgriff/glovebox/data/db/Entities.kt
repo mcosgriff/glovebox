@@ -58,6 +58,12 @@ data class VehicleEntity(
      */
     val milestonesRepeatEveryMiles: Int? = null,
     /**
+     * The id of the bundled schedule (KnownSchedules) the milestone table was added from; null for a
+     * table the user typed or imported. Kept while the table is, whatever is edited in it, and cleared
+     * with it: the Milestones screen says where the table started from.
+     */
+    val milestonesKnownList: String? = null,
+    /**
      * A DistanceUnit name: what this vehicle's odometer counts in. Every distance stored for the vehicle
      * (readings, intervals, snooze points, the cluster offset, milestones) is in this unit as it was typed;
      * column names that say "miles" are older than the choice. Changed only through UnitDao.convert, which
@@ -102,6 +108,11 @@ data class ScheduleItemEntity(
      * Null means it is logged under "Your items". Typical items answer through [templateKey] instead.
      */
     val service: String? = null,
+    /**
+     * The id of the bundled schedule (KnownSchedules) this item was added from, and stays set whatever
+     * happens to it later. Null for everything else. The item is the user's own all the same.
+     */
+    val knownList: String? = null,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

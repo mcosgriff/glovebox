@@ -2,6 +2,9 @@ package io.cosgriff.glovebox.ui.schedule
 
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.domain.KnownSchedules
+import kotlinx.coroutines.flow.flow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -115,6 +118,10 @@ data class MilestonesState(
     val table: List<SavedMilestone> = emptyList(),
     /** The length of the cycle when the user's table starts again after its last milestone; null when it ends. */
     val repeatsEveryMiles: Int? = null,
+    /** The maker's schedule that ships for this model, while the vehicle has no table of its own; it is offered, never applied. */
+    val known: KnownScheduleList? = null,
+    /** For a table that was added from a bundled schedule: whose guide it is, said beside it for as long as the table is kept. */
+    val startedFrom: String? = null,
 )
 
 /**
@@ -131,6 +138,7 @@ class MilestonesViewModel @Inject constructor(
     settings: SettingsRepository,
     private val table: MilestoneDao,
     private val saver: ExportSaver,
+    catalog: KnownScheduleCatalog,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<MilestonesRoute>().vehicleId
 
@@ -141,14 +149,16 @@ class MilestonesViewModel @Inject constructor(
         Triple(records, readings, rows)
     }
 
+    private val knownLists = flow { emit(catalog.lists()) }
+
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<MilestonesState?> = combine(
         vehicles.observe(vehicleId),
         schedule.observeTracked(vehicleId),
         log,
-        settings.settings,
+        combine(settings.settings, knownLists) { s, lists -> s to lists },
         ahead,
-    ) { vehicle, items, (records, readings, rows), s, count ->
+    ) { vehicle, items, (records, readings, rows), (s, lists), count ->
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
@@ -181,6 +191,7 @@ class MilestonesViewModel @Inject constructor(
                 table = saved,
                 model = "${vehicle.year} ${vehicle.make} ${vehicle.model}",
                 repeatsEveryMiles = every,
+                startedFrom = vehicle.milestonesKnownList?.let { id -> KnownSchedules.startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
             )
         }
         val done = entries.flatMap { e ->
@@ -195,6 +206,7 @@ class MilestonesViewModel @Inject constructor(
             unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -234,6 +246,25 @@ class MilestonesViewModel @Inject constructor(
     fun delete(draft: MilestoneDraft) {
         editing = null
         draft.id?.let { id -> viewModelScope.launch { table.deleteMilestone(vehicleId, id) } }
+    }
+
+    /**
+     * Adds the maker's table that ships for this model, in the vehicle's unit, as its milestone table.
+     * It is then an ordinary table: edited, saved as a file or removed like one the user typed.
+     */
+    fun addKnown() {
+        val s = state.value ?: return
+        val list = s.known ?: return
+        viewModelScope.launch {
+            table.addKnown(
+                vehicleId,
+                list.id,
+                KnownSchedules.milestonesIn(list, s.unit).map { m ->
+                    MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
+                        m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
+                },
+            )
+        }
     }
 
     fun setRepeat(everyMiles: Int?) = viewModelScope.launch { table.setRepeat(vehicleId, everyMiles) }
@@ -384,7 +415,10 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         ) {
             item {
                 Text(
-                    if (state.fromTable) {
+                    if (state.startedFrom != null) {
+                        "${state.startedFrom} It is shown with what your log says was done, and the jobs are in Glovebox's words. " +
+                            "It's a guide: the Reminders tab is what tells you something is due. You can edit it like a table of your own."
+                    } else if (state.fromTable) {
                         "Your own milestone table, with what your log says was done. " +
                             (state.repeatsEveryMiles?.let { "It repeats every ${it.asDistance(unit)}, so after its last milestone it starts again from the first. " } ?: "") +
                             "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn't checked them."
@@ -518,6 +552,26 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 }
             }
             if (!state.fromTable) {
+                state.known?.let { known ->
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            OutlinedButton(
+                                onClick = vm::addKnown,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                border = BorderStroke(1.5.dp, scheme.onSurface),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                            ) {
+                                Text("Use the maker's table for the ${known.title}")
+                            }
+                            Text(
+                                KnownSchedules.tableOffer(known) + " It is then shown here in place of these.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TextButton(onClick = vm::addMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
