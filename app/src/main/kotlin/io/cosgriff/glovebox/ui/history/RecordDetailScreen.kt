@@ -136,7 +136,7 @@ class RecordDetailViewModel @Inject constructor(
         val items = schedule.allFor(r.record.vehicleId)
         val tracked = items
             .filter { it.tracked }
-            .mapNotNull { it.toTracked(settings.settings.first().defaultRule) }
+            .mapNotNull { it.toTracked(settings.settings.first().defaultRule, vehicle?.clusterSwap()) }
             .associateBy { it.id }
         val swap = vehicle?.clusterSwap()
         val unit = vehicle?.unit ?: DistanceUnit.MILES

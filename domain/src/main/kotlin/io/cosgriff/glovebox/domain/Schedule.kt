@@ -82,6 +82,10 @@ fun Interval.label(unit: DistanceUnit): String = listOfNotNull(
     months?.let { "$it mo" },
 ).joinToString(" / ")
 
+/** "First at 100,000 mi, then every 50,000 mi / 60 mo" for a job with a first time of its own; the plain label otherwise. */
+fun Interval.label(unit: DistanceUnit, firstAt: Int?): String =
+    if (firstAt == null) label(unit) else "First at ${unit.format(firstAt)}, then every ${label(unit)}"
+
 object IntervalInput {
     /**
      * Parses what the user typed in the miles / months boxes. Blank means "doesn't apply";

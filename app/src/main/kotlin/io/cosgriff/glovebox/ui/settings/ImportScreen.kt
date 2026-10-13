@@ -432,6 +432,7 @@ class ImportViewModel @Inject constructor(
                     severeMonths = it.severe?.months,
                     ruleOverride = it.rule?.name,
                     service = it.service,
+                    firstMiles = it.firstAt,
                 )
             }
             // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
@@ -444,6 +445,7 @@ class ImportViewModel @Inject constructor(
                     severeMonths = item.severe?.months,
                     ruleOverride = item.rule?.name,
                     service = item.service,
+                    firstMiles = item.firstAt,
                 )
             }
             val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
@@ -509,7 +511,7 @@ class ImportViewModel @Inject constructor(
         val plan = HistoryImport.plan(items, saved, refs)
         val before = records.map { it.toEntry(swap, rows.answering()) }
         // A sold vehicle has no reminders to move.
-        val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) }
+        val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule, swap) }
         fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
         val odd = HistoryImport.backwards(after(ImportMode.ADD_NEW), odometer.readingsFor(vehicle.id).toReadings(swap))
         val view = PlanView(
@@ -572,8 +574,9 @@ private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, soc
 private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
 
 /** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
-private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?, unit: DistanceUnit): String = listOfNotNull(
-    normal?.let { "Every ${it.label(unit).replace(" / ", " or ")}" } ?: "No interval",
+private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?, unit: DistanceUnit, firstAt: Int? = null): String = listOfNotNull(
+    firstAt?.let { "First at ${unit.format(it)}" },
+    normal?.let { "${if (firstAt != null) "then every" else "Every"} ${it.label(unit).replace(" / ", " or ")}" } ?: "No interval",
     severe?.let { "severe ${it.label(unit).replace(" / ", " or ")}" },
     rule?.ruleLabel()?.lowercase(),
     HistoryImport.services[service]?.let { "reset by \"${it.label}\"" },
@@ -590,8 +593,8 @@ private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName
 private fun describe(work: List<TableJob>, orMonths: Int?): String =
     listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
 
-private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit)
-private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit)
+private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt)
+private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt)
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 

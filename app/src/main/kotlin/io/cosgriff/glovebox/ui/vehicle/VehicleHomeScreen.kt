@@ -154,7 +154,7 @@ class VehicleHomeViewModel @Inject constructor(
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
         val updates = readings.toReadings(swap)
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap) }
         VehicleHome(
             vehicle = vehicle,
             odometer = VehicleReminders.currentOdometer(entries, updates),

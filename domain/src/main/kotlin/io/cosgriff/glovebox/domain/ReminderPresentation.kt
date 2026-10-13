@@ -69,7 +69,7 @@ object ReminderPresentation {
         if (s.awaitingFirst) {
             // Counted from zero to the mileage the job is first due at.
             val left = status.milesRemaining ?: return ReminderProgress(DueHeadline.NotLogged, null)
-            return ReminderProgress(DueHeadline.Miles(left), (1.0 - left.toDouble() / s.item.firstAt!!).coerceIn(0.0, 1.0))
+            return ReminderProgress(DueHeadline.Miles(left), (1.0 - left.toDouble() / status.dueAtOdometer!!).coerceIn(0.0, 1.0))
         }
         val last = s.lastDone ?: return ReminderProgress(DueHeadline.NotLogged, null)
         s.snooze?.let { return ReminderProgress(DueHeadline.Snoozed(it), null) }

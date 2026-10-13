@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.db.MilestoneDao
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
+import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -93,8 +98,10 @@ data class DraftItem(
     val own: Boolean = template == null,
     /** For the user's own: the CatalogItem id of the built-in service line that resets it; null = logged under "Your items". */
     val service: String? = null,
-    /** For an item added from a maker's schedule that ships with the app: the guide it started from. Said under it for good. */
-    val from: String? = null,
+    /** For an item from a maker's schedule that ships with the app: that list's id, kept on the row for good. */
+    val knownList: String? = null,
+    /** The distance covered at which the job is first due, when that isn't one interval in; null for most. */
+    val firstAt: Int? = null,
 ) {
     val active: Interval get() = if (useSevere) severe ?: normal else normal
     val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
@@ -106,8 +113,17 @@ class ScheduleSetupViewModel @Inject constructor(
     vehicles: VehicleDao,
     private val schedule: ScheduleDao,
     settings: SettingsRepository,
+    private val catalog: KnownScheduleCatalog,
+    private val milestones: MilestoneDao,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<ScheduleSetupRoute>().vehicleId
+
+    /**
+     * The maker's schedule that ships for this vehicle, when there is one. It is then the schedule
+     * setup starts from, in place of the typical list, and its table becomes the vehicle's milestones.
+     */
+    var known by mutableStateOf<KnownScheduleList?>(null)
+        private set
 
     var vehicle by mutableStateOf<VehicleEntity?>(null)
         private set
@@ -134,8 +150,20 @@ class ScheduleSetupViewModel @Inject constructor(
         viewModelScope.launch {
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
-            items = ScheduleTemplates.generic(v?.drivetrain, v?.fuel, v?.unit ?: DistanceUnit.MILES).map {
-                DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
+            val unit = v?.unit ?: DistanceUnit.MILES
+            val list = v?.let { KnownSchedules.match(catalog.lists(), it.year, it.make, it.model) }
+            known = list
+            items = if (list != null) {
+                KnownSchedules.intervalsIn(list, unit).mapIndexed { i, it ->
+                    DraftItem(
+                        key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
+                        own = true, service = it.service, knownList = list.id, firstAt = it.firstAt,
+                    )
+                }
+            } else {
+                ScheduleTemplates.generic(v?.drivetrain, v?.fuel, unit).map {
+                    DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
+                }
             }
         }
     }
@@ -197,9 +225,23 @@ class ScheduleSetupViewModel @Inject constructor(
                     ruleOverride = it.rule?.name,
                     tracked = it.tracked,
                     service = it.service.takeIf { _ -> it.own },
+                    knownList = it.knownList,
+                    firstMiles = it.firstAt,
                 )
             },
         )
+        // The maker's table goes with its schedule: it is what the Milestones screen then shows.
+        known?.let { list ->
+            val unit = vehicle?.unit ?: DistanceUnit.MILES
+            milestones.addKnown(
+                vehicleId,
+                list.id,
+                KnownSchedules.milestonesIn(list, unit).map { m ->
+                    MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
+                        m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
+                },
+            )
+        }
         onDone(vehicleId)
     }
 }
@@ -235,7 +277,7 @@ fun ScheduleSetupScreen(
             IconButton(onClick = onDone) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
-            Text("Recommended maintenance", style = MaterialTheme.typography.titleLarge)
+            Text(if (vm.known != null) "Maintenance schedule" else "Recommended maintenance", style = MaterialTheme.typography.titleLarge)
         }
 
         Column(
@@ -243,13 +285,23 @@ fun ScheduleSetupScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                val known = vm.known
                 Text(
-                    "A typical schedule to start from for your ${vm.vehicle.displayName()}. " +
-                        "Pick what to track — you can edit any interval later.",
+                    if (known != null) {
+                        "The maker's schedule for your ${vm.vehicle.displayName()}, from the ${known.source.name}. " +
+                            "Pick what to track — you can edit any interval later."
+                    } else {
+                        "A typical schedule to start from for your ${vm.vehicle.displayName()}. " +
+                            "Pick what to track — you can edit any interval later."
+                    },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    "These are common intervals, not the manufacturer's. Check your owner's manual and edit anything that differs.",
+                    if (known != null) {
+                        "${known.source.note} It has the jobs the guide's table repeats; the whole table, inspections included, is on the Milestones screen."
+                    } else {
+                        "These are common intervals, not the manufacturer's. Check your owner's manual and edit anything that differs."
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -346,12 +398,11 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
             Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    item.active.label(unit),
+                    item.active.label(unit, item.firstAt),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
                     color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                item.from?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
             if (item.showsSevere) {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {

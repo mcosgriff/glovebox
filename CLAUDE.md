@@ -134,7 +134,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
-maintenance schedules (a maker's table and reminders, offered on those two screens for the 2017–2024 4Runner).
+maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -191,8 +191,8 @@ Notes on what's built:
   can be added from Vehicle details (`Vin.isPlausible`), which doesn't decode it or change the details.
   The drivetrain is never preselected.
 - The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
-  not manufacturer data. A maker's own schedule comes only from a bundled list (next note), which is
-  offered beside the typical list and never replaces or edits it.
+  not manufacturer data, **unless a bundled maker's schedule covers the vehicle (next note): then that
+  is what setup starts from**, in place of the typical list.
 - Known maintenance schedules (#134, `KnownSchedules` in `:domain`, `KnownScheduleCatalog` in app,
   `docs/known-schedules.md`, which has the rules and how each list was made). **Glovebox has no schedule
   of its own for any model and works none out; a bundled schedule is a maker's published guide, named.**
@@ -207,15 +207,31 @@ Notes on what's built:
   50,000) stays in the table only; reminders are for logged work, not inspections. The table holds every
   line of the guide; a special-operating-condition job is named with its condition and has no `service`,
   so it is never taken for the ordinary job.
-- Where they show: "Use the maker's table for …" on Milestones while the vehicle has no table
-  (`MilestoneDao.addKnown`, which does nothing if one has appeared), after which it is an ordinary table
-  that can be edited, saved or removed; and "Add reminders from the maker's guide" on the Maintenance
-  schedule while the list has one the user lacks (`KnownSchedules.plan`: an item of the user's own with
-  that name is kept, there is no replace), with a dialog that lists each interval and the typical items
-  that would double one, **ticked** to stop tracking (an import's are unticked). Never at setup.
-  `vehicles.milestonesKnownList` (cleared with the table) and `schedule_items.knownList` (permanent) are
-  why the screen says "Started from the …. Check it against the guide for your own vehicle." There is no
-  "checked" state as torque values have. A list in miles goes to a kilometre vehicle as schedule figures.
+- **Where a list covers a vehicle, it is the schedule** (the user's decision, 2026-10-13, reversing
+  "offered, never at setup"). `ScheduleSetupViewModel` matches the list and shows its intervals in place
+  of the typical ones; saving writes them as the user's own items (no `templateKey`, `service` set,
+  `knownList` set) and adds the list's table as the vehicle's milestones (`MilestoneDao.addKnown`, which
+  does nothing if a table has appeared). A vehicle set up earlier gets "Use the maker's schedule" on the
+  Maintenance schedule while the list has an item it lacks (`KnownSchedules.plan`: an item of the user's
+  own with that name is kept, there is no replace), with a dialog that lists each interval and the
+  typical items that would double one, **ticked** to stop tracking (an import's are unticked), and "Use
+  the maker's table" on Milestones. The typical items can still be added, unticked, from the schedule
+  screen. **The source is said once per screen, never under every item** (the user found that too
+  busy): an info box on the Maintenance schedule when any item has `knownList`, and the introduction on
+  Milestones (`vehicles.milestonesKnownList`, cleared with the table). There is no "checked" state as
+  torque values have. A list in miles goes to a kilometre vehicle as schedule figures.
+- A job's first time can be at its own mileage (`schedule_items.firstMiles`, `TrackedItem.firstAt`,
+  `firstAtMiles` / `firstAtKm` in an `interval-schedule` file, "First time at" in the item editor):
+  "first at 100,000, then every 50,000". Stored as distance really covered, in the vehicle's unit;
+  `toTracked(rule, swap)` puts it in dash terms, so **pass the vehicle's swap wherever statuses are
+  worked out**. It matters only until the job is logged once.
+- **A job the vehicle hasn't reached is not "Not logged yet"** (`VehicleReminders.statuses`,
+  `ItemStatus.awaitingFirst` / `.counting`): never logged, with a reading on record below its first
+  mileage (`firstAt`, or one interval from zero), it counts down to that mileage like any reminder,
+  by distance only (`ReminderEngine.first`), since a maker's "or 120 months" counts from a day in
+  service that Glovebox doesn't know. A time-only job, a vehicle with no reading, and a job the vehicle
+  is already past stay "Not logged yet". **Use `counting`, not `lastDone != null`, to decide whether a
+  reminder has something to count from.** `NoticeRules` announces such a first time once.
 - After setup the schedule lives on `ScheduleScreen` (from Vehicle details). It writes straight to
   `schedule_items`: a tick is `tracked`, and an edit keeps whatever the editor doesn't show, such as a
   snooze. `ScheduleItemEditor` is shared with setup; `ItemHistory` adds LAST DONE (derived from the log,
@@ -288,7 +304,8 @@ Notes on what's built:
   owner's manual prints it. **They are a view, never a second source of what is due:** reminders and
   notifications come only from the interval schedule and the service log, and nothing on that screen
   creates, moves or silences one. Nothing about them is stored; "completed" is derived from the log each
-  time, and there is deliberately no tick-box. The list is generated from tracked items that have a mileage
+  time, and there is deliberately no tick-box: the green tick beside a completed job (and on a card whose
+  jobs are all done) is drawn from the log, and can't be tapped. The list is generated from tracked items that have a mileage
   interval (`Milestones.generate`): every multiple is a point and items on the same point share a card. It
   starts at the vehicle's earliest logged job and runs a few points past the odometer, more on request.
   A run of three or more past milestones with nothing logged is folded into one row (`Milestones.folded`).
@@ -626,7 +643,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v18); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v19); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

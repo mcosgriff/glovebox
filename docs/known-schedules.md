@@ -15,23 +15,29 @@ of how each one was made. The code is `KnownSchedules` in `:domain`; the lists a
    it was read, a sentence shown to the user, and `source.basis`. "It was on a website" is not a basis.
    The source is credited on the About screen.
 3. **A list covers only the model years whose guides were read and found to agree.** Not a generation,
-   not "probably the same". A year whose guide wasn't found gets nothing.
-4. **Offered, never applied.** A list is offered for an exact make, model and year, on the Milestones
-   screen (the table) and the Maintenance schedule screen (the reminders). It isn't offered at vehicle
-   setup, and the typical starter list is unchanged.
-5. **What comes from a list says so for good**, with the advice to check it against the owner's own
-   guide: `vehicles.milestonesKnownList` for a table, `schedule_items.knownList` for an item.
+   not "probably the same". A year whose guide wasn't found gets the typical starter list, as before.
+4. **Where there is a list, it is the schedule.** Setting up a vehicle whose make, model and year a
+   list covers starts from the maker's schedule in place of the typical list, and its table becomes
+   the vehicle's milestones. The screen says whose guide it is. Everything can still be unticked or
+   edited. A vehicle set up before the list existed is offered it ("Use the maker's schedule" on the
+   Maintenance schedule, "Use the maker's table" on Milestones); nothing changes until that is tapped.
+5. **What comes from a list says so, once per screen**, with the advice to check it against the
+   owner's own guide: an info box on the Maintenance schedule and the introduction on Milestones,
+   never a line under every item. `schedule_items.knownList` and `vehicles.milestonesKnownList`
+   record it.
 6. **The table is the whole guide**: every line at every milestone, inspections included. Jobs that
    apply only under the guide's special operating conditions are in it too, each named with its
    condition (`Replace rear differential oil · towing or heavy loads`) and with no `service`, so it is
    never taken for the ordinary job. A job for one drivetrain says so in its name (`(4WD)`).
 7. **A reminder interval has to be the table's own.** `KnownSchedules.parse` refuses an interval unless
-   its job is in the table at exactly the multiples of that interval, with the table's months. A job
-   that doesn't come round evenly stays in the table only. Reminders are given only for work that gets
+   its job is in the table at exactly the multiples of that interval, with the table's months, or, for
+   a job with a first time of its own (`firstAtMiles`: "first at 100,000, then every 50,000"), at that
+   mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given only for work that gets
    logged (replace, rotate, lubricate), not for inspections.
-8. **Nothing of the user's is written over.** The table is offered only while the vehicle has none.
+8. **Nothing of the user's is written over.** The table is added only while the vehicle has none.
    A reminder is added as the user's own item unless they already have one of that name. Typical items
-   are never edited; the ones that would double a new reminder are listed, ticked, to stop tracking.
+   are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
+   ticked, to stop tracking.
 9. **A table doesn't repeat unless the guide says it does.**
 
 ## The file
@@ -85,8 +91,10 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval
   under any special operating condition), tire rotation 5,000 / 6, propeller shaft lubrication
-  15,000 / 18, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144. The engine coolant
-  is replaced first at 100,000 miles and then every 50,000, which an interval can't say, so it is in
-  the table only.
+  15,000 / 18, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, and engine coolant
+  first at 100,000 miles and then every 50,000 / 60. The guide's "or 120 months" for the first coolant
+  change isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
+- Not reminders, because under ordinary driving the guide only inspects them: brake fluid, transmission
+  fluid, differential and transfer case oil. Their replacement under towing or dust is in the table.
 - Not covered: 2010 and 2012–2016 (no guide found at that address), 2011 (found; it has separate
   schedules for the 4-cylinder and the V6), 2025 on (a new generation, with a chart in place of the log).

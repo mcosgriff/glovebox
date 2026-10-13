@@ -113,6 +113,12 @@ data class ScheduleItemEntity(
      * happens to it later. Null for everything else. The item is the user's own all the same.
      */
     val knownList: String? = null,
+    /**
+     * For a job whose first time isn't one interval in ("first at 100,000, then every 50,000"): the
+     * distance the vehicle has covered when it is first due, in the vehicle's unit. It matters only
+     * until the job has been logged once. Null for every other item.
+     */
+    val firstMiles: Int? = null,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

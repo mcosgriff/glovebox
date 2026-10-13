@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material.icons.outlined.Info
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.ScheduleExport
@@ -127,6 +132,8 @@ data class ScheduleState(
      * there is still one to add. It is offered, never applied.
      */
     val known: Pair<KnownScheduleList, KnownIntervalPlan>? = null,
+    /** Said once above the list when any item came from a maker's schedule: whose guide, and to check it. */
+    val startedFrom: String? = null,
 ) {
     val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null }.map { it.tracked to it.useSevere }).use
 }
@@ -141,7 +148,7 @@ class ScheduleViewModel @Inject constructor(
     odometer: OdometerDao,
     settings: SettingsRepository,
     private val actions: RecordActions,
-    milestones: MilestoneDao,
+    private val milestones: MilestoneDao,
     private val saver: ExportSaver,
     catalog: KnownScheduleCatalog,
 ) : ViewModel() {
@@ -178,7 +185,7 @@ class ScheduleViewModel @Inject constructor(
         val updates = readings.toReadings(swap)
         val entered = records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet()
         val statuses = VehicleReminders.statuses(
-            items.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule) },
+            items.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule, swap) },
             entries,
             updates,
             LocalDate.now(),
@@ -199,7 +206,8 @@ class ScheduleViewModel @Inject constructor(
                     template = e.templateKey?.let(templates::get),
                     own = e.templateKey == null,
                     service = e.service,
-                    from = e.knownList?.let { KnownSchedules.startedFrom(credits[it]) },
+                    knownList = e.knownList,
+                    firstAt = e.firstMiles,
                 )
             },
             templateKeys = items.associate { it.id.toString() to it.templateKey },
@@ -218,7 +226,8 @@ class ScheduleViewModel @Inject constructor(
             defaultRule = s.defaultRule,
             missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }),
             odometer = VehicleReminders.currentOdometer(entries, updates),
-            notLogged = statuses.values.count { it.lastDone == null },
+            notLogged = statuses.values.count { !it.counting },
+            startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { KnownSchedules.startedFrom(credits[it]) },
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model)
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
@@ -297,10 +306,20 @@ class ScheduleViewModel @Inject constructor(
                     ruleOverride = it.rule?.name,
                     service = it.service,
                     knownList = list.id,
+                    firstMiles = it.firstAt,
                 )
             },
             replaced = emptyList(),
             stopped = plan.doubles.map { it.id }.filter { it in stop },
+        )
+        // The maker's table goes with its schedule, unless the vehicle already has a table of its own.
+        milestones.addKnown(
+            vehicleId,
+            list.id,
+            KnownSchedules.milestonesIn(list, s.vehicle.unit).map { m ->
+                MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
+                    m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
+            },
         )
     }
 
@@ -336,6 +355,7 @@ class ScheduleViewModel @Inject constructor(
         useSevere = useSevere,
         ruleOverride = rule?.name,
         tracked = tracked,
+        firstMiles = firstAt,
         // Never on a typical item: those answer through their template key.
         service = service.takeIf { entity.templateKey == null },
     )
@@ -430,11 +450,15 @@ fun ScheduleScreen(
         ) {
             if (state.items.isEmpty()) {
                 Text(
-                    "Nothing is set up for this vehicle yet. Start from a typical schedule, or add your own items one at a time.",
+                    if (state.known != null) {
+                        "Nothing is set up for this vehicle yet. Start from the maker's schedule, or add your own items one at a time."
+                    } else {
+                        "Nothing is set up for this vehicle yet. Start from a typical schedule, or add your own items one at a time."
+                    },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Button(onClick = { onSetUp(v.id) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-                    Text("Start from a typical schedule")
+                    Text(if (state.known != null) "Start from the maker's schedule" else "Start from a typical schedule")
                 }
                 // An imported table doesn't need a schedule to be worth looking at.
                 if (hasMilestoneTable) MilestonesRow(onClick = { onOpenMilestones(v.id) })
@@ -453,6 +477,18 @@ fun ScheduleScreen(
                         if (state.use == DrivingUse.MIXED) {
                             Text(
                                 "Some items are on their severe interval and some aren't. Picking one here sets them all.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+                state.startedFrom?.let { text ->
+                    Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
+                        Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                "$text Items added or edited since are yours.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -497,7 +533,8 @@ fun ScheduleScreen(
                 }
             }
 
-            state.known?.let { (list, plan) ->
+            // With nothing set up yet, setup is the way in (above); this is for a schedule that already has items.
+            state.known?.takeIf { state.items.isNotEmpty() }?.let { (list, plan) ->
                 var asking by rememberSaveable { mutableStateOf(false) }
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     OutlinedButton(
@@ -505,10 +542,11 @@ fun ScheduleScreen(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
-                        Text("Add reminders from the maker's guide")
+                        Text("Use the maker's schedule")
                     }
                     Text(
-                        "For the ${list.title}. " + KnownSchedules.intervalOffer(list, plan),
+                        "For the ${list.title}. " + KnownSchedules.intervalOffer(list, plan) +
+                            if (hasMilestoneTable) "" else " Its table becomes this vehicle's milestones.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -614,7 +652,7 @@ private fun KnownRemindersDialog(
                     Column {
                         Text(item.name, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            item.normal.label(unit) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
+                            item.normal.label(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,

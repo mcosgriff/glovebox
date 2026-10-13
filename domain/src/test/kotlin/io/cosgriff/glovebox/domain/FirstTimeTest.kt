@@ -58,10 +58,28 @@ class FirstTimeTest {
     }
 
     @Test
-    fun `an item without one is unchanged`() {
+    fun `any job the vehicle hasn't reached counts down to one interval from zero`() {
+        val plugs = TrackedItem(3, "Spark plugs", Interval(120_000, 144), DueRule.WHICHEVER_FIRST)
+        val s = status(31_000, item = plugs)
+        assertTrue(s.awaitingFirst)
+        assertEquals(120_000, s.status.dueAtOdometer)
+        assertEquals(89_000, s.status.milesRemaining)
+        assertEquals(ReminderGroup.LATER, ReminderPresentation.group(s, today))
+    }
+
+    @Test
+    fun `a job the vehicle is already past is still not logged yet`() {
         val s = status(31_000, item = oil)
         assertFalse(s.counting)
         assertEquals(DueState.OVERDUE, s.status.state)
+    }
+
+    @Test
+    fun `a job that goes by time alone, or a vehicle with no reading, has no first mileage`() {
+        assertFalse(status(31_000, item = TrackedItem(4, "Brake fluid", Interval(null, 36), DueRule.WHICHEVER_FIRST)).counting)
+        assertFalse(status(31_000, item = TrackedItem(5, "Belt", Interval(60_000, 72), DueRule.TIME_ONLY)).counting)
+        val unread = VehicleReminders.statuses(listOf(coolant), emptyList(), emptyList(), today).single()
+        assertFalse(unread.counting)
     }
 
     @Test
@@ -73,6 +91,14 @@ class FirstTimeTest {
         assertEquals(listOf("Coolant"), near.notices.filterIsInstance<Notice.ServiceDue>().single().services)
         val again = NoticeRules.daily(listOf(vehicle(99_800)), near.log, NoticePrefs(), today.plusDays(1))
         assertTrue(again.notices.none { it is Notice.ServiceDue })
+    }
+
+    @Test
+    fun `the generated milestones start such a job at its first mileage`() {
+        val points = Milestones.generate(listOf(coolant, oil), from = 1, current = 195_000, ahead = 6)
+        val coolantAt = points.filter { m -> m.jobs.any { it.name == "Coolant" } }.map { it.atMiles }
+        assertEquals(listOf(100_000, 150_000, 200_000, 250_000), coolantAt)
+        assertTrue(points.any { it.atMiles == 50_000 && it.jobs.single().name == "Oil" })
     }
 
     @Test

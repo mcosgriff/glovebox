@@ -396,7 +396,7 @@ interface MilestoneDao {
 /** A row's id and one whole-number column of it. */
 data class IdValue(val id: Long, val value: Int?)
 
-data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?)
+data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?, val firstMiles: Int?)
 
 /**
  * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
@@ -417,11 +417,11 @@ interface UnitDao {
     @Query("UPDATE service_records SET odometer = :value WHERE id = :id")
     suspend fun setRecord(id: Long, value: Int)
 
-    @Query("SELECT id, intervalMiles, severeMiles, snoozedUntilOdometer FROM schedule_items WHERE vehicleId = :vehicleId")
+    @Query("SELECT id, intervalMiles, severeMiles, snoozedUntilOdometer, firstMiles FROM schedule_items WHERE vehicleId = :vehicleId")
     suspend fun schedule(vehicleId: Long): List<ScheduleDistances>
 
-    @Query("UPDATE schedule_items SET intervalMiles = :interval, severeMiles = :severe, snoozedUntilOdometer = :snooze WHERE id = :id")
-    suspend fun setSchedule(id: Long, interval: Int?, severe: Int?, snooze: Int?)
+    @Query("UPDATE schedule_items SET intervalMiles = :interval, severeMiles = :severe, snoozedUntilOdometer = :snooze, firstMiles = :first WHERE id = :id")
+    suspend fun setSchedule(id: Long, interval: Int?, severe: Int?, snooze: Int?, first: Int?)
 
     @Query("SELECT id, atMiles AS value FROM milestones WHERE vehicleId = :vehicleId ORDER BY atMiles")
     suspend fun milestones(vehicleId: Long): List<IdValue>
@@ -451,7 +451,7 @@ interface UnitDao {
         readings(vehicleId).forEach { r -> r.value?.let { setReading(r.id, measured(it)) } }
         records(vehicleId).forEach { r -> r.value?.let { setRecord(r.id, measured(it)) } }
         schedule(vehicleId).forEach { s ->
-            setSchedule(s.id, s.intervalMiles?.let(::scheduled), s.severeMiles?.let(::scheduled), s.snoozedUntilOdometer?.let(::measured))
+            setSchedule(s.id, s.intervalMiles?.let(::scheduled), s.severeMiles?.let(::scheduled), s.snoozedUntilOdometer?.let(::measured), s.firstMiles?.let(::scheduled))
         }
 
         val table = milestones(vehicleId)

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.outlined.CheckCircle
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.KnownScheduleList
@@ -162,7 +164,7 @@ class MilestonesViewModel @Inject constructor(
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }.filter { it.interval.miles != null }
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = VehicleReminders.currentOdometer(entries, readings.toReadings(swap))?.let { swap.actual(it) }
@@ -660,6 +662,10 @@ private fun MilestoneCard(
                         )
                     }
                 }
+                // Every job here has a record: the whole milestone is done.
+                if (m.jobs.isNotEmpty() && completed == m.jobs.size) {
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = "All completed", modifier = Modifier.size(22.dp), tint = statusColors().ok)
+                }
                 Icon(
                     if (open) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
                     contentDescription = null,
@@ -695,6 +701,13 @@ private fun JobRow(job: MilestoneJobStatus, unit: DistanceUnit, onOpenRecord: (L
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // A tick for work the log has; an empty place otherwise, so the names line up. It is never a
+        // box to tick: the line under the name says which record it comes from.
+        if (done != null) {
+            Icon(Icons.Outlined.CheckCircle, contentDescription = null, modifier = Modifier.size(22.dp), tint = statusColors().ok)
+        } else {
+            Spacer(Modifier.size(22.dp))
+        }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(job.job.name, style = MaterialTheme.typography.bodyLarge)
             // A job nothing in the log matches is simply listed: no "missed", no tick-box.

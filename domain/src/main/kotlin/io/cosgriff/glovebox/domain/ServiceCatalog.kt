@@ -189,8 +189,8 @@ data class ItemStatus(
     val status: DueStatus,
     val snooze: Snooze? = null,
     /**
-     * Never logged, and the vehicle hasn't yet reached the mileage the job is first due at
-     * ([TrackedItem.firstAt]). [status] then counts down to that mileage, so this is a reminder like
+     * Never logged, and the vehicle hasn't yet reached the mileage the job is first due at:
+     * [TrackedItem.firstAt], or one interval from zero. [status] then counts down to that mileage, so this is a reminder like
      * any logged one and not a "Not logged yet". Past that mileage with nothing logged it is false:
      * Glovebox can't know whether the job was done, and asks.
      */
@@ -218,8 +218,12 @@ object VehicleReminders {
         val pace = ReminderEngine.milesPerDay(readings)
         return items.map { item ->
             val last = ServiceLog.lastDone(item.id, entries)
-            if (last == null && item.firstAt != null && odometer < item.firstAt) {
-                return@map ItemStatus(item, null, ReminderEngine.first(item.firstAt, odometer, today, pace, lead), awaitingFirst = true)
+            // A job the vehicle hasn't reached yet can't be owed: with nothing logged it counts down to its
+            // first time, which is one interval from zero unless the item says otherwise. That needs a
+            // reading to go on, and a job that goes by time alone has no first mileage.
+            val first = item.firstAt ?: item.interval.miles?.takeIf { item.rule != DueRule.TIME_ONLY }
+            if (last == null && first != null && readings.isNotEmpty() && odometer < first) {
+                return@map ItemStatus(item, null, ReminderEngine.first(first, odometer, today, pace, lead), awaitingFirst = true)
             }
             val status = ReminderEngine.status(item.interval, item.rule, last, odometer, today, pace, lead)
             // A snooze has nothing to hold back until the reminder is due, or before it was ever logged.

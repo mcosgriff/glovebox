@@ -131,7 +131,7 @@ class LastDoneViewModel @Inject constructor(
         LastDoneState(
             vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
             rows = LastDoneEntries.rows(
-                items.mapNotNull { it.toTracked(s.defaultRule) },
+                items.mapNotNull { it.toTracked(s.defaultRule, swap) },
                 entries,
                 records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet(),
                 swap,

@@ -168,9 +168,9 @@ class ExportViewModel @Inject constructor(
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->
-                val tracked = item.toTracked(rule) ?: return@mapNotNull null
+                val tracked = item.toTracked(rule, swap) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
-                ExportScheduleLine(item.name, tracked.interval.label(v.unit), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
+                ExportScheduleLine(item.name, tracked.interval.label(v.unit, item.firstMiles), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
                 ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), stored.getValue(r.id).completedOn)
