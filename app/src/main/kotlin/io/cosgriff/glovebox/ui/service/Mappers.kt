@@ -6,6 +6,7 @@ import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
@@ -32,7 +33,11 @@ import kotlin.math.abs
 
 val longDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US)
 
-fun Int.asMiles(): String = String.format(Locale.US, "%,d mi", this)
+/** What this vehicle's odometer counts in; every distance stored for it is in this unit. */
+val VehicleEntity.unit: DistanceUnit get() = DistanceUnit.of(distanceUnit)
+
+/** "12,345 mi" or "12,345 km": a distance of a vehicle that counts in [unit]. There is no unit-less version on purpose. */
+fun Int.asDistance(unit: DistanceUnit): String = unit.format(this)
 
 /** The interval and rule in force for a schedule item; null if it has no usable interval. */
 fun ScheduleItemEntity.toTracked(defaultRule: DueRule): TrackedItem? {
@@ -72,33 +77,33 @@ fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerRea
     swap.readings(map { OdometerReading(it.date, it.odometer) })
 
 /** "73,412 mi or Apr 10, 2027" */
-fun NextDue.text(): String = listOfNotNull(odometer?.asMiles(), date?.format(longDate)).joinToString(" or ")
+fun NextDue.text(unit: DistanceUnit): String = listOfNotNull(odometer?.asDistance(unit), date?.format(longDate)).joinToString(" or ")
 
-fun ReminderChange.text(): String =
-    after?.let { "${item.name} — next due ${item.interval.nextDueAfter(it).text()}" }
+fun ReminderChange.text(unit: DistanceUnit): String =
+    after?.let { "${item.name} — next due ${item.interval.nextDueAfter(it).text(unit)}" }
         ?: "${item.name} — back to not logged yet"
 
 /** "In 1,688 mi", "Overdue 12 days" */
-fun DueHeadline.text(): String = when (this) {
+fun DueHeadline.text(unit: DistanceUnit): String = when (this) {
     DueHeadline.NotLogged -> "Not logged yet"
     is DueHeadline.Miles -> when {
-        remaining < 0 -> "Overdue ${abs(remaining).asMiles()}"
+        remaining < 0 -> "Overdue ${abs(remaining).asDistance(unit)}"
         remaining == 0 -> "Due now"
-        else -> "In ${remaining.asMiles()}"
+        else -> "In ${remaining.asDistance(unit)}"
     }
     is DueHeadline.Days -> when {
         remaining < 0 -> "Overdue ${days(abs(remaining))}"
         remaining == 0L -> "Due today"
         else -> "In ${days(remaining)}"
     }
-    is DueHeadline.Snoozed -> "Snoozed until ${snooze.until()}"
+    is DueHeadline.Snoozed -> "Snoozed until ${snooze.until(unit)}"
 }
 
 private val shortDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d", Locale.US)
 
 /** "69,412 mi", "Oct 24", or "70,100 mi or Apr 10, 2027" — the year only when it isn't this one. */
-fun Snooze.until(today: LocalDate = LocalDate.now()): String = listOfNotNull(
-    untilOdometer?.asMiles(),
+fun Snooze.until(unit: DistanceUnit, today: LocalDate = LocalDate.now()): String = listOfNotNull(
+    untilOdometer?.asDistance(unit),
     untilDate?.let { it.format(if (it.year == today.year) shortDate else longDate) },
 ).joinToString(" or ")
 

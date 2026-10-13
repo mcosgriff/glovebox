@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -73,7 +75,7 @@ import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.LastDoneRoute
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.RecordActions
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.toEntry
@@ -95,6 +97,7 @@ data class LastDoneState(
     /** In dash terms; null for a vehicle with no mileage yet. */
     val odometer: Int?,
     val swap: ClusterSwap?,
+    val unit: DistanceUnit,
 ) {
     val pending: Int get() = rows.count { it.lastDone == null }
 }
@@ -135,6 +138,7 @@ class LastDoneViewModel @Inject constructor(
             ),
             odometer = VehicleReminders.currentOdometer(entries, readings.toReadings(swap)),
             swap = swap,
+            unit = vehicle.unit,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -160,6 +164,7 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
             itemName = row.item.name,
             currentOdometer = state.odometer,
             swap = state.swap,
+            unit = state.unit,
             onSave = { date, odometer ->
                 vm.save(row, date, odometer)
                 entering = null
@@ -205,7 +210,7 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         state.rows.forEachIndexed { i, row ->
                             if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                            Row(row, onEnter = { entering = row.item.id }, onOpenRecord = onOpenRecord)
+                            Row(row, state.unit, onEnter = { entering = row.item.id }, onOpenRecord = onOpenRecord)
                         }
                     }
                 }
@@ -217,7 +222,7 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
 }
 
 @Composable
-private fun Row(row: LastDoneRow, onEnter: () -> Unit, onOpenRecord: (Long) -> Unit) {
+private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpenRecord: (Long) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val last = row.lastDone
     val recordId = row.recordId
@@ -235,7 +240,7 @@ private fun Row(row: LastDoneRow, onEnter: () -> Unit, onOpenRecord: (Long) -> U
         Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(row.item.name, style = MaterialTheme.typography.titleSmall)
             Text(
-                "Every ${row.item.interval.label().replace(" / ", " or ")}",
+                "Every ${row.item.interval.label(unit).replace(" / ", " or ")}",
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -245,7 +250,7 @@ private fun Row(row: LastDoneRow, onEnter: () -> Unit, onOpenRecord: (Long) -> U
         } else {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    "${last.date.format(longDate)} · ${last.odometer.asMiles()}",
+                    "${last.date.format(longDate)} · ${last.odometer.asDistance(unit)}",
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
                     fontWeight = FontWeight.SemiBold,
@@ -272,6 +277,7 @@ fun LastDoneSheet(
     itemName: String,
     currentOdometer: Int?,
     swap: ClusterSwap?,
+    unit: DistanceUnit,
     onSave: (date: LocalDate, odometer: Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -282,7 +288,7 @@ fun LastDoneSheet(
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
     val odometer = OdometerInput.parse(odometerText)
-    val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors)
+    val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors, unit)
 
     if (pickingDate) {
         DatePickerSheet(
@@ -323,7 +329,7 @@ fun LastDoneSheet(
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Odometer then (mi)") },
+                label = { Text("Odometer then (${unit.symbol})") },
                 supportingText = note?.let { { Text(it.text) } },
                 isError = note?.tone == NoteTone.WARNING,
                 singleLine = true,

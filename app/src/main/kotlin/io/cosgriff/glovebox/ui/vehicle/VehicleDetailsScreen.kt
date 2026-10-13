@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
@@ -266,6 +267,7 @@ fun VehicleDetailsScreen(
     if (settingOffset) {
         OdometerOffsetSheet(
             current = swap,
+            unit = v.unit,
             onSave = {
                 vm.setClusterSwap(it)
                 settingOffset = false
@@ -289,6 +291,7 @@ fun VehicleDetailsScreen(
         MarkAsSoldSheet(
             vehicleName = name,
             lastOdometer = lastOdometer,
+            unit = v.unit,
             onArchive = { sale ->
                 selling = false
                 vm.markAsSold(sale) { undo -> onArchived(name, undo) }
@@ -444,7 +447,7 @@ fun VehicleDetailsScreen(
                     ) {
                         Text("Odometer offset", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
-                            swap?.let { ClusterSwaps.offsetLabel(it.offset) } ?: "None",
+                            swap?.let { ClusterSwaps.offsetLabel(it.offset, v.unit) } ?: "None",
                             Modifier.weight(1f).padding(vertical = 8.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -60,9 +61,9 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         text(v.title, title, after = 6f)
         v.nickname?.let { labelled("Nickname", it) }
         v.vin?.let { labelled("VIN", it, mono) }
-        v.odometer?.let { labelled("Odometer", "${Exports.miles(it)} (highest reading on record)") }
-        Exports.actualMileage(v)?.let { labelled("Actual mileage", Exports.miles(it)) }
-        v.clusterSwap?.let { labelled("Instrument cluster", Exports.clusterNote(it)) }
+        v.odometer?.let { labelled("Odometer", "${Exports.distance(it, v.unit)} (highest reading on record)") }
+        Exports.actualMileage(v)?.let { labelled("Actual mileage", Exports.distance(it, v.unit)) }
+        v.clusterSwap?.let { labelled("Instrument cluster", Exports.clusterNote(it, v.unit)) }
         v.soldOn?.let { labelled("Sold", Exports.date(it)) }
         labelled("Period", Exports.datesLabel(doc.options.dates, doc.exportedOn))
         labelled("Records", Exports.summary(v))
@@ -70,11 +71,11 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
 
         section("Service records")
         if (v.records.isEmpty()) text("No service records in this period.", body)
-        v.records.forEach { record(it) }
+        v.records.forEach { record(it, v.unit) }
 
         if (v.schedule.isNotEmpty()) {
             section("Maintenance schedule")
-            table(listOf("Item", "Every", "Last done"), v.schedule.map { listOf(it.name, it.every, Exports.lastDone(it)) })
+            table(listOf("Item", "Every", "Last done"), v.schedule.map { listOf(it.name, it.every, Exports.lastDone(it, v.unit)) })
             text(Exports.SCHEDULE_NOTE, small, before = 4f)
         }
         if (v.recalls.isNotEmpty()) {
@@ -84,8 +85,8 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         }
     }
 
-    private suspend fun record(r: ExportRecord) {
-        val head = "${Exports.date(r.date)} · ${Exports.miles(r.odometer)}"
+    private suspend fun record(r: ExportRecord, unit: DistanceUnit) {
+        val head = "${Exports.date(r.date)} · ${Exports.distance(r.odometer, unit)}"
         val lines = r.items.map { "•  $it" }
         // Keep a record's heading with its work, so a page never ends on a bare date.
         room(height(head, strong) + lines.sumOf { height(it, body).toDouble() }.toFloat() + 24f)

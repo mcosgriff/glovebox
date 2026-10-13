@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavBackStackEntry
 import androidx.compose.material3.MaterialTheme
@@ -96,7 +97,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class MileageReadingsRoute(val vehicleId: Long)
 
 /** [last] is the vehicle's latest known reading in dash terms, to tell the odometer from the other numbers in view. */
-@Serializable data class ReadDashRoute(val last: Int? = null)
+@Serializable data class ReadDashRoute(val last: Int? = null, val unit: String = "MILES")
 @Serializable object ReminderRulesRoute
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
@@ -326,6 +327,7 @@ fun GloveboxNavHost() {
             screen<ReadDashRoute> { entry ->
                 ReadDashScreen(
                     last = entry.toRoute<ReadDashRoute>().last,
+                    unit = DistanceUnit.of(entry.toRoute<ReadDashRoute>().unit),
                     onClose = { nav.popBackStack() },
                     onUse = { miles ->
                         nav.previousBackStackEntry?.savedStateHandle?.set(DASH_READING, miles)
@@ -337,7 +339,7 @@ fun GloveboxNavHost() {
                 // What the camera read comes back through this entry's saved state, as a scanned VIN does.
                 val dashReading by entry.savedStateHandle.getStateFlow<Int?>(DASH_READING, null).collectAsStateWithLifecycle()
                 VehicleHomeScreen(
-                    onReadDash = { last -> nav.navigate(ReadDashRoute(last)) },
+                    onReadDash = { last, unit -> nav.navigate(ReadDashRoute(last, unit.name)) },
                     dashReading = dashReading,
                     onDashReadingUsed = { entry.savedStateHandle[DASH_READING] = null },
                     onBack = { nav.popBackStack() },

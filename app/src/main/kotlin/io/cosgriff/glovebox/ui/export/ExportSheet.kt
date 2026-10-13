@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -149,6 +150,7 @@ class ExportViewModel @Inject constructor(
             title = VehicleText.title(v.year, v.make, v.model, v.trim),
             nickname = v.nickname,
             vin = v.vin,
+            unit = v.unit,
             odometer = VehicleReminders.currentOdometer(entries, readings),
             soldOn = v.archivedOn,
             clusterSwap = swap,
@@ -168,7 +170,7 @@ class ExportViewModel @Inject constructor(
             schedule = items.filter { it.tracked }.mapNotNull { item ->
                 val tracked = item.toTracked(rule) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
-                ExportScheduleLine(item.name, tracked.interval.label(), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
+                ExportScheduleLine(item.name, tracked.interval.label(v.unit), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
                 ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), stored.getValue(r.id).completedOn)

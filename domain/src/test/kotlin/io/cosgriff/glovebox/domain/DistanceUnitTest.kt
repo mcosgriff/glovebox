@@ -67,8 +67,11 @@ class DistanceUnitTest {
 
     @Test
     fun `the lead distance follows the vehicle's unit and the days don't`() {
-        assertEquals(LeadTime(800, 14), LeadTime(500, 14).forUnit(km))
-        assertEquals(LeadTime(500, 14), LeadTime(500, 14).forUnit(mi))
+        assertEquals(LeadTime(800, 14), LeadTime(500, 14).forUnit(km, from = mi))
+        assertEquals(LeadTime(500, 14), LeadTime(500, 14).forUnit(mi, from = mi))
+        // Typed in kilometres, it is kept as typed for a kilometre vehicle and converted for one in miles.
+        assertEquals(LeadTime(1_000, 14), LeadTime(1_000, 14).forUnit(km, from = km))
+        assertEquals(LeadTime(625, 14), LeadTime(1_000, 14).forUnit(mi, from = km))
     }
 
     @Test

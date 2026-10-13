@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.FileDistances
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -100,7 +103,7 @@ import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.RecordActions
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
@@ -319,7 +322,7 @@ class ImportViewModel @Inject constructor(
                 // A sold vehicle gets no reminders and isn't being worked on.
                 vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
-                file is ImportFile.IntervalSchedule -> schedulePreview(vehicle.id, file.items)
+                file is ImportFile.IntervalSchedule -> schedulePreview(vehicle, file.items)
                 file is ImportFile.MilestoneSchedule -> milestonePreview(vehicle, file)
                 else -> null
             }
@@ -395,7 +398,11 @@ class ImportViewModel @Inject constructor(
         }
     }
 
-    private suspend fun schedulePreview(vehicleId: Long, items: List<ImportedScheduleItem>): ImportPreview {
+    private suspend fun schedulePreview(vehicle: VehicleEntity, inMiles: List<ImportedScheduleItem>): ImportPreview {
+        val vehicleId = vehicle.id
+        val unit = vehicle.unit
+        // The file is in miles; everything from here on is in the vehicle's unit.
+        val items = FileDistances.schedule(inMiles, unit)
         val rows = schedule.allFor(vehicleId)
         val byId = rows.associateBy { it.id }
         val saved = rows.map { it.toSaved() }
@@ -405,11 +412,12 @@ class ImportViewModel @Inject constructor(
             kind = ImportKind.INTERVAL_SCHEDULE,
             noun = "item",
             total = plan.total,
-            new = plan.new.map { PlanLine(it.name, it.describe()) },
+            new = plan.new.map { PlanLine(it.name, it.describe(unit)) },
             fills = emptyList(),
-            differs = plan.differs.map { (item, mine) -> PlanLine(mine.name, item.describe(), mine.describe()) },
+            differs = plan.differs.map { (item, mine) -> PlanLine(mine.name, item.describe(unit), mine.describe(unit)) },
             same = plan.same.size,
             caution = "These are the file's intervals, not the manufacturer's. Check them against your owner's manual.",
+            note = convertedNote(unit),
             doubles = doubles.map { it.name },
         )
         return ImportPreview.Ready(view) { mode, stopDoubles ->
@@ -446,34 +454,39 @@ class ImportViewModel @Inject constructor(
 
     private suspend fun milestonePreview(vehicle: VehicleEntity, file: ImportFile.MilestoneSchedule): ImportPreview {
         val vehicleId = vehicle.id
-        val items = file.items
+        val unit = vehicle.unit
+        // The file is in miles; the table, and how it repeats, are kept in the vehicle's unit.
+        val (items, repeats) = FileDistances.milestones(file.items, file.repeatsEveryMiles, unit)
         val rows = milestones.tableFor(vehicleId)
         val byId = rows.associateBy { it.milestone.id }
         val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
         // A table repeats one way or not at all; a file that says otherwise goes no further.
-        MilestoneImport.repeatConflict(file.repeatsEveryMiles, saved, vehicle.milestonesRepeatEveryMiles)?.let { return ImportPreview.Refused(it) }
+        MilestoneImport.repeatConflict(repeats, saved, vehicle.milestonesRepeatEveryMiles, unit)?.let { return ImportPreview.Refused(it) }
         val plan = MilestoneImport.plan(items, saved)
         val view = PlanView(
             kind = ImportKind.MILESTONE_SCHEDULE,
             noun = "milestone",
             total = plan.total,
-            new = plan.new.map { PlanLine(it.atMiles.asMiles(), describe(it.work, it.orMonths)) },
+            new = plan.new.map { PlanLine(it.atMiles.asDistance(unit), describe(it.work, it.orMonths)) },
             fills = emptyList(),
-            differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asMiles(), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
+            differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asDistance(unit), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
             same = plan.same.size,
             caution = "Milestones are for reference on the Milestones screen. They don't create or change reminders, and they are your figures, not the manufacturer's.",
-            note = MilestoneImport.repeatNote(file.repeatsEveryMiles),
+            note = listOfNotNull(MilestoneImport.repeatNote(repeats, unit), convertedNote(unit)).joinToString(" "),
         )
         return ImportPreview.Ready(view) { mode, _ ->
             fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
             val added = plan.new.map { MilestoneEntity(vehicleId = vehicleId, atMiles = it.atMiles, orMonths = it.orMonths) to jobs(it) }
             val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to jobs(item) } }
-            milestones.applyImport(vehicleId, file.repeatsEveryMiles, added, replaced)
+            milestones.applyImport(vehicleId, repeats, added, replaced)
             finish(view, vehicleId, mode)
         }
     }
 
-    private suspend fun historyPreview(vehicle: VehicleEntity, items: List<ImportedRecord>, s: Settings): ImportPreview {
+    private suspend fun historyPreview(vehicle: VehicleEntity, inMiles: List<ImportedRecord>, s: Settings): ImportPreview {
+        val unit = vehicle.unit
+        // The file's readings are in miles; they are saved as this vehicle's dash would have shown them.
+        val items = FileDistances.history(inMiles, unit)
         val swap = vehicle.clusterSwap()
         val records = service.recordsFor(vehicle.id)
         val byId = records.associateBy { it.record.id }
@@ -503,15 +516,16 @@ class ImportViewModel @Inject constructor(
             kind = ImportKind.SERVICE_HISTORY,
             noun = "record",
             total = plan.total,
-            new = plan.new.map { PlanLine(it.title(), it.describe()) },
-            fills = plan.fills.map { PlanLine(it.first.title(), it.first.describe()) },
-            differs = plan.differs.map { (item, mine) -> PlanLine(item.title(), item.describe(), mine.describe()) },
+            new = plan.new.map { PlanLine(it.title(unit), it.describe()) },
+            fills = plan.fills.map { PlanLine(it.first.title(unit), it.first.describe()) },
+            differs = plan.differs.map { (item, mine) -> PlanLine(item.title(unit), item.describe(), mine.describe()) },
             same = plan.same.size,
             caution = "Imported records are marked as imported in History and in exports.",
-            moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text() } },
+            note = convertedNote(unit),
+            moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
             warnings = odd.map { e ->
                 // As it is written in the file, which is how the user will look for it.
-                "${e.date.format(longDate)} · ${swap.asReadOn(e.odometer, e.date).asMiles()} doesn't fit the readings around it. Check the date and the odometer."
+                "${e.date.format(longDate)} · ${swap.asReadOn(e.odometer, e.date).asDistance(unit)} doesn't fit the readings around it. Check the date and the odometer."
             },
         )
         return ImportPreview.Ready(view) { mode, _ ->
@@ -547,7 +561,7 @@ class ImportViewModel @Inject constructor(
         }
     }
 
-    private fun ImportedRecord.title() = "${date.format(longDate)} · ${odometer.asMiles()}"
+    private fun ImportedRecord.title(unit: DistanceUnit) = "${date.format(longDate)} · ${odometer.asDistance(unit)}"
 }
 
 /** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
@@ -558,9 +572,9 @@ private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, soc
 private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
 
 /** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
-private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?): String = listOfNotNull(
-    normal?.let { "Every ${it.label().replace(" / ", " or ")}" } ?: "No interval",
-    severe?.let { "severe ${it.label().replace(" / ", " or ")}" },
+private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?, unit: DistanceUnit): String = listOfNotNull(
+    normal?.let { "Every ${it.label(unit).replace(" / ", " or ")}" } ?: "No interval",
+    severe?.let { "severe ${it.label(unit).replace(" / ", " or ")}" },
     rule?.ruleLabel()?.lowercase(),
     HistoryImport.services[service]?.let { "reset by \"${it.label}\"" },
 ).joinToString(" · ")
@@ -576,8 +590,15 @@ private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName
 private fun describe(work: List<TableJob>, orMonths: Int?): String =
     listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
 
-private fun ImportedScheduleItem.describe() = describe(normal, severe, rule, service)
-private fun SavedScheduleItem.describe() = describe(normal, severe, rule, service)
+private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit)
+private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit)
+
+/**
+ * Said under a preview for a kilometre vehicle: a file is always in miles, and what the page lists is
+ * what will be saved, so the figures won't be the ones in the file.
+ */
+private fun convertedNote(unit: DistanceUnit): String? =
+    "Import files are in miles. The figures here are what will be saved, in kilometres.".takeIf { unit == DistanceUnit.KILOMETERS }
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 

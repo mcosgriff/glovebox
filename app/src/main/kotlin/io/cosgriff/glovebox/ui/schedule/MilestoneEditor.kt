@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,7 +56,7 @@ import io.cosgriff.glovebox.domain.MilestoneProblems
 import io.cosgriff.glovebox.domain.RepeatEdit
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.TableJob
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.util.Locale
 
@@ -79,6 +80,8 @@ fun MilestoneEditor(
     draft: MilestoneDraft,
     others: List<Int>,
     repeatsEveryMiles: Int?,
+    /** What the vehicle's odometer counts in; the table is in it. */
+    unit: DistanceUnit,
     startsTable: Boolean,
     endsTable: Boolean,
     onSave: (ImportedMilestone) -> Unit,
@@ -125,7 +128,7 @@ fun MilestoneEditor(
         )
     }
 
-    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles)
+    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles, unit)
     val problems = (checked as? MilestoneEdit.Refused)?.problems?.takeIf { showErrors } ?: MilestoneProblems()
 
     if (deleting) {
@@ -178,14 +181,14 @@ fun MilestoneEditor(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("DUE AT")
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    NumberField("Miles", milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
+                    NumberField(unit.title, milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
                     NumberField("Or months", monthsText, { monthsText = it }, problems.months != null, Modifier.weight(1f))
                 }
                 val wrong = listOfNotNull(problems.miles, problems.months)
                 if (wrong.isEmpty()) {
                     Text(
-                        "Miles the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
-                            (repeatsEveryMiles?.let { " The table repeats every ${it.asMiles()}, so this comes round again each time." } ?: ""),
+                        "${unit.title} the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
+                            (repeatsEveryMiles?.let { " The table repeats every ${it.asDistance(unit)}, so this comes round again each time." } ?: ""),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -322,24 +325,24 @@ private const val NO_SERVICE = "None of these: work with this name"
  * [lastMiles] is the table's highest mileage, which the cycle can't be shorter than.
  */
 @Composable
-fun MilestoneRepeatDialog(repeatsEveryMiles: Int?, lastMiles: Int, onSave: (Int?) -> Unit, onDismiss: () -> Unit) {
+fun MilestoneRepeatDialog(repeatsEveryMiles: Int?, lastMiles: Int, unit: DistanceUnit, onSave: (Int?) -> Unit, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     var text by remember { mutableStateOf(repeatsEveryMiles?.let { String.format(Locale.US, "%,d", it) }.orEmpty()) }
     var showError by remember { mutableStateOf(false) }
-    val checked = MilestoneEdits.repeat(text, lastMiles)
+    val checked = MilestoneEdits.repeat(text, lastMiles, unit)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Does the table repeat?") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many miles later, " +
-                        "with the same work. Leave it empty for a table that ends at ${lastMiles.asMiles()}.",
+                    "Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many ${unit.plural} later, " +
+                        "with the same work. Leave it empty for a table that ends at ${lastMiles.asDistance(unit)}.",
                 )
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Repeats every (miles)") },
+                    label = { Text("Repeats every (${unit.plural})") },
                     singleLine = true,
                     isError = showError && checked is RepeatEdit.Refused,
                     supportingText = (checked as? RepeatEdit.Refused)?.takeIf { showError }?.let { { Text("${it.why}.") } },

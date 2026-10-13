@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.cosgriff.glovebox.domain.MileagePreview
 import io.cosgriff.glovebox.domain.MileageUpdate
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.statusColors
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -61,6 +62,8 @@ private val shortDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d", 
 @Composable
 fun UpdateMileageSheet(
     vehicleName: String,
+    /** What this vehicle's odometer counts in; the reading is typed and saved in it. */
+    unit: DistanceUnit,
     preview: (miles: Int) -> MileagePreview,
     onSave: (miles: Int) -> Unit,
     onDismiss: () -> Unit,
@@ -125,9 +128,9 @@ fun UpdateMileageSheet(
                             fontWeight = FontWeight.SemiBold,
                             color = if (miles == null) scheme.onSurfaceVariant else scheme.onSurface,
                         )
-                        Text("mi", Modifier.padding(bottom = 6.dp), color = scheme.onSurfaceVariant)
+                        Text(unit.symbol, Modifier.padding(bottom = 6.dp), color = scheme.onSurfaceVariant)
                     }
-                    shown.deltaLine(typed = miles != null)?.let { (text, tone) ->
+                    shown.deltaLine(typed = miles != null, unit)?.let { (text, tone) ->
                         Text(
                             text,
                             style = MaterialTheme.typography.bodySmall,
@@ -151,7 +154,7 @@ fun UpdateMileageSheet(
                 )
             }
 
-            shown.impactLine(typed = miles != null)?.let {
+            shown.impactLine(typed = miles != null, unit)?.let {
                 Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp)) {
                     Text(
                         it,
@@ -205,7 +208,7 @@ fun UpdateMileageSheet(
                         when {
                             miles == null -> "Enter the reading"
                             low || far -> "Save anyway"
-                            else -> "Save ${miles.asMiles()}"
+                            else -> "Save ${miles.asDistance(unit)}"
                         },
                         maxLines = 1,
                     )
@@ -218,31 +221,31 @@ fun UpdateMileageSheet(
 private enum class Tone { GOOD, BAD, PLAIN }
 
 /** "+538 mi since Oct 10", or what the last reading was when there's nothing to add up yet. */
-private fun MileagePreview.deltaLine(typed: Boolean): Pair<String, Tone>? {
+private fun MileagePreview.deltaLine(typed: Boolean, unit: DistanceUnit): Pair<String, Tone>? {
     val last = last ?: return null
-    val lastText = "Last reading was ${last.odometer.asMiles()} on ${last.date.format(shortDate)}"
+    val lastText = "Last reading was ${last.odometer.asDistance(unit)} on ${last.date.format(shortDate)}"
     val delta = delta
     return when {
         !typed || delta == null -> lastText to Tone.PLAIN
         below || far -> lastText to Tone.BAD
-        else -> "+${delta.asMiles()} since ${last.date.format(shortDate)}" to Tone.GOOD
+        else -> "+${delta.asDistance(unit)} since ${last.date.format(shortDate)}" to Tone.GOOD
     }
 }
 
 /** "Oil & filter now due in 1,150 mi · Tire rotation overdue by 3,850 mi." */
-private fun MileagePreview.impactLine(typed: Boolean): String? = when {
+private fun MileagePreview.impactLine(typed: Boolean, unit: DistanceUnit): String? = when {
     !typed -> null
-    below -> "That's lower than the last reading, so reminders will keep counting from ${last?.odometer?.asMiles()}. " +
+    below -> "That's lower than the last reading, so reminders will keep counting from ${last?.odometer?.asDistance(unit)}. " +
         "Check the number before saving."
     // Said in place of what it would do to the reminders: if the number is wrong, those are wrong too.
-    far -> "That's ${delta?.asMiles()} more than the last reading. If a digit has slipped, every mileage reminder would count from it. " +
+    far -> "That's ${delta?.asDistance(unit)} more than the last reading. If a digit has slipped, every mileage reminder would count from it. " +
         "Check the number before saving."
     impact.isEmpty() -> null
     else -> impact.joinToString(" · ", postfix = ".") { (status, headline) ->
         when {
-            headline.remaining < 0 -> "${status.item.name} overdue by ${abs(headline.remaining).asMiles()}"
+            headline.remaining < 0 -> "${status.item.name} overdue by ${abs(headline.remaining).asDistance(unit)}"
             headline.remaining == 0 -> "${status.item.name} due now"
-            else -> "${status.item.name} now due in ${headline.remaining.asMiles()}"
+            else -> "${status.item.name} now due in ${headline.remaining.asDistance(unit)}"
         }
     }
 }

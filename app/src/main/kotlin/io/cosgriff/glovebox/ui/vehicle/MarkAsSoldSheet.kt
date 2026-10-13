@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,7 @@ import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.SaleProblem
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import java.time.LocalDate
 
@@ -52,6 +53,8 @@ fun MarkAsSoldSheet(
     vehicleName: String,
     /** The highest reading so far; the final odometer starts there and can't go below it. */
     lastOdometer: Int?,
+    /** What this vehicle's odometer counts in. */
+    unit: DistanceUnit,
     onArchive: (Sale) -> Unit,
     onDismiss: () -> Unit,
     /** Opens the export sheet for this vehicle, as a PDF. */
@@ -104,13 +107,13 @@ fun MarkAsSoldSheet(
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Final odometer (mi)") },
+                label = { Text("Final odometer (${unit.symbol})") },
                 supportingText = {
                     Text(
                         when {
-                            tooLow -> "Lower than the last reading, ${lastOdometer?.asMiles()}."
+                            tooLow -> "Lower than the last reading, ${lastOdometer?.asDistance(unit)}."
                             lastOdometer == null -> "Optional."
-                            else -> "Last reading was ${lastOdometer.asMiles()}."
+                            else -> "Last reading was ${lastOdometer.asDistance(unit)}."
                         },
                     )
                 },

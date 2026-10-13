@@ -7,7 +7,10 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import io.cosgriff.glovebox.domain.DistanceConversion
+import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.forUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.MileageCadence
@@ -28,7 +31,7 @@ data class Settings(
     val lockAfterSeconds: Int = 0,
     val hideInRecents: Boolean = true,
     val defaultRule: DueRule = DueRule.WHICHEVER_FIRST,
-    /** How early a reminder starts counting as due soon. */
+    /** How early a reminder starts counting as due soon. Its distance is as typed, in [distanceUnit]; use [leadFor] for a vehicle. */
     val lead: LeadTime = LeadTime(),
     val torqueUnit: TorqueUnit = TorqueUnit.FOOT_POUND,
     /**
@@ -46,7 +49,10 @@ data class Settings(
     val backupReminder: Boolean = true,
     /** When the backup reminder last went out. */
     val backupRemindedOn: LocalDate? = null,
-)
+) {
+    /** [lead] for a vehicle that counts in [unit]: this is what every reminder calculation takes. */
+    fun leadFor(unit: DistanceUnit): LeadTime = lead.forUnit(unit, from = distanceUnit)
+}
 
 private val Context.dataStore by preferencesDataStore("settings")
 
@@ -136,7 +142,17 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLockAfterSeconds(s: Int) = context.dataStore.edit { it[Keys.lockAfter] = s }
     suspend fun setHideInRecents(on: Boolean) = context.dataStore.edit { it[Keys.hideRecents] = on }
     suspend fun setDefaultRule(rule: DueRule) = context.dataStore.edit { it[Keys.rule] = rule.name }
-    suspend fun setDistanceUnit(unit: DistanceUnit) = context.dataStore.edit { it[Keys.distance] = unit.name }
+    /**
+     * The unit new vehicles get. The lead distance is typed in this unit, so it is converted with it
+     * (500 mi becomes 800 km) and means the same as before. No vehicle is touched.
+     */
+    suspend fun setDistanceUnit(unit: DistanceUnit) = context.dataStore.edit { p ->
+        val from = p[Keys.distance]?.let(DistanceUnit::of) ?: Settings().distanceUnit
+        if (from != unit) {
+            p[Keys.leadMiles] = DistanceConversion.convert(p[Keys.leadMiles] ?: Settings().lead.miles, from, unit, DistanceKind.SCHEDULED)
+            p[Keys.distance] = unit.name
+        }
+    }
     suspend fun setLeadTime(lead: LeadTime) = context.dataStore.edit {
         it[Keys.leadMiles] = lead.miles
         it[Keys.leadDays] = lead.days

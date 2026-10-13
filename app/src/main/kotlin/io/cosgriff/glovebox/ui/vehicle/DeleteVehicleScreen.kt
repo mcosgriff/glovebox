@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
@@ -169,6 +170,7 @@ fun DeleteVehicleScreen(
         MarkAsSoldSheet(
             vehicleName = d.name,
             lastOdometer = d.lastOdometer,
+            unit = d.vehicle.unit,
             onArchive = { sale ->
                 archiving = false
                 vm.archiveInstead(sale, onArchived)

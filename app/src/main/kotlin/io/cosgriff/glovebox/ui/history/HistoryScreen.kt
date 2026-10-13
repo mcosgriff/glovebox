@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.ui.service.HistoryFocus
 import kotlinx.coroutines.launch
@@ -59,7 +61,7 @@ import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.domain.format
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -239,7 +241,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(shown, key = { it.record.id }) { r ->
-                    RecordCard(r, mark = fresh?.mark?.takeIf { r.record.id == fresh?.recordId }, onClick = { onOpenRecord(r.record.id) })
+                    RecordCard(r, state.vehicle?.unit ?: DistanceUnit.MILES, mark = fresh?.mark?.takeIf { r.record.id == fresh?.recordId }, onClick = { onOpenRecord(r.record.id) })
                 }
             }
         }
@@ -247,7 +249,7 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun RecordCard(r: ServiceRecordWithItems, mark: RecordMark?, onClick: () -> Unit) {
+private fun RecordCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: RecordMark?, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val fresh = mark != null
     Card(
@@ -261,7 +263,7 @@ private fun RecordCard(r: ServiceRecordWithItems, mark: RecordMark?, onClick: ()
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(r.record.date.format(longDate), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                Text(r.record.odometer.asMiles(), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                Text(r.record.odometer.asDistance(unit), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
             }
             Text(r.items.joinToString(", ") { it.label })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

@@ -86,5 +86,10 @@ object DistanceConversion {
             "Do this only if the dash now reads in ${to.plural}, or the wrong unit was chosen."
 }
 
-/** How early a reminder starts, for a vehicle in [unit]; the setting itself is kept in miles. */
-fun LeadTime.forUnit(unit: DistanceUnit): LeadTime = copy(miles = unit.scheduled(miles))
+/**
+ * How early a reminder starts for a vehicle in [unit]. The setting is one for the app and is kept as
+ * typed, in [from], the unit new vehicles get; for a vehicle in the other unit it is converted the
+ * way a schedule figure is (500 mi as 800 km).
+ */
+fun LeadTime.forUnit(unit: DistanceUnit, from: DistanceUnit): LeadTime =
+    copy(miles = DistanceConversion.convert(miles, from, unit, DistanceKind.SCHEDULED))

@@ -32,6 +32,8 @@ class ImportFilesTest {
         note: String? = null,
     ) = SavedTorqueSpec(id, name, category, socket, torque, source, note)
 
+    private fun scheduleFile(items: List<SavedScheduleItem>) = ScheduleExport.file(items, DistanceUnit.MILES)
+
     private fun schemaAccepts(kind: ImportKind, text: String): Boolean {
         val schema = File("../docs/import/schema/${kind.id}.schema.json").readText()
         assertTrue(ImportFiles.schema(kind) in schema)
@@ -47,7 +49,7 @@ class ImportFilesTest {
 
     @Test
     fun `a schedule goes out as its tracked items and is read back the same`() {
-        val written = ScheduleExport.file(schedule)
+        val written = scheduleFile(schedule)
         assertEquals(3, written.count)
         assertEquals(emptyList<LeftOut>(), written.leftOut)
         assertTrue(schemaAccepts(ImportKind.INTERVAL_SCHEDULE, written.text!!))
@@ -64,7 +66,7 @@ class ImportFilesTest {
 
     @Test
     fun `read back into the vehicle it came from, the user's own items are the same and the typical ones are doubles`() {
-        val items = (ImportFormat.parse(ScheduleExport.file(schedule).text!!) as ImportFile.IntervalSchedule).items
+        val items = (ImportFormat.parse(scheduleFile(schedule).text!!) as ImportFile.IntervalSchedule).items
         val plan = ScheduleImport.plan(items, schedule)
         assertEquals(listOf(3L, 4L), plan.same.map { it.second.id })
         assertEquals(listOf("Engine oil & filter"), plan.new.map { it.name })
@@ -73,7 +75,7 @@ class ImportFilesTest {
 
     @Test
     fun `what a schedule file can't hold is left out and said, and the rest still goes`() {
-        val written = ScheduleExport.file(
+        val written = scheduleFile(
             listOf(
                 item(1, "Oil change"),
                 item(2, "Timing belt", Interval(600_000, null)),
@@ -99,9 +101,9 @@ class ImportFilesTest {
 
     @Test
     fun `with nothing that can be written there is no file`() {
-        assertNull(ScheduleExport.file(emptyList()).text)
-        assertNull(ScheduleExport.file(listOf(item(1, "Oil change", tracked = false))).text)
-        val none = ScheduleExport.file(listOf(item(1, "Timing belt", Interval(600_000, null))))
+        assertNull(scheduleFile(emptyList()).text)
+        assertNull(scheduleFile(listOf(item(1, "Oil change", tracked = false))).text)
+        val none = scheduleFile(listOf(item(1, "Timing belt", Interval(600_000, null))))
         assertNull(none.text)
         assertEquals(1, none.leftOut.size)
         assertNull(TorqueExport.file(emptyList(), TorqueUnit.FOOT_POUND).text)
@@ -109,7 +111,7 @@ class ImportFilesTest {
 
     @Test
     fun `no more goes in a file than one may hold`() {
-        val written = ScheduleExport.file((1..ScheduleImport.MAX_ITEMS + 2).map { item(it.toLong(), "Job $it") })
+        val written = scheduleFile((1..ScheduleImport.MAX_ITEMS + 2).map { item(it.toLong(), "Job $it") })
         assertEquals(ScheduleImport.MAX_ITEMS, written.count)
         assertEquals(listOf(LeftOut("Job 201", "a file holds 200 at most"), LeftOut("Job 202", "a file holds 200 at most")), written.leftOut)
         assertTrue(ImportFormat.parse(written.text!!) is ImportFile.IntervalSchedule)
@@ -165,7 +167,7 @@ class ImportFilesTest {
         val docs = File("../docs/import/examples")
         val schedule = (ImportFormat.parse(File(docs, "interval-schedule.json").readText()) as ImportFile.IntervalSchedule).items
         val saved = schedule.mapIndexed { i, it -> SavedScheduleItem(i.toLong(), it.name, it.normal, it.severe, it.rule, null, true, it.service) }
-        assertEquals(schedule, (ImportFormat.parse(ScheduleExport.file(saved).text!!) as ImportFile.IntervalSchedule).items)
+        assertEquals(schedule, (ImportFormat.parse(scheduleFile(saved).text!!) as ImportFile.IntervalSchedule).items)
 
         val torque = (ImportFormat.parse(File(docs, "torque-specs.json").readText()) as ImportFile.TorqueSpecs).items
         val rows = torque.mapIndexed { i, it -> SavedTorqueSpec(i.toLong(), it.name, it.category, it.socket, it.torque, it.source, it.note) }
@@ -178,5 +180,49 @@ class ImportFilesTest {
         assertEquals("glovebox-schedule-2003-honda-accord.json", ScheduleExport.fileName("2003 Honda Accord"))
         assertEquals("glovebox-torque-specs-2003-honda-accord.json", TorqueExport.fileName("2003 Honda Accord"))
         assertEquals("glovebox-milestones-2003-honda-accord.json", MilestoneExport.fileName("2003 Honda Accord"))
+    }
+
+    private val km = DistanceUnit.KILOMETERS
+
+    @Test
+    fun `a file's schedule figures come into a kilometre vehicle as a manual gives them, and go back out the same`() {
+        val file = listOf(ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6)), ImportedScheduleItem("Brake fluid", Interval(null, 36)))
+        val into = FileDistances.schedule(file, km)
+        assertEquals(listOf(Interval(12_000, 12), Interval(null, 36)), into.map { it.normal })
+        assertEquals(Interval(8_000, 6), into[0].severe)
+        assertEquals(file, FileDistances.schedule(file, DistanceUnit.MILES))
+
+        val saved = into.mapIndexed { i, it -> SavedScheduleItem(i.toLong(), it.name, it.normal, it.severe, it.rule, null, true, it.service) }
+        val back = (ImportFormat.parse(ScheduleExport.file(saved, km).text!!) as ImportFile.IntervalSchedule).items
+        assertEquals(file, back)
+    }
+
+    @Test
+    fun `a milestone table comes into a kilometre vehicle with its cycle, and goes back out the same`() {
+        val file = listOf(ImportedMilestone(30_000, listOf(TableJob("B"))), ImportedMilestone(10_000, listOf(TableJob("A"))))
+        val (table, repeats) = FileDistances.milestones(file, 120_000, km)
+        assertEquals(listOf(16_000, 48_000), table.map { it.atMiles })
+        assertEquals(192_000, repeats)
+
+        val saved = table.mapIndexed { i, m -> SavedMilestone(i.toLong(), m.atMiles, m.work, m.orMonths) }
+        val back = ImportFormat.parse(MilestoneExport.file(saved, repeats, km)) as ImportFile.MilestoneSchedule
+        assertEquals(listOf(10_000, 30_000), back.items.map { it.atMiles })
+        assertEquals(120_000, back.repeatsEveryMiles)
+    }
+
+    @Test
+    fun `a history file's readings come into a kilometre vehicle converted exactly`() {
+        val record = ImportedRecord(java.time.LocalDate.of(2024, 3, 1), 41_000, listOf(ImportedWork("Oil change")), diy = true)
+        assertEquals(listOf(65_983), FileDistances.history(listOf(record), km).map { it.odometer })
+        assertEquals(listOf(record), FileDistances.history(listOf(record), DistanceUnit.MILES))
+    }
+
+    @Test
+    fun `a kilometre figure with no whole number of miles still makes a file the app accepts`() {
+        // 7,500 km is 4,687.5 mi: the file says 4,688, which reads back as 7,501 km. Off by one, never refused.
+        val written = ScheduleExport.file(listOf(item(1, "Oil change", Interval(7_500, 6))), km)
+        val back = (ImportFormat.parse(written.text!!) as ImportFile.IntervalSchedule).items.single()
+        assertEquals(4_688, back.normal.miles)
+        assertEquals(7_501, FileDistances.schedule(listOf(back), km).single().normal.miles)
     }
 }

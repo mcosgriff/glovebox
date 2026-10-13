@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.BackupRules
 import android.content.Context
 import androidx.work.BackoffPolicy
@@ -83,7 +84,7 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
                 name = "${v.year} ${v.nickname ?: v.model}",
                 // Last done goes in as it was read, so recording a cluster replacement doesn't look like the
                 // service being logged again (NoticeRules.cycle) and announce everything a second time.
-                statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.lead)
+                statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.leadFor(v.unit))
                     .map { s -> s.copy(lastDone = s.lastDone?.let { swap.asReadOn(it) }) },
                 lastReadingOn = ServiceLog.readings(entries, updates).maxOfOrNull { it.date },
             )

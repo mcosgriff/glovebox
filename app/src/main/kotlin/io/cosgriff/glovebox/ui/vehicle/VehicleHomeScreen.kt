@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.graphics.luminance
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
@@ -86,7 +88,7 @@ import io.cosgriff.glovebox.domain.ReminderProgress
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.VehicleHomeRoute
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
@@ -157,8 +159,8 @@ class VehicleHomeViewModel @Inject constructor(
             vehicle = vehicle,
             odometer = VehicleReminders.currentOdometer(entries, updates),
             defaultRule = s.defaultRule,
-            comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), s.lead)),
-            inputs = ReminderInputs(tracked, entries, updates, s.lead),
+            comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), s.leadFor(vehicle.unit))),
+            inputs = ReminderInputs(tracked, entries, updates, s.leadFor(vehicle.unit)),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -184,7 +186,7 @@ fun VehicleHomeScreen(
     /** The "When were these last done?" list. */
     onEnterLastDone: (vehicleId: Long) -> Unit,
     /** Opens the camera to read the odometer; [last] is the latest known reading. */
-    onReadDash: (last: Int?) -> Unit,
+    onReadDash: (last: Int?, unit: DistanceUnit) -> Unit,
     /** What the camera read, until [onDashReadingUsed] says the sheet has taken it. */
     dashReading: Int?,
     onDashReadingUsed: () -> Unit,
@@ -194,6 +196,7 @@ fun VehicleHomeScreen(
 ) {
     val home = vm.home.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val v = home.vehicle
+    val unit = v.unit
     val up = home.comingUp
     val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
     var updatingMileage by rememberSaveable { mutableStateOf(vm.startWithMileage) }
@@ -201,13 +204,14 @@ fun VehicleHomeScreen(
     if (updatingMileage) {
         UpdateMileageSheet(
             vehicleName = "${v.year} ${v.nickname ?: v.model}",
-            preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now()) },
+            unit = unit,
+            preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now(), unit) },
             onSave = { miles ->
                 updatingMileage = false
-                vm.saveMileage(miles) { id -> onMessage("Mileage updated · ${miles.asMiles()}", "Undo") { vm.undoMileage(id) } }
+                vm.saveMileage(miles) { id -> onMessage("Mileage updated · ${miles.asDistance(unit)}", "Undo") { vm.undoMileage(id) } }
             },
             onDismiss = { updatingMileage = false },
-            onReadDash = { onReadDash(home.odometer) },
+            onReadDash = { onReadDash(home.odometer, unit) },
             dashReading = dashReading,
             onDashReadingUsed = onDashReadingUsed,
         )
@@ -254,7 +258,7 @@ fun VehicleHomeScreen(
                     WhiteCard {
                         up.counting.forEachIndexed { i, (status, progress) ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            ReminderRow(status, progress, v.clusterSwap())
+                            ReminderRow(status, progress, v.clusterSwap(), unit)
                         }
                     }
                 }
@@ -278,7 +282,7 @@ fun VehicleHomeScreen(
                             ) {
                                 Text(status.item.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                                 Text(
-                                    "Every ${status.item.interval.label().replace(" / ", " or ")}",
+                                    "Every ${status.item.interval.label(unit).replace(" / ", " or ")}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -335,7 +339,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("Odometer", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        odometer?.asMiles() ?: "Not recorded",
+                        odometer?.asDistance(v.unit) ?: "Not recorded",
                         style = MaterialTheme.typography.headlineSmall,
                         fontFamily = PlexMono,
                     )
@@ -343,7 +347,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     val swap = v.clusterSwap()
                     if (swap != null && odometer != null) {
                         Text(
-                            "${swap.actual(odometer).asMiles()} actual · cluster replaced",
+                            "${swap.actual(odometer).asDistance(v.unit)} actual · cluster replaced",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -418,7 +422,7 @@ private fun StatusPill(up: ComingUp) {
 }
 
 @Composable
-private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: ClusterSwap?) {
+private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit) {
     val colors = statusColors()
     val color = when (status.status.state) {
         DueState.OVERDUE -> colors.overdue
@@ -428,10 +432,10 @@ private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: Cl
     Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(status.item.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-            Text(progress.headline.text(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
+            Text(progress.headline.text(unit), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
         }
         ProgressBar(progress.fraction ?: 0.0, color)
-        Text(status.detail(progress, swap), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(status.detail(progress, swap, unit), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -460,11 +464,11 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
 }
 
 /** "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026" */
-private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?): String {
+private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit): String {
     // As it was read at the time, which is what the record says.
     val last = lastDone?.let { swap.asReadOn(it) } ?: return ""
-    val every = "Every ${item.interval.label().replace(" / ", " or ")}"
-    val lastText = if (progress.headline is DueHeadline.Days) "last on ${last.date.format(longDate)}" else "last at ${last.odometer.asMiles()}"
+    val every = "Every ${item.interval.label(unit).replace(" / ", " or ")}"
+    val lastText = if (progress.headline is DueHeadline.Days) "last on ${last.date.format(longDate)}" else "last at ${last.odometer.asDistance(unit)}"
     // Only worth an estimate when mileage decides it and the date comes from the driving pace.
     val estimate = status.estimatedDueDate
         ?.takeIf { progress.headline is DueHeadline.Miles && status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE }

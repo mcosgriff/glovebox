@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -153,6 +154,8 @@ data class LogServiceData(
      * is typed belongs to whichever cluster was in on the form's date, and is saved as typed.
      */
     val swap: ClusterSwap?,
+    /** What the vehicle's odometer counts in; the reading is typed and saved in it. */
+    val unit: DistanceUnit,
     /** Which schedule items answer to which catalog line, for previewing what an edit moves. */
     val answering: Map<String, Set<Long>>,
     /** What the user wrote on Vehicle details, for the hints beside the lines. */
@@ -276,7 +279,7 @@ class LogServiceViewModel @Inject constructor(
             val due = if (editing) {
                 emptyList()
             } else {
-                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), prefs.lead)
+                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), prefs.leadFor(vehicle?.unit ?: DistanceUnit.MILES))
                     // Never-logged items count as due, but offering all of them would bury the form on a
                     // new vehicle; they can still be ticked in the categories below.
                     .filter { it.lastDone != null && it.status.state != DueState.OK }
@@ -320,6 +323,7 @@ class LogServiceViewModel @Inject constructor(
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
                 swap = swap,
+                unit = vehicle?.unit ?: DistanceUnit.MILES,
                 answering = answering,
                 specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
                 original = original,
@@ -430,7 +434,7 @@ fun LogServiceScreen(
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        FieldLabel("Odometer (mi)")
+                        FieldLabel("Odometer (${data.unit.symbol})")
                         OutlinedTextField(
                             value = vm.odometerText,
                             onValueChange = { vm.odometerText = it },
@@ -452,6 +456,7 @@ fun LogServiceScreen(
                     readings = data.readings.map { it.copy(odometer = data.swap.asReadOn(it.odometer, vm.date)) },
                     lastOdometer = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) },
                     showErrors = vm.showErrors,
+                    unit = data.unit,
                 )?.let { note ->
                     Text(
                         note.text,
@@ -526,7 +531,7 @@ fun LogServiceScreen(
                         data.categories.first { it.id == vm.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
-                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs),
+                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs, data.unit),
                                 checked = option.id in vm.selected,
                                 onToggle = { vm.toggle(option.id) },
                             )
@@ -578,7 +583,7 @@ fun LogServiceScreen(
                             Text("No changes to reminders.", style = MaterialTheme.typography.bodyMedium)
                         } else {
                             changes.forEach {
-                                Text(it.text(), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                                Text(it.text(data.unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }

@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import java.util.Locale
+import io.cosgriff.glovebox.domain.Snoozing
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +50,7 @@ import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.SnoozeKind
 import io.cosgriff.glovebox.domain.SnoozeOption
 import io.cosgriff.glovebox.domain.UrgentItem
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.until
 
 /** Pushes a due reminder back without logging it. Design: 10a · Snooze sheet. */
@@ -64,6 +68,7 @@ fun SnoozeSheet(
     onDismiss: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val unit = reminder.vehicle.unit
     var kind by rememberSaveable { mutableStateOf(options.first().kind) }
     // The choices can change under the sheet (a mileage update, say); fall back to the first.
     val chosen = options.firstOrNull { it.kind == kind } ?: options.first()
@@ -103,8 +108,8 @@ fun SnoozeSheet(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(selected = option == chosen, onClick = null, modifier = Modifier.padding(horizontal = 12.dp))
-                            Text(option.kind.label(), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                            Text(option.hint(), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                            Text(option.kind.label(unit), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                            Text(option.hint(unit), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -113,7 +118,7 @@ fun SnoozeSheet(
             Text(
                 buildAnnotatedString {
                     append("You'll be reminded again ")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(chosen.whenText()) }
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(chosen.whenText(unit)) }
                     append(".")
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -140,30 +145,30 @@ fun SnoozeSheet(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.onSurfaceVariant),
                 ) {
-                    Text("Skip this one — wait until ${skip.until()}")
+                    Text("Skip this one — wait until ${skip.until(unit)}")
                 }
             }
         }
     }
 }
 
-private fun SnoozeKind.label(): String = when (this) {
-    SnoozeKind.MILES_500 -> "500 miles"
-    SnoozeKind.MILES_1000 -> "1,000 miles"
+private fun SnoozeKind.label(unit: DistanceUnit): String = when (this) {
+    // 500 and 1,000 miles, or 800 and 1,600 kilometres.
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> String.format(Locale.US, "%,d %s", Snoozing.distance(this, unit), unit.plural)
     SnoozeKind.WEEKS_2 -> "2 weeks"
     SnoozeKind.MONTH_1 -> "1 month"
     SnoozeKind.NEXT_OIL_CHANGE -> "With the next oil change"
 }
 
 /** The oil change is an estimate of when it will be due, so it reads "~70,100 mi". */
-private fun SnoozeOption.hint(): String = when (kind) {
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until()}"
-    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> snooze.until()
-    SnoozeKind.NEXT_OIL_CHANGE -> "~${snooze.untilOdometer?.asMiles() ?: snooze.until()}"
+private fun SnoozeOption.hint(unit: DistanceUnit): String = when (kind) {
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until(unit)}"
+    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> snooze.until(unit)
+    SnoozeKind.NEXT_OIL_CHANGE -> "~${snooze.untilOdometer?.asDistance(unit) ?: snooze.until(unit)}"
 }
 
-private fun SnoozeOption.whenText(): String = when (kind) {
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until()}"
-    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> "on ${snooze.until()}"
-    SnoozeKind.NEXT_OIL_CHANGE -> "with the oil change, around ${snooze.until()}"
+private fun SnoozeOption.whenText(unit: DistanceUnit): String = when (kind) {
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until(unit)}"
+    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> "on ${snooze.until(unit)}"
+    SnoozeKind.NEXT_OIL_CHANGE -> "with the oil change, around ${snooze.until(unit)}"
 }

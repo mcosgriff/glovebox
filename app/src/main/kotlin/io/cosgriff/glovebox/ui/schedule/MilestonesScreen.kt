@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +79,7 @@ import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.toEntry
@@ -102,6 +104,7 @@ data class MilestonesState(
     /** Miles the vehicle has really covered; null with no reading yet. */
     val current: Int?,
     val swap: ClusterSwap?,
+    val unit: DistanceUnit,
     /** False when nothing tracked repeats by mileage, so there is nothing to build milestones from. */
     val hasMileageItems: Boolean,
     /** True when these are the user's own imported table, shown in place of the view built from the schedule. */
@@ -172,6 +175,7 @@ class MilestonesViewModel @Inject constructor(
                 milestones = Milestones.status(list, done, current, continues = every != null),
                 current = current,
                 swap = swap,
+                unit = vehicle.unit,
                 hasMileageItems = true,
                 fromTable = true,
                 table = saved,
@@ -188,6 +192,7 @@ class MilestonesViewModel @Inject constructor(
             milestones = Milestones.status(list, done, current, continues = true),
             current = current,
             swap = swap,
+            unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
         )
@@ -258,6 +263,7 @@ class MilestonesViewModel @Inject constructor(
 fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, vm: MilestonesViewModel = hiltViewModel()) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val scheme = MaterialTheme.colorScheme
+    val unit = state.unit
     val list = rememberLazyListState()
     // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
     var placed by rememberSaveable { mutableStateOf(false) }
@@ -307,6 +313,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         MilestoneRepeatDialog(
             repeatsEveryMiles = state.repeatsEveryMiles,
             lastMiles = state.table.maxOf { it.atMiles },
+            unit = unit,
             onSave = {
                 repeating = false
                 vm.setRepeat(it)
@@ -347,6 +354,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             draft = editing,
             others = state.table.filter { it.id != editing.id }.map { it.atMiles },
             repeatsEveryMiles = state.repeatsEveryMiles,
+            unit = unit,
             startsTable = state.table.isEmpty(),
             endsTable = state.table.size == 1,
             onSave = { vm.save(editing, it) },
@@ -362,7 +370,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             Column(Modifier.padding(start = 8.dp)) {
                 Text("Milestones", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                 Text(
-                    listOfNotNull(state.vehicleName, state.current?.let { "${it.asMiles()}${if (state.swap != null) " actual" else ""}" }).joinToString(" · "),
+                    listOfNotNull(state.vehicleName, state.current?.let { "${it.asDistance(unit)}${if (state.swap != null) " actual" else ""}" }).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -378,7 +386,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 Text(
                     if (state.fromTable) {
                         "Your own milestone table, with what your log says was done. " +
-                            (state.repeatsEveryMiles?.let { "It repeats every ${it.asMiles()}, so after its last milestone it starts again from the first. " } ?: "") +
+                            (state.repeatsEveryMiles?.let { "It repeats every ${it.asDistance(unit)}, so after its last milestone it starts again from the first. " } ?: "") +
                             "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn't checked them."
                     } else {
                         "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
@@ -423,6 +431,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                             onOpenRecord = onOpenRecord,
                             // Only the user's own table can be edited; a repeat is the milestone it repeats.
                             onEdit = if (state.fromTable) ({ vm.edit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
+                            unit = unit,
                         )
                     }
                 } else {
@@ -434,7 +443,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                "${String.format(Locale.US, "%,d", first)} to ${row.last().milestone.atMiles.asMiles()} · ${row.size} with nothing logged",
+                                "${String.format(Locale.US, "%,d", first)} to ${row.last().milestone.atMiles.asDistance(unit)} · ${row.size} with nothing logged",
                                 Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
@@ -479,7 +488,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(state.repeatsEveryMiles?.let { "Repeats every ${it.asMiles()}" } ?: "Doesn't repeat", style = MaterialTheme.typography.bodyLarge)
+                                    Text(state.repeatsEveryMiles?.let { "Repeats every ${it.asDistance(unit)}" } ?: "Doesn't repeat", style = MaterialTheme.typography.bodyLarge)
                                     Text(
                                         if (state.repeatsEveryMiles != null) "After the last milestone it starts again from the first" else "The table ends at its last milestone",
                                         style = MaterialTheme.typography.bodySmall,
@@ -494,7 +503,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 item {
                     SaveAsImportFile(
                         caption = "A copy to keep, or to pass to someone with the same model. It holds this table and nothing about your vehicle or its history, and it isn't encrypted.",
-                        write = { MilestoneExport.written(state.table, state.repeatsEveryMiles) },
+                        write = { MilestoneExport.written(state.table, state.repeatsEveryMiles, unit) },
                         onSave = vm::saveAsFile,
                     )
                 }
@@ -542,6 +551,7 @@ private fun MilestoneCard(
     onToggle: () -> Unit,
     onOpenRecord: (Long) -> Unit,
     onEdit: (() -> Unit)?,
+    unit: DistanceUnit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val next = m.place == MilestonePlace.NEXT
@@ -564,7 +574,7 @@ private fun MilestoneCard(
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        m.milestone.atMiles.asMiles(),
+                        m.milestone.atMiles.asDistance(unit),
                         Modifier.semantics { heading() },
                         style = MaterialTheme.typography.titleMedium,
                         fontFamily = PlexMono,
@@ -576,10 +586,10 @@ private fun MilestoneCard(
                             if (m.jobs.size == 1) "1 job" else "${m.jobs.size} jobs",
                             "$completed completed".takeIf { completed > 0 },
                             m.milestone.orMonths?.let { "or $it months" },
-                            m.milestone.repeatOf?.let { "repeat of ${it.asMiles()}" },
+                            m.milestone.repeatOf?.let { "repeat of ${it.asDistance(unit)}" },
                             // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
                             swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
-                                ?.let { "${(m.milestone.atMiles - it.offset).asMiles()} on the dash" },
+                                ?.let { "${(m.milestone.atMiles - it.offset).asDistance(unit)} on the dash" },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (completed > 0) statusColors().ok else scheme.onSurfaceVariant,
@@ -588,7 +598,7 @@ private fun MilestoneCard(
                 if (next) {
                     Surface(color = scheme.primaryContainer, shape = CircleShape) {
                         Text(
-                            current?.let { "NEXT · IN ${(m.milestone.atMiles - it).asMiles().uppercase()}" } ?: "NEXT",
+                            current?.let { "NEXT · IN ${(m.milestone.atMiles - it).asDistance(unit).uppercase()}" } ?: "NEXT",
                             Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
@@ -606,12 +616,12 @@ private fun MilestoneCard(
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
                     m.jobs.forEach { job ->
                         HorizontalDivider(color = scheme.outlineVariant)
-                        JobRow(job, onOpenRecord)
+                        JobRow(job, unit, onOpenRecord)
                     }
                     if (onEdit != null) {
                         HorizontalDivider(color = scheme.outlineVariant)
                         TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text(m.milestone.repeatOf?.let { "Edit the ${it.asMiles()} milestone" } ?: "Edit this milestone")
+                            Text(m.milestone.repeatOf?.let { "Edit the ${it.asDistance(unit)} milestone" } ?: "Edit this milestone")
                         }
                     }
                 }
@@ -621,7 +631,7 @@ private fun MilestoneCard(
 }
 
 @Composable
-private fun JobRow(job: MilestoneJobStatus, onOpenRecord: (Long) -> Unit) {
+private fun JobRow(job: MilestoneJobStatus, unit: DistanceUnit, onOpenRecord: (Long) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val done = job.done
     Row(
@@ -636,8 +646,8 @@ private fun JobRow(job: MilestoneJobStatus, onOpenRecord: (Long) -> Unit) {
             // A job nothing in the log matches is simply listed: no "missed", no tick-box.
             if (done != null) {
                 Text(
-                    "Completed ${done.date.format(longDate)} at ${done.readMiles.asMiles()}" +
-                        if (done.readMiles != done.actualMiles) " on the dash (${done.actualMiles.asMiles()} actual)" else "",
+                    "Completed ${done.date.format(longDate)} at ${done.readMiles.asDistance(unit)}" +
+                        if (done.readMiles != done.actualMiles) " on the dash (${done.actualMiles.asDistance(unit)} actual)" else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = statusColors().ok,
                 )

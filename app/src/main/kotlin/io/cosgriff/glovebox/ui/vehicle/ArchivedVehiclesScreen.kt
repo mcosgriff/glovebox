@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +48,7 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
@@ -191,7 +193,7 @@ private fun ArchivedCard(
                         listOfNotNull(
                             v.nickname,
                             v.archivedOn?.let { "Sold ${it.format(longDate)}" },
-                            a.finalOdometer?.let { "final ${it.asMiles()}" },
+                            a.finalOdometer?.let { "final ${it.asDistance(v.unit)}" },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,

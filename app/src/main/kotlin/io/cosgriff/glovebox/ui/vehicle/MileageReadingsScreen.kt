@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +73,7 @@ import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
-import io.cosgriff.glovebox.ui.service.asMiles
+import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -92,6 +94,7 @@ data class MileageReadingsState(
     /** Newest first: the standalone readings and the ones logged with a service record. */
     val rows: List<ReadingRow>,
     val swap: ClusterSwap?,
+    val unit: DistanceUnit,
 )
 
 /** Puts a reading back as it was. A singleton with its own scope because Undo can be tapped after the screen has closed. */
@@ -135,8 +138,10 @@ class MileageReadingsViewModel @Inject constructor(
                 readings.map { LoggedReading(it.id, it.date, it.odometer) } +
                     records.map { LoggedReading(it.record.id, it.record.date, it.record.odometer, fromRecord = true) },
                 swap,
+                vehicle.unit,
             ),
             swap = swap,
+            unit = vehicle.unit,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -172,19 +177,21 @@ fun MileageReadingsScreen(
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val scheme = MaterialTheme.colorScheme
+    val unit = state.unit
     // The reading's id, so the sheet survives the list changing under it.
     var editing by rememberSaveable { mutableStateOf<Long?>(null) }
 
     state.rows.firstOrNull { !it.reading.fromRecord && it.reading.id == editing }?.let { row ->
         ReadingSheet(
             reading = row.reading,
+            unit = unit,
             onSave = { date, miles ->
                 editing = null
-                vm.correct(row.reading.id, date, miles) { undo -> onMessage("Reading corrected · ${miles.asMiles()}", "Undo", undo) }
+                vm.correct(row.reading.id, date, miles) { undo -> onMessage("Reading corrected · ${miles.asDistance(unit)}", "Undo", undo) }
             },
             onDelete = {
                 editing = null
-                vm.delete(row.reading.id) { old, undo -> onMessage("Reading deleted · ${old.odometer.asMiles()}", "Undo", undo) }
+                vm.delete(row.reading.id) { old, undo -> onMessage("Reading deleted · ${old.odometer.asDistance(unit)}", "Undo", undo) }
             },
             onDismiss = { editing = null },
         )
@@ -228,7 +235,7 @@ fun MileageReadingsScreen(
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         state.rows.forEachIndexed { i, row ->
                             if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                            ReadingLine(row, onClick = { if (row.reading.fromRecord) onOpenRecord(row.reading.id) else editing = row.reading.id })
+                            ReadingLine(row, unit, onClick = { if (row.reading.fromRecord) onOpenRecord(row.reading.id) else editing = row.reading.id })
                         }
                     }
                 }
@@ -238,7 +245,7 @@ fun MileageReadingsScreen(
 }
 
 @Composable
-private fun ReadingLine(row: ReadingRow, onClick: () -> Unit) {
+private fun ReadingLine(row: ReadingRow, unit: DistanceUnit, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val reading = row.reading
     Row(
@@ -250,7 +257,7 @@ private fun ReadingLine(row: ReadingRow, onClick: () -> Unit) {
     ) {
         Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(reading.odometer.asMiles(), style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                Text(reading.odometer.asDistance(unit), style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                 if (row.current) {
                     Surface(color = scheme.primaryContainer, shape = CircleShape) {
                         Text(
@@ -271,7 +278,7 @@ private fun ReadingLine(row: ReadingRow, onClick: () -> Unit) {
             // Says which one to look at, never that it is wrong: only the user knows what the dash read.
             val doubt = when {
                 row.outOfLine -> "Doesn't fit the readings around it. An odometer only goes up, so check this one."
-                row.jump != null -> "${row.jump?.asMiles()} more than the reading before it. Check a digit hasn't slipped."
+                row.jump != null -> "${row.jump?.asDistance(unit)} more than the reading before it. Check a digit hasn't slipped."
                 else -> null
             }
             doubt?.let { Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = scheme.error) }
@@ -283,7 +290,7 @@ private fun ReadingLine(row: ReadingRow, onClick: () -> Unit) {
 /** Corrects one standalone reading's value or date, or deletes it. What is typed is saved as typed. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ReadingSheet(reading: LoggedReading, onSave: (date: LocalDate, miles: Int) -> Unit, onDelete: () -> Unit, onDismiss: () -> Unit) {
+private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (date: LocalDate, miles: Int) -> Unit, onDelete: () -> Unit, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     var day by rememberSaveable { mutableLongStateOf(reading.date.toEpochDay()) }
     var text by rememberSaveable { mutableStateOf(reading.odometer.toString()) }
@@ -315,7 +322,7 @@ private fun ReadingSheet(reading: LoggedReading, onSave: (date: LocalDate, miles
         ) {
             Text("Correct a reading", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(
-                "Was ${reading.odometer.asMiles()} on ${reading.date.format(longDate)}. Reminders are worked out again from whatever you save.",
+                "Was ${reading.odometer.asDistance(unit)} on ${reading.date.format(longDate)}. Reminders are worked out again from whatever you save.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.onSurfaceVariant,
             )
@@ -323,7 +330,7 @@ private fun ReadingSheet(reading: LoggedReading, onSave: (date: LocalDate, miles
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Odometer (mi)") },
+                label = { Text("Odometer (${unit.symbol})") },
                 supportingText = problem?.takeIf { showErrors }?.let { { Text(it) } },
                 isError = showErrors && problem != null,
                 singleLine = true,
