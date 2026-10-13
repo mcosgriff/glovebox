@@ -75,9 +75,14 @@ Keep them green; lint errors fail the build.
   pulls in the same log-upload transport as its barcode reader. Tesseract4Android is native code with no
   network calls and no permissions, checked in the `.so` files themselves; check again on an upgrade. It is
   published only on JitPack, so `settings.gradle.kts` lets JitPack serve that one group and nothing else
-  (`exclusiveContent`). **Don't widen that filter or add another JitPack dependency without asking.** It
-  costs about 30 MB of APK (native libraries for four ABIs, plus the 4 MB language file in
-  `assets/tessdata`, from `tessdata_fast` 4.1.0); packaging per ABI is an open question, not decided.
+  (`exclusiveContent`). **Don't widen that filter or add another JitPack dependency without asking.** Its
+  native libraries are about 7 MB per ABI, plus the 4 MB language file in `assets/tessdata` (from
+  `tessdata_fast` 4.1.0).
+- **The release APK is 64-bit ARM only** (`abiFilters` on the release build type, #123): 22 MB where four
+  ABIs made 49. Every phone the app is meant for is arm64; a 32-bit ARM phone or an x86 emulator can't
+  install a release, and Android says so at install time. Debug builds carry every ABI, so any emulator
+  works. One APK per release, which is what `release.yml` and Obtainium expect: **don't add an ABI back
+  or split the APK per ABI without asking.**
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.

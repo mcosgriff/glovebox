@@ -44,6 +44,11 @@ android {
 
     buildTypes {
         release {
+            // The released APK carries native code (SQLCipher, Tesseract) for 64-bit ARM only, which is every
+            // phone the app is meant for; four processor types made it 49 MB, this makes it 22. A 32-bit
+            // phone or an x86 emulator refuses to install it rather than failing later. Debug builds keep
+            // every type, so any emulator works. See CLAUDE.md before adding one back.
+            ndk { abiFilters += "arm64-v8a" }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

@@ -49,6 +49,10 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 
 `applicationId` (`io.cosgriff.glovebox`) must never change after the first release.
 
+The release APK is built for 64-bit ARM (`arm64-v8a`) only, which keeps it to about 22 MB. That covers
+phones sold with Android 10 or later almost without exception; a 32-bit phone or an x86 emulator will
+refuse to install it. Debug builds (`./gradlew :app:installDebug`) include every processor type.
+
 ## Next up
 
 - Recommended schedule seeding after decode, Log service, History, Reminders tab
