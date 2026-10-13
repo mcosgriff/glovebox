@@ -133,7 +133,8 @@ readings, from Vehicle details). "When were these last done?" (a date and mileag
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
-screen; the user's own table is built and edited there, and saved from there as an import file).
+screen; the user's own table is built and edited there, and saved from there as an import file). Known
+maintenance schedules (a maker's table and reminders, offered on those two screens for the 2017–2024 4Runner).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -190,7 +191,31 @@ Notes on what's built:
   can be added from Vehicle details (`Vin.isPlausible`), which doesn't decode it or change the details.
   The drivetrain is never preselected.
 - The schedule is a generic starter list (`ScheduleTemplates.generic`), labelled as typical intervals,
-  not manufacturer data — there is no source for factory schedules.
+  not manufacturer data. A maker's own schedule comes only from a bundled list (next note), which is
+  offered beside the typical list and never replaces or edits it.
+- Known maintenance schedules (#134, `KnownSchedules` in `:domain`, `KnownScheduleCatalog` in app,
+  `docs/known-schedules.md`, which has the rules and how each list was made). **Glovebox has no schedule
+  of its own for any model and works none out; a bundled schedule is a maker's published guide, named.**
+  A list is a file in `assets/known-schedules/`: the same header as a torque list (id, make, model,
+  years, source with `basis`; `KnownLists.header` reads both), `milestones` written as a
+  `milestone-schedule` file's items and `intervals` as an `interval-schedule` file's, read by those same
+  readers. **Only facts are taken (mileages, months, which jobs), named in Glovebox's words; a list
+  covers only the model years whose guides were read and agree, never "the generation".** The one that
+  ships is the 4Runner's, 2017 to 2024, from Toyota's Warranty and Maintenance Guides. **An interval has
+  to be the table's own:** `KnownSchedules.parse` refuses one whose job isn't in the table at exactly
+  the multiples of that interval, so a job that comes round unevenly (coolant at 100,000, then every
+  50,000) stays in the table only; reminders are for logged work, not inspections. The table holds every
+  line of the guide; a special-operating-condition job is named with its condition and has no `service`,
+  so it is never taken for the ordinary job.
+- Where they show: "Use the maker's table for …" on Milestones while the vehicle has no table
+  (`MilestoneDao.addKnown`, which does nothing if one has appeared), after which it is an ordinary table
+  that can be edited, saved or removed; and "Add reminders from the maker's guide" on the Maintenance
+  schedule while the list has one the user lacks (`KnownSchedules.plan`: an item of the user's own with
+  that name is kept, there is no replace), with a dialog that lists each interval and the typical items
+  that would double one, **ticked** to stop tracking (an import's are unticked). Never at setup.
+  `vehicles.milestonesKnownList` (cleared with the table) and `schedule_items.knownList` (permanent) are
+  why the screen says "Started from the …. Check it against the guide for your own vehicle." There is no
+  "checked" state as torque values have. A list in miles goes to a kilometre vehicle as schedule figures.
 - After setup the schedule lives on `ScheduleScreen` (from Vehicle details). It writes straight to
   `schedule_items`: a tick is `tracked`, and an edit keeps whatever the editor doesn't show, such as a
   snooze. `ScheduleItemEditor` is shared with setup; `ItemHistory` adds LAST DONE (derived from the log,
@@ -276,7 +301,8 @@ Notes on what's built:
   miles really covered: with a cluster replacement everything is placed by `swap.actual`, and the dash
   figure is shown beside it.
 - The user's own milestone table (`MilestoneImport`, kind `milestone-schedule`, tables `milestones` and
-  `milestone_jobs`, both cascading from `vehicles`): imported from a file or typed in the app (below). When a
+  `milestone_jobs`, both cascading from `vehicles`): imported from a file, typed in the app (below) or
+  added from a maker's schedule that ships with the app. A milestone holds up to 40 jobs. When a
   vehicle has one, the Milestones screen shows it **in place of** the generated view, with
   `status(continues = false)`, since a table simply ends and a job's last milestone takes whatever comes
   after the one before it. A job is the same job across milestones, and is completed by logged work, by
@@ -493,7 +519,8 @@ Notes on what's built:
   sent: a VIN, or a year, make and model.
 - About (`ui/about`): the version comes from the installed package. `PrivacyScreen` states what is kept,
   what is sent and what never happens; every line has to stay true of the code, so update it with any
-  change to the network, permissions, backup or export. The copy never names manufacturer data as a source.
+  change to the network, permissions, backup or export. The copy names a maker's document as a source only for a
+  bundled list, by that list's own `source.name`.
 - Open-source licences: the AboutLibraries Gradle plugin (build time only, no runtime library) writes the
   release dependency list with licence texts to `R.raw.aboutlibraries`; `LicenceCatalog` reads it and
   `Licences.grouped` (domain) arranges it, so the list can't fall behind the build. A library whose
@@ -599,7 +626,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v17); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v18); keep exported schemas in `data/schemas`.
 
 ## Conventions
 
