@@ -276,8 +276,8 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
 | `name` | yes | 1 to 60 characters, unique in the file ignoring capitals |
 | `everyMiles` | a distance, months, or both | Whole miles, 1 to 500000 |
 | `everyKm` | in place of `everyMiles` | Whole kilometres, 1 to 800000 |
-| `everyMonths` | one of the two | Whole months, 1 to 600. Write years as months: 3 years is `36` |
-| `severe` | no | The interval for hard use, if it differs: `everyMiles`, `everyMonths` or both |
+| `everyMonths` | a distance, months, or both | Whole months, 1 to 600. Write years as months: 3 years is `36` |
+| `severe` | no | The interval for hard use, if it differs: `everyMiles` or `everyKm`, `everyMonths`, or a distance and months. In the same unit as the item |
 | `rule` | no | `whichever-first`, `whichever-last`, `mileage-only` or `time-only`. Left out, the item follows the rule you chose in Settings |
 | `service` | no | Which of Glovebox's own service lines resets this item. The values are the same as for [`service-history`](#service-history) |
 
