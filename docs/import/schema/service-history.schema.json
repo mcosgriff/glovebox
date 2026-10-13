@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
   "title": "Glovebox import: service history",
-  "description": "Maintenance already done on one vehicle, one record per visit. Format version 1. See docs/import/README.md.",
+  "description": "Maintenance already done on one vehicle, one record per visit. Format version 1. See docs/import/README.md. Odometer readings are in miles (odometer) or kilometres (odometerKm); a file uses one of them throughout.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -53,9 +53,20 @@
       "additionalProperties": false,
       "required": [
         "date",
-        "odometer",
         "work",
         "doneBy"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "odometer"
+          ]
+        },
+        {
+          "required": [
+            "odometerKm"
+          ]
+        }
       ],
       "properties": {
         "date": {
@@ -66,6 +77,12 @@
         },
         "odometer": {
           "description": "Whole miles, as the dash read that day.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999999
+        },
+        "odometerKm": {
+          "description": "Whole kilometres, as the dash read that day. Give this or odometer, never both. A file gives every distance in one unit: miles or kilometres, not both.",
           "type": "integer",
           "minimum": 1,
           "maximum": 9999999

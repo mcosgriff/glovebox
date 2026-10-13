@@ -14,17 +14,12 @@ import kotlinx.serialization.json.put
  */
 object MilestoneExport {
     /** [table] in any order; the file is in mileage order, with each milestone's jobs in the user's. */
-    fun file(table: List<SavedMilestone>, repeatsEveryMiles: Int?, unit: DistanceUnit): String {
-        // The file is in miles ([FileDistances]); the table is in the vehicle's unit.
-        val (inMiles, repeats) = FileDistances.milestonesOut(table, repeatsEveryMiles, unit)
-        return text(inMiles, repeats)
-    }
-
-    private fun text(table: List<SavedMilestone>, repeatsEveryMiles: Int?): String = ImportFiles.text(
+    /** [unit] is what the vehicle counts in, and so what the file is written in: `atMiles` or `atKm`. */
+    fun file(table: List<SavedMilestone>, repeatsEveryMiles: Int?, unit: DistanceUnit): String = ImportFiles.text(
         kind = ImportKind.MILESTONE_SCHEDULE,
         items = table.sortedBy { it.atMiles }.map { m ->
             buildJsonObject {
-                put("atMiles", m.atMiles)
+                put(if (unit == DistanceUnit.KILOMETERS) "atKm" else "atMiles", m.atMiles)
                 m.orMonths?.let { put("orMonths", it) }
                 put(
                     "work",
@@ -41,7 +36,7 @@ object MilestoneExport {
                 )
             }
         },
-        own = { repeatsEveryMiles?.let { put(MilestoneImport.REPEATS, it) } },
+        own = { repeatsEveryMiles?.let { put(if (unit == DistanceUnit.KILOMETERS) MilestoneImport.REPEATS_KM else MilestoneImport.REPEATS, it) } },
     )
 
     /** The table as the save row takes it. Nothing is ever left out: the editor and the reader keep the same rules. */

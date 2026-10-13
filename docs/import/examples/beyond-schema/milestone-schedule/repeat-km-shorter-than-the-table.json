@@ -1,0 +1,1 @@
+{"glovebox": "import", "version": 1, "kind": "milestone-schedule", "repeatsEveryKm": 20000, "items": [{"atKm": 48000, "work": [{"name": "Rotate tires", "service": "rotation"}]}]}

@@ -20,26 +20,26 @@ import kotlinx.serialization.json.put
  * or when anything was last done: those belong to the vehicle, not the schedule.
  */
 object ScheduleExport {
-    /** [unit] is what the vehicle counts in; the file is in miles ([FileDistances]). */
+    /** [unit] is what the vehicle counts in, and so what the file is written in: `everyMiles` or `everyKm`. */
     fun file(items: List<SavedScheduleItem>, unit: DistanceUnit): WrittenFile = ImportFiles.sift(
         kind = ImportKind.INTERVAL_SCHEDULE,
-        candidates = FileDistances.scheduleOut(items.filter { it.tracked }, unit).map { item -> Triple(item.name.trim(), ScheduleImport.key(item.name), json(item)) },
+        candidates = items.filter { it.tracked }.map { item -> Triple(item.name.trim(), ScheduleImport.key(item.name), json(item, unit)) },
         max = ScheduleImport.MAX_ITEMS,
         read = { array, check -> ScheduleImport.read(array, check) },
         twice = "another item in the schedule has the same name",
     )
 
-    private fun json(item: SavedScheduleItem): JsonObject = buildJsonObject {
+    private fun json(item: SavedScheduleItem, unit: DistanceUnit): JsonObject = buildJsonObject {
         put("name", item.name.trim())
         // An item with no interval is written without one, which the reader refuses in its own words.
-        item.normal?.let { interval(it) }
-        item.severe?.let { put("severe", buildJsonObject { interval(it) }) }
+        item.normal?.let { interval(it, unit) }
+        item.severe?.let { put("severe", buildJsonObject { interval(it, unit) }) }
         item.rule?.let { rule -> put("rule", ScheduleImport.rules.entries.first { it.value == rule }.key) }
         service(item)?.let { put("service", it) }
     }
 
-    private fun JsonObjectBuilder.interval(interval: Interval) {
-        interval.miles?.let { put("everyMiles", it) }
+    private fun JsonObjectBuilder.interval(interval: Interval, unit: DistanceUnit) {
+        interval.miles?.let { put(if (unit == DistanceUnit.KILOMETERS) "everyKm" else "everyMiles", it) }
         interval.months?.let { put("everyMonths", it) }
     }
 

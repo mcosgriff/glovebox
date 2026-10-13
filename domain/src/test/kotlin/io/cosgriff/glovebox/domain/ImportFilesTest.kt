@@ -91,7 +91,7 @@ class ImportFilesTest {
                 LeftOut("Timing belt", "everyMiles must be from 1 to 500000"),
                 LeftOut("x".repeat(61), "name is 61 characters; the most allowed is 60"),
                 LeftOut("OIL change", "another item in the schedule has the same name"),
-                LeftOut("No interval", "needs \"everyMiles\", \"everyMonths\" or both"),
+                LeftOut("No interval", "needs \"everyMiles\" or \"everyKm\", \"everyMonths\", or a distance and months"),
                 LeftOut("Coolant", "everyMonths must be from 1 to 600"),
             ),
             written.leftOut,
@@ -183,46 +183,74 @@ class ImportFilesTest {
     }
 
     private val km = DistanceUnit.KILOMETERS
+    private val mi = DistanceUnit.MILES
 
     @Test
-    fun `a file's schedule figures come into a kilometre vehicle as a manual gives them, and go back out the same`() {
-        val file = listOf(ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6)), ImportedScheduleItem("Brake fluid", Interval(null, 36)))
-        val into = FileDistances.schedule(file, km)
-        assertEquals(listOf(Interval(12_000, 12), Interval(null, 36)), into.map { it.normal })
-        assertEquals(Interval(8_000, 6), into[0].severe)
-        assertEquals(file, FileDistances.schedule(file, DistanceUnit.MILES))
-
-        val saved = into.mapIndexed { i, it -> SavedScheduleItem(i.toLong(), it.name, it.normal, it.severe, it.rule, null, true, it.service) }
-        val back = (ImportFormat.parse(ScheduleExport.file(saved, km).text!!) as ImportFile.IntervalSchedule).items
-        assertEquals(file, back)
+    fun `a kilometre vehicle's schedule is written in kilometres and read back exactly`() {
+        // 7,500 km has no whole number of miles; in a kilometre file it doesn't need one.
+        val saved = listOf(item(1, "Oil change", Interval(7_500, 6), Interval(5_001, 3)), item(2, "Brake fluid", Interval(null, 24)))
+        val written = ScheduleExport.file(saved, km)
+        assertTrue("\"everyKm\": 7500" in written.text!!)
+        assertFalse("everyMiles" in written.text!!)
+        assertTrue(schemaAccepts(ImportKind.INTERVAL_SCHEDULE, written.text!!))
+        val file = ImportFormat.parse(written.text!!) as ImportFile.IntervalSchedule
+        assertEquals(km, file.unit)
+        assertEquals(listOf(Interval(7_500, 6), Interval(null, 24)), file.items.map { it.normal })
+        // Into the vehicle it came from: nothing converted, nothing differs.
+        val back = FileDistances.schedule(file.items, file.unit, km)
+        assertEquals(2, ScheduleImport.plan(back, saved).same.size)
     }
 
     @Test
-    fun `a milestone table comes into a kilometre vehicle with its cycle, and goes back out the same`() {
-        val file = listOf(ImportedMilestone(30_000, listOf(TableJob("B"))), ImportedMilestone(10_000, listOf(TableJob("A"))))
-        val (table, repeats) = FileDistances.milestones(file, 120_000, km)
-        assertEquals(listOf(16_000, 48_000), table.map { it.atMiles })
+    fun `a kilometre vehicle's milestone table is written in kilometres and read back exactly`() {
+        val table = listOf(SavedMilestone(1, 15_001, listOf(TableJob("A"))), SavedMilestone(2, 90_000, listOf(TableJob("B")), 60))
+        val text = MilestoneExport.file(table, 180_000, km)
+        assertTrue("\"atKm\": 15001" in text && "\"repeatsEveryKm\": 180000" in text)
+        assertFalse("atMiles" in text || "repeatsEveryMiles" in text)
+        assertTrue(schemaAccepts(ImportKind.MILESTONE_SCHEDULE, text))
+        val file = ImportFormat.parse(text) as ImportFile.MilestoneSchedule
+        assertEquals(km, file.unit)
+        val (items, repeats) = FileDistances.milestones(file.items, file.repeatsEveryMiles, file.unit, km)
+        assertEquals(180_000, repeats)
+        assertEquals(2, MilestoneImport.plan(items, table).same.size)
+    }
+
+    @Test
+    fun `a file in the vehicle's own unit is never converted`() {
+        val schedule = listOf(ImportedScheduleItem("Oil change", Interval(7_501, 12)))
+        assertEquals(schedule, FileDistances.schedule(schedule, km, km))
+        assertEquals(schedule, FileDistances.schedule(schedule, mi, mi))
+        val record = ImportedRecord(java.time.LocalDate.of(2024, 3, 1), 66_001, listOf(ImportedWork("Oil change")), diy = true)
+        assertEquals(listOf(record), FileDistances.history(listOf(record), km, km))
+        assertNull(FileDistances.convertedNote(km, km))
+    }
+
+    @Test
+    fun `a file in the other unit is converted, schedule figures as a manual gives them and readings exactly`() {
+        val miles = listOf(ImportedScheduleItem("Oil change", Interval(7_500, 12), Interval(5_000, 6)))
+        assertEquals(listOf(Interval(12_000, 12)), FileDistances.schedule(miles, mi, km).map { it.normal })
+        assertEquals(Interval(8_000, 6), FileDistances.schedule(miles, mi, km).single().severe)
+        // And a kilometre file into a vehicle that counts in miles.
+        assertEquals(listOf(Interval(5_000, 6)), FileDistances.schedule(listOf(ImportedScheduleItem("Rotate", Interval(8_000, 6))), km, mi).map { it.normal })
+
+        val table = listOf(ImportedMilestone(30_000, listOf(TableJob("B"))), ImportedMilestone(10_000, listOf(TableJob("A"))))
+        val (inKm, repeats) = FileDistances.milestones(table, 120_000, mi, km)
+        assertEquals(listOf(16_000, 48_000), inKm.map { it.atMiles })
         assertEquals(192_000, repeats)
+        val (inMiles, back) = FileDistances.milestones(inKm, repeats, km, mi)
+        assertEquals(listOf(10_000, 30_000), inMiles.map { it.atMiles })
+        assertEquals(120_000, back)
 
-        val saved = table.mapIndexed { i, m -> SavedMilestone(i.toLong(), m.atMiles, m.work, m.orMonths) }
-        val back = ImportFormat.parse(MilestoneExport.file(saved, repeats, km)) as ImportFile.MilestoneSchedule
-        assertEquals(listOf(10_000, 30_000), back.items.map { it.atMiles })
-        assertEquals(120_000, back.repeatsEveryMiles)
-    }
-
-    @Test
-    fun `a history file's readings come into a kilometre vehicle converted exactly`() {
         val record = ImportedRecord(java.time.LocalDate.of(2024, 3, 1), 41_000, listOf(ImportedWork("Oil change")), diy = true)
-        assertEquals(listOf(65_983), FileDistances.history(listOf(record), km).map { it.odometer })
-        assertEquals(listOf(record), FileDistances.history(listOf(record), DistanceUnit.MILES))
+        assertEquals(listOf(65_983), FileDistances.history(listOf(record), mi, km).map { it.odometer })
+        assertEquals(listOf(41_000), FileDistances.history(listOf(record.copy(odometer = 65_983)), km, mi).map { it.odometer })
+        assertEquals("This file is in miles. The figures here are what will be saved, in kilometres.", FileDistances.convertedNote(mi, km))
     }
 
     @Test
-    fun `a kilometre figure with no whole number of miles still makes a file the app accepts`() {
-        // 7,500 km is 4,687.5 mi: the file says 4,688, which reads back as 7,501 km. Off by one, never refused.
-        val written = ScheduleExport.file(listOf(item(1, "Oil change", Interval(7_500, 6))), km)
-        val back = (ImportFormat.parse(written.text!!) as ImportFile.IntervalSchedule).items.single()
-        assertEquals(4_688, back.normal.miles)
-        assertEquals(7_501, FileDistances.schedule(listOf(back), km).single().normal.miles)
+    fun `an interval past what a kilometre file can hold is left out and said`() {
+        val written = ScheduleExport.file(listOf(item(1, "Oil change", Interval(12_000, null)), item(2, "Timing chain", Interval(800_001, null))), km)
+        assertEquals(1, written.count)
+        assertEquals(listOf(LeftOut("Timing chain", "everyKm must be from 1 to 800000")), written.leftOut)
     }
 }

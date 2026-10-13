@@ -134,7 +134,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: kilometres in import files (#126), unlock on Android 10 (untested, #27),
+To build: unlock on Android 10 (untested, #27),
 known torque specs (#76), VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -150,10 +150,13 @@ Notes on what's built:
   for a reading far above the last (`MileageReadings.farAhead`) and the dash reader's window. The lead
   distance is one setting, kept as typed in `Settings.distanceUnit`; **always take it through
   `Settings.leadFor(vehicle.unit)`**, never `Settings.lead`, and changing the default unit converts it.
-  **Import files stay in miles** (their fields say so): `FileDistances` puts a file into the vehicle's unit
-  before anything is compared or saved, and a file written from a kilometre vehicle back into miles. A
-  kilometre figure that isn't a multiple of 8 can come back from a file 1 km out; kilometres in files is
-  #126. The Import page says, for a kilometre vehicle, that its figures are the converted ones. The dash
+  **An import file says its own unit by the fields it uses** (#126): `everyMiles` or `everyKm`, `atMiles`
+  or `atKm`, `repeatsEveryMiles` or `repeatsEveryKm`, `odometer` or `odometerKm`, one unit for the whole
+  file (`ImportCheck.distance` refuses a second), reported as `ImportFile.….unit`. `FileDistances` puts a
+  file into the vehicle's unit before anything is compared or saved: nothing is converted when the two
+  agree, and the Import page says so when they don't. A file the app writes is in the vehicle's unit, so
+  it reads back into that vehicle unchanged. The kilometre limits are the miles limits as schedule
+  figures (a test holds them equal), except the odometer's, which is seven digits in either. The dash
   reader reads a number and takes it to be in the vehicle's unit. Notifications name services and carry
   no distance. After a conversion a service already announced as due may be announced once more, because
   `NoticeRules.cycle` is keyed on the last-done reading. Each vehicle in a list (garage, Reminders, an

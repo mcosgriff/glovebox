@@ -235,10 +235,10 @@ class ImportFormatTest {
 
     @Test
     fun `a schedule item needs an interval, in whole miles or months`() {
-        assertEquals(listOf("items[0]: needs \"everyMiles\", \"everyMonths\" or both"), errors(schedule("""[ { "name": "Oil change" } ]""")))
+        assertEquals(listOf("items[0]: needs \"everyMiles\" or \"everyKm\", \"everyMonths\", or a distance and months"), errors(schedule("""[ { "name": "Oil change" } ]""")))
         assertEquals(listOf("items[0].everyMiles: must be a whole number, without quotes"), errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500.5 } ]""")))
         assertEquals(listOf("items[0].everyMonths: must be from 1 to 600"), errors(schedule("""[ { "name": "Oil change", "everyMonths": 0 } ]""")))
-        assertEquals(listOf("items[0].severe: needs \"everyMiles\", \"everyMonths\" or both"), errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500, "severe": {} } ]""")))
+        assertEquals(listOf("items[0].severe: needs \"everyMiles\" or \"everyKm\", \"everyMonths\", or a distance and months"), errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500, "severe": {} } ]""")))
         // A whole number written with a decimal point is still a whole number, to the schema as well.
         assertTrue(schedule("""[ { "name": "Oil change", "everyMiles": 7500.0 } ]""") is ImportFile.IntervalSchedule)
     }
@@ -319,5 +319,89 @@ class ImportFormatTest {
         assertEquals(MilestoneImport.MAX_WORK, int("\$defs", "milestone", "properties", "work", "maxItems"))
         assertEquals(MilestoneImport.MAX_ITEMS, int("properties", "items", "maxItems"))
         assertEquals(MilestoneImport.MAX_MILES, int("properties", MilestoneImport.REPEATS, "maximum"))
+    }
+
+    @Test
+    fun `the kilometre examples are accepted by the schema and by the app, as kilometres`() {
+        fun parsed(kind: String): ImportFile {
+            val file = File(docs, "examples/$kind-km.json")
+            assertTrue("the schema refuses $kind-km.json", schemaAccepts(kind, file))
+            return ImportFormat.parse(file.readText(), LocalDate.of(2026, 10, 12))
+        }
+        val schedule = parsed("interval-schedule") as ImportFile.IntervalSchedule
+        assertEquals(DistanceUnit.KILOMETERS, schedule.unit)
+        assertEquals(ImportedScheduleItem("Oil change", Interval(12_000, 12), Interval(8_000, 6), DueRule.WHICHEVER_FIRST, "oil"), schedule.items[0])
+        // An item with only months has no distance, and takes no side.
+        assertEquals(Interval(null, 24), schedule.items[2].normal)
+
+        val history = parsed("service-history") as ImportFile.ServiceHistory
+        assertEquals(DistanceUnit.KILOMETERS, history.unit)
+        assertEquals(listOf(66_000, 78_250), history.items.map { it.odometer })
+
+        val milestones = parsed("milestone-schedule") as ImportFile.MilestoneSchedule
+        assertEquals(DistanceUnit.KILOMETERS, milestones.unit)
+        assertEquals(listOf(15_000, 30_000, 90_000), milestones.items.map { it.atMiles })
+        assertEquals(180_000, milestones.repeatsEveryMiles)
+    }
+
+    @Test
+    fun `the miles examples are still miles`() {
+        assertEquals(DistanceUnit.MILES, (ImportFormat.parse(File(docs, "examples/interval-schedule.json").readText()) as ImportFile.IntervalSchedule).unit)
+        assertEquals(DistanceUnit.MILES, (ImportFormat.parse(File(docs, "examples/service-history.json").readText()) as ImportFile.ServiceHistory).unit)
+        assertEquals(DistanceUnit.MILES, (ImportFormat.parse(File(docs, "examples/milestone-schedule.json").readText()) as ImportFile.MilestoneSchedule).unit)
+    }
+
+    @Test
+    fun `a figure is in miles or kilometres, never both, and a file keeps to one`() {
+        assertEquals(
+            listOf("items[0].everyKm: give \"everyMiles\" or \"everyKm\", not both"),
+            errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500, "everyKm": 12000 } ]""")),
+        )
+        assertEquals(
+            listOf("items[1].everyKm: is in kilometres, but items[0].everyMiles is in miles; a file gives every distance in one unit"),
+            errors(schedule("""[ { "name": "Oil change", "everyMiles": 7500 }, { "name": "Rotate tires", "everyKm": 10000 } ]""")),
+        )
+        assertEquals(
+            listOf("items[0].severe.everyMiles: is in miles, but items[0].everyKm is in kilometres; a file gives every distance in one unit"),
+            errors(schedule("""[ { "name": "Oil change", "everyKm": 12000, "severe": { "everyMiles": 5000 } } ]""")),
+        )
+        assertEquals(listOf("items[0].everyKm: must be from 1 to 800000"), errors(schedule("""[ { "name": "Oil change", "everyKm": 800001 } ]""")))
+        // A months-only item sits in a file of either unit.
+        assertTrue(schedule("""[ { "name": "Brake fluid", "everyMonths": 24 }, { "name": "Oil change", "everyKm": 12000 } ]""") is ImportFile.IntervalSchedule)
+    }
+
+    @Test
+    fun `a record's reading is odometer or odometerKm, and a table's cycle is in its milestones' unit`() {
+        val rest = """"date": "2024-03-01", "work": [ { "label": "Oil change" } ], "doneBy": { "type": "diy" }"""
+        assertEquals(listOf("items[0]: needs \"odometer\" (miles) or \"odometerKm\""), errors(history("""[ { $rest } ]""")))
+        assertEquals(listOf("items[0].odometerKm: give \"odometer\" or \"odometerKm\", not both"), errors(history("""[ { $rest, "odometer": 41000, "odometerKm": 66000 } ]""")))
+        assertEquals(66_000, (history("""[ { $rest, "odometerKm": 66000 } ]""") as ImportFile.ServiceHistory).items.single().odometer)
+
+        fun table(extra: String, at: String) = ImportFormat.parse(
+            """{ "glovebox": "import", "version": 1, "kind": "milestone-schedule", $extra "items": [ { $at, "work": [ { "name": "A" } ] } ] }""",
+        )
+        assertEquals(96_000, (table(""""repeatsEveryKm": 96000,""", """"atKm": 48000""") as ImportFile.MilestoneSchedule).repeatsEveryMiles)
+        assertEquals(
+            listOf("repeatsEveryMiles: is in miles, but items[0].atKm is in kilometres; a file gives every distance in one unit"),
+            errors(table(""""repeatsEveryMiles": 120000,""", """"atKm": 48000""")),
+        )
+        assertEquals(
+            listOf("repeatsEveryKm: is 20000, less than the highest atKm in the file (48000); it is the length of the whole cycle, so it can't be shorter than the table"),
+            errors(table(""""repeatsEveryKm": 20000,""", """"atKm": 48000""")),
+        )
+        assertEquals(listOf("items[0]: needs \"atMiles\" or \"atKm\""), errors(table("", """"orMonths": 12""")))
+    }
+
+    @Test
+    fun `the kilometre limits in the schemas match the app's`() {
+        fun schema(kind: String) = Json.parseToJsonElement(File(docs, "schema/$kind.schema.json").readText())
+        fun JsonElement.at(vararg path: String): JsonElement = path.fold(this) { e, key -> e.jsonObject.getValue(key) }
+        fun JsonElement.int(vararg path: String) = at(*path).jsonPrimitive.content.toInt()
+        assertEquals(ScheduleImport.MAX_KM, schema("interval-schedule").int("\$defs", "km", "maximum"))
+        assertEquals(DistanceUnit.KILOMETERS.scheduled(ScheduleImport.MAX_MILES), ScheduleImport.MAX_KM)
+        assertEquals(MilestoneImport.MAX_KM, schema("milestone-schedule").int("\$defs", "milestone", "properties", "atKm", "maximum"))
+        assertEquals(MilestoneImport.MAX_KM, schema("milestone-schedule").int("properties", MilestoneImport.REPEATS_KM, "maximum"))
+        assertEquals(DistanceUnit.KILOMETERS.scheduled(MilestoneImport.MAX_MILES), MilestoneImport.MAX_KM)
+        assertEquals(HistoryImport.MAX_ODOMETER, schema("service-history").int("\$defs", "record", "properties", "odometerKm", "maximum"))
     }
 }

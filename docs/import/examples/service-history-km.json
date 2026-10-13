@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "service-history",
+  "items": [
+    {
+      "date": "2024-03-01",
+      "odometerKm": 66000,
+      "work": [
+        {
+          "label": "Oil & filter change",
+          "service": "oil"
+        },
+        {
+          "label": "Tire rotation",
+          "service": "rotation"
+        }
+      ],
+      "doneBy": {
+        "type": "shop",
+        "name": "Corner Garage"
+      },
+      "cost": "89.00"
+    },
+    {
+      "date": "2024-09-14",
+      "odometerKm": 78250,
+      "work": [
+        {
+          "label": "Oil & filter change",
+          "service": "oil"
+        }
+      ],
+      "doneBy": {
+        "type": "diy"
+      }
+    }
+  ]
+}

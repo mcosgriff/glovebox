@@ -34,12 +34,14 @@ sealed interface ImportFile {
 
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
 
-    data class IntervalSchedule(val items: List<ImportedScheduleItem>) : ImportFile
+    /** [unit] is what the file's intervals are in; they are put into the vehicle's unit by [FileDistances]. */
+    data class IntervalSchedule(val items: List<ImportedScheduleItem>, val unit: DistanceUnit = DistanceUnit.MILES) : ImportFile
 
-    data class ServiceHistory(val items: List<ImportedRecord>) : ImportFile
+    /** [unit] is what the file's odometer readings are in. */
+    data class ServiceHistory(val items: List<ImportedRecord>, val unit: DistanceUnit = DistanceUnit.MILES) : ImportFile
 
     /** [repeatsEveryMiles] is the length of the cycle when the table starts again after its last milestone; null when it simply ends. */
-    data class MilestoneSchedule(val items: List<ImportedMilestone>, val repeatsEveryMiles: Int? = null) : ImportFile
+    data class MilestoneSchedule(val items: List<ImportedMilestone>, val repeatsEveryMiles: Int? = null, val unit: DistanceUnit = DistanceUnit.MILES) : ImportFile
 }
 
 object ImportFormat {
@@ -57,7 +59,7 @@ object ImportFormat {
 
     /** Fields beside `items` that only one kind has. In any other kind's file they are unknown fields, and refuse it. */
     private fun ownKeys(kind: ImportKind?): Set<String> = when (kind) {
-        ImportKind.MILESTONE_SCHEDULE -> setOf(MilestoneImport.REPEATS)
+        ImportKind.MILESTONE_SCHEDULE -> setOf(MilestoneImport.REPEATS, MilestoneImport.REPEATS_KM)
         else -> emptySet()
     }
 
@@ -98,16 +100,16 @@ object ImportFormat {
             }
             ImportKind.INTERVAL_SCHEDULE -> {
                 val items = ScheduleImport.read(envelope.getValue("items"), check)
-                if (check.failed) check.invalid() else ImportFile.IntervalSchedule(items)
+                if (check.failed) check.invalid() else ImportFile.IntervalSchedule(items, check.unit)
             }
             ImportKind.SERVICE_HISTORY -> {
                 val items = HistoryImport.read(envelope.getValue("items"), check, today)
-                if (check.failed) check.invalid() else ImportFile.ServiceHistory(items)
+                if (check.failed) check.invalid() else ImportFile.ServiceHistory(items, check.unit)
             }
             ImportKind.MILESTONE_SCHEDULE -> {
                 val items = MilestoneImport.read(envelope.getValue("items"), check)
-                val repeats = envelope[MilestoneImport.REPEATS]?.let { MilestoneImport.repeats(it, items, check) }
-                if (check.failed) check.invalid() else ImportFile.MilestoneSchedule(items, repeats)
+                val repeats = MilestoneImport.repeats(envelope, items, check)
+                if (check.failed) check.invalid() else ImportFile.MilestoneSchedule(items, repeats, check.unit)
             }
         }
     }
@@ -124,6 +126,38 @@ class ImportCheck {
     fun fail(path: String, message: String) {
         errors += ImportError(path, message)
     }
+
+    private var seenUnit: DistanceUnit? = null
+    private var seenAt = ""
+
+    /** What the file's distances are in: kilometres if it used the kilometre fields, otherwise miles. */
+    val unit: DistanceUnit get() = seenUnit ?: DistanceUnit.MILES
+
+    /**
+     * A distance that a file gives either in miles ([milesKey]) or in kilometres ([kmKey]): each
+     * figure names its own unit, and **a file gives every distance in one unit**, so the first one
+     * read settles it and one in the other unit is refused. Null when the field is absent, and when
+     * it is there but wrong, which has been reported; [has] tells the two apart.
+     */
+    fun distance(o: JsonObject, path: String, milesKey: String, kmKey: String, maxMiles: Int, maxKm: Int): Int? {
+        if (milesKey in o && kmKey in o) return null.also { fail(at(path, kmKey), "give \"$milesKey\" or \"$kmKey\", not both") }
+        val (key, found, max) = when {
+            milesKey in o -> Triple(milesKey, DistanceUnit.MILES, maxMiles)
+            kmKey in o -> Triple(kmKey, DistanceUnit.KILOMETERS, maxKm)
+            else -> return null
+        }
+        val value = int(o.getValue(key), at(path, key), 1, max)
+        val first = seenUnit
+        if (first == null) {
+            seenUnit = found
+            seenAt = at(path, key)
+        } else if (first != found) {
+            return null.also { fail(at(path, key), "is in ${found.plural}, but $seenAt is in ${first.plural}; a file gives every distance in one unit") }
+        }
+        return value
+    }
+
+    fun has(o: JsonObject, milesKey: String, kmKey: String): Boolean = milesKey in o || kmKey in o
 
     fun invalid(): ImportFile.Invalid =
         ImportFile.Invalid(errors.take(ImportFormat.MAX_ERRORS), (errors.size - ImportFormat.MAX_ERRORS).coerceAtLeast(0))
