@@ -107,6 +107,7 @@ import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
+import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
@@ -547,29 +548,6 @@ class ImportViewModel @Inject constructor(
     }
 
     private fun ImportedRecord.title() = "${date.format(longDate)} · ${odometer.asMiles()}"
-
-    private fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
-        id = id,
-        name = name,
-        category = TorqueCategory.of(category),
-        socket = socketSize,
-        torque = newtonMeters?.let(::Torque),
-        source = TorqueSource.of(source),
-        note = note,
-    )
-
-    private fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
-        id = id,
-        name = name,
-        normal = interval(intervalMiles, intervalMonths),
-        severe = interval(severeMiles, severeMonths),
-        rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
-        templateKey = templateKey,
-        tracked = tracked,
-        service = service,
-    )
-
-    private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 }
 
 /** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */

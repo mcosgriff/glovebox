@@ -185,7 +185,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                 "Files you save" to listOf(
                     "A backup file is encrypted with the password you choose. Glovebox does not keep the password and cannot recover it.",
                     "A PDF or Markdown export is not encrypted. Anyone who has the file can read it.",
-                    "A milestone table saved as an import file is not encrypted either. It holds the table's mileages, months and jobs, and nothing about your vehicle or its history.",
+                    "A schedule, milestone table or set of torque specs saved as an import file is not encrypted either. It holds what is on that screen (items and intervals, mileages and jobs, or fasteners with your values and notes) and nothing else about your vehicle or its history.",
                     "Deleting all data in Settings does not touch files you have already saved elsewhere.",
                 ),
                 "Files you import" to listOf(

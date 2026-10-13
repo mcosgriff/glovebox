@@ -114,6 +114,29 @@ An import reads the one file you pick, on your phone. Nothing is sent anywhere. 
 plain text and not encrypted: treat it like any other document. To move all of your data between
 phones, use the encrypted backup instead (Settings → Backup).
 
+## Saving a file from the app
+
+Three screens can write what they hold as a file of the matching kind, with "Save as an import
+file" at the bottom: the Maintenance schedule (`interval-schedule`), Torque specs (`torque-specs`)
+and Milestones (`milestone-schedule`, when the table is your own). It is a copy to keep, or to give
+to someone with the same model. Service history has no such button: that is the vehicle's own
+record, and the PDF / Markdown export and the backup are for it.
+
+- **What goes in a schedule file:** every item you have ticked, the typical ones Glovebox suggested
+  as well as your own, with both intervals as you have set them. A typical item is written with the
+  `service` that resets it. Not which interval is in use, not a snooze, and not when anything was
+  last done. Imported into a vehicle that tracks the same typical items, the file's items are new
+  items of that owner's, and the Import page offers to stop tracking the typical ones they double.
+- **What goes in a torque file:** every row, filled in or not, with values in the unit you have
+  chosen in Settings (to two decimals). They are the values you entered. Whoever gets the file
+  should check each against their own service manual, as the Import page tells them.
+- **Nothing about the vehicle** is in any of them: no VIN, no history, no dates. Only the suggested
+  file name says which model it came from. The file isn't encrypted.
+- **A saved file is always one the app accepts.** The screens are looser than the format in a few
+  places: an interval can be longer than 500,000 miles or 600 months, a name can run past the limit,
+  and two torque rows can have the same name. Anything a file can't hold is listed, with the reason,
+  before the file is saved, and you choose whether to save the rest.
+
 ## `torque-specs`
 
 [`schema/torque-specs.schema.json`](schema/torque-specs.schema.json) ·

@@ -66,7 +66,7 @@ class MilestoneExportTest {
         val schema = File("../docs/import/schema/milestone-schedule.schema.json").readText()
         val registry = com.networknt.schema.SchemaRegistry.withDefaultDialect(com.networknt.schema.SpecificationVersion.DRAFT_2020_12)
         assertTrue(registry.getSchema(schema).validate(text, com.networknt.schema.InputFormat.JSON).isEmpty())
-        assertTrue(MilestoneExport.SCHEMA in schema)
+        assertTrue(ImportFiles.schema(ImportKind.MILESTONE_SCHEDULE) in schema)
         assertTrue(text.endsWith("}\n"))
     }
 

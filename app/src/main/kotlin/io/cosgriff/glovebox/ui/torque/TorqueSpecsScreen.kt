@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.domain.TorqueExport
+import io.cosgriff.glovebox.domain.WrittenFile
+import io.cosgriff.glovebox.ui.export.ExportSaver
+import io.cosgriff.glovebox.ui.export.SaveAsImportFile
+import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -106,6 +111,7 @@ class TorqueSpecsViewModel @Inject constructor(
     private val torque: TorqueDao,
     settings: SettingsRepository,
     private val undo: TorqueSpecUndo,
+    private val saver: ExportSaver,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<TorqueSpecsRoute>().vehicleId
 
@@ -122,6 +128,14 @@ class TorqueSpecsViewModel @Inject constructor(
             settingsUnit = s.torqueUnit,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** The rows as an import file, with values in the unit the user works in. */
+    fun written(): WrittenFile = state.value?.let { s -> TorqueExport.file(s.specs.map { it.toSaved() }, s.settingsUnit) } ?: WrittenFile(null, 0)
+
+    fun saveAsFile(text: String) {
+        val v = state.value?.vehicle ?: return
+        viewModelScope.launch { saver.saveImportFile(text, TorqueExport.fileName("${v.year} ${v.make} ${v.model}")) }
+    }
 
     /** [draft] with id 0 is a new spec. */
     fun save(draft: SpecDraft) = viewModelScope.launch {
@@ -313,6 +327,14 @@ fun TorqueSpecsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
+                if (state.specs.isNotEmpty()) {
+                    SaveAsImportFile(
+                        caption = "A copy to keep, or to pass to someone with the same model. It holds these rows and nothing else about your vehicle, and it isn't encrypted. " +
+                            "Every value in it is the one you entered: whoever uses the file should check each against their own service manual.",
+                        write = vm::written,
+                        onSave = vm::saveAsFile,
+                    )
+                }
             }
         }
     }

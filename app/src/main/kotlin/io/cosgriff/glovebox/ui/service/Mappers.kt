@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.ui.service
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DueHeadline
@@ -10,7 +11,12 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.SavedScheduleItem
+import io.cosgriff.glovebox.domain.SavedTorqueSpec
 import io.cosgriff.glovebox.domain.ScheduleRef
+import io.cosgriff.glovebox.domain.Torque
+import io.cosgriff.glovebox.domain.TorqueCategory
+import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceEntry
@@ -109,3 +115,28 @@ fun DueRule.ruleLabel(): String = when (this) {
     DueRule.MILEAGE_ONLY -> "Mileage only"
     DueRule.TIME_ONLY -> "Time only"
 }
+
+/** A torque row as an import or a file written from the vehicle sees it. */
+fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
+    id = id,
+    name = name,
+    category = TorqueCategory.of(category),
+    socket = socketSize,
+    torque = newtonMeters?.let(::Torque),
+    source = TorqueSource.of(source),
+    note = note,
+)
+
+/** A schedule item as an import or a file written from the vehicle sees it. */
+fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
+    id = id,
+    name = name,
+    normal = savedInterval(intervalMiles, intervalMonths),
+    severe = savedInterval(severeMiles, severeMonths),
+    rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
+    templateKey = templateKey,
+    tracked = tracked,
+    service = service,
+)
+
+private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)

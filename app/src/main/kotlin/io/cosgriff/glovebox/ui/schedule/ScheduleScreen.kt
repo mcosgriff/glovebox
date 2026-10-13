@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.ScheduleExport
+import io.cosgriff.glovebox.domain.WrittenFile
+import io.cosgriff.glovebox.ui.export.ExportSaver
+import io.cosgriff.glovebox.ui.export.SaveAsImportFile
+import io.cosgriff.glovebox.ui.service.toSaved
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -119,6 +124,7 @@ class ScheduleViewModel @Inject constructor(
     settings: SettingsRepository,
     private val actions: RecordActions,
     milestones: MilestoneDao,
+    private val saver: ExportSaver,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<ScheduleRoute>().vehicleId
 
@@ -127,6 +133,14 @@ class ScheduleViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     private var entities: Map<String, ScheduleItemEntity> = emptyMap()
+
+    /** The schedule as an import file: every tracked item, as it is saved. */
+    fun written(): WrittenFile = ScheduleExport.file(entities.values.sortedBy { it.id }.map { it.toSaved() })
+
+    /** [model] is the year, make and model, for the file's suggested name. */
+    fun saveAsFile(text: String, model: String) {
+        viewModelScope.launch { saver.saveImportFile(text, ScheduleExport.fileName(model)) }
+    }
 
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<ScheduleState?> = combine(
@@ -453,6 +467,15 @@ fun ScheduleScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            if (tracked > 0) {
+                SaveAsImportFile(
+                    caption = "A copy to keep, or to pass to someone with the same model. It holds the ticked items and their intervals as you have them, " +
+                        "not when anything was last done and nothing else about your vehicle. They are your intervals, not the manufacturer's, and the file isn't encrypted.",
+                    write = vm::written,
+                    onSave = { vm.saveAsFile(it, "${v.year} ${v.make} ${v.model}") },
+                )
+            }
         }
     }
 }

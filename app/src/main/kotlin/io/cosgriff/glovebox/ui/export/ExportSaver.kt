@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.domain.ExportFormat
+import io.cosgriff.glovebox.domain.ImportFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -69,6 +70,16 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
         }
         pending = Pending(file, fileName, done, onSaved)
         launcher(mimeType, fileName)
+    }
+
+    /**
+     * Writes [text] as an import file (`ImportFiles` in :domain) and asks where to put it. Like every
+     * export it is in the clear, and the working copy goes once it is copied out or the user backs out.
+     */
+    suspend fun saveImportFile(text: String, fileName: String) {
+        val file = newFile()
+        withContext(Dispatchers.IO) { file.writeText(text) }
+        save(file, fileName, ImportFiles.MIME_TYPE, "Saved $fileName") {}
     }
 
     /** [destination] is null when the user backed out. Either way the working copy goes. */
