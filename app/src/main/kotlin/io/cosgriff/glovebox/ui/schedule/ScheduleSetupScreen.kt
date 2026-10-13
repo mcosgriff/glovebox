@@ -93,6 +93,8 @@ data class DraftItem(
     val own: Boolean = template == null,
     /** For the user's own: the CatalogItem id of the built-in service line that resets it; null = logged under "Your items". */
     val service: String? = null,
+    /** For an item added from a maker's schedule that ships with the app: the guide it started from. Said under it for good. */
+    val from: String? = null,
 ) {
     val active: Interval get() = if (useSevere) severe ?: normal else normal
     val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
@@ -349,6 +351,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
                     fontFamily = PlexMono,
                     color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                item.from?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
             if (item.showsSevere) {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {

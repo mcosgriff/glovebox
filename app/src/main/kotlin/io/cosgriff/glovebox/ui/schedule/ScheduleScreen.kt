@@ -6,6 +6,17 @@ import io.cosgriff.glovebox.domain.ScheduleExport
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.export.SaveAsImportFile
+import io.cosgriff.glovebox.domain.KnownIntervalPlan
+import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.label
+import io.cosgriff.glovebox.ui.theme.PlexMono
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import kotlinx.coroutines.flow.flow
 import io.cosgriff.glovebox.ui.service.toSaved
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -111,6 +122,11 @@ data class ScheduleState(
     val odometer: Int?,
     /** Tracked reminders that have never been logged. */
     val notLogged: Int,
+    /**
+     * The maker's schedule that ships for this model and what adding its reminders would do, while
+     * there is still one to add. It is offered, never applied.
+     */
+    val known: Pair<KnownScheduleList, KnownIntervalPlan>? = null,
 ) {
     val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null }.map { it.tracked to it.useSevere }).use
 }
@@ -127,6 +143,7 @@ class ScheduleViewModel @Inject constructor(
     private val actions: RecordActions,
     milestones: MilestoneDao,
     private val saver: ExportSaver,
+    catalog: KnownScheduleCatalog,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.toRoute<ScheduleRoute>().vehicleId
 
@@ -150,9 +167,10 @@ class ScheduleViewModel @Inject constructor(
         schedule.observeAll(vehicleId),
         service.observeRecords(vehicleId),
         odometer.observe(vehicleId),
-        settings.settings,
-    ) { vehicle, items, records, readings, s ->
+        combine(settings.settings, flow { emit(catalog.lists()) }) { s, lists -> s to lists },
+    ) { vehicle, items, records, readings, (s, lists) ->
         if (vehicle == null) return@combine null
+        val credits = lists.associate { it.id to KnownSchedules.credit(it) }
         entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel, vehicle.unit).associateBy { it.key }
         val swap = vehicle.clusterSwap()
@@ -181,6 +199,7 @@ class ScheduleViewModel @Inject constructor(
                     template = e.templateKey?.let(templates::get),
                     own = e.templateKey == null,
                     service = e.service,
+                    from = e.knownList?.let { KnownSchedules.startedFrom(credits[it]) },
                 )
             },
             templateKeys = items.associate { it.id.toString() to it.templateKey },
@@ -200,6 +219,9 @@ class ScheduleViewModel @Inject constructor(
             missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }),
             odometer = VehicleReminders.currentOdometer(entries, updates),
             notLogged = statuses.values.count { it.lastDone == null },
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model)
+                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit), items.map { it.toSaved() }) }
+                ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -253,6 +275,35 @@ class ScheduleViewModel @Inject constructor(
      * Adds the typical items the schedule lacks, unticked: the user picks which to track, so a
      * dozen "not logged yet" reminders don't appear at once.
      */
+    /**
+     * Adds the reminders of the maker's schedule as items of the user's own, tracked, each remembering
+     * the list it started from. [stop] are the typical items the user agreed to stop tracking because
+     * one of these is the same job; nothing else about a typical item changes, and none is removed.
+     */
+    fun addKnown(stop: Set<Long>) = viewModelScope.launch {
+        val s = state.value ?: return@launch
+        val (list, plan) = s.known ?: return@launch
+        val severe = s.use == DrivingUse.SEVERE
+        schedule.applyImport(
+            added = plan.new.map {
+                ScheduleItemEntity(
+                    vehicleId = vehicleId,
+                    name = it.name,
+                    intervalMiles = it.normal.miles,
+                    intervalMonths = it.normal.months,
+                    severeMiles = it.severe?.miles,
+                    severeMonths = it.severe?.months,
+                    useSevere = severe && it.severe != null,
+                    ruleOverride = it.rule?.name,
+                    service = it.service,
+                    knownList = list.id,
+                )
+            },
+            replaced = emptyList(),
+            stopped = plan.doubles.map { it.id }.filter { it in stop },
+        )
+    }
+
     fun addMissing() = viewModelScope.launch {
         val s = state.value ?: return@launch
         val severe = s.use == DrivingUse.SEVERE
@@ -446,6 +497,36 @@ fun ScheduleScreen(
                 }
             }
 
+            state.known?.let { (list, plan) ->
+                var asking by rememberSaveable { mutableStateOf(false) }
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(
+                        onClick = { asking = true },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                    ) {
+                        Text("Add reminders from the maker's guide")
+                    }
+                    Text(
+                        "For the ${list.title}. " + KnownSchedules.intervalOffer(list, plan),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (asking) {
+                    KnownRemindersDialog(
+                        list = list,
+                        plan = plan,
+                        unit = state.vehicle.unit,
+                        onAdd = { stop ->
+                            asking = false
+                            vm.addKnown(stop)
+                        },
+                        onDismiss = { asking = false },
+                    )
+                }
+            }
+
             // A schedule that began with the user's own items can still pick up the typical ones.
             if (state.items.isNotEmpty() && state.missing.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -507,4 +588,60 @@ private fun MilestonesRow(onClick: () -> Unit) {
             )
         }
     }
+}
+
+/**
+ * What adding a maker's reminders will do, before it is done: each item with its interval, and the
+ * typical items that would then be a second reminder for the same job, ticked to stop tracking.
+ */
+@Composable
+private fun KnownRemindersDialog(
+    list: KnownScheduleList,
+    plan: KnownIntervalPlan,
+    unit: DistanceUnit,
+    onAdd: (stop: Set<Long>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    var stop by rememberSaveable { mutableStateOf(plan.doubles.map { it.id }) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Reminders from the ${list.source.name}") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Added as items of your own, ticked. You can edit or untick any of them afterwards.", color = scheme.onSurfaceVariant)
+                plan.new.forEach { item ->
+                    Column {
+                        Text(item.name, style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            item.normal.label(unit) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = PlexMono,
+                            color = scheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (plan.doubles.isNotEmpty()) {
+                    Text(
+                        "These typical items are the same jobs. Ticked ones stop reminding you, so each job has one reminder; they stay on the list, unticked.",
+                        color = scheme.onSurfaceVariant,
+                    )
+                    plan.doubles.forEach { double ->
+                        val ticked = double.id in stop
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .toggleable(value = ticked, role = Role.Checkbox, onValueChange = { stop = if (it) stop + double.id else stop - double.id }),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Checkbox(checked = ticked, onCheckedChange = null)
+                            Text("Stop tracking “${double.name}”")
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onAdd(stop.toSet()) }) { Text(if (plan.new.size == 1) "Add 1 reminder" else "Add ${plan.new.size} reminders") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
