@@ -1,0 +1,28 @@
+{
+  "id": "toyota-4runner-2010-2011",
+  "title": "2010–2011 4Runner",
+  "make": "Toyota",
+  "model": "4Runner",
+  "years": {
+    "from": 2010,
+    "to": 2011
+  },
+  "source": {
+    "name": "Toyota owner's manual",
+    "url": "https://assets.sia.toyota.com/publications/en/om-s/OM35A36U/pdf/OM35A36U.pdf",
+    "retrieved": "2026-10-12",
+    "note": "Read from Toyota's owner's manual for these model years. Check it against the manual for your own vehicle, above all if the wheels aren't the originals.",
+    "basis": "Figures printed in Toyota's own owner's manuals, which Toyota publishes free: OM35A36U (2010), OM35A52U (2011). Copied from those documents; no third party's compilation was used."
+  },
+  "items": [
+    {
+      "name": "Lug nuts",
+      "category": "wheels",
+      "torque": {
+        "value": 83,
+        "unit": "ft-lb"
+      },
+      "note": "Tightening torque for the wheel nuts, as the owner's manual gives it."
+    }
+  ]
+}

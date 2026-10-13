@@ -7,7 +7,7 @@ import org.junit.Test
 import java.io.File
 
 class KnownSpecsTest {
-    // Gradle runs a module's tests from the module's folder. No list ships yet, so the folder may not exist.
+    // Gradle runs a module's tests from the module's folder.
     private val assets = File("../app/src/main/assets/${KnownSpecs.ASSET_DIR}")
     private val bundled: List<KnownSpecList> by lazy {
         assets.listFiles { f -> f.extension == "json" }.orEmpty().sortedBy { it.name }.map { file ->
@@ -42,7 +42,7 @@ class KnownSpecsTest {
 
     @Test
     fun `every list that ships is read, says where it came from and why it may ship, and has a value for every row`() {
-        // None ships yet: this holds any that is added to the same rules.
+        assertTrue(bundled.isNotEmpty())
         assertEquals(bundled.size, bundled.map { it.id }.toSet().size)
         for (list in bundled) {
             assertTrue(list.source.basis.isNotBlank())
@@ -51,6 +51,34 @@ class KnownSpecsTest {
             // One row per fastener, so adding a list twice can't double anything.
             assertEquals(list.items.size, list.items.map { TorqueImport.key(it.name, it.category) }.toSet().size)
         }
+    }
+
+    @Test
+    fun `no two lists claim the same vehicle`() {
+        for (a in bundled) for (b in bundled) {
+            if (a.id < b.id && a.make.equals(b.make, true) && a.model.equals(b.model, true)) {
+                assertTrue("${a.id} and ${b.id} overlap", a.years.last < b.years.first || b.years.last < a.years.first)
+            }
+        }
+    }
+
+    @Test
+    fun `the 4Runner lists say what Toyota's owner's manuals say for each run of years`() {
+        // Read out of Toyota's own documents (docs/known-specs.md has which); the figure changed twice.
+        fun ftLb(year: Int) = KnownSpecs.match(bundled, year, "TOYOTA", "4Runner")!!.items.associate { it.name to it.torque!!.inUnit(TorqueUnit.FOOT_POUND) }
+        fun same(expected: Map<String, Double>, year: Int) {
+            val actual = ftLb(year)
+            assertEquals("$year", expected.keys, actual.keys)
+            expected.forEach { (name, value) -> assertEquals("$year $name", value, actual.getValue(name), 0.001) }
+        }
+        for (year in 2010..2011) same(mapOf("Lug nuts" to 83.0), year)
+        for (year in 2012..2014) same(mapOf("Lug nuts" to 81.0), year)
+        val byWheel = mapOf("Lug nuts, steel wheels" to 83.0, "Lug nuts, aluminum wheels" to 76.0)
+        for (year in 2015..2016) same(byWheel, year)
+        for (year in 2017..2024) same(byWheel + ("Spare tire carrier" to 34.4), year)
+        assertNull(KnownSpecs.match(bundled, 2009, "TOYOTA", "4Runner"))
+        assertNull(KnownSpecs.match(bundled, 2025, "TOYOTA", "4Runner"))
+        assertTrue(bundled.filter { it.model == "4Runner" }.all { it.source.name == "Toyota owner's manual" && it.source.url!!.startsWith("https://assets.sia.toyota.com/") })
     }
 
     @Test
@@ -98,7 +126,7 @@ class KnownSpecsTest {
     @Test
     fun `the offer says whose values they are and what happens to the user's own`() {
         val text = KnownSpecs.offer(roadster, KnownSpecs.plan(roadster, emptyList()))
-        assertTrue(text.startsWith("4 reference values from example.test. A made-up list."))
+        assertTrue(text.startsWith("4 reference values. Source: example.test. A made-up list."))
         assertTrue("DOUBLE-CHECK" in text)
         val some = KnownSpecs.offer(roadster, KnownSpecs.plan(roadster, listOf(saved(2, "Oil drain plug", TorqueCategory.ENGINE, Torque(40.0)))))
         assertTrue(some.startsWith("3 reference values") && some.endsWith("1 fastener you have already filled in is left as it is."))

@@ -1,8 +1,8 @@
 # Bundled torque lists
 
 Glovebox can ship a list of torque values for a model, offered on that vehicle's Torque specs screen
-as "Add known specs for …". **No list ships today.** This file is how one gets added, and what has
-to be true of it first.
+as "Add known specs for …". This file is how one gets added, what has to be true of it first, and
+where the lists that ship came from.
 
 ## What has to be true before a list goes in
 
@@ -77,3 +77,33 @@ Every value arrives tagged DOUBLE-CHECK. The tag clears when the user says they 
 it matches the factory service manual, or changes it. The row keeps "Started from the … list" for
 good. A row the user had already filled in is never overwritten, and an unconfirmed value is left out
 of a file the user saves.
+
+## The lists that ship
+
+### Toyota 4Runner, 2010 to 2024
+
+Only what Toyota's owner's manuals give: the wheel nut torque and, from 2017, the torque for raising
+the spare tire into its carrier. Nothing else in those manuals is a torque figure. The wheel nut
+figure changed twice, so there are four lists.
+
+| Model years | Wheel nuts | Spare tire carrier | Toyota documents read |
+|---|---|---|---|
+| 2010–2011 | 83 ft·lbf (110 N·m) | not given | OM35A36U, OM35A52U |
+| 2012–2014 | 81 ft·lbf (110 N·m) | not given | OM35819U, OM35A22U, OM35A83U |
+| 2015–2016 | steel 83 ft·lbf (112 N·m), aluminum 76 ft·lbf (103 N·m) | not given | OM35B18U, OM35B23U |
+| 2017–2024 | steel 83 ft·lbf, aluminum 76 ft·lbf | 34.4 ft·lbf (46.6 N·m) | OM35B37U, OM35B46U, OM35B48U, OM35B54U, OM35B41U, OM35B65U, OM35B72U, OM35B73U, OM35C03U |
+
+How they were read, so it can be repeated for another model:
+
+- Each document is Toyota's own PDF at
+  `https://assets.sia.toyota.com/publications/en/om-s/<code>/pdf/<code>.pdf`. Its text was extracted
+  with `pdftotext -layout` and every line containing `ft·lbf` was listed with its page. The figures
+  appear in the tire-changing steps and again in the specifications table.
+- The manuals don't print their model year. Which document belongs to which year comes from manual
+  catalogues that list Toyota's document code per year (ownersman.com, manualsnet.com,
+  manual-directory.com), checked against each PDF's creation date. 2019 has no catalogue entry and is
+  taken to be OM35B48U from its date (July 2018) and its place in the sequence. The figures are the
+  same on both sides of every year whose document is less certain, so a wrong pairing inside a run
+  of years would not change a list; the two changes fall between documents the catalogues agree on.
+- Not in these lists, because the owner's manual doesn't give them: every other fastener. Those need
+  a repair manual.

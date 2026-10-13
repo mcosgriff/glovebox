@@ -172,7 +172,7 @@ object KnownSpecs {
 
     /** What is said where a list is offered: whose it is, what it isn't, and what happens to the user's own rows. */
     fun offer(list: KnownSpecList, plan: KnownSpecPlan): String =
-        "${count(plan.changes).replaceFirstChar { it.uppercase() }} from ${list.source.name}. ${list.source.note} " +
+        "${count(plan.changes).replaceFirstChar { it.uppercase() }}. Source: ${list.source.name}. ${list.source.note} " +
             "Each is tagged DOUBLE-CHECK until you have checked it against a service or repair manual and said so." +
             when (plan.kept.size) {
                 0 -> ""

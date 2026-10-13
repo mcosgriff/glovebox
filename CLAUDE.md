@@ -134,7 +134,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: a first bundled torque list from a source that may be shipped (#76), VIN scan follow-up (#83).
+To build: VIN scan follow-up (#83).
 
 Notes on what's built:
 - Distance units (#93). The unit is chosen where a vehicle is added (a switch on both paths, starting at
@@ -570,9 +570,12 @@ Notes on what's built:
   as the manufacturer's.** A list is a file in `assets/known-specs/`: an id, the make, model and year range
   it is for, its source (name, optional URL, the day it was copied, a sentence on what kind of source it
   is, and `basis`) and items written exactly as in a `torque-specs` import file, read by the same strict
-  reader. **No list ships yet, and the folder doesn't exist.** A 4Runner list copied from an enthusiast
-  site was built and then taken out before merging: the site gave no permission to reuse its table, the
-  app may one day be sold, and two of its figures were disputed by its own readers. **`basis` has to be a
+  reader. **The lists that ship are the 4Runner's, 2010 to 2024, and hold only what Toyota's own owner's
+  manuals print:** the wheel nut torque (which changed twice, hence four lists by year) and, from 2017,
+  the spare tire carrier. `docs/known-specs.md` records which Toyota documents were read and how. A fuller
+  4Runner list copied from an enthusiast site was built first and taken out before merging: the site gave
+  no permission to reuse its table, the app may one day be sold, and its wheel nut figure turned out not
+  to be the manual's. **`basis` has to be a
   real answer** (written permission, or values the maintainer took from a manual they have); "it was on a
   website" is not one. Don't add rows from a source that doesn't state units, and don't correct a figure
   from memory: leave it out or note the dispute. `KnownSpecsTest` holds every file in the folder to these

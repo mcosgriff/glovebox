@@ -1,0 +1,46 @@
+{
+  "id": "toyota-4runner-2017-2024",
+  "title": "2017–2024 4Runner",
+  "make": "Toyota",
+  "model": "4Runner",
+  "years": {
+    "from": 2017,
+    "to": 2024
+  },
+  "source": {
+    "name": "Toyota owner's manual",
+    "url": "https://assets.sia.toyota.com/publications/en/om-s/OM35B54U/pdf/OM35B54U.pdf",
+    "retrieved": "2026-10-12",
+    "note": "Read from Toyota's owner's manual for these model years. Check it against the manual for your own vehicle, above all if the wheels aren't the originals.",
+    "basis": "Figures printed in Toyota's own owner's manuals, which Toyota publishes free: OM35B37U (2017), B46U, B48U, B54U (2020), B41U, B72U, B73U, OM35C03U (2024). Copied from those documents; no third party's compilation was used."
+  },
+  "items": [
+    {
+      "name": "Lug nuts, steel wheels",
+      "category": "wheels",
+      "torque": {
+        "value": 83,
+        "unit": "ft-lb"
+      },
+      "note": "Tightening torque for the wheel nuts on steel wheels, as the owner's manual gives it."
+    },
+    {
+      "name": "Lug nuts, aluminum wheels",
+      "category": "wheels",
+      "torque": {
+        "value": 76,
+        "unit": "ft-lb"
+      },
+      "note": "Tightening torque for the wheel nuts on aluminum wheels, as the owner's manual gives it."
+    },
+    {
+      "name": "Spare tire carrier",
+      "category": "wheels",
+      "torque": {
+        "value": 34.4,
+        "unit": "ft-lb"
+      },
+      "note": "Tightening torque when raising the spare tire into its carrier, as the owner's manual gives it."
+    }
+  ]
+}
