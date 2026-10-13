@@ -6,7 +6,12 @@ import java.io.File
 import java.io.IOException
 
 /**
- * Reads the text in one camera frame with Tesseract, entirely on the phone: the engine is a native
+ * Reads the text in one camera frame with Tesseract, entirely on the phone, for the two things the
+ * camera is pointed at to read: the odometer ([digits]) and a printed VIN ([vin]). Tesseract is told
+ * which characters there can be ([characters]), and keeps only the words it is at least
+ * [minConfidence] (of 100) sure of.
+ *
+ * It runs entirely on the phone: the engine is a native
  * library and its language file ships in the app, so nothing is fetched and nothing is sent. Only
  * the greyscale (luminance) plane is needed. Not thread-safe: use one per analyzer, on its thread.
  *
@@ -14,7 +19,7 @@ import java.io.IOException
  * cache the first time and reused; Android may clear it, and `DataWipe` does, and it is simply
  * copied again. It holds nothing of the user's.
  */
-class DashReader(private val context: Context) {
+class TextReader private constructor(private val context: Context, private val characters: String, private val minConfidence: Float) {
     private var api: TessBaseAPI? = null
 
     /** Set when the engine couldn't be started; nothing more is tried after that. */
@@ -22,13 +27,13 @@ class DashReader(private val context: Context) {
         private set
 
     /**
-     * What Tesseract makes of the frame, digits and their punctuation only, or null when it read
+     * What Tesseract makes of the frame, in the reader's own characters only, or null when it read
      * nothing or can't run. [luminance] is [width] x [height], one byte per pixel, rows top to bottom.
      */
     fun read(luminance: ByteArray, width: Int, height: Int): String? {
         val text = StringBuilder()
         for (word in words(luminance, width, height)) {
-            if (word.confidence < MIN_CONFIDENCE) continue
+            if (word.confidence < minConfidence) continue
             if (text.isNotEmpty()) text.append(if (word.startsLine) '\n' else ' ')
             text.append(word.text)
         }
@@ -71,7 +76,7 @@ class DashReader(private val context: Context) {
         if (failed) return null
         val engine = try {
             val data = languageFile()
-            TessBaseAPI().takeIf { it.init(data.parentFile!!.parentFile!!.absolutePath, LANGUAGE, TessBaseAPI.OEM_LSTM_ONLY) }
+            TessBaseAPI().takeIf { it.init(data.parentFile!!.parentFile!!.absolutePath, LANGUAGE, TessBaseAPI.OEM_LSTM_ONLY, NO_WORD_LISTS) }
         } catch (_: IOException) {
             null
         } catch (_: UnsatisfiedLinkError) {
@@ -82,9 +87,8 @@ class DashReader(private val context: Context) {
             failed = true
             return null
         }
-        // An odometer is digits; the point and comma are kept so a trip meter's tenths can be told apart.
-        engine.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, "0123456789.,")
-        // The numbers on a cluster are scattered about, not laid out as a page.
+        engine.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, characters)
+        // The numbers on a cluster, and a VIN among the other print on a plate or a card, are scattered about, not laid out as a page.
         engine.pageSegMode = TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT
         api = engine
         return engine
@@ -110,10 +114,27 @@ class DashReader(private val context: Context) {
         private const val LINE = TessBaseAPI.PageIteratorLevel.RIL_TEXTLINE
 
         /**
-         * Tesseract will make a digit out of a bookshelf if asked for digits only, but it isn't sure
-         * of it. A word below this (of 100) is dropped before anything looks for a reading in it.
+         * Tesseract's English word lists pull a reading towards words. Neither an odometer nor a VIN is
+         * one, so they are left out; they can only be switched off as the engine starts.
          */
-        const val MIN_CONFIDENCE = 70f
+        private val NO_WORD_LISTS = mapOf("load_system_dawg" to "0", "load_freq_dawg" to "0")
+
+        /**
+         * For the odometer. An odometer is digits; the point and comma are kept so a trip meter's
+         * tenths can be told apart. Tesseract will make a digit out of a bookshelf if asked for digits
+         * only, but it isn't sure of it, and nothing else vouches for a reading, so a word it is less
+         * than 70 sure of is dropped.
+         */
+        fun digits(context: Context) = TextReader(context, "0123456789.,", minConfidence = 70f)
+
+        /**
+         * For a printed VIN: capitals and digits. I, O and Q are let through although a VIN has none,
+         * so that a 1 or a 0 read as one of them can be put right (`VinScan.printed`) instead of coming
+         * out as some other letter. The space is listed too: left out, Tesseract runs the words of a line
+         * together ("VIN1M8GDM9AX…"), and a VIN beside a label is lost in a longer run. Every word is kept, however unsure: a VIN vouches for itself with
+         * its check digit, and has to be read the same twice.
+         */
+        fun vin(context: Context) = TextReader(context, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ", minConfidence = 0f)
 
         /** Darker than this on average and the picture is taken to be lit digits on a dark display. */
         private const val DARK = 110

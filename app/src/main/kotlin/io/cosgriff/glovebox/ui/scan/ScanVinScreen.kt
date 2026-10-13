@@ -87,7 +87,10 @@ internal const val GUIDE_HEIGHT = 0.3
 /** Door-jamb barcodes are small; zoomed in, the phone can sit far enough back to focus on one. */
 private const val START_ZOOM = 2f
 
-/** Design: 2 · Scan VIN. Frames are read on the phone; nothing is saved or sent. */
+/**
+ * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
+ * (Tesseract, as the dash reader does). Frames are read on the phone; nothing is saved or sent.
+ */
 @Composable
 fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     val context = LocalContext.current
@@ -114,7 +117,7 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             Scanner(onClose, onUseVin)
         } else {
             NoCamera(
-                why = "Glovebox uses the camera only to read the VIN barcode. The picture is read on this phone and isn't saved or sent anywhere.",
+                why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
                 instead = "Type the VIN instead",
                 refused = refused,
                 onAsk = { ask.launch(Manifest.permission.CAMERA) },
@@ -130,6 +133,8 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
     /** A VIN that passed its check digit; scanning pauses while it is on screen. */
     var found by rememberSaveable { mutableStateOf<String?>(null) }
+    /** [found] was read from print, not from a barcode. */
+    var fromPrint by rememberSaveable { mutableStateOf(false) }
     /** A barcode was read but it wasn't a VIN. */
     var notAVin by remember { mutableStateOf(false) }
     var torch by remember { mutableStateOf(false) }
@@ -148,18 +153,45 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     DisposableEffect(controller, lifecycleOwner) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = VinBarcodeReader()
+        val print = TextReader.vin(context.applicationContext)
+        // What each recent frame's print came to; only ever touched on the analyzer's thread.
+        val printed = ArrayDeque<String?>()
         controller.setImageAnalysisAnalyzer(executor) { image ->
             image.use {
-                if (paused) return@use
-                val text = reader.read(it) ?: return@use
-                val vin = VinScan.vin(text)
-                if (vin != null) found = vin else notAVin = true
+                if (paused) {
+                    // What was read before "Rescan" says nothing about what is in front of the camera now.
+                    printed.clear()
+                    return@use
+                }
+                val (band, width, height) = it.guideBand()
+                // A barcode first: it is quicker to read and carries its own error checking.
+                val barcode = reader.read(band, width, height)
+                if (barcode != null) {
+                    val vin = VinScan.vin(barcode)
+                    if (vin != null) {
+                        fromPrint = false
+                        found = vin
+                    } else {
+                        notAVin = true
+                    }
+                    return@use
+                }
+                // No barcode in the frame: look for the VIN in print. If the recogniser can't run on
+                // this phone it reads nothing, and the scanner is a barcode scanner as before.
+                printed.addLast(print.read(band, width, height)?.let(VinScan::printed))
+                while (printed.size > VinScan.WINDOW) printed.removeFirst()
+                VinScan.agreed(printed.toList())?.let { vin ->
+                    fromPrint = true
+                    found = vin
+                }
             }
         }
         controller.bindToLifecycle(lifecycleOwner)
         onDispose {
             controller.clearImageAnalysisAnalyzer()
             controller.unbind()
+            // The recogniser is closed on the thread that uses it, after any frame still being read.
+            executor.execute { print.close() }
             executor.shutdown()
         }
     }
@@ -217,7 +249,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
         ) {
             Text(
-                "Line up the barcode on the\ndriver's door-jamb sticker",
+                "Line up the barcode on the door-jamb\nsticker, or the VIN printed on the dash",
                 style = MaterialTheme.typography.bodyLarge,
                 color = OnScrim,
                 textAlign = TextAlign.Center,
@@ -226,7 +258,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             // Only a band across the middle of the frame is read; this box sits inside it.
             Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
             Text(
-                if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR",
+                if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
                 style = MaterialTheme.typography.bodySmall,
                 color = if (notAVin && found == null) Guide else OnScrimMuted,
                 textAlign = TextAlign.Center,
@@ -247,7 +279,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(18.dp), tint = statusColors().ok)
                         Text(
-                            "VIN detected · check digit valid",
+                            if (fromPrint) "VIN read from print · check digit valid" else "VIN detected · check digit valid",
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = statusColors().ok,
@@ -317,12 +349,6 @@ internal fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, 
     ) {
         Icon(icon, contentDescription = label)
     }
-}
-
-/** The frame's greyscale plane, turned upright, handed to ZXing. */
-private fun VinBarcodeReader.read(image: ImageProxy): String? {
-    val (guide, gw, gh) = image.guideBand()
-    return read(guide, gw, gh)
 }
 
 /** The part of a frame the on-screen guide sits in: its greyscale plane, turned upright and cut to the band across the middle. */
