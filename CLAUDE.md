@@ -52,8 +52,16 @@ Keep them green; lint errors fail the build.
   or deleting a record automatically rolls reminders back. Don't add a cached last-done column.
   A "last done" the user gives on its own is a service record too, flagged `enteredAsLastDone` (#78).
   **Nothing is assumed or estimated for the user:** there is no "assume everything was done on schedule".
-- **Torque stored in N·m**, converted for display. Odometer stored in miles (km is a display setting later),
-  and as typed from the dash: a cluster replacement converts on read, never by rewriting readings.
+- **Torque stored in N·m**, converted for display.
+- **Distances are stored in the vehicle's own unit, as typed** (#93). A vehicle counts in miles or
+  kilometres (`vehicles.distanceUnit`, `DistanceUnit` in `:domain`), and every reading, interval, snooze
+  point, cluster offset and milestone of it is stored in that unit exactly as it was typed, like readings
+  across a cluster replacement. So nothing is converted for display and a figure always reads back as
+  typed; whole miles can't hold kilometres (4 in 10 come back 1 km out), which is why it isn't a display
+  setting. Almost all of `:domain` neither knows nor cares what unit its numbers are in. Column and field
+  names that say "miles" are older than the choice. **Never write a number into a vehicle's tables in
+  another unit, and never show one without the vehicle's unit:** there is deliberately no unit-less
+  formatter (`Int.asDistance(unit)`, `Interval.label(unit)`, `VehicleEntity.unit`).
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
 - **Barcodes are read with ZXing, not ML Kit.** ML Kit's bundled barcode library depends on Google's
@@ -118,10 +126,30 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27),
+To build: kilometres in import files (#126), unlock on Android 10 (untested, #27),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
+- Distance units (#93). The unit is chosen where a vehicle is added (a switch on both paths, starting at
+  `Settings.distanceUnit`, the Settings row, which is only the default for new vehicles) and changed on
+  Vehicle details, which converts: `UnitDao.convert` rewrites every figure of that vehicle in one
+  transaction and is the only thing that changes a unit. **There are two conversions and each figure
+  takes one** (`DistanceKind`): a *measurement* (a reading, a snooze point, the cluster offset) goes
+  exactly, at 1.609344; a *schedule figure* (an interval, a milestone, how a table repeats) goes at 1.6,
+  as manuals for both markets print them, so 5,000 mi is 8,000 km and comes back as 5,000. Glovebox's own
+  figures are kept in miles and given to a kilometre vehicle as schedule figures: the typical schedule
+  (`ScheduleTemplates.generic(…, unit)`), the two snooze steps (`Snoozing.distance`), and the thresholds
+  for a reading far above the last (`MileageReadings.farAhead`) and the dash reader's window. The lead
+  distance is one setting, kept as typed in `Settings.distanceUnit`; **always take it through
+  `Settings.leadFor(vehicle.unit)`**, never `Settings.lead`, and changing the default unit converts it.
+  **Import files stay in miles** (their fields say so): `FileDistances` puts a file into the vehicle's unit
+  before anything is compared or saved, and a file written from a kilometre vehicle back into miles. A
+  kilometre figure that isn't a multiple of 8 can come back from a file 1 km out; kilometres in files is
+  #126. The Import page says, for a kilometre vehicle, that its figures are the converted ones. The dash
+  reader reads a number and takes it to be in the vehicle's unit. Notifications name services and carry
+  no distance. After a conversion a service already announced as due may be announced once more, because
+  `NoticeRules.cycle` is keyed on the last-done reading. Each vehicle in a list (garage, Reminders, an
+  export of all vehicles) is worded in its own unit.
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
   vehicle?". Body, drive type, engine, fuel, transmission and the year / make / model can be corrected
   before saving. `VinDecode.quality` sorts a decode into clean, partial (vPIC flagged it) or unidentified;
@@ -432,8 +460,7 @@ Notes on what's built:
   `DataWipe` removes it with the rest of the settings. Its buttons save the two choices, then hand over through
   `Destination.AddVehicle` or `RestorePicker.pick()`. Notifications off there turns every kind off in
   Settings; the lock switch is disabled, and says why, on a phone with no screen lock (`canLockApp`).
-- Settings rows that lead nowhere are left out, not shown dead: `Distance units` (odometers are stored
-  and shown in miles everywhere; km needs every mileage field and label converted) . `Maintenance schedule` opens the only vehicle's schedule, or asks which when there are several,
+- Settings rows that lead nowhere are left out, not shown dead. `Maintenance schedule` opens the only vehicle's schedule, or asks which when there are several,
   and is absent with none. `Lock the app` (`LockDelay`, stored as `lockAfterSeconds`, -1 = on restart)
   shows only while the lock is on and the phone has a screen lock. The privacy line says what is really
   sent: a VIN, or a year, make and model.
