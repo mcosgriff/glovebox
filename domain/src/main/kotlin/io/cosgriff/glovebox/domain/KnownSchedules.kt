@@ -86,6 +86,9 @@ object KnownSchedules {
      * Where [intervals] say something [table] doesn't. An interval is the table's own when its job
      * (the same service, or failing that the same name) is at every multiple of the interval up to
      * the table's end and nowhere else, and its months are the months printed at those milestones.
+     * One with a first time of its own ([ImportedScheduleItem.firstAt]) is in the table at that
+     * mileage and then every interval after it; the table's months aren't held against it, since
+     * they count from new and the interval's from the last time.
      */
     fun contradictions(table: List<ImportedMilestone>, intervals: List<ImportedScheduleItem>): List<String> {
         val end = table.maxOfOrNull { it.atMiles } ?: return listOf("there is no table for the intervals to come from")
@@ -96,9 +99,10 @@ object KnownSchedules {
             when {
                 every == null -> "\"${item.name}\" has no distance; a table is by distance"
                 at.isEmpty() -> "\"${item.name}\" isn't a job in the table"
-                at.map { it.atMiles } != (every..end step every).toList() ->
-                    "\"${item.name}\" is in the table at ${at.joinToString { it.atMiles.toString() }}, which isn't every $every"
-                at.any { m -> m.orMonths != null && item.normal.months != null && m.orMonths != item.normal.months * (m.atMiles / every) } ->
+                at.map { it.atMiles } != ((item.firstAt ?: every)..end step every).toList() ->
+                    "\"${item.name}\" is in the table at ${at.joinToString { it.atMiles.toString() }}, which isn't " +
+                        (item.firstAt?.let { "$it and then every $every" } ?: "every $every")
+                item.firstAt == null && at.any { m -> m.orMonths != null && item.normal.months != null && m.orMonths != item.normal.months * (m.atMiles / every) } ->
                     "\"${item.name}\" has months that aren't the table's"
                 else -> null
             }

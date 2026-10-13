@@ -78,8 +78,9 @@ class KnownSchedulesTest {
         assertEquals(setOf("driveshaft", "cabin-air", "engine-air", "oil", "rotation", "brake-inspect"), services(30_000))
         assertEquals(setOf("coolant", "oil", "rotation", "brake-inspect"), services(100_000))
         assertTrue("spark-plugs" in services(120_000))
-        // The coolant is replaced at 100,000 and then every 50,000, which no interval can say; it stays in the table.
-        assertEquals(setOf("oil", "rotation", "driveshaft", "cabin-air", "engine-air", "spark-plugs"), list.intervals.mapNotNull { it.service }.toSet())
+        assertEquals(setOf("oil", "rotation", "driveshaft", "cabin-air", "engine-air", "spark-plugs", "coolant"), list.intervals.mapNotNull { it.service }.toSet())
+        // The coolant is replaced first at 100,000 and then every 50,000.
+        assertEquals(100_000 to Interval(50_000, 60), list.intervals.single { it.service == "coolant" }.let { it.firstAt to it.normal })
         assertEquals(Interval(10_000, 12) to Interval(5_000, 6), list.intervals.single { it.service == "oil" }.let { it.normal to it.severe })
         assertEquals("Toyota Warranty and Maintenance Guide", list.source.name)
     }
@@ -101,6 +102,10 @@ class KnownSchedulesTest {
         assertTrue("isn't a job in the table" in refused("""[ { "name": "Flush the brakes", "everyMiles": 8000 } ]"""))
         assertTrue("months that aren't the table's" in refused("""[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 6, "service": "oil" } ]"""))
         assertTrue("no distance" in refused("""[ { "name": "Change the oil", "everyMonths": 4, "service": "oil" } ]"""))
+        // A first time of its own: in the table there and every interval after it, or it is refused.
+        val hinges = ImportedScheduleItem("Grease the hinges", Interval(4_000, null), firstAt = 12_000)
+        assertTrue("isn't 12000 and then every 4000" in KnownSchedules.contradictions(roadster.milestones, listOf(hinges)).single())
+        assertEquals(emptyList<String>(), KnownSchedules.contradictions(roadster.milestones, listOf(hinges.copy(normal = Interval(8_000, 6)))))
         // Once, at its own interval, with the table ending before a second time: nothing contradicts it.
         assertEquals(emptyList<String>(), KnownSchedules.contradictions(roadster.milestones, listOf(ImportedScheduleItem("Grease the hinges", Interval(12_000, 12)))))
     }

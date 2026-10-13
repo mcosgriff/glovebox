@@ -12,6 +12,11 @@ data class ImportedScheduleItem(
     val rule: DueRule? = null,
     /** The built-in service line that resets it, as a [CatalogItem] id; null when it is logged under "Your items". */
     val service: String? = null,
+    /**
+     * The odometer reading the job is first due at, when that isn't one interval in ("first at 100,000,
+     * then every 50,000"); in the file's unit. It matters only until the job has been logged once.
+     */
+    val firstAt: Int? = null,
 )
 
 /**
@@ -27,6 +32,7 @@ data class SavedScheduleItem(
     val templateKey: String?,
     val tracked: Boolean,
     val service: String? = null,
+    val firstAt: Int? = null,
 )
 
 /** The `interval-schedule` kind: `docs/import/schema/interval-schedule.schema.json`. */
@@ -47,7 +53,11 @@ object ScheduleImport {
     )
 
     private val intervalKeys = setOf("everyMiles", "everyKm", "everyMonths")
-    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service")
+    /** The file's fields for a first time that isn't one interval in: one or the other, in the file's unit. */
+    const val FIRST = "firstAtMiles"
+    const val FIRST_KM = "firstAtKm"
+
+    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", FIRST, FIRST_KM)
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
@@ -60,9 +70,10 @@ object ScheduleImport {
             val severe = o["severe"]?.let { s -> check.obj(s, "$path.severe", intervalKeys)?.let { interval(it, "$path.severe", check) } }
             val rule = o["rule"]?.let { check.choice(it, "$path.rule", rules) }
             val service = o["service"]?.let { check.choice(it, "$path.service", HistoryImport.services.mapValues { s -> s.key }) }
-            if (name == null || normal == null) return@mapIndexedNotNull null
+            val first = check.distance(o, path, FIRST, FIRST_KM, MAX_MILES, MAX_KM)
+            if (name == null || normal == null || (check.has(o, FIRST, FIRST_KM) && first == null)) return@mapIndexedNotNull null
             seen.put(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
-            ImportedScheduleItem(name, normal, severe, rule, service)
+            ImportedScheduleItem(name, normal, severe, rule, service, first)
         }
     }
 
@@ -94,7 +105,7 @@ object ScheduleImport {
             existing = existing.filter { it.templateKey == null },
             key = { key(it.name) },
             existingKey = { key(it.name) },
-            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule && i.service == e.service },
+            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule && i.service == e.service && i.firstAt == e.firstAt },
         )
 
     /**

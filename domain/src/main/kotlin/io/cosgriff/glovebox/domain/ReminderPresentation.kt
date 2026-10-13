@@ -65,8 +65,13 @@ object ReminderPresentation {
      * vehicle with a single odometer reading still shows the right figure.
      */
     fun progress(s: ItemStatus): ReminderProgress {
-        val last = s.lastDone ?: return ReminderProgress(DueHeadline.NotLogged, null)
         val status = s.status
+        if (s.awaitingFirst) {
+            // Counted from zero to the mileage the job is first due at.
+            val left = status.milesRemaining ?: return ReminderProgress(DueHeadline.NotLogged, null)
+            return ReminderProgress(DueHeadline.Miles(left), (1.0 - left.toDouble() / s.item.firstAt!!).coerceIn(0.0, 1.0))
+        }
+        val last = s.lastDone ?: return ReminderProgress(DueHeadline.NotLogged, null)
         s.snooze?.let { return ReminderProgress(DueHeadline.Snoozed(it), null) }
 
         val miles = status.milesRemaining?.let { left ->
@@ -89,7 +94,7 @@ object ReminderPresentation {
     }
 
     fun comingUp(statuses: List<ItemStatus>): ComingUp {
-        val (logged, never) = statuses.partition { it.lastDone != null }
+        val (logged, never) = statuses.partition { it.counting }
         return ComingUp(
             counting = logged.map { it to progress(it) }.sortedWith(urgency),
             notLogged = never.sortedBy { it.item.name },
@@ -111,7 +116,7 @@ object ReminderPresentation {
      * and anything expected within 30 days — by date, or by mileage at the current driving pace.
      */
     fun group(s: ItemStatus, today: LocalDate): ReminderGroup = when {
-        s.lastDone == null -> ReminderGroup.NOT_LOGGED
+        !s.counting -> ReminderGroup.NOT_LOGGED
         s.snooze != null -> ReminderGroup.LATER
         s.status.state == DueState.OVERDUE -> ReminderGroup.OVERDUE
         s.status.state == DueState.DUE_SOON -> ReminderGroup.NEXT_30_DAYS

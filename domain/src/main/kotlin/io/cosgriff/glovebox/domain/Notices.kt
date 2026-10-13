@@ -82,6 +82,9 @@ object NoticeRules {
     /** Identifies one run of a reminder: it changes whenever the service is logged again. */
     fun cycle(lastDone: LastDone): String = "${lastDone.date.toEpochDay()}:${lastDone.odometer}"
 
+    /** The run a reminder is in: since it was last logged, or its wait for the first time. */
+    private fun cycle(s: ItemStatus): String = s.lastDone?.let(::cycle) ?: "first"
+
     /**
      * The daily check: what to say today, and the log to keep afterwards.
      *
@@ -102,11 +105,11 @@ object NoticeRules {
         val mileageAsked = mutableMapOf<Long, LocalDate>()
 
         for (v in vehicles) {
-            val logged = v.statuses.filter { it.lastDone != null }
+            val logged = v.statuses.filter { it.counting }
 
             val dueSoon = logged.filter { it.status.state == DueState.DUE_SOON }
-            val newlyDue = dueSoon.filter { log.dueAnnounced[it.item.id] != cycle(it.lastDone!!) }
-            dueSoon.forEach { dueAnnounced[it.item.id] = cycle(it.lastDone!!) }
+            val newlyDue = dueSoon.filter { log.dueAnnounced[it.item.id] != cycle(it) }
+            dueSoon.forEach { dueAnnounced[it.item.id] = cycle(it) }
             if (prefs.serviceDue && newlyDue.isNotEmpty()) notices += Notice.ServiceDue(v.id, v.name, newlyDue.map { it.item.name })
 
             val overdue = logged.filter { it.status.state == DueState.OVERDUE }

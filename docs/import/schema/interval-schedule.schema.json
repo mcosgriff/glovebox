@@ -98,6 +98,14 @@
         "everyMonths": {
           "$ref": "#/$defs/months"
         },
+        "firstAtMiles": {
+          "description": "For a job whose first time isn't one interval in: the odometer reading it is first due at, such as 100000 for \"first at 100,000 miles, then every 50,000\". It only matters until the job has been logged once. Left out, the first time is one interval in, like every other.",
+          "$ref": "#/$defs/miles"
+        },
+        "firstAtKm": {
+          "description": "The same as firstAtMiles, for a file in kilometres.",
+          "$ref": "#/$defs/km"
+        },
         "severe": {
           "description": "The interval for hard use (towing, off-road, dust, short trips), if it differs.",
           "type": "object",
@@ -184,12 +192,40 @@
           ]
         }
       },
-      "not": {
-        "required": [
-          "everyMiles",
-          "everyKm"
-        ]
-      }
+      "allOf": [
+        {
+          "not": {
+            "required": [
+              "everyMiles",
+              "everyKm"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "firstAtMiles",
+              "firstAtKm"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "everyMiles",
+              "firstAtKm"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "everyKm",
+              "firstAtMiles"
+            ]
+          }
+        }
+      ]
     }
   }
 }
