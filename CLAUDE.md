@@ -21,6 +21,9 @@ Keep them green; lint errors fail the build.
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
 - `./gradlew build` — everything.
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
+- `./gradlew :app:connectedDebugAndroidTest` — the few tests that need native code on a device
+  (`app/src/androidTest`, so far the dash reader). Not part of `build` or CI. **It uninstalls the debug app
+  when it finishes, which wipes that app's data on the emulator or phone:** ask first, or back up in the app.
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.
@@ -57,6 +60,13 @@ Keep them green; lint errors fail the build.
   log-upload transport (`transport-backend-cct`, `transport-runtime`) plus Firebase and Play Services
   pieces, which breaks the rule above. ZXing is pure Java with no network code. Check the dependency tree
   the same way before adding any Google or Firebase library.
+- **Text is read with Tesseract, not ML Kit** (#64, the odometer off the dash). ML Kit's text recognition
+  pulls in the same log-upload transport as its barcode reader. Tesseract4Android is native code with no
+  network calls and no permissions, checked in the `.so` files themselves; check again on an upgrade. It is
+  published only on JitPack, so `settings.gradle.kts` lets JitPack serve that one group and nothing else
+  (`exclusiveContent`). **Don't widen that filter or add another JitPack dependency without asking.** It
+  costs about 30 MB of APK (native libraries for four ABIs, plus the 4 MB language file in
+  `assets/tessdata`, from `tessdata_fast` 4.1.0); packaging per ABI is an open question, not decided.
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
@@ -89,7 +99,7 @@ vehicle directly when there is only one), vehicle home (Coming up + Log
 service), vehicle details (photo, nickname, from the VIN, what it takes, schedule and recalls rows,
 Mark as sold), archived vehicles (read-only history, move back to garage), delete vehicle (counts, type the
 name to confirm), torque specs (unit switch, categories, search, add / edit / delete),
-update-mileage sheet (with Undo), add vehicle via
+update-mileage sheet (with Undo, and Read dash: the odometer read by the camera), add vehicle via
 VIN (VIN entry, then a confirm screen where decoded values can be corrected), add without a VIN (year,
 make and model from NHTSA's lists or typed), VIN scanning (Code 39 and QR), receipt and parts photos
 (attach, grid, viewer, share), export as PDF or Markdown, notifications (service due, overdue, new
@@ -108,7 +118,7 @@ schedule setup, the Maintenance schedule screen and vehicle home). Import (Setti
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file).
-To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#64, #65),
+To build: distance units (km display, #93), unlock on Android 10 (untested, #27), mileage readings (#65),
 known torque specs (#76), VIN scan follow-ups (#82, #83).
 
 Notes on what's built:
@@ -303,8 +313,22 @@ Notes on what's built:
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
   vehicles" still returns to it, which is where another vehicle is added.
 - Update mileage adds an `odometer_readings` row dated today; the snackbar's Undo is the only way to
-  remove one so far. The sheet's preview comes from `MileageUpdate.preview`. "Read dash" (camera) and
-  the notification entry point are not built.
+  remove one so far. The sheet's preview comes from `MileageUpdate.preview`.
+- "Read dash" on that sheet (`ReadDashScreen`, `DashReader`, `DashReading` in `:domain`) points the camera
+  at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`guideBand()`,
+  `NoCamera`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark
+  frame is turned into its negative, since most odometers are lit digits on black), words under
+  `DashReader.MIN_CONFIDENCE` are dropped, and `DashReading.pick` chooses the number. **With a last
+  reading, only a number from it to 200,000 miles past it is ever offered**; that is what keeps a trip
+  meter, the clock or a stray digit read out of the trim from being put forward, and a dash that really
+  reads lower is typed by hand. With none, the longest whole number. A reading is shown only when three
+  of the last five frames agree (`DashReading.steady`), and **it only fills the sheet's field**: the
+  screen says "check it against the dash", never "detected", the sheet says where the number came from
+  until it is changed, and nothing is saved until the user taps Save. The reading comes back through the
+  vehicle home entry's saved state (`DASH_READING`), as a scanned VIN does. Frames are never stored.
+  Tesseract's language file is copied from assets to `cache/tesseract/` on first use, which `DataWipe`
+  already clears with the cache. `DashReaderTest` (on a device) draws readings and checks the engine
+  reads them; how well a real cluster reads, seven-segment LCDs above all, is only known from real dashes.
 - Garage list and Reminders tab share `GarageOverview` (app) for every vehicle's reminders. Reminders
   groups come from `ReminderPresentation.grouped`.
   `LogServiceRoute.scheduleItemId` opens Log service with that reminder's work ticked.

@@ -72,16 +72,17 @@ import io.cosgriff.glovebox.ui.theme.statusColors
 import java.util.concurrent.Executors
 
 // The scanner sits over a live camera picture, so it keeps the canvas's own colours in both themes.
-private val Scrim = Color(0xFF0E1012)
-private val OnScrim = Color(0xFFF4F3EF)
-private val OnScrimMuted = Color(0xFFB9B6AE)
-private val Guide = Color(0xFFFDBA74)
-private val Ink = Color(0xFF17191C)
+// Shared with the dash reader (ReadDashScreen), which is the same kind of screen.
+internal val Scrim = Color(0xFF0E1012)
+internal val OnScrim = Color(0xFFF4F3EF)
+internal val OnScrimMuted = Color(0xFFB9B6AE)
+internal val Guide = Color(0xFFFDBA74)
+internal val Ink = Color(0xFF17191C)
 
 // The part of the frame that is read: a band across the middle, comfortably larger than the guide
 // box drawn over it, since the preview is cropped to fill the screen and the two don't line up exactly.
-private const val GUIDE_WIDTH = 0.8
-private const val GUIDE_HEIGHT = 0.3
+internal const val GUIDE_WIDTH = 0.8
+internal const val GUIDE_HEIGHT = 0.3
 
 /** Door-jamb barcodes are small; zoomed in, the phone can sit far enough back to focus on one. */
 private const val START_ZOOM = 2f
@@ -112,7 +113,13 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
         if (granted) {
             Scanner(onClose, onUseVin)
         } else {
-            NoCamera(refused = refused, onAsk = { ask.launch(Manifest.permission.CAMERA) }, onClose = onClose)
+            NoCamera(
+                why = "Glovebox uses the camera only to read the VIN barcode. The picture is read on this phone and isn't saved or sent anywhere.",
+                instead = "Type the VIN instead",
+                refused = refused,
+                onAsk = { ask.launch(Manifest.permission.CAMERA) },
+                onClose = onClose,
+            )
         }
     }
 }
@@ -269,8 +276,9 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     }
 }
 
+/** [why] says what the camera is for on this screen; [instead] is the way on without it. */
 @Composable
-private fun NoCamera(refused: Boolean, onAsk: () -> Unit, onClose: () -> Unit) {
+internal fun NoCamera(why: String, instead: String, refused: Boolean, onAsk: () -> Unit, onClose: () -> Unit) {
     val context = LocalContext.current
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
@@ -282,11 +290,7 @@ private fun NoCamera(refused: Boolean, onAsk: () -> Unit, onClose: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
         ) {
             Text("Camera access is off", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = OnScrim)
-            Text(
-                "Glovebox uses the camera only to read the VIN barcode. The picture is read on this phone and isn't saved or sent anywhere.",
-                color = OnScrimMuted,
-                textAlign = TextAlign.Center,
-            )
+            Text(why, color = OnScrimMuted, textAlign = TextAlign.Center)
             if (refused) {
                 // After a refusal Android may stop showing its prompt, so Settings is the reliable way.
                 Button(onClick = { context.openAppSettings() }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
@@ -298,13 +302,13 @@ private fun NoCamera(refused: Boolean, onAsk: () -> Unit, onClose: () -> Unit) {
                     Text("Allow camera")
                 }
             }
-            TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = OnScrim)) { Text("Type the VIN instead") }
+            TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = OnScrim)) { Text(instead) }
         }
     }
 }
 
 @Composable
-private fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, container: Color, content: Color, onClick: () -> Unit) {
+internal fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, container: Color, content: Color, onClick: () -> Unit) {
     FilledIconButton(
         onClick = onClick,
         modifier = Modifier.size(48.dp),
@@ -317,6 +321,13 @@ private fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, l
 
 /** The frame's greyscale plane, turned upright, handed to ZXing. */
 private fun VinBarcodeReader.read(image: ImageProxy): String? {
+    val (guide, gw, gh) = image.guideBand()
+    return read(guide, gw, gh)
+}
+
+/** The part of a frame the on-screen guide sits in: its greyscale plane, turned upright and cut to the band across the middle. */
+internal fun ImageProxy.guideBand(): Triple<ByteArray, Int, Int> {
+    val image = this
     val plane = image.planes[0]
     val width = image.width
     val height = image.height
@@ -328,13 +339,12 @@ private fun VinBarcodeReader.read(image: ImageProxy): String? {
         buffer.get(pixels, row * width, width)
     }
     val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, image.imageInfo.rotationDegrees)
-    val (guide, gw, gh) = VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
-    return read(guide, gw, gh)
+    return VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
 }
 
-private fun Context.hasCamera(): Boolean =
+internal fun Context.hasCamera(): Boolean =
     ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
-private fun Context.openAppSettings() {
+internal fun Context.openAppSettings() {
     startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$packageName".toUri()))
 }

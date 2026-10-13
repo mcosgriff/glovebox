@@ -5,3 +5,8 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 -dontwarn org.slf4j.**
+
+# Tesseract4Android (reading the odometer off the dash). Its native code looks these classes, fields and
+# methods up by name, and the library ships no rules of its own.
+-keep class com.googlecode.tesseract.android.** { *; }
+-keep class com.googlecode.leptonica.android.** { *; }

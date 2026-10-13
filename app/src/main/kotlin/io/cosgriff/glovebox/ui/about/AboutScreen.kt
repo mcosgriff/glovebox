@@ -196,7 +196,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Sharing a photo or saving a file hands it to the app you choose.",
                 ),
                 "Permissions" to listOf(
-                    "Camera: to scan a VIN barcode and to photograph receipts and parts. Scanner frames are read and thrown away, never stored.",
+                    "Camera: to scan a VIN barcode, to read the odometer off the dash, and to photograph receipts and parts. Scanner and dash frames are read on this phone and thrown away, never stored or sent.",
                     "Notifications: for reminders, new recalls and the backup reminder.",
                     "Internet: for NHTSA only.",
                     "Fingerprint, face or screen lock: Android does the checking and tells the app only whether it passed.",
