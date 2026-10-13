@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/interval-schedule.schema.json",
   "title": "Glovebox import: maintenance schedule by interval",
-  "description": "Jobs that each repeat at their own interval, for one vehicle. Format version 1. See docs/import/README.md.",
+  "description": "Jobs that each repeat at their own interval, for one vehicle. Format version 1. See docs/import/README.md. Intervals are in miles (everyMiles) or kilometres (everyKm); a file uses one of them throughout.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -43,10 +43,16 @@
       "pattern": "^[^\\s\\x00-\\x1f\\x7f-\\x9f]([^\\x00-\\x1f\\x7f-\\x9f]*[^\\s\\x00-\\x1f\\x7f-\\x9f])?$"
     },
     "miles": {
-      "description": "Whole miles between one time and the next.",
+      "description": "Whole miles.",
       "type": "integer",
       "minimum": 1,
       "maximum": 500000
+    },
+    "km": {
+      "description": "Whole kilometres. A file gives every distance in one unit: miles or kilometres, not both.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 800000
     },
     "months": {
       "description": "Whole months between one time and the next. Write years as months: 3 years is 36.",
@@ -68,6 +74,11 @@
         },
         {
           "required": [
+            "everyKm"
+          ]
+        },
+        {
+          "required": [
             "everyMonths"
           ]
         }
@@ -80,6 +91,9 @@
         },
         "everyMiles": {
           "$ref": "#/$defs/miles"
+        },
+        "everyKm": {
+          "$ref": "#/$defs/km"
         },
         "everyMonths": {
           "$ref": "#/$defs/months"
@@ -96,6 +110,11 @@
             },
             {
               "required": [
+                "everyKm"
+              ]
+            },
+            {
+              "required": [
                 "everyMonths"
               ]
             }
@@ -104,9 +123,18 @@
             "everyMiles": {
               "$ref": "#/$defs/miles"
             },
+            "everyKm": {
+              "$ref": "#/$defs/km"
+            },
             "everyMonths": {
               "$ref": "#/$defs/months"
             }
+          },
+          "not": {
+            "required": [
+              "everyMiles",
+              "everyKm"
+            ]
           }
         },
         "rule": {
@@ -155,6 +183,12 @@
             "detail"
           ]
         }
+      },
+      "not": {
+        "required": [
+          "everyMiles",
+          "everyKm"
+        ]
       }
     }
   }

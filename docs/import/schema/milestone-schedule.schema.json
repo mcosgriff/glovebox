@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/milestone-schedule.schema.json",
   "title": "Glovebox import: maintenance schedule by milestone",
-  "description": "Mileage points with the work due at each, as an owner's manual prints a schedule. Format version 1. See docs/import/README.md.",
+  "description": "Mileage points with the work due at each, as an owner's manual prints a schedule. Format version 1. See docs/import/README.md. Mileages are in miles (atMiles, repeatsEveryMiles) or kilometres (atKm, repeatsEveryKm); a file uses one of them throughout.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,6 +11,12 @@
     "kind",
     "items"
   ],
+  "not": {
+    "required": [
+      "repeatsEveryMiles",
+      "repeatsEveryKm"
+    ]
+  },
   "properties": {
     "$schema": {
       "description": "Optional. Lets an editor check the file as it is typed. Glovebox ignores it.",
@@ -31,6 +37,12 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 1000000
+    },
+    "repeatsEveryKm": {
+      "description": "The same, for a table whose milestones are in kilometres (atKm). Must be at least the highest atKm in the file.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1600000
     },
     "items": {
       "description": "In any order; Glovebox shows them by mileage. No two may have the same atMiles.",
@@ -53,8 +65,19 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "atMiles",
         "work"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "atMiles"
+          ]
+        },
+        {
+          "required": [
+            "atKm"
+          ]
+        }
       ],
       "properties": {
         "atMiles": {
@@ -62,6 +85,12 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1000000
+        },
+        "atKm": {
+          "description": "Whole kilometres the vehicle has covered when this work is due. Give this or atMiles, never both. A file gives every distance in one unit: miles or kilometres, not both.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1600000
         },
         "orMonths": {
           "description": "The vehicle's age in whole months at which the same work is due if the mileage isn't reached. Shown for information.",

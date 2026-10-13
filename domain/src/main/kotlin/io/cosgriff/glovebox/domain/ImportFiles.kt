@@ -94,47 +94,38 @@ object ImportFiles {
 }
 
 /**
- * **An import file is always in miles**, whatever the vehicle counts in: its fields say so
- * (`everyMiles`, `atMiles`), and a file is passed between owners. So a file's figures are put into the
- * vehicle's unit before anything is compared or saved, and a file written from a kilometre vehicle is
- * put into miles. Schedule figures go the way a manual gives them (5,000 mi is 8,000 km), readings
- * exactly. For a vehicle in miles every one of these returns what it was given.
+ * Putting a file's distances into a vehicle's unit. **A file says which unit it is in by the fields
+ * it uses** (`everyMiles` or `everyKm`, `atMiles` or `atKm`, `odometer` or `odometerKm`), one unit
+ * for the whole file, and a file is passed between owners, so its unit needn't be the vehicle's.
+ * Where it is, nothing is converted and every figure arrives exactly as written. Where it isn't,
+ * schedule figures go the way a manual gives them (5,000 mi is 8,000 km) and readings exactly.
  *
- * A kilometre figure that isn't a multiple of 8 has no whole number of miles, so it can come back
- * from a file 1 km out. Until the format can carry kilometres, that is the price of the file.
+ * A file the app writes is in the vehicle's own unit, so saving a table and reading it back into
+ * the same vehicle changes nothing.
  */
 object FileDistances {
-    private val miles = DistanceUnit.MILES
+    private fun scheduled(value: Int, from: DistanceUnit, to: DistanceUnit) = DistanceConversion.convert(value, from, to, DistanceKind.SCHEDULED)
 
-    private fun Interval.into(unit: DistanceUnit) = copy(miles = this.miles?.let(unit::scheduled))
-    private fun Interval.out(unit: DistanceUnit) = copy(miles = this.miles?.let(unit::scheduledInMiles))
+    private fun Interval.into(from: DistanceUnit, to: DistanceUnit) = copy(miles = miles?.let { scheduled(it, from, to) })
 
-    /** A schedule file's items for a vehicle in [unit]. */
-    fun schedule(items: List<ImportedScheduleItem>, unit: DistanceUnit): List<ImportedScheduleItem> =
-        if (unit == miles) items else items.map { it.copy(normal = it.normal.into(unit), severe = it.severe?.into(unit)) }
+    /** A schedule file's items, written in [from], for a vehicle in [to]. */
+    fun schedule(items: List<ImportedScheduleItem>, from: DistanceUnit, to: DistanceUnit): List<ImportedScheduleItem> =
+        if (from == to) items else items.map { it.copy(normal = it.normal.into(from, to), severe = it.severe?.into(from, to)) }
 
-    /** A vehicle's schedule items as a file holds them. */
-    fun scheduleOut(items: List<SavedScheduleItem>, unit: DistanceUnit): List<SavedScheduleItem> =
-        if (unit == miles) items else items.map { it.copy(normal = it.normal?.out(unit), severe = it.severe?.out(unit)) }
-
-    /** A milestone file's table, in mileage order, and how it repeats, for a vehicle in [unit]. */
-    fun milestones(items: List<ImportedMilestone>, repeats: Int?, unit: DistanceUnit): Pair<List<ImportedMilestone>, Int?> {
-        if (unit == miles) return items to repeats
+    /** A milestone file's table, in mileage order, and how it repeats, written in [from], for a vehicle in [to]. */
+    fun milestones(items: List<ImportedMilestone>, repeats: Int?, from: DistanceUnit, to: DistanceUnit): Pair<List<ImportedMilestone>, Int?> {
+        if (from == to) return items to repeats
         val sorted = items.sortedBy { it.atMiles }
-        val at = DistanceConversion.milestones(sorted.map { it.atMiles }, miles, unit)
+        val at = DistanceConversion.milestones(sorted.map { it.atMiles }, from, to)
         // A cycle is never shorter than its table.
-        return sorted.mapIndexed { i, m -> m.copy(atMiles = at[i]) } to repeats?.let { maxOf(unit.scheduled(it), at.lastOrNull() ?: 0) }
+        return sorted.mapIndexed { i, m -> m.copy(atMiles = at[i]) } to repeats?.let { maxOf(scheduled(it, from, to), at.lastOrNull() ?: 0) }
     }
 
-    /** A vehicle's milestone table and how it repeats, as a file holds them. */
-    fun milestonesOut(table: List<SavedMilestone>, repeats: Int?, unit: DistanceUnit): Pair<List<SavedMilestone>, Int?> {
-        if (unit == miles) return table to repeats
-        val sorted = table.sortedBy { it.atMiles }
-        val at = DistanceConversion.milestones(sorted.map { it.atMiles }, unit, miles)
-        return sorted.mapIndexed { i, m -> m.copy(atMiles = at[i]) } to repeats?.let { maxOf(unit.scheduledInMiles(it), at.lastOrNull() ?: 0) }
-    }
+    /** A history file's records, written in [from], with each reading as a dash in [to] would have shown it. */
+    fun history(items: List<ImportedRecord>, from: DistanceUnit, to: DistanceUnit): List<ImportedRecord> =
+        if (from == to) items else items.map { it.copy(odometer = DistanceConversion.convert(it.odometer, from, to, DistanceKind.MEASURED)) }
 
-    /** A history file's records, with each reading as the vehicle's dash would have shown it. */
-    fun history(items: List<ImportedRecord>, unit: DistanceUnit): List<ImportedRecord> =
-        if (unit == miles) items else items.map { it.copy(odometer = unit.measured(it.odometer)) }
+    /** Said under a preview when the file's unit isn't the vehicle's: what the page lists is what will be saved, not what the file says. */
+    fun convertedNote(from: DistanceUnit, to: DistanceUnit): String? =
+        "This file is in ${from.plural}. The figures here are what will be saved, in ${to.plural}.".takeIf { from != to }
 }

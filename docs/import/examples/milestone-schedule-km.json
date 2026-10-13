@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/milestone-schedule.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "milestone-schedule",
+  "repeatsEveryKm": 180000,
+  "items": [
+    {
+      "atKm": 15000,
+      "orMonths": 12,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atKm": 30000,
+      "orMonths": 24,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atKm": 90000,
+      "work": [
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        }
+      ]
+    }
+  ]
+}

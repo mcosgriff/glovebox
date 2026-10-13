@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.domain
 
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import java.util.Locale
 
 /** One line of work at a milestone in the user's own table. [service] is a [CatalogItem] id; null for anything else. */
@@ -29,10 +30,14 @@ object MilestoneImport {
     const val MAX_MILES = 1_000_000
     const val MAX_MONTHS = 600
 
-    /** The file's field for a table that repeats. */
+    /** The file's fields for a table that repeats: one or the other, in the unit the milestones are in. */
     const val REPEATS = "repeatsEveryMiles"
+    const val REPEATS_KM = "repeatsEveryKm"
 
-    private val itemKeys = setOf("atMiles", "orMonths", "work")
+    /** The same limit for a table given in kilometres: 1,000,000 mi as a schedule figure. */
+    const val MAX_KM = 1_600_000
+
+    private val itemKeys = setOf("atMiles", "atKm", "orMonths", "work")
 
     /**
      * The rules a table keeps however it is made, shared by the file reader here and the editor
@@ -61,8 +66,9 @@ object MilestoneImport {
         val ats = arrayOfNulls<Int>(list.size)
         val read = list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
-            val o = check.obj(e, path, itemKeys, required = setOf("atMiles", "work")) ?: return@mapIndexedNotNull null
-            val at = o["atMiles"]?.let { check.int(it, "$path.atMiles", 1, MAX_MILES) }
+            val o = check.obj(e, path, itemKeys, required = setOf("work")) ?: return@mapIndexedNotNull null
+            if (!check.has(o, "atMiles", "atKm")) check.fail(path, "needs \"atMiles\" or \"atKm\"")
+            val at = check.distance(o, path, "atMiles", "atKm", MAX_MILES, MAX_KM)
             val months = o["orMonths"]?.let { check.int(it, "$path.orMonths", 1, MAX_MONTHS) }
             val work = o["work"]?.let { work(it, "$path.work", check) }
             ats[i] = at
@@ -70,7 +76,7 @@ object MilestoneImport {
             ImportedMilestone(at, work, months)
         }
         repeated(ats.asList()).forEach { (i, first) ->
-            check.fail("${ImportCheck.at("items", i)}.atMiles", "is the same mileage as items[$first]; put all the work for one mileage in one milestone")
+            check.fail("${ImportCheck.at("items", i)}.${if (check.unit == DistanceUnit.KILOMETERS) "atKm" else "atMiles"}", "is the same mileage as items[$first]; put all the work for one mileage in one milestone")
         }
         return read.sortedBy { it.atMiles }
     }
@@ -79,11 +85,12 @@ object MilestoneImport {
      * The length of the cycle. It can't be shorter than the table, or a repeat of an early milestone
      * would land among the later ones; that is the rule a schema can't state.
      */
-    fun repeats(e: JsonElement, items: List<ImportedMilestone>, check: ImportCheck): Int? {
-        val every = check.int(e, REPEATS, 1, MAX_MILES) ?: return null
+    fun repeats(envelope: JsonObject, items: List<ImportedMilestone>, check: ImportCheck): Int? {
+        val every = check.distance(envelope, "", REPEATS, REPEATS_KM, MAX_MILES, MAX_KM) ?: return null
         val last = items.maxOfOrNull { it.atMiles } ?: return every
         if (!cycleCovers(every, last)) {
-            check.fail(REPEATS, "is $every, less than the highest atMiles in the file ($last); it is the length of the whole cycle, so it can't be shorter than the table")
+            val (field, at) = if (check.unit == DistanceUnit.KILOMETERS) REPEATS_KM to "atKm" else REPEATS to "atMiles"
+            check.fail(field, "is $every, less than the highest $at in the file ($last); it is the length of the whole cycle, so it can't be shorter than the table")
             return null
         }
         return every

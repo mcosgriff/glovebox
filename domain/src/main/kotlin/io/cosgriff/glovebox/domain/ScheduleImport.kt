@@ -34,6 +34,9 @@ object ScheduleImport {
     const val MAX_ITEMS = 200
     const val MAX_NAME = 60
     const val MAX_MILES = 500_000
+
+    /** The same limit for an interval given in kilometres: 500,000 mi as a schedule figure. */
+    const val MAX_KM = 800_000
     const val MAX_MONTHS = 600
 
     val rules: Map<String, DueRule> = mapOf(
@@ -43,7 +46,7 @@ object ScheduleImport {
         "time-only" to DueRule.TIME_ONLY,
     )
 
-    private val intervalKeys = setOf("everyMiles", "everyMonths")
+    private val intervalKeys = setOf("everyMiles", "everyKm", "everyMonths")
     private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service")
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
@@ -63,16 +66,19 @@ object ScheduleImport {
         }
     }
 
-    /** `everyMiles`, `everyMonths` or both; one of them has to be there. */
+    /**
+     * A distance (`everyMiles`, or `everyKm`), `everyMonths`, or a distance and months; one of them
+     * has to be there. The distance comes back in the file's own unit ([ImportCheck.unit]).
+     */
     private fun interval(o: JsonObject, path: String, check: ImportCheck): Interval? {
-        val miles = o["everyMiles"]?.let { check.int(it, "$path.everyMiles", 1, MAX_MILES) }
+        val distance = check.distance(o, path, "everyMiles", "everyKm", MAX_MILES, MAX_KM)
         val months = o["everyMonths"]?.let { check.int(it, "$path.everyMonths", 1, MAX_MONTHS) }
-        if ("everyMiles" !in o && "everyMonths" !in o) {
-            return null.also { check.fail(path.ifEmpty { "items" }, "needs \"everyMiles\", \"everyMonths\" or both") }
+        if (!check.has(o, "everyMiles", "everyKm") && "everyMonths" !in o) {
+            return null.also { check.fail(path.ifEmpty { "items" }, "needs \"everyMiles\" or \"everyKm\", \"everyMonths\", or a distance and months") }
         }
         // Null when a field was there but wrong: that has been reported already.
-        if (("everyMiles" in o && miles == null) || ("everyMonths" in o && months == null)) return null
-        return Interval(miles, months)
+        if ((check.has(o, "everyMiles", "everyKm") && distance == null) || ("everyMonths" in o && months == null)) return null
+        return Interval(distance, months)
     }
 
     /** Two items are the same job when their names agree, ignoring case. */

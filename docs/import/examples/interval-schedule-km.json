@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/interval-schedule.schema.json",
+  "glovebox": "import",
+  "version": 1,
+  "kind": "interval-schedule",
+  "items": [
+    {
+      "name": "Oil change",
+      "everyKm": 12000,
+      "everyMonths": 12,
+      "severe": {
+        "everyKm": 8000,
+        "everyMonths": 6
+      },
+      "rule": "whichever-first",
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires",
+      "everyKm": 10000,
+      "service": "rotation"
+    },
+    {
+      "name": "Brake fluid flush",
+      "everyMonths": 24
+    }
+  ]
+}

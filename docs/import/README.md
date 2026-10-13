@@ -48,13 +48,16 @@ The format is deliberately strict:
   value quietly dropped.
 - Nothing is repaired. Text must not start or end with a space or contain line breaks, numbers are
   written without quotes, and a field you don't have is left out, not set to `null` or `""`.
-- Units are always written out. Nothing is assumed from context. **Distances in a file are miles**,
-  as the field names say (`everyMiles`, `atMiles`, a record's `odometer`), whatever the vehicle counts
-  in. Imported into a vehicle that counts in kilometres they are converted: odometer readings
-  exactly, intervals and milestones the way a manual printed for both markets gives them (5,000 mi is
-  8,000 km). The Import page shows the converted figures before anything is saved. A file saved from
-  a kilometre vehicle is written in miles the same way, so a kilometre figure that isn't a multiple of
-  8 can come back 1 km different.
+- Units are always written out. Nothing is assumed from context. **A distance is in miles or in
+  kilometres, and its field name says which:** `everyMiles` or `everyKm`, `atMiles` or `atKm`,
+  `repeatsEveryMiles` or `repeatsEveryKm`, `odometer` (miles) or `odometerKm`. Give one or the other
+  for a figure, never both, and **use one unit for the whole file**: a file with miles in one place
+  and kilometres in another is refused.
+- **The file's unit needn't be the vehicle's.** Each vehicle counts in miles or kilometres. A file in
+  the vehicle's own unit is saved exactly as written. A file in the other unit is converted: odometer
+  readings exactly, intervals and milestones the way a manual printed for both markets gives them
+  (5,000 mi is 8,000 km), and the Import page shows the converted figures before anything is saved.
+  A file saved from the app is written in that vehicle's unit.
 - Every list and every piece of text has a maximum, given in the schema.
 
 ## Checking a file before you import it
@@ -181,7 +184,7 @@ record, and the PDF / Markdown export and the backup are for it.
 ## `service-history`
 
 [`schema/service-history.schema.json`](schema/service-history.schema.json) ·
-[`examples/service-history.json`](examples/service-history.json) · up to 1000 records
+[`examples/service-history.json`](examples/service-history.json) · in kilometres: [`examples/service-history-km.json`](examples/service-history-km.json) · up to 1000 records
 
 Maintenance that was done before you kept it in Glovebox: a dealer printout typed up, a spreadsheet,
 another app's export. One record per visit.
@@ -203,7 +206,8 @@ another app's export. One record per visit.
 | Field | Required | Rules |
 |---|---|---|
 | `date` | yes | `YYYY-MM-DD`, a real date, not in the future |
-| `odometer` | yes | Whole miles, 1 to 9999999: what the dash read that day |
+| `odometer` | this or `odometerKm` | Whole miles, 1 to 9999999: what the dash read that day |
+| `odometerKm` | this or `odometer` | The same in whole kilometres, 1 to 9999999 |
 | `work` | yes | 1 to 30 lines, each with a `label` (up to 80 characters) and optionally a `service` |
 | `doneBy` | yes | `{ "type": "diy" }` or `{ "type": "shop" }`, the shop optionally with a `name` (up to 60 characters) |
 | `cost` | no | Dollars as text in quotes, at most two decimals: `"62.50"`. Text, so nothing is rounded |
@@ -251,7 +255,7 @@ count for a reminder. The values, by the category History files them under:
 ## `interval-schedule`
 
 [`schema/interval-schedule.schema.json`](schema/interval-schedule.schema.json) ·
-[`examples/interval-schedule.json`](examples/interval-schedule.json) · up to 200 items
+[`examples/interval-schedule.json`](examples/interval-schedule.json) · in kilometres: [`examples/interval-schedule-km.json`](examples/interval-schedule-km.json) · up to 200 items
 
 One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000, brake fluid every
 3 years.
@@ -270,9 +274,10 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
 | Field | Required | Rules |
 |---|---|---|
 | `name` | yes | 1 to 60 characters, unique in the file ignoring capitals |
-| `everyMiles` | one of the two | Whole miles, 1 to 500000 |
-| `everyMonths` | one of the two | Whole months, 1 to 600. Write years as months: 3 years is `36` |
-| `severe` | no | The interval for hard use, if it differs: `everyMiles`, `everyMonths` or both |
+| `everyMiles` | a distance, months, or both | Whole miles, 1 to 500000 |
+| `everyKm` | in place of `everyMiles` | Whole kilometres, 1 to 800000 |
+| `everyMonths` | a distance, months, or both | Whole months, 1 to 600. Write years as months: 3 years is `36` |
+| `severe` | no | The interval for hard use, if it differs: `everyMiles` or `everyKm`, `everyMonths`, or a distance and months. In the same unit as the item |
 | `rule` | no | `whichever-first`, `whichever-last`, `mileage-only` or `time-only`. Left out, the item follows the rule you chose in Settings |
 | `service` | no | Which of Glovebox's own service lines resets this item. The values are the same as for [`service-history`](#service-history) |
 
@@ -300,7 +305,7 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
 ## `milestone-schedule`
 
 [`schema/milestone-schedule.schema.json`](schema/milestone-schedule.schema.json) ·
-[`examples/milestone-schedule.json`](examples/milestone-schedule.json) · up to 200 milestones
+[`examples/milestone-schedule.json`](examples/milestone-schedule.json) · in kilometres: [`examples/milestone-schedule-km.json`](examples/milestone-schedule-km.json) · up to 200 milestones
 
 A schedule the way an owner's manual prints it: mileage points, each with the work due there.
 
@@ -318,7 +323,8 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
 
 | Field | Required | Rules |
 |---|---|---|
-| `atMiles` | yes | Whole miles the vehicle has covered, 1 to 1000000. No two milestones in a file may share one |
+| `atMiles` | this or `atKm` | Whole miles the vehicle has covered, 1 to 1000000. No two milestones in a file may share one |
+| `atKm` | this or `atMiles` | The same in whole kilometres, 1 to 1600000 |
 | `orMonths` | no | The vehicle's age in whole months at which the same work is due if the mileage isn't reached, 1 to 600. Shown for information |
 | `work` | yes | 1 to 30 lines, each with a `name` (up to 80 characters) and optionally a `service` |
 
@@ -338,6 +344,7 @@ whole:
 | Field | Required | Rules |
 |---|---|---|
 | `repeatsEveryMiles` | no | The length of the whole cycle in whole miles, 1 to 1000000, and at least the highest `atMiles` in the file. Leave it out for a table that ends |
+| `repeatsEveryKm` | no | The same for a table in kilometres (`atKm`), 1 to 1600000, and at least the highest `atKm` |
 
 - **It is information, not reminders.** The table is shown on the Milestones screen (from a
   vehicle's Maintenance schedule) in place of the milestones Glovebox builds from your schedule. It
