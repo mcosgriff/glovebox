@@ -102,7 +102,11 @@ data class DraftItem(
     val knownList: String? = null,
     /** The distance covered at which the job is first due, when that isn't one interval in; null for most. */
     val firstAt: Int? = null,
+    /** A job that exists only under severe use; [normal] is its interval then. On normal use it is listed, switched off. */
+    val severeOnly: Boolean = false,
 ) {
+    /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
+    val dormant: Boolean get() = severeOnly && !useSevere
     val active: Interval get() = if (useSevere) severe ?: normal else normal
     val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
 }
@@ -157,7 +161,7 @@ class ScheduleSetupViewModel @Inject constructor(
                 KnownSchedules.intervalsIn(list, unit, v.drivetrain).mapIndexed { i, it ->
                     DraftItem(
                         key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
-                        own = true, service = it.service, knownList = list.id, firstAt = it.firstAt,
+                        own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly,
                     )
                 }
             } else {
@@ -227,6 +231,7 @@ class ScheduleSetupViewModel @Inject constructor(
                     service = it.service.takeIf { _ -> it.own },
                     knownList = it.knownList,
                     firstMiles = it.firstAt,
+                    severeOnly = it.severeOnly,
                 )
             },
         )
@@ -270,7 +275,7 @@ fun ScheduleSetupScreen(
     }
 
     val items = vm.items ?: return // first frame while the vehicle loads
-    val count = items.count { it.tracked }
+    val count = items.count { it.tracked && !it.dormant }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -403,6 +408,13 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
                     fontFamily = PlexMono,
                     color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (item.severeOnly) {
+                    Text(
+                        if (item.dormant) "Only for severe use. Off while you're on normal use." else "Only for severe use.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             if (item.showsSevere) {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {

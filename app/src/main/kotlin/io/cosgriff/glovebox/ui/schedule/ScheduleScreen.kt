@@ -136,7 +136,7 @@ data class ScheduleState(
     /** Said once above the list when any item came from a maker's schedule: whose guide, and to check it. */
     val startedFrom: String? = null,
 ) {
-    val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null }.map { it.tracked to it.useSevere }).use
+    val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null || it.severeOnly }.map { it.tracked to it.useSevere }).use
 }
 
 /** A vehicle's schedule after setup: what is tracked, at which intervals, and when each was last done. */
@@ -209,6 +209,7 @@ class ScheduleViewModel @Inject constructor(
                     service = e.service,
                     knownList = e.knownList,
                     firstAt = e.firstMiles,
+                    severeOnly = e.severeOnly,
                 )
             },
             templateKeys = items.associate { it.id.toString() to it.templateKey },
@@ -311,7 +312,8 @@ class ScheduleViewModel @Inject constructor(
                     intervalMonths = it.normal.months,
                     severeMiles = it.severe?.miles,
                     severeMonths = it.severe?.months,
-                    useSevere = severe && it.severe != null,
+                    useSevere = severe && (it.severe != null || it.severeOnly),
+                    severeOnly = it.severeOnly,
                     ruleOverride = it.rule?.name,
                     service = it.service,
                     knownList = list.id,
@@ -432,7 +434,8 @@ fun ScheduleScreen(
     }
 
     val v = state.vehicle
-    val tracked = state.items.count { it.tracked }
+    // A ticked job that is only for severe use isn't reminding anyone on normal use, so it isn't counted.
+    val tracked = state.items.count { it.tracked && !it.dormant }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -471,7 +474,7 @@ fun ScheduleScreen(
                 // An imported table doesn't need a schedule to be worth looking at.
                 if (hasMilestoneTable) MilestonesRow(onClick = { onOpenMilestones(v.id) })
             } else {
-                if (state.items.any { it.severe != null }) {
+                if (state.items.any { it.severe != null || it.severeOnly }) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         SectionLabel("HOW DO YOU DRIVE IT?")
                         DrivingUseSwitch(
@@ -667,7 +670,7 @@ private fun KnownRemindersDialog(
                     Column {
                         Text(item.name, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            item.normal.label(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
+                            (if (item.severeOnly) "Only for severe use · " else "") + item.normal.label(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,

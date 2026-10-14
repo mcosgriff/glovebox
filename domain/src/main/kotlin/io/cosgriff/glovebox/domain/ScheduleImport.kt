@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.domain
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import java.util.Locale
 
 /** One job from an `interval-schedule` import file, already checked. [rule] null means the app-wide default. */
@@ -17,6 +18,12 @@ data class ImportedScheduleItem(
      * then every 50,000"); in the file's unit. It matters only until the job has been logged once.
      */
     val firstAt: Int? = null,
+    /**
+     * A job that exists only under severe use: a maker's "additional items for special operating
+     * conditions", such as changing the differential oil when towing. [normal] is then its interval
+     * under severe use, and on normal use it is never due. It has no [severe] of its own.
+     */
+    val severeOnly: Boolean = false,
 )
 
 /**
@@ -33,6 +40,7 @@ data class SavedScheduleItem(
     val tracked: Boolean,
     val service: String? = null,
     val firstAt: Int? = null,
+    val severeOnly: Boolean = false,
 )
 
 /** The `interval-schedule` kind: `docs/import/schema/interval-schedule.schema.json`. */
@@ -57,7 +65,10 @@ object ScheduleImport {
     const val FIRST = "firstAtMiles"
     const val FIRST_KM = "firstAtKm"
 
-    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", FIRST, FIRST_KM)
+    /** The file's field for a job that exists only under severe use. Only ever `true`; left out otherwise. */
+    const val SEVERE_ONLY = "severeOnly"
+
+    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", FIRST, FIRST_KM, SEVERE_ONLY)
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
@@ -73,7 +84,17 @@ object ScheduleImport {
             val first = check.distance(o, path, FIRST, FIRST_KM, MAX_MILES, MAX_KM)
             if (name == null || normal == null || (check.has(o, FIRST, FIRST_KM) && first == null)) return@mapIndexedNotNull null
             seen.put(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
-            ImportedScheduleItem(name, normal, severe, rule, service, first)
+            // Only ever `true`: an ordinary job leaves the field out, so there is one way to write each.
+            val severeOnly = o[SEVERE_ONLY]?.let { e ->
+                if ((e as? JsonPrimitive)?.let { !it.isString && it.content == "true" } == true) true
+                else null.also { check.fail("$path.$SEVERE_ONLY", "must be true, or left out") }
+            }
+            if (SEVERE_ONLY in o && severeOnly == null) return@mapIndexedNotNull null
+            if (severeOnly == true && "severe" in o) {
+                check.fail("$path.severe", "isn't for a job that is severeOnly: its interval is already the one for severe use")
+                return@mapIndexedNotNull null
+            }
+            ImportedScheduleItem(name, normal, severe, rule, service, first, severeOnly == true)
         }
     }
 
@@ -105,7 +126,7 @@ object ScheduleImport {
             existing = existing.filter { it.templateKey == null },
             key = { key(it.name) },
             existingKey = { key(it.name) },
-            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule && i.service == e.service && i.firstAt == e.firstAt },
+            same = { i, e -> i.normal == e.normal && i.severe == e.severe && i.rule == e.rule && i.service == e.service && i.firstAt == e.firstAt && i.severeOnly == e.severeOnly },
         )
 
     /**

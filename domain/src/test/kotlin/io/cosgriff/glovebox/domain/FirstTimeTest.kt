@@ -131,4 +131,17 @@ class FirstTimeTest {
         assertEquals(160_000, parsed.items.single().firstAt)
         assertEquals(100_000, FileDistances.schedule(parsed.items, parsed.unit, DistanceUnit.MILES).single().firstAt)
     }
+
+    @Test
+    fun `a job only for severe use is read strictly and can't also have a severe interval`() {
+        fun parse(item: String) = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "interval-schedule", "items": [ $item ] }""", today)
+        val ok = parse("""{ "name": "Diff oil", "everyMiles": 15000, "severeOnly": true }""") as ImportFile.IntervalSchedule
+        assertTrue(ok.items.single().severeOnly)
+        assertFalse((parse("""{ "name": "Diff oil", "everyMiles": 15000 }""") as ImportFile.IntervalSchedule).items.single().severeOnly)
+        listOf(
+            """{ "name": "Diff oil", "everyMiles": 15000, "severeOnly": false }""",
+            """{ "name": "Diff oil", "everyMiles": 15000, "severeOnly": "true" }""",
+            """{ "name": "Diff oil", "everyMiles": 15000, "severeOnly": true, "severe": { "everyMiles": 5000 } }""",
+        ).forEach { assertTrue(it, parse(it) is ImportFile.Invalid) }
+    }
 }

@@ -145,6 +145,10 @@
             ]
           }
         },
+        "severeOnly": {
+          "description": "true for a job that exists only under hard use, such as changing the differential oil when towing. Its interval is then the one for hard use, and on normal use it is never due. It can't also have \"severe\". Leave it out for every other job.",
+          "const": true
+        },
         "rule": {
           "description": "Which interval decides when it is due. Left out, the item follows the rule chosen in Settings.",
           "enum": [
@@ -228,6 +232,14 @@
             "required": [
               "everyKm",
               "firstAtMiles"
+            ]
+          }
+        },
+        {
+          "not": {
+            "required": [
+              "severeOnly",
+              "severe"
             ]
           }
         }

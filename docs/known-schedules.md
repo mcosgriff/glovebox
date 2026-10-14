@@ -37,6 +37,12 @@ of how each one was made. The code is `KnownSchedules` in `:domain`; the lists a
    mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given for work that gets
    logged (replace, rotate, lubricate), and for an inspection only where the owner asked for it and
    there is a service line to log it with; a list doesn't turn every inspection into a reminder.
+   **A job the guide lists only under special operating conditions is a reminder that is only for
+   severe use** (`severeOnly`): it is in the schedule with the guide's interval, named with its
+   condition, and reminds only while "How do you drive it?" is on Severe. On normal use it stays on the
+   list, switched off. There is one switch, not one per condition: on Severe every such job is on, and
+   the owner unticks the ones for conditions that aren't theirs. Where the guide gives an ordinary job
+   a shorter interval under those conditions, that is the item's `severe` interval.
 8. **Nothing of the user's is written over.** The table is added only while the vehicle has none.
    A reminder is added as the user's own item unless they already have one of that name. Typical items
    are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
@@ -112,8 +118,11 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
 - Inspections that are reminders too (asked for by the owner, 2026-10-13): front and rear differential
   oil every 15,000 / 18, transfer case oil every 30,000 / 36. Logging a change of one counts as its
   check. The other inspections are in the table only.
-- No replacement reminder, because under ordinary driving the guide only inspects them: brake fluid,
-  transmission fluid, differential and transfer case oil. Their replacement under towing or dust is in
-  the table, and #136 is for making those reminders.
+- Only for severe use (#136): front and rear differential oil every 15,000 / 18 and automatic
+  transmission fluid every 60,000 / 72 when towing or carrying heavy loads; transfer case oil every
+  30,000 / 36 on dusty roads or when towing. Under ordinary driving the guide only inspects these.
+- Shorter under severe use: engine oil 5,000 / 6 (any of the guide's four conditions), propeller shaft
+  lubrication 5,000 / 6 (dust, salted roads or towing).
+- Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2010 and 2012–2016 (no guide found at that address), 2011 (found; it has separate
   schedules for the 4-cylinder and the V6), 2025 on (a new generation, with a chart in place of the log).

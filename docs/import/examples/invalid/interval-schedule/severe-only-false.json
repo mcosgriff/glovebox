@@ -1,0 +1,12 @@
+{
+  "glovebox": "import",
+  "version": 1,
+  "kind": "interval-schedule",
+  "items": [
+    {
+      "name": "Diff oil",
+      "everyMiles": 15000,
+      "severeOnly": false
+    }
+  ]
+}

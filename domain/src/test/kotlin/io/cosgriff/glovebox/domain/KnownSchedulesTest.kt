@@ -90,8 +90,16 @@ class KnownSchedulesTest {
         assertTrue(at(15_000).filter { it.service in setOf("front-diff", "rear-diff") }.all { " · towing" in it.name })
         assertEquals(
             setOf("oil", "rotation", "driveshaft", "cabin-air", "engine-air", "spark-plugs", "coolant", "front-diff-check", "rear-diff-check", "transfer-case-check"),
-            list.intervals.mapNotNull { it.service }.toSet(),
+            list.intervals.filterNot { it.severeOnly }.mapNotNull { it.service }.toSet(),
         )
+        // The guide's "additional items for special operating conditions" that are changes of oil: only for severe use.
+        assertEquals(
+            mapOf("front-diff" to Interval(15_000, 18), "rear-diff" to Interval(15_000, 18), "transfer-case" to Interval(30_000, 36), "trans-fluid" to Interval(60_000, 72)),
+            list.intervals.filter { it.severeOnly }.associate { it.service to it.normal },
+        )
+        assertTrue(list.intervals.filter { it.severeOnly }.all { " · " in it.name && it.severe == null })
+        // Under dust, salt or towing the propeller shaft is greased every 5,000.
+        assertEquals(Interval(5_000, 6), list.intervals.single { it.service == "driveshaft" }.severe)
         assertEquals(Interval(15_000, 18), list.intervals.single { it.service == "front-diff-check" }.normal)
         assertEquals(Interval(30_000, 36), list.intervals.single { it.service == "transfer-case-check" }.normal)
         // The coolant is replaced first at 100,000 and then every 50,000.
@@ -187,8 +195,8 @@ class KnownSchedulesTest {
             assertTrue("$drive", jobs(drive).any { it.startsWith("Replace rear differential oil") })
             assertEquals(24, KnownSchedules.milestonesIn(list, DistanceUnit.MILES, drive).size)
         }
-        assertEquals(10, reminders("4WD").size)
-        assertEquals(8, reminders("4x2").size)
+        assertEquals(14, reminders("4WD").size)
+        assertEquals(10, reminders("4x2").size)
     }
 
     @Test
