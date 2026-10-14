@@ -264,11 +264,11 @@ fun VehicleHomeScreen(
                         up.notLogged.forEachIndexed { i, status ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Row(
-                                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 4.dp),
+                                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(status.item.name, style = MaterialTheme.typography.titleSmall)
                                     // Amber, not red: the schedule's last point has passed with nothing logged,
                                     // which isn't the same as the work being overdue.
