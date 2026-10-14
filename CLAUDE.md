@@ -235,6 +235,15 @@ Notes on what's built:
   "first at 100,000, then every 50,000". Stored as distance really covered, in the vehicle's unit;
   `toTracked(rule, swap)` puts it in dash terms, so **pass the vehicle's swap wherever statuses are
   worked out**. It matters only until the job is logged once.
+- A job can be only for severe use (#136, `schedule_items.severeOnly`, `severeOnly: true` in an
+  `interval-schedule` file, `DraftItem.dormant`): a maker's "additional items for special operating
+  conditions", such as differential oil when towing. Its interval is in the ordinary interval columns
+  and it has no severe interval of its own (the reader refuses both). **`toTracked` returns null for it
+  while `useSevere` is off**, so on normal use it reminds nobody, isn't "to log" and isn't counted as
+  tracked; it stays on the Maintenance schedule saying "Only for severe use. Off while you're on normal
+  use." **One Normal / Severe switch, not one per condition** (the user's choice): Severe turns every
+  such job on, each named with its condition, and the owner unticks what doesn't apply. The editor
+  can't make one; they come from a maker's list or an import file.
 - **A job the vehicle hasn't reached is not "Not logged yet"** (`VehicleReminders.statuses`,
   `ItemStatus.awaitingFirst` / `.counting`): never logged, with a reading on record below its first
   mileage (`firstAt`, or one interval from zero), it counts down to that mileage like any reminder,
@@ -667,7 +676,7 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v19); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v20); keep exported schemas in `data/schemas`.
 
 ## Conventions
 

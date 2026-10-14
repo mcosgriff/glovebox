@@ -125,7 +125,8 @@ fun ScheduleItemEditor(
                                 name = name.trim(),
                                 normal = if (useSevere) normal else interval,
                                 severe = if (useSevere) interval else severe,
-                                useSevere = useSevere,
+                                // A job only for severe use has no second interval to switch to here; whether it is on follows the schedule.
+                                useSevere = if (item.severeOnly) item.useSevere else useSevere,
                                 rule = rule,
                                 service = service,
                                 firstAt = firstTyped,
@@ -171,6 +172,14 @@ fun ScheduleItemEditor(
                     color = if (showErrors && typed == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
+                if (item.severeOnly) {
+                    Text(
+                        "This job is only for severe use (towing, heavy loads, dust), and this is its interval then. " +
+                            "It reminds you while the schedule is set to severe use, and is switched off on normal use.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 val suggestedSevere = item.template?.severe
                 if (severe != null) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {

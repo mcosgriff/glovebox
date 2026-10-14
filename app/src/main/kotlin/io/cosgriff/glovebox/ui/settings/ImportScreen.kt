@@ -433,6 +433,7 @@ class ImportViewModel @Inject constructor(
                     ruleOverride = it.rule?.name,
                     service = it.service,
                     firstMiles = it.firstAt,
+                    severeOnly = it.severeOnly,
                 )
             }
             // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
@@ -446,6 +447,7 @@ class ImportViewModel @Inject constructor(
                     ruleOverride = item.rule?.name,
                     service = item.service,
                     firstMiles = item.firstAt,
+                    severeOnly = item.severeOnly,
                 )
             }
             val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
@@ -593,8 +595,8 @@ private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName
 private fun describe(work: List<TableJob>, orMonths: Int?): String =
     listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
 
-private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt)
-private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt)
+private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt) + if (severeOnly) " · only for severe use" else ""
+private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt) + if (severeOnly) " · only for severe use" else ""
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 
