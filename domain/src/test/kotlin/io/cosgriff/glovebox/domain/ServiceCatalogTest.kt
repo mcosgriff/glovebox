@@ -110,6 +110,14 @@ class ServiceCatalogTest {
         assertEquals(setOf(1L, 3L), answering["diff-fluid"])
         assertEquals(listOf("service:front-diff", "name:front differential oil change", "service:front-diff-check"), MilestoneImport.doneKeys("Front differential oil change", "front-diff"))
         assertEquals(listOf("service:front-diff-check", "name:checked it"), MilestoneImport.doneKeys("Checked it", "front-diff-check"))
+        // On Log service each line stands for its own reminder only, so "Log it" on the check ticks the check.
+        val options = ServiceCatalog.forVehicle(schedule).flatMap { it.options }.associateBy { it.id }
+        assertEquals(1L, options.getValue("front-diff-check").scheduleItemId)
+        assertEquals(2L, options.getValue("front-diff").scheduleItemId)
+        assertEquals(3L, options.getValue("rear-diff-check").scheduleItemId)
+        assertNull(options.getValue("diff-fluid").scheduleItemId)
+        assertNull(options.getValue("rear-diff").scheduleItemId)
+        assertEquals(listOf("front-diff-check"), options.values.filter { it.scheduleItemId == 1L }.map { it.id })
         // Every covered line is a real one.
         val ids = HistoryImport.services.keys
         assertTrue(HistoryImport.services.values.all { ids.containsAll(it.covers) })
