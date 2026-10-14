@@ -95,4 +95,23 @@ class ServiceCatalogTest {
         assertNull(OdometerInput.parse("99999999999"))
         assertTrue(OdometerInput.parse("1") == 1)
     }
+
+    @Test
+    fun `a change of oil counts as the check of it, and never the other way round`() {
+        val schedule = listOf(
+            ScheduleRef(1, "Inspect front differential oil", templateKey = null, tracked = true, service = "front-diff-check"),
+            ScheduleRef(2, "Change front differential oil", templateKey = null, tracked = true, service = "front-diff"),
+            ScheduleRef(3, "Inspect rear differential oil", templateKey = null, tracked = true, service = "rear-diff-check"),
+        )
+        val answering = ServiceLinks.answering(schedule)
+        assertEquals(setOf(1L), answering["front-diff-check"])
+        assertEquals(setOf(1L, 2L), answering["front-diff"])
+        // The one line for all of them counts as each check.
+        assertEquals(setOf(1L, 3L), answering["diff-fluid"])
+        assertEquals(listOf("service:front-diff", "name:front differential oil change", "service:front-diff-check"), MilestoneImport.doneKeys("Front differential oil change", "front-diff"))
+        assertEquals(listOf("service:front-diff-check", "name:checked it"), MilestoneImport.doneKeys("Checked it", "front-diff-check"))
+        // Every covered line is a real one.
+        val ids = HistoryImport.services.keys
+        assertTrue(HistoryImport.services.values.all { ids.containsAll(it.covers) })
+    }
 }

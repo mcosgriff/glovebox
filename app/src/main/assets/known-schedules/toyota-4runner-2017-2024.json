@@ -157,13 +157,15 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -178,10 +180,12 @@
           "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -342,7 +346,8 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
@@ -354,7 +359,8 @@
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -363,16 +369,20 @@
           "name": "Inspect steering linkage and boots"
         },
         {
-          "name": "Inspect transfer case oil (4WD)"
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
         },
         {
-          "name": "Replace transfer case oil (4WD) · dusty roads or towing"
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -521,13 +531,15 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -542,10 +554,12 @@
           "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -706,7 +720,8 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
@@ -718,7 +733,8 @@
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -727,22 +743,27 @@
           "name": "Inspect steering linkage and boots"
         },
         {
-          "name": "Inspect transfer case oil (4WD)"
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
         },
         {
           "name": "Inspect drive belts"
         },
         {
-          "name": "Replace transfer case oil (4WD) · dusty roads or towing"
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
-          "name": "Replace automatic transmission fluid · towing or heavy loads"
+          "name": "Replace automatic transmission fluid · towing or heavy loads",
+          "service": "trans-fluid"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -891,13 +912,15 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -915,10 +938,12 @@
           "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -1079,7 +1104,8 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
@@ -1091,7 +1117,8 @@
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -1100,19 +1127,23 @@
           "name": "Inspect steering linkage and boots"
         },
         {
-          "name": "Inspect transfer case oil (4WD)"
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
         },
         {
           "name": "Inspect drive belts"
         },
         {
-          "name": "Replace transfer case oil (4WD) · dusty roads or towing"
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -1265,13 +1296,15 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -1289,10 +1322,12 @@
           "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -1457,7 +1492,8 @@
           "name": "Inspect exhaust pipes and mountings"
         },
         {
-          "name": "Inspect front differential oil (4WD)"
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
         },
         {
           "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
@@ -1469,7 +1505,8 @@
           "name": "Inspect radiator and condenser"
         },
         {
-          "name": "Inspect rear differential oil"
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
         },
         {
           "name": "Inspect steering gear"
@@ -1478,22 +1515,27 @@
           "name": "Inspect steering linkage and boots"
         },
         {
-          "name": "Inspect transfer case oil (4WD)"
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
         },
         {
           "name": "Inspect drive belts"
         },
         {
-          "name": "Replace transfer case oil (4WD) · dusty roads or towing"
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
         },
         {
-          "name": "Replace front differential oil (4WD) · towing or heavy loads"
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
         },
         {
-          "name": "Replace rear differential oil · towing or heavy loads"
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
         },
         {
-          "name": "Replace automatic transmission fluid · towing or heavy loads"
+          "name": "Replace automatic transmission fluid · towing or heavy loads",
+          "service": "trans-fluid"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -1548,6 +1590,24 @@
       "everyMiles": 120000,
       "everyMonths": 144,
       "service": "spark-plugs"
+    },
+    {
+      "name": "Inspect front differential oil (4WD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "front-diff-check"
+    },
+    {
+      "name": "Inspect rear differential oil",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil (4WD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "transfer-case-check"
     }
   ]
 }

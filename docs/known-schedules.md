@@ -27,13 +27,16 @@ of how each one was made. The code is `KnownSchedules` in `:domain`; the lists a
    record it.
 6. **The table is the whole guide**: every line at every milestone, inspections included. Jobs that
    apply only under the guide's special operating conditions are in it too, each named with its
-   condition (`Replace rear differential oil · towing or heavy loads`) and with no `service`, so it is
-   never taken for the ordinary job. A job for one drivetrain says so in its name (`(4WD)`).
+   condition (`Replace rear differential oil · towing or heavy loads`). Such a job has a `service` only
+   when no ordinary job in the table has the same one, so it is never taken for the ordinary job: the
+   oil change under special conditions has none, the differential oil changes do. A job for one
+   drivetrain says so in its name (`(4WD)`).
 7. **A reminder interval has to be the table's own.** `KnownSchedules.parse` refuses an interval unless
    its job is in the table at exactly the multiples of that interval, with the table's months, or, for
    a job with a first time of its own (`firstAtMiles`: "first at 100,000, then every 50,000"), at that
-   mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given only for work that gets
-   logged (replace, rotate, lubricate), not for inspections.
+   mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given for work that gets
+   logged (replace, rotate, lubricate), and for an inspection only where the owner asked for it and
+   there is a service line to log it with; a list doesn't turn every inspection into a reminder.
 8. **Nothing of the user's is written over.** The table is added only while the vehicle has none.
    A reminder is added as the user's own item unless they already have one of that name. Typical items
    are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
@@ -95,7 +98,11 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   15,000 / 18, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, and engine coolant
   first at 100,000 miles and then every 50,000 / 60. The guide's "or 120 months" for the first coolant
   change isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
-- Not reminders, because under ordinary driving the guide only inspects them: brake fluid, transmission
-  fluid, differential and transfer case oil. Their replacement under towing or dust is in the table.
+- Inspections that are reminders too (asked for by the owner, 2026-10-13): front and rear differential
+  oil every 15,000 / 18, transfer case oil every 30,000 / 36. Logging a change of one counts as its
+  check. The other inspections are in the table only.
+- No replacement reminder, because under ordinary driving the guide only inspects them: brake fluid,
+  transmission fluid, differential and transfer case oil. Their replacement under towing or dust is in
+  the table, and #136 is for making those reminders.
 - Not covered: 2010 and 2012–2016 (no guide found at that address), 2011 (found; it has separate
   schedules for the 4-cylinder and the V6), 2025 on (a new generation, with a chart in place of the log).

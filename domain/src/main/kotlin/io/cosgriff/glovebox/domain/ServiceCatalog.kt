@@ -1,7 +1,13 @@
 package io.cosgriff.glovebox.domain
 
-/** A kind of work offered on the Log service screen. [resets] is a [ScheduleTemplateItem.key]. */
-data class CatalogItem(val id: String, val label: String, val resets: String? = null)
+/**
+ * A kind of work offered on the Log service screen. [resets] is a [ScheduleTemplateItem.key].
+ *
+ * [covers] are other lines this work also counts as: changing an oil includes checking it, so a
+ * logged change resets the reminder to check it and completes that job on a milestone. It goes one
+ * way only; a check never counts as a change.
+ */
+data class CatalogItem(val id: String, val label: String, val resets: String? = null, val covers: Set<String> = emptySet())
 
 data class CatalogCategory(val id: String, val label: String, val items: List<CatalogItem>)
 
@@ -29,6 +35,11 @@ object ServiceLinks {
         }
         // Only the user's own items carry a service; on a typical item it would be ignored.
         schedule.filter { it.templateKey == null && it.service != null }.forEach { out.getOrPut(it.service!!) { mutableSetOf() } += it.id }
+        // Work that includes other work answers for that too: a change of oil for the check of it.
+        val direct = out.mapValues { it.value.toSet() }
+        ServiceCatalog.categories.flatMap { it.items }.forEach { item ->
+            item.covers.forEach { covered -> direct[covered]?.let { out.getOrPut(item.id) { mutableSetOf() } += it } }
+        }
         return out
     }
 
@@ -108,7 +119,16 @@ object ServiceCatalog {
         CatalogCategory(
             "driveline", "Driveline",
             listOf(
-                CatalogItem("diff-fluid", "Differential / transfer case fluid", resets = "diff-fluid"),
+                CatalogItem(
+                    "diff-fluid", "Differential / transfer case fluid", resets = "diff-fluid",
+                    covers = setOf("front-diff-check", "rear-diff-check", "transfer-case-check"),
+                ),
+                CatalogItem("front-diff-check", "Front differential oil check"),
+                CatalogItem("front-diff", "Front differential oil change", covers = setOf("front-diff-check")),
+                CatalogItem("rear-diff-check", "Rear differential oil check"),
+                CatalogItem("rear-diff", "Rear differential oil change", covers = setOf("rear-diff-check")),
+                CatalogItem("transfer-case-check", "Transfer case oil check"),
+                CatalogItem("transfer-case", "Transfer case oil change", covers = setOf("transfer-case-check")),
                 CatalogItem("driveshaft", "Driveshaft grease"),
                 CatalogItem("cv-axle", "CV axle / boot"),
             ),

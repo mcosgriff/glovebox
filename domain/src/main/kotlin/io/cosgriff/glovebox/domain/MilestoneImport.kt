@@ -129,7 +129,9 @@ object MilestoneImport {
 
     /** The keys a logged line of work answers to: its catalog line if it has one, and what it is called. */
     fun doneKeys(label: String, catalogId: String?): List<String> =
-        listOfNotNull(catalogId?.let { "service:$it" }, "name:${nameKey(label)}")
+        listOfNotNull(catalogId?.let { "service:$it" }, "name:${nameKey(label)}") +
+            // Work that includes other work completes that job too: a change of oil, the check of it.
+            HistoryImport.services[catalogId]?.covers.orEmpty().map { "service:$it" }
 
     /** The saved table as the Milestones screen takes it, for a table that ends where it ends. */
     fun milestones(table: List<SavedMilestone>): List<Milestone> =

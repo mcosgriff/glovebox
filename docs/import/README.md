@@ -222,14 +222,17 @@ count for a reminder. The values, by the category History files them under:
 | Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat` |
 | Brakes | `front-pads`, `rear-pads`, `rotors`, `brake-fluid`, `brake-inspect` |
 | Fluids | `coolant`, `trans-fluid`, `power-steering`, `washer` |
-| Driveline | `diff-fluid`, `driveshaft`, `cv-axle` |
+| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle` |
 | Cabin & electrical | `cabin-air`, `wipers`, `battery`, `bulbs` |
 | Inspection | `multi-point`, `emissions`, `recall` |
 | Other | `accessory`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
   it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
-  `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A line
+  `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A change
+  also counts as the check of the same thing: `front-diff`, `rear-diff` and `transfer-case` reset a
+  reminder set to `front-diff-check`, `rear-diff-check` or `transfer-case-check`, and `diff-fluid`
+  resets all three. A check never counts as a change. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
   (ignoring capitals). Any other line is history only. The preview lists every reminder that would
   move before you import.

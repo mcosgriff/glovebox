@@ -203,8 +203,9 @@ Notes on what's built:
   covers only the model years whose guides were read and agree, never "the generation".** The one that
   ships is the 4Runner's, 2017 to 2024, from Toyota's Warranty and Maintenance Guides. **An interval has
   to be the table's own:** `KnownSchedules.parse` refuses one whose job isn't in the table at exactly
-  the multiples of that interval, so a job that comes round unevenly (coolant at 100,000, then every
-  50,000) stays in the table only; reminders are for logged work, not inspections. The table holds every
+  the multiples of that interval (or at its `firstAtMiles` and every interval after). Reminders are for
+  logged work; an inspection is one only where the user asked (the 4Runner's differential and transfer
+  case oil checks), never every inspection in a guide. The table holds every
   line of the guide; a special-operating-condition job is named with its condition and has no `service`,
   so it is never taken for the ordinary job.
 - **Where a list covers a vehicle, it is the schedule** (the user's decision, 2026-10-13, reversing
@@ -394,6 +395,12 @@ Notes on what's built:
   `service` is ignored on a typical item, and `templateKey` still means "Glovebox's own", which is what
   keeps imports from touching those. On Log service an item that answers to a catalog line is logged
   through that line and isn't also listed under "Your items".
+- A catalog line can count as another (`CatalogItem.covers`, one way only): a change of the front
+  differential oil (`front-diff`) is also its check (`front-diff-check`), likewise `rear-diff` and
+  `transfer-case`, and the combined `diff-fluid` line covers all three checks. `ServiceLinks.answering`
+  and `MilestoneImport.doneKeys` both follow it, so a logged change resets the reminder to check and
+  ticks the inspection on a milestone. This is how "checked" and "replaced" are both loggable without
+  a per-line action: they are two lines.
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
 - Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
   prefilled, because a prefilled reading gets saved untouched and every reminder is then counted from the

@@ -74,11 +74,26 @@ class KnownSchedulesTest {
         fun services(miles: Int) = at(miles).mapNotNull { it.service }.toSet()
         assertEquals(setOf("rotation", "brake-inspect"), services(5_000))
         assertEquals(setOf("oil", "rotation", "brake-inspect"), services(10_000))
-        assertEquals(setOf("driveshaft", "rotation", "brake-inspect"), services(15_000))
-        assertEquals(setOf("driveshaft", "cabin-air", "engine-air", "oil", "rotation", "brake-inspect"), services(30_000))
+        // The differential oils are checked every 15,000, and changed then only for towing.
+        assertEquals(setOf("driveshaft", "rotation", "brake-inspect", "front-diff-check", "rear-diff-check", "front-diff", "rear-diff"), services(15_000))
+        assertEquals(
+            setOf(
+                "driveshaft", "cabin-air", "engine-air", "oil", "rotation", "brake-inspect",
+                "front-diff-check", "rear-diff-check", "transfer-case-check", "front-diff", "rear-diff", "transfer-case",
+            ),
+            services(30_000),
+        )
         assertEquals(setOf("coolant", "oil", "rotation", "brake-inspect"), services(100_000))
         assertTrue("spark-plugs" in services(120_000))
-        assertEquals(setOf("oil", "rotation", "driveshaft", "cabin-air", "engine-air", "spark-plugs", "coolant"), list.intervals.mapNotNull { it.service }.toSet())
+        assertTrue("trans-fluid" in services(60_000))
+        // A job only for special operating conditions says so in its name, whatever service logs it.
+        assertTrue(at(15_000).filter { it.service in setOf("front-diff", "rear-diff") }.all { " · towing" in it.name })
+        assertEquals(
+            setOf("oil", "rotation", "driveshaft", "cabin-air", "engine-air", "spark-plugs", "coolant", "front-diff-check", "rear-diff-check", "transfer-case-check"),
+            list.intervals.mapNotNull { it.service }.toSet(),
+        )
+        assertEquals(Interval(15_000, 18), list.intervals.single { it.service == "front-diff-check" }.normal)
+        assertEquals(Interval(30_000, 36), list.intervals.single { it.service == "transfer-case-check" }.normal)
         // The coolant is replaced first at 100,000 and then every 50,000.
         assertEquals(100_000 to Interval(50_000, 60), list.intervals.single { it.service == "coolant" }.let { it.firstAt to it.normal })
         assertEquals(Interval(10_000, 12) to Interval(5_000, 6), list.intervals.single { it.service == "oil" }.let { it.normal to it.severe })
