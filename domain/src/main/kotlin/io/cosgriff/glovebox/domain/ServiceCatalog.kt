@@ -26,7 +26,26 @@ data class ScheduleRef(val id: Long, val name: String, val templateKey: String?,
  * the log each time, never stored: linking an item to a service makes past work count straight away.
  */
 object ServiceLinks {
-    /** Catalog item id -> the schedule items that answer to it. */
+    /**
+     * Catalog item id -> the schedule items that are that line's own: the typical item it resets and
+     * the user's items set to it. **This is what a line on Log service stands for**, so "Log it" on a
+     * reminder ticks its own line and never a line that merely includes it.
+     */
+    fun own(schedule: List<ScheduleRef>): Map<String, Set<Long>> {
+        val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
+        val out = mutableMapOf<String, MutableSet<Long>>()
+        ServiceCatalog.categories.flatMap { it.items }.forEach { item ->
+            item.resets?.let(byKey::get)?.let { out.getOrPut(item.id) { mutableSetOf() } += it.id }
+        }
+        // Only the user's own items carry a service; on a typical item it would be ignored.
+        schedule.filter { it.templateKey == null && it.service != null }.forEach { out.getOrPut(it.service!!) { mutableSetOf() } += it.id }
+        return out
+    }
+
+    /**
+     * Catalog item id -> every schedule item a logged line of it counts for: its [own], and those of
+     * the lines it covers. **This is what logged work resets**, wider than what the line stands for.
+     */
     fun answering(schedule: List<ScheduleRef>): Map<String, Set<Long>> {
         val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
         val out = mutableMapOf<String, MutableSet<Long>>()
@@ -171,7 +190,8 @@ object ServiceCatalog {
      */
     fun forVehicle(schedule: List<ScheduleRef>): List<WorkCategory> {
         val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
-        val answering = ServiceLinks.answering(schedule)
+        // What each line stands for, not everything it would reset: a change of oil isn't the line for the check of it.
+        val answering = ServiceLinks.own(schedule)
         val linked = answering.values.flatten().toMutableSet()
         val fromCatalog = categories.map { c ->
             WorkCategory(

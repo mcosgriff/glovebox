@@ -427,7 +427,9 @@ Notes on what's built:
   differential oil (`front-diff`) is also its check (`front-diff-check`), likewise `rear-diff` and
   `transfer-case`, and the combined `diff-fluid` line covers all three checks. `ServiceLinks.answering`
   and `MilestoneImport.doneKeys` both follow it, so a logged change resets the reminder to check and
-  ticks the inspection on a milestone. This is how "checked" and "replaced" are both loggable without
+  ticks the inspection on a milestone. **What a Log service line stands for is narrower:**
+  `ServiceLinks.own` (no `covers`) decides `WorkOption.scheduleItemId`, so "Log it" on the check ticks the
+  check and not the change that would also reset it. This is how "checked" and "replaced" are both loggable without
   a per-line action: they are two lines.
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
 - Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
