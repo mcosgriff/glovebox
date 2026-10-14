@@ -124,7 +124,9 @@ class KnownSchedulesTest {
         assertTrue("isn't every 6000" in refused("""[ { "name": "Change the oil", "everyMiles": 6000, "service": "oil" } ]"""))
         assertTrue("isn't a job in the table" in refused("""[ { "name": "Flush the brakes", "everyMiles": 8000 } ]"""))
         assertTrue("months that aren't the table's" in refused("""[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 6, "service": "oil" } ]"""))
-        assertTrue("no distance" in refused("""[ { "name": "Change the oil", "everyMonths": 4, "service": "oil" } ]"""))
+        assertTrue("no distance and isn't marked time-only" in refused("""[ { "name": "Change the oil", "everyMonths": 4, "service": "oil" } ]"""))
+        // By time alone, and said to be: the table's mileages for it aren't held against it.
+        assertTrue(KnownSchedules.parse(file(intervals = """[ { "name": "Grease the hinges", "everyMonths": 24, "rule": "time-only" } ]""")) is KnownScheduleFile.Ok)
         // A first time of its own: in the table there and every interval after it, or it is refused.
         val hinges = ImportedScheduleItem("Grease the hinges", Interval(4_000, null), firstAt = 12_000)
         assertTrue("isn't 12000 and then every 4000" in KnownSchedules.contradictions(roadster.milestones, listOf(hinges)).single())
@@ -220,5 +222,47 @@ class KnownSchedulesTest {
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind(null))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("6x4"))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("Other"))
+    }
+
+    @Test
+    fun `the GTI list is Volkswagen's card for the car`() {
+        val list = KnownSchedules.match(bundled, 2011, "VOLKSWAGEN", "GTI")!!
+        assertEquals(2010..2014, list.years)
+        assertNull(KnownSchedules.match(bundled, 2015, "Volkswagen", "GTI"))
+        assertNull(KnownSchedules.match(bundled, 2011, "Volkswagen", "Golf"))
+        // One column per 10,000 miles to 120,000; the card prints no months for them.
+        assertEquals((10_000..120_000 step 10_000).toList(), list.milestones.map { it.atMiles })
+        assertTrue(list.milestones.all { it.orMonths == null })
+        fun services(miles: Int) = list.milestones.single { it.atMiles == miles }.work.mapNotNull { it.service }.toSet()
+        assertEquals(setOf("oil", "rotation", "brake-inspect"), services(10_000))
+        assertEquals(setOf("oil", "rotation", "brake-inspect", "cabin-air"), services(20_000))
+        assertEquals(setOf("oil", "rotation", "brake-inspect", "brake-fluid"), services(30_000))
+        assertEquals(setOf("oil", "rotation", "brake-inspect", "cabin-air", "trans-fluid"), services(40_000))
+        assertEquals(setOf("oil", "rotation", "brake-inspect", "cabin-air", "engine-air", "spark-plugs"), services(60_000))
+        assertEquals(setOf("oil", "rotation", "brake-inspect", "cabin-air", "engine-air", "spark-plugs", "trans-fluid"), services(120_000))
+        // The brake fluid is by time alone on the card: drawn at 30,000 and every 20,000 after.
+        assertEquals(listOf(30_000, 50_000, 70_000, 90_000, 110_000), list.milestones.filter { m -> m.work.any { it.service == "brake-fluid" } }.map { it.atMiles })
+        val by = list.intervals.associateBy { it.service }
+        assertEquals(Interval(10_000, null), by.getValue("oil").normal)
+        assertEquals(Interval(20_000, 24), by.getValue("cabin-air").normal)
+        assertEquals(Interval(60_000, 72), by.getValue("spark-plugs").normal)
+        assertEquals(Interval(60_000, 72), by.getValue("engine-air").normal)
+        assertEquals(Interval(40_000, null), by.getValue("trans-fluid").normal)
+        assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, by.getValue("brake-fluid").let { it.normal to it.rule })
+    }
+
+    @Test
+    fun `a car known to have a manual gearbox doesn't get the dual-clutch fluid change`() {
+        val list = KnownSchedules.match(bundled, 2011, "Volkswagen", "GTI")!!
+        fun dsg(transmission: String?) =
+            KnownSchedules.intervalsIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { it.service == "trans-fluid" } to
+                KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { m -> m.work.any { it.service == "trans-fluid" } }
+        // As vPIC decodes a GTI: "Automatic" for the DSG, "Manual/Standard" for the six-speed.
+        assertEquals(1 to 3, dsg("Automatic"))
+        assertEquals(1 to 3, dsg("Dual-Clutch Transmission (DCT)"))
+        assertEquals(1 to 3, dsg(null))
+        assertEquals(0 to 0, dsg("Manual/Standard"))
+        assertEquals(0 to 0, dsg("6-speed manual"))
+        assertEquals(false, Transmissions.isManual("Automated Manual Transmission (AMT)"))
     }
 }

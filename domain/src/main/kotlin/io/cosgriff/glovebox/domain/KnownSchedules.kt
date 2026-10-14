@@ -27,6 +27,11 @@ data class KnownScheduleList(
      * reminders. A vehicle known to drive two wheels doesn't get them ([KnownSchedules.applies]).
      */
     val fourWheelDriveOnly: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that aren't for a manual gearbox (a dual-clutch or automatic
+     * transmission's fluid change). A vehicle known to have a manual doesn't get them.
+     */
+    val manualExcluded: Set<String> = emptySet(),
 )
 
 sealed interface KnownScheduleFile {
@@ -66,7 +71,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + "fourWheelDriveOnly"
+    private val keys = required + setOf("fourWheelDriveOnly", "manualExcluded")
 
     fun parse(text: String): KnownScheduleFile {
         val root = try {
@@ -83,17 +88,21 @@ object KnownSchedules {
         val intervals = o["intervals"]?.let { ScheduleImport.read(it, check) }.orEmpty()
         if (!tableFailed && !check.failed) contradictions(milestones, intervals).forEach { check.fail("intervals", it) }
         val names = (milestones.flatMap { m -> m.work.map { it.name } } + intervals.map { it.name }).map(MilestoneImport::nameKey).toSet()
-        val fourWheel = o["fourWheelDriveOnly"]?.let { e ->
-            check.array(e, "fourWheelDriveOnly", 1, 200)?.mapIndexedNotNull { i, n ->
-                val path = ImportCheck.at("fourWheelDriveOnly", i)
+        // A field that names some of the list's jobs: every name has to be one.
+        fun jobs(field: String): Set<String> = o[field]?.let { e ->
+            check.array(e, field, 1, 200)?.mapIndexedNotNull { i, n ->
+                val path = ImportCheck.at(field, i)
                 check.string(n, path, MilestoneImport.MAX_NAME)?.also { if (MilestoneImport.nameKey(it) !in names) check.fail(path, "\"$it\" isn't a job in this list") }
             }
-        }.orEmpty()
+        }.orEmpty().map(MilestoneImport::nameKey).toSet()
+        val fourWheel = jobs("fourWheelDriveOnly")
+        val notManual = jobs("manualExcluded")
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
                 header.id, header.title, header.make, header.model, header.years, header.source, check.unit, milestones, intervals,
-                fourWheelDriveOnly = fourWheel.map(MilestoneImport::nameKey).toSet(),
+                fourWheelDriveOnly = fourWheel,
+                manualExcluded = notManual,
             ),
         )
     }
@@ -113,8 +122,10 @@ object KnownSchedules {
             val at = table.filter { m -> m.work.any { MilestoneImport.jobKey(it) == key } }
             val every = item.normal.miles
             when {
-                every == null -> "\"${item.name}\" has no distance; a table is by distance"
                 at.isEmpty() -> "\"${item.name}\" isn't a job in the table"
+                // A job the guide gives by time alone ("every 2 years regardless of mileage") is in the table
+                // wherever the maker chose to draw it; there is no mileage to hold it to.
+                every == null -> if (item.rule == DueRule.TIME_ONLY) null else "\"${item.name}\" has no distance and isn't marked time-only"
                 at.map { it.atMiles } != ((item.firstAt ?: every)..end step every).toList() ->
                     "\"${item.name}\" is in the table at ${at.joinToString { it.atMiles.toString() }}, which isn't " +
                         (item.firstAt?.let { "$it and then every $every" } ?: "every $every")
@@ -137,20 +148,24 @@ object KnownSchedules {
      * nothing at all because the guide has no other line for it and leaving a job out is the worse
      * mistake. That is not a claim that all-wheel drive is four-wheel drive ([DriveKind]).
      */
-    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?): Boolean =
-        Drivetrains.kind(drivetrain) != DriveKind.TWO_WHEEL || MilestoneImport.nameKey(jobName) !in list.fourWheelDriveOnly
+    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, transmission: String? = null): Boolean {
+        val key = MilestoneImport.nameKey(jobName)
+        val twoWheel = Drivetrains.kind(drivetrain) == DriveKind.TWO_WHEEL
+        // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one.
+        return !(twoWheel && key in list.fourWheelDriveOnly) && !(Transmissions.isManual(transmission) && key in list.manualExcluded)
+    }
 
     /**
      * [list]'s table and intervals for one vehicle: in [unit], which changes nothing when it is the
      * list's own, and without the jobs that aren't for its [drivetrain].
      */
-    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?): List<ImportedMilestone> =
+    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedMilestone> =
         FileDistances.milestones(list.milestones, null, list.unit, unit).first
-            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain) }) }
+            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain, transmission) }) }
             .filter { it.work.isNotEmpty() }
 
-    fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?): List<ImportedScheduleItem> =
-        FileDistances.schedule(list.intervals, list.unit, unit).filter { applies(list, it.name, drivetrain) }
+    fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedScheduleItem> =
+        FileDistances.schedule(list.intervals, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
 
     /**
      * What adding [intervals] (already in the vehicle's unit) would do. Each becomes an item of the

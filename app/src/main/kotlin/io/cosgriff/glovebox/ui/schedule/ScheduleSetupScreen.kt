@@ -158,7 +158,7 @@ class ScheduleSetupViewModel @Inject constructor(
             val list = v?.let { KnownSchedules.match(catalog.lists(), it.year, it.make, it.model) }
             known = list
             items = if (list != null) {
-                KnownSchedules.intervalsIn(list, unit, v.drivetrain).mapIndexed { i, it ->
+                KnownSchedules.intervalsIn(list, unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
                     DraftItem(
                         key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
                         own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly,
@@ -241,7 +241,7 @@ class ScheduleSetupViewModel @Inject constructor(
             milestones.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain).map { m ->
+                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain, vehicle?.transmission).map { m ->
                     MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
                         m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
                 },
@@ -312,9 +312,12 @@ fun ScheduleSetupScreen(
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("HOW DO YOU DRIVE IT?")
-                DrivingUseSwitch(severe = vm.severeUse, onPick = vm::chooseSevereUse)
+            // Only where it changes something: a schedule none of whose jobs differs under severe use has no use for it.
+            if (items.any { it.severe != null || it.severeOnly }) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SectionLabel("HOW DO YOU DRIVE IT?")
+                    DrivingUseSwitch(severe = vm.severeUse, onPick = vm::chooseSevereUse)
+                }
             }
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
