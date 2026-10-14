@@ -5,7 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -164,8 +163,15 @@ class EndToEndTest {
 
     private fun see(text: String, timeout: Long = WAIT): UiObject2 = see(By.text(text), timeout)
 
+    /**
+     * Waits for it, and scrolls down for it if it doesn't come: a smaller screen than the one the test
+     * was written on puts more below the fold.
+     */
     private fun see(selector: BySelector, timeout: Long = WAIT): UiObject2 {
-        val found = device.wait(Until.findObject(selector), timeout)
+        val found = device.wait(Until.findObject(selector), timeout) ?: run {
+            scrollDownFor(selector)
+            device.findObject(selector)
+        }
         assertNotNull("While trying to $step: didn't find $selector on the screen. It showed: ${onScreen()}", found)
         return found
     }
@@ -203,16 +209,28 @@ class EndToEndTest {
 
     private fun scrolledTo(selector: BySelector): BySelector {
         // A screen that has only just opened may not be drawn yet: give it a moment before deciding to scroll.
-        if (device.wait(Until.findObject(selector), 2_000) == null) {
-            // The screen's own scrolling list, scrolled by the list itself rather than by a swipe that may land on a button.
-            device.wait(Until.findObject(By.scrollable(true)), WAIT)?.let { list ->
-                stale { list.scrollUntil(Direction.DOWN, Until.findObject(selector)) }
-            }
-        }
+        if (device.wait(Until.findObject(selector), 2_000) == null) scrollDownFor(selector)
         device.waitForIdle()
         Thread.sleep(SETTLE)
         see(selector)
         return selector
+    }
+
+    /**
+     * Swipes the screen down a page at a time looking for it, then back up for something a tap further
+     * down scrolled away. Slow swipes, so nothing flings, and a pause after each so nothing is still moving.
+     */
+    private fun scrollDownFor(selector: BySelector) {
+        val w = device.displayWidth
+        val h = device.displayHeight
+        for ((from, to) in listOf(h * 7 / 10 to h * 3 / 10, h * 3 / 10 to h * 7 / 10)) {
+            repeat(15) {
+                if (device.findObject(selector) != null) return
+                device.swipe(w / 2, from, w / 2, to, 40)
+                device.waitForIdle()
+                Thread.sleep(SETTLE)
+            }
+        }
     }
 
     /** Compose redraws often; an object found a moment ago can be gone. Look again, a few times. */
@@ -237,6 +255,8 @@ class EndToEndTest {
         assertNotNull("While trying to $step: no field to type \"$text\" into for \"$into\".", editable)
         editable!!.text = text
         device.waitForIdle()
+        // On a small screen the keyboard hides whatever comes next.
+        closeKeyboard()
     }
 
     /** The update-mileage sheet has its own keypad, not a text field: a reading is tapped in a digit at a time. */
