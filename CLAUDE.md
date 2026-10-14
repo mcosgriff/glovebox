@@ -21,8 +21,14 @@ Keep them green; lint errors fail the build.
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
 - `./gradlew build` — everything, including the database migration tests (`:data`).
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
-- On-device tests (`app/src/androidTest`, the few that need native code: so far the text reader). Not
-  part of `build` or CI. Run them with
+- On-device tests (`app/src/androidTest`): the text reader (`TextReaderTest`) and **`EndToEndTest`**, the app
+  driven with UI Automator from first launch through the maker's schedule, "Log it", a mileage update, an
+  encrypted backup and its restore. It finds things only by the words on screen, turns airplane mode on
+  so nothing calls NHTSA, and **skips itself unless the welcome screen shows**, because it ends by
+  replacing everything with a backup. A change to wording it looks for breaks it, which is the point:
+  change the test with the screen. CI runs both on a fresh emulator (the `end-to-end` job in `ci.yml`).
+  Locally, run them only on a throwaway emulator (the `Glovebox_E2E` AVD), never the one with test data.
+  Not part of `build`. Run them with
   `./gradlew :app:installDebug :app:installDebugAndroidTest` and then
   `adb shell am instrument -w io.cosgriff.glovebox.debug.test/androidx.test.runner.AndroidJUnitRunner`,
   which leaves the debug app and its data alone. **Don't use `connectedDebugAndroidTest`: it uninstalls
