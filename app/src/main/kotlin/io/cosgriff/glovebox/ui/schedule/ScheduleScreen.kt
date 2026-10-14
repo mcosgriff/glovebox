@@ -233,7 +233,7 @@ class ScheduleViewModel @Inject constructor(
             odometer = VehicleReminders.currentOdometer(entries, updates),
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { KnownSchedules.startedFrom(credits[it]) },
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model)
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel)
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )

@@ -217,6 +217,13 @@ Notes on what's built:
   (`Transmissions.isManual`, vPIC's "Manual/Standard") loses the jobs named there (the GTI's DSG fluid).
   A job the guide gives by time alone is an interval with months, no distance and `rule: time-only`;
   `KnownSchedules.contradictions` then only requires the job to be in the table.
+- A model whose guide has a schedule per engine gets a list per engine (`KnownScheduleList.engine`:
+  a label, the displacement and, where needed, the fuel). `KnownSchedules.match(lists, year, make, model,
+  engine, fuel)` reads the size from the vehicle's engine text (`Engines.displacementL`); **an engine that
+  isn't on record matches no engine's list**, and `ScheduleSetupViewModel` asks "Which engine does it
+  have?" from `KnownSchedules.engineChoices`, writing the pick to the vehicle only if it had none
+  (`VehicleDao.setEngineIfBlank`). Only setup asks; the offers on the schedule and Milestones screens
+  need the engine on record. No list that ships uses it yet.
 - The lists that ship: the 4Runner 2017–2024 (Toyota's guides, every year read) and the Mk6 GTI
   2010–2014 (Volkswagen's cards as filed with NHTSA: 2012 and 2014 read in full, 2010 from the
   all-models card, **2011 and 2013 inferred**; `docs/known-schedules.md` has the table of what was read).

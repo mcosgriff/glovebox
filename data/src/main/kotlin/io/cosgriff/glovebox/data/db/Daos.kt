@@ -53,6 +53,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET nickname = :nickname WHERE id = :id")
     suspend fun setNickname(id: Long, nickname: String?)
 
+    /** Fills in the engine for a vehicle that has none on record; one that has is left exactly as it is. */
+    @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
+    suspend fun setEngineIfBlank(id: Long, engine: String)
+
     @Query("UPDATE vehicles SET oilSpec = :value WHERE id = :id")
     suspend fun setOilSpec(id: Long, value: String?)
 
