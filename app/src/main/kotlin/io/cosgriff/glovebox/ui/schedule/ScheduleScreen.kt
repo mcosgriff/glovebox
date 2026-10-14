@@ -233,7 +233,7 @@ class ScheduleViewModel @Inject constructor(
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { KnownSchedules.startedFrom(credits[it]) },
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model)
-                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit), items.map { it.toSaved() }) }
+                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -324,7 +324,7 @@ class ScheduleViewModel @Inject constructor(
         milestones.addKnown(
             vehicleId,
             list.id,
-            KnownSchedules.milestonesIn(list, s.vehicle.unit).map { m ->
+            KnownSchedules.milestonesIn(list, s.vehicle.unit, s.vehicle.drivetrain).map { m ->
                 MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
                     m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
             },

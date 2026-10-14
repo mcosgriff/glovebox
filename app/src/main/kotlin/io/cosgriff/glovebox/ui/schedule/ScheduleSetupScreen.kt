@@ -154,7 +154,7 @@ class ScheduleSetupViewModel @Inject constructor(
             val list = v?.let { KnownSchedules.match(catalog.lists(), it.year, it.make, it.model) }
             known = list
             items = if (list != null) {
-                KnownSchedules.intervalsIn(list, unit).mapIndexed { i, it ->
+                KnownSchedules.intervalsIn(list, unit, v.drivetrain).mapIndexed { i, it ->
                     DraftItem(
                         key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
                         own = true, service = it.service, knownList = list.id, firstAt = it.firstAt,
@@ -236,7 +236,7 @@ class ScheduleSetupViewModel @Inject constructor(
             milestones.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, unit).map { m ->
+                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain).map { m ->
                     MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
                         m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
                 },

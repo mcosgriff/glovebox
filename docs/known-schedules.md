@@ -62,6 +62,14 @@ as those of an `interval-schedule` one ([import/README.md](import/README.md)); b
 same strict readers, so errors are reported under `items[…]`. A list in miles is given to a kilometre
 vehicle as schedule figures (5,000 mi is 8,000 km). `KnownSchedulesTest` reads every file in the folder.
 
+`fourWheelDriveOnly` names the jobs the guide marks "(4WD)". A vehicle **known** to drive two wheels
+(vPIC's `4x2`, or RWD / FWD picked by hand) doesn't get them, in the table or the schedule. Every other
+vehicle keeps them, with "(4WD)" in the name: a four-wheel-drive one because they are its jobs, and one
+on record as all-wheel drive, or with no drive type at all, because the guide has no other line for it
+and leaving a job out is the worse mistake. **Four-wheel drive and all-wheel drive are different systems
+and the code keeps them apart** (`DriveKind`); a guide that marks jobs for AWD gets its own field for
+them, and nothing marked for one is taken to be for the other.
+
 A model whose guide differs by engine gets one list per engine; that needs a field to match on, which
 is added with the first list that needs it.
 
@@ -89,7 +97,10 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   and/or intercooler"; the 2024 guide's oil note says "recommended oil" where the others say "0W-20";
   2017 has no footnote on fluid levels.
 - These years have one engine. Drivetrain is marked on the guide's own lines, so 2WD and 4WD share the
-  list and the 4WD-only jobs say `(4WD)`.
+  list and the 4WD-only jobs say `(4WD)` and are left out for a 2WD truck. The guide has no "AWD" lines:
+  Toyota calls the Limited's system full-time 4WD, and NHTSA's decoder gives a Limited as
+  `4WD/4-Wheel Drive/4x4` or `4x2` (checked 2026-10-13 with the 2022 patterns `JTEKU5JR*N` and
+  `JTEDU5JR*N`), never as AWD.
 - Left out, because they aren't jobs at a milestone: the note that the oil is to be replaced at 5,000
   miles if 0W-20 wasn't used at the last change, the daily checks for off-road driving, and the
   explanations of each item.

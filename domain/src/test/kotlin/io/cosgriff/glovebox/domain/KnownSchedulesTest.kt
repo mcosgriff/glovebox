@@ -151,9 +151,9 @@ class KnownSchedulesTest {
 
     @Test
     fun `a kilometre vehicle gets the figures as a manual for that market prints them`() {
-        assertEquals(listOf(6_400, 12_800, 19_200, 25_600), KnownSchedules.milestonesIn(roadster, DistanceUnit.KILOMETERS).map { it.atMiles })
-        assertEquals(Interval(6_400, 4), KnownSchedules.intervalsIn(roadster, DistanceUnit.KILOMETERS).first().normal)
-        assertEquals(roadster.milestones, KnownSchedules.milestonesIn(roadster, DistanceUnit.MILES))
+        assertEquals(listOf(6_400, 12_800, 19_200, 25_600), KnownSchedules.milestonesIn(roadster, DistanceUnit.KILOMETERS, null).map { it.atMiles })
+        assertEquals(Interval(6_400, 4), KnownSchedules.intervalsIn(roadster, DistanceUnit.KILOMETERS, null).first().normal)
+        assertEquals(roadster.milestones, KnownSchedules.milestonesIn(roadster, DistanceUnit.MILES, null))
     }
 
     @Test
@@ -166,5 +166,51 @@ class KnownSchedulesTest {
         assertTrue(KnownSchedules.intervalOffer(list, plan).startsWith("1 reminder from the Acme service booklet"))
         assertTrue("1 item of your own with the same name is left as it is." in KnownSchedules.intervalOffer(list, plan))
         assertTrue("Check it against the guide for your own vehicle." in KnownSchedules.startedFrom(KnownSchedules.credit(list)))
+    }
+
+    @Test
+    fun `a vehicle known to drive two wheels doesn't get the four-wheel-drive jobs`() {
+        val list = KnownSchedules.match(bundled, 2022, "Toyota", "4Runner")!!
+        fun jobs(drivetrain: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, drivetrain).flatMap { m -> m.work.map { it.name } }.toSet()
+        fun reminders(drivetrain: String?) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, drivetrain).map { it.name }
+        // As vPIC decodes a 4Runner: "4WD/4-Wheel Drive/4x4" or "4x2". The pickers say 4WD, AWD, RWD, FWD.
+        listOf("4WD/4-Wheel Drive/4x4", "4WD", "AWD", "AWD/All-Wheel Drive", null, "").forEach { drive ->
+            assertTrue("$drive", "Inspect front differential oil (4WD)" in reminders(drive))
+            assertTrue("$drive", "Inspect transfer case oil (4WD)" in reminders(drive))
+            assertTrue("$drive", jobs(drive).any { it.startsWith("Replace transfer case oil (4WD)") })
+        }
+        listOf("4x2", "RWD", "RWD/Rear-Wheel Drive", "FWD").forEach { drive ->
+            assertTrue("$drive", jobs(drive).none { "(4WD)" in it })
+            assertTrue("$drive", reminders(drive).none { "(4WD)" in it })
+            // What every 4Runner has stays: the rear differential, and all 24 milestones.
+            assertTrue("$drive", "Inspect rear differential oil" in reminders(drive))
+            assertTrue("$drive", jobs(drive).any { it.startsWith("Replace rear differential oil") })
+            assertEquals(24, KnownSchedules.milestonesIn(list, DistanceUnit.MILES, drive).size)
+        }
+        assertEquals(10, reminders("4WD").size)
+        assertEquals(8, reminders("4x2").size)
+    }
+
+    @Test
+    fun `every job a list names for four-wheel drive is marked so, and the other way round`() {
+        bundled.forEach { list ->
+            val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
+            assertEquals(list.id, names.filter { "(4WD)" in it }.map(MilestoneImport::nameKey).toSet(), list.fourWheelDriveOnly)
+        }
+        assertTrue(errors(file(extra = "\"fourWheelDriveOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+    }
+
+    @Test
+    fun `four-wheel drive and all-wheel drive are told apart`() {
+        assertEquals(DriveKind.FOUR_WHEEL, Drivetrains.kind("4WD/4-Wheel Drive/4x4"))
+        assertEquals(DriveKind.FOUR_WHEEL, Drivetrains.kind("2WD/4WD"))
+        assertEquals(DriveKind.ALL_WHEEL, Drivetrains.kind("AWD/All-Wheel Drive"))
+        assertEquals(DriveKind.ALL_WHEEL, Drivetrains.kind("AWD"))
+        assertEquals(DriveKind.TWO_WHEEL, Drivetrains.kind("4x2"))
+        assertEquals(DriveKind.TWO_WHEEL, Drivetrains.kind("FWD/Front-Wheel Drive"))
+        assertEquals(DriveKind.TWO_WHEEL, Drivetrains.kind("RWD/Rear-Wheel Drive"))
+        assertEquals(DriveKind.UNKNOWN, Drivetrains.kind(null))
+        assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("6x4"))
+        assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("Other"))
     }
 }

@@ -208,6 +208,11 @@ Notes on what's built:
   case oil checks), never every inspection in a guide. The table holds every
   line of the guide; a special-operating-condition job is named with its condition and has no `service`,
   so it is never taken for the ordinary job.
+- A list's `fourWheelDriveOnly` names the jobs its guide marks "(4WD)"; `KnownSchedules.milestonesIn` /
+  `intervalsIn(list, unit, drivetrain)` leave them out only for a vehicle **known** to drive two wheels
+  (`Drivetrains.kind` is `TWO_WHEEL`: vPIC's "4x2", or RWD / FWD). **4WD and AWD are different systems
+  and `DriveKind` keeps them apart** (the user's point): an AWD or unknown vehicle keeps the "(4WD)" jobs
+  only because the guide has no other line for it, and a guide with AWD lines gets its own field.
 - **Where a list covers a vehicle, it is the schedule** (the user's decision, 2026-10-13, reversing
   "offered, never at setup"). `ScheduleSetupViewModel` matches the list and shows its intervals in place
   of the typical ones; saving writes them as the user's own items (no `templateKey`, `service` set,

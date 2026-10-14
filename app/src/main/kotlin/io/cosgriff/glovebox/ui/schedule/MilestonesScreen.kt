@@ -124,6 +124,8 @@ data class MilestonesState(
     val known: KnownScheduleList? = null,
     /** For a table that was added from a bundled schedule: whose guide it is, said beside it for as long as the table is kept. */
     val startedFrom: String? = null,
+    /** The vehicle's drive type, which decides which of a maker's jobs are for it. */
+    val drivetrain: String? = null,
 )
 
 /**
@@ -209,6 +211,7 @@ class MilestonesViewModel @Inject constructor(
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model),
+            drivetrain = vehicle.drivetrain,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -261,7 +264,7 @@ class MilestonesViewModel @Inject constructor(
             table.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, s.unit).map { m ->
+                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain).map { m ->
                     MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
                         m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
                 },

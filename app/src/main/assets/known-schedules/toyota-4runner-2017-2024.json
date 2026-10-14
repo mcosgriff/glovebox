@@ -14,6 +14,14 @@
     "note": "Read from the maintenance log in Toyota's guide for these model years, in Glovebox's wording. Check it against the guide that came with your own vehicle.",
     "basis": "The mileages, months and jobs of the maintenance log in Toyota's own Warranty and Maintenance Guides, which Toyota publishes free: T-MMS-174Runner to T-MMS-244Runner. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
+  "fourWheelDriveOnly": [
+    "Inspect drive shaft boots (4WD)",
+    "Inspect drive shaft boots (4WD) · dusty roads",
+    "Inspect front differential oil (4WD)",
+    "Inspect transfer case oil (4WD)",
+    "Replace front differential oil (4WD) · towing or heavy loads",
+    "Replace transfer case oil (4WD) · dusty roads or towing"
+  ],
   "milestones": [
     {
       "atMiles": 5000,
