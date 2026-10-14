@@ -274,6 +274,11 @@ class ScheduleViewModel @Inject constructor(
         }
     }
 
+    /** Ticks or unticks every item at once. Only `tracked` changes; a snooze, an interval and every record stay. */
+    fun setAllTracked(tracked: Boolean) {
+        viewModelScope.launch { schedule.updateAll(entities.values.filter { it.tracked != tracked }.map { it.copy(tracked = tracked) }) }
+    }
+
     fun setTracked(item: DraftItem, tracked: Boolean) {
         editing = null
         viewModelScope.launch { entities[item.key]?.let { schedule.update(it.copy(tracked = tracked)) } }
@@ -500,7 +505,14 @@ fun ScheduleScreen(
                 }
                 // A tracked item that repeats by mileage is all the milestones view needs; so is a table of the user's own.
                 if (hasMilestoneTable || state.items.any { it.tracked && it.active.miles != null }) MilestonesRow(onClick = { onOpenMilestones(v.id) })
-                SectionLabel("$tracked OF ${state.items.size} TRACKED")
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    SectionLabel("$tracked OF ${state.items.size} TRACKED", Modifier.weight(1f))
+                    // As on setup: everything on, or with everything on, everything off.
+                    val all = tracked == state.items.size
+                    TextButton(onClick = { vm.setAllTracked(!all) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text(if (all) "Clear all" else "Select all")
+                    }
+                }
             }
 
             if (state.notLogged > 0) {
