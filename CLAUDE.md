@@ -213,6 +213,13 @@ Notes on what's built:
   (`Drivetrains.kind` is `TWO_WHEEL`: vPIC's "4x2", or RWD / FWD). **4WD and AWD are different systems
   and `DriveKind` keeps them apart** (the user's point): an AWD or unknown vehicle keeps the "(4WD)" jobs
   only because the guide has no other line for it, and a guide with AWD lines gets its own field.
+- `manualExcluded` is the same for the gearbox: only a vehicle known to have a manual
+  (`Transmissions.isManual`, vPIC's "Manual/Standard") loses the jobs named there (the GTI's DSG fluid).
+  A job the guide gives by time alone is an interval with months, no distance and `rule: time-only`;
+  `KnownSchedules.contradictions` then only requires the job to be in the table.
+- The lists that ship: the 4Runner 2017–2024 (Toyota's guides, every year read) and the Mk6 GTI
+  2010–2014 (Volkswagen's cards as filed with NHTSA: 2012 and 2014 read in full, 2010 from the
+  all-models card, **2011 and 2013 inferred**; `docs/known-schedules.md` has the table of what was read).
 - **Where a list covers a vehicle, it is the schedule** (the user's decision, 2026-10-13, reversing
   "offered, never at setup"). `ScheduleSetupViewModel` matches the list and shows its intervals in place
   of the typical ones; saving writes them as the user's own items (no `templateKey`, `service` set,

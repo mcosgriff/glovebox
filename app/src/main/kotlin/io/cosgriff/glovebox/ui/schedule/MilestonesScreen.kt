@@ -126,6 +126,7 @@ data class MilestonesState(
     val startedFrom: String? = null,
     /** The vehicle's drive type, which decides which of a maker's jobs are for it. */
     val drivetrain: String? = null,
+    val transmission: String? = null,
 )
 
 /**
@@ -212,6 +213,7 @@ class MilestonesViewModel @Inject constructor(
             fromTable = false,
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model),
             drivetrain = vehicle.drivetrain,
+            transmission = vehicle.transmission,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -264,7 +266,7 @@ class MilestonesViewModel @Inject constructor(
             table.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain).map { m ->
+                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain, s.transmission).map { m ->
                     MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
                         m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
                 },

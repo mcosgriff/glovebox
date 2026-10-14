@@ -76,6 +76,15 @@ and leaving a job out is the worse mistake. **Four-wheel drive and all-wheel dri
 and the code keeps them apart** (`DriveKind`); a guide that marks jobs for AWD gets its own field for
 them, and nothing marked for one is taken to be for the other.
 
+`manualExcluded` names the jobs that aren't for a manual gearbox, such as a dual-clutch transmission's
+fluid change. The rule is the same shape: only a vehicle **known** to have a manual (vPIC's
+`Manual/Standard`) loses them; an automatic, a dual-clutch or nothing on record keeps them.
+
+A job a guide gives by time alone ("every 2 years regardless of mileage") is a reminder with months and
+no distance, marked `time-only`. The table shows it wherever the maker drew it, and the check doesn't hold
+its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the
+repeating part and the job's name says the rest: Glovebox doesn't know the day a car went into service.
+
 A model whose guide differs by engine gets one list per engine; that needs a field to match on, which
 is added with the first list that needs it.
 
@@ -126,3 +135,33 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2010 and 2012–2016 (no guide found at that address), 2011 (found; it has separate
   schedules for the 4-cylinder and the V6), 2025 on (a new generation, with a chart in place of the log).
+
+### Volkswagen GTI, 2010–2014 (Mk6)
+
+Source: Volkswagen's "Maintenance Schedule For USA" cards, which Volkswagen files with NHTSA as
+manufacturer communications (`https://static.nhtsa.gov/odi/tsbs/<year>/MC-<id>-<suffix>.pdf`; the ids
+are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-13.
+
+| Model year | What was read | Document |
+|---|---|---|
+| 2010 | The card for all models except the Routan. Every row that names the GTI, its 2.0T engine or all models agrees with the 2012 GTI card | `2012/MC-10156104-9999` |
+| 2011 | **No card for this year was found.** Volkswagen's model-year 2011 sheet of transmission and spark plug intervals gives the GTI 2.0T: DSG fluid at 40,000, spark plugs at 60,000, as the cards either side do | `2012/MC-10071284-7690` |
+| 2012 | The GTI card, in full; the list was written from it | `2012/MC-10072614-5448` |
+| 2013 | **No card for this year was found.** The model-year 2013 sheet gives the same two figures | `2012/MC-10071272-7690` |
+| 2014 | The GTI card, in full: the same jobs in the same columns as 2012 | `2013/MC-10155950-9999` |
+
+- **2011 and 2013 are inferred**, from identical cards on both sides and Volkswagen's own sheet for the
+  year confirming the two figures that vary most between models. That is weaker than reading the card,
+  and the owner of a 2011 or 2013 should check the list against the maintenance booklet in the car.
+- The card is a grid: 12 columns, 10,000 to 120,000 miles, with no months printed for a column. Jobs
+  "regardless of mileage" (airbag check yearly, brake fluid, the tire mobility kit) are drawn in the
+  columns Volkswagen chose and named with their time here.
+- Reminders: engine oil and tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; DSG fluid and
+  filter 40,000 (not for a manual car); air filter and spark plugs 60,000 / 72 mo; brake fluid every
+  24 months by time alone (the card says at 3 years first, then every 2).
+- Left out of the 2010 card's rows as not the GTI's: AdBlue, the diesel particulate and fuel filters
+  (TDI), the New Beetle's brake fluid row, the convertible roof, the 2.5L / 3.2L spark plug row and the
+  2.5L automatic's fluid. Its three "if applicable" rows that the 2012 and 2014 GTI cards don't have
+  (Haldex clutch oil, timing belt, tire pressure sensors) are left out too, on the evidence of those cards.
+- Left out of every year: the dealer's service sticker.
+- Not covered: the Mk5 (2009 and earlier) and the Mk7 (2015 on), which have cards of their own.
