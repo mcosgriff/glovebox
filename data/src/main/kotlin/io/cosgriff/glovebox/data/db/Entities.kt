@@ -119,6 +119,12 @@ data class ScheduleItemEntity(
      * until the job has been logged once. Null for every other item.
      */
     val firstMiles: Int? = null,
+    /**
+     * A job that exists only under severe use (a maker's "special operating conditions": differential
+     * oil when towing). Its interval is in [intervalMiles] / [intervalMonths], and it reminds only while
+     * [useSevere] is on; on normal use it stays on the list, switched off.
+     */
+    @ColumnInfo(defaultValue = "0") val severeOnly: Boolean = false,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

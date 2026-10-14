@@ -1572,6 +1572,10 @@
       "name": "Lubricate propeller shaft",
       "everyMiles": 15000,
       "everyMonths": 18,
+      "severe": {
+        "everyMiles": 5000,
+        "everyMonths": 6
+      },
       "service": "driveshaft"
     },
     {
@@ -1616,6 +1620,34 @@
       "everyMiles": 30000,
       "everyMonths": 36,
       "service": "transfer-case-check"
+    },
+    {
+      "name": "Replace front differential oil (4WD) · towing or heavy loads",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "severeOnly": true,
+      "service": "front-diff"
+    },
+    {
+      "name": "Replace rear differential oil · towing or heavy loads",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "severeOnly": true,
+      "service": "rear-diff"
+    },
+    {
+      "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "severeOnly": true,
+      "service": "transfer-case"
+    },
+    {
+      "name": "Replace automatic transmission fluid · towing or heavy loads",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "severeOnly": true,
+      "service": "trans-fluid"
     }
   ]
 }

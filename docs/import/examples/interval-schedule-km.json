@@ -30,6 +30,12 @@
       "everyKm": 80000,
       "firstAtKm": 160000,
       "service": "coolant"
+    },
+    {
+      "name": "Differential oil when towing",
+      "everyKm": 24000,
+      "severeOnly": true,
+      "service": "rear-diff"
     }
   ]
 }

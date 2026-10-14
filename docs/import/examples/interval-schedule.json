@@ -39,6 +39,12 @@
       "everyMiles": 50000,
       "firstAtMiles": 100000,
       "service": "coolant"
+    },
+    {
+      "name": "Differential oil when towing",
+      "everyMiles": 15000,
+      "severeOnly": true,
+      "service": "rear-diff"
     }
   ]
 }

@@ -29,7 +29,7 @@ class Converters {
         MilestoneEntity::class,
         MilestoneJobEntity::class,
     ],
-    version = 19,
+    version = 20,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -50,6 +50,7 @@ class Converters {
         AutoMigration(from = 16, to = 17), // torque_specs.knownList
         AutoMigration(from = 17, to = 18), // vehicles.milestonesKnownList, schedule_items.knownList
         AutoMigration(from = 18, to = 19), // schedule_items.firstMiles
+        AutoMigration(from = 19, to = 20), // schedule_items.severeOnly
     ],
 )
 @TypeConverters(Converters::class)

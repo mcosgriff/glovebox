@@ -49,6 +49,8 @@ fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?): Trac
     val miles = if (useSevere) severeMiles ?: intervalMiles else intervalMiles
     val months = if (useSevere) severeMonths ?: intervalMonths else intervalMonths
     if (miles == null && months == null) return null
+    // A job only for severe use isn't a reminder on normal use: it is on the list, switched off.
+    if (severeOnly && !useSevere) return null
     val rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: defaultRule
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
     val zeroAt = -(swap?.offset ?: 0)
@@ -149,6 +151,7 @@ fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
     tracked = tracked,
     service = service,
     firstAt = firstMiles,
+    severeOnly = severeOnly,
 )
 
 private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
