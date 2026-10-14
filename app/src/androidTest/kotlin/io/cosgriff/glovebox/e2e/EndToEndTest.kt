@@ -137,7 +137,8 @@ class EndToEndTest {
         step("everything is as it was when the backup was made")
         tap("Garage", timeout = LONG)
         see(containing("45,200 mi"), timeout = LONG)
-        see("7 TO LOG")
+        // The garage list says it as a chip ("7 to log"), vehicle home as a badge ("7 TO LOG"); a restore can land on either.
+        see(By.text(java.util.regex.Pattern.compile("7 to log", java.util.regex.Pattern.CASE_INSENSITIVE)))
         assertTrue("the reading added after the backup is still there", device.findObject(By.textContains("46,000 mi")) == null)
     }
 
