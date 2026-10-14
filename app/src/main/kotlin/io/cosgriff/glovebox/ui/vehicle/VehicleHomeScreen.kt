@@ -154,7 +154,7 @@ class VehicleHomeViewModel @Inject constructor(
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
         val updates = readings.toReadings(swap)
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap) }
         VehicleHome(
             vehicle = vehicle,
             odometer = VehicleReminders.currentOdometer(entries, updates),
@@ -180,6 +180,8 @@ class VehicleHomeViewModel @Inject constructor(
 fun VehicleHomeScreen(
     onBack: () -> Unit,
     onLogService: (vehicleId: Long) -> Unit,
+    /** Log service with one reminder's work already ticked. */
+    onLogItem: (vehicleId: Long, scheduleItemId: Long) -> Unit,
     onOpenRules: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
     onOpenDetails: (vehicleId: Long) -> Unit,
@@ -247,22 +249,7 @@ fun VehicleHomeScreen(
 
                 if (openRecalls.count > 0) RecallBanner(openRecalls, onClick = { onOpenRecalls(v.id) })
 
-                if (up.counting.isNotEmpty()) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Coming up", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text(home.defaultRule.ruleLabel(), style = MaterialTheme.typography.bodySmall)
-                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
-                        }
-                    }
-                    WhiteCard {
-                        up.counting.forEachIndexed { i, (status, progress) ->
-                            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            ReminderRow(status, progress, v.clusterSwap(), unit)
-                        }
-                    }
-                }
-
+                // Above "Coming up": these have nothing to count from, so they are what needs doing first.
                 if (up.notLogged.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Not logged yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -277,15 +264,33 @@ fun VehicleHomeScreen(
                         up.notLogged.forEachIndexed { i, status ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Row(
-                                Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                Text(status.item.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    "Every ${status.item.interval.label(unit).replace(" / ", " or ")}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(status.item.name, style = MaterialTheme.typography.titleSmall)
+                                    // Amber, not red: the schedule's last point has passed with nothing logged,
+                                    // which isn't the same as the work being overdue.
+                                    status.lastScheduled?.let { point ->
+                                        val at = v.clusterSwap().actual(point.at).asDistance(unit)
+                                        Text(
+                                            if (point.ago == 0) "Scheduled now, at $at · nothing logged" else "Last scheduled at $at · ${point.ago.asDistance(unit)} ago · nothing logged",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = statusColors().soon,
+                                        )
+                                    }
+                                    Text(
+                                        "Every ${status.item.interval.label(unit).replace(" / ", " or ")}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                // Opens Log service with this job ticked, for work being done now.
+                                TextButton(onClick = { onLogItem(v.id, status.item.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    Text("Log it", fontWeight = FontWeight.SemiBold)
+                                }
                             }
                         }
                     }
@@ -296,6 +301,22 @@ fun VehicleHomeScreen(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
                         Text("Enter when these were last done")
+                    }
+                }
+
+                if (up.counting.isNotEmpty()) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Coming up", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        TextButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp)) {
+                            Text(home.defaultRule.ruleLabel(), style = MaterialTheme.typography.bodySmall)
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    WhiteCard {
+                        up.counting.forEachIndexed { i, (status, progress) ->
+                            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            ReminderRow(status, progress, v.clusterSwap(), unit)
+                        }
                     }
                 }
 
@@ -407,6 +428,8 @@ private fun StatusPill(up: ComingUp) {
         up.overdue > 0 && scheme.background.luminance() < 0.5f -> Triple("${up.overdue} OVERDUE", scheme.onPrimaryContainer, scheme.onPrimary)
         up.overdue > 0 -> Triple("${up.overdue} OVERDUE", scheme.primaryContainer, scheme.onPrimaryContainer)
         up.dueSoon > 0 -> Triple("${up.dueSoon} DUE SOON", scheme.surfaceVariant, scheme.onSurface)
+        // Nothing to be up to date on while there is work the log doesn't have.
+        up.notLogged.isNotEmpty() -> Triple("${up.notLogged.size} TO LOG", scheme.surfaceVariant, statusColors().soon)
         up.counting.isNotEmpty() -> Triple("UP TO DATE", scheme.tertiaryContainer, scheme.onTertiaryContainer)
         else -> return
     }

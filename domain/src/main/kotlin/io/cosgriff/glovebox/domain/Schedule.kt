@@ -41,14 +41,14 @@ object ScheduleTemplates {
         add(ScheduleTemplateItem("brake-inspect", "Brake inspection", Interval(15_000, 12)))
         add(ScheduleTemplateItem("brake-fluid", "Brake fluid", Interval(null, 36)))
         add(ScheduleTemplateItem("trans-fluid", "Transmission fluid", Interval(60_000, null), Interval(30_000, null)))
-        when (driveKind(drivetrain)) {
-            DriveKind.FOUR_OR_ALL_WHEEL -> add(
+        when (templateDrive(drivetrain)) {
+            TemplateDrive.FOUR_OR_ALL_WHEEL -> add(
                 ScheduleTemplateItem("diff-fluid", "Differential & transfer case fluid", Interval(60_000, null), Interval(30_000, null)),
             )
-            DriveKind.REAR -> add(
+            TemplateDrive.REAR -> add(
                 ScheduleTemplateItem("diff-fluid", "Differential fluid", Interval(60_000, null), Interval(30_000, null)),
             )
-            DriveKind.OTHER -> Unit
+            TemplateDrive.OTHER -> Unit
         }
         add(ScheduleTemplateItem("coolant", if (engine) "Engine coolant" else "Coolant", Interval(100_000, 120)))
         if (engine) add(ScheduleTemplateItem("spark-plugs", "Spark plugs", Interval(100_000, null)))
@@ -64,14 +64,14 @@ object ScheduleTemplates {
     /** vPIC says "Electric" for battery-electric cars; hybrids report their combustion fuel as primary. */
     fun isElectric(fuel: String?): Boolean = fuel?.trim().equals("Electric", ignoreCase = true)
 
-    private enum class DriveKind { FOUR_OR_ALL_WHEEL, REAR, OTHER }
+    private enum class TemplateDrive { FOUR_OR_ALL_WHEEL, REAR, OTHER }
 
-    private fun driveKind(drivetrain: String?): DriveKind {
+    private fun templateDrive(drivetrain: String?): TemplateDrive {
         val d = drivetrain?.uppercase().orEmpty()
         return when {
-            "4WD" in d || "AWD" in d || "4X4" in d -> DriveKind.FOUR_OR_ALL_WHEEL
-            "RWD" in d -> DriveKind.REAR
-            else -> DriveKind.OTHER
+            "4WD" in d || "AWD" in d || "4X4" in d -> TemplateDrive.FOUR_OR_ALL_WHEEL
+            "RWD" in d -> TemplateDrive.REAR
+            else -> TemplateDrive.OTHER
         }
     }
 }
@@ -81,6 +81,10 @@ fun Interval.label(unit: DistanceUnit): String = listOfNotNull(
     miles?.let(unit::format),
     months?.let { "$it mo" },
 ).joinToString(" / ")
+
+/** "First at 100,000 mi, then every 50,000 mi / 60 mo" for a job with a first time of its own; the plain label otherwise. */
+fun Interval.label(unit: DistanceUnit, firstAt: Int?): String =
+    if (firstAt == null) label(unit) else "First at ${unit.format(firstAt)}, then every ${label(unit)}"
 
 object IntervalInput {
     /**

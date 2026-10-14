@@ -25,7 +25,7 @@ data class SavedMilestone(val id: Long, val atMiles: Int, val work: List<TableJo
  */
 object MilestoneImport {
     const val MAX_ITEMS = 200
-    const val MAX_WORK = 30
+    const val MAX_WORK = 40
     const val MAX_NAME = 80
     const val MAX_MILES = 1_000_000
     const val MAX_MONTHS = 600
@@ -129,7 +129,9 @@ object MilestoneImport {
 
     /** The keys a logged line of work answers to: its catalog line if it has one, and what it is called. */
     fun doneKeys(label: String, catalogId: String?): List<String> =
-        listOfNotNull(catalogId?.let { "service:$it" }, "name:${nameKey(label)}")
+        listOfNotNull(catalogId?.let { "service:$it" }, "name:${nameKey(label)}") +
+            // Work that includes other work completes that job too: a change of oil, the check of it.
+            HistoryImport.services[catalogId]?.covers.orEmpty().map { "service:$it" }
 
     /** The saved table as the Milestones screen takes it, for a table that ends where it ends. */
     fun milestones(table: List<SavedMilestone>): List<Milestone> =

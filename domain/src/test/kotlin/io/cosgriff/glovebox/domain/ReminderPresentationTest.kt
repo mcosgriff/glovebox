@@ -136,8 +136,13 @@ class ReminderPresentationTest {
         )
         assertEquals(Attention(DueState.DUE_SOON, 1, "Oil"), ReminderPresentation.comingUp(listOf(fine, soon)).attention)
         assertEquals(Attention(DueState.OK, 0, null), ReminderPresentation.comingUp(listOf(fine)).attention)
-        // A vehicle with nothing logged has nothing to report, not nine overdue items.
-        assertNull(ReminderPresentation.comingUp(listOf(never)).attention)
+        // A vehicle with nothing logged has work to log, not nine overdue items.
+        assertEquals(Attention(DueState.OK, 0, null, toLog = 1), ReminderPresentation.comingUp(listOf(never)).attention)
+        // And it isn't "up to date" while something is still to log, whatever else is counting.
+        assertEquals(Attention(DueState.OK, 0, null, toLog = 1), ReminderPresentation.comingUp(listOf(fine, never)).attention)
+        // Something really due comes first.
+        assertEquals(Attention(DueState.DUE_SOON, 1, "Oil"), ReminderPresentation.comingUp(listOf(soon, never)).attention)
+        assertNull(ReminderPresentation.comingUp(emptyList()).attention)
     }
 
     @Test
@@ -176,7 +181,7 @@ class ReminderPresentationTest {
     }
 
     @Test
-    fun `reminders tab groups by overdue, next 30 days, later and not logged`() {
+    fun `reminders tab groups by not logged, overdue, next 30 days and later`() {
         val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
         val soonByMiles = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
         // Due in 20 days: outside the 14-day lead, inside the 30-day window.
@@ -191,7 +196,7 @@ class ReminderPresentationTest {
         val groups = ReminderPresentation.grouped(listOf("Truck" to truck, "Hatch" to hatch), today)
 
         assertEquals(
-            listOf(ReminderGroup.OVERDUE, ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER, ReminderGroup.NOT_LOGGED),
+            listOf(ReminderGroup.NOT_LOGGED, ReminderGroup.OVERDUE, ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER),
             groups.keys.toList(),
         )
         assertEquals(listOf("Truck" to "Rotation"), groups.names(ReminderGroup.OVERDUE))

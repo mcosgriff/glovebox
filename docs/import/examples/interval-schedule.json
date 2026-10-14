@@ -32,6 +32,13 @@
       },
       "rule": "mileage-only",
       "service": "driveshaft"
+    },
+    {
+      "name": "Coolant",
+      "everyMonths": 60,
+      "everyMiles": 50000,
+      "firstAtMiles": 100000,
+      "service": "coolant"
     }
   ]
 }

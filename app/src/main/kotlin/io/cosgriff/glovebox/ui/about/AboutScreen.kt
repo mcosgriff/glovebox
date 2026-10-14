@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import javax.inject.Inject
 import io.cosgriff.glovebox.ui.torque.KnownSpecCatalog
 import io.cosgriff.glovebox.domain.KnownSpecList
+import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.ui.schedule.KnownScheduleCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -97,6 +99,7 @@ fun AboutScreen(
 ) {
     // The torque lists that ship with the app, each credited to where it came from.
     val known by vm.lists.collectAsStateWithLifecycle()
+    val schedules by vm.schedules.collectAsStateWithLifecycle()
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val version = remember { context.versionName() }
@@ -132,12 +135,17 @@ fun AboutScreen(
                     HorizontalDivider(color = scheme.outlineVariant)
                     Source("NHTSA recalls", "Recalls by year, make and model")
                     HorizontalDivider(color = scheme.outlineVariant)
-                    // No manufacturer data: the schedule is a general starter list and torque specs are typed in,
-                    // or come from a named list that is offered for its model and tagged to double-check.
+                    // Nothing of Glovebox's own: the schedule is a general starter list and torque specs are typed in.
+                    // What else ships is a named list (a maker's guide or manual), offered for its model, never
+                    // applied unasked, and marked to check.
                     Source("Maintenance schedules & specs", "Typical intervals to start from, and your own entries")
                     known.forEach { list ->
                         HorizontalDivider(color = scheme.outlineVariant)
                         Source(list.source.name, "Reference torque values offered for the ${list.title}. ${list.source.note}")
+                    }
+                    schedules.forEach { list ->
+                        HorizontalDivider(color = scheme.outlineVariant)
+                        Source(list.source.name, "The maintenance table and reminders offered for the ${list.title}. ${list.source.note}")
                     }
                 }
                 Text(
@@ -244,8 +252,9 @@ fun PrivacyScreen(onBack: () -> Unit) {
     }
 }
 
-/** The bundled torque lists, for crediting their sources on the About screen. */
+/** The bundled torque lists and maintenance schedules, for crediting their sources on the About screen. */
 @HiltViewModel
-class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog) : ViewModel() {
+class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog, scheduleCatalog: KnownScheduleCatalog) : ViewModel() {
     val lists: StateFlow<List<KnownSpecList>> = flow { emit(catalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val schedules: StateFlow<List<KnownScheduleList>> = flow { emit(scheduleCatalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }

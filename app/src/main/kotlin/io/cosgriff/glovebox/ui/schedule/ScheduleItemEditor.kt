@@ -87,6 +87,10 @@ fun ScheduleItemEditor(
     // A new item starts blank: the interval is the user's to say, not ours to guess.
     var milesText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.miles.asText()) }
     var monthsText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.months.asText()) }
+    var firstText by remember(item.key) { mutableStateOf(item.firstAt.asText()) }
+    // Blank is "one interval in, like any other"; otherwise a whole distance above zero.
+    val firstTyped = firstText.filterNot { it == ',' || it.isWhitespace() }.let { if (it.isEmpty()) null else it.toIntOrNull()?.takeIf { n -> n > 0 } }
+    val firstBad = firstText.isNotBlank() && firstTyped == null
     var showErrors by remember(item.key) { mutableStateOf(false) }
 
     val typed = IntervalInput.parse(milesText, monthsText)
@@ -113,7 +117,7 @@ fun ScheduleItemEditor(
             Button(
                 onClick = {
                     val interval = typed
-                    if (name.isBlank() || interval == null) {
+                    if (name.isBlank() || interval == null || firstBad) {
                         showErrors = true
                     } else {
                         onSave(
@@ -124,6 +128,7 @@ fun ScheduleItemEditor(
                                 useSevere = useSevere,
                                 rule = rule,
                                 service = service,
+                                firstAt = firstTyped,
                             ),
                         )
                     }
@@ -188,6 +193,21 @@ fun ScheduleItemEditor(
                         )
                     }
                 }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                SectionLabel("FIRST TIME AT (OPTIONAL)")
+                NumberField(unit.title, firstText, { firstText = it }, showErrors && firstBad, Modifier.fillMaxWidth())
+                Text(
+                    if (showErrors && firstBad) {
+                        "Enter whole ${unit.plural} above zero, or leave it blank."
+                    } else {
+                        "For a job whose first time isn't one interval in, such as coolant first at 100,000 and then every 50,000. " +
+                            "Until it has been logged once it is due at this reading; after that the interval counts from the last time. Leave blank otherwise."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (showErrors && firstBad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             RuleDropdown(rule, defaultRule, onPick = { rule = it })

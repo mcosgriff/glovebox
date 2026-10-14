@@ -78,7 +78,7 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
             val items = deps.schedule().allFor(v.id)
             val entries = records.map { it.toEntry(swap, items.answering()) }
             val updates = deps.odometer().readingsFor(v.id).toReadings(swap)
-            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule) }
+            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap) }
             NoticeVehicle(
                 id = v.id,
                 name = "${v.year} ${v.nickname ?: v.model}",

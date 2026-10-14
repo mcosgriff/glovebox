@@ -1,7 +1,13 @@
 package io.cosgriff.glovebox.domain
 
-/** A kind of work offered on the Log service screen. [resets] is a [ScheduleTemplateItem.key]. */
-data class CatalogItem(val id: String, val label: String, val resets: String? = null)
+/**
+ * A kind of work offered on the Log service screen. [resets] is a [ScheduleTemplateItem.key].
+ *
+ * [covers] are other lines this work also counts as: changing an oil includes checking it, so a
+ * logged change resets the reminder to check it and completes that job on a milestone. It goes one
+ * way only; a check never counts as a change.
+ */
+data class CatalogItem(val id: String, val label: String, val resets: String? = null, val covers: Set<String> = emptySet())
 
 data class CatalogCategory(val id: String, val label: String, val items: List<CatalogItem>)
 
@@ -29,6 +35,11 @@ object ServiceLinks {
         }
         // Only the user's own items carry a service; on a typical item it would be ignored.
         schedule.filter { it.templateKey == null && it.service != null }.forEach { out.getOrPut(it.service!!) { mutableSetOf() } += it.id }
+        // Work that includes other work answers for that too: a change of oil for the check of it.
+        val direct = out.mapValues { it.value.toSet() }
+        ServiceCatalog.categories.flatMap { it.items }.forEach { item ->
+            item.covers.forEach { covered -> direct[covered]?.let { out.getOrPut(item.id) { mutableSetOf() } += it } }
+        }
         return out
     }
 
@@ -108,7 +119,16 @@ object ServiceCatalog {
         CatalogCategory(
             "driveline", "Driveline",
             listOf(
-                CatalogItem("diff-fluid", "Differential / transfer case fluid", resets = "diff-fluid"),
+                CatalogItem(
+                    "diff-fluid", "Differential / transfer case fluid", resets = "diff-fluid",
+                    covers = setOf("front-diff-check", "rear-diff-check", "transfer-case-check"),
+                ),
+                CatalogItem("front-diff-check", "Front differential oil check"),
+                CatalogItem("front-diff", "Front differential oil change", covers = setOf("front-diff-check")),
+                CatalogItem("rear-diff-check", "Rear differential oil check"),
+                CatalogItem("rear-diff", "Rear differential oil change", covers = setOf("rear-diff-check")),
+                CatalogItem("transfer-case-check", "Transfer case oil check"),
+                CatalogItem("transfer-case", "Transfer case oil change", covers = setOf("transfer-case-check")),
                 CatalogItem("driveshaft", "Driveshaft grease"),
                 CatalogItem("cv-axle", "CV axle / boot"),
             ),
@@ -170,14 +190,56 @@ object ServiceCatalog {
 }
 
 /** A schedule item being tracked, with the interval and rule already resolved. */
-/** [snooze] is whatever is stored for the item, whether or not it has passed. */
-data class TrackedItem(val id: Long, val name: String, val interval: Interval, val rule: DueRule, val snooze: Snooze? = null)
+/**
+ * [snooze] is whatever is stored for the item, whether or not it has passed.
+ *
+ * [firstAt] is for a job whose first time isn't one interval in: "first at 100,000 miles, then every
+ * 50,000". It is the odometer, in dash terms, the job is first due at. It only matters until the job
+ * has been logged once; from then on the interval counts from the last time, as for any other item.
+ */
+data class TrackedItem(
+    val id: Long,
+    val name: String,
+    val interval: Interval,
+    val rule: DueRule,
+    val snooze: Snooze? = null,
+    val firstAt: Int? = null,
+    /**
+     * What the dash read when the vehicle had covered no distance: 0, unless the cluster has been
+     * replaced. A schedule counts from there, so "one interval from zero" is this plus the interval.
+     */
+    val zeroAt: Int = 0,
+)
+
+/**
+ * For a job with nothing logged that the vehicle is already past: the schedule's most recent point
+ * for it, [at] on the dash, and how far back that is. A fact about the schedule and the odometer,
+ * never a claim that the job was missed; it may have been done and not logged.
+ */
+data class PastPoint(val at: Int, val ago: Int)
 
 /**
  * [snooze] is set only while a snooze is holding the reminder back; [status] then reads
  * [DueState.OK] but keeps the real distances, so the reminder is honest once the snooze passes.
  */
-data class ItemStatus(val item: TrackedItem, val lastDone: LastDone?, val status: DueStatus, val snooze: Snooze? = null)
+data class ItemStatus(
+    val item: TrackedItem,
+    val lastDone: LastDone?,
+    val status: DueStatus,
+    val snooze: Snooze? = null,
+    /**
+     * Never logged, and the vehicle hasn't yet reached the mileage the job is first due at:
+     * [TrackedItem.firstAt], or one interval from zero. [status] then counts down to that mileage, so this is a reminder like
+     * any logged one and not a "Not logged yet". Past that mileage with nothing logged it is false:
+     * Glovebox can't know whether the job was done, and asks.
+     */
+    val awaitingFirst: Boolean = false,
+    /** Set only for a job that is "not logged yet" and goes by distance, on a vehicle with a reading. */
+    val lastScheduled: PastPoint? = null,
+) {
+    /** There is something to count from: a logged service, or a first mileage still ahead. */
+    val counting: Boolean get() = lastDone != null || awaitingFirst
+}
 
 object VehicleReminders {
     /** Latest known odometer from the service log and standalone mileage updates. */
@@ -197,7 +259,20 @@ object VehicleReminders {
         val pace = ReminderEngine.milesPerDay(readings)
         return items.map { item ->
             val last = ServiceLog.lastDone(item.id, entries)
+            // A job the vehicle hasn't reached yet can't be owed: with nothing logged it counts down to its
+            // first time, which is one interval from zero unless the item says otherwise. That needs a
+            // reading to go on, and a job that goes by time alone has no first mileage.
+            val step = item.interval.miles?.takeIf { item.rule != DueRule.TIME_ONLY }
+            val first = item.firstAt ?: step?.let { item.zeroAt + it }
+            if (last == null && first != null && readings.isNotEmpty() && odometer < first) {
+                return@map ItemStatus(item, null, ReminderEngine.first(first, odometer, today, pace, lead), awaitingFirst = true)
+            }
             val status = ReminderEngine.status(item.interval, item.rule, last, odometer, today, pace, lead)
+            if (last == null) {
+                // Past its first time with nothing logged: where the schedule last put it, for the screen to say.
+                val point = if (first != null && step != null && readings.isNotEmpty()) (first + (odometer - first) / step * step).let { PastPoint(it, odometer - it) } else null
+                return@map ItemStatus(item, null, status, lastScheduled = point)
+            }
             // A snooze has nothing to hold back until the reminder is due, or before it was ever logged.
             val snooze = item.snooze?.takeIf { last != null && status.state != DueState.OK && it.isActive(odometer, today) }
             ItemStatus(item, last, if (snooze != null) status.copy(state = DueState.OK) else status, snooze)

@@ -33,6 +33,7 @@ object ScheduleExport {
         put("name", item.name.trim())
         // An item with no interval is written without one, which the reader refuses in its own words.
         item.normal?.let { interval(it, unit) }
+        item.firstAt?.let { put(if (unit == DistanceUnit.KILOMETERS) ScheduleImport.FIRST_KM else ScheduleImport.FIRST, it) }
         item.severe?.let { put("severe", buildJsonObject { interval(it, unit) }) }
         item.rule?.let { rule -> put("rule", ScheduleImport.rules.entries.first { it.value == rule }.key) }
         service(item)?.let { put("service", it) }

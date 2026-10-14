@@ -6,6 +6,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlin.math.abs
 
+
 /** Where a bundled list came from. Shown wherever the list is offered or one of its values is. */
 data class KnownSpecSource(
     /** Short enough for a row: a manual's title, or a site's name. */
@@ -72,7 +73,7 @@ object KnownSpecs {
     /** The folder in the app's assets the lists live in. */
     const val ASSET_DIR = "known-specs"
 
-    private val keys = setOf("id", "title", "make", "model", "years", "source", "items")
+    private val keys = KnownLists.headerKeys + "items"
 
     fun parse(text: String): KnownSpecFile {
         val root = try {
@@ -82,34 +83,7 @@ object KnownSpecs {
         }
         val check = ImportCheck()
         val o = check.obj(root, "", keys, required = keys) ?: return KnownSpecFile.Invalid(check.invalid().errors)
-        val id = o["id"]?.let { check.string(it, "id", 60) }
-        val title = o["title"]?.let { check.string(it, "title", 60) }
-        val make = o["make"]?.let { check.string(it, "make", 40) }
-        val model = o["model"]?.let { check.string(it, "model", 40) }
-        val years = o["years"]?.let { y ->
-            check.obj(y, "years", setOf("from", "to"), required = setOf("from", "to"))?.let { range ->
-                val from = range["from"]?.let { check.int(it, "years.from", 1900, 2100) }
-                val to = range["to"]?.let { check.int(it, "years.to", 1900, 2100) }
-                if (from != null && to != null && to < from) check.fail("years.to", "is before years.from")
-                if (from != null && to != null && to >= from) from..to else null
-            }
-        }
-        val source = o["source"]?.let { s ->
-            check.obj(s, "source", setOf("name", "url", "retrieved", "note", "basis"), required = setOf("name", "retrieved", "note", "basis"))?.let { src ->
-                val name = src["name"]?.let { check.string(it, "source.name", 40) }
-                val url = src["url"]?.let { check.string(it, "source.url", 300) }
-                val retrieved = src["retrieved"]?.let { check.string(it, "source.retrieved", 10) }
-                val note = src["note"]?.let { check.string(it, "source.note", 200) }
-                val basis = src["basis"]?.let { check.string(it, "source.basis", 300) }
-                if (url != null && !url.startsWith("https://")) check.fail("source.url", "must be an https address")
-                if (retrieved != null && !Regex("""\d{4}-\d{2}-\d{2}""").matches(retrieved)) check.fail("source.retrieved", "must be a date written as \"YYYY-MM-DD\"")
-                if (name != null && retrieved != null && note != null && basis != null && ("url" !in src || url != null)) {
-                    KnownSpecSource(name, url, retrieved, note, basis)
-                } else {
-                    null
-                }
-            }
-        }
+        val header = KnownLists.header(o, check)
         val raw = o["items"]
         val items = raw?.let { TorqueImport.read(it, check) }.orEmpty()
         // A list supplies values, and says nothing about where a user got theirs.
@@ -118,10 +92,8 @@ object KnownSpecs {
             if ("torque" !in item) check.fail("items[$i]", "has no torque value; a known spec is a value")
             if ("source" in item) check.fail("items[$i].source", "isn't for a bundled list: every value in one is a reference to double-check")
         }
-        if (check.failed || id == null || title == null || make == null || model == null || years == null || source == null) {
-            return KnownSpecFile.Invalid(check.invalid().errors)
-        }
-        return KnownSpecFile.Ok(KnownSpecList(id, title, make, model, years, source, items))
+        if (check.failed || header == null) return KnownSpecFile.Invalid(check.invalid().errors)
+        return KnownSpecFile.Ok(KnownSpecList(header.id, header.title, header.make, header.model, header.years, header.source, items))
     }
 
     /**
@@ -130,9 +102,7 @@ object KnownSpecs {
      * guessed from a near miss, because a torque value for the wrong model is worse than none.
      */
     fun match(lists: List<KnownSpecList>, year: Int, make: String, model: String): KnownSpecList? =
-        lists.firstOrNull { year in it.years && same(it.make, make) && same(it.model, model) }
-
-    private fun same(a: String, b: String) = a.filterNot(Char::isWhitespace).equals(b.filterNot(Char::isWhitespace), ignoreCase = true)
+        lists.firstOrNull { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
 
     /**
      * What adding [list] to a vehicle with [existing] rows would do. Rows match on category and name,

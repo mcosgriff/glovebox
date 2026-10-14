@@ -166,7 +166,7 @@ class ImportFilesTest {
     fun `the published examples survive being imported and written out again`() {
         val docs = File("../docs/import/examples")
         val schedule = (ImportFormat.parse(File(docs, "interval-schedule.json").readText()) as ImportFile.IntervalSchedule).items
-        val saved = schedule.mapIndexed { i, it -> SavedScheduleItem(i.toLong(), it.name, it.normal, it.severe, it.rule, null, true, it.service) }
+        val saved = schedule.mapIndexed { i, it -> SavedScheduleItem(i.toLong(), it.name, it.normal, it.severe, it.rule, null, true, it.service, it.firstAt) }
         assertEquals(schedule, (ImportFormat.parse(scheduleFile(saved).text!!) as ImportFile.IntervalSchedule).items)
 
         val torque = (ImportFormat.parse(File(docs, "torque-specs.json").readText()) as ImportFile.TorqueSpecs).items

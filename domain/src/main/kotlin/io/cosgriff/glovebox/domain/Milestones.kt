@@ -52,9 +52,12 @@ object Milestones {
         val byPoint = sortedMapOf<Int, MutableList<MilestoneJob>>()
         for ((item, step) in steps.sortedBy { it.first.name }) {
             // Newest first, so a very short interval can't crowd out the points that matter most.
-            var at = horizon / step * step
+            // A job with a first time of its own starts there and comes round every interval after it.
+            val first = item.firstAt?.toLong()
+            val phase = first?.let { it % step } ?: 0L
+            var at = (horizon - phase) / step * step + phase
             var made = 0
-            while (at >= maxOf(from, 1) && made < MAX_POINTS) {
+            while (at >= maxOf(from.toLong(), 1L, first ?: 1L) && made < MAX_POINTS) {
                 byPoint.getOrPut(at.toInt()) { mutableListOf() } += MilestoneJob(item.id.toString(), item.name)
                 at -= step
                 made++

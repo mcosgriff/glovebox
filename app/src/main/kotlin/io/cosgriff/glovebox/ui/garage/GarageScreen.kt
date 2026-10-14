@@ -229,10 +229,13 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
 @Composable
 private fun AttentionChip(a: Attention) {
     val scheme = MaterialTheme.colorScheme
-    val (text, container, content) = when (a.state) {
+    val (text, container, content) = when {
+        a.toLog > 0 -> Triple("${a.toLog} to log", scheme.surfaceVariant, statusColors().soon)
+        else -> when (a.state) {
         DueState.OVERDUE -> Triple(a.only?.let { "$it overdue" } ?: "${a.count} overdue", scheme.primary, scheme.onPrimary)
         DueState.DUE_SOON -> Triple(a.only?.let { "$it due soon" } ?: "${a.count} due soon", scheme.surfaceVariant, statusColors().soon)
         DueState.OK -> Triple("Up to date", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        }
     }
     Surface(color = container, shape = CircleShape) {
         Text(

@@ -1,7 +1,12 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.outlined.CheckCircle
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.domain.KnownSchedules
+import kotlinx.coroutines.flow.flow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -115,6 +120,12 @@ data class MilestonesState(
     val table: List<SavedMilestone> = emptyList(),
     /** The length of the cycle when the user's table starts again after its last milestone; null when it ends. */
     val repeatsEveryMiles: Int? = null,
+    /** The maker's schedule that ships for this model, while the vehicle has no table of its own; it is offered, never applied. */
+    val known: KnownScheduleList? = null,
+    /** For a table that was added from a bundled schedule: whose guide it is, said beside it for as long as the table is kept. */
+    val startedFrom: String? = null,
+    /** The vehicle's drive type, which decides which of a maker's jobs are for it. */
+    val drivetrain: String? = null,
 )
 
 /**
@@ -131,6 +142,7 @@ class MilestonesViewModel @Inject constructor(
     settings: SettingsRepository,
     private val table: MilestoneDao,
     private val saver: ExportSaver,
+    catalog: KnownScheduleCatalog,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.toRoute<MilestonesRoute>().vehicleId
 
@@ -141,18 +153,20 @@ class MilestonesViewModel @Inject constructor(
         Triple(records, readings, rows)
     }
 
+    private val knownLists = flow { emit(catalog.lists()) }
+
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<MilestonesState?> = combine(
         vehicles.observe(vehicleId),
         schedule.observeTracked(vehicleId),
         log,
-        settings.settings,
+        combine(settings.settings, knownLists) { s, lists -> s to lists },
         ahead,
-    ) { vehicle, items, (records, readings, rows), s, count ->
+    ) { vehicle, items, (records, readings, rows), (s, lists), count ->
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule) }.filter { it.interval.miles != null }
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = VehicleReminders.currentOdometer(entries, readings.toReadings(swap))?.let { swap.actual(it) }
@@ -181,6 +195,7 @@ class MilestonesViewModel @Inject constructor(
                 table = saved,
                 model = "${vehicle.year} ${vehicle.make} ${vehicle.model}",
                 repeatsEveryMiles = every,
+                startedFrom = vehicle.milestonesKnownList?.let { id -> KnownSchedules.startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
             )
         }
         val done = entries.flatMap { e ->
@@ -195,6 +210,8 @@ class MilestonesViewModel @Inject constructor(
             unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model),
+            drivetrain = vehicle.drivetrain,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -234,6 +251,25 @@ class MilestonesViewModel @Inject constructor(
     fun delete(draft: MilestoneDraft) {
         editing = null
         draft.id?.let { id -> viewModelScope.launch { table.deleteMilestone(vehicleId, id) } }
+    }
+
+    /**
+     * Adds the maker's table that ships for this model, in the vehicle's unit, as its milestone table.
+     * It is then an ordinary table: edited, saved as a file or removed like one the user typed.
+     */
+    fun addKnown() {
+        val s = state.value ?: return
+        val list = s.known ?: return
+        viewModelScope.launch {
+            table.addKnown(
+                vehicleId,
+                list.id,
+                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain).map { m ->
+                    MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
+                        m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
+                },
+            )
+        }
     }
 
     fun setRepeat(everyMiles: Int?) = viewModelScope.launch { table.setRepeat(vehicleId, everyMiles) }
@@ -384,7 +420,10 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
         ) {
             item {
                 Text(
-                    if (state.fromTable) {
+                    if (state.startedFrom != null) {
+                        "${state.startedFrom} It is shown with what your log says was done, and the jobs are in Glovebox's words. " +
+                            "It's a guide: the Reminders tab is what tells you something is due. You can edit it like a table of your own."
+                    } else if (state.fromTable) {
                         "Your own milestone table, with what your log says was done. " +
                             (state.repeatsEveryMiles?.let { "It repeats every ${it.asDistance(unit)}, so after its last milestone it starts again from the first. " } ?: "") +
                             "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn't checked them."
@@ -518,6 +557,26 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 }
             }
             if (!state.fromTable) {
+                state.known?.let { known ->
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            OutlinedButton(
+                                onClick = vm::addKnown,
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                border = BorderStroke(1.5.dp, scheme.onSurface),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                            ) {
+                                Text("Use the maker's table for the ${known.title}")
+                            }
+                            Text(
+                                KnownSchedules.tableOffer(known) + " It is then shown here in place of these.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TextButton(onClick = vm::addMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -606,6 +665,10 @@ private fun MilestoneCard(
                         )
                     }
                 }
+                // Every job here has a record: the whole milestone is done.
+                if (m.jobs.isNotEmpty() && completed == m.jobs.size) {
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = "All completed", modifier = Modifier.size(22.dp), tint = statusColors().ok)
+                }
                 Icon(
                     if (open) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
                     contentDescription = null,
@@ -641,6 +704,13 @@ private fun JobRow(job: MilestoneJobStatus, unit: DistanceUnit, onOpenRecord: (L
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // A tick for work the log has; an empty place otherwise, so the names line up. It is never a
+        // box to tick: the line under the name says which record it comes from.
+        if (done != null) {
+            Icon(Icons.Outlined.CheckCircle, contentDescription = null, modifier = Modifier.size(22.dp), tint = statusColors().ok)
+        } else {
+            Spacer(Modifier.size(22.dp))
+        }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(job.job.name, style = MaterialTheme.typography.bodyLarge)
             // A job nothing in the log matches is simply listed: no "missed", no tick-box.

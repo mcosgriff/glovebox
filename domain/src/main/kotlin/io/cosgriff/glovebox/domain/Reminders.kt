@@ -121,6 +121,32 @@ object ReminderEngine {
         )
     }
 
+    /**
+     * Status of a job that has never been logged and is first due at an odometer reading still
+     * ahead ([firstAt] > [currentOdometer]). By mileage only: a maker's "or 120 months" for the first
+     * time counts from the day the vehicle went into service, which Glovebox doesn't know.
+     */
+    fun first(firstAt: Int, currentOdometer: Int, today: LocalDate, milesPerDay: Double?, lead: LeadTime = LeadTime()): DueStatus {
+        val left = firstAt - currentOdometer
+        return DueStatus(
+            state = when {
+                left <= 0 -> DueState.OVERDUE
+                left <= lead.miles -> DueState.DUE_SOON
+                else -> DueState.OK
+            },
+            dueAtOdometer = firstAt,
+            dueByDate = null,
+            milesRemaining = left,
+            daysRemaining = null,
+            estimatedDueDate = when {
+                left <= 0 -> today
+                milesPerDay != null && milesPerDay > 0 -> today.plusDays(ceil(left / milesPerDay).toLong())
+                else -> null
+            },
+            decidedBy = DecidedBy.MILEAGE,
+        )
+    }
+
     private fun pickEstimate(
         rule: DueRule,
         mileageDate: LocalDate?,

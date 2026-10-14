@@ -40,13 +40,19 @@ val VehicleEntity.unit: DistanceUnit get() = DistanceUnit.of(distanceUnit)
 fun Int.asDistance(unit: DistanceUnit): String = unit.format(this)
 
 /** The interval and rule in force for a schedule item; null if it has no usable interval. */
-fun ScheduleItemEntity.toTracked(defaultRule: DueRule): TrackedItem? {
+/**
+ * [swap] is the vehicle's cluster replacement, if it has had one. A job's first mileage
+ * (`firstMiles`) is distance really covered, and everything in `:domain` is in dash terms, so it
+ * is put into those here. **Pass the vehicle's swap wherever statuses are worked out.**
+ */
+fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?): TrackedItem? {
     val miles = if (useSevere) severeMiles ?: intervalMiles else intervalMiles
     val months = if (useSevere) severeMonths ?: intervalMonths else intervalMonths
     if (miles == null && months == null) return null
     val rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: defaultRule
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
-    return TrackedItem(id, name, Interval(miles, months), rule, snooze)
+    val zeroAt = -(swap?.offset ?: 0)
+    return TrackedItem(id, name, Interval(miles, months), rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
 }
 
 /** Null unless the vehicle has had its instrument cluster replaced. */
@@ -142,6 +148,7 @@ fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
     templateKey = templateKey,
     tracked = tracked,
     service = service,
+    firstAt = firstMiles,
 )
 
 private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)

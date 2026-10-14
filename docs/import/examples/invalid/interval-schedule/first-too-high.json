@@ -1,0 +1,12 @@
+{
+  "glovebox": "import",
+  "version": 1,
+  "kind": "interval-schedule",
+  "items": [
+    {
+      "name": "Coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 500001
+    }
+  ]
+}

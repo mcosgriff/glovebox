@@ -222,14 +222,17 @@ count for a reminder. The values, by the category History files them under:
 | Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat` |
 | Brakes | `front-pads`, `rear-pads`, `rotors`, `brake-fluid`, `brake-inspect` |
 | Fluids | `coolant`, `trans-fluid`, `power-steering`, `washer` |
-| Driveline | `diff-fluid`, `driveshaft`, `cv-axle` |
+| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle` |
 | Cabin & electrical | `cabin-air`, `wipers`, `battery`, `bulbs` |
 | Inspection | `multi-point`, `emissions`, `recall` |
 | Other | `accessory`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
   it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
-  `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A line
+  `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A change
+  also counts as the check of the same thing: `front-diff`, `rear-diff` and `transfer-case` reset a
+  reminder set to `front-diff-check`, `rear-diff-check` or `transfer-case-check`, and `diff-fluid`
+  resets all three. A check never counts as a change. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
   (ignoring capitals). Any other line is history only. The preview lists every reminder that would
   move before you import.
@@ -277,6 +280,8 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
 | `everyMiles` | a distance, months, or both | Whole miles, 1 to 500000 |
 | `everyKm` | in place of `everyMiles` | Whole kilometres, 1 to 800000 |
 | `everyMonths` | a distance, months, or both | Whole months, 1 to 600. Write years as months: 3 years is `36` |
+| `firstAtMiles` | no | For a job whose first time isn't one interval in: the odometer reading it is first due at, 1 to 500000. "First at 100,000 miles, then every 50,000" is `"firstAtMiles": 100000, "everyMiles": 50000` |
+| `firstAtKm` | in place of `firstAtMiles` | The same in kilometres, 1 to 800000. In the same unit as the item |
 | `severe` | no | The interval for hard use, if it differs: `everyMiles` or `everyKm`, `everyMonths`, or a distance and months. In the same unit as the item |
 | `rule` | no | `whichever-first`, `whichever-last`, `mileage-only` or `time-only`. Left out, the item follows the rule you chose in Settings |
 | `service` | no | Which of Glovebox's own service lines resets this item. The values are the same as for [`service-history`](#service-history) |
@@ -286,8 +291,13 @@ One repeating interval per job: oil every 7,500 miles, tires rotated every 5,000
   by an import.
 - **Matching:** an item in the file matches one of your own items with the same name, ignoring
   capitals. It never matches a typical item, even one with the same name.
-- **Same or different:** the interval, the severe interval, the rule and the service.
-- **Replace matching** changes only those four things. Whether the item is tracked, a snooze, which
+- **Same or different:** the interval, the first-time figure, the severe interval, the rule and the service.
+- **The first time:** with `firstAtMiles`, a job that has never been logged is due when the odometer
+  reaches that reading, and from then on every interval after the last time it was logged. It is by
+  distance only: a manual's "or 10 years" for the first time counts from the day the vehicle went
+  into service, which Glovebox doesn't know. Once the odometer is past it with nothing logged, the
+  job is listed as not logged yet, like any other.
+- **Replace matching** changes only those five things. Whether the item is tracked, a snooze, which
   of its intervals is in use and every service logged against it stay as they are.
 - **Two reminders for one job:** if a typical item you are tracking has the same name as an item in
   the file, or is the one the file's `service` resets, the preview says so and offers to stop
@@ -326,7 +336,7 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
 | `atMiles` | this or `atKm` | Whole miles the vehicle has covered, 1 to 1000000. No two milestones in a file may share one |
 | `atKm` | this or `atMiles` | The same in whole kilometres, 1 to 1600000 |
 | `orMonths` | no | The vehicle's age in whole months at which the same work is due if the mileage isn't reached, 1 to 600. Shown for information |
-| `work` | yes | 1 to 30 lines, each with a `name` (up to 80 characters) and optionally a `service` |
+| `work` | yes | 1 to 40 lines, each with a `name` (up to 80 characters) and optionally a `service` |
 
 One optional field goes beside `items`, not inside a milestone, because it is about the table as a
 whole:

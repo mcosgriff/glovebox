@@ -197,6 +197,25 @@ interface ScheduleDao {
     @Query("UPDATE schedule_items SET tracked = 0 WHERE id IN (:ids)")
     suspend fun stopTracking(ids: List<Long>)
 
+    /** Typical items only, and only those no logged line was ever saved against. */
+    @Query(
+        "DELETE FROM schedule_items WHERE id IN (:ids) AND templateKey IS NOT NULL " +
+            "AND id NOT IN (SELECT scheduleItemId FROM service_record_items WHERE scheduleItemId IS NOT NULL)",
+    )
+    suspend fun removeUnlogged(ids: List<Long>)
+
+    /**
+     * A maker's schedule taking over from typical items, whole or not at all. [replaced] are the
+     * typical items that are the same jobs as [added]: each is removed, unless a service was logged
+     * against it, in which case it stays, untracked, so that record keeps its link.
+     */
+    @Transaction
+    suspend fun applyKnown(added: List<ScheduleItemEntity>, replaced: List<Long>) {
+        insertAll(added)
+        removeUnlogged(replaced)
+        stopTracking(replaced)
+    }
+
     /**
      * One import, applied whole or not at all. Nothing is deleted by one; [stopped] are typical items
      * the user chose to stop tracking because the file has the same job.
@@ -320,6 +339,9 @@ interface MilestoneDao {
     @Query("UPDATE vehicles SET milestonesRepeatEveryMiles = :everyMiles WHERE id = :vehicleId")
     suspend fun setRepeat(vehicleId: Long, everyMiles: Int?)
 
+    @Query("UPDATE vehicles SET milestonesKnownList = :list WHERE id = :vehicleId")
+    suspend fun setKnownList(vehicleId: Long, list: String?)
+
     @Query("DELETE FROM milestones WHERE id = :milestoneId")
     suspend fun deleteById(milestoneId: Long)
 
@@ -341,7 +363,10 @@ interface MilestoneDao {
     @Transaction
     suspend fun deleteMilestone(vehicleId: Long, milestoneId: Long) {
         deleteById(milestoneId)
-        if (count(vehicleId) == 0) setRepeat(vehicleId, null)
+        if (count(vehicleId) == 0) {
+            setRepeat(vehicleId, null)
+            setKnownList(vehicleId, null)
+        }
     }
 
     /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
@@ -349,6 +374,18 @@ interface MilestoneDao {
     suspend fun deleteTable(vehicleId: Long) {
         deleteMilestones(vehicleId)
         setRepeat(vehicleId, null)
+        setKnownList(vehicleId, null)
+    }
+
+    /**
+     * A bundled schedule's table, for a vehicle that has none: the rows, and which list they came from.
+     * Does nothing if a table has appeared meanwhile, since a table is never written over by a list.
+     */
+    @Transaction
+    suspend fun addKnown(vehicleId: Long, list: String, table: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>) {
+        if (count(vehicleId) > 0) return
+        applyImport(vehicleId, null, table, emptyList())
+        setKnownList(vehicleId, list)
     }
 
     /**
@@ -378,7 +415,7 @@ interface MilestoneDao {
 /** A row's id and one whole-number column of it. */
 data class IdValue(val id: Long, val value: Int?)
 
-data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?)
+data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?, val firstMiles: Int?)
 
 /**
  * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
@@ -399,11 +436,11 @@ interface UnitDao {
     @Query("UPDATE service_records SET odometer = :value WHERE id = :id")
     suspend fun setRecord(id: Long, value: Int)
 
-    @Query("SELECT id, intervalMiles, severeMiles, snoozedUntilOdometer FROM schedule_items WHERE vehicleId = :vehicleId")
+    @Query("SELECT id, intervalMiles, severeMiles, snoozedUntilOdometer, firstMiles FROM schedule_items WHERE vehicleId = :vehicleId")
     suspend fun schedule(vehicleId: Long): List<ScheduleDistances>
 
-    @Query("UPDATE schedule_items SET intervalMiles = :interval, severeMiles = :severe, snoozedUntilOdometer = :snooze WHERE id = :id")
-    suspend fun setSchedule(id: Long, interval: Int?, severe: Int?, snooze: Int?)
+    @Query("UPDATE schedule_items SET intervalMiles = :interval, severeMiles = :severe, snoozedUntilOdometer = :snooze, firstMiles = :first WHERE id = :id")
+    suspend fun setSchedule(id: Long, interval: Int?, severe: Int?, snooze: Int?, first: Int?)
 
     @Query("SELECT id, atMiles AS value FROM milestones WHERE vehicleId = :vehicleId ORDER BY atMiles")
     suspend fun milestones(vehicleId: Long): List<IdValue>
@@ -433,7 +470,7 @@ interface UnitDao {
         readings(vehicleId).forEach { r -> r.value?.let { setReading(r.id, measured(it)) } }
         records(vehicleId).forEach { r -> r.value?.let { setRecord(r.id, measured(it)) } }
         schedule(vehicleId).forEach { s ->
-            setSchedule(s.id, s.intervalMiles?.let(::scheduled), s.severeMiles?.let(::scheduled), s.snoozedUntilOdometer?.let(::measured))
+            setSchedule(s.id, s.intervalMiles?.let(::scheduled), s.severeMiles?.let(::scheduled), s.snoozedUntilOdometer?.let(::measured), s.firstMiles?.let(::scheduled))
         }
 
         val table = milestones(vehicleId)

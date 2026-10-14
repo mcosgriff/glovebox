@@ -72,7 +72,7 @@ class GarageOverview @Inject constructor(
                 val swap = v.clusterSwap()
                 val entries = recordsBy[v.id].orEmpty().map { it.toEntry(swap, itemsBy[v.id].orEmpty().answering()) }
                 val updates = readingsBy[v.id].orEmpty().toReadings(swap)
-                val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule) }
+                val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule, swap) }
                 val statuses = VehicleReminders.statuses(tracked, entries, updates, today, s.leadFor(v.unit))
                 val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
                 GarageVehicle(

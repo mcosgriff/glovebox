@@ -23,6 +23,13 @@
     {
       "name": "Brake fluid flush",
       "everyMonths": 24
+    },
+    {
+      "name": "Coolant",
+      "everyMonths": 60,
+      "everyKm": 80000,
+      "firstAtKm": 160000,
+      "service": "coolant"
     }
   ]
 }

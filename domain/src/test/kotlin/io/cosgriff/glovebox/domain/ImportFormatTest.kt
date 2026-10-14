@@ -228,6 +228,7 @@ class ImportFormatTest {
                 ImportedScheduleItem("Rotate tires", Interval(5_000, null), service = "rotation"),
                 ImportedScheduleItem("Brake fluid flush", Interval(null, 36)),
                 ImportedScheduleItem("Grease driveshaft", Interval(15_000, null), Interval(5_000, null), DueRule.MILEAGE_ONLY, "driveshaft"),
+                ImportedScheduleItem("Coolant", Interval(50_000, 60), service = "coolant", firstAt = 100_000),
             ),
             items,
         )

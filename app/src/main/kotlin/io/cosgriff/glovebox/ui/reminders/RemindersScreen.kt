@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.material3.Icon
@@ -269,6 +271,17 @@ private fun ReminderCard(
         val title = @Composable { modifier: Modifier ->
             Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(r.status.item.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                // As on vehicle home: amber, not the overdue red, for a job the schedule has passed with nothing logged.
+                r.status.lastScheduled?.let { point ->
+                    val unit = r.vehicle.unit
+                    val at = r.vehicle.clusterSwap().actual(point.at).asDistance(unit)
+                    Text(
+                        if (point.ago == 0) "Scheduled now, at $at · nothing logged" else "Last scheduled at $at · ${point.ago.asDistance(unit)} ago · nothing logged",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = statusColors().soon,
+                    )
+                }
                 Text(
                     "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.label(r.vehicle.unit).every()}",
                     style = MaterialTheme.typography.bodySmall,

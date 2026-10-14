@@ -274,7 +274,7 @@ class LogServiceViewModel @Inject constructor(
             // The line to tick for a reminder: the one saved against it, or the catalog line it answers to.
             val optionFor: Map<Long?, WorkOption> = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId } +
                 options.flatMap { o -> answering[o.id].orEmpty().map { id -> id to o } }
-            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule) }
+            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule, swap) }
 
             val due = if (editing) {
                 emptyList()
