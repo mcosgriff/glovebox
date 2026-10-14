@@ -35,11 +35,16 @@ data class ComingUp(
     val next: Pair<ItemStatus, ReminderProgress>?
         get() = counting.firstOrNull { it.first.status.state != DueState.OVERDUE && it.first.snooze == null }
 
-    /** The one status worth a chip on a garage card; null when nothing has been logged yet. */
+    /**
+     * The one status worth a chip on a garage card; null when nothing is tracked. "Up to date" is
+     * only said when every tracked job has something to count from: with work still to log there is
+     * nothing to be up to date on, and the chip says how many there are to log instead.
+     */
     val attention: Attention?
         get() = when {
             overdue > 0 -> attention(DueState.OVERDUE, overdue)
             dueSoon > 0 -> attention(DueState.DUE_SOON, dueSoon)
+            notLogged.isNotEmpty() -> Attention(DueState.OK, 0, null, toLog = notLogged.size)
             counting.isNotEmpty() -> Attention(DueState.OK, 0, null)
             else -> null
         }
@@ -49,7 +54,8 @@ data class ComingUp(
 }
 
 /** [count] reminders in [state]; [only] names the reminder when there is exactly one. */
-data class Attention(val state: DueState, val count: Int, val only: String?)
+/** [toLog] is set, with [state] OK, when nothing is due but that many jobs have never been logged. */
+data class Attention(val state: DueState, val count: Int, val only: String?, val toLog: Int = 0)
 
 /** Sections of the Reminders tab, in the order they are shown. */
 enum class ReminderGroup { OVERDUE, NEXT_30_DAYS, LATER, NOT_LOGGED }

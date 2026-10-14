@@ -270,6 +270,17 @@ fun VehicleHomeScreen(
                             ) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                     Text(status.item.name, style = MaterialTheme.typography.titleSmall)
+                                    // Amber, not red: the schedule's last point has passed with nothing logged,
+                                    // which isn't the same as the work being overdue.
+                                    status.lastScheduled?.let { point ->
+                                        val at = v.clusterSwap().actual(point.at).asDistance(unit)
+                                        Text(
+                                            if (point.ago == 0) "Scheduled now, at $at · nothing logged" else "Last scheduled at $at · ${point.ago.asDistance(unit)} ago · nothing logged",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = statusColors().soon,
+                                        )
+                                    }
                                     Text(
                                         "Every ${status.item.interval.label(unit).replace(" / ", " or ")}",
                                         style = MaterialTheme.typography.bodySmall,
@@ -417,6 +428,8 @@ private fun StatusPill(up: ComingUp) {
         up.overdue > 0 && scheme.background.luminance() < 0.5f -> Triple("${up.overdue} OVERDUE", scheme.onPrimaryContainer, scheme.onPrimary)
         up.overdue > 0 -> Triple("${up.overdue} OVERDUE", scheme.primaryContainer, scheme.onPrimaryContainer)
         up.dueSoon > 0 -> Triple("${up.dueSoon} DUE SOON", scheme.surfaceVariant, scheme.onSurface)
+        // Nothing to be up to date on while there is work the log doesn't have.
+        up.notLogged.isNotEmpty() -> Triple("${up.notLogged.size} TO LOG", scheme.surfaceVariant, statusColors().soon)
         up.counting.isNotEmpty() -> Triple("UP TO DATE", scheme.tertiaryContainer, scheme.onTertiaryContainer)
         else -> return
     }

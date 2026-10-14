@@ -75,6 +75,28 @@ class FirstTimeTest {
     }
 
     @Test
+    fun `a job the vehicle is past says where the schedule last put it`() {
+        assertEquals(PastPoint(50_000, 2_000), status(52_000, item = oil).lastScheduled)
+        assertEquals(PastPoint(50_000, 0), status(50_000, item = oil).lastScheduled)
+        // From its own first time, then every interval: 100,000, 150,000, ...
+        assertEquals(PastPoint(150_000, 12_000), status(162_000).lastScheduled)
+        assertEquals(PastPoint(100_000, 49_999), status(149_999).lastScheduled)
+        // Nothing to say once it is logged, before its first time, or with no distance to go by.
+        assertNull(status(52_000, listOf(ServiceEntry(1, today, 51_000, setOf(2))), item = oil).lastScheduled)
+        assertNull(status(31_000).lastScheduled)
+        assertNull(status(52_000, item = TrackedItem(4, "Brake fluid", Interval(null, 36), DueRule.WHICHEVER_FIRST)).lastScheduled)
+    }
+
+    @Test
+    fun `with a replaced cluster the schedule still counts from when the vehicle was new`() {
+        // The new cluster read 0 when the vehicle had covered 40,000: zero distance was at -40,000 on this dash.
+        val swapped = oil.copy(zeroAt = -40_000)
+        assertEquals(PastPoint(10_000, 2_000), status(12_000, item = swapped).lastScheduled) // 50,000 actual
+        val plugs = TrackedItem(3, "Spark plugs", Interval(120_000, null), DueRule.WHICHEVER_FIRST, zeroAt = -40_000)
+        assertEquals(80_000, status(12_000, item = plugs).status.dueAtOdometer)
+    }
+
+    @Test
     fun `a job that goes by time alone, or a vehicle with no reading, has no first mileage`() {
         assertFalse(status(31_000, item = TrackedItem(4, "Brake fluid", Interval(null, 36), DueRule.WHICHEVER_FIRST)).counting)
         assertFalse(status(31_000, item = TrackedItem(5, "Belt", Interval(60_000, 72), DueRule.TIME_ONLY)).counting)

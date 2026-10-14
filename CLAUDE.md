@@ -400,7 +400,12 @@ Notes on what's built:
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`. On vehicle home that
   section sits **above** "Coming up" (the user's choice, 2026-10-13: they have nothing to count from, so
   they are dealt with first), each row with "Log it" (Log service with that job ticked) and one "Enter
-  when these were last done" under the card. They are still never given a guessed next-due point.
+  when these were last done" under the card. They are still never given a guessed next-due point. A row for a job
+  that goes by distance says, in amber (`statusColors().soon`, never the overdue red), where the schedule
+  last put it: "Last scheduled at 50,000 mi · 2,000 mi ago · nothing logged" (`ItemStatus.lastScheduled`,
+  counted from when the vehicle was new: `TrackedItem.zeroAt`). **"Up to date" is said only when every
+  tracked job has something to count from;** with work still to log the badge on vehicle home and the
+  garage chip say "N to log" (`ComingUp.attention`, `Attention.toLog`), after anything overdue or due soon.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
   vehicles" still returns to it, which is where another vehicle is added.
 - Update mileage adds an `odometer_readings` row dated today, with Undo on the snackbar. The sheet's

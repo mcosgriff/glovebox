@@ -51,7 +51,8 @@ fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?): Trac
     if (miles == null && months == null) return null
     val rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: defaultRule
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
-    return TrackedItem(id, name, Interval(miles, months), rule, snooze, firstAt = firstMiles?.let { it - (swap?.offset ?: 0) })
+    val zeroAt = -(swap?.offset ?: 0)
+    return TrackedItem(id, name, Interval(miles, months), rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
 }
 
 /** Null unless the vehicle has had its instrument cluster replaced. */
