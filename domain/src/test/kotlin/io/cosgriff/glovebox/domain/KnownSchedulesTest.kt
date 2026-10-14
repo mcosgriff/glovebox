@@ -57,8 +57,58 @@ class KnownSchedulesTest {
     @Test
     fun `no two bundled lists are for the same vehicle`() {
         bundled.forEach { list ->
-            list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, list.model)?.id) }
+            // A list for one engine is found by that engine; one for every engine, by the model alone.
+            val engine = list.engine?.let { "${it.displacementL}L" }
+            list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, list.model, engine, list.engine?.fuel)?.id) }
         }
+    }
+
+    @Test
+    fun `a model with a list per engine is matched by the engine, and asked about when it isn't known`() {
+        fun engineList(id: String, engine: String) = (KnownSchedules.parse(file(extra = "\"engine\": $engine,").replace("\"id\": \"made-up\"", "\"id\": \"$id\"")) as KnownScheduleFile.Ok).list
+        val four = engineList("four", """{ "label": "1.6L 4-cylinder", "displacementL": 1.6 }""")
+        val six = engineList("six", """{ "label": "2.8L V6", "displacementL": 2.8 }""")
+        val diesel = engineList("diesel", """{ "label": "2.8L diesel", "displacementL": 2.8, "fuel": "Diesel" }""")
+        val lists = listOf(four, six)
+        fun match(engine: String?, fuel: String? = null, of: List<KnownScheduleList> = lists) = KnownSchedules.match(of, 2003, "Acme", "Roadster", engine, fuel)?.id
+        fun choices(engine: String?, fuel: String? = null, of: List<KnownScheduleList> = lists) = KnownSchedules.engineChoices(of, 2003, "Acme", "Roadster", engine, fuel).map { it.id }
+        // As a VIN decode writes it, and as an owner might.
+        assertEquals("four", match("1.6L 4-cyl"))
+        assertEquals("six", match("2.8 L V6"))
+        assertEquals(emptyList<String>(), choices("1.6L 4-cyl"))
+        // Not on record, or no size in what was typed: no list is chosen, and both are offered.
+        listOf(null, "", "V6", "the big one").forEach { engine ->
+            assertNull("$engine", match(engine))
+            assertEquals("$engine", listOf("four", "six"), choices(engine))
+        }
+        // An engine none of them is for: nothing, and nothing to pick between.
+        assertNull(match("3.5L 6-cyl"))
+        assertEquals(emptyList<String>(), choices("3.5L 6-cyl"))
+        // Two engines of one size told apart by fuel; with the fuel unknown the owner is asked.
+        val both = listOf(six.copy(engine = six.engine!!.copy(fuel = "Gasoline")), diesel)
+        assertEquals("diesel", match("2.8L 6-cyl", "Diesel", both))
+        assertEquals("six", match("2.8L 6-cyl", "Gasoline", both))
+        assertNull(match("2.8L 6-cyl", null, both))
+        assertEquals(listOf("six", "diesel"), choices("2.8L 6-cyl", null, both))
+        assertEquals(listOf("diesel"), choices(null, "Diesel", both))
+        // A list for every engine still matches whatever the engine, as the ones that ship do.
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", null, null)?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", "9.9L", "Coal")?.id)
+        // A wrong year or model offers nothing to pick between either.
+        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(lists, 2010, "Acme", "Roadster"))
+    }
+
+    @Test
+    fun `an engine's size is read from its text and never guessed`() {
+        assertEquals(4.0, Engines.displacementL("4.0L 6-cyl")!!, 0.0)
+        assertEquals(2.0, Engines.displacementL("2.0 l turbo")!!, 0.0)
+        assertEquals(1.25, Engines.displacementL("1.25L")!!, 0.0)
+        assertNull(Engines.displacementL("V6"))
+        assertNull(Engines.displacementL("1GR-FE"))
+        assertNull(Engines.displacementL("4 LED headlights"))
+        assertNull(Engines.displacementL(null))
+        assertTrue(errors(file(extra = "\"engine\": { \"label\": \"Big\", \"displacementL\": 40 },")).single().contains("between 0.1 and 20"))
+        assertTrue(errors(file(extra = "\"engine\": { \"displacementL\": 2.0 },")).isNotEmpty())
     }
 
     @Test

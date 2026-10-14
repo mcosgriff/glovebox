@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.MilestoneEntity
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
@@ -114,7 +116,7 @@ data class DraftItem(
 @HiltViewModel
 class ScheduleSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
+    private val vehicles: VehicleDao,
     private val schedule: ScheduleDao,
     settings: SettingsRepository,
     private val catalog: KnownScheduleCatalog,
@@ -128,6 +130,12 @@ class ScheduleSetupViewModel @Inject constructor(
      */
     var known by mutableStateOf<KnownScheduleList?>(null)
         private set
+
+    /** The maker's schedules for this model and year, one per engine, when the vehicle's engine isn't on record. */
+    var engineChoices by mutableStateOf<List<KnownScheduleList>>(emptyList())
+        private set
+
+    private var chosenEngine: String? = null
 
     var vehicle by mutableStateOf<VehicleEntity?>(null)
         private set
@@ -155,21 +163,45 @@ class ScheduleSetupViewModel @Inject constructor(
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
             val unit = v?.unit ?: DistanceUnit.MILES
-            val list = v?.let { KnownSchedules.match(catalog.lists(), it.year, it.make, it.model) }
+            val lists = catalog.lists()
+            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel) }
             known = list
-            items = if (list != null) {
-                KnownSchedules.intervalsIn(list, unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
-                    DraftItem(
-                        key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
-                        own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly,
-                    )
-                }
+            // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
+            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel)
+            items = if (list != null && v != null) {
+                knownItems(list, v)
             } else {
                 ScheduleTemplates.generic(v?.drivetrain, v?.fuel, unit).map {
                     DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
                 }
             }
         }
+    }
+
+    private fun knownItems(list: KnownScheduleList, v: VehicleEntity): List<DraftItem> =
+        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
+            DraftItem(
+                key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
+                own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly,
+            )
+        }
+
+    /**
+     * The owner says which of [engineChoices] is their engine. The schedule becomes that list's, and
+     * the engine is written to the vehicle when it is saved, if it has none on record.
+     */
+    fun chooseEngine(list: KnownScheduleList) {
+        val v = vehicle ?: return
+        known = list
+        chosenEngine = list.engine?.label
+        engineChoices = emptyList()
+        severeUse = false
+        items = knownItems(list, v)
+    }
+
+    /** "Neither of these": the typical list stays, and the question isn't asked again on this screen. */
+    fun declineEngines() {
+        engineChoices = emptyList()
     }
 
     fun chooseSevereUse(on: Boolean) {
@@ -235,6 +267,7 @@ class ScheduleSetupViewModel @Inject constructor(
                 )
             },
         )
+        chosenEngine?.let { vehicles.setEngineIfBlank(vehicleId, it) }
         // The maker's table goes with its schedule: it is what the Milestones screen then shows.
         known?.let { list ->
             val unit = vehicle?.unit ?: DistanceUnit.MILES
@@ -310,6 +343,29 @@ fun ScheduleSetupScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+
+            if (vm.engineChoices.isNotEmpty()) {
+                Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val source = vm.engineChoices.first().source.name
+                        Text("Which engine does it have?", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "The $source has a schedule for each of these, and this vehicle's engine isn't on record. " +
+                                "Pick yours to start from the maker's schedule in place of the typical one below.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        vm.engineChoices.forEach { list ->
+                            OutlinedButton(
+                                onClick = { vm.chooseEngine(list) },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                            ) { Text(list.engine?.label ?: list.title) }
+                        }
+                        TextButton(onClick = vm::declineEngines, modifier = Modifier.heightIn(min = 48.dp)) { Text("Neither, or I'm not sure") }
+                    }
+                }
             }
 
             // Only where it changes something: a schedule none of whose jobs differs under severe use has no use for it.

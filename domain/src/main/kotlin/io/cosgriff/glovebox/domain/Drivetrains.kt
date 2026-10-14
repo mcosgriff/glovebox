@@ -23,6 +23,14 @@ object Transmissions {
     }
 }
 
+/** What a vehicle's engine text says: "4.0L 6-cyl" as a VIN decode writes it, or whatever the owner typed. */
+object Engines {
+    private val litres = Regex("""(\d{1,2}(?:\.\d{1,2})?)\s*L(?![a-z])""", RegexOption.IGNORE_CASE)
+
+    /** The displacement in litres, when the text gives one ("2.0L", "4.0 L V6"); null when it doesn't. Nothing is guessed from a name. */
+    fun displacementL(engine: String?): Double? = engine?.let { litres.find(it) }?.groupValues?.get(1)?.toDoubleOrNull()
+}
+
 object Drivetrains {
     /** [DriveKind.UNKNOWN] is nothing on record, or something else (a 6x4 truck): "can't tell", never "two". */
     fun kind(drivetrain: String?): DriveKind {

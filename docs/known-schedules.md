@@ -85,8 +85,18 @@ no distance, marked `time-only`. The table shows it wherever the maker drew it, 
 its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the
 repeating part and the job's name says the rest: Glovebox doesn't know the day a car went into service.
 
-A model whose guide differs by engine gets one list per engine; that needs a field to match on, which
-is added with the first list that needs it.
+**A model whose guide has a schedule per engine gets one list per engine**, each with
+
+```json
+"engine": { "label": "2.7L 4-cylinder", "displacementL": 2.7 }
+```
+
+and `"fuel": "Diesel"` as well where two engines of one size differ by it. A list without `engine` is
+for every engine the model had in its years. A vehicle is matched by the size in its engine text ("4.0L
+6-cyl" as a VIN decode writes it, or what the owner typed) and, where the list names one, by its fuel.
+**An engine that isn't on record matches no engine's list.** Setup then asks "Which engine does it
+have?", offering each list's `label` and "Neither, or I'm not sure"; the pick is the owner's, and it is
+written to the vehicle if it had no engine on record. Nothing is guessed from a trim or a model name.
 
 ## Making a list
 

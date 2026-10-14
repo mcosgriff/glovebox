@@ -211,7 +211,7 @@ class MilestonesViewModel @Inject constructor(
             unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model),
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel),
             drivetrain = vehicle.drivetrain,
             transmission = vehicle.transmission,
         )
