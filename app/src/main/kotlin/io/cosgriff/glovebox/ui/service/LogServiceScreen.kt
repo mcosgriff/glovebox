@@ -270,10 +270,12 @@ class LogServiceViewModel @Inject constructor(
             val updates = odometer.readingsFor(vehicleId).toReadings(swap)
             val categories = ServiceCatalog.forVehicle(items.map { it.toRef() })
             val options = categories.flatMap { it.options }
-            val answering = items.answering()
-            // The line to tick for a reminder: the one saved against it, or the catalog line it answers to.
-            val optionFor: Map<Long?, WorkOption> = options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId } +
-                options.flatMap { o -> answering[o.id].orEmpty().map { id -> id to o } }
+            // The line to tick for a reminder: the catalog line that is its own, or failing that the one saved
+            // against it, which wins. Its own only: a change of oil also resets the check of it, but "Log it" on
+            // the check must tick the check (ServiceLinks.own, not .answering).
+            val own = ServiceLinks.own(items.map { it.toRef() })
+            val optionFor: Map<Long?, WorkOption> = options.flatMap { o -> own[o.id].orEmpty().map { id -> id to o } }.toMap() +
+                options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
             val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule, swap) }
 
             val due = if (editing) {
@@ -324,7 +326,7 @@ class LogServiceViewModel @Inject constructor(
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
                 swap = swap,
                 unit = vehicle?.unit ?: DistanceUnit.MILES,
-                answering = answering,
+                answering = items.answering(),
                 specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
                 original = original,
             )
