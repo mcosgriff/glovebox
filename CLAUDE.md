@@ -19,7 +19,7 @@ Keep them green; lint errors fail the build.
 ## Commands
 
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
-- `./gradlew build` — everything.
+- `./gradlew build` — everything, including the database migration tests (`:data`).
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
 - On-device tests (`app/src/androidTest`, the few that need native code: so far the text reader). Not
   part of `build` or CI. Run them with
@@ -693,6 +693,11 @@ Notes on what's built:
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
 - Schema changes so far are Room auto-migrations (v20); keep exported schemas in `data/schemas`.
+  `MigrationTest` (`:data`, on the JVM with Robolectric, so part of `./gradlew build` and CI) makes a
+  database at every exported version, fills every column of every table, opens it as the current
+  database and reads each value back. **A new version is covered as soon as its schema file is in the
+  folder; a new table has to be added to the test's `order` list**, which the test says if it is missing.
+  A hand-written migration, when one is ever needed, is tested by the same test.
 
 ## Conventions
 

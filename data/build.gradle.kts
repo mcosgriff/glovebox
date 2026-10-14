@@ -19,6 +19,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // MigrationTest reads every exported schema, and runs on the JVM (Robolectric), so it is part of `build`.
+    sourceSets { named("test") { assets.directories.add("$projectDir/schemas") } }
+    testOptions.unitTests.isIncludeAndroidResources = true
 }
 
 kotlin {
@@ -55,4 +59,8 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.room.testing)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.kotlinx.coroutines.android)
 }
