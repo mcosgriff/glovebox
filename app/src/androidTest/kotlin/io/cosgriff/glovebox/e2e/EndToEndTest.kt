@@ -210,6 +210,15 @@ class EndToEndTest {
     private fun scrolledTo(selector: BySelector): BySelector {
         // A screen that has only just opened may not be drawn yet: give it a moment before deciding to scroll.
         if (device.wait(Until.findObject(selector), 2_000) == null) scrollDownFor(selector)
+        // Something on the bottom edge sits under Android's navigation bar, where a tap goes to Android:
+        // lift it into the middle first.
+        device.findObject(selector)?.let { found ->
+            val h = device.displayHeight
+            if (found.visibleBounds.bottom > h * 85 / 100) {
+                device.swipe(device.displayWidth / 2, h * 6 / 10, device.displayWidth / 2, h * 4 / 10, 40)
+                device.waitForIdle()
+            }
+        }
         device.waitForIdle()
         Thread.sleep(SETTLE)
         see(selector)
