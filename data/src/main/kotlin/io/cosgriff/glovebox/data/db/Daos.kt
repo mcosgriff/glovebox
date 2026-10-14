@@ -197,6 +197,25 @@ interface ScheduleDao {
     @Query("UPDATE schedule_items SET tracked = 0 WHERE id IN (:ids)")
     suspend fun stopTracking(ids: List<Long>)
 
+    /** Typical items only, and only those no logged line was ever saved against. */
+    @Query(
+        "DELETE FROM schedule_items WHERE id IN (:ids) AND templateKey IS NOT NULL " +
+            "AND id NOT IN (SELECT scheduleItemId FROM service_record_items WHERE scheduleItemId IS NOT NULL)",
+    )
+    suspend fun removeUnlogged(ids: List<Long>)
+
+    /**
+     * A maker's schedule taking over from typical items, whole or not at all. [replaced] are the
+     * typical items that are the same jobs as [added]: each is removed, unless a service was logged
+     * against it, in which case it stays, untracked, so that record keeps its link.
+     */
+    @Transaction
+    suspend fun applyKnown(added: List<ScheduleItemEntity>, replaced: List<Long>) {
+        insertAll(added)
+        removeUnlogged(replaced)
+        stopTracking(replaced)
+    }
+
     /**
      * One import, applied whole or not at all. Nothing is deleted by one; [stopped] are typical items
      * the user chose to stop tracking because the file has the same job.

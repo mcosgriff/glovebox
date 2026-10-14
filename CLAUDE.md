@@ -214,9 +214,13 @@ Notes on what's built:
   does nothing if a table has appeared). A vehicle set up earlier gets "Use the maker's schedule" on the
   Maintenance schedule while the list has an item it lacks (`KnownSchedules.plan`: an item of the user's
   own with that name is kept, there is no replace), with a dialog that lists each interval and the
-  typical items that would double one, **ticked** to stop tracking (an import's are unticked), and "Use
-  the maker's table" on Milestones. The typical items can still be added, unticked, from the schedule
-  screen. **The source is said once per screen, never under every item** (the user found that too
+  typical items that would double one, **ticked** to be replaced (an import's are unticked and only stop
+  tracking), and "Use the maker's table" on Milestones. **A replaced typical item is removed**
+  (`ScheduleDao.applyKnown`; the user found an unticked generic twin beside the maker's item confusing),
+  unless a service was logged against it, when it stays untracked so the record keeps its link. This is
+  the one place a typical item is deleted. The typical items a maker's schedule doesn't cover can still
+  be added, unticked, from the schedule screen; ones whose job an item of the user's own already is
+  (by its `service`) are not offered back. **The source is said once per screen, never under every item** (the user found that too
   busy): an info box on the Maintenance schedule when any item has `knownList`, and the introduction on
   Milestones (`vehicles.milestonesKnownList`, cleared with the table). There is no "checked" state as
   torque values have. A list in miles goes to a kilometre vehicle as schedule figures.

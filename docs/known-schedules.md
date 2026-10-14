@@ -37,7 +37,8 @@ of how each one was made. The code is `KnownSchedules` in `:domain`; the lists a
 8. **Nothing of the user's is written over.** The table is added only while the vehicle has none.
    A reminder is added as the user's own item unless they already have one of that name. Typical items
    are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
-   ticked, to stop tracking.
+   ticked, and are removed when the schedule is taken, so each job is on the list once. One that has a
+   service logged against it is kept, untracked, so that record keeps its link.
 9. **A table doesn't repeat unless the guide says it does.**
 
 ## The file

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.MilestoneEntity
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -224,7 +225,10 @@ class ScheduleViewModel @Inject constructor(
                 )
             },
             defaultRule = s.defaultRule,
-            missing = ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }),
+            // Not a typical item whose job one of the user's own already is: adding it back would be a second reminder.
+            missing = items.filter { it.templateKey == null }.mapNotNull { HistoryImport.services[it.service]?.resets }.toSet().let { covered ->
+                ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }).filter { it.key !in covered }
+            },
             odometer = VehicleReminders.currentOdometer(entries, updates),
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { KnownSchedules.startedFrom(credits[it]) },
@@ -286,14 +290,14 @@ class ScheduleViewModel @Inject constructor(
      */
     /**
      * Adds the reminders of the maker's schedule as items of the user's own, tracked, each remembering
-     * the list it started from. [stop] are the typical items the user agreed to stop tracking because
-     * one of these is the same job; nothing else about a typical item changes, and none is removed.
+     * the list it started from. [stop] are the typical items the user agreed to have replaced because
+     * one of these is the same job: each is removed, or kept untracked if a service was logged against it.
      */
     fun addKnown(stop: Set<Long>) = viewModelScope.launch {
         val s = state.value ?: return@launch
         val (list, plan) = s.known ?: return@launch
         val severe = s.use == DrivingUse.SEVERE
-        schedule.applyImport(
+        schedule.applyKnown(
             added = plan.new.map {
                 ScheduleItemEntity(
                     vehicleId = vehicleId,
@@ -309,8 +313,7 @@ class ScheduleViewModel @Inject constructor(
                     firstMiles = it.firstAt,
                 )
             },
-            replaced = emptyList(),
-            stopped = plan.doubles.map { it.id }.filter { it in stop },
+            replaced = plan.doubles.map { it.id }.filter { it in stop },
         )
         // The maker's table goes with its schedule, unless the vehicle already has a table of its own.
         milestones.addKnown(
@@ -661,7 +664,8 @@ private fun KnownRemindersDialog(
                 }
                 if (plan.doubles.isNotEmpty()) {
                     Text(
-                        "These typical items are the same jobs. Ticked ones stop reminding you, so each job has one reminder; they stay on the list, unticked.",
+                        "These typical items are the same jobs. Ticked ones are taken off the list, so each job is there once. " +
+                            "One with a service logged against it stays, unticked, so its history keeps its link.",
                         color = scheme.onSurfaceVariant,
                     )
                     plan.doubles.forEach { double ->
@@ -673,7 +677,7 @@ private fun KnownRemindersDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Checkbox(checked = ticked, onCheckedChange = null)
-                            Text("Stop tracking “${double.name}”")
+                            Text("Replace “${double.name}”")
                         }
                     }
                 }
