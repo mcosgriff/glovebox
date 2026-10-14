@@ -144,6 +144,7 @@ dependencies {
     implementation(libs.tesseract4android)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
