@@ -397,7 +397,10 @@ Notes on what's built:
   on Vehicle details for that job (oil, tire size, wiper blades), otherwise the reminder's interval.
   Future dates are refused by the date picker itself, typed or tapped.
 - Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")
-  and leaves them out of overdue counts — see `ReminderPresentation.comingUp`.
+  and leaves them out of overdue counts — see `ReminderPresentation.comingUp`. On vehicle home that
+  section sits **above** "Coming up" (the user's choice, 2026-10-13: they have nothing to count from, so
+  they are dealt with first), each row with "Log it" (Log service with that job ticked) and one "Enter
+  when these were last done" under the card. They are still never given a guessed next-due point.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
   vehicles" still returns to it, which is where another vehicle is added.
 - Update mileage adds an `odometer_readings` row dated today, with Undo on the snackbar. The sheet's

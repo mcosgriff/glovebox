@@ -344,6 +344,7 @@ fun GloveboxNavHost() {
                     onDashReadingUsed = { entry.savedStateHandle[DASH_READING] = null },
                     onBack = { nav.popBackStack() },
                     onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
+                    onLogItem = { vehicleId, scheduleItemId -> nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId)) },
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
                     onOpenDetails = { vehicleId -> nav.navigate(VehicleDetailsRoute(vehicleId)) },
