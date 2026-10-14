@@ -57,8 +57,11 @@ data class ComingUp(
 /** [toLog] is set, with [state] OK, when nothing is due but that many jobs have never been logged. */
 data class Attention(val state: DueState, val count: Int, val only: String?, val toLog: Int = 0)
 
-/** Sections of the Reminders tab, in the order they are shown. */
-enum class ReminderGroup { OVERDUE, NEXT_30_DAYS, LATER, NOT_LOGGED }
+/**
+ * Sections of the Reminders tab, in the order they are shown. What isn't logged yet comes first, as
+ * on vehicle home: those jobs have nothing to count from, so they are what needs dealing with.
+ */
+enum class ReminderGroup { NOT_LOGGED, OVERDUE, NEXT_30_DAYS, LATER }
 
 /** A reminder shown outside its vehicle's own screen, so it carries the vehicle along. */
 data class UrgentItem<V>(val vehicle: V, val status: ItemStatus, val progress: ReminderProgress)

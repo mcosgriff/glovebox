@@ -181,7 +181,7 @@ class ReminderPresentationTest {
     }
 
     @Test
-    fun `reminders tab groups by overdue, next 30 days, later and not logged`() {
+    fun `reminders tab groups by not logged, overdue, next 30 days and later`() {
         val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
         val soonByMiles = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
         // Due in 20 days: outside the 14-day lead, inside the 30-day window.
@@ -196,7 +196,7 @@ class ReminderPresentationTest {
         val groups = ReminderPresentation.grouped(listOf("Truck" to truck, "Hatch" to hatch), today)
 
         assertEquals(
-            listOf(ReminderGroup.OVERDUE, ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER, ReminderGroup.NOT_LOGGED),
+            listOf(ReminderGroup.NOT_LOGGED, ReminderGroup.OVERDUE, ReminderGroup.NEXT_30_DAYS, ReminderGroup.LATER),
             groups.keys.toList(),
         )
         assertEquals(listOf("Truck" to "Rotation"), groups.names(ReminderGroup.OVERDUE))
