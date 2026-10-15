@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/mcosgriff/glovebox/compare/v0.4.0...v0.5.0) (2026-10-15)
+
+
+### Features
+
+* **import:** import the service visits from a Carfax report PDF ([#169](https://github.com/mcosgriff/glovebox/issues/169)) ([7fd0e32](https://github.com/mcosgriff/glovebox/commit/7fd0e326ef8bb6e40677fb48a658ec7f6b07d54e))
+
+
+### Bug Fixes
+
+* **vehicle:** pick the drive type from FWD, RWD, AWD and 4WD when adding by VIN ([#170](https://github.com/mcosgriff/glovebox/issues/170)) ([0c6fb85](https://github.com/mcosgriff/glovebox/commit/0c6fb854e275073d76604b6f047e3ee63b231a98))
+* **vehicle:** say when NHTSA has no trim for a VIN ([#172](https://github.com/mcosgriff/glovebox/issues/172)) ([a4578a0](https://github.com/mcosgriff/glovebox/commit/a4578a0fcc26ac9238604f06719089b49053462c))
+
 ## [0.4.0](https://github.com/mcosgriff/glovebox/compare/v0.3.2...v0.4.0) (2026-10-15)
 
 
