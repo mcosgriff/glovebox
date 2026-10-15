@@ -210,39 +210,44 @@ object CarfaxReport {
 
     private val ligatureWords = listOf("filter", "fluid", "flushed", "verified", "certified", "refilled", "filled", "inflated", "flat", "first", "final", "fixed", "field", "fleet", "flex")
 
+    /** The words a service line is made of that have "fi" or "fl" in them, in the forms a report uses. */
+    private val ligatureVocabulary = setOf(
+        "filter", "filters", "fluid", "fluids", "flushed", "flush", "verified", "certified", "refilled", "filled", "inflated",
+        "inflation", "flat", "first", "final", "fixed", "field", "fleet", "flex", "refinished", "fitted", "fluorescent",
+    )
+
     /**
-     * Some PDF writers name the "fi" and "fl" glyphs as other letters: a report printed to PDF on a Mac
-     * reads "Oil and clter changed", "Brake guid gushed", "Springceld". Only the words a service line or
-     * a place name is made of are put back; anything else is left as it reads.
+     * Some PDF writers name the "fi" and "fl" glyphs as other letters, and which letters depends on the
+     * report: printed on a Mac, one reads "Oil and clter changed", another "Differential iuid iushed". So a
+     * word that isn't one we know, but becomes one when a single letter is read as "fi" or "fl", is put
+     * back. A place name ending "…celd" is "…field" (Springfield). Anything else is left as it reads.
      */
-    private val misnamed: List<Pair<Regex, String>> = listOf(
-        """(?i)\bclters?\b""" to "filter",
-        """(?i)\bguids?\b""" to "fluid",
-        """(?i)\bgushed\b""" to "flushed",
-        """(?i)\bVericed\b""" to "Verified",
-        """(?i)\bcrst\b""" to "first",
-        """(?i)\bcnal\b""" to "final",
-        """(?i)\binated\b""" to "inflated",
-        """(?i)\bcxed\b""" to "fixed",
-        """celd(s?)\b""" to "field$1",
-    ).map { (pattern, word) -> Regex(pattern) to word }
+    private fun misnamedLigature(word: String): String {
+        val core = word.trimEnd(',', '.', ';', ':', ')').trimStart('(')
+        val tail = word.substring(word.indexOf(core) + core.length)
+        val head = word.substring(0, word.indexOf(core))
+        // Words joined by a slash ("flushed/changed") are each looked at.
+        if ('/' in core) return head + core.split('/').joinToString("/") { misnamedLigature(it) } + tail
+        val lower = core.lowercase(Locale.US)
+        if (lower in ligatureVocabulary || core.length < 3) return word
+        for (i in core.indices) for (pair in listOf("fi", "fl")) {
+            val candidate = lower.substring(0, i) + pair + lower.substring(i + 1)
+            if (candidate in ligatureVocabulary) {
+                val fixed = if (core.first().isUpperCase()) candidate.replaceFirstChar { it.uppercase() } else candidate
+                return head + fixed + tail
+            }
+        }
+        return head + core.replace(Regex("""celd(s?)$"""), "field$1") + tail
+    }
 
     /**
      * A report saved from a browser often draws "fi" and "fl" as one glyph the PDF can't name, which
      * reads back as a replacement character ("Oil and �lter changed"), or names it as other letters
-     * ([misnamed]). The one that makes a known word is put back; otherwise "fi", the commoner.
+     * ([misnamedLigature]). The one that makes a known word is put back; otherwise "fi", the commoner.
      */
     fun repairLigatures(word: String): String {
-        var w = word.replace("\uFB01", "fi").replace("\uFB02", "fl")
-        misnamed.forEach { (re, fix) ->
-            w = re.replace(w) { m ->
-                val r = if (fix.contains("$1")) fix.replace("$1", m.groupValues.getOrElse(1) { "" }) else fix
-                // Keep a capital where the misread word had one, and an "s" it ended with.
-                val cased = if (m.value.first().isUpperCase()) r.replaceFirstChar { it.uppercase() } else r
-                if (!fix.contains("$1") && m.value.endsWith("s") && !cased.endsWith("s")) cased + "s" else cased
-            }
-        }
-        if ('\uFFFD' !in w) return w
+        val w = word.replace("\uFB01", "fi").replace("\uFB02", "fl")
+        if ('\uFFFD' !in w) return misnamedLigature(w)
         val fl = w.replace("\uFFFD", "fl")
         return if (ligatureWords.any { fl.lowercase(Locale.US).trimEnd(',', '.').contains(it) }) fl else w.replace("\uFFFD", "fi")
     }
