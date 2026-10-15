@@ -629,6 +629,9 @@ Notes on what's built:
 - Manufacturer VIN lookup pages are a short checked list (`Recalls.manufacturerSite`); other makes get
   NHTSA's lookup. "Find a dealer" hands "<make> dealer" to the maps app. With nothing open, the way in
   is the Recalls row on Vehicle details.
+- A long press on the VIN row of Vehicle details copies the VIN (`copyVin`), marked sensitive
+  (`ClipDescription.EXTRA_IS_SENSITIVE`) so Android hides it in its clipboard preview; Android 13+ says
+  "Copied" itself, earlier versions get a toast. The row also has an accessibility long-press action.
 - Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
   column at a time (`VehicleDao.setNickname` etc.), never with a whole-row `@Update`, so they can't undo
   a recall check that landed meanwhile. Rows with nowhere to go yet are left out rather than shown dead.

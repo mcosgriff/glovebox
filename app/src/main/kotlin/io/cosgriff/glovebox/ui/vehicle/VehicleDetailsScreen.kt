@@ -1,5 +1,18 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import android.widget.Toast
+import android.os.PersistableBundle
+import android.os.Build
+import android.content.Context
+import android.content.ClipboardManager
+import android.content.ClipDescription
+import android.content.ClipData
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.data.db.UnitDao
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -263,6 +276,8 @@ fun VehicleDetailsScreen(
     val photo by vm.photo.collectAsStateWithLifecycle()
     val photoFailed by vm.photoFailed.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<Spec?>(null) }
     var selling by rememberSaveable { mutableStateOf(false) }
@@ -426,7 +441,22 @@ fun VehicleDetailsScreen(
                         v.bodyClass?.let { Triple("Body", it, false) },
                     )
                     rows.forEach { (label, value, mono) ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 11.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // The VIN is the one value worth having elsewhere (an insurer's or a parts site's form): a long press copies it.
+                        val copy = if (label == "VIN") ({ copyVin(context, value); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .then(
+                                    if (copy == null) {
+                                        Modifier
+                                    } else {
+                                        Modifier
+                                            .pointerInput(value) { detectTapGestures(onLongPress = { copy() }) }
+                                            .semantics { onLongClick(label = "Copy the VIN") { copy(); true } }
+                                    },
+                                )
+                                .padding(vertical = 11.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
                             Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 value,
@@ -745,4 +775,16 @@ private fun SpecDialog(spec: Spec, current: String, onSave: (String) -> Unit, on
         confirmButton = { TextButton(onClick = { onSave(text.text) }) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+/**
+ * Puts the VIN on the clipboard, marked sensitive so Android hides it in its clipboard preview. Android 13
+ * and later say "Copied" themselves; earlier versions get a short message here.
+ */
+private fun copyVin(context: Context, vin: String) {
+    val clip = ClipData.newPlainText("VIN", vin).apply {
+        description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+    }
+    context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) Toast.makeText(context, "VIN copied", Toast.LENGTH_SHORT).show()
 }
