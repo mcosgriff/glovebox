@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0](https://github.com/mcosgriff/glovebox/compare/v0.3.2...v0.4.0) (2026-10-15)
+
+
+### Features
+
+* **scan:** read VIN barcodes with zxing-cpp, and Data Matrix and Code 128 too ([#162](https://github.com/mcosgriff/glovebox/issues/162)) ([2d59486](https://github.com/mcosgriff/glovebox/commit/2d59486672de5e8dcc299bd37437ade7438a1579))
+* **vehicle:** check what is entered under "What it takes" ([#165](https://github.com/mcosgriff/glovebox/issues/165)) ([d9ad26e](https://github.com/mcosgriff/glovebox/commit/d9ad26e6bffe48d911757d6687c1554b31501421))
+* **vehicle:** long-press the VIN on Vehicle details to copy it ([#164](https://github.com/mcosgriff/glovebox/issues/164)) ([bc5bb34](https://github.com/mcosgriff/glovebox/commit/bc5bb34e6a3334243bbe8aca3e822cd52f10f830))
+* **vehicle:** more of what a vehicle takes, tire pressures, copy part numbers, and put it in exports ([#167](https://github.com/mcosgriff/glovebox/issues/167)) ([546c3f8](https://github.com/mcosgriff/glovebox/commit/546c3f82a779b571780f07c512421406ac7774fd))
+
 ## [0.3.2](https://github.com/mcosgriff/glovebox/compare/v0.3.1...v0.3.2) (2026-10-15)
 
 
