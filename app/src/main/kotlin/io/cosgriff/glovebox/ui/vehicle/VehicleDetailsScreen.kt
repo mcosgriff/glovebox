@@ -244,23 +244,6 @@ class VehicleDetailsViewModel @Inject constructor(
         vehicles.setTires(vehicleId, front, rear.takeIf { front != null }, pFront, pRear, pSpare, unit.name.takeIf { any })
     }
 
-    /** One of the rows past oil, tires and wipers; [values] are its fields in order, each checked, null for empty. */
-    fun saveMore(item: TakesItem, values: List<Any?>) = viewModelScope.launch {
-        fun s(i: Int) = values.getOrNull(i) as String?
-        when (item) {
-            TakesItem.TRANSMISSION -> vehicles.setTransmissionFluid(vehicleId, s(0))
-            TakesItem.DIFFERENTIAL -> vehicles.setDifferentialOil(vehicleId, s(0))
-            TakesItem.TRANSFER_CASE -> vehicles.setTransferCaseOil(vehicleId, s(0))
-            TakesItem.COOLANT -> vehicles.setCoolant(vehicleId, s(0))
-            TakesItem.BRAKE_FLUID -> vehicles.setBrakeFluid(vehicleId, s(0))
-            TakesItem.AIR_FILTERS -> vehicles.setAirFilters(vehicleId, s(0), s(1))
-            TakesItem.SPARK_PLUGS -> vehicles.setSparkPlugs(vehicleId, s(0), s(1))
-            TakesItem.BATTERY -> vehicles.setBattery(vehicleId, s(0), values.getOrNull(1) as Int?)
-            TakesItem.BULBS -> vehicles.setBulbs(vehicleId, s(0), s(1), s(2))
-            TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> Unit
-        }
-    }
-
     fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?) = viewModelScope.launch {
         vehicles.setWipers(vehicleId, driver, passenger, rear, note)
     }
@@ -297,6 +280,8 @@ fun VehicleDetailsScreen(
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
     onDelete: (vehicleId: Long) -> Unit,
     onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
+    /** What it takes past oil, tires and wipers: fluids, filters, plugs, battery, bulbs. */
+    onOpenMoreTakes: (vehicleId: Long) -> Unit,
     onOpenReadings: (vehicleId: Long) -> Unit,
     /** The Import page with this vehicle chosen: a Carfax report, or an import file. */
     onOpenImport: (vehicleId: Long) -> Unit,
@@ -313,7 +298,6 @@ fun VehicleDetailsScreen(
     val haptics = LocalHapticFeedback.current
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
-    var addingMore by rememberSaveable { mutableStateOf(false) }
     val takes = v.whatItTakes()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
@@ -409,30 +393,8 @@ fun VehicleDetailsScreen(
         TakesItem.TIRES -> TiresDialog(v, onSave = { f, r, pf, pr, ps, u -> vm.saveTires(f, r, pf, pr, ps, u); editing = null }, onDismiss = { editing = null })
         TakesItem.WIPERS -> WipersDialog(v, onSave = { d, p, r, n -> vm.saveWipers(d, p, r, n); editing = null }, onDismiss = { editing = null })
         null -> Unit
-        else -> MoreDialog(item, takes, onSave = { vm.saveMore(item, it); editing = null }, onDismiss = { editing = null })
+        else -> Unit // the rest are edited on their own page
     }
-    if (addingMore) {
-        AlertDialog(
-            onDismissRequest = { addingMore = false },
-            title = { Text("Add to what it takes") },
-            text = {
-                Column {
-                    takes.addable().forEach { item ->
-                        Text(
-                            item.label,
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                .clickable(role = Role.Button) { addingMore = false; editing = item }
-                                .padding(vertical = 12.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = { TextButton(onClick = { addingMore = false }) { Text("Cancel") } },
-        )
-    }
-
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
@@ -571,7 +533,7 @@ fun VehicleDetailsScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel("WHAT IT TAKES")
                 Card {
-                    takes.shown().forEachIndexed { i, spec ->
+                    takes.basics().forEachIndexed { i, spec ->
                         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         val value = takes.summary(spec)
                         // A long press copies the row's part numbers, for a parts site's search box.
@@ -599,21 +561,24 @@ fun VehicleDetailsScreen(
                             Chevron()
                         }
                     }
-                    if (takes.addable().isNotEmpty()) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { addingMore = true }),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    // The rest have a page of their own, like torque and fastener specs.
+                    val entered = takes.entered().size
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { onOpenMoreTakes(v.id) }),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                            Text("Fluids, filters & parts", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
-                                "Add more: fluids, filters, plugs, battery, bulbs",
-                                Modifier.weight(1f).padding(vertical = 8.dp),
+                                if (entered == 0) "None saved yet" else "$entered of ${entered + takes.notEntered().size} saved",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = if (entered == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                             )
-                            Chevron()
                         }
+                        Chevron()
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Row(
@@ -832,7 +797,7 @@ private fun LinkRow(title: String, detail: String, detailColor: Color = Material
 }
 
 @Composable
-private fun Chevron() {
+internal fun Chevron() {
     Icon(
         Icons.AutoMirrored.Outlined.KeyboardArrowRight,
         contentDescription = null,
@@ -923,7 +888,7 @@ private fun PlateDialog(plate: String?, region: String?, onSave: (String?, Strin
  * Empty is always allowed and clears it. The error shows once the user has typed something wrong.
  */
 @Composable
-private fun CheckedField(
+internal fun CheckedField(
     value: String,
     onValue: (String) -> Unit,
     label: String,
@@ -948,7 +913,7 @@ private fun CheckedField(
 
 /** Save is offered only when every filled-in field is valid. */
 @Composable
-private fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDismiss: () -> Unit, content: @Composable () -> Unit) {
+internal fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDismiss: () -> Unit, content: @Composable () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -967,7 +932,7 @@ private fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDism
     )
 }
 
-private fun String.orNullIfBlank() = trim().takeIf { it.isNotEmpty() }
+internal fun String.orNullIfBlank() = trim().takeIf { it.isNotEmpty() }
 
 @Composable
 private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, VehicleSpecEntry.Volume?, String?) -> Unit, onDismiss: () -> Unit) {
@@ -1069,59 +1034,6 @@ private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?, Int?, Int?,
     }
 }
 
-/** One field of a row past oil, tires and wipers: how it is labelled, and the check that gives its stored form. */
-private class MoreField(val label: String, val error: String, val check: (String) -> Any?, val current: Any?, val supporting: String? = null, val keyboard: KeyboardType = KeyboardType.Text)
-
-private fun moreFields(item: TakesItem, w: WhatItTakes): List<MoreField> {
-    val name = "Up to 40 characters"
-    val part = "Letters, digits and dashes; up to three, separated by commas"
-    return when (item) {
-        TakesItem.TRANSMISSION -> listOf(MoreField("Fluid", name, VehicleSpecEntry::fluidName, w.transmissionFluid, "Such as ATF WS, Dexron VI or the DSG fluid's number"))
-        TakesItem.DIFFERENTIAL -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.differentialOil, "Such as 75W-85 GL-5"))
-        TakesItem.TRANSFER_CASE -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.transferCaseOil, "A gear oil grade, or the fluid's name"))
-        TakesItem.COOLANT -> listOf(MoreField("Coolant", name, VehicleSpecEntry::fluidName, w.coolant, "Such as Toyota Super Long Life or G13"))
-        TakesItem.BRAKE_FLUID -> listOf(MoreField("Grade", "DOT 3, DOT 4, DOT 5 or DOT 5.1", VehicleSpecEntry::brakeFluid, w.brakeFluid, "As on the reservoir cap: DOT 3, DOT 4…"))
-        TakesItem.AIR_FILTERS -> listOf(
-            MoreField("Engine air filter part number", part, VehicleSpecEntry::partNumbers, w.engineAirFilter),
-            MoreField("Cabin air filter part number", part, VehicleSpecEntry::partNumbers, w.cabinAirFilter),
-        )
-        TakesItem.SPARK_PLUGS -> listOf(
-            MoreField("Part number", part, VehicleSpecEntry::partNumbers, w.sparkPlug),
-            MoreField("Gap", "Such as 0.044 in or 1.1 mm", VehicleSpecEntry::plugGap, w.sparkPlugGap, "In inches or millimetres"),
-        )
-        TakesItem.BATTERY -> listOf(
-            MoreField("Group size", "A BCI group such as 24F, 35 or H6", VehicleSpecEntry::batteryGroup, w.batteryGroup, "As printed on the battery"),
-            MoreField("Cold-cranking amps", "100 to 1,500", VehicleSpecEntry::cca, w.batteryCca, keyboard = KeyboardType.Number),
-        )
-        TakesItem.BULBS -> listOf(
-            MoreField("Low beam", "A bulb code such as H11, 9006 or D4S", VehicleSpecEntry::bulbCode, w.bulbLow),
-            MoreField("High beam", "A bulb code such as 9005 or HB3", VehicleSpecEntry::bulbCode, w.bulbHigh),
-            MoreField("Fog light", "A bulb code such as H11 or H16", VehicleSpecEntry::bulbCode, w.bulbFog),
-        )
-        TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> emptyList()
-    }
-}
-
-/** The editor for any row past oil, tires and wipers: its fields, each checked, saved in their stored form. */
-@Composable
-private fun MoreDialog(item: TakesItem, takes: WhatItTakes, onSave: (List<Any?>) -> Unit, onDismiss: () -> Unit) {
-    val fields = remember(item) { moreFields(item, takes) }
-    val texts = rememberSaveable(item, saver = listSaver(save = { it.toList() }, restore = { it.toMutableStateList() })) {
-        fields.map { it.current?.toString().orEmpty() }.toMutableStateList()
-    }
-    val valid = fields.indices.all { i -> texts[i].isBlank() || fields[i].check(texts[i]) != null }
-    SpecEditor(
-        title = item.label,
-        valid = valid,
-        onSave = { onSave(fields.indices.map { i -> texts[i].orNullIfBlank()?.let { fields[i].check(it) } }) },
-        onDismiss = onDismiss,
-    ) {
-        fields.forEachIndexed { i, f ->
-            CheckedField(texts[i], { texts[i] = it }, f.label, f.error, f.check, supporting = f.supporting, keyboard = f.keyboard)
-        }
-    }
-}
-
 @Composable
 private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -> Unit, onDismiss: () -> Unit) {
     var driver by rememberSaveable { mutableStateOf(v.wiperDriverIn?.toString().orEmpty()) }
@@ -1162,7 +1074,7 @@ private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -
  * Puts [text] on the clipboard. A [sensitive] one (the VIN) is marked so Android hides it in its clipboard
  * preview. Android 13 and later say "Copied" themselves; earlier versions get a short message here.
  */
-private fun copyText(context: Context, label: String, text: String, sensitive: Boolean) {
+internal fun copyText(context: Context, label: String, text: String, sensitive: Boolean) {
     val clip = ClipData.newPlainText(label, text).apply {
         if (sensitive) description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
     }

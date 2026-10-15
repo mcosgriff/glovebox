@@ -68,11 +68,14 @@ data class WhatItTakes(
         else -> null
     }
 
-    /** The rows to show: oil, tires and wipers always, the rest only once something is entered. */
-    fun shown(): List<TakesItem> = TakesItem.entries.filter { it.always || summary(it) != null }
+    /** The rows on Vehicle details itself: oil, tires and wipers, entered or not. */
+    fun basics(): List<TakesItem> = TakesItem.entries.filter { it.always }
 
-    /** The rows "Add more" offers: everything not shown yet. */
-    fun addable(): List<TakesItem> = TakesItem.entries.filter { !it.always && summary(it) == null }
+    /** The rest (fluids, filters, plugs, battery, bulbs) with something entered: the cards on their own page. */
+    fun entered(): List<TakesItem> = TakesItem.entries.filter { !it.always && summary(it) != null }
+
+    /** The rest with nothing entered yet, which that page offers to add. */
+    fun notEntered(): List<TakesItem> = TakesItem.entries.filter { !it.always && summary(it) == null }
 
     /**
      * What to say beside a line on Log service, by catalog id: the fluid or part that job uses.
