@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/mcosgriff/glovebox/compare/v0.3.0...v0.3.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **release:** run the unit tests that exist before building the release ([#154](https://github.com/mcosgriff/glovebox/issues/154)) ([19e5c17](https://github.com/mcosgriff/glovebox/commit/19e5c17342f9130a499d8ee8fddf54e46b9e79c5))
+
 ## [0.3.0](https://github.com/mcosgriff/glovebox/compare/v0.2.0...v0.3.0) (2026-10-14)
 
 
