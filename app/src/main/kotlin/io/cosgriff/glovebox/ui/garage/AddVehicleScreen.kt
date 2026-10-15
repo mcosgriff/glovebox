@@ -593,6 +593,14 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     modifier = Modifier.weight(1f),
                 )
             }
+            // vPIC often has no trim (a Golf GTI, for one), so an empty field shouldn't look like a failed decode.
+            if (vm.trimChoices.isEmpty() && vm.trim.isBlank()) {
+                Text(
+                    "NHTSA doesn't list a trim for this VIN. Add one if you like; it's optional.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
             if (ambiguous) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
