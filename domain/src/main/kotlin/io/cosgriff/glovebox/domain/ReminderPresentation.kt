@@ -29,6 +29,18 @@ data class ComingUp(
     val notLogged: List<ItemStatus>,
 ) {
     val overdue: Int get() = counting.count { it.first.status.state == DueState.OVERDUE }
+
+    /**
+     * The overdue group on vehicle home, most urgent first. A snoozed one isn't in it: the snooze is the
+     * owner saying "not now", so it waits under [upcoming], as it does under Later on the Reminders tab.
+     */
+    val overdueNow: List<Pair<ItemStatus, ReminderProgress>>
+        get() = counting.filter { it.first.status.state == DueState.OVERDUE && it.first.snooze == null }
+
+    /** Everything else that is counting down: due soon, then fine, then the snoozed, whatever their state. */
+    val upcoming: List<Pair<ItemStatus, ReminderProgress>>
+        get() = counting.filter { it.first.status.state != DueState.OVERDUE || it.first.snooze != null }
+            .sortedBy { it.first.snooze != null } // stable: the rest keep their urgency order
     val dueSoon: Int get() = counting.count { it.first.status.state == DueState.DUE_SOON }
 
     /** The soonest reminder that isn't overdue yet — the "Next:" line on a garage card. */

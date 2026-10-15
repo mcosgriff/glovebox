@@ -481,7 +481,10 @@ Notes on what's built:
   and leaves them out of overdue counts — see `ReminderPresentation.comingUp`. On vehicle home that
   section sits **above** "Coming up" (the user's choice, 2026-10-13: they have nothing to count from, so
   they are dealt with first; the Reminders tab puts that group first too), each row with "Log it" (Log service with that job ticked) and one "Enter
-  when these were last done" under the card. They are still never given a guessed next-due point. A row for a job
+  when these were last done" under the card. Vehicle home has three groups, in this order: Not logged yet, Overdue
+  (`ComingUp.overdueNow`) and Coming up (`ComingUp.upcoming`: due soon, fine, then snoozed, since a snooze
+  is "not now", as on the Reminders tab), and **every row in all three is one tap from Log service with
+  that job ticked** (the user's request: log it from where it's seen). They are still never given a guessed next-due point. A row for a job
   that goes by distance says, in amber (`statusColors().soon`, never the overdue red), where the schedule
   last put it: "Last scheduled at 50,000 mi · 2,000 mi ago · nothing logged" (`ItemStatus.lastScheduled`,
   counted from when the vehicle was new: `TrackedItem.zeroAt`). **"Up to date" is said only when every

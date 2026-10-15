@@ -108,6 +108,21 @@ class ReminderPresentationTest {
     }
 
     @Test
+    fun `vehicle home splits overdue from what is coming up, and a snoozed one waits with the rest`() {
+        val overdue = status(Interval(5_000, null), odometer = 66_000, id = 1, name = "Rotation")
+        val soon = status(Interval(5_000, null), odometer = 64_800, id = 2, name = "Oil")
+        val fine = status(Interval(30_000, null), odometer = 61_000, id = 3, name = "Air filter")
+        val snoozed = status(Interval(5_000, null), odometer = 67_000, id = 4, name = "Wipers")
+            .copy(snooze = Snooze(untilOdometer = 68_000, untilDate = null))
+
+        val up = ReminderPresentation.comingUp(listOf(fine, snoozed, soon, overdue))
+
+        assertEquals(listOf("Rotation"), up.overdueNow.map { it.first.item.name })
+        assertEquals(listOf("Oil", "Air filter", "Wipers"), up.upcoming.map { it.first.item.name })
+        assertEquals(up.counting.size, up.overdueNow.size + up.upcoming.size)
+    }
+
+    @Test
     fun `due soon outranks an item that has merely used more of its interval`() {
         // 2,600 of 3,000 mi used but 400 mi left: inside the 500 mi lead, so due soon.
         val soon = status(Interval(3_000, null), odometer = 62_600, id = 1, name = "Oil")
