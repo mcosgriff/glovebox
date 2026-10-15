@@ -1,51 +1,54 @@
 package io.cosgriff.glovebox.ui.scan
 
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
-import com.google.zxing.PlanarYUVLuminanceSource
-import com.google.zxing.common.HybridBinarizer
+import android.graphics.Bitmap
+import android.graphics.Rect
+import zxingcpp.BarcodeReader
 
 /**
- * Reads a barcode out of one camera frame with ZXing, entirely on the phone. Only the greyscale
+ * Reads a barcode out of one camera frame with zxing-cpp, entirely on the phone. Only the greyscale
  * (luminance) plane is needed. Not thread-safe: use one per analyzer.
+ *
+ * zxing-cpp (#161) replaced the Java ZXing library after a phone trial: on live frames of a door-jamb
+ * sticker, blurred or under glare, the Java reader read nothing or read wrongly, where zxing-cpp is
+ * built for poor frames. Google's ML Kit would read better still but sends usage logs to Google, which
+ * the app's network rule doesn't allow.
  */
 class VinBarcodeReader {
-    private val reader = MultiFormatReader().apply {
-        setHints(
-            mapOf(
-                // What a VIN is printed as: Code 39 on the door-jamb sticker, sometimes a QR code.
-                DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.CODE_39, BarcodeFormat.QR_CODE),
-                DecodeHintType.TRY_HARDER to true,
-            ),
-        )
-    }
+    private val reader = BarcodeReader(
+        BarcodeReader.Options(
+            // Code 39 on most door-jamb stickers; QR, Data Matrix and Code 128 on others. Whatever carries
+            // it, VinScan only accepts 17 characters with a valid check digit.
+            formats = setOf(BarcodeReader.Format.CODE_39, BarcodeReader.Format.QR_CODE, BarcodeReader.Format.DATA_MATRIX, BarcodeReader.Format.CODE_128),
+            tryHarder = true,
+            // A QR or Data Matrix code printed light on dark; zxing-cpp doesn't invert a 1D code, and labels don't print one so.
+            tryInvert = true,
+            tryDownscale = true,
+            maxNumberOfSymbols = 1,
+        ),
+    )
 
     /**
      * The text of a barcode in the frame, or null. [luminance] is [width] x [height], one byte per
      * pixel, rows top to bottom.
      *
-     * If the frame can't be read as it is, it is tried again with the lighting evened out. For a
-     * 1D barcode ZXing picks a single black/white threshold per row, whichever of its binarizers
-     * is used, so a barcode half in shadow or under glare reads as all black or all white on one
-     * side. [evenOut] fixes that before ZXing sees it.
+     * If the frame can't be read as it is, it is tried again with the lighting evened out: a barcode
+     * half in shadow or under glare otherwise reads as all black or all white on one side.
      */
     fun read(luminance: ByteArray, width: Int, height: Int): String? =
         attempt(luminance, width, height) ?: attempt(evenOut(luminance, width, height), width, height)
 
     private fun attempt(luminance: ByteArray, width: Int, height: Int): String? {
-        val source = PlanarYUVLuminanceSource(luminance, width, height, 0, 0, width, height, false)
-        return attempt(BinaryBitmap(HybridBinarizer(source)))
-    }
-
-    private fun attempt(bitmap: BinaryBitmap): String? = try {
-        reader.decodeWithState(bitmap).text
-    } catch (_: NotFoundException) {
-        null
-    } finally {
-        reader.reset()
+        // zxing-cpp takes a Bitmap; grey in all three colours, so it reads back as the same luminance.
+        val pixels = IntArray(width * height) { i ->
+            val l = luminance[i].toInt() and 0xFF
+            (0xFF shl 24) or (l shl 16) or (l shl 8) or l
+        }
+        val bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+        return try {
+            reader.read(bitmap, Rect(0, 0, width, height), 0).firstOrNull()?.text
+        } finally {
+            bitmap.recycle()
+        }
     }
 
     companion object {

@@ -73,10 +73,14 @@ Keep them green; lint errors fail the build.
   formatter (`Int.asDistance(unit)`, `Interval.label(unit)`, `VehicleEntity.unit`).
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
-- **Barcodes are read with ZXing, not ML Kit.** ML Kit's bundled barcode library depends on Google's
-  log-upload transport (`transport-backend-cct`, `transport-runtime`) plus Firebase and Play Services
-  pieces, which breaks the rule above. ZXing is pure Java with no network code. Check the dependency tree
-  the same way before adding any Google or Firebase library.
+- **Barcodes are read with zxing-cpp, not ML Kit** (#161; before that, Java ZXing). ML Kit's bundled barcode
+  library depends on Google's log-upload transport (`transport-backend-cct`, `transport-runtime`) plus
+  Firebase and Play Services pieces, which breaks the rule above; asked again on 2026-10-15 after a failed
+  phone trial, and still no. zxing-cpp (`io.github.zxing-cpp:android`) is native code with no network
+  calls: its POM depends only on the Kotlin standard library and CameraX, and its `.so` imports no network
+  function (checked with pyelftools; check again on an upgrade). It adds about 1.6 MB to the arm64
+  release. Java ZXing stays as a test-only dependency, to draw the barcodes the tests read. Check any
+  Google or Firebase library's dependency tree the same way before adding it.
 - **Text is read with Tesseract, not ML Kit** (#64, the odometer off the dash). ML Kit's text recognition
   pulls in the same log-upload transport as its barcode reader. Tesseract4Android is native code with no
   network calls and no permissions, checked in the `.so` files themselves; check again on an upgrade. It is
@@ -176,10 +180,14 @@ Notes on what's built:
   schedule screen, so Back from there keeps it.
 - VIN scanning (`ScanVinScreen`): CameraX's `LifecycleCameraController` feeds frames at about 1080p to
   `VinBarcodeReader`, which takes the luminance plane, turns it upright (a 1D reader only scans along
-  rows), cuts out a band across the middle where the guide is, and asks ZXing for a Code 39 or QR code.
+  rows), cuts out a band across the middle where the guide is, and asks zxing-cpp for a Code 39, QR, Data Matrix
+  or Code 128 code.
   The camera starts at 2x zoom so the phone can sit back far enough to focus. If a frame can't be read it
-  is tried again after `evenOut`: for 1D barcodes ZXing uses one black/white threshold per row whichever
-  binarizer is chosen, so a barcode half in shadow fails without it (a test pins this). `VinScan.vin` accepts only a 17-character run that passes
+  is tried again after `evenOut`, which stretches each row's contrast locally so a barcode half in shadow
+  or glare still reads. Reading is native, so its tests run on a device (`VinBarcodeReaderDeviceTest`, in
+  CI's emulator job); the frame maths around it stay JVM tests. A barcode that isn't a VIN is only said to
+  be one when the same text is read twice in five (`VinScan.notAVin`), and the slow printed-VIN reader runs
+  on one frame in four (`VinScan.PRINT_EVERY`). `VinScan.vin` accepts only a 17-character run that passes
   the check digit; it deliberately doesn't slide a window along longer text, which would match by chance
   about one time in eleven. With no barcode in the frame the same band goes to Tesseract
   (`TextReader.vin`, #82) for a VIN in print, on a windshield plate or a registration card.
