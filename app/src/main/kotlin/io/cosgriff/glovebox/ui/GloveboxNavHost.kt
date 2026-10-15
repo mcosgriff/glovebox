@@ -102,7 +102,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable object NotificationsRoute
 @Serializable object BackupRoute
 /** Adds data from a JSON file the user picks to one vehicle. */
-@Serializable object ImportRoute
+/** [vehicleId] starts the page with that vehicle chosen, as Vehicle details opens it. */
+@Serializable data class ImportRoute(val vehicleId: Long? = null)
 @Serializable object DeleteAllRoute
 @Serializable object AboutRoute
 @Serializable object PrivacyRoute
@@ -361,6 +362,7 @@ fun GloveboxNavHost() {
                     onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
                     onOpenReadings = { vehicleId -> nav.navigate(MileageReadingsRoute(vehicleId)) },
+                    onOpenImport = { vehicleId -> nav.navigate(ImportRoute(vehicleId)) },
                 )
             }
             screen<MileageReadingsRoute> {
@@ -503,7 +505,7 @@ fun GloveboxNavHost() {
                     onOpenRules = { nav.navigate(ReminderRulesRoute) },
                     onOpenNotifications = { nav.navigate(NotificationsRoute) },
                     onOpenBackup = { nav.navigate(BackupRoute) },
-                    onOpenImport = { nav.navigate(ImportRoute) },
+                    onOpenImport = { nav.navigate(ImportRoute()) },
                     onDeleteAll = { nav.navigate(DeleteAllRoute) },
                     onOpenAbout = { nav.navigate(AboutRoute) },
                     onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import java.time.LocalDate
+import io.cosgriff.glovebox.domain.CarfaxReport
 import io.cosgriff.glovebox.domain.FileDistances
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -52,6 +54,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -112,6 +116,7 @@ import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.ui.ImportRoute
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
@@ -136,7 +141,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /** An import file the user picked: its name and what it says. Held in memory only, never written anywhere. */
-data class PickedImport(val name: String, val text: String)
+/** [file] is set when the pick was read already, as a Carfax report PDF is; otherwise [text] is parsed as an import file. */
+data class PickedImport(val name: String, val text: String, val file: ImportFile? = null)
 
 /**
  * Lets the user pick an import file with Android's file picker. A singleton with its launcher in
@@ -170,6 +176,20 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
     fun onPicked(uri: Uri?) {
         if (uri == null) return
         scope.launch {
+            // A PDF is read as a Carfax report: its service visits become a service-history import.
+            val bytes = withContext(Dispatchers.IO) { readBytes(uri, PDF_MAX_BYTES) }
+            if (bytes != null && bytes.size >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "%PDF") {
+                if (bytes.size > PDF_MAX_BYTES) {
+                    _problem.value = "That PDF is too big (the most is 20 MB)."
+                    return@launch
+                }
+                val file = withContext(Dispatchers.Default) {
+                    PdfWords.read(context, bytes)?.let { CarfaxReport.read(it, LocalDate.now()) }
+                }
+                if (file == null) _problem.value = "That PDF couldn't be read. A password-protected PDF can't be imported."
+                else _picked.value = PickedImport(displayName(uri) ?: "Carfax report", "", file)
+                return@launch
+            }
             val text = withContext(Dispatchers.IO) { read(uri) }
             when (text) {
                 null -> _problem.value = "That file couldn't be opened."
@@ -202,6 +222,24 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
         null
     }
 
+    /** Up to [cap] bytes and one more, so a caller can tell a file over the cap; null when it can't be opened. */
+    private fun readBytes(uri: Uri, cap: Int): ByteArray? = try {
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            val out = ByteArrayOutputStream()
+            val buffer = ByteArray(64 * 1024)
+            while (out.size() <= cap) {
+                val n = input.read(buffer)
+                if (n < 0) break
+                out.write(buffer, 0, n)
+            }
+            out.toByteArray()
+        }
+    } catch (_: IOException) {
+        null
+    } catch (_: SecurityException) {
+        null
+    }
+
     private fun displayName(uri: Uri): String? = try {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
             if (c.moveToFirst()) c.getString(0) else null
@@ -213,6 +251,9 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
     private companion object {
         // Not valid JSON, so it can never be mistaken for a file's contents.
         const val TOO_BIG = "\u0000too-big"
+
+        /** A Carfax report is a few MB at most; this leaves room without holding something huge in memory. */
+        const val PDF_MAX_BYTES = 20 * 1024 * 1024
     }
 }
 
@@ -289,6 +330,7 @@ class ImportViewModel @Inject constructor(
     private val milestones: MilestoneDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     /** The garage, then sold vehicles: those can still take service history. */
     val vehicles: StateFlow<List<VehicleEntity>?> = combine(vehicles.observeActive(), vehicles.observeArchived()) { active, sold -> active + sold }
@@ -297,14 +339,14 @@ class ImportViewModel @Inject constructor(
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
 
-    private val chosenVehicle = MutableStateFlow<Long?>(null)
+    private val chosenVehicle = MutableStateFlow(savedStateHandle.toRoute<ImportRoute>().vehicleId)
 
     /** The vehicle to import into: the one chosen, or the only one there is. */
     val vehicleId: StateFlow<Long?> = combine(this.vehicles, chosenVehicle) { list, chosen ->
         chosen?.takeIf { id -> list.orEmpty().any { it.id == id } } ?: list?.singleOrNull()?.id
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    private val parsed = picker.picked.mapLatest { p -> p?.let { withContext(Dispatchers.Default) { ImportFormat.parse(it.text) } } }
+    private val parsed = picker.picked.mapLatest { p -> p?.let { it.file ?: withContext(Dispatchers.Default) { ImportFormat.parse(it.text) } } }
 
     private val _result = MutableStateFlow<ImportResult?>(null)
     val result: StateFlow<ImportResult?> = _result.asStateFlow()
@@ -649,7 +691,7 @@ fun ImportScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file. The file is checked first, and you see what it would do before anything is saved.",
+                    "Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.",
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {

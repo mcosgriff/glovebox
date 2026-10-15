@@ -142,7 +142,8 @@ DELETE, then the phone's screen lock). Odometer offset (instrument cluster repla
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
-about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+about what differs; also the user's own milestone table and a Carfax report PDF; Vehicle details' "Import service
+history" row opens the same page with that vehicle chosen, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 To build: VIN scan follow-up (#83).
@@ -308,6 +309,22 @@ Notes on what's built:
   reported with its path (`items[3].torque.unit`). The app ships no JSON Schema library; `:domain` reads
   the file as a JSON tree with kotlinx.serialization. A file never names a vehicle. There are four kinds
   (`ImportKind`), all built. The Settings row is absent with no vehicles.
+- A Carfax report PDF is a service-history import (#160): `ImportPicker` sees "%PDF" at the start of the pick,
+  `PdfWords` (app, PDFBox for Android, from memory and never written to disk, BouncyCastle excluded) gives
+  each word with its position, and `CarfaxReport.read` (`:domain`) turns the history table into
+  `ImportFile.ServiceHistory`, so the Import page previews and writes it like any history file. Columns are
+  found from positions (an entry starts on a line whose first word is a date at the left; a wide gap
+  separates the source from the comments). **Only service visits are taken**: an entry counts when a
+  comment is work (`isWork`: replaced, changed, serviced, inspected…, and not a title, registration, owner
+  or damage line). A comment becomes a catalog line only where the wording is plain (`CarfaxReport.service`:
+  "Oil and filter changed" is oil, "Brake pads replaced" stays text: which axle?); the source's first line
+  is the shop. A visit with no mileage is counted and refused, never guessed. The ligatures (fi, fl, ff,
+  ffi, ffl) drawn as one glyph come back as the ligature character, a replacement character, or an ordinary
+  letter the PDF misnames them as ("clter", "iuid"), and `repairLigatures` puts them back, only ever into a
+  word of its vocabulary. **A misnamed letter is learnt from the whole report** (`standIns`: the letter must
+  make at least two different known words), because one word a letter away proves nothing ("Door" and
+  "floor", "Lex Brodie's" and "Flex"). Tests use a made-up
+  report built word by word; **never commit a real report**. Keeping the PDF is #168's job.
 - What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
   default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import
