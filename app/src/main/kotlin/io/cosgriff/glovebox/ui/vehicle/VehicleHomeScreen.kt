@@ -294,13 +294,7 @@ fun VehicleHomeScreen(
                                     )
                                 }
                                 // The whole row opens Log service with this job ticked; this says so.
-                                Text(
-                                    "Log it",
-                                    Modifier.padding(horizontal = 8.dp),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
+                                LogItLabel()
                             }
                         }
                     }
@@ -480,7 +474,37 @@ private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: Cl
             Text(progress.headline.text(unit), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
         }
         ProgressBar(progress.fraction ?: 0.0, color)
-        Text(status.detail(progress, swap, unit), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // "Log it" as on Not logged yet, on the detail line so the name and countdown keep the top line.
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                status.detail(progress, swap, unit),
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            LogItLabel()
+        }
+    }
+}
+
+/**
+ * "Log it" drawn as an outlined button on a reminder row. It has no click of its own: the whole row
+ * is the button (with "Log it" as its click label), so a tap anywhere on the row does the same.
+ */
+@Composable
+private fun LogItLabel() {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+        color = Color.Transparent,
+    ) {
+        Text(
+            "Log it",
+            Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 
