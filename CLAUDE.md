@@ -687,7 +687,8 @@ Notes on what's built:
 - License plate (schema v24, `vehicles.plate`, `.plateRegion`, `LicensePlates` in `:domain`): a row under the
   nickname on Vehicle details opens a dialog with the plate (capitals, letters, digits, spaces and dashes,
   `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the
-  two-letter code. Kept on the phone, never sent (the privacy screen says so), and not in exports.
+  two-letter code. Kept on the phone and never sent (the privacy screen says so); exports give it under the
+  VIN (`ExportVehicle.plate`).
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;

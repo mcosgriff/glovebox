@@ -61,6 +61,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         text(v.title, title, after = 6f)
         v.nickname?.let { labelled("Nickname", it) }
         v.vin?.let { labelled("VIN", it, mono) }
+        v.plate?.let { labelled("License plate", it, mono) }
         v.odometer?.let { labelled("Odometer", "${Exports.distance(it, v.unit)} (highest reading on record)") }
         Exports.actualMileage(v)?.let { labelled("Actual mileage", Exports.distance(it, v.unit)) }
         v.clusterSwap?.let { labelled("Instrument cluster", Exports.clusterNote(it, v.unit)) }

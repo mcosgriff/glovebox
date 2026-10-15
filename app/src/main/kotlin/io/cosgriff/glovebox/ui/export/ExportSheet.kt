@@ -75,6 +75,7 @@ import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
 import io.cosgriff.glovebox.domain.Exports
 import io.cosgriff.glovebox.domain.asReadOn
+import io.cosgriff.glovebox.domain.LicensePlates
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
@@ -151,6 +152,7 @@ class ExportViewModel @Inject constructor(
             title = VehicleText.title(v.year, v.make, v.model, v.trim),
             nickname = v.nickname,
             vin = v.vin,
+            plate = LicensePlates.label(v.plate, v.plateRegion),
             unit = v.unit,
             odometer = VehicleReminders.currentOdometer(entries, readings),
             soldOn = v.archivedOn,
