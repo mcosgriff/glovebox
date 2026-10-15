@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.material3.Switch
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.text.input.KeyboardType
+import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
@@ -146,18 +152,14 @@ data class VehicleDetails(
 )
 
 /** The user-entered rows under "What it takes". */
-enum class Spec(val label: String, val hint: String) {
-    OIL("Engine oil", "Grade and how much it holds"),
-    OIL_FILTER("Oil filter", "Part number"),
-    TIRES("Tire size", "As printed on the sidewall"),
-    WIPERS("Wiper blades", "Driver, passenger and rear lengths"),
-}
+enum class Spec(val label: String) { OIL("Engine oil"), TIRES("Tires"), WIPERS("Wiper blades") }
+
+private fun VehicleEntity.volume(): VehicleSpecEntry.Volume? = oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } }
 
 private fun VehicleEntity.value(spec: Spec): String? = when (spec) {
-    Spec.OIL -> oilSpec
-    Spec.OIL_FILTER -> oilFilter
-    Spec.TIRES -> tireSize
-    Spec.WIPERS -> wiperBlades
+    Spec.OIL -> VehicleSpecEntry.oilSummary(oilSpec, oilApproval, oilCapacity, volume(), oilFilter)
+    Spec.TIRES -> VehicleSpecEntry.tireSummary(tireSize, tireSizeRear)
+    Spec.WIPERS -> VehicleSpecEntry.wiperSummary(wiperDriverIn, wiperPassengerIn, wiperRearIn, wiperBlades)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -226,14 +228,15 @@ class VehicleDetailsViewModel @Inject constructor(
         nicknameEdits.value = text
     }
 
-    fun save(spec: Spec, text: String) = viewModelScope.launch {
-        val value = VehicleText.clean(text, VehicleText.MAX_SPEC)
-        when (spec) {
-            Spec.OIL -> vehicles.setOilSpec(vehicleId, value)
-            Spec.OIL_FILTER -> vehicles.setOilFilter(vehicleId, value)
-            Spec.TIRES -> vehicles.setTireSize(vehicleId, value)
-            Spec.WIPERS -> vehicles.setWiperBlades(vehicleId, value)
-        }
+    /** Each is already checked and in its standard form (VehicleSpecEntry); null clears it. */
+    fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?) = viewModelScope.launch {
+        vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
+    }
+
+    fun saveTires(front: String?, rear: String?) = viewModelScope.launch { vehicles.setTires(vehicleId, front, rear.takeIf { front != null }) }
+
+    fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?) = viewModelScope.launch {
+        vehicles.setWipers(vehicleId, driver, passenger, rear, note)
     }
 
     /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */
@@ -356,16 +359,11 @@ fun VehicleDetailsScreen(
     // Seeded once: after that the field is the source of truth and the database follows it.
     var nickname by rememberSaveable { mutableStateOf(v.nickname.orEmpty()) }
 
-    editing?.let { spec ->
-        SpecDialog(
-            spec = spec,
-            current = v.value(spec).orEmpty(),
-            onSave = {
-                vm.save(spec, it)
-                editing = null
-            },
-            onDismiss = { editing = null },
-        )
+    when (editing) {
+        Spec.OIL -> OilDialog(v, onSave = { g, a, c, u, f -> vm.saveOil(g, a, c, u, f); editing = null }, onDismiss = { editing = null })
+        Spec.TIRES -> TiresDialog(v, onSave = { f, r -> vm.saveTires(f, r); editing = null }, onDismiss = { editing = null })
+        Spec.WIPERS -> WipersDialog(v, onSave = { d, p, r, n -> vm.saveWipers(d, p, r, n); editing = null }, onDismiss = { editing = null })
+        null -> Unit
     }
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -751,30 +749,165 @@ private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
     )
 }
 
+/**
+ * A field that checks what is typed: [check] gives the standard form, or null when it isn't valid.
+ * Empty is always allowed and clears it. The error shows once the user has typed something wrong.
+ */
 @Composable
-private fun SpecDialog(spec: Spec, current: String, onSave: (String) -> Unit, onDismiss: () -> Unit) {
-    // Opens ready to type, with the cursor after what is already there.
-    var text by rememberSaveable(spec, stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(current, TextRange(current.length))) }
-    val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
+private fun CheckedField(
+    value: String,
+    onValue: (String) -> Unit,
+    label: String,
+    error: String,
+    check: (String) -> Any?,
+    modifier: Modifier = Modifier,
+    supporting: String? = null,
+    keyboard: KeyboardType = KeyboardType.Text,
+) {
+    val bad = value.isNotBlank() && check(value) == null
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValue,
+        modifier = modifier.fillMaxWidth(),
+        label = { Text(label) },
+        isError = bad,
+        supportingText = (if (bad) error else supporting)?.let { { Text(it) } },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = keyboard, imeAction = ImeAction.Next),
+    )
+}
+
+/** Save is offered only when every filled-in field is valid. */
+@Composable
+private fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDismiss: () -> Unit, content: @Composable () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(spec.label) },
+        title = { Text(title) },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { if (it.text.length <= VehicleText.MAX_SPEC) text = it },
-                modifier = Modifier.focusRequester(focus),
-                label = { Text(spec.hint) },
-                supportingText = { Text("From your owner's or service manual. Leave empty to clear it.") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onSave(text.text) }),
-            )
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content()
+                Text(
+                    "From your owner's or service manual. Leave a field empty to clear it.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         },
-        confirmButton = { TextButton(onClick = { onSave(text.text) }) { Text("Save") } },
+        confirmButton = { TextButton(onClick = onSave, enabled = valid) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+private fun String.orNullIfBlank() = trim().takeIf { it.isNotEmpty() }
+
+@Composable
+private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, VehicleSpecEntry.Volume?, String?) -> Unit, onDismiss: () -> Unit) {
+    var grade by rememberSaveable { mutableStateOf(v.oilSpec.orEmpty()) }
+    var approval by rememberSaveable { mutableStateOf(v.oilApproval.orEmpty()) }
+    var capacity by rememberSaveable { mutableStateOf(v.oilCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() }.orEmpty()) }
+    var litres by rememberSaveable { mutableStateOf(v.oilCapacityUnit == VehicleSpecEntry.Volume.LITRES.name) }
+    var filter by rememberSaveable { mutableStateOf(v.oilFilter.orEmpty()) }
+    val unit = if (litres) VehicleSpecEntry.Volume.LITRES else VehicleSpecEntry.Volume.QUARTS
+    fun ok(text: String, check: (String) -> Any?) = text.isBlank() || check(text) != null
+    val valid = ok(grade, VehicleSpecEntry::oilGrade) && ok(approval, VehicleSpecEntry::oilApproval) &&
+        ok(capacity) { VehicleSpecEntry.oilCapacity(it, unit) } && ok(filter, VehicleSpecEntry::partNumbers)
+    SpecEditor(
+        title = "Engine oil",
+        valid = valid,
+        onSave = {
+            onSave(
+                grade.orNullIfBlank()?.let(VehicleSpecEntry::oilGrade),
+                approval.orNullIfBlank()?.let(VehicleSpecEntry::oilApproval),
+                capacity.orNullIfBlank()?.let { VehicleSpecEntry.oilCapacity(it, unit) },
+                unit,
+                filter.orNullIfBlank()?.let(VehicleSpecEntry::partNumbers),
+            )
+        },
+        onDismiss = onDismiss,
+    ) {
+        CheckedField(grade, { grade = it }, "Grade", "A grade like 5W-30", VehicleSpecEntry::oilGrade, supporting = "Viscosity, such as 0W-20 or 5W-30")
+        // The common grades a tap away.
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            VehicleSpecEntry.commonGrades.forEach { g ->
+                FilterChip(selected = VehicleSpecEntry.oilGrade(grade) == g, onClick = { grade = g }, label = { Text(g, fontFamily = PlexMono) })
+            }
+        }
+        CheckedField(approval, { approval = it }, "Approval (optional)", "Up to 60 characters", VehicleSpecEntry::oilApproval, supporting = "Such as API SP, ILSAC GF-6 or VW 502 00")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CheckedField(
+                capacity, { capacity = it }, "Capacity with filter", "1 to ${unit.max.toInt()} ${unit.symbol}, one decimal place",
+                { VehicleSpecEntry.oilCapacity(it, unit) }, modifier = Modifier.weight(1f), keyboard = KeyboardType.Decimal,
+            )
+            listOf(false to "qt", true to "L").forEach { (l, symbol) ->
+                FilterChip(selected = litres == l, onClick = { litres = l }, label = { Text(symbol) })
+            }
+        }
+        CheckedField(
+            filter, { filter = it }, "Oil filter part number", "Letters, digits and dashes; up to three, separated by commas",
+            VehicleSpecEntry::partNumbers, supporting = "Add an alternative after a comma",
+        )
+    }
+}
+
+@Composable
+private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?) -> Unit, onDismiss: () -> Unit) {
+    var front by rememberSaveable { mutableStateOf(v.tireSize.orEmpty()) }
+    var differ by rememberSaveable { mutableStateOf(v.tireSizeRear != null) }
+    var rear by rememberSaveable { mutableStateOf(v.tireSizeRear.orEmpty()) }
+    val valid = (front.isBlank() || VehicleSpecEntry.tireSize(front) != null) && (!differ || rear.isBlank() || VehicleSpecEntry.tireSize(rear) != null)
+    SpecEditor(
+        title = "Tires",
+        valid = valid,
+        onSave = { onSave(front.orNullIfBlank()?.let(VehicleSpecEntry::tireSize), rear.orNullIfBlank()?.takeIf { differ }?.let(VehicleSpecEntry::tireSize)) },
+        onDismiss = onDismiss,
+    ) {
+        val error = "As on the sidewall, such as P265/70R17, 225/40R18 92W or 33x12.50R15LT"
+        CheckedField(front, { front = it }, if (differ) "Front" else "Size", error, VehicleSpecEntry::tireSize, supporting = "As printed on the sidewall")
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = differ, role = Role.Switch, onValueChange = { differ = it }),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Different size at the rear", Modifier.weight(1f))
+            Switch(checked = differ, onCheckedChange = null)
+        }
+        if (differ) CheckedField(rear, { rear = it }, "Rear", error, VehicleSpecEntry::tireSize)
+    }
+}
+
+@Composable
+private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -> Unit, onDismiss: () -> Unit) {
+    var driver by rememberSaveable { mutableStateOf(v.wiperDriverIn?.toString().orEmpty()) }
+    var passenger by rememberSaveable { mutableStateOf(v.wiperPassengerIn?.toString().orEmpty()) }
+    var rear by rememberSaveable { mutableStateOf(v.wiperRearIn?.toString().orEmpty()) }
+    var note by rememberSaveable { mutableStateOf(v.wiperBlades.orEmpty()) }
+    val valid = listOf(driver, passenger, rear).all { it.isBlank() || VehicleSpecEntry.wiperLength(it) != null } && note.trim().length <= VehicleText.MAX_SPEC
+    SpecEditor(
+        title = "Wiper blades",
+        valid = valid,
+        onSave = {
+            onSave(
+                driver.orNullIfBlank()?.let(VehicleSpecEntry::wiperLength),
+                passenger.orNullIfBlank()?.let(VehicleSpecEntry::wiperLength),
+                rear.orNullIfBlank()?.let(VehicleSpecEntry::wiperLength),
+                VehicleText.clean(note, VehicleText.MAX_SPEC),
+            )
+        },
+        onDismiss = onDismiss,
+    ) {
+        val error = "Whole inches, 10 to 34"
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CheckedField(driver, { driver = it }, "Driver (in)", error, VehicleSpecEntry::wiperLength, modifier = Modifier.weight(1f), keyboard = KeyboardType.Number)
+            CheckedField(passenger, { passenger = it }, "Passenger (in)", error, VehicleSpecEntry::wiperLength, modifier = Modifier.weight(1f), keyboard = KeyboardType.Number)
+        }
+        CheckedField(rear, { rear = it }, "Rear (in, if it has one)", error, VehicleSpecEntry::wiperLength, keyboard = KeyboardType.Number)
+        OutlinedTextField(
+            value = note,
+            onValueChange = { if (it.length <= VehicleText.MAX_SPEC) note = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Part numbers or blade type (optional)") },
+            singleLine = true,
+        )
+    }
 }
 
 /**

@@ -57,17 +57,17 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
     suspend fun setEngineIfBlank(id: Long, engine: String)
 
-    @Query("UPDATE vehicles SET oilSpec = :value WHERE id = :id")
-    suspend fun setOilSpec(id: Long, value: String?)
+    @Query(
+        "UPDATE vehicles SET oilSpec = :grade, oilApproval = :approval, oilCapacity = :capacity, oilCapacityUnit = :unit, " +
+            "oilFilter = :filter WHERE id = :id",
+    )
+    suspend fun setOil(id: Long, grade: String?, approval: String?, capacity: Double?, unit: String?, filter: String?)
 
-    @Query("UPDATE vehicles SET oilFilter = :value WHERE id = :id")
-    suspend fun setOilFilter(id: Long, value: String?)
+    @Query("UPDATE vehicles SET tireSize = :front, tireSizeRear = :rear WHERE id = :id")
+    suspend fun setTires(id: Long, front: String?, rear: String?)
 
-    @Query("UPDATE vehicles SET tireSize = :value WHERE id = :id")
-    suspend fun setTireSize(id: Long, value: String?)
-
-    @Query("UPDATE vehicles SET wiperBlades = :value WHERE id = :id")
-    suspend fun setWiperBlades(id: Long, value: String?)
+    @Query("UPDATE vehicles SET wiperDriverIn = :driver, wiperPassengerIn = :passenger, wiperRearIn = :rear, wiperBlades = :note WHERE id = :id")
+    suspend fun setWipers(id: Long, driver: Int?, passenger: Int?, rear: Int?, note: String?)
 
     @Query("UPDATE vehicles SET photoFile = :fileName WHERE id = :id")
     suspend fun setPhotoFile(id: Long, fileName: String?)

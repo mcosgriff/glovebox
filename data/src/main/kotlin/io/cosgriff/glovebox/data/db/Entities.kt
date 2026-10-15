@@ -32,10 +32,23 @@ data class VehicleEntity(
     val transmission: String? = null,
     val bodyClass: String? = null,
     val nickname: String? = null,
+    /** The oil grade ("0W-20"). Entered before #165 it may be free text, which the editor asks to fix. */
     val oilSpec: String? = null,
+    /** Filter part numbers, up to three separated by commas. */
     val oilFilter: String? = null,
+    /** The approval the manual names ("API SP", "VW 502 00"). */
+    val oilApproval: String? = null,
+    /** How much oil it holds with the filter, in [oilCapacityUnit] (a VehicleSpecEntry.Volume name). */
+    val oilCapacity: Double? = null,
+    val oilCapacityUnit: String? = null,
+    /** The tire size, all round or at the front; [tireSizeRear] only when the rear differs. */
     val tireSize: String? = null,
+    val tireSizeRear: String? = null,
+    /** Wiper blade part numbers or type, as typed; the lengths are in the three columns after it, in inches. */
     val wiperBlades: String? = null,
+    val wiperDriverIn: Int? = null,
+    val wiperPassengerIn: Int? = null,
+    val wiperRearIn: Int? = null,
     /** Name of the vehicle's own encrypted photo in PhotoCrypto.photoDir. */
     val photoFile: String? = null,
     /**
