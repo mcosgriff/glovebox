@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/mcosgriff/glovebox/compare/v0.6.0...v0.7.0) (2026-10-15)
+
+
+### Features
+
+* **home:** give overdue its own group, and log any reminder from vehicle home in one tap ([#180](https://github.com/mcosgriff/glovebox/issues/180)) ([5b597aa](https://github.com/mcosgriff/glovebox/commit/5b597aa42029619f334e9d5d9a626eea81667fda))
+* **vehicle:** give fluids, filters and parts their own page ([#179](https://github.com/mcosgriff/glovebox/issues/179)) ([6365cae](https://github.com/mcosgriff/glovebox/commit/6365cae9e6ed186a842131382766b3fdf444b660))
+
+
+### Bug Fixes
+
+* **service:** make Log service's categories read as tabs, and open the one a due chip ticks ([#177](https://github.com/mcosgriff/glovebox/issues/177)) ([d58e4fd](https://github.com/mcosgriff/glovebox/commit/d58e4fd65fc1702f03d4c40ca68eafc1a63bbb49))
+
 ## [0.6.0](https://github.com/mcosgriff/glovebox/compare/v0.5.0...v0.6.0) (2026-10-15)
 
 
