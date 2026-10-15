@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
@@ -154,6 +155,7 @@ class ExportViewModel @Inject constructor(
             odometer = VehicleReminders.currentOdometer(entries, readings),
             soldOn = v.archivedOn,
             clusterSwap = swap,
+            whatItTakes = v.whatItTakes().lines(),
             records = records.map { r ->
                 ExportRecord(
                     date = r.record.date,
@@ -305,6 +307,8 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
                     HorizontalDivider(color = scheme.outlineVariant)
                     Tick("Maintenance schedule & recalls", o.scheduleAndRecalls) { vm.change(o.copy(scheduleAndRecalls = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
+                    Tick("What it takes (oil, tires, fluids, parts)", o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
+                    HorizontalDivider(color = scheme.outlineVariant)
                     val pdf = o.format == ExportFormat.PDF
                     // The choice is remembered while Markdown is selected, so switching back to PDF restores it.
                     Tick(if (pdf) "Receipt photos" else "Receipt photos (PDF only)", o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
@@ -333,7 +337,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             )
 
             val n = doc.recordCount
-            val hasContent = n > 0 || doc.vehicles.any { it.schedule.isNotEmpty() || it.recalls.isNotEmpty() }
+            val hasContent = n > 0 || doc.vehicles.any { it.schedule.isNotEmpty() || it.recalls.isNotEmpty() || it.whatItTakes.isNotEmpty() }
             Button(
                 onClick = { vm.export(onStarted = onDismiss) },
                 enabled = hasContent && !vm.working,

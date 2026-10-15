@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.foundation.combinedClickable
+import io.cosgriff.glovebox.ui.service.whatItTakes
+import io.cosgriff.glovebox.domain.WhatItTakes
+import io.cosgriff.glovebox.domain.TakesItem
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.horizontalScroll
@@ -152,15 +158,6 @@ data class VehicleDetails(
 )
 
 /** The user-entered rows under "What it takes". */
-enum class Spec(val label: String) { OIL("Engine oil"), TIRES("Tires"), WIPERS("Wiper blades") }
-
-private fun VehicleEntity.volume(): VehicleSpecEntry.Volume? = oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } }
-
-private fun VehicleEntity.value(spec: Spec): String? = when (spec) {
-    Spec.OIL -> VehicleSpecEntry.oilSummary(oilSpec, oilApproval, oilCapacity, volume(), oilFilter)
-    Spec.TIRES -> VehicleSpecEntry.tireSummary(tireSize, tireSizeRear)
-    Spec.WIPERS -> VehicleSpecEntry.wiperSummary(wiperDriverIn, wiperPassengerIn, wiperRearIn, wiperBlades)
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -233,7 +230,27 @@ class VehicleDetailsViewModel @Inject constructor(
         vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
     }
 
-    fun saveTires(front: String?, rear: String?) = viewModelScope.launch { vehicles.setTires(vehicleId, front, rear.takeIf { front != null }) }
+    fun saveTires(front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, unit: VehicleSpecEntry.Pressure) = viewModelScope.launch {
+        val any = pFront != null || pRear != null || pSpare != null
+        vehicles.setTires(vehicleId, front, rear.takeIf { front != null }, pFront, pRear, pSpare, unit.name.takeIf { any })
+    }
+
+    /** One of the rows past oil, tires and wipers; [values] are its fields in order, each checked, null for empty. */
+    fun saveMore(item: TakesItem, values: List<Any?>) = viewModelScope.launch {
+        fun s(i: Int) = values.getOrNull(i) as String?
+        when (item) {
+            TakesItem.TRANSMISSION -> vehicles.setTransmissionFluid(vehicleId, s(0))
+            TakesItem.DIFFERENTIAL -> vehicles.setDifferentialOil(vehicleId, s(0))
+            TakesItem.TRANSFER_CASE -> vehicles.setTransferCaseOil(vehicleId, s(0))
+            TakesItem.COOLANT -> vehicles.setCoolant(vehicleId, s(0))
+            TakesItem.BRAKE_FLUID -> vehicles.setBrakeFluid(vehicleId, s(0))
+            TakesItem.AIR_FILTERS -> vehicles.setAirFilters(vehicleId, s(0), s(1))
+            TakesItem.SPARK_PLUGS -> vehicles.setSparkPlugs(vehicleId, s(0), s(1))
+            TakesItem.BATTERY -> vehicles.setBattery(vehicleId, s(0), values.getOrNull(1) as Int?)
+            TakesItem.BULBS -> vehicles.setBulbs(vehicleId, s(0), s(1), s(2))
+            TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> Unit
+        }
+    }
 
     fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?) = viewModelScope.launch {
         vehicles.setWipers(vehicleId, driver, passenger, rear, note)
@@ -282,7 +299,9 @@ fun VehicleDetailsScreen(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
-    var editing by rememberSaveable { mutableStateOf<Spec?>(null) }
+    var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
+    var addingMore by rememberSaveable { mutableStateOf(false) }
+    val takes = v.whatItTakes()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
@@ -359,11 +378,33 @@ fun VehicleDetailsScreen(
     // Seeded once: after that the field is the source of truth and the database follows it.
     var nickname by rememberSaveable { mutableStateOf(v.nickname.orEmpty()) }
 
-    when (editing) {
-        Spec.OIL -> OilDialog(v, onSave = { g, a, c, u, f -> vm.saveOil(g, a, c, u, f); editing = null }, onDismiss = { editing = null })
-        Spec.TIRES -> TiresDialog(v, onSave = { f, r -> vm.saveTires(f, r); editing = null }, onDismiss = { editing = null })
-        Spec.WIPERS -> WipersDialog(v, onSave = { d, p, r, n -> vm.saveWipers(d, p, r, n); editing = null }, onDismiss = { editing = null })
+    when (val item = editing) {
+        TakesItem.OIL -> OilDialog(v, onSave = { g, a, c, u, f -> vm.saveOil(g, a, c, u, f); editing = null }, onDismiss = { editing = null })
+        TakesItem.TIRES -> TiresDialog(v, onSave = { f, r, pf, pr, ps, u -> vm.saveTires(f, r, pf, pr, ps, u); editing = null }, onDismiss = { editing = null })
+        TakesItem.WIPERS -> WipersDialog(v, onSave = { d, p, r, n -> vm.saveWipers(d, p, r, n); editing = null }, onDismiss = { editing = null })
         null -> Unit
+        else -> MoreDialog(item, takes, onSave = { vm.saveMore(item, it); editing = null }, onDismiss = { editing = null })
+    }
+    if (addingMore) {
+        AlertDialog(
+            onDismissRequest = { addingMore = false },
+            title = { Text("Add to what it takes") },
+            text = {
+                Column {
+                    takes.addable().forEach { item ->
+                        Text(
+                            item.label,
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .clickable(role = Role.Button) { addingMore = false; editing = item }
+                                .padding(vertical = 12.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { addingMore = false }) { Text("Cancel") } },
+        )
     }
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -440,7 +481,7 @@ fun VehicleDetailsScreen(
                     )
                     rows.forEach { (label, value, mono) ->
                         // The VIN is the one value worth having elsewhere (an insurer's or a parts site's form): a long press copies it.
-                        val copy = if (label == "VIN") ({ copyVin(context, value); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
+                        val copy = if (label == "VIN") ({ copyText(context, "VIN", value, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
                         Row(
                             Modifier.fillMaxWidth()
                                 .then(
@@ -483,11 +524,19 @@ fun VehicleDetailsScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel("WHAT IT TAKES")
                 Card {
-                    Spec.entries.forEachIndexed { i, spec ->
+                    takes.shown().forEachIndexed { i, spec ->
                         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        val value = v.value(spec)
+                        val value = takes.summary(spec)
+                        // A long press copies the row's part numbers, for a parts site's search box.
+                        val parts = takes.partNumbers(spec)
                         Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { editing = spec }),
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .combinedClickable(
+                                    role = Role.Button,
+                                    onClick = { editing = spec },
+                                    onLongClickLabel = parts?.let { "Copy the part numbers" },
+                                    onLongClick = parts?.let { p -> { copyText(context, "Part numbers", p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -499,6 +548,22 @@ fun VehicleDetailsScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (value == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.End,
+                            )
+                            Chevron()
+                        }
+                    }
+                    if (takes.addable().isNotEmpty()) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { addingMore = true }),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Add more: fluids, filters, plugs, battery, bulbs",
+                                Modifier.weight(1f).padding(vertical = 8.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                             Chevron()
                         }
@@ -850,15 +915,31 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
 }
 
 @Composable
-private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?) -> Unit, onDismiss: () -> Unit) {
+private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?, Int?, Int?, Int?, VehicleSpecEntry.Pressure) -> Unit, onDismiss: () -> Unit) {
     var front by rememberSaveable { mutableStateOf(v.tireSize.orEmpty()) }
     var differ by rememberSaveable { mutableStateOf(v.tireSizeRear != null) }
     var rear by rememberSaveable { mutableStateOf(v.tireSizeRear.orEmpty()) }
-    val valid = (front.isBlank() || VehicleSpecEntry.tireSize(front) != null) && (!differ || rear.isBlank() || VehicleSpecEntry.tireSize(rear) != null)
+    var pFront by rememberSaveable { mutableStateOf(v.tirePressureFront?.toString().orEmpty()) }
+    var pRear by rememberSaveable { mutableStateOf(v.tirePressureRear?.toString().orEmpty()) }
+    var pSpare by rememberSaveable { mutableStateOf(v.tirePressureSpare?.toString().orEmpty()) }
+    var kpa by rememberSaveable { mutableStateOf(v.tirePressureUnit == VehicleSpecEntry.Pressure.KPA.name) }
+    val unit = if (kpa) VehicleSpecEntry.Pressure.KPA else VehicleSpecEntry.Pressure.PSI
+    val pressure = { s: String -> VehicleSpecEntry.tirePressure(s, unit) }
+    val valid = (front.isBlank() || VehicleSpecEntry.tireSize(front) != null) && (!differ || rear.isBlank() || VehicleSpecEntry.tireSize(rear) != null) &&
+        listOf(pFront, pRear, pSpare).all { it.isBlank() || pressure(it) != null }
     SpecEditor(
         title = "Tires",
         valid = valid,
-        onSave = { onSave(front.orNullIfBlank()?.let(VehicleSpecEntry::tireSize), rear.orNullIfBlank()?.takeIf { differ }?.let(VehicleSpecEntry::tireSize)) },
+        onSave = {
+            onSave(
+                front.orNullIfBlank()?.let(VehicleSpecEntry::tireSize),
+                rear.orNullIfBlank()?.takeIf { differ }?.let(VehicleSpecEntry::tireSize),
+                pFront.orNullIfBlank()?.let(pressure),
+                pRear.orNullIfBlank()?.let(pressure),
+                pSpare.orNullIfBlank()?.let(pressure),
+                unit,
+            )
+        },
         onDismiss = onDismiss,
     ) {
         val error = "As on the sidewall, such as P265/70R17, 225/40R18 92W or 33x12.50R15LT"
@@ -871,6 +952,69 @@ private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?) -> Unit, on
             Switch(checked = differ, onCheckedChange = null)
         }
         if (differ) CheckedField(rear, { rear = it }, "Rear", error, VehicleSpecEntry::tireSize)
+        SectionLabel("COLD PRESSURE, FROM THE DOOR PLACARD")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(false to "psi", true to "kPa").forEach { (k, symbol) -> FilterChip(selected = kpa == k, onClick = { kpa = k }, label = { Text(symbol) }) }
+        }
+        val pError = "Whole ${unit.symbol}, ${unit.range.first} to ${unit.range.last}"
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CheckedField(pFront, { pFront = it }, "Front", pError, pressure, modifier = Modifier.weight(1f), keyboard = KeyboardType.Number)
+            CheckedField(pRear, { pRear = it }, "Rear", pError, pressure, modifier = Modifier.weight(1f), keyboard = KeyboardType.Number)
+        }
+        CheckedField(pSpare, { pSpare = it }, "Spare (if it differs)", pError, pressure, keyboard = KeyboardType.Number)
+    }
+}
+
+/** One field of a row past oil, tires and wipers: how it is labelled, and the check that gives its stored form. */
+private class MoreField(val label: String, val error: String, val check: (String) -> Any?, val current: Any?, val supporting: String? = null, val keyboard: KeyboardType = KeyboardType.Text)
+
+private fun moreFields(item: TakesItem, w: WhatItTakes): List<MoreField> {
+    val name = "Up to 40 characters"
+    val part = "Letters, digits and dashes; up to three, separated by commas"
+    return when (item) {
+        TakesItem.TRANSMISSION -> listOf(MoreField("Fluid", name, VehicleSpecEntry::fluidName, w.transmissionFluid, "Such as ATF WS, Dexron VI or the DSG fluid's number"))
+        TakesItem.DIFFERENTIAL -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.differentialOil, "Such as 75W-85 GL-5"))
+        TakesItem.TRANSFER_CASE -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.transferCaseOil, "A gear oil grade, or the fluid's name"))
+        TakesItem.COOLANT -> listOf(MoreField("Coolant", name, VehicleSpecEntry::fluidName, w.coolant, "Such as Toyota Super Long Life or G13"))
+        TakesItem.BRAKE_FLUID -> listOf(MoreField("Grade", "DOT 3, DOT 4, DOT 5 or DOT 5.1", VehicleSpecEntry::brakeFluid, w.brakeFluid, "As on the reservoir cap: DOT 3, DOT 4…"))
+        TakesItem.AIR_FILTERS -> listOf(
+            MoreField("Engine air filter part number", part, VehicleSpecEntry::partNumbers, w.engineAirFilter),
+            MoreField("Cabin air filter part number", part, VehicleSpecEntry::partNumbers, w.cabinAirFilter),
+        )
+        TakesItem.SPARK_PLUGS -> listOf(
+            MoreField("Part number", part, VehicleSpecEntry::partNumbers, w.sparkPlug),
+            MoreField("Gap", "Such as 0.044 in or 1.1 mm", VehicleSpecEntry::plugGap, w.sparkPlugGap, "In inches or millimetres"),
+        )
+        TakesItem.BATTERY -> listOf(
+            MoreField("Group size", "A BCI group such as 24F, 35 or H6", VehicleSpecEntry::batteryGroup, w.batteryGroup, "As printed on the battery"),
+            MoreField("Cold-cranking amps", "100 to 1,500", VehicleSpecEntry::cca, w.batteryCca, keyboard = KeyboardType.Number),
+        )
+        TakesItem.BULBS -> listOf(
+            MoreField("Low beam", "A bulb code such as H11, 9006 or D4S", VehicleSpecEntry::bulbCode, w.bulbLow),
+            MoreField("High beam", "A bulb code such as 9005 or HB3", VehicleSpecEntry::bulbCode, w.bulbHigh),
+            MoreField("Fog light", "A bulb code such as H11 or H16", VehicleSpecEntry::bulbCode, w.bulbFog),
+        )
+        TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> emptyList()
+    }
+}
+
+/** The editor for any row past oil, tires and wipers: its fields, each checked, saved in their stored form. */
+@Composable
+private fun MoreDialog(item: TakesItem, takes: WhatItTakes, onSave: (List<Any?>) -> Unit, onDismiss: () -> Unit) {
+    val fields = remember(item) { moreFields(item, takes) }
+    val texts = rememberSaveable(item, saver = listSaver(save = { it.toList() }, restore = { it.toMutableStateList() })) {
+        fields.map { it.current?.toString().orEmpty() }.toMutableStateList()
+    }
+    val valid = fields.indices.all { i -> texts[i].isBlank() || fields[i].check(texts[i]) != null }
+    SpecEditor(
+        title = item.label,
+        valid = valid,
+        onSave = { onSave(fields.indices.map { i -> texts[i].orNullIfBlank()?.let { fields[i].check(it) } }) },
+        onDismiss = onDismiss,
+    ) {
+        fields.forEachIndexed { i, f ->
+            CheckedField(texts[i], { texts[i] = it }, f.label, f.error, f.check, supporting = f.supporting, keyboard = f.keyboard)
+        }
     }
 }
 
@@ -911,13 +1055,13 @@ private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -
 }
 
 /**
- * Puts the VIN on the clipboard, marked sensitive so Android hides it in its clipboard preview. Android 13
- * and later say "Copied" themselves; earlier versions get a short message here.
+ * Puts [text] on the clipboard. A [sensitive] one (the VIN) is marked so Android hides it in its clipboard
+ * preview. Android 13 and later say "Copied" themselves; earlier versions get a short message here.
  */
-private fun copyVin(context: Context, vin: String) {
-    val clip = ClipData.newPlainText("VIN", vin).apply {
-        description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+private fun copyText(context: Context, label: String, text: String, sensitive: Boolean) {
+    val clip = ClipData.newPlainText(label, text).apply {
+        if (sensitive) description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
     }
     context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) Toast.makeText(context, "VIN copied", Toast.LENGTH_SHORT).show()
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) Toast.makeText(context, "$label copied", Toast.LENGTH_SHORT).show()
 }

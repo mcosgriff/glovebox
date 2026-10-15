@@ -23,6 +23,8 @@ data class ExportOptions(
     val dates: ExportDates = ExportDates.AllTime,
     val costsAndNotes: Boolean = true,
     val scheduleAndRecalls: Boolean = true,
+    /** "What it takes": the oil, tires, fluids and parts the owner has entered. */
+    val whatItTakes: Boolean = true,
     /** Receipt and parts photos; only a PDF can carry them. */
     val photos: Boolean = true,
 ) {
@@ -66,6 +68,8 @@ data class ExportVehicle(
     val records: List<ExportRecord>,
     val schedule: List<ExportScheduleLine>,
     val recalls: List<ExportRecall>,
+    /** "What it takes", as (label, one line), only the rows the owner has filled in (WhatItTakes.lines). */
+    val whatItTakes: List<Pair<String, String>> = emptyList(),
 ) {
     /** Null when no record in the export has a cost. */
     val totalCents: Long? get() = records.mapNotNull { it.costCents }.takeIf { it.isNotEmpty() }?.sum()
@@ -107,6 +111,7 @@ object Exports {
                     },
                 schedule = v.schedule.takeIf { options.scheduleAndRecalls }.orEmpty(),
                 recalls = v.recalls.takeIf { options.scheduleAndRecalls }.orEmpty(),
+                whatItTakes = v.whatItTakes.takeIf { options.whatItTakes }.orEmpty(),
             )
         },
     )
@@ -163,6 +168,9 @@ object Exports {
     /** Said under any schedule: the intervals are the owner's settings, not factory data. */
     const val SCHEDULE_NOTE = "Intervals are the ones the owner set in Glovebox, not the manufacturer's schedule."
 
+    /** Under "What it takes": whose figures they are. */
+    const val TAKES_NOTE = "Entered by the owner from their manuals and the parts they use; Glovebox hasn't checked them against the vehicle."
+
     fun markdown(doc: ExportDocument): String = buildString {
         val today = doc.exportedOn
         doc.vehicles.forEachIndexed { i, v ->
@@ -177,6 +185,12 @@ object Exports {
             append("- Period: ${datesLabel(doc.options.dates, today)}\n")
             append("- ${summary(v)}\n")
             append("- Exported from Glovebox on ${date(today)}\n")
+
+            if (v.whatItTakes.isNotEmpty()) {
+                append("\n## What it takes\n\n| | |\n|---|---|\n")
+                v.whatItTakes.forEach { (label, line) -> append("| ${cell(label)} | ${cell(line)} |\n") }
+                append("\n$TAKES_NOTE\n")
+            }
 
             append("\n## Service records\n\n")
             if (v.records.isEmpty()) append("No service records in this period.\n")

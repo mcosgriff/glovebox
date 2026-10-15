@@ -647,6 +647,15 @@ Notes on what's built:
   before this (schema v21) stays in `oilSpec`, `tireSize` and `wiperBlades` and the editor asks for it to
   be put right. The one-line summaries feed Log service's hints. Nothing is looked up or suggested from the
   model.
+- Past oil, tires and wipers (#166): transmission fluid, differential and transfer case oil (a gear grade is
+  normalised, "75W-90 GL-5", anything else is taken as the fluid's name), coolant, brake fluid (DOT grade),
+  air filters, spark plugs (part number, gap in inches or mm), battery (BCI group, CCA) and headlight
+  bulbs (codes). **`WhatItTakes` and `TakesItem` in `:domain` are the one model:** each row's one-line
+  summary, which rows show (oil, tires, wipers always; the rest once filled in, offered under "Add more"),
+  the part numbers a long press copies, Log service's hint per catalog line (`hint(catalogId)`), and the
+  export's lines. Map a vehicle row to it with `VehicleEntity.whatItTakes()`. Tires carry the door
+  placard's cold pressures (psi or kPa, front, rear, spare). Exports have a "What it takes" section before
+  the records, with its own switch on the export sheet (`ExportOptions.whatItTakes`). Schema v22.
 - A long press on the VIN row of Vehicle details copies the VIN (`copyVin`), marked sensitive
   (`ClipDescription.EXTRA_IS_SENSITIVE`) so Android hides it in its clipboard preview; Android 13+ says
   "Copied" itself, earlier versions get a toast. The row also has an accessibility long-press action.
