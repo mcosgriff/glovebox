@@ -241,7 +241,8 @@ data class TorqueSpecEntity(
 /**
  * A recall NHTSA lists for the vehicle's year, make and model. [completedOn] is the user's own mark:
  * NHTSA can't say whether a given VIN was repaired. [serviceRecordId] is the record added when it
- * was marked done, if there is one.
+ * was marked done, if there is one. [archivedOn] is the user's other mark: the recall doesn't apply to
+ * this vehicle (no notice came, and the maker's VIN lookup doesn't list it), so it no longer counts as open.
  */
 @Entity(
     tableName = "recalls",
@@ -264,6 +265,7 @@ data class RecallEntity(
     val firstSeenOn: LocalDate,
     val completedOn: LocalDate? = null,
     val serviceRecordId: Long? = null,
+    val archivedOn: LocalDate? = null,
 )
 
 /**

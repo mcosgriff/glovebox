@@ -96,7 +96,7 @@ class RecallRepository(
 
 fun RecallEntity.toNotice() = RecallNotice(campaign, component, summary, consequence, remedy, reportedOn)
 
-fun RecallEntity.toStored() = StoredRecall(id, toNotice(), done = completedOn != null)
+fun RecallEntity.toStored() = StoredRecall(id, toNotice(), done = completedOn != null, archived = archivedOn != null)
 
 private fun RecallNotice.toEntity(vehicleId: Long, firstSeenOn: LocalDate) = RecallEntity(
     vehicleId = vehicleId,
