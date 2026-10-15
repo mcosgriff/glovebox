@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/mcosgriff/glovebox/compare/v0.5.0...v0.6.0) (2026-10-15)
+
+
+### Features
+
+* **recalls:** archive a recall that doesn't apply to the vehicle ([#174](https://github.com/mcosgriff/glovebox/issues/174)) ([9973bf9](https://github.com/mcosgriff/glovebox/commit/9973bf9bf466aaf841232bb0803e56cea09185cb))
+* **vehicle:** add a license plate, and clear a vehicle's service history ([#176](https://github.com/mcosgriff/glovebox/issues/176)) ([1854f29](https://github.com/mcosgriff/glovebox/commit/1854f2948aa1418b0b108caaab24687cd35cb0e2))
+
+
+### Bug Fixes
+
+* **import:** leave out mistyped Carfax readings, map more wording, and fill the odometer on a tap ([#173](https://github.com/mcosgriff/glovebox/issues/173)) ([3ef84fe](https://github.com/mcosgriff/glovebox/commit/3ef84fe9320781463c81ad1576073af3e89cc57f))
+
 ## [0.5.0](https://github.com/mcosgriff/glovebox/compare/v0.4.0...v0.5.0) (2026-10-15)
 
 
