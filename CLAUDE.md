@@ -174,7 +174,8 @@ Notes on what's built:
   export of all vehicles) is worded in its own unit.
 - Add vehicle is one route with two steps in `AddVehicleViewModel`: VIN entry, then "Is this your
   vehicle?". Body, drive type, engine, fuel, transmission and the year / make / model can be corrected
-  before saving. `VinDecode.quality` sorts a decode into clean, partial (vPIC flagged it) or unidentified;
+  before saving; the drive type is picked from `VehiclePick.drivetrains` (vPIC often has none), and a
+  decoded one that isn't among them is kept unless one is picked. `VinDecode.quality` sorts a decode into clean, partial (vPIC flagged it) or unidentified;
   a vehicle is never saved without a real year, make and model, so an unidentified VIN has to be fixed or
   filled in by hand. vPIC trims that list several ("SR5/SR5 Premium") are offered as choices, and
   `vehicles.trimConfirmed` records that the user picked or typed one. The vehicle is saved before the

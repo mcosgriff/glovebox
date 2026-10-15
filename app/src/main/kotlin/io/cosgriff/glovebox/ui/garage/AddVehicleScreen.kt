@@ -41,6 +41,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import io.cosgriff.glovebox.domain.VehiclePick
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -449,7 +453,16 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     var editingVehicle by rememberSaveable { mutableStateOf(false) }
     val identified = vm.year != null && vm.make.isNotBlank() && vm.model.isNotBlank()
 
-    editing?.let { field ->
+    if (editing == DecodedField.DRIVE) {
+        DriveDialog(
+            current = vm.fields[DecodedField.DRIVE],
+            onSave = {
+                vm.correct(DecodedField.DRIVE, it)
+                editing = null
+            },
+            onDismiss = { editing = null },
+        )
+    } else editing?.let { field ->
         FieldDialog(
             label = field.label,
             current = vm.fields[field].orEmpty(),
@@ -714,6 +727,53 @@ private fun FieldDialog(label: String, current: String, onSave: (String) -> Unit
             )
         },
         confirmButton = { TextButton(onClick = { onSave(text) }) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+/**
+ * The drive type as one of [VehiclePick.drivetrains], as on the add-without-a-VIN screen, since vPIC often
+ * has none (a Golf, for one). A decoded value that is none of them is shown and kept unless one is picked.
+ * Nothing is chosen for the user, and tapping the chosen one clears it.
+ */
+@Composable
+private fun DriveDialog(current: String?, onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val initial = VinDecode.shortDrive(current)?.uppercase()?.takeIf { it in VehiclePick.drivetrains }
+    var chosen by rememberSaveable { mutableStateOf(initial) }
+    val other = current?.takeIf { initial == null }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(DecodedField.DRIVE.label) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    VehiclePick.drivetrains.forEachIndexed { i, d ->
+                        SegmentedButton(
+                            selected = chosen == d,
+                            onClick = { chosen = if (chosen == d) null else d },
+                            shape = SegmentedButtonDefaults.itemShape(i, VehiclePick.drivetrains.size),
+                            colors = SegmentedButtonDefaults.colors(activeContainerColor = scheme.secondary, activeContentColor = scheme.onSecondary),
+                            icon = {},
+                        ) { Text(d) }
+                    }
+                }
+                Text(
+                    when {
+                        other != null && chosen == null -> "NHTSA decoded \"$other\", which is kept unless you pick one."
+                        else -> "Replaces what NHTSA decoded. Leave none picked to clear it."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                // Unchanged, the decoded wording is kept as it was ("FWD/Front-Wheel Drive/4x2").
+                onSave(if (chosen == initial || (chosen == null && other != null)) current.orEmpty() else chosen.orEmpty())
+            }) { Text("Save") }
+        },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
