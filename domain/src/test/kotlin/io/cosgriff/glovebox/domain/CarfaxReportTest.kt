@@ -114,14 +114,43 @@ class CarfaxReportTest {
         assertNull(CarfaxReport.service("Vehicle serviced"))
     }
 
+    private fun repaired(vararg words: String) = CarfaxReport.repairLigatures(words.toList())
+
     @Test
     fun `fi and fl drawn as one glyph are put back`() {
-        assertEquals("filter", CarfaxReport.repairLigatures("�lter"))
-        assertEquals("fluid", CarfaxReport.repairLigatures("�uid"))
-        assertEquals("flushed", CarfaxReport.repairLigatures("�ushed"))
-        assertEquals("Verified", CarfaxReport.repairLigatures("Veri�ed"))
-        assertEquals("filter", CarfaxReport.repairLigatures("ﬁlter"))
-        assertEquals("plain", CarfaxReport.repairLigatures("plain"))
+        assertEquals(
+            listOf("filter", "fluid", "flushed", "Verified", "filter", "plain"),
+            repaired("\uFFFDlter", "\uFFFDuid", "\uFFFDushed", "Veri\uFFFDed", "\uFB01lter", "plain"),
+        )
+    }
+
+    @Test
+    fun `ff, ffi and ffl are put back however the PDF names them`() {
+        assertEquals(
+            listOf("Differential", "Differential", "muffler", "muffler,", "efficiency", "traffic"),
+            repaired("Di\uFB00erential", "Di\uFFFDerential", "mu\uFB04er", "mu\uFFFDer,", "e\uFFFDciency", "tra\uFB03c"),
+        )
+        // Named as letters: here "c" is "ff", "q" is "ffi" and "i" is "fl", each shown by two words.
+        assertEquals(
+            listOf("Differential", "buffed", "Officer", "efficiency", "Flywheel", "fluid/differential"),
+            repaired("Dicerential", "buced", "Oqcer", "eqciency", "Iywheel", "iuid/dicerential"),
+        )
+        // "g" for "fi", in capitals and in a town's name.
+        assertEquals(listOf("FILTER", "first", "Westfield,"), repaired("GLTER", "grst", "Westgeld,"))
+    }
+
+    @Test
+    fun `a letter is only read as a ligature when the rest of the report shows it is one`() {
+        // One word a letter away from a known one proves nothing.
+        listOf("Dicerential", "Door", "Low", "did", "Wipers/washers", "Lex").forEach { assertEquals(listOf(it), repaired(it)) }
+        // With "c" shown to be "fi", "D" in "Door" still isn't "fl", and ordinary words stay as they are.
+        val ordinary = listOf(
+            "Door", "Low", "did", "Wipers/washers", "Brakes", "changed", "inspected", "Toyota", "Oil", "and", "liter", "bulbs",
+            "Volkswagen", "Tire", "Center", "Ocean", "120,000", "A/C", "Pre-delivery", "Coolant", "yield", "windshield",
+        )
+        assertEquals(listOf("filter", "first") + ordinary, repaired(*(listOf("clter", "crst") + ordinary).toTypedArray()))
+        // "i" for "fi" doesn't make "yield" a field.
+        assertEquals(listOf("filter", "first", "yield", "Springield"), repaired("ilter", "irst", "yield", "Springield"))
     }
 
     @Test
@@ -131,7 +160,7 @@ class CarfaxReportTest {
         val words = report {
             entry(
                 "02/02/2023", "52,000", listOf("Acme Auto of Springceld"),
-                listOf("V- ehicle serviced", "- Oil and clter changed", "Brake guid gushed/changed", "Spark plug(s) replaced", "Four tires balanced", "Tire(s) balanced"),
+                listOf("V- ehicle serviced", "- Oil and clter changed", "Brake guid gushed/changed", "Spark plug(s) replaced", "Air clters replaced", "Four tires balanced", "Tire(s) balanced"),
             )
             at(182f, "Get the full picture at www.carfax.com.")
         }
@@ -143,6 +172,7 @@ class CarfaxReportTest {
                 ImportedWork("Oil and filter changed", "oil"),
                 ImportedWork("Brake fluid flushed/changed", "brake-fluid"),
                 ImportedWork("Spark plug(s) replaced", "spark-plugs"),
+                ImportedWork("Air filters replaced", "engine-air"),
                 ImportedWork("Four tires balanced", "balance"),
                 // The same job named twice is one service line.
                 ImportedWork("Tire(s) balanced", null),

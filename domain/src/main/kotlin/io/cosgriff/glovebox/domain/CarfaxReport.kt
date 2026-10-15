@@ -48,7 +48,8 @@ object CarfaxReport {
         if (words.none { it.text.contains("CARFAX", ignoreCase = true) }) {
             return refuse("This doesn't look like a Carfax vehicle history report.")
         }
-        val reading = visits(words.map { it.copy(text = repairLigatures(it.text)) }, today)
+        val repaired = repairLigatures(words.map { it.text })
+        val reading = visits(words.mapIndexed { i, w -> w.copy(text = repaired[i]) }, today)
         if (reading.records.isEmpty()) {
             return refuse(
                 "No service visits with a mileage were found in this report." +
@@ -178,8 +179,8 @@ object CarfaxReport {
      */
     private val services: List<Pair<Regex, String>> = listOf(
         """oil and filter changed|oil changed""" to "oil",
-        """cabin air filter""" to "cabin-air",
-        """(engine )?air filter (replaced|changed)""" to "engine-air",
+        """cabin air filters?""" to "cabin-air",
+        """(engine )?air filters? (replaced|changed)""" to "engine-air",
         """tires? rotated|tire rotation""" to "rotation",
         """(wheels?|tires?) balanced""" to "balance",
         """(wheels?|front end) aligned|alignment performed""" to "alignment",
@@ -208,47 +209,112 @@ object CarfaxReport {
         return services.firstOrNull { (re, _) -> re.containsMatchIn(plain) }?.second
     }
 
-    private val ligatureWords = listOf("filter", "fluid", "flushed", "verified", "certified", "refilled", "filled", "inflated", "flat", "first", "final", "fixed", "field", "fleet", "flex")
+    /** The ligatures a font may draw as one glyph, longest first so "ffi" is tried before "ff" and "fi". */
+    private val ligatures = listOf("ffi", "ffl", "ff", "fi", "fl")
 
-    /** The words a service line is made of that have "fi" or "fl" in them, in the forms a report uses. */
-    private val ligatureVocabulary = setOf(
-        "filter", "filters", "fluid", "fluids", "flushed", "flush", "verified", "certified", "refilled", "filled", "inflated",
-        "inflation", "flat", "first", "final", "fixed", "field", "fleet", "flex", "refinished", "fitted", "fluorescent",
-    )
+    private val ligatureChars = mapOf('\uFB00' to "ff", '\uFB01' to "fi", '\uFB02' to "fl", '\uFB03' to "ffi", '\uFB04' to "ffl")
 
     /**
-     * Some PDF writers name the "fi" and "fl" glyphs as other letters, and which letters depends on the
-     * report: printed on a Mac, one reads "Oil and clter changed", another "Differential iuid iushed". So a
-     * word that isn't one we know, but becomes one when a single letter is read as "fi" or "fl", is put
-     * back. A place name ending "…celd" is "…field" (Springfield). Anything else is left as it reads.
+     * Words a Carfax report uses that have a ligature in them: the service and inspection vocabulary, and the
+     * common words of shop names and sources. A misread is only ever repaired into one of these.
      */
-    private fun misnamedLigature(word: String): String {
+    private val ligatureVocabulary = setOf(
+        // Fluids and filters
+        "filter", "filters", "fluid", "fluids", "flush", "flushed", "flushes", "filled", "refill", "refilled", "flow", "airflow",
+        "overflow",
+        // Parts
+        "differential", "differentials", "diff", "flywheel", "fitting", "fittings", "flex", "flexible", "flasher", "flashers",
+        "floor", "flared", "muffler", "mufflers", "reflector", "deflector", "baffle", "fluorescent",
+        // What was done
+        "inflated", "inflation", "fixed", "fitted", "refinished", "flat", "buffed", "scuffed", "affected", "effect", "effects",
+        "verified", "certified", "first", "final", "flagged", "fleet", "field",
+        // Reports and sources
+        "office", "officer", "official", "efficiency", "traffic", "affidavit", "sheriff", "profile", "certificate", "notification",
+    )
+
+    /** A word as [head], the letters and slashes between ([core]) and [tail], so "(clter," is looked at as "clter". */
+    private class Parts(word: String) {
         val core = word.trimEnd(',', '.', ';', ':', ')').trimStart('(')
-        val tail = word.substring(word.indexOf(core) + core.length)
         val head = word.substring(0, word.indexOf(core))
-        // Words joined by a slash ("flushed/changed") are each looked at.
-        if ('/' in core) return head + core.split('/').joinToString("/") { misnamedLigature(it) } + tail
+        val tail = word.substring(head.length + core.length)
+    }
+
+    /** Known words [core] becomes when one of its letters is read as a ligature: (that letter, the ligature, the word). */
+    private fun misreadings(core: String): List<Triple<Char, String, String>> {
         val lower = core.lowercase(Locale.US)
-        if (lower in ligatureVocabulary || core.length < 3) return word
-        for (i in core.indices) for (pair in listOf("fi", "fl")) {
-            val candidate = lower.substring(0, i) + pair + lower.substring(i + 1)
-            if (candidate in ligatureVocabulary) {
-                val fixed = if (core.first().isUpperCase()) candidate.replaceFirstChar { it.uppercase() } else candidate
-                return head + fixed + tail
-            }
-        }
-        return head + core.replace(Regex("""celd(s?)$"""), "field$1") + tail
+        if (lower in ligatureVocabulary || core.length < 3 || core.any { !it.isLetter() }) return emptyList()
+        return lower.indices.flatMap { i ->
+            ligatures.map { lig -> Triple(lower[i], lig, lower.substring(0, i) + lig + lower.substring(i + 1)) }
+        }.filter { it.third in ligatureVocabulary }
     }
 
     /**
-     * A report saved from a browser often draws "fi" and "fl" as one glyph the PDF can't name, which
-     * reads back as a replacement character ("Oil and �lter changed"), or names it as other letters
-     * ([misnamedLigature]). The one that makes a known word is put back; otherwise "fi", the commoner.
+     * Some PDF writers name a ligature's glyph as an ordinary letter, and which letter depends on the report:
+     * printed on a Mac, one reads "Oil and clter changed", another "Differential iuid iushed". A glyph is
+     * named the same way throughout a report, so the letter standing in for each ligature is learnt from the
+     * whole report: the letter that turns the most different words into known ones, and at least two. One
+     * word alone proves nothing: "Door" is a letter away from "floor", "Low" from "flow", "did" from "diff".
      */
-    fun repairLigatures(word: String): String {
-        val w = word.replace("\uFB01", "fi").replace("\uFB02", "fl")
-        if ('\uFFFD' !in w) return misnamedLigature(w)
-        val fl = w.replace("\uFFFD", "fl")
-        return if (ligatureWords.any { fl.lowercase(Locale.US).trimEnd(',', '.').contains(it) }) fl else w.replace("\uFFFD", "fi")
+    private fun standIns(words: Collection<String>): Map<Char, String> {
+        val evidence = mutableMapOf<Pair<Char, String>, MutableSet<String>>()
+        words.forEach { w ->
+            Parts(w).core.split('/').forEach { core ->
+                misreadings(core).forEach { (letter, lig, known) -> evidence.getOrPut(letter to lig) { mutableSetOf() } += known }
+            }
+        }
+        val found = mutableMapOf<Char, String>()
+        evidence.entries.filter { it.value.size >= 2 }.sortedByDescending { it.value.size }.forEach { (key, _) ->
+            val (letter, lig) = key
+            if (letter !in found && lig !in found.values) found[letter] = lig
+        }
+        return found
+    }
+
+    /**
+     * A word that isn't one we know, but becomes one when a letter that stands in for a ligature in this
+     * report ([standIns]) is read as it, is put back. A place name ending "…celd" is "…field" (Springfield)
+     * when "c" stands for "fi", unless it is "i", where "…ield" is a word of its own (yield). Anything else is
+     * left as it reads: a repair is only ever into a word of [ligatureVocabulary].
+     */
+    private fun misnamedLigature(word: String, standIns: Map<Char, String>): String {
+        if (standIns.isEmpty()) return word
+        val parts = Parts(word)
+        if (parts.core.isEmpty()) return word
+        // Words joined by a slash ("flushed/changed") are each looked at.
+        val core = parts.core.split('/').joinToString("/") { core ->
+            val known = misreadings(core).firstOrNull { (letter, lig, _) -> standIns[letter] == lig }
+            when {
+                known != null -> matchCase(core, known.third)
+                else -> standIns.entries.firstOrNull { it.value == "fi" && it.key != 'i' }
+                    ?.let { core.replace(Regex("""${it.key}eld(s?)$"""), "field$1") } ?: core
+            }
+        }
+        return parts.head + core + parts.tail
+    }
+
+    private fun matchCase(original: String, fixed: String): String = when {
+        original.all { it.isUpperCase() } -> fixed.uppercase(Locale.US)
+        original.first().isUpperCase() -> fixed.replaceFirstChar { it.uppercase() }
+        else -> fixed
+    }
+
+    /**
+     * A report saved from a browser often draws "fi", "fl", "ff", "ffi" and "ffl" as one glyph. The PDF may
+     * name it as the ligature character, as a replacement character ("Oil and �lter changed"), or as an
+     * ordinary letter ([standIns]), which only the rest of the report can tell, so this takes every word of
+     * it. A replacement character is put back as the ligature that makes a known word, otherwise as "fi",
+     * the commonest.
+     */
+    fun repairLigatures(words: List<String>): List<String> {
+        val named = words.map { word ->
+            var w = word
+            ligatureChars.forEach { (c, s) -> w = w.replace(c.toString(), s) }
+            if ('\uFFFD' !in w) return@map w
+            val core = Parts(w).core.lowercase(Locale.US)
+            val fits = ligatures.firstOrNull { lig -> core.replace("\uFFFD", lig).split('/').any { it in ligatureVocabulary } }
+            w.replace("\uFFFD", fits ?: "fi")
+        }
+        val standIns = standIns(named.toSet())
+        return named.map { misnamedLigature(it, standIns) }
     }
 }

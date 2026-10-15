@@ -317,8 +317,12 @@ Notes on what's built:
   comment is work (`isWork`: replaced, changed, serviced, inspected…, and not a title, registration, owner
   or damage line). A comment becomes a catalog line only where the wording is plain (`CarfaxReport.service`:
   "Oil and filter changed" is oil, "Brake pads replaced" stays text: which axle?); the source's first line
-  is the shop. A visit with no mileage is counted and refused, never guessed. "fi" and "fl" drawn as one
-  glyph come back as a replacement character and are put back (`repairLigatures`). Tests use a made-up
+  is the shop. A visit with no mileage is counted and refused, never guessed. The ligatures (fi, fl, ff,
+  ffi, ffl) drawn as one glyph come back as the ligature character, a replacement character, or an ordinary
+  letter the PDF misnames them as ("clter", "iuid"), and `repairLigatures` puts them back, only ever into a
+  word of its vocabulary. **A misnamed letter is learnt from the whole report** (`standIns`: the letter must
+  make at least two different known words), because one word a letter away proves nothing ("Door" and
+  "floor", "Lex Brodie's" and "Flex"). Tests use a made-up
   report built word by word; **never commit a real report**. Keeping the PDF is #168's job.
 - What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
