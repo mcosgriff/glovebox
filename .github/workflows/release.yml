@@ -34,8 +34,10 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
-      - name: Unit tests (domain + app)
-        run: ./gradlew :domain:test :app:testReleaseUnitTest
+      # The same unit tests as CI, migration tests included. The Android plugin makes unit tests for the
+      # debug build only, so there is no testReleaseUnitTest; the release build is checked by being built.
+      - name: Unit tests
+        run: ./gradlew :domain:test testDebugUnitTest
 
       - name: Decode signing keystore
         run: echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
