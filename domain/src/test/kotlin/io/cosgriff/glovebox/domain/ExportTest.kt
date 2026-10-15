@@ -175,4 +175,19 @@ class ExportTest {
         assertTrue(md.indexOf("# Service history: 2019 Toyota 4Runner SR5") < md.indexOf("\n---\n"))
         assertTrue(md.indexOf("\n---\n") < md.indexOf("# Service history: 2011 Volkswagen GTI"))
     }
+
+    @Test
+    fun `what it takes is its own section, and can be left out`() {
+        val takes = listOf("Engine oil" to "0W-20 \u00b7 6.6 qt \u00b7 filter 04152-YZZA1", "Tires" to "P265/70R17 \u00b7 32 psi")
+        val with = Exports.document(listOf(truck.copy(whatItTakes = takes)), ExportOptions(format = ExportFormat.MARKDOWN), today)
+        val md = Exports.markdown(with)
+        assert("## What it takes" in md)
+        assert("| Engine oil | 0W-20 \u00b7 6.6 qt \u00b7 filter 04152-YZZA1 |" in md) { md }
+        assert(Exports.TAKES_NOTE in md)
+        // Before the records, where someone taking the car over looks first.
+        assert(md.indexOf("## What it takes") < md.indexOf("## Service records"))
+        val without = Exports.document(listOf(truck.copy(whatItTakes = takes)), ExportOptions(format = ExportFormat.MARKDOWN, whatItTakes = false), today)
+        assert("What it takes" !in Exports.markdown(without))
+        assert("What it takes" !in Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
+    }
 }

@@ -73,7 +73,6 @@ data class WorkOption(val id: String, val label: String, val scheduleItemId: Lon
 data class WorkCategory(val id: String, val label: String, val options: List<WorkOption>)
 
 /** What the user has written down on Vehicle details. Any of it may be missing. */
-data class VehicleSpecs(val oil: String? = null, val tireSize: String? = null, val wiperBlades: String? = null)
 
 object ServiceCatalog {
     /**
@@ -82,13 +81,8 @@ object ServiceCatalog {
      * [interval] is that reminder's, when the line resets a tracked one. Null when there is nothing
      * worth saying. Nothing here is looked up: it is all the user's own data.
      */
-    fun hint(optionId: String, interval: Interval?, specs: VehicleSpecs, unit: DistanceUnit): String? {
-        val spec = when (optionId) {
-            "oil" -> specs.oil
-            "new-tires" -> specs.tireSize
-            "wipers" -> specs.wiperBlades
-            else -> null
-        }?.trim()?.takeIf { it.isNotEmpty() }
+    fun hint(optionId: String, interval: Interval?, specs: WhatItTakes, unit: DistanceUnit): String? {
+        val spec = specs.hint(optionId)?.trim()?.takeIf { it.isNotEmpty() }
         return spec ?: interval?.let { "Every ${it.label(unit)}" }
     }
 

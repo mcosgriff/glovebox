@@ -69,6 +69,12 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         labelled("Records", Exports.summary(v))
         gap(10f)
 
+        if (v.whatItTakes.isNotEmpty()) {
+            section("What it takes")
+            table(listOf("", ""), v.whatItTakes.map { (label, line) -> listOf(label, line) }, fractions = listOf(0.3f, 0.7f))
+            text(Exports.TAKES_NOTE, small, before = 4f)
+        }
+
         section("Service records")
         if (v.records.isEmpty()) text("No service records in this period.", body)
         v.records.forEach { record(it, v.unit) }
@@ -124,8 +130,9 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         bitmap.recycle()
     }
 
-    private fun table(header: List<String>, rows: List<List<String>>) {
-        val widths = listOf(0.36f, 0.26f, 0.38f).map { it * WIDTH }
+    /** [fractions] share the page's width between the columns; a header of blanks isn't drawn. */
+    private fun table(header: List<String>, rows: List<List<String>>, fractions: List<Float> = listOf(0.36f, 0.26f, 0.38f)) {
+        val widths = fractions.map { it * WIDTH }
         fun row(cells: List<String>, paint: TextPaint) {
             val layouts = cells.mapIndexed { i, cell -> layout(cell, paint, widths[i] - 8f) }
             val h = layouts.maxOf { it.height } + 6f
@@ -138,7 +145,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
             y += h
             canvas.drawLine(LEFT, y, RIGHT, y, rule)
         }
-        row(header, strong)
+        if (header.any { it.isNotBlank() }) row(header, strong)
         rows.forEach { row(it, body) }
     }
 

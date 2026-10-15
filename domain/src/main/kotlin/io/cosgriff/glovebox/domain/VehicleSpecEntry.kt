@@ -86,6 +86,89 @@ object VehicleSpecEntry {
     /** A blade length in whole inches, 10 to 34. */
     fun wiperLength(text: String): Int? = text.trim().removeSuffix("\"").removeSuffix("in").trim().toIntOrNull()?.takeIf { it in 10..34 }
 
+    // ---- Fluids -------------------------------------------------------------------------------------
+
+    private val gearWinter = setOf(70, 75, 80, 85)
+    private val gearSummer = setOf(80, 85, 90, 110, 140, 190, 250)
+
+    /**
+     * Gear oil for a differential or transfer case. A grade is written one way ("75w90 gl5" is
+     * "75W-90 GL-5"); anything else is taken as the fluid's name, as some use ATF or a maker's own fluid,
+     * up to 40 characters. Null only when it is empty, too long, or a grade that doesn't exist.
+     */
+    fun gearOil(text: String): String? {
+        val t = text.trim().replace(Regex("""\s+"""), " ")
+        val m = Regex("""(?i)(?:SAE\s*)?(\d{2,3})\s*W\s*-?\s*(\d{2,3})(?:\s*(?:API\s*)?GL\s*-?\s*([45]))?""").matchEntire(t)
+            ?: return fluidName(t)
+        val (w, s, gl) = m.destructured
+        if (w.toInt() !in gearWinter || s.toInt() !in gearSummer) return null
+        return "${w.toInt()}W-${s.toInt()}" + if (gl.isNotEmpty()) " GL-$gl" else ""
+    }
+
+    /** A fluid by its name ("ATF WS", "Toyota SLLC pink", "G 052 182"): one line, up to 40 characters. */
+    fun fluidName(text: String): String? = text.trim().replace(Regex("""\s+"""), " ").takeIf { it.isNotEmpty() && it.length <= 40 }
+
+    private val dot = Regex("""(?i)DOT\s*([345](?:\.1)?)(\s*LV)?""")
+
+    /** A brake fluid's DOT grade, written "DOT 4" or "DOT 4 LV"; DOT 3, 4, 5 and 5.1 exist. */
+    fun brakeFluid(text: String): String? {
+        val m = dot.matchEntire(text.trim()) ?: return null
+        val (grade, lv) = m.destructured
+        if (grade !in setOf("3", "4", "5", "5.1")) return null
+        return "DOT $grade" + if (lv.isNotBlank()) " LV" else ""
+    }
+
+    // ---- Parts ---------------------------------------------------------------------------------------
+
+    /** A BCI battery group size ("24F", "35", "94R", "H6", "LN3"), uppercased. */
+    fun batteryGroup(text: String): String? = text.trim().uppercase(Locale.US).replace(" ", "")
+        .takeIf { Regex("""\d{1,3}[A-Z]{0,2}|[HLT]\d|LN\d|H\d{1,2}""").matches(it) }
+
+    /** Cold-cranking amps, 100 to 1,500. */
+    fun cca(text: String): Int? = text.trim().replace(",", "").removeSuffix("CCA").removeSuffix("cca").trim().toIntOrNull()?.takeIf { it in 100..1500 }
+
+    /**
+     * A spark plug gap in inches ("0.044", ".044", "0.044 in") or millimetres ("1.1 mm"), written with
+     * its unit: 0.020 to 0.070 in, or 0.5 to 1.8 mm. A bare number below 0.1 is inches.
+     */
+    fun plugGap(text: String): String? {
+        val t = text.trim().lowercase(Locale.US).replace(",", ".")
+        Regex("""(\d*\.\d+|\d+)\s*mm""").matchEntire(t)?.let { m ->
+            val v = m.groupValues[1].toDouble()
+            return if (v in 0.5..1.8) "${trimZero(v)} mm" else null
+        }
+        Regex("""(\d*\.\d{2,3})\s*(?:in|"|inch|inches)?""").matchEntire(t)?.let { m ->
+            val v = m.groupValues[1].toDouble()
+            return if (v in 0.020..0.070) String.format(Locale.US, "%.3f in", v) else null
+        }
+        return null
+    }
+
+    private val bulb = Regex("""H\d{1,2}[A-Z]{0,2}|HB[1-5]|HIR[12]|9\d{3}[A-Z]{0,3}|D[1-8][SR]|\d{3,4}[A-Z]{0,3}|P13W|PSX\d{2}W|PS\d{2}W""")
+
+    /** A bulb's code ("H11", "9005", "D4S", "3157"), uppercased and checked against the common families. */
+    fun bulbCode(text: String): String? = text.trim().uppercase(Locale.US).replace(" ", "").takeIf { bulb.matches(it) }
+
+    // ---- Tire pressure -------------------------------------------------------------------------------
+
+    enum class Pressure(val symbol: String, val range: IntRange) { PSI("psi", 15..110), KPA("kPa", 100..760) }
+
+    /** A cold inflation pressure as the door placard prints it, in whole psi or kPa. */
+    fun tirePressure(text: String, unit: Pressure): Int? =
+        text.trim().removeSuffix(unit.symbol).removeSuffix(unit.symbol.uppercase(Locale.US)).trim().toIntOrNull()?.takeIf { it in unit.range }
+
+    /** "32 psi", "35 psi front / 38 psi rear", with " · spare 60 psi" when the spare is given. */
+    fun pressureSummary(front: Int?, rear: Int?, spare: Int?, unit: Pressure?): String? {
+        val u = (unit ?: Pressure.PSI).symbol
+        val main = when {
+            front == null && rear == null -> null
+            rear == null || rear == front -> "${front ?: rear} $u"
+            front == null -> "$rear $u rear"
+            else -> "$front $u front / $rear $u rear"
+        }
+        return listOfNotNull(main, spare?.let { "spare $it $u" }).joinToString(" · ").ifEmpty { null }
+    }
+
     // ---- How each reads ----------------------------------------------------------------------------
 
     /** "0W-20 · API SP · 6.6 qt · filter 04152-YZZA1", or whatever of that there is; null when nothing is. */

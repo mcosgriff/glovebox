@@ -49,6 +49,26 @@ data class VehicleEntity(
     val wiperDriverIn: Int? = null,
     val wiperPassengerIn: Int? = null,
     val wiperRearIn: Int? = null,
+    /** Cold tire pressures from the door placard, in [tirePressureUnit] (a VehicleSpecEntry.Pressure name). */
+    val tirePressureFront: Int? = null,
+    val tirePressureRear: Int? = null,
+    val tirePressureSpare: Int? = null,
+    val tirePressureUnit: String? = null,
+    // The rest of "What it takes" (#166), each already checked (VehicleSpecEntry); null is not entered.
+    val transmissionFluid: String? = null,
+    val differentialOil: String? = null,
+    val transferCaseOil: String? = null,
+    val coolantType: String? = null,
+    val brakeFluid: String? = null,
+    val engineAirFilter: String? = null,
+    val cabinAirFilter: String? = null,
+    val sparkPlug: String? = null,
+    val sparkPlugGap: String? = null,
+    val batteryGroup: String? = null,
+    val batteryCca: Int? = null,
+    val bulbLow: String? = null,
+    val bulbHigh: String? = null,
+    val bulbFog: String? = null,
     /** Name of the vehicle's own encrypted photo in PhotoCrypto.photoDir. */
     val photoFile: String? = null,
     /**

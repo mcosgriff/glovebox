@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.VehicleSpecEntry
+import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
@@ -155,3 +157,36 @@ fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
 )
 
 private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
+
+/** Everything entered under "What it takes", as `:domain` reads it. */
+fun VehicleEntity.whatItTakes(): WhatItTakes = WhatItTakes(
+    oilGrade = oilSpec,
+    oilApproval = oilApproval,
+    oilCapacity = oilCapacity,
+    oilCapacityUnit = oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } },
+    oilFilter = oilFilter,
+    tireSize = tireSize,
+    tireSizeRear = tireSizeRear,
+    tirePressureFront = tirePressureFront,
+    tirePressureRear = tirePressureRear,
+    tirePressureSpare = tirePressureSpare,
+    tirePressureUnit = tirePressureUnit?.let { u -> VehicleSpecEntry.Pressure.entries.firstOrNull { it.name == u } },
+    wiperDriver = wiperDriverIn,
+    wiperPassenger = wiperPassengerIn,
+    wiperRear = wiperRearIn,
+    wiperNote = wiperBlades,
+    transmissionFluid = transmissionFluid,
+    differentialOil = differentialOil,
+    transferCaseOil = transferCaseOil,
+    coolant = coolantType,
+    brakeFluid = brakeFluid,
+    engineAirFilter = engineAirFilter,
+    cabinAirFilter = cabinAirFilter,
+    sparkPlug = sparkPlug,
+    sparkPlugGap = sparkPlugGap,
+    batteryGroup = batteryGroup,
+    batteryCca = batteryCca,
+    bulbLow = bulbLow,
+    bulbHigh = bulbHigh,
+    bulbFog = bulbFog,
+)

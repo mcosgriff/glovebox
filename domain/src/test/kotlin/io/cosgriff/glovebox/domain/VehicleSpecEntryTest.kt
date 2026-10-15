@@ -70,4 +70,61 @@ class VehicleSpecEntryTest {
         assertEquals("22\" / 22\" · Bosch ICON", VehicleSpecEntry.wiperSummary(22, 22, null, "Bosch ICON"))
         assertNull(VehicleSpecEntry.wiperSummary(null, null, null, null))
     }
+
+    @Test
+    fun `gear oil grades are written one way and other fluids are taken by name`() {
+        assertEquals("75W-90 GL-5", VehicleSpecEntry.gearOil("75w90 gl5"))
+        assertEquals("75W-85", VehicleSpecEntry.gearOil("SAE 75W-85"))
+        assertEquals("80W-90 GL-4", VehicleSpecEntry.gearOil("80W-90 API GL-4"))
+        assertEquals("Toyota LF gear oil", VehicleSpecEntry.gearOil(" Toyota  LF gear oil "))
+        assertNull(VehicleSpecEntry.gearOil("72W-90"))
+        assertNull(VehicleSpecEntry.gearOil(""))
+        assertNull(VehicleSpecEntry.fluidName("x".repeat(41)))
+    }
+
+    @Test
+    fun `brake fluid is a DOT grade`() {
+        assertEquals("DOT 3", VehicleSpecEntry.brakeFluid("dot3"))
+        assertEquals("DOT 5.1", VehicleSpecEntry.brakeFluid("DOT 5.1"))
+        assertEquals("DOT 4 LV", VehicleSpecEntry.brakeFluid("dot 4 lv"))
+        listOf("DOT 6", "DOT 4.1", "brake fluid", "").forEach { assertNull(it, VehicleSpecEntry.brakeFluid(it)) }
+    }
+
+    @Test
+    fun `battery, plug gap and bulbs are checked`() {
+        listOf("24F", "35", "94R", "H6", "LN3", "65").forEach { assertEquals(it, it, VehicleSpecEntry.batteryGroup(it.lowercase())) }
+        assertNull(VehicleSpecEntry.batteryGroup("big one"))
+        assertEquals(650, VehicleSpecEntry.cca("650 CCA"))
+        assertNull(VehicleSpecEntry.cca("50"))
+        assertEquals("0.044 in", VehicleSpecEntry.plugGap(".044"))
+        assertEquals("0.044 in", VehicleSpecEntry.plugGap("0.044\""))
+        assertEquals("1.1 mm", VehicleSpecEntry.plugGap("1,1 mm"))
+        listOf("0.1", "3 mm", "0.08", "wide").forEach { assertNull(it, VehicleSpecEntry.plugGap(it)) }
+        listOf("H11", "9005", "D4S", "3157", "HB3", "H7LL").forEach { assertEquals(it, it, VehicleSpecEntry.bulbCode(it.lowercase())) }
+        listOf("bright", "X99", "").forEach { assertNull(it, VehicleSpecEntry.bulbCode(it)) }
+    }
+
+    @Test
+    fun `tire pressure is a whole number in range and reads as the placard does`() {
+        assertEquals(32, VehicleSpecEntry.tirePressure("32", VehicleSpecEntry.Pressure.PSI))
+        assertEquals(240, VehicleSpecEntry.tirePressure("240 kPa", VehicleSpecEntry.Pressure.KPA))
+        listOf("10", "120", "32.5", "").forEach { assertNull(it, VehicleSpecEntry.tirePressure(it, VehicleSpecEntry.Pressure.PSI)) }
+        assertEquals("32 psi", VehicleSpecEntry.pressureSummary(32, 32, null, VehicleSpecEntry.Pressure.PSI))
+        assertEquals("35 psi front / 38 psi rear \u00b7 spare 60 psi", VehicleSpecEntry.pressureSummary(35, 38, 60, null))
+        assertEquals("230 kPa", VehicleSpecEntry.pressureSummary(230, null, null, VehicleSpecEntry.Pressure.KPA))
+    }
+
+    @Test
+    fun `what it takes shows the always rows and offers the rest`() {
+        val empty = WhatItTakes()
+        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS), empty.shown())
+        assertEquals(TakesItem.entries.size - 3, empty.addable().size)
+        val some = WhatItTakes(transmissionFluid = "ATF WS", engineAirFilter = "17801-0P051", cabinAirFilter = "87139-YZZ08", tireSize = "P265/70R17", tirePressureFront = 32, tirePressureRear = 32)
+        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS, TakesItem.TRANSMISSION, TakesItem.AIR_FILTERS), some.shown())
+        assertEquals("P265/70R17 \u00b7 32 psi", some.summary(TakesItem.TIRES))
+        assertEquals("engine 17801-0P051 \u00b7 cabin 87139-YZZ08", some.summary(TakesItem.AIR_FILTERS))
+        assertEquals("17801-0P051, 87139-YZZ08", some.partNumbers(TakesItem.AIR_FILTERS))
+        assertEquals(listOf("Tires", "Transmission fluid", "Air filters"), some.lines().map { it.first })
+        assertEquals("32 psi", some.hint("rotation"))
+    }
 }

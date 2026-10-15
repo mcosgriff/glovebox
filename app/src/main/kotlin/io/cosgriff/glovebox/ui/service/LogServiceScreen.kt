@@ -20,7 +20,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
-import io.cosgriff.glovebox.domain.VehicleSpecs
+import io.cosgriff.glovebox.domain.WhatItTakes
 import androidx.compose.material3.ButtonDefaults
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -160,7 +160,7 @@ data class LogServiceData(
     /** Which schedule items answer to which catalog line, for previewing what an edit moves. */
     val answering: Map<String, Set<Long>>,
     /** What the user wrote on Vehicle details, for the hints beside the lines. */
-    val specs: VehicleSpecs,
+    val specs: WhatItTakes,
     /** The record being edited; null when logging a new one. */
     val original: ServiceRecordWithItems?,
 )
@@ -328,11 +328,7 @@ class LogServiceViewModel @Inject constructor(
                 swap = swap,
                 unit = vehicle?.unit ?: DistanceUnit.MILES,
                 answering = items.answering(),
-                specs = VehicleSpecs(
-                    oil = vehicle?.let { v -> VehicleSpecEntry.oilSummary(v.oilSpec, v.oilApproval, v.oilCapacity, v.oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } }, null) },
-                    tireSize = vehicle?.let { VehicleSpecEntry.tireSummary(it.tireSize, it.tireSizeRear) },
-                    wiperBlades = vehicle?.let { VehicleSpecEntry.wiperSummary(it.wiperDriverIn, it.wiperPassengerIn, it.wiperRearIn, it.wiperBlades) },
-                ),
+                specs = vehicle?.whatItTakes() ?: WhatItTakes(),
                 original = original,
             )
         }

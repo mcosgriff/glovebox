@@ -63,8 +63,38 @@ interface VehicleDao {
     )
     suspend fun setOil(id: Long, grade: String?, approval: String?, capacity: Double?, unit: String?, filter: String?)
 
-    @Query("UPDATE vehicles SET tireSize = :front, tireSizeRear = :rear WHERE id = :id")
-    suspend fun setTires(id: Long, front: String?, rear: String?)
+    @Query(
+        "UPDATE vehicles SET tireSize = :front, tireSizeRear = :rear, tirePressureFront = :pFront, tirePressureRear = :pRear, " +
+            "tirePressureSpare = :pSpare, tirePressureUnit = :pUnit WHERE id = :id",
+    )
+    suspend fun setTires(id: Long, front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, pUnit: String?)
+
+    @Query("UPDATE vehicles SET transmissionFluid = :value WHERE id = :id")
+    suspend fun setTransmissionFluid(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET differentialOil = :value WHERE id = :id")
+    suspend fun setDifferentialOil(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET transferCaseOil = :value WHERE id = :id")
+    suspend fun setTransferCaseOil(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET coolantType = :value WHERE id = :id")
+    suspend fun setCoolant(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET brakeFluid = :value WHERE id = :id")
+    suspend fun setBrakeFluid(id: Long, value: String?)
+
+    @Query("UPDATE vehicles SET engineAirFilter = :engine, cabinAirFilter = :cabin WHERE id = :id")
+    suspend fun setAirFilters(id: Long, engine: String?, cabin: String?)
+
+    @Query("UPDATE vehicles SET sparkPlug = :part, sparkPlugGap = :gap WHERE id = :id")
+    suspend fun setSparkPlugs(id: Long, part: String?, gap: String?)
+
+    @Query("UPDATE vehicles SET batteryGroup = :group, batteryCca = :cca WHERE id = :id")
+    suspend fun setBattery(id: Long, group: String?, cca: Int?)
+
+    @Query("UPDATE vehicles SET bulbLow = :low, bulbHigh = :high, bulbFog = :fog WHERE id = :id")
+    suspend fun setBulbs(id: Long, low: String?, high: String?, fog: String?)
 
     @Query("UPDATE vehicles SET wiperDriverIn = :driver, wiperPassengerIn = :passenger, wiperRearIn = :rear, wiperBlades = :note WHERE id = :id")
     suspend fun setWipers(id: Long, driver: Int?, passenger: Int?, rear: Int?, note: String?)
