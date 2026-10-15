@@ -154,13 +154,16 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = VinBarcodeReader()
         val print = TextReader.vin(context.applicationContext)
-        // What each recent frame's print came to; only ever touched on the analyzer's thread.
+        // What each recent frame's print and barcode came to; only ever touched on the analyzer's thread.
         val printed = ArrayDeque<String?>()
+        val barcodes = ArrayDeque<String>()
+        var frame = 0
         controller.setImageAnalysisAnalyzer(executor) { image ->
             image.use {
                 if (paused) {
                     // What was read before "Rescan" says nothing about what is in front of the camera now.
                     printed.clear()
+                    barcodes.clear()
                     return@use
                 }
                 val (band, width, height) = it.guideBand()
@@ -172,10 +175,14 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                         fromPrint = false
                         found = vin
                     } else {
-                        notAVin = true
+                        barcodes.addLast(barcode)
+                        while (barcodes.size > VinScan.WINDOW) barcodes.removeFirst()
+                        notAVin = VinScan.notAVin(barcodes.toList())
                     }
                     return@use
                 }
+                // The print reader is slow: give the barcode reader most of the frames.
+                if (frame++ % VinScan.PRINT_EVERY != 0) return@use
                 // No barcode in the frame: look for the VIN in print. If the recogniser can't run on
                 // this phone it reads nothing, and the scanner is a barcode scanner as before.
                 printed.addLast(print.read(band, width, height)?.let(VinScan::printed))

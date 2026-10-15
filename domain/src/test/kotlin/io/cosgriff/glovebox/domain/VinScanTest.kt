@@ -1,6 +1,8 @@
 package io.cosgriff.glovebox.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -85,5 +87,18 @@ class VinScanTest {
         // A different VIN each time is never offered.
         assertNull(VinScan.agreed(listOf(vin, "1M8GDM9A1KP042788", null)))
         assertNull(VinScan.agreed(emptyList()))
+    }
+
+    @Test
+    fun `one misread barcode doesn't say it isn't a VIN, the same one twice does`() {
+        // A made-up VIN that passes its check digit, behind the import marker as a door-jamb barcode carries it.
+        val good = "I$vin"
+        assertEquals(vin, VinScan.vin(good))
+        assertFalse(VinScan.notAVin(listOf("I1M8GDM9AXKP0427B8")))
+        assertFalse(VinScan.notAVin(listOf("I1M8GDM9AXKP0427B8", "I1M8GDM9AXKP04Z788", good)))
+        assertTrue(VinScan.notAVin(listOf("PART-12345", "PART-12345")))
+        // Only the recent reads count.
+        assertFalse(VinScan.notAVin(listOf("PART-12345", "PART-12345", "a", "b", "c", "d", "e")))
+        assertFalse(VinScan.notAVin(listOf(good, good)))
     }
 }
