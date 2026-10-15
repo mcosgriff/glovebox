@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -344,10 +346,12 @@ private fun AddButton(working: Boolean, onChoose: () -> Unit, onTake: () -> Unit
         ) {
             if (working) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                Text("  Adding…")
+                Spacer(Modifier.width(8.dp))
+                Text("Adding…")
             } else {
                 Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text("  Add a document")
+                Spacer(Modifier.width(8.dp))
+                Text("Add a document")
             }
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
