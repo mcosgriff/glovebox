@@ -682,7 +682,9 @@ Notes on what's built:
   normalised, "75W-90 GL-5", anything else is taken as the fluid's name), coolant, brake fluid (DOT grade),
   air filters, spark plugs (part number, gap in inches or mm), battery (BCI group, CCA) and headlight
   bulbs (codes). **`WhatItTakes` and `TakesItem` in `:domain` are the one model:** each row's one-line
-  summary, which rows show (oil, tires, wipers always; the rest once filled in, offered under "Add more"),
+  summary, which rows go where (oil, tires and wipers on Vehicle details; the rest on their own page,
+  "Fluids, filters & parts" (`FluidsPartsScreen`), laid out like Torque specs at the user's request: a card
+  for each entered, then one per item still to add, each opening its editor in one tap),
   the part numbers a long press copies, Log service's hint per catalog line (`hint(catalogId)`), and the
   export's lines. Map a vehicle row to it with `VehicleEntity.whatItTakes()`. Tires carry the door
   placard's cold pressures (psi or kPa, front, rear, spare). Exports have a "What it takes" section before

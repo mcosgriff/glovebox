@@ -115,12 +115,15 @@ class VehicleSpecEntryTest {
     }
 
     @Test
-    fun `what it takes shows the always rows and offers the rest`() {
+    fun `what it takes keeps the basics apart and splits the rest by what is entered`() {
         val empty = WhatItTakes()
-        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS), empty.shown())
-        assertEquals(TakesItem.entries.size - 3, empty.addable().size)
+        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS), empty.basics())
+        assertEquals(emptyList<TakesItem>(), empty.entered())
+        assertEquals(TakesItem.entries.size - 3, empty.notEntered().size)
         val some = WhatItTakes(transmissionFluid = "ATF WS", engineAirFilter = "17801-0P051", cabinAirFilter = "87139-YZZ08", tireSize = "P265/70R17", tirePressureFront = 32, tirePressureRear = 32)
-        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS, TakesItem.TRANSMISSION, TakesItem.AIR_FILTERS), some.shown())
+        assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS), some.basics())
+        assertEquals(listOf(TakesItem.TRANSMISSION, TakesItem.AIR_FILTERS), some.entered())
+        assertEquals(TakesItem.entries.size - 5, some.notEntered().size)
         assertEquals("P265/70R17 \u00b7 32 psi", some.summary(TakesItem.TIRES))
         assertEquals("engine 17801-0P051 \u00b7 cabin 87139-YZZ08", some.summary(TakesItem.AIR_FILTERS))
         assertEquals("17801-0P051, 87139-YZZ08", some.partNumbers(TakesItem.AIR_FILTERS))
