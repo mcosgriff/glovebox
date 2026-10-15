@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.luminance
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -249,13 +251,15 @@ fun VehicleHomeScreen(
 
                 if (openRecalls.count > 0) RecallBanner(openRecalls, onClick = { onOpenRecalls(v.id) })
 
-                // Above "Coming up": these have nothing to count from, so they are what needs doing first.
+                // Three groups, each row one tap from Log service with that job ticked. Not logged yet comes
+                // first: these have nothing to count from, so they are what needs doing first.
+                val tapHint = "Tap one to log it."
                 if (up.notLogged.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Not logged yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(
                             "Log each of these once and its countdown starts from that date and mileage. " +
-                                "If you know when one was last done, you can enter just that.",
+                                "If you know when one was last done, you can enter just that. $tapHint",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -264,7 +268,9 @@ fun VehicleHomeScreen(
                         up.notLogged.forEachIndexed { i, status ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Row(
-                                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 14.dp),
+                                Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                                    .clickable(role = Role.Button, onClickLabel = "Log it") { onLogItem(v.id, status.item.id) }
+                                    .padding(vertical = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
@@ -287,10 +293,14 @@ fun VehicleHomeScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                // Opens Log service with this job ticked, for work being done now.
-                                TextButton(onClick = { onLogItem(v.id, status.item.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                                    Text("Log it", fontWeight = FontWeight.SemiBold)
-                                }
+                                // The whole row opens Log service with this job ticked; this says so.
+                                Text(
+                                    "Log it",
+                                    Modifier.padding(horizontal = 8.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                             }
                         }
                     }
@@ -304,18 +314,27 @@ fun VehicleHomeScreen(
                     }
                 }
 
-                if (up.counting.isNotEmpty()) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Coming up", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text(home.defaultRule.ruleLabel(), style = MaterialTheme.typography.bodySmall)
-                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                // The rule link sits by the first of these two headings that is shown.
+                val groups = listOf("Overdue" to up.overdueNow, "Coming up" to up.upcoming).filter { it.second.isNotEmpty() }
+                groups.forEachIndexed { g, (title, rows) ->
+                    Column {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            if (g == 0) {
+                                TextButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp)) {
+                                    Text(home.defaultRule.ruleLabel(), style = MaterialTheme.typography.bodySmall)
+                                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+                        if (g == 0 && up.notLogged.isEmpty()) {
+                            Text(tapHint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     WhiteCard {
-                        up.counting.forEachIndexed { i, (status, progress) ->
+                        rows.forEachIndexed { i, (status, progress) ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            ReminderRow(status, progress, v.clusterSwap(), unit)
+                            ReminderRow(status, progress, v.clusterSwap(), unit, onClick = { onLogItem(v.id, status.item.id) })
                         }
                     }
                 }
@@ -445,14 +464,17 @@ private fun StatusPill(up: ComingUp) {
 }
 
 @Composable
-private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit) {
+private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit, onClick: () -> Unit) {
     val colors = statusColors()
     val color = when (status.status.state) {
         DueState.OVERDUE -> colors.overdue
         DueState.DUE_SOON -> colors.soon
         DueState.OK -> colors.ok
     }
-    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Log it", onClick = onClick).padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(status.item.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
             Text(progress.headline.text(unit), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
