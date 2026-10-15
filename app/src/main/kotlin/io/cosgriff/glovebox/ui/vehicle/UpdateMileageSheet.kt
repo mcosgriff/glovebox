@@ -236,7 +236,7 @@ private fun MileagePreview.deltaLine(typed: Boolean, unit: DistanceUnit): Pair<S
 private fun MileagePreview.impactLine(typed: Boolean, unit: DistanceUnit): String? = when {
     !typed -> null
     below -> "That's lower than the last reading, so reminders will keep counting from ${last?.odometer?.asDistance(unit)}. " +
-        "Check the number before saving."
+        "If that one is wrong, correct or delete it in Vehicle details, Mileage readings."
     // Said in place of what it would do to the reminders: if the number is wrong, those are wrong too.
     far -> "That's ${delta?.asDistance(unit)} more than the last reading. If a digit has slipped, every mileage reminder would count from it. " +
         "Check the number before saving."

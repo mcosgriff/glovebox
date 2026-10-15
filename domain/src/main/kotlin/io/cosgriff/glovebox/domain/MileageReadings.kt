@@ -77,7 +77,7 @@ object MileageReadings {
      * Whatever is outside it is the odd one out, which names the one mistyped reading and not every
      * reading it happens to disagree with. Of two runs as long as each other, the one that ends
      * later is believed, since later readings are the ones still being added to.
-     * (`HistoryImport.backwards` does the same for an import, weighing saved readings over new ones.)
+     * (`HistoryImport.doubtful` does the same for an import, weighing saved readings over new ones.)
      */
     private fun fitting(odometers: List<Int>): Set<Int> {
         if (odometers.isEmpty()) return emptySet()

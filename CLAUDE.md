@@ -143,7 +143,7 @@ readings, from Vehicle details). "When were these last done?" (a date and mileag
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
 about what differs; also the user's own milestone table and a Carfax report PDF; Vehicle details' "Import service
-history" row opens the same page with that vehicle chosen, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+history" row opens the same page with that vehicle chosen and no vehicle choice, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 To build: VIN scan follow-up (#83).
@@ -319,7 +319,9 @@ Notes on what's built:
   separates the source from the comments). **Only service visits are taken**: an entry counts when a
   comment is work (`isWork`: replaced, changed, serviced, inspected…, and not a title, registration, owner
   or damage line). A comment becomes a catalog line only where the wording is plain (`CarfaxReport.service`:
-  "Oil and filter changed" is oil, "Brake pads replaced" stays text: which axle?); the source's first line
+  "Oil and filter changed" is oil, "Front differential serviced" is `front-diff`, "Brake pads replaced" stays
+  text: which axle?). A visit that names one job twice ("Alignment performed", "Four wheel alignment
+  performed") gets one line, worded as the longer (`oneLinePerService`). The source's first line
   is the shop. A visit with no mileage is counted and refused, never guessed. The ligatures (fi, fl, ff,
   ffi, ffl) drawn as one glyph come back as the ligature character, a replacement character, or an ordinary
   letter the PDF misnames them as ("clter", "iuid"), and `repairLigatures` puts them back, only ever into a
@@ -361,9 +363,11 @@ Notes on what's built:
   the imported record resets every reminder it did; otherwise it is a difference. A replace keeps the
   record's id, so its photos and recall link stay, and clears `enteredAsLastDone`. The preview lists the
   reminders that move for the chosen mode (`LogEdits.reminderChanges` over `HistoryImport.entriesAfter`)
-  and warns about readings that don't fit the ones around them (`HistoryImport.backwards`: whatever falls
-  outside the heaviest run of readings that never goes down, saved readings weighing more), both in dash
-  terms. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
+  and lists, under "Readings to check", records whose reading looks mistyped (`HistoryImport.doubtful`:
+  outside the heaviest run of readings that never goes down, saved readings weighing more; or far ahead of
+  the reading before, by `MileageReadings.farAhead` or over three times the vehicle's own pace), both in
+  dash terms. **Those are left out unless the user ticks them** (the user's GTI gained 60,000 miles from a
+  shop's typo in a report: the odometer is the highest reading). The preview is planned without them. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
   `today` passed to `ImportFormat.parse`. An imported record says "· imported" after who did it
   (`LogEdits.who`) and carries `Exports.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.
 - Milestones (`Milestones` in `:domain`, `MilestonesScreen`): the schedule laid out by mileage, as an
@@ -467,7 +471,7 @@ Notes on what's built:
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
 - Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
   prefilled, because a prefilled reading gets saved untouched and every reminder is then counted from the
-  wrong mileage. The note on the right of each line comes from `ServiceCatalog.hint`: what the user wrote
+  wrong mileage. A "Use current" button under the empty field (new records only) fills it on the user's tap. The note on the right of each line comes from `ServiceCatalog.hint`: what the user wrote
   on Vehicle details for that job (oil, tire size, wiper blades), otherwise the reminder's interval.
   Future dates are refused by the date picker itself, typed or tapped.
 - Never-logged reminders are "overdue" to `ReminderEngine`, but the UI lists them apart ("Not logged yet")

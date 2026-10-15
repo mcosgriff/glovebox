@@ -127,16 +127,23 @@ object CarfaxReport {
             records += ImportedRecord(
                 date = day,
                 odometer = miles,
-                // A report can name one job twice ("Four tires balanced", "Tire(s) balanced"): the first is the service line.
-                work = work.take(HistoryImport.MAX_WORK).fold(listOf<ImportedWork>()) { done, item ->
-                    val id = service(item)?.takeIf { s -> done.none { it.service == s } }
-                    done + ImportedWork(item.take(HistoryImport.MAX_LABEL), id)
-                },
+                work = oneLinePerService(work.map { ImportedWork(it.take(HistoryImport.MAX_LABEL), service(it)) }).take(HistoryImport.MAX_WORK),
                 diy = false,
                 shopName = shop,
             )
         }
         return Reading(records, withoutMileage)
+    }
+
+    /**
+     * A report can name one job twice in a visit ("Four tires balanced", "Tire(s) balanced"; "Alignment
+     * performed", "Four wheel alignment performed"). That is one service line, worded as the longer of
+     * the two, where the detail is; it stays where the first one was.
+     */
+    fun oneLinePerService(work: List<ImportedWork>): List<ImportedWork> {
+        val wordiest = work.filter { it.service != null }.groupBy { it.service }.mapValues { (_, same) -> same.maxBy { it.label.length } }
+        return work.filter { it.service == null || it === work.first { w -> w.service == it.service } }
+            .map { w -> w.service?.let(wordiest::getValue) ?: w }
     }
 
     /** The page's own small print ("…at www.carfax.com."), which can sit right under the last entry. */
@@ -175,7 +182,7 @@ object CarfaxReport {
 
     /**
      * The Log service line a comment is, where the wording leaves no doubt; null keeps it as written.
-     * "Brakes checked" or "Brake pads replaced" (which axle?) stay as they are.
+     * "Brake pads replaced" (which axle?) stays as it is.
      */
     private val services: List<Pair<Regex, String>> = listOf(
         """oil and filter changed|oil changed""" to "oil",
@@ -189,18 +196,36 @@ object CarfaxReport {
         """rear brake pads replaced""" to "rear-pads",
         """(front |rear )?brake rotors? (replaced|resurfaced)""" to "rotors",
         """brake fluid (flushed|changed|replaced)""" to "brake-fluid",
+        """brake fluid (checked|inspected|tested)""" to "brake-fluid-check",
+        """brakes? (system )?(checked|inspected)|brake inspection""" to "brake-inspect",
         """(coolant|cooling system|radiator) (flushed|changed|serviced)|antifreeze (flushed|changed)|antifreeze/coolant flushed""" to "coolant",
         """transmission (fluid|oil) (flushed|changed|replaced)|transmission serviced""" to "trans-fluid",
-        """transfer case (fluid|oil)? ?(changed|serviced|flushed)""" to "transfer-case",
-        """differential (fluid|oil)? ?(changed|serviced|flushed)|differentials? serviced""" to "diff-fluid",
+        // Front and rear have their own lines, so they come before the differential in general.
+        """front (differential|diff) (fluid |oil )?(changed|serviced|services|flushed|replaced)""" to "front-diff",
+        """front (differential|diff) (fluid |oil )?(checked|inspected)""" to "front-diff-check",
+        """rear (differential|diff) (fluid |oil )?(changed|serviced|services|flushed|replaced)""" to "rear-diff",
+        """rear (differential|diff) (fluid |oil )?(checked|inspected)""" to "rear-diff-check",
+        """transfer case (fluid |oil )?(changed|serviced|services|flushed|replaced)""" to "transfer-case",
+        """transfer case (fluid |oil )?(checked|inspected)""" to "transfer-case-check",
+        """differentials? (fluid |oil )?(changed|serviced|services|flushed|replaced)""" to "diff-fluid",
         """spark plugs? replaced""" to "spark-plugs",
         """battery replaced|new battery installed""" to "battery",
         """wiper blades? replaced|wipers? replaced""" to "wipers",
         """(serpentine|drive|accessory) belts? replaced""" to "belt",
+        """(serpentine|drive|accessory) belts? (checked|inspected)""" to "belt-check",
+        """timing belts? (replaced|changed)""" to "timing-belt",
+        """fuel filters? (replaced|changed)""" to "fuel-filter",
+        """fuel (system|injection system|injectors|induction system) (cleaned|serviced|flushed)""" to "fuel-system",
+        """battery(/charging system)? (checked|tested|inspected)""" to "battery-check",
+        """(shocks|struts|shock absorbers)((/| and )(shocks|struts))? (replaced|installed)""" to "shocks",
+        """wheel bearings? (replaced|installed)""" to "wheel-bearing",
+        """(tie rods?( ends?)?|ball joints?) (replaced|installed)""" to "steering-parts",
         """(light )?bulbs? replaced""" to "bulbs",
         """power steering (fluid )?(flushed|changed|serviced)""" to "power-steering",
         """maintenance inspection completed|multi-point inspection""" to "multi-point",
         """emissions? (inspection|test)""" to "emissions",
+        // "Emissions or safety inspection performed" says neither for sure, and stays as written.
+        """(?<!or )safety inspection""" to "safety-inspection",
     ).map { (pattern, id) -> Regex("""(?i)\b($pattern)\b""") to id }
 
     /** Carfax writes "Tire(s) replaced"; the patterns are written for "Tires replaced". */

@@ -261,6 +261,12 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
 data class PlanLine(val name: String, val file: String, val yours: String? = null)
 
 /**
+ * A record from the file whose reading looks mistyped, and whether the user has chosen to import it
+ * anyway. [key] is its date and odometer, which no two records of a file share.
+ */
+data class DoubtLine(val key: Pair<LocalDate, Int>, val title: String, val why: String, val included: Boolean)
+
+/**
  * A file set against the chosen vehicle, in words: what the page shows whichever kind the file is.
  * Nothing has been written when this exists.
  */
@@ -279,8 +285,8 @@ data class PlanView(
     val doubles: List<String> = emptyList(),
     /** Service history only: the reminders whose last done moves, for each choice the user can make. */
     val moves: Map<ImportMode, List<String>> = emptyMap(),
-    /** Things worth a second look that don't stop the import. */
-    val warnings: List<String> = emptyList(),
+    /** Service history only: records whose reading looks wrong, left out unless the user includes them. */
+    val doubts: List<DoubtLine> = emptyList(),
     /** Something true of the file as a whole, said before the import and again after it. */
     val note: String? = null,
 ) {
@@ -339,7 +345,14 @@ class ImportViewModel @Inject constructor(
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
 
-    private val chosenVehicle = MutableStateFlow(savedStateHandle.toRoute<ImportRoute>().vehicleId)
+    private val route = savedStateHandle.toRoute<ImportRoute>()
+    private val chosenVehicle = MutableStateFlow(route.vehicleId)
+
+    /** Opened from a vehicle (Vehicle details), so there is nothing to choose. */
+    val vehicleFixed: Boolean = route.vehicleId != null
+
+    /** Doubtful records ([PlanView.doubts]) the user has chosen to import anyway, by date and odometer. */
+    private val included = MutableStateFlow<Set<Pair<LocalDate, Int>>>(emptySet())
 
     /** The vehicle to import into: the one chosen, or the only one there is. */
     val vehicleId: StateFlow<Long?> = combine(this.vehicles, chosenVehicle) { list, chosen ->
@@ -352,15 +365,15 @@ class ImportViewModel @Inject constructor(
     val result: StateFlow<ImportResult?> = _result.asStateFlow()
 
     /** Null with no file picked. Worked out afresh for each file and vehicle; nothing is written by it. */
-    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, this.vehicles, settings.settings) { file, id, list, s ->
-        Triple(file, list.orEmpty().firstOrNull { it.id == id }, s)
-    }.mapLatest { (file, vehicle, s) ->
+    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, this.vehicles, settings.settings, included) { file, id, list, s, keep ->
+        Inputs(file, list.orEmpty().firstOrNull { it.id == id }, s, keep)
+    }.mapLatest { (file, vehicle, s, keep) ->
         when (file) {
             null -> null
             is ImportFile.Invalid -> ImportPreview.Invalid(file)
             else -> when {
                 vehicle == null -> ImportPreview.NeedsVehicle
-                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, s)
+                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, s, keep)
                 // A sold vehicle gets no reminders and isn't being worked on.
                 vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
@@ -378,8 +391,13 @@ class ImportViewModel @Inject constructor(
         chosenVehicle.value = id
     }
 
+    fun include(key: Pair<LocalDate, Int>, yes: Boolean) {
+        included.value = if (yes) included.value + key else included.value - key
+    }
+
     fun pick() {
         _result.value = null
+        included.value = emptySet()
         picker.pick()
     }
 
@@ -529,10 +547,10 @@ class ImportViewModel @Inject constructor(
         }
     }
 
-    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, s: Settings): ImportPreview {
+    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, s: Settings, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
         val unit = vehicle.unit
         // The file says which unit its readings are in; they are saved as this vehicle's dash would have shown them.
-        val items = FileDistances.history(file.items, file.unit, unit)
+        val all = FileDistances.history(file.items, file.unit, unit)
         val swap = vehicle.clusterSwap()
         val records = service.recordsFor(vehicle.id)
         val byId = records.associateBy { it.record.id }
@@ -552,12 +570,21 @@ class ImportViewModel @Inject constructor(
                 enteredAsLastDone = r.record.enteredAsLastDone,
             )
         }
-        val plan = HistoryImport.plan(items, saved, refs)
         val before = records.map { it.toEntry(swap, rows.answering()) }
+        // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
+        // the odometer is the highest reading on record, so one wrong one would put every mileage reminder out.
+        val whole = HistoryImport.plan(all, saved, refs)
+        val doubts = HistoryImport.doubtful(
+            HistoryImport.entriesAfter(whole, ImportMode.ADD_NEW, before, refs, swap),
+            odometer.readingsFor(vehicle.id).toReadings(swap),
+            unit,
+        ).map { d -> whole.new[(-1L - d.entry.id).toInt()] to d }
+        val leftOut = doubts.map { (r, _) -> r.date to r.odometer }.filter { it !in keep }.toSet()
+        val items = all.filter { (it.date to it.odometer) !in leftOut }
+        val plan = HistoryImport.plan(items, saved, refs)
         // A sold vehicle has no reminders to move.
         val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule, swap) }
         fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
-        val odd = HistoryImport.backwards(after(ImportMode.ADD_NEW), odometer.readingsFor(vehicle.id).toReadings(swap))
         val view = PlanView(
             kind = ImportKind.SERVICE_HISTORY,
             noun = "record",
@@ -569,9 +596,16 @@ class ImportViewModel @Inject constructor(
             caution = "Imported records are marked as imported in History and in exports.",
             note = FileDistances.convertedNote(file.unit, unit),
             moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
-            warnings = odd.map { e ->
-                // As it is written in the file, which is how the user will look for it.
-                "${e.date.format(longDate)} · ${swap.asReadOn(e.odometer, e.date).asDistance(unit)} doesn't fit the readings around it. Check the date and the odometer."
+            doubts = doubts.map { (r, d) ->
+                DoubtLine(
+                    key = r.date to r.odometer,
+                    // As it is written in the file, which is how the user will look for it.
+                    title = r.title(unit),
+                    why = d.before?.let { b ->
+                        "${(d.entry.odometer - b.odometer).asDistance(unit)} more than the reading of ${swap.asReadOn(b.odometer, b.date).asDistance(unit)} on ${b.date.format(longDate)}"
+                    } ?: "Doesn't fit the readings before and after it",
+                    included = (r.date to r.odometer) in keep,
+                )
             },
         )
         return ImportPreview.Ready(view) { mode, _ ->
@@ -608,6 +642,8 @@ class ImportViewModel @Inject constructor(
     }
 
     private fun ImportedRecord.title(unit: DistanceUnit) = "${date.format(longDate)} · ${odometer.asDistance(unit)}"
+
+    private data class Inputs(val file: ImportFile?, val vehicle: VehicleEntity?, val settings: Settings, val keep: Set<Pair<LocalDate, Int>>)
 }
 
 /** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
@@ -736,7 +772,13 @@ fun ImportScreen(
                 return@Column
             }
 
-            if (vehicles.size > 1) {
+            val fixed = vehicles.firstOrNull { it.id == vehicleId }?.takeIf { vm.vehicleFixed }
+            if (fixed != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel("IMPORT INTO")
+                    Text("${fixed.year} ${fixed.nickname ?: fixed.model}", style = MaterialTheme.typography.titleMedium)
+                }
+            } else if (vehicles.size > 1) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel("IMPORT INTO")
                     Card {
@@ -779,6 +821,7 @@ fun ImportScreen(
                 is ImportPreview.Ready -> {
                     val view = p.view
                     PlanCard(view)
+                    if (view.doubts.isNotEmpty()) DoubtsCard(view.doubts, vm::include)
                     if (view.differs.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             SectionLabel("${view.noun.uppercase()}S THAT DIFFER FROM YOURS")
@@ -842,9 +885,12 @@ private fun PlanCard(view: PlanView) {
                 if (view.same > 0) {
                     Text("${view.same} already the same · left alone", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
-                view.warnings.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.error) }
-                if (view.warnings.size > SHOWN) {
-                    Text("and ${view.warnings.size - SHOWN} more like that", style = MaterialTheme.typography.bodySmall, color = scheme.error)
+                view.doubts.count { !it.included }.takeIf { it > 0 }?.let { n ->
+                    Text(
+                        "${view.count(n)} left out: " + (if (n == 1) "its reading looks" else "their readings look") + " wrong. See below.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = scheme.error,
+                    )
                 }
                 view.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                 Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
@@ -907,6 +953,45 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
             "Glovebox's typical schedule already has " + (if (names.size == 1) "this" else "these") + ", so you'd get two reminders for one job. " +
                 "Unticked here, both stay, and work logged for one that shares a service line counts for both. " +
                 "A stopped item keeps its history and can be ticked again on the schedule.",
+            style = MaterialTheme.typography.bodySmall,
+            color = scheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * Records whose odometer looks mistyped, each left out unless ticked. The vehicle's odometer is its
+ * highest reading, so a wrong one from a report would become the odometer and put every mileage
+ * reminder out. Nothing is decided wrong: the user ticks what the report has right.
+ */
+@Composable
+private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>, Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionLabel("READINGS TO CHECK")
+        Card {
+            Column {
+                doubts.forEachIndexed { i, d ->
+                    if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                            .toggleable(value = d.included, role = Role.Checkbox, onValueChange = { onInclude(d.key, it) }),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Checkbox(checked = d.included, onCheckedChange = null)
+                        Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(d.title, style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
+                            Text(d.why, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+        Text(
+            "These readings don't look right, so they are left out. Your odometer is the highest reading on record: " +
+                "one wrong reading would become it, and every mileage reminder would count from it. " +
+                "Tick one to import it as it is, or leave it out and log that visit yourself with the right mileage.",
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
         )

@@ -110,17 +110,36 @@ class HistoryImportTest {
             file(day.plusMonths(7), 47_000), // fine
         )
         val after = HistoryImport.entriesAfter(HistoryImport.plan(items, listOf(saved(1)), schedule), ImportMode.ADD_NEW, before, schedule, null)
-        assertEquals(listOf(45_000, 39_000), HistoryImport.backwards(after, emptyList()).map { it.odometer })
+        assertEquals(listOf(45_000, 39_000), HistoryImport.doubtful(after, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
     }
 
     @Test
     fun `one mistyped reading is named, not every record it disagrees with`() {
         val items = listOf(file(day.minusMonths(14), 43_000), file(day.minusMonths(6), 36_150), file(day, 41_000), file(day.plusMonths(3), 44_000))
         val after = HistoryImport.entriesAfter(HistoryImport.plan(items, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
-        assertEquals(listOf(43_000), HistoryImport.backwards(after, emptyList()).map { it.odometer })
+        assertEquals(listOf(43_000), HistoryImport.doubtful(after, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
         // Two visits on one day in either order are fine.
         val sameDay = listOf(file(day, 41_000), file(day, 41_020))
-        assertTrue(HistoryImport.backwards(HistoryImport.entriesAfter(HistoryImport.plan(sameDay, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null), emptyList()).isEmpty())
+        assertTrue(HistoryImport.doubtful(HistoryImport.entriesAfter(HistoryImport.plan(sameDay, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null), emptyList(), DistanceUnit.MILES).isEmpty())
+    }
+
+    @Test
+    fun `the newest reading is asked about when it jumps far ahead`() {
+        // About 10,000 a year, then 60,000 more in eighteen months: a slipped digit, with nothing after it to disagree.
+        val saved = listOf(OdometerReading(day.minusYears(3), 50_000), OdometerReading(day.minusYears(2), 60_000))
+        val items = listOf(file(day.minusYears(1), 70_000), file(day.plusMonths(6), 130_000))
+        val after = HistoryImport.entriesAfter(HistoryImport.plan(items, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        val doubt = HistoryImport.doubtful(after, saved, DistanceUnit.MILES).single()
+        assertEquals(130_000, doubt.entry.odometer)
+        assertEquals(OdometerReading(day.minusYears(1), 70_000), doubt.before)
+        // The same visit after a believable stretch isn't.
+        val fine = listOf(file(day.minusYears(1), 70_000), file(day.plusMonths(6), 85_000))
+        val ok = HistoryImport.entriesAfter(HistoryImport.plan(fine, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        assertTrue(HistoryImport.doubtful(ok, saved, DistanceUnit.MILES).isEmpty())
+        // Too fast for any vehicle, with no history to judge a pace by.
+        val first = listOf(file(day.minusMonths(2), 20_000), file(day, 45_000))
+        val fast = HistoryImport.entriesAfter(HistoryImport.plan(first, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        assertEquals(listOf(45_000), HistoryImport.doubtful(fast, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
     }
 
     @Test
@@ -130,7 +149,7 @@ class HistoryImportTest {
         val before = listOf(swap.toDash(ServiceEntry(1, LocalDate.of(2025, 6, 1), 4_000, setOf(1))))
         val plan = HistoryImport.plan(listOf(file(day, 41_000)), emptyList(), schedule)
         val after = HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, before, schedule, swap)
-        assertTrue(HistoryImport.backwards(after, swap.readings(emptyList())).isEmpty())
+        assertTrue(HistoryImport.doubtful(after, swap.readings(emptyList()), DistanceUnit.MILES).isEmpty())
     }
 
     @Test

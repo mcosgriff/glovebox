@@ -4,6 +4,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 /** One line of work on an imported record. [service] is a [CatalogItem] id; null for anything else. */
@@ -180,23 +181,37 @@ object HistoryImport {
     }
 
     /**
-     * New records that don't fit the readings around them once the import is in. Worth a warning,
-     * not a block, as on the Log service form: one of the readings is wrong and it may not be the
-     * file's. [after] is in dash terms.
+     * A record from the file whose reading looks wrong. [before] is the reading it jumps far ahead
+     * of; null when it doesn't fit the readings around it at all.
+     */
+    data class Doubt(val entry: ServiceEntry, val before: OdometerReading? = null)
+
+    /**
+     * New records whose odometer looks mistyped once the import is in: worth asking about before
+     * they go in, never refused. A report copies whatever the shop typed, and the vehicle's odometer
+     * is the highest reading on record, so one slipped digit would put every mileage reminder out.
+     * [after] and [updates] are in dash terms, and [unit] is the vehicle's.
      *
      * An odometer only goes up, so the readings that agree with each other are the longest run that
      * never goes down when put in date order; whatever falls outside it is the odd one out. That
      * names the one mistyped reading, not every record it happens to disagree with. Where it could be
      * either of two, a reading already on the vehicle is believed over one from the file.
+     *
+     * One inside that run is still doubtful when it is far above the reading before it: further than
+     * a vehicle is driven in the time ([MileageReadings.farAhead]), or, with a year of readings to
+     * go by, over [FAR_PACE] times this vehicle's own pace up to then. The newest reading has nothing
+     * after it to disagree with, so the jump is the only sign of a wrong one.
      */
-    fun backwards(after: List<ServiceEntry>, updates: List<OdometerReading>): List<ServiceEntry> {
-        data class Point(val date: LocalDate, val odometer: Int, val entry: ServiceEntry?)
+    fun doubtful(after: List<ServiceEntry>, updates: List<OdometerReading>, unit: DistanceUnit): List<Doubt> {
+        data class Point(val date: LocalDate, val odometer: Int, val entry: ServiceEntry?) {
+            val new get() = entry != null && entry.id < 0
+        }
         val points = (after.map { Point(it.date, it.odometer, it) } + updates.map { Point(it.date, it.odometer, null) })
             .sortedWith(compareBy<Point> { it.date }.thenBy { it.odometer })
         if (points.isEmpty()) return emptyList()
         // Heaviest non-decreasing subsequence, by the plain quadratic method: files are capped well below
         // where that matters. A saved reading weighs a little more than a new one, which settles ties.
-        fun weight(p: Point) = if (p.entry != null && p.entry.id < 0) 2 else 3
+        fun weight(p: Point) = if (p.new) 2 else 3
         val length = IntArray(points.size) { weight(points[it]) }
         val previous = IntArray(points.size) { -1 }
         for (i in points.indices) {
@@ -213,6 +228,34 @@ object HistoryImport {
             fits += at
             at = previous[at]
         }
-        return points.filterIndexed { i, p -> i !in fits && p.entry != null && p.entry.id < 0 }.mapNotNull { it.entry }
+        val run = fits.sorted()
+        return points.mapIndexedNotNull { i, p ->
+            if (!p.new) return@mapIndexedNotNull null
+            if (i !in fits) return@mapIndexedNotNull Doubt(p.entry!!)
+            val k = run.indexOf(i)
+            val before = run.getOrNull(k - 1)?.let { OdometerReading(points[it].date, points[it].odometer) } ?: return@mapIndexedNotNull null
+            val first = points[run.first()]
+            val far = MileageReadings.farAhead(p.odometer, p.date, before, unit) || run.first() != run[k - 1] && fasterThanUsual(
+                OdometerReading(first.date, first.odometer), before, OdometerReading(p.date, p.odometer), unit,
+            )
+            Doubt(p.entry!!, before).takeIf { far }
+        }
+    }
+
+    /** How many times its usual pace a vehicle has to have gone for a jump to be asked about. */
+    const val FAR_PACE = 3
+
+    /**
+     * Whether going from [before] to [reading] is over [FAR_PACE] times the pace from [first] to
+     * [before], and more than [MileageReadings.FAR_MILES]. Only once a year of readings shows a pace.
+     */
+    private fun fasterThanUsual(first: OdometerReading, before: OdometerReading, reading: OdometerReading, unit: DistanceUnit): Boolean {
+        val history = ChronoUnit.DAYS.between(first.date, before.date)
+        if (history < 365) return false
+        val delta = reading.odometer.toLong() - before.odometer
+        if (delta <= unit.scheduled(MileageReadings.FAR_MILES)) return false
+        val usual = (before.odometer - first.odometer).toDouble() / history
+        val days = ChronoUnit.DAYS.between(before.date, reading.date).coerceAtLeast(1)
+        return delta > usual * FAR_PACE * days
     }
 }
