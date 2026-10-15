@@ -87,7 +87,7 @@ data class WhatItTakes(
         "front-diff", "rear-diff", "front-diff-check", "rear-diff-check" -> differentialOil
         "transfer-case", "transfer-case-check" -> transferCaseOil
         "coolant" -> coolant
-        "brake-fluid" -> brakeFluid
+        "brake-fluid", "brake-fluid-check" -> brakeFluid
         "engine-air" -> engineAirFilter
         "cabin-air" -> cabinAirFilter
         "spark-plugs" -> summary(TakesItem.SPARK_PLUGS)

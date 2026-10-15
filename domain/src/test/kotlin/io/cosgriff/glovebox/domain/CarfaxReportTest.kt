@@ -54,7 +54,7 @@ class CarfaxReportTest {
         assertEquals("Acme Motors", first.shopName)
         assertEquals(false, first.diy)
         assertEquals(
-            listOf(ImportedWork("Oil and filter changed", "oil"), ImportedWork("Tires rotated", "rotation"), ImportedWork("Brakes checked", null)),
+            listOf(ImportedWork("Oil and filter changed", "oil"), ImportedWork("Tires rotated", "rotation"), ImportedWork("Brakes checked", "brake-inspect")),
             first.work,
         )
         // Work the wording doesn't name exactly is kept as written.
@@ -108,10 +108,48 @@ class CarfaxReportTest {
         assertEquals("engine-air", CarfaxReport.service("Air filter replaced"))
         assertEquals("front-pads", CarfaxReport.service("Front brake pads replaced"))
         assertEquals("multi-point", CarfaxReport.service("Maintenance inspection completed"))
+        assertEquals("brake-inspect", CarfaxReport.service("Brakes checked"))
+        assertEquals("brake-inspect", CarfaxReport.service("Brake system inspected"))
+        assertEquals("brake-fluid-check", CarfaxReport.service("Brake fluid checked"))
+        assertEquals("brake-fluid", CarfaxReport.service("Brake fluid flushed"))
+        assertEquals("belt-check", CarfaxReport.service("Serpentine belt checked"))
+        assertEquals("belt", CarfaxReport.service("Drive belt(s) replaced"))
+        assertEquals("alignment", CarfaxReport.service("Four wheel alignment performed"))
+        assertEquals("rear-diff", CarfaxReport.service("Rear differential serviced"))
+        assertEquals("front-diff", CarfaxReport.service("Front differential fluid flushed/changed"))
+        assertEquals("front-diff-check", CarfaxReport.service("Front differential fluid checked"))
+        assertEquals("diff-fluid", CarfaxReport.service("Differential serviced"))
+        assertEquals("diff-fluid", CarfaxReport.service("Differential fluid flushed/changed"))
+        assertEquals("transfer-case", CarfaxReport.service("Transfer case fluid flushed/changed"))
+        assertEquals("timing-belt", CarfaxReport.service("Timing belt replaced"))
+        assertEquals("fuel-filter", CarfaxReport.service("Fuel filter replaced"))
+        assertEquals("fuel-system", CarfaxReport.service("Fuel injection system cleaned"))
+        assertEquals("battery-check", CarfaxReport.service("Battery/charging system checked"))
+        assertEquals("battery", CarfaxReport.service("Battery replaced"))
+        assertEquals("shocks", CarfaxReport.service("Shock absorber(s)/strut(s) replaced"))
+        assertEquals("wheel-bearing", CarfaxReport.service("Wheel bearing(s) replaced"))
+        assertEquals("steering-parts", CarfaxReport.service("Tie rod end(s) replaced"))
+        assertEquals("safety-inspection", CarfaxReport.service("Safety inspection performed"))
+        assertNull(CarfaxReport.service("Emissions or safety inspection performed"))
         // Which axle? Left as written.
         assertNull(CarfaxReport.service("Brake pads replaced"))
         assertNull(CarfaxReport.service("Battery cable(s) replaced"))
         assertNull(CarfaxReport.service("Vehicle serviced"))
+    }
+
+    @Test
+    fun `one job named twice in a visit is one line, worded as the longer`() {
+        assertEquals(
+            listOf(ImportedWork("Four wheel alignment performed", "alignment"), ImportedWork("Starter replaced", null), ImportedWork("Oil changed", "oil")),
+            CarfaxReport.oneLinePerService(
+                listOf(
+                    ImportedWork("Alignment performed", "alignment"),
+                    ImportedWork("Starter replaced", null),
+                    ImportedWork("Four wheel alignment performed", "alignment"),
+                    ImportedWork("Oil changed", "oil"),
+                ),
+            ),
+        )
     }
 
     private fun repaired(vararg words: String) = CarfaxReport.repairLigatures(words.toList())
@@ -173,9 +211,8 @@ class CarfaxReportTest {
                 ImportedWork("Brake fluid flushed/changed", "brake-fluid"),
                 ImportedWork("Spark plug(s) replaced", "spark-plugs"),
                 ImportedWork("Air filters replaced", "engine-air"),
+                // The same job named twice is one service line, in the wordier of the two.
                 ImportedWork("Four tires balanced", "balance"),
-                // The same job named twice is one service line.
-                ImportedWork("Tire(s) balanced", null),
             ),
             r.work,
         )
