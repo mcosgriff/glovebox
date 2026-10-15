@@ -140,11 +140,14 @@ dependencies {
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
-    implementation(libs.zxing.core)
+    implementation(libs.zxing.cpp)
     implementation(libs.tesseract4android)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.uiautomator)
+    // Draws the barcodes the reader is tested on; the app reads them with zxing-cpp.
+    androidTestImplementation(libs.zxing.core)
+    testImplementation(libs.zxing.core)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)

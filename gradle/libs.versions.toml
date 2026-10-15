@@ -82,6 +82,10 @@ camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref =
 camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+# Reads the VIN barcodes (#161): the C++ successor to ZXing, far better on blurred and unevenly lit camera frames.
+# No network code: checked in its native library's imported functions (none are network calls) and its POM
+# (it depends only on the Kotlin standard library and CameraX). Check again on an upgrade.
+zxing-cpp = { module = "io.github.zxing-cpp:android", version = "2.3.0" }
 tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android", version.ref = "tesseract4android" }
 # Tests that have to run on a phone or emulator (app/src/androidTest); nothing here ships in the app.
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
