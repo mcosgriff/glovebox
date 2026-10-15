@@ -19,6 +19,22 @@ object VinScan {
     const val WINDOW = 5
 
     /**
+     * The printed-VIN reader runs on one frame in this many. It is far slower than the barcode reader,
+     * and running it on every frame without a barcode left the barcode reader a couple of tries a
+     * second while the user was still lining a barcode up.
+     */
+    const val PRINT_EVERY = 4
+
+    /**
+     * Whether to tell the user the barcode in view isn't a VIN: only when the same text that isn't
+     * one has been read in [AGREE] of the last [WINDOW] barcode reads. Code 39 has no checksum, so one
+     * blurred frame can come out as wrong characters; saying so on a single read put "isn't a VIN" up
+     * for good while the real VIN barcode was still in front of the camera.
+     */
+    fun notAVin(reads: List<String>): Boolean =
+        reads.takeLast(WINDOW).filter { vin(it) == null }.groupingBy { it }.eachCount().any { it.value >= AGREE }
+
+    /**
      * The VIN in [text] as recognised from print (a windshield plate, a registration card), or null.
      *
      * A VIN never has the letters I, O or Q, exactly because they look like 1 and 0, so where
