@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -449,6 +450,15 @@ fun LogServiceScreen(
                             colors = fieldColors(),
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                         )
+                        // Only on the user's tap: a reading filled in by itself gets saved untouched.
+                        val current = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) }
+                        if (current != null && !vm.editing && vm.odometerText.isBlank()) {
+                            TextButton(
+                                onClick = { vm.odometerText = String.format(Locale.US, "%,d", current) },
+                                modifier = Modifier.heightIn(min = 48.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp),
+                            ) { Text("Use current") }
+                        }
                     }
                 }
                 LogEdits.odometerNote(
