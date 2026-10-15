@@ -469,6 +469,9 @@ Notes on what's built:
   check and not the change that would also reset it. This is how "checked" and "replaced" are both loggable without
   a per-line action: they are two lines.
 - Log service only offers one-tap "due" chips for reminders that have a log entry.
+  Turning one on opens its category, so the tick is in sight. The category buttons are tabs, not ticks
+  (the user found the canvas's solid ink "open" button read as chosen): the open one is outlined in ink
+  with a caret, and a soft-orange "✓ n" says how many of its lines are ticked.
 - Log service leaves the odometer empty and shows "Last recorded" under it; it is deliberately not
   prefilled, because a prefilled reading gets saved untouched and every reminder is then counted from the
   wrong mileage. A "Use current" button under the empty field (new records only) fills it on the user's tap. The note on the right of each line comes from `ServiceCatalog.hint`: what the user wrote
