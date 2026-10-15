@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/mcosgriff/glovebox/compare/v0.3.1...v0.3.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **scan:** read a door-jamb barcode faster, and don't call it "not a VIN" after one misread ([#156](https://github.com/mcosgriff/glovebox/issues/156)) ([a760af6](https://github.com/mcosgriff/glovebox/commit/a760af6b518864a6a821a91fedd3a4f39567598c))
+
 ## [0.3.1](https://github.com/mcosgriff/glovebox/compare/v0.3.0...v0.3.1) (2026-10-15)
 
 
