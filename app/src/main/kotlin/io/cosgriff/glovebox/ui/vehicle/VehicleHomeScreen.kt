@@ -532,12 +532,19 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
     }
 }
 
-/** "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026" */
+/**
+ * "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026". A job counting down to its first
+ * time has no last, so it gets the interval alone (and an estimate, when there is one).
+ */
 private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit): String {
-    // As it was read at the time, which is what the record says.
-    val last = lastDone?.let { swap.asReadOn(it) } ?: return ""
     val every = "Every ${item.interval.label(unit).replace(" / ", " or ")}"
-    val lastText = if (progress.headline is DueHeadline.Days) "last on ${last.date.format(longDate)}" else "last at ${last.odometer.asDistance(unit)}"
+    // As it was read at the time, which is what the record says.
+    val last = lastDone?.let { swap.asReadOn(it) }
+    val lastText = when {
+        last == null -> null
+        progress.headline is DueHeadline.Days -> "last on ${last.date.format(longDate)}"
+        else -> "last at ${last.odometer.asDistance(unit)}"
+    }
     // Only worth an estimate when mileage decides it and the date comes from the driving pace.
     val estimate = status.estimatedDueDate
         ?.takeIf { progress.headline is DueHeadline.Miles && status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE }
