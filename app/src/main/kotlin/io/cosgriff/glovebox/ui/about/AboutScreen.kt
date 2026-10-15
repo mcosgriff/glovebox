@@ -211,7 +211,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Adding a vehicle without a VIN asks for NHTSA's list of makes, then for the models of the make and year you pick.",
                     "Checking for recalls sends the year, make and model. It does not send the VIN.",
                     "Like any website, NHTSA can see the internet address the request came from.",
-                    "Nothing else is sent: no mileage, records, photos, names or location.",
+                    "Nothing else is sent: no mileage, records, photos, names, license plate or location.",
                 ),
                 "What the app never does" to listOf(
                     "No analytics, crash reporting, advertising or tracking, and no third-party code that reports back to anyone.",

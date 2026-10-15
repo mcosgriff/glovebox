@@ -58,6 +58,8 @@ data class ExportVehicle(
     val title: String,
     val nickname: String?,
     val vin: String?,
+    /** "CO · ABC 1234" (LicensePlates.label); null when the owner hasn't entered one. */
+    val plate: String? = null,
     /** What this vehicle's odometer counts in; every distance below is in it. */
     val unit: DistanceUnit,
     /** The highest reading on record, as the dash shows it. */
@@ -181,6 +183,7 @@ object Exports {
             append("# Service history: ${text(v.title)}\n\n")
             v.nickname?.let { append("- Nickname: ${text(it)}\n") }
             v.vin?.let { append("- VIN: `$it`\n") }
+            v.plate?.let { append("- License plate: `$it`\n") }
             v.odometer?.let { append("- Odometer: ${distance(it, v.unit)} (highest reading on record)\n") }
             actualMileage(v)?.let { append("- Actual mileage: ${distance(it, v.unit)}\n") }
             v.clusterSwap?.let { append("- Instrument cluster: ${clusterNote(it, v.unit)}\n") }

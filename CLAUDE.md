@@ -684,6 +684,16 @@ Notes on what's built:
   export's lines. Map a vehicle row to it with `VehicleEntity.whatItTakes()`. Tires carry the door
   placard's cold pressures (psi or kPa, front, rear, spare). Exports have a "What it takes" section before
   the records, with its own switch on the export sheet (`ExportOptions.whatItTakes`). Schema v22.
+- License plate (schema v24, `vehicles.plate`, `.plateRegion`, `LicensePlates` in `:domain`): a row under the
+  nickname on Vehicle details opens a dialog with the plate (capitals, letters, digits, spaces and dashes,
+  `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the
+  two-letter code. Kept on the phone and never sent (the privacy screen says so); exports give it under the
+  VIN (`ExportVehicle.plate`).
+- Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
+  and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
+  report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;
+  everything else about the vehicle stays (what it takes, torque specs, schedule, recalls, milestones,
+  mileage updates), and reminders count from what is left. A recall marked done keeps its mark.
 - A long press on the VIN row of Vehicle details copies the VIN (`copyVin`), marked sensitive
   (`ClipDescription.EXTRA_IS_SENSITIVE`) so Android hides it in its clipboard preview; Android 13+ says
   "Copied" itself, earlier versions get a toast. The row also has an accessibility long-press action.

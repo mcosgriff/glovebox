@@ -18,6 +18,7 @@ class ExportTest {
         title = "2019 Toyota 4Runner SR5",
         nickname = "Old Blue",
         vin = "1M8GDM9AXKP042788",
+        plate = "CO · ABC 1234",
         odometer = 68_412,
         soldOn = null,
         records = listOf(brakes, oil, wipers),
@@ -90,6 +91,7 @@ class ExportTest {
         val md = Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue(md.startsWith("# Service history: 2019 Toyota 4Runner SR5\n"))
         assertTrue("- VIN: `1M8GDM9AXKP042788`" in md)
+        assertTrue("- License plate: `CO · ABC 1234`" in md)
         assertTrue("- 3 records · \$472.50 total" in md)
         assertTrue("- Exported from Glovebox on Oct 11, 2026" in md)
         // Newest first.

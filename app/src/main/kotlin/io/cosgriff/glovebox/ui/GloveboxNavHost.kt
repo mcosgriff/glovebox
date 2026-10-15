@@ -73,6 +73,7 @@ import io.cosgriff.glovebox.ui.schedule.LastDoneScreen
 import io.cosgriff.glovebox.ui.schedule.MilestonesScreen
 import io.cosgriff.glovebox.ui.schedule.ScheduleSetupScreen
 import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
+import io.cosgriff.glovebox.ui.vehicle.ClearHistoryScreen
 import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
@@ -130,6 +131,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long)
 @Serializable object ArchivedVehiclesRoute
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long)
+/** Deletes a vehicle's service records (imported, or all) and nothing else. */
+@Serializable data class ClearHistoryRoute(val vehicleId: Long)
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
@@ -363,6 +366,16 @@ fun GloveboxNavHost() {
                     onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
                     onOpenReadings = { vehicleId -> nav.navigate(MileageReadingsRoute(vehicleId)) },
                     onOpenImport = { vehicleId -> nav.navigate(ImportRoute(vehicleId)) },
+                    onClearHistory = { vehicleId -> nav.navigate(ClearHistoryRoute(vehicleId)) },
+                )
+            }
+            screen<ClearHistoryRoute> {
+                ClearHistoryScreen(
+                    onCancel = { nav.popBackStack() },
+                    onCleared = { n ->
+                        nav.popBackStack()
+                        showNote(if (n == 1) "1 service record deleted" else "$n service records deleted")
+                    },
                 )
             }
             screen<MileageReadingsRoute> {

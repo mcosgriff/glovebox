@@ -58,6 +58,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import io.cosgriff.glovebox.domain.LicensePlates
+import java.util.Locale
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -225,6 +231,9 @@ class VehicleDetailsViewModel @Inject constructor(
         nicknameEdits.value = text
     }
 
+    /** [plate] is already cleaned (LicensePlates.clean); null clears it. */
+    fun savePlate(plate: String?, region: String?) = viewModelScope.launch { vehicles.setPlate(vehicleId, plate, region) }
+
     /** Each is already checked and in its standard form (VehicleSpecEntry); null clears it. */
     fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?) = viewModelScope.launch {
         vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
@@ -291,6 +300,8 @@ fun VehicleDetailsScreen(
     onOpenReadings: (vehicleId: Long) -> Unit,
     /** The Import page with this vehicle chosen: a Carfax report, or an import file. */
     onOpenImport: (vehicleId: Long) -> Unit,
+    /** Deleting the service records alone, imported or all, keeping everything else. */
+    onClearHistory: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -307,6 +318,7 @@ fun VehicleDetailsScreen(
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
+    var editingPlate by rememberSaveable { mutableStateOf(false) }
     var settingOffset by rememberSaveable { mutableStateOf(false) }
     var changingUnit by rememberSaveable { mutableStateOf(false) }
     val swap = v.clusterSwap()
@@ -348,6 +360,18 @@ fun VehicleDetailsScreen(
                 settingOffset = false
             },
             onDismiss = { settingOffset = false },
+        )
+    }
+
+    if (editingPlate) {
+        PlateDialog(
+            plate = v.plate,
+            region = v.plateRegion,
+            onSave = { plate, region ->
+                vm.savePlate(plate, region)
+                editingPlate = false
+            },
+            onDismiss = { editingPlate = false },
         )
     }
 
@@ -450,6 +474,27 @@ fun VehicleDetailsScreen(
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            Card {
+                val plate = LicensePlates.label(v.plate, v.plateRegion)
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { editingPlate = true }),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text("License plate", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        plate ?: "Add",
+                        Modifier.weight(1f).padding(vertical = 8.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = if (v.plate != null) PlexMono else null,
+                        color = if (plate == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.End,
+                    )
+                    Chevron()
+                }
+            }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(if (v.enteredByHand) "VEHICLE" else "FROM THE VIN")
@@ -643,6 +688,12 @@ fun VehicleDetailsScreen(
                     detail = "From a Carfax report PDF, or an import file",
                     onClick = { onOpenImport(v.id) },
                 )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = "Clear service history",
+                    detail = "Delete imported or all service records · keeps what it takes and specs",
+                    onClick = { onClearHistory(v.id) },
+                )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -818,6 +869,51 @@ private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
             )
         },
         confirmButton = { TextButton(onClick = { onSave(text) }, enabled = plausible) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+/** The plate and where it was issued. Either can be left empty; both empty clears it. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlateDialog(plate: String?, region: String?, onSave: (String?, String?) -> Unit, onDismiss: () -> Unit) {
+    var text by rememberSaveable { mutableStateOf(plate.orEmpty()) }
+    var code by rememberSaveable { mutableStateOf(region) }
+    var open by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("License plate") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it.uppercase(Locale.US).take(LicensePlates.MAX + 2) },
+                    label = { Text("Plate") },
+                    supportingText = { Text("Kept on this phone. Glovebox never sends it.") },
+                    singleLine = true,
+                    textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
+                    OutlinedTextField(
+                        value = LicensePlates.region(code)?.name ?: "Not set",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("State or province") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    )
+                    ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                        DropdownMenuItem(text = { Text("Not set") }, onClick = { code = null; open = false })
+                        LicensePlates.regions.forEach { r ->
+                            DropdownMenuItem(text = { Text("${r.name} (${r.code})") }, onClick = { code = r.code; open = false })
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onSave(LicensePlates.clean(text), code) }) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
