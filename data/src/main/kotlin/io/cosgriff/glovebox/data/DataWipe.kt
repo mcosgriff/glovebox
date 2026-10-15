@@ -22,6 +22,19 @@ class DataWipe(
     }
 
     /**
+     * Deletes a vehicle's service records, or only the imported ones when [all] is false, with their
+     * photos. Everything else about the vehicle stays: its details, what it takes, torque specs,
+     * schedule, recalls, milestones and mileage updates. Reminders count from whatever is left.
+     */
+    suspend fun clearHistory(vehicleId: Long, all: Boolean): Int {
+        val service = db.service()
+        val files = service.photoFilesOf(vehicleId, all)
+        val deleted = service.clearRecords(vehicleId, all)
+        files.forEach { File(photos.photoDir, it).delete() }
+        return deleted
+    }
+
+    /**
      * Crypto-erase: destroy the keys first so leftovers are unreadable, then delete files.
      * The caller must restart the app process afterwards (e.g. relaunch to the welcome screen).
      */

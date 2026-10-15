@@ -32,6 +32,10 @@ data class VehicleEntity(
     val transmission: String? = null,
     val bodyClass: String? = null,
     val nickname: String? = null,
+    /** As typed, in capitals (`LicensePlates.clean`). Kept on the phone only. */
+    val plate: String? = null,
+    /** Where the plate was issued: a `PlateRegion` code ("CO", "ON"). */
+    val plateRegion: String? = null,
     /** The oil grade ("0W-20"). Entered before #165 it may be free text, which the editor asks to fix. */
     val oilSpec: String? = null,
     /** Filter part numbers, up to three separated by commas. */

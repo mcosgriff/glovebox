@@ -53,6 +53,9 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET nickname = :nickname WHERE id = :id")
     suspend fun setNickname(id: Long, nickname: String?)
 
+    @Query("UPDATE vehicles SET plate = :plate, plateRegion = :region WHERE id = :id")
+    suspend fun setPlate(id: Long, plate: String?, region: String?)
+
     /** Fills in the engine for a vehicle that has none on record; one that has is left exactly as it is. */
     @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
     suspend fun setEngineIfBlank(id: Long, engine: String)
@@ -130,6 +133,16 @@ interface VehicleDao {
 
 @Dao
 interface ServiceDao {
+    /** How many records [clearRecords] with [all] would delete: every one, or only the imported. */
+    @Query("SELECT COUNT(*) FROM service_records WHERE vehicleId = :vehicleId AND (imported = 1 OR :all)")
+    suspend fun countRecords(vehicleId: Long, all: Boolean): Int
+
+    @Query("SELECT p.fileName FROM photos p JOIN service_records r ON p.recordId = r.id WHERE r.vehicleId = :vehicleId AND (r.imported = 1 OR :all)")
+    suspend fun photoFilesOf(vehicleId: Long, all: Boolean): List<String>
+
+    /** Lines and photo rows cascade; a recall it was the work for keeps its done mark. */
+    @Query("DELETE FROM service_records WHERE vehicleId = :vehicleId AND (imported = 1 OR :all)")
+    suspend fun clearRecords(vehicleId: Long, all: Boolean): Int
     @Transaction
     @Query("SELECT * FROM service_records WHERE vehicleId = :vehicleId ORDER BY date DESC, odometer DESC")
     fun observeRecords(vehicleId: Long): Flow<List<ServiceRecordWithItems>>

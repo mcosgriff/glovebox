@@ -29,7 +29,7 @@ class Converters {
         MilestoneEntity::class,
         MilestoneJobEntity::class,
     ],
-    version = 23,
+    version = 24,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -54,6 +54,7 @@ class Converters {
         AutoMigration(from = 20, to = 21), // vehicles: oilApproval, oilCapacity(Unit), tireSizeRear, wiper lengths
         AutoMigration(from = 21, to = 22), // vehicles: tire pressures and the rest of "What it takes"
         AutoMigration(from = 22, to = 23), // recalls.archivedOn
+        AutoMigration(from = 23, to = 24), // vehicles.plate, plateRegion
     ],
 )
 @TypeConverters(Converters::class)
