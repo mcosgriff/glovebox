@@ -104,7 +104,7 @@ object CarfaxReport {
             if (start !in entryStarts) { i++; continue }
             val entry = mutableListOf(start)
             var j = i + 1
-            while (j < all.size && all[j] !in entryStarts && all[j].page == start.page && all[j].y - entry.last().y <= ENTRY_GAP) entry += all[j++]
+            while (j < all.size && all[j] !in entryStarts && all[j].page == start.page && all[j].y - entry.last().y <= ENTRY_GAP && !isFooter(all[j])) entry += all[j++]
             i = j
 
             val day = try { LocalDate.parse(start.words.first().text, dateFormat) } catch (_: DateTimeParseException) { continue }
@@ -126,7 +126,11 @@ object CarfaxReport {
             records += ImportedRecord(
                 date = day,
                 odometer = miles,
-                work = work.take(HistoryImport.MAX_WORK).map { ImportedWork(it.take(HistoryImport.MAX_LABEL), service(it)) },
+                // A report can name one job twice ("Four tires balanced", "Tire(s) balanced"): the first is the service line.
+                work = work.take(HistoryImport.MAX_WORK).fold(listOf<ImportedWork>()) { done, item ->
+                    val id = service(item)?.takeIf { s -> done.none { it.service == s } }
+                    done + ImportedWork(item.take(HistoryImport.MAX_LABEL), id)
+                },
                 diy = false,
                 shopName = shop,
             )
@@ -134,17 +138,30 @@ object CarfaxReport {
         return Reading(records, withoutMileage)
     }
 
+    /** The page's own small print ("…at www.carfax.com."), which can sit right under the last entry. */
+    private fun isFooter(line: Line): Boolean = line.words.any { it.text.contains("carfax.com", ignoreCase = true) || it.text.contains("CARFAX") }
+
     /**
      * The comment column's items: one per line, a line starting with a small letter continuing the one
      * before ("Titled or registered as commercial" / "vehicle").
      */
     private fun commentItems(column: String): List<String> {
         val out = mutableListOf<String>()
-        column.lines().map { it.trim().replace(Regex("""\s+"""), " ") }.filter { it.isNotEmpty() }.forEach { line ->
+        column.lines().map { tidy(it) }.filter { it.isNotEmpty() }.forEach { line ->
             if (out.isNotEmpty() && line.first().isLowerCase()) out[out.lastIndex] = out.last() + " " + line else out += line
         }
         return out
     }
+
+    /**
+     * One comment line, without the list bullets a printed report can leave in the text: a dash on its own,
+     * or stuck to the first letter of the word it stands before ("V- ehicle serviced" is "Vehicle serviced").
+     */
+    private fun tidy(line: String): String = line.trim().replace(Regex("""\s+"""), " ")
+        .replace(Regex("""^(-+\s*)+"""), "")
+        .replace(Regex("""\b([A-Za-z])-+ ([a-z])"""), "$1$2")
+        .replace(Regex("""(^|\s)-+(?=\s|$)"""), " ")
+        .trim()
 
     private val workWords = Regex(
         """(?i)\b(replaced|changed|rotated|serviced|inspected|inspection|repaired|flushed|installed|performed|checked|aligned|balanced|""" +
@@ -169,35 +186,64 @@ object CarfaxReport {
         """tires? replaced|new tires? installed""" to "new-tires",
         """front brake pads replaced""" to "front-pads",
         """rear brake pads replaced""" to "rear-pads",
-        """brake rotors? (replaced|resurfaced)""" to "rotors",
+        """(front |rear )?brake rotors? (replaced|resurfaced)""" to "rotors",
         """brake fluid (flushed|changed|replaced)""" to "brake-fluid",
-        """(coolant|cooling system|radiator) (flushed|changed|serviced)|antifreeze (flushed|changed)""" to "coolant",
+        """(coolant|cooling system|radiator) (flushed|changed|serviced)|antifreeze (flushed|changed)|antifreeze/coolant flushed""" to "coolant",
         """transmission (fluid|oil) (flushed|changed|replaced)|transmission serviced""" to "trans-fluid",
         """transfer case (fluid|oil)? ?(changed|serviced|flushed)""" to "transfer-case",
         """differential (fluid|oil)? ?(changed|serviced|flushed)|differentials? serviced""" to "diff-fluid",
         """spark plugs? replaced""" to "spark-plugs",
         """battery replaced|new battery installed""" to "battery",
         """wiper blades? replaced|wipers? replaced""" to "wipers",
-        """(serpentine|drive|accessory) belt replaced""" to "belt",
+        """(serpentine|drive|accessory) belts? replaced""" to "belt",
+        """(light )?bulbs? replaced""" to "bulbs",
         """power steering (fluid )?(flushed|changed|serviced)""" to "power-steering",
         """maintenance inspection completed|multi-point inspection""" to "multi-point",
         """emissions? (inspection|test)""" to "emissions",
     ).map { (pattern, id) -> Regex("""(?i)\b($pattern)\b""") to id }
 
-    fun service(item: String): String? = services.firstOrNull { (re, _) -> re.containsMatchIn(item) }?.second
+    /** Carfax writes "Tire(s) replaced"; the patterns are written for "Tires replaced". */
+    fun service(item: String): String? {
+        val plain = item.replace("(s)", "s")
+        return services.firstOrNull { (re, _) -> re.containsMatchIn(plain) }?.second
+    }
 
     private val ligatureWords = listOf("filter", "fluid", "flushed", "verified", "certified", "refilled", "filled", "inflated", "flat", "first", "final", "fixed", "field", "fleet", "flex")
 
     /**
+     * Some PDF writers name the "fi" and "fl" glyphs as other letters: a report printed to PDF on a Mac
+     * reads "Oil and clter changed", "Brake guid gushed", "Springceld". Only the words a service line or
+     * a place name is made of are put back; anything else is left as it reads.
+     */
+    private val misnamed: List<Pair<Regex, String>> = listOf(
+        """(?i)\bclters?\b""" to "filter",
+        """(?i)\bguids?\b""" to "fluid",
+        """(?i)\bgushed\b""" to "flushed",
+        """(?i)\bVericed\b""" to "Verified",
+        """(?i)\bcrst\b""" to "first",
+        """(?i)\bcnal\b""" to "final",
+        """(?i)\binated\b""" to "inflated",
+        """(?i)\bcxed\b""" to "fixed",
+        """celd(s?)\b""" to "field$1",
+    ).map { (pattern, word) -> Regex(pattern) to word }
+
+    /**
      * A report saved from a browser often draws "fi" and "fl" as one glyph the PDF can't name, which
-     * reads back as a replacement character ("Oil and �lter changed"). The one that makes a known word is
-     * put back; otherwise "fi", the commoner.
+     * reads back as a replacement character ("Oil and �lter changed"), or names it as other letters
+     * ([misnamed]). The one that makes a known word is put back; otherwise "fi", the commoner.
      */
     fun repairLigatures(word: String): String {
-        if ('�' !in word && 'ﬁ' !in word && 'ﬂ' !in word) return word
-        val w = word.replace("ﬁ", "fi").replace("ﬂ", "fl")
-        if ('�' !in w) return w
-        val fl = w.replace("�", "fl")
-        return if (ligatureWords.any { fl.lowercase(Locale.US).trimEnd(',', '.').contains(it) }) fl else w.replace("�", "fi")
+        var w = word.replace("\uFB01", "fi").replace("\uFB02", "fl")
+        misnamed.forEach { (re, fix) ->
+            w = re.replace(w) { m ->
+                val r = if (fix.contains("$1")) fix.replace("$1", m.groupValues.getOrElse(1) { "" }) else fix
+                // Keep a capital where the misread word had one, and an "s" it ended with.
+                val cased = if (m.value.first().isUpperCase()) r.replaceFirstChar { it.uppercase() } else r
+                if (!fix.contains("$1") && m.value.endsWith("s") && !cased.endsWith("s")) cased + "s" else cased
+            }
+        }
+        if ('\uFFFD' !in w) return w
+        val fl = w.replace("\uFFFD", "fl")
+        return if (ligatureWords.any { fl.lowercase(Locale.US).trimEnd(',', '.').contains(it) }) fl else w.replace("\uFFFD", "fi")
     }
 }

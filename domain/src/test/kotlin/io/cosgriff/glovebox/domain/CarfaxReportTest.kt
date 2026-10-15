@@ -123,4 +123,31 @@ class CarfaxReportTest {
         assertEquals("filter", CarfaxReport.repairLigatures("ﬁlter"))
         assertEquals("plain", CarfaxReport.repairLigatures("plain"))
     }
+
+    @Test
+    fun `a report printed to PDF on a Mac reads the same`() {
+        // There "fi" comes out as "c" and "fl" as "g", bullets stick to the first letter, and the page's
+        // small print sits right under the last entry.
+        val words = report {
+            entry(
+                "02/02/2023", "52,000", listOf("Acme Auto of Springceld"),
+                listOf("V- ehicle serviced", "- Oil and clter changed", "Brake guid gushed/changed", "Spark plug(s) replaced", "Four tires balanced", "Tire(s) balanced"),
+            )
+            at(182f, "Get the full picture at www.carfax.com.")
+        }
+        val r = records(words).single()
+        assertEquals("Acme Auto of Springfield", r.shopName)
+        assertEquals(
+            listOf(
+                ImportedWork("Vehicle serviced", null),
+                ImportedWork("Oil and filter changed", "oil"),
+                ImportedWork("Brake fluid flushed/changed", "brake-fluid"),
+                ImportedWork("Spark plug(s) replaced", "spark-plugs"),
+                ImportedWork("Four tires balanced", "balance"),
+                // The same job named twice is one service line.
+                ImportedWork("Tire(s) balanced", null),
+            ),
+            r.work,
+        )
+    }
 }
