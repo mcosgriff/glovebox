@@ -270,7 +270,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                 Text("We can't recover a forgotten password.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             } else {
                 Text(
-                    BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos) +
+                    BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos, summary.documents) +
                         (summary.createdOn?.let { ", backed up ${it.format(longDate)}." } ?: "."),
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.bodyLarge,

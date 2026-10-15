@@ -7,6 +7,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import androidx.core.graphics.scale
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
+import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.PhotoSizing
@@ -29,6 +30,7 @@ class RecordPhotoStore(
     private val crypto: PhotoCrypto,
     private val service: ServiceDao,
     private val vehicles: VehicleDao,
+    private val documents: DocumentDao,
 ) {
     /** Where the camera app writes a new photo before it is encrypted. Emptied as soon as it has been. */
     val captureDir: File get() = File(context.cacheDir, "capture").apply { mkdirs() }
@@ -93,14 +95,15 @@ class RecordPhotoStore(
 
     /**
      * Run once per launch. Removes plaintext left in the cache, and encrypted files nothing points
-     * at: photos of a deleted record whose Undo was never taken, or of a form that was abandoned.
+     * at: photos of a deleted record whose Undo was never taken, or of a form that was abandoned, and
+     * a document whose row never got written.
      */
     suspend fun sweep() = withContext(Dispatchers.IO) {
         clearShared()
         captureDir.listFiles()?.forEach { it.delete() }
         val files = crypto.photoDir.listFiles().orEmpty().filter { it.isFile }.map { StoredFile(it.name, it.lastModified()) }
         if (files.isEmpty()) return@withContext
-        val referenced = (service.allPhotoFiles() + vehicles.allPhotoFiles()).toSet()
+        val referenced = (service.allPhotoFiles() + vehicles.allPhotoFiles() + documents.allFiles()).toSet()
         RecordPhotos.orphans(files, referenced, System.currentTimeMillis()).forEach { File(crypto.photoDir, it).delete() }
     }
 

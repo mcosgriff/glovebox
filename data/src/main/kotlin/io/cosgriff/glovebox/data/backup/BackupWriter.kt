@@ -19,8 +19,8 @@ import java.io.OutputStream
 import java.security.GeneralSecurityException
 import java.time.LocalDate
 
-/** What a backup would hold, for the screen to show before one is made. */
-data class BackupContents(val vehicles: Int, val records: Int, val photos: Int)
+/** What a backup would hold, for the screen to show before one is made. [documentBytes] is before encryption. */
+data class BackupContents(val vehicles: Int, val records: Int, val photos: Int, val documents: Int = 0, val documentBytes: Long = 0)
 
 /**
  * Gathers everything a backup holds and writes it through [BackupOutputStream]. Tables are read
@@ -32,10 +32,13 @@ class BackupWriter(
     private val settings: SettingsRepository,
 ) {
     suspend fun contents(): BackupContents = withContext(Dispatchers.IO) {
+        val documents = db.documents().allFiles().size
         BackupContents(
             vehicles = db.vehicles().all().size,
             records = count("service_records"),
-            photos = photoFiles().size,
+            photos = photoFiles().size - documents,
+            documents = documents,
+            documentBytes = db.openHelper.readableDatabase.query("SELECT COALESCE(SUM(sizeBytes), 0) FROM documents").use { c -> if (c.moveToFirst()) c.getLong(0) else 0L },
         )
     }
 
@@ -46,6 +49,7 @@ class BackupWriter(
      */
     suspend fun write(out: OutputStream, password: CharArray, today: LocalDate, onProgress: (Int, Int) -> Unit = { _, _ -> }) = withContext(Dispatchers.IO) {
         val photos = photoFiles()
+        val documents = db.documents().allFiles().size
         val prefs = settings.raw()
         BackupEntryWriter(BackupOutputStream(out, password)).use { entries ->
             val sqlite = db.openHelper.readableDatabase
@@ -68,7 +72,8 @@ class BackupWriter(
                             buildJsonObject {
                                 put("vehicles", count("vehicles"))
                                 put("records", count("service_records"))
-                                put("photos", photos.size)
+                                put("photos", photos.size - documents)
+                                put("documents", documents)
                             },
                         )
                     }.toString().toByteArray(),
@@ -116,7 +121,8 @@ class BackupWriter(
         }
     }
 
-    private suspend fun photoFiles(): List<String> = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles()).distinct()
+    /** Every encrypted file the database points at: photos, and documents, which a backup carries the same way. */
+    private suspend fun photoFiles(): List<String> = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles() + db.documents().allFiles()).distinct()
 
     private fun count(table: String): Int =
         db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM `$table`").use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }

@@ -18,6 +18,8 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
+import io.cosgriff.glovebox.data.photo.DocumentStore
+import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
 import io.cosgriff.glovebox.data.settings.SettingsRepository
@@ -49,14 +51,19 @@ object DataModule {
     @Provides fun milestoneDao(db: GloveboxDatabase) = db.milestones()
     @Provides fun unitDao(db: GloveboxDatabase) = db.units()
     @Provides fun recallDao(db: GloveboxDatabase) = db.recalls()
+    @Provides fun documentDao(db: GloveboxDatabase) = db.documents()
 
     @Provides @Singleton
     fun vehiclePhotos(@ApplicationContext c: Context, photos: PhotoCrypto, vehicles: VehicleDao) =
         VehiclePhotoStore(c, photos, vehicles)
 
     @Provides @Singleton
-    fun recordPhotos(@ApplicationContext c: Context, photos: PhotoCrypto, service: ServiceDao, vehicles: VehicleDao) =
-        RecordPhotoStore(c, photos, service, vehicles)
+    fun recordPhotos(@ApplicationContext c: Context, photos: PhotoCrypto, service: ServiceDao, vehicles: VehicleDao, documents: DocumentDao) =
+        RecordPhotoStore(c, photos, service, vehicles, documents)
+
+    @Provides @Singleton
+    fun documents(@ApplicationContext c: Context, photos: PhotoCrypto, documents: DocumentDao, recordPhotos: RecordPhotoStore) =
+        DocumentStore(c, photos, documents, recordPhotos)
 
     @Provides @Singleton
     fun settings(@ApplicationContext c: Context) = SettingsRepository(c)

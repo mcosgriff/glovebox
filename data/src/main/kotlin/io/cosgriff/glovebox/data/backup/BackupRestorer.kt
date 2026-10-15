@@ -25,7 +25,7 @@ import java.io.File
 import java.time.LocalDate
 
 /** What a backup says it holds, read from its manifest once the password has worked. */
-data class BackupSummary(val createdOn: LocalDate?, val schemaVersion: Int, val vehicles: Int, val records: Int, val photos: Int)
+data class BackupSummary(val createdOn: LocalDate?, val schemaVersion: Int, val vehicles: Int, val records: Int, val photos: Int, val documents: Int = 0)
 
 /**
  * Puts a backup's contents on this phone, replacing what is there.
@@ -75,7 +75,7 @@ class BackupRestorer(
                             val name = File(entry.name).name
                             if (name != entry.name || name.isEmpty()) throw BackupException(BackupException.Reason.DAMAGED)
                             crypto.encryptTo(File(staging, name), name, entry.bytes.inputStream())
-                            onProgress(++staged, summary.photos)
+                            onProgress(++staged, summary.photos + summary.documents)
                         }
                         BackupEntryKind.MANIFEST -> Unit
                     }
@@ -109,7 +109,7 @@ class BackupRestorer(
 
     private suspend fun movePhotosIn() {
         val staging = crypto.restoreDir
-        val wanted = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles()).toSet()
+        val wanted = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles() + db.documents().allFiles()).toSet()
         val staged = staging.listFiles().orEmpty()
         if (staged.any { it.name in wanted }) {
             // The old photos belonged to the data that was replaced.
@@ -189,6 +189,7 @@ class BackupRestorer(
             vehicles = int(counts, "vehicles") ?: 0,
             records = int(counts, "records") ?: 0,
             photos = int(counts, "photos") ?: 0,
+            documents = int(counts, "documents") ?: 0,
         )
     }
 

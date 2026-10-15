@@ -34,6 +34,7 @@ import io.cosgriff.glovebox.lock.LockScreen
 import io.cosgriff.glovebox.ui.GloveboxNavHost
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
+import io.cosgriff.glovebox.ui.vehicle.DocumentPicker
 import io.cosgriff.glovebox.ui.vehicle.VehiclePhotoPicker
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -89,6 +90,12 @@ class MainActivity : FragmentActivity() {
     private val openImport = registerForActivityResult(ActivityResultContracts.OpenDocument()) { importPicker.onPicked(it) }
     private val launchImportPicker: () -> Unit = { openImport.launch(arrayOf("*/*")) }
 
+    @Inject lateinit var documentPicker: DocumentPicker
+
+    private val openDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) { documentPicker.onPicked(it) }
+    private val takeDocumentPhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { documentPicker.onCaptured(it) }
+    private val launchDocumentPicker: () -> Unit = { openDocument.launch(arrayOf("application/pdf", "image/*")) }
+
     private val launchPhotoPicker: () -> Unit = {
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
@@ -103,6 +110,7 @@ class MainActivity : FragmentActivity() {
         exportSaver.attach(launchExportSave)
         restorePicker.attach(launchBackupPicker)
         importPicker.attach(launchImportPicker)
+        documentPicker.attach(launchDocumentPicker) { takeDocumentPhoto.launch(it) }
         // Once per process, and only on a fresh start: a restored activity may have a form with photos attached.
         if (savedInstanceState == null && !swept) {
             swept = true
@@ -167,6 +175,7 @@ class MainActivity : FragmentActivity() {
         exportSaver.detach(launchExportSave)
         restorePicker.detach(launchBackupPicker)
         importPicker.detach(launchImportPicker)
+        documentPicker.detach(launchDocumentPicker)
         super.onDestroy()
     }
 

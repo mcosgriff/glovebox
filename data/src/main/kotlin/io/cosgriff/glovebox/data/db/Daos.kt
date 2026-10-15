@@ -474,6 +474,30 @@ data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMi
  * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
  */
 @Dao
+interface DocumentDao {
+    @Query("SELECT * FROM documents WHERE vehicleId = :vehicleId")
+    fun observe(vehicleId: Long): Flow<List<DocumentEntity>>
+
+    @Query("SELECT * FROM documents WHERE id = :id")
+    suspend fun byId(id: Long): DocumentEntity?
+
+    @Query("SELECT * FROM documents WHERE vehicleId = :vehicleId")
+    suspend fun documentsFor(vehicleId: Long): List<DocumentEntity>
+
+    @Insert suspend fun insert(document: DocumentEntity): Long
+
+    @Query("UPDATE documents SET type = :type, name = :name, date = :date WHERE id = :id")
+    suspend fun describe(id: Long, type: String, name: String, date: LocalDate?)
+
+    @Query("DELETE FROM documents WHERE id = :id")
+    suspend fun delete(id: Long)
+
+    /** Every document file, archived vehicles' included. */
+    @Query("SELECT fileName FROM documents")
+    suspend fun allFiles(): List<String>
+}
+
+@Dao
 interface UnitDao {
     @Query("SELECT id, odometer AS value FROM odometer_readings WHERE vehicleId = :vehicleId")
     suspend fun readings(vehicleId: Long): List<IdValue>

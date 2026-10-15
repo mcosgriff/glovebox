@@ -113,6 +113,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -133,6 +134,7 @@ import io.cosgriff.glovebox.domain.ScheduleSummary
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
+import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -161,6 +163,8 @@ data class VehicleDetails(
     /** Null until NHTSA has answered for this vehicle. */
     val recalls: OpenRecalls?,
     val torqueSpecs: Int,
+    /** "2 documents · 4.2 MB", or "None yet". */
+    val documents: String = VehicleDocuments.summary(0, 0),
 )
 
 /** The user-entered rows under "What it takes". */
@@ -175,6 +179,7 @@ class VehicleDetailsViewModel @Inject constructor(
     service: ServiceDao,
     odometer: OdometerDao,
     torque: TorqueDao,
+    documents: DocumentDao,
     private val photos: VehiclePhotoStore,
     private val picker: VehiclePhotoPicker,
     private val archiver: VehicleArchiver,
@@ -188,13 +193,15 @@ class VehicleDetailsViewModel @Inject constructor(
         schedule.observeAll(vehicleId),
         recalls.observe(vehicleId),
         torque.observe(vehicleId),
-    ) { vehicle, items, list, specs ->
+        documents.observe(vehicleId),
+    ) { vehicle, items, list, specs, docs ->
         if (vehicle == null) return@combine null
         VehicleDetails(
             vehicle = vehicle,
             schedule = items.takeIf { it.isNotEmpty() }?.let { all -> ScheduleSummaries.of(all.map { it.tracked to it.useSevere }) },
             recalls = if (vehicle.recallsCheckedOn == null) null else Recalls.open(list.map { it.toStored() }),
             torqueSpecs = specs.size,
+            documents = VehicleDocuments.summary(docs.size, docs.sumOf { it.sizeBytes }),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -285,6 +292,8 @@ fun VehicleDetailsScreen(
     onOpenReadings: (vehicleId: Long) -> Unit,
     /** The Import page with this vehicle chosen: a Carfax report, or an import file. */
     onOpenImport: (vehicleId: Long) -> Unit,
+    /** The vehicle's paperwork: a history report, the title, the registration. */
+    onOpenDocuments: (vehicleId: Long) -> Unit,
     /** Deleting the service records alone, imported or all, keeping everything else. */
     onClearHistory: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
@@ -646,6 +655,12 @@ fun VehicleDetailsScreen(
                     title = "Mileage readings",
                     detail = "Every odometer reading · fix or delete a wrong one",
                     onClick = { onOpenReadings(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = "Documents",
+                    detail = "Title, registration, reports, warranty · " + details.documents.replaceFirstChar { it.lowercase() },
+                    onClick = { onOpenDocuments(v.id) },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(

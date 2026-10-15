@@ -219,6 +219,33 @@ data class PhotoEntity(
     val fileName: String,
 )
 
+/**
+ * A piece of a vehicle's paperwork (a history report, the title, the registration). The file is
+ * encrypted in PhotoCrypto.photoDir under [fileName], beside the photos, so the sweep, backups and
+ * Delete all data treat it as they treat a photo.
+ */
+@Entity(
+    tableName = "documents",
+    foreignKeys = [ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE)],
+    indices = [Index("vehicleId")],
+)
+data class DocumentEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val vehicleId: Long,
+    /** A DocumentType name. */
+    val type: String,
+    val name: String,
+    /** The date on the document, if the owner gave one: an issue date, a report's date. */
+    val date: LocalDate? = null,
+    /** Name of the encrypted file in PhotoCrypto.photoDir. */
+    val fileName: String,
+    /** A DocumentFormat name: PDF, or JPEG for a picture. */
+    val format: String,
+    /** Size before encryption. */
+    val sizeBytes: Long,
+    val addedOn: LocalDate,
+)
+
 @Entity(
     tableName = "torque_specs",
     foreignKeys = [ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE)],

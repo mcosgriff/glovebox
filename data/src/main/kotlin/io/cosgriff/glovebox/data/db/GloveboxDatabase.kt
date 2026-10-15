@@ -28,8 +28,9 @@ class Converters {
         RecallEntity::class,
         MilestoneEntity::class,
         MilestoneJobEntity::class,
+        DocumentEntity::class,
     ],
-    version = 24,
+    version = 25,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -55,6 +56,7 @@ class Converters {
         AutoMigration(from = 21, to = 22), // vehicles: tire pressures and the rest of "What it takes"
         AutoMigration(from = 22, to = 23), // recalls.archivedOn
         AutoMigration(from = 23, to = 24), // vehicles.plate, plateRegion
+        AutoMigration(from = 24, to = 25), // documents
     ],
 )
 @TypeConverters(Converters::class)
@@ -67,6 +69,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun recalls(): RecallDao
     abstract fun milestones(): MilestoneDao
     abstract fun units(): UnitDao
+    abstract fun documents(): DocumentDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"
