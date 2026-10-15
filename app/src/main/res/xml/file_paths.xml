@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The only two places a photo is ever in the clear, both in the private cache and both emptied:
-     "capture" is where the camera app writes a new photo before it is encrypted, "shared" holds
-     the copy handed to the share sheet. -->
+<!-- The only two places a photo or document is ever in the clear, both in the private cache and
+     both emptied: "capture" is where the camera app writes a new photo before it is encrypted,
+     "shared" holds the copy handed to the share sheet or to the app that opens a document. -->
 <paths>
     <cache-path name="capture" path="capture/" />
     <cache-path name="shared" path="shared/" />

@@ -201,8 +201,8 @@ fun PrivacyScreen(onBack: () -> Unit) {
         ) {
             listOf(
                 "Everything stays on this phone" to listOf(
-                    "There is no account and no Glovebox server. Your vehicles, service records, photos and settings exist only on this phone.",
-                    "The database and photos are encrypted with keys held by Android Keystore.",
+                    "There is no account and no Glovebox server. Your vehicles, service records, photos, documents and settings exist only on this phone.",
+                    "The database, photos and documents are encrypted with keys held by Android Keystore.",
                     "Android's own cloud backup and device-to-device transfer are switched off for this app. The only copy that can leave is a backup file you make yourself.",
                 ),
                 "What is sent, and to whom" to listOf(
@@ -211,7 +211,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Adding a vehicle without a VIN asks for NHTSA's list of makes, then for the models of the make and year you pick.",
                     "Checking for recalls sends the year, make and model. It does not send the VIN.",
                     "Like any website, NHTSA can see the internet address the request came from.",
-                    "Nothing else is sent: no mileage, records, photos, names, license plate or location.",
+                    "Nothing else is sent: no mileage, records, photos, documents, names, license plate or location.",
                 ),
                 "What the app never does" to listOf(
                     "No analytics, crash reporting, advertising or tracking, and no third-party code that reports back to anyone.",
@@ -223,14 +223,14 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Deleting all data in Settings does not touch files you have already saved elsewhere.",
                 ),
                 "Files you import" to listOf(
-                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept, and nothing is sent anywhere.",
+                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept unless you tick \"Keep a copy in this vehicle's documents\", and nothing is sent anywhere.",
                 ),
                 "When you leave the app" to listOf(
                     "A manufacturer's recall page, Find a dealer and the source code open in your browser or maps app. What those do is up to them.",
-                    "Sharing a photo or saving a file hands it to the app you choose.",
+                    "Opening or sharing a document, sharing a photo or saving a file hands a copy to the app you choose.",
                 ),
                 "Permissions" to listOf(
-                    "Camera: to scan a VIN from its barcode or from print, to read the odometer off the dash, and to photograph receipts and parts. Scanner and dash frames are read on this phone and thrown away, never stored or sent.",
+                    "Camera: to scan a VIN from its barcode or from print, to read the odometer off the dash, and to photograph receipts, parts and paperwork. Scanner and dash frames are read on this phone and thrown away, never stored or sent.",
                     "Notifications: for reminders, new recalls and the backup reminder.",
                     "Internet: for NHTSA only.",
                     "Fingerprint, face or screen lock: Android does the checking and tells the app only whether it passed.",
