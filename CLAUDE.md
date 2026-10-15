@@ -637,6 +637,16 @@ Notes on what's built:
 - Manufacturer VIN lookup pages are a short checked list (`Recalls.manufacturerSite`); other makes get
   NHTSA's lookup. "Find a dealer" hands "<make> dealer" to the maps app. With nothing open, the way in
   is the Recalls row on Vehicle details.
+- "What it takes" on Vehicle details is three rows, each with its own editor that checks entries as they
+  are typed (`VehicleSpecEntry` in `:domain`) and stores one standard form: **engine oil** (SAE grade,
+  picked from chips or typed and normalised to "5W-30"; the approval the manual names; capacity with
+  filter in quarts or litres; filter part numbers, up to three), **tires** (a sidewall size checked for
+  width, aspect ratio, rim, load index and speed rating, or a flotation size; a separate rear size only when
+  it differs) and **wiper blades** (driver, passenger and rear lengths in whole inches, 10 to 34, plus part
+  numbers or type). Save is offered only when every filled-in field is valid; empty clears it. Text entered
+  before this (schema v21) stays in `oilSpec`, `tireSize` and `wiperBlades` and the editor asks for it to
+  be put right. The one-line summaries feed Log service's hints. Nothing is looked up or suggested from the
+  model.
 - A long press on the VIN row of Vehicle details copies the VIN (`copyVin`), marked sensitive
   (`ClipDescription.EXTRA_IS_SENSITIVE`) so Android hides it in its clipboard preview; Android 13+ says
   "Copied" itself, earlier versions get a toast. The row also has an accessibility long-press action.

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -327,7 +328,11 @@ class LogServiceViewModel @Inject constructor(
                 swap = swap,
                 unit = vehicle?.unit ?: DistanceUnit.MILES,
                 answering = items.answering(),
-                specs = VehicleSpecs(oil = vehicle?.oilSpec, tireSize = vehicle?.tireSize, wiperBlades = vehicle?.wiperBlades),
+                specs = VehicleSpecs(
+                    oil = vehicle?.let { v -> VehicleSpecEntry.oilSummary(v.oilSpec, v.oilApproval, v.oilCapacity, v.oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } }, null) },
+                    tireSize = vehicle?.let { VehicleSpecEntry.tireSummary(it.tireSize, it.tireSizeRear) },
+                    wiperBlades = vehicle?.let { VehicleSpecEntry.wiperSummary(it.wiperDriverIn, it.wiperPassengerIn, it.wiperRearIn, it.wiperBlades) },
+                ),
                 original = original,
             )
         }
