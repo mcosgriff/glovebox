@@ -140,6 +140,10 @@ dependencies {
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
     implementation(libs.zxing.cpp)
+    implementation(libs.pdfbox.android) {
+        // Only needed to open encrypted PDFs, and it would clash with the app's own BouncyCastle.
+        exclude(group = "org.bouncycastle")
+    }
     implementation(libs.tesseract4android)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.junit)

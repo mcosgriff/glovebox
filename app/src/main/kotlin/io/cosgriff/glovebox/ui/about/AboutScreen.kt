@@ -223,7 +223,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Deleting all data in Settings does not touch files you have already saved elsewhere.",
                 ),
                 "Files you import" to listOf(
-                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. The file is not copied or kept, and nothing is sent anywhere.",
+                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept, and nothing is sent anywhere.",
                 ),
                 "When you leave the app" to listOf(
                     "A manufacturer's recall page, Find a dealer and the source code open in your browser or maps app. What those do is up to them.",

@@ -308,6 +308,18 @@ Notes on what's built:
   reported with its path (`items[3].torque.unit`). The app ships no JSON Schema library; `:domain` reads
   the file as a JSON tree with kotlinx.serialization. A file never names a vehicle. There are four kinds
   (`ImportKind`), all built. The Settings row is absent with no vehicles.
+- A Carfax report PDF is a service-history import (#160): `ImportPicker` sees "%PDF" at the start of the pick,
+  `PdfWords` (app, PDFBox for Android, from memory and never written to disk, BouncyCastle excluded) gives
+  each word with its position, and `CarfaxReport.read` (`:domain`) turns the history table into
+  `ImportFile.ServiceHistory`, so the Import page previews and writes it like any history file. Columns are
+  found from positions (an entry starts on a line whose first word is a date at the left; a wide gap
+  separates the source from the comments). **Only service visits are taken**: an entry counts when a
+  comment is work (`isWork`: replaced, changed, serviced, inspected…, and not a title, registration, owner
+  or damage line). A comment becomes a catalog line only where the wording is plain (`CarfaxReport.service`:
+  "Oil and filter changed" is oil, "Brake pads replaced" stays text: which axle?); the source's first line
+  is the shop. A visit with no mileage is counted and refused, never guessed. "fi" and "fl" drawn as one
+  glyph come back as a replacement character and are put back (`repairLigatures`). Tests use a made-up
+  report built word by word; **never commit a real report**. Keeping the PDF is #168's job.
 - What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
   default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import

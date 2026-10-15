@@ -86,6 +86,10 @@ zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 # No network code: checked in its native library's imported functions (none are network calls) and its POM
 # (it depends only on the Kotlin standard library and CameraX). Check again on an upgrade.
 zxing-cpp = { module = "io.github.zxing-cpp:android", version = "2.3.0" }
+# Reads the words and their positions out of a Carfax report PDF (#160), on the phone. Apache 2.0; none of its
+# classes touch java.net (checked). Its BouncyCastle (for encrypted PDFs only) is excluded in app/build.gradle.kts:
+# the app has its own, newer one.
+pdfbox-android = { module = "com.tom-roush:pdfbox-android", version = "2.0.27.0" }
 tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android", version.ref = "tesseract4android" }
 # Tests that have to run on a phone or emulator (app/src/androidTest); nothing here ships in the app.
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }

@@ -1,0 +1,126 @@
+package io.cosgriff.glovebox.domain
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.time.LocalDate
+
+/**
+ * A made-up report laid out as Carfax's are: date at x 55, mileage at 129, source at 182, comments at 356,
+ * lines 13 points apart. Nothing here is a real vehicle's history.
+ */
+class CarfaxReportTest {
+    private val today = LocalDate.of(2026, 10, 15)
+
+    private class Page(val page: Int) {
+        val words = mutableListOf<PdfWord>()
+        var y = 100f
+        fun at(x: Float, text: String) = text.split(" ").fold(x) { left, w -> words += PdfWord(page, left, y, w); left + w.length * 5.5f + 4f }
+        /** One history entry: the first line has the date, mileage, the source's first line and the first comment. */
+        fun entry(date: String, miles: String?, source: List<String>, comments: List<String>) {
+            val rows = maxOf(source.size, comments.size)
+            for (r in 0 until rows) {
+                if (r == 0) { at(55f, date); miles?.let { at(129f, it) } }
+                source.getOrNull(r)?.let { at(182f, it) }
+                comments.getOrNull(r)?.let { at(356f, it) }
+                y += 13f
+            }
+            y += 26f
+        }
+    }
+
+    private fun report(build: Page.() -> Unit): List<PdfWord> = Page(1).apply {
+        at(55f, "CARFAX Vehicle History Report")
+        y += 40f
+        build()
+    }.words
+
+    private fun records(words: List<PdfWord>) = (CarfaxReport.read(words, today) as ImportFile.ServiceHistory).items
+
+    @Test
+    fun `service visits come out as records, and titles and registrations don't`() {
+        val words = report {
+            entry("04/02/2019", null, listOf("Ohio", "Motor Vehicle Dept."), listOf("Title issued or updated", "New owner reported"))
+            entry("06/14/2019", "12,480", listOf("Acme Motors", "Springfield, OH", "555-010-0000"), listOf("Oil and �lter changed", "Tires rotated", "Brakes checked"))
+            entry("01/09/2020", "18,002", listOf("Corner Garage", "Springfield, OH"), listOf("Oxygen sensor replaced"))
+            entry("03/03/2020", "19,250", listOf("Ohio", "Motor Vehicle Dept."), listOf("Registration issued or renewed"))
+        }
+        val r = records(words)
+        assertEquals(2, r.size)
+        val first = r[0]
+        assertEquals(LocalDate.of(2019, 6, 14), first.date)
+        assertEquals(12_480, first.odometer)
+        assertEquals("Acme Motors", first.shopName)
+        assertEquals(false, first.diy)
+        assertEquals(
+            listOf(ImportedWork("Oil and filter changed", "oil"), ImportedWork("Tires rotated", "rotation"), ImportedWork("Brakes checked", null)),
+            first.work,
+        )
+        // Work the wording doesn't name exactly is kept as written.
+        assertEquals(listOf(ImportedWork("Oxygen sensor replaced", null)), r[1].work)
+    }
+
+    @Test
+    fun `a comment that wraps is one item, and boxes after an entry aren't part of it`() {
+        val words = report {
+            entry("05/05/2021", "30,100", listOf("Acme Motors"), listOf("Transmission fluid", "changed"))
+            // An owner summary further down, with numbers in the comment column.
+            at(80f, "Purchased: 2021")
+            at(480f, "12,000 mi/yr")
+            y += 40f
+            entry("06/06/2021", "31,000", listOf("Acme Motors"), listOf("Wheels balanced"))
+        }
+        val r = records(words)
+        assertEquals(listOf(ImportedWork("Transmission fluid changed", "trans-fluid")), r[0].work)
+        assertEquals(listOf(ImportedWork("Wheels balanced", "balance")), r[1].work)
+    }
+
+    @Test
+    fun `a visit without a mileage, or in the future, isn't taken`() {
+        val words = report {
+            entry("07/07/2022", null, listOf("Acme Motors"), listOf("Vehicle serviced"))
+            entry("08/08/2022", "40,000", listOf("Acme Motors"), listOf("Vehicle serviced"))
+            entry("01/01/2030", "90,000", listOf("Acme Motors"), listOf("Vehicle serviced"))
+        }
+        assertEquals(listOf(40_000), records(words).map { it.odometer })
+        val onlyWithout = report { entry("07/07/2022", null, listOf("Acme Motors"), listOf("Vehicle serviced")) }
+        val refused = CarfaxReport.read(onlyWithout, today) as ImportFile.Invalid
+        assertTrue(refused.errors.single().message.contains("1 had no mileage"))
+    }
+
+    @Test
+    fun `a PDF that isn't a Carfax report, or has no visits, is refused with a reason`() {
+        val notCarfax = Page(1).apply { at(55f, "Quarterly statement"); y += 20f; entry("06/14/2019", "12,480", listOf("Bank"), listOf("Payment received")) }.words
+        assertTrue((CarfaxReport.read(notCarfax, today) as ImportFile.Invalid).errors.single().message.contains("doesn't look like a Carfax"))
+        val noVisits = report { entry("04/02/2019", null, listOf("Ohio", "Motor Vehicle Dept."), listOf("Title issued or updated")) }
+        assertTrue((CarfaxReport.read(noVisits, today) as ImportFile.Invalid).errors.single().message.contains("No service visits"))
+    }
+
+    @Test
+    fun `a comment is work when something was done, and a service line only when the wording is plain`() {
+        listOf("Oil and filter changed", "Brakes checked", "Maintenance inspection completed", "Emissions inspection performed", "Starter replaced")
+            .forEach { assertTrue(it, CarfaxReport.isWork(it)) }
+        listOf("Title issued or updated", "Registration issued or renewed", "New owner reported", "Odometer reading reported", "Vehicle color noted as White", "Damage reported")
+            .forEach { assertTrue(it, !CarfaxReport.isWork(it)) }
+        assertEquals("oil", CarfaxReport.service("Oil and filter changed"))
+        assertEquals("cabin-air", CarfaxReport.service("Cabin air filter replaced"))
+        assertEquals("engine-air", CarfaxReport.service("Air filter replaced"))
+        assertEquals("front-pads", CarfaxReport.service("Front brake pads replaced"))
+        assertEquals("multi-point", CarfaxReport.service("Maintenance inspection completed"))
+        // Which axle? Left as written.
+        assertNull(CarfaxReport.service("Brake pads replaced"))
+        assertNull(CarfaxReport.service("Battery cable(s) replaced"))
+        assertNull(CarfaxReport.service("Vehicle serviced"))
+    }
+
+    @Test
+    fun `fi and fl drawn as one glyph are put back`() {
+        assertEquals("filter", CarfaxReport.repairLigatures("�lter"))
+        assertEquals("fluid", CarfaxReport.repairLigatures("�uid"))
+        assertEquals("flushed", CarfaxReport.repairLigatures("�ushed"))
+        assertEquals("Verified", CarfaxReport.repairLigatures("Veri�ed"))
+        assertEquals("filter", CarfaxReport.repairLigatures("ﬁlter"))
+        assertEquals("plain", CarfaxReport.repairLigatures("plain"))
+    }
+}
