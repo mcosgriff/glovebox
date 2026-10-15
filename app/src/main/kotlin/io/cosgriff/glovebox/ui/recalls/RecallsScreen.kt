@@ -101,10 +101,13 @@ data class RecallsState(
     /** Starting point for the odometer when a recall is marked done. */
     val odometer: Int?,
 ) {
-    val open: Int get() = recalls.count { it.completedOn == null }
+    val open: Int get() = recalls.count { it.isOpen }
     val canCheck: Boolean get() = Recalls.canCheck(vehicle.year, vehicle.make, vehicle.model)
     val makeName: String get() = Recalls.makeName(vehicle.make)
 }
+
+/** Neither marked done nor archived as not applying. */
+private val RecallEntity.isOpen: Boolean get() = completedOn == null && archivedOn == null
 
 /** How a recall is being marked done: on its own, or with a record of the work. */
 data class RecallCompletion(val date: LocalDate, val odometer: Int?, val shopName: String?)
@@ -113,7 +116,7 @@ data class RecallCompletion(val date: LocalDate, val odometer: Int?, val shopNam
 class RecallsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
-    recalls: RecallDao,
+    private val recalls: RecallDao,
     service: ServiceDao,
     odometer: OdometerDao,
     private val repository: RecallRepository,
@@ -174,9 +177,14 @@ class RecallsViewModel @Inject constructor(
     }
 
     fun markOpen(recall: RecallEntity) = viewModelScope.launch { actions.reopenRecall(recall.id) }
+
+    /** The user found it doesn't apply to this vehicle. Nothing is deleted; [unarchive] puts it back. */
+    fun archive(recall: RecallEntity) = viewModelScope.launch { recalls.setArchived(recall.id, LocalDate.now()) }
+
+    fun unarchive(recall: RecallEntity) = viewModelScope.launch { recalls.setArchived(recall.id, null) }
 }
 
-private enum class RecallTab(val label: String) { ALL("All"), OPEN("Open"), DONE("Completed") }
+private enum class RecallTab(val label: String) { ALL("All"), OPEN("Open"), DONE("Completed"), ARCHIVED("Archived") }
 
 /** Design: 8 · Recalls. */
 @Composable
@@ -205,8 +213,9 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
     val shown = state.recalls.filter {
         when (tab) {
             RecallTab.ALL -> true
-            RecallTab.OPEN -> it.completedOn == null
+            RecallTab.OPEN -> it.isOpen
             RecallTab.DONE -> it.completedOn != null
+            RecallTab.ARCHIVED -> it.completedOn == null && it.archivedOn != null
         }
     }
 
@@ -243,7 +252,8 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                     Modifier.fillMaxWidth().padding(top = 8.dp).horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    RecallTab.entries.forEach { t ->
+                    // Archived only appears once something is.
+                    RecallTab.entries.filter { it != RecallTab.ARCHIVED || state.recalls.any { r -> r.archivedOn != null } || tab == it }.forEach { t ->
                         FilterChip(
                             selected = t == tab,
                             onClick = { tab = t },
@@ -260,7 +270,11 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
             if (shown.isEmpty()) {
                 item {
                     Text(
-                        if (tab == RecallTab.OPEN) "No open recalls." else "Nothing marked done yet.",
+                        when (tab) {
+                            RecallTab.OPEN -> "No open recalls."
+                            RecallTab.ARCHIVED -> "Nothing archived."
+                            else -> "Nothing marked done yet."
+                        },
                         Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -270,6 +284,8 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 RecallCard(
                     recall = recall,
                     onToggle = { if (recall.completedOn == null) marking = recall.id else vm.markOpen(recall) },
+                    onArchive = { vm.archive(recall) },
+                    onUnarchive = { vm.unarchive(recall) },
                     onFindDealer = { context.findDealer(state.makeName, site?.recallUrl ?: Recalls.NHTSA_LOOKUP_URL) },
                     modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
                 )
@@ -289,7 +305,8 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 )
                 Text(
                     "Recall list from NHTSA by year, make and model. NHTSA can't say whether the repair was already done on " +
-                        "this VIN: confirm that with ${state.makeName}, then mark it here. Marking one done can add it to Service history.",
+                        "this VIN: confirm that with ${state.makeName}, then mark it here. Marking one done can add it to Service history. " +
+                        "One that doesn't apply to your vehicle can be archived, and moved back if it turns out it does.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -415,9 +432,17 @@ private fun RecallsState.summaryLine(refreshing: Boolean, failed: Boolean, today
 }
 
 @Composable
-private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer: () -> Unit, modifier: Modifier) {
+private fun RecallCard(
+    recall: RecallEntity,
+    onToggle: () -> Unit,
+    onFindDealer: () -> Unit,
+    onArchive: () -> Unit,
+    onUnarchive: () -> Unit,
+    modifier: Modifier,
+) {
     val scheme = MaterialTheme.colorScheme
     val done = recall.completedOn != null
+    val archived = !done && recall.archivedOn != null
     var expanded by rememberSaveable { mutableStateOf(false) }
     // The collapsed card clips long NHTSA text; only offer to expand when something is hidden.
     var clipped by rememberSaveable { mutableStateOf(false) }
@@ -427,7 +452,7 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
         modifier = modifier.fillMaxWidth(),
         color = scheme.surface,
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.5.dp, if (done) scheme.outlineVariant else scheme.primary),
+        border = BorderStroke(1.5.dp, if (done || archived) scheme.outlineVariant else scheme.primary),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -439,11 +464,11 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
                     fontWeight = FontWeight.SemiBold,
                     color = body,
                 )
-                Pill(
-                    if (done) "COMPLETED" else "OPEN",
-                    container = if (done) scheme.tertiaryContainer else scheme.primaryContainer,
-                    content = if (done) scheme.onTertiaryContainer else scheme.onPrimaryContainer,
-                )
+                when {
+                    done -> Pill("COMPLETED", container = scheme.tertiaryContainer, content = scheme.onTertiaryContainer)
+                    archived -> Pill("ARCHIVED", container = scheme.surfaceVariant, content = scheme.onSurfaceVariant)
+                    else -> Pill("OPEN", container = scheme.primaryContainer, content = scheme.onPrimaryContainer)
+                }
             }
             Text(Recalls.componentLabel(recall.component), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(
@@ -462,6 +487,7 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
                 listOfNotNull(
                     recall.reportedOn?.let { "Reported ${it.format(longDate)}" },
                     recall.completedOn?.let { "marked done ${it.format(longDate)}" },
+                    recall.archivedOn?.takeIf { archived }?.let { "archived ${it.format(longDate)} as not applying to this vehicle" },
                 ).joinToString(" · ").replaceFirstChar(Char::uppercase),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
@@ -474,6 +500,18 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
                 ) {
                     Text(if (expanded) "Show less" else "Show the full notice")
                 }
+            }
+            if (archived) {
+                OutlinedButton(
+                    onClick = onUnarchive,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.5.dp, scheme.onSurface),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+                ) {
+                    Text("Move back to open", maxLines = 1)
+                }
+                return@Column
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
@@ -494,6 +532,15 @@ private fun RecallCard(recall: RecallEntity, onToggle: () -> Unit, onFindDealer:
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {
                     Text("Find a dealer", maxLines = 1)
+                }
+            }
+            if (!done) {
+                TextButton(
+                    onClick = onArchive,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp),
+                ) {
+                    Text("Doesn't apply to this vehicle? Archive it")
                 }
             }
         }

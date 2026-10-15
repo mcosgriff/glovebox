@@ -16,8 +16,13 @@ data class RecallNotice(
     val reportedOn: LocalDate?,
 )
 
-/** A recall already kept for a vehicle. [done] is the user's own mark; NHTSA can't tell us. */
-data class StoredRecall(val id: Long, val notice: RecallNotice, val done: Boolean)
+/**
+ * A recall already kept for a vehicle. [done] is the user's own mark; NHTSA can't tell us. [archived]
+ * is the user saying it doesn't apply to this vehicle; it isn't open, and can be moved back.
+ */
+data class StoredRecall(val id: Long, val notice: RecallNotice, val done: Boolean, val archived: Boolean = false) {
+    val open: Boolean get() = !done && !archived
+}
 
 /** What a fresh list from NHTSA changes in the stored one. */
 data class RecallChanges(
@@ -94,16 +99,17 @@ object Recalls {
     fun isStale(checkedOn: LocalDate?, today: LocalDate, afterDays: Long = STALE_AFTER_DAYS): Boolean =
         checkedOn == null || ChronoUnit.DAYS.between(checkedOn, today) >= afterDays
 
-    /** Open recalls first, then the most recently reported. */
+    /** Open recalls first, then archived, then done, each the most recently reported first. */
     fun sorted(recalls: List<StoredRecall>): List<StoredRecall> =
         recalls.sortedWith(
             compareBy<StoredRecall> { it.done }
+                .thenBy { it.archived }
                 .thenByDescending { it.notice.reportedOn ?: LocalDate.MIN }
                 .thenBy { it.notice.campaign },
         )
 
     fun open(recalls: List<StoredRecall>): OpenRecalls {
-        val open = sorted(recalls).filter { !it.done }
+        val open = sorted(recalls).filter { it.open }
         return OpenRecalls(open.size, open.singleOrNull()?.let { componentLabel(it.notice.component) })
     }
 

@@ -50,7 +50,8 @@ data class ExportRecord(
 data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?)
 
 /** [completedOn] is the owner's own mark; NHTSA can't confirm a repair. */
-data class ExportRecall(val campaign: String, val component: String, val completedOn: LocalDate?)
+/** [archivedOn] is the owner saying it doesn't apply to this vehicle. */
+data class ExportRecall(val campaign: String, val component: String, val completedOn: LocalDate?, val archivedOn: LocalDate? = null)
 
 data class ExportVehicle(
     /** "2019 Toyota 4Runner SR5" */
@@ -153,7 +154,9 @@ object Exports {
 
     fun lastDone(line: ExportScheduleLine, unit: DistanceUnit): String = line.lastDone?.let { "${date(it.date)} at ${distance(it.odometer, unit)}" } ?: "Not logged"
 
-    fun recallStatus(recall: ExportRecall): String = recall.completedOn?.let { "Marked done ${date(it)}" } ?: "Open"
+    fun recallStatus(recall: ExportRecall): String = recall.completedOn?.let { "Marked done ${date(it)}" }
+        ?: recall.archivedOn?.let { "Archived as not applying ${date(it)}" }
+        ?: "Open"
 
     /** Said under any recall list: where it comes from and what a "done" means. */
     const val RECALL_NOTE = "Recalls are listed by NHTSA for the year, make and model. \"Marked done\" is the owner's own record; " +

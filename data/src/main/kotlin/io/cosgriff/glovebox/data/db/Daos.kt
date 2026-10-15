@@ -330,6 +330,10 @@ interface RecallDao {
     @Query("UPDATE recalls SET completedOn = :completedOn, serviceRecordId = :recordId WHERE id = :id")
     suspend fun setDone(id: Long, completedOn: LocalDate?, recordId: Long?)
 
+    /** [archivedOn] null moves it back to the open list. */
+    @Query("UPDATE recalls SET archivedOn = :archivedOn WHERE id = :id")
+    suspend fun setArchived(id: Long, archivedOn: LocalDate?)
+
     @Query("UPDATE recalls SET serviceRecordId = :recordId WHERE id IN (:ids)")
     suspend fun linkRecord(ids: List<Long>, recordId: Long)
 

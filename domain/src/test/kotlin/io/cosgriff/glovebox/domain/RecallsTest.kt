@@ -132,6 +132,19 @@ class RecallsTest {
     }
 
     @Test
+    fun `an archived recall isn't open, and sits between open and done`() {
+        val stored = listOf(
+            StoredRecall(1, fuelPump, done = true),
+            StoredRecall(2, steering, done = false, archived = true),
+            StoredRecall(3, labels, done = false),
+        )
+        assertEquals(listOf(3L, 2L, 1L), Recalls.sorted(stored).map { it.id })
+        assertEquals(OpenRecalls(1, Recalls.componentLabel(labels.component)), Recalls.open(stored))
+        // NHTSA dropping it takes it away, as it would an open one.
+        assertEquals(listOf(2L, 3L), Recalls.merge(stored, emptyList()).withdrawn)
+    }
+
+    @Test
     fun `manufacturer lookup matches the make however it is cased`() {
         assertEquals("Toyota", Recalls.manufacturerSite("TOYOTA")?.name)
         assertEquals("Mercedes-Benz", Recalls.manufacturerSite(" mercedes-benz ")?.name)

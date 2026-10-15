@@ -175,7 +175,8 @@ class ExportViewModel @Inject constructor(
                 ExportScheduleLine(item.name, tracked.interval.label(v.unit, item.firstMiles), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
-                ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), stored.getValue(r.id).completedOn)
+                val row = stored.getValue(r.id)
+                ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), row.completedOn, row.archivedOn)
             },
         )
     }

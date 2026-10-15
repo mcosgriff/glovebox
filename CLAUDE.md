@@ -630,6 +630,11 @@ Notes on what's built:
   "No open recalls" is only shown once NHTSA has answered for that vehicle.
 - NHTSA answers HTTP 400 with an empty list when it has no recalls for a vehicle; `NhtsaClient.recalls`
   reads the body rather than the status. Report dates arrive as day/month/year.
+- `recalls.archivedOn` (schema v23) is the user saying a recall doesn't apply to this vehicle (no notice came,
+  the maker's VIN lookup doesn't list it): an archived recall isn't open (`StoredRecall.open`), so it leaves
+  the count, banner and garage chip, sits under its own "Archived" filter on the Recalls screen, and "Move
+  back to open" clears it. Only an open recall can be archived. Exports say "Archived as not applying".
+  NHTSA dropping the campaign deletes it, as for an open one.
 - `recalls.completedOn` is the user's mark and survives refreshes; a campaign NHTSA drops is deleted only
   while open. Marking done goes through `RecordActions.completeRecall`, which can add a service record
   (`recalls.serviceRecordId`) whose line has no schedule item, so it resets no reminder. Mark as open
