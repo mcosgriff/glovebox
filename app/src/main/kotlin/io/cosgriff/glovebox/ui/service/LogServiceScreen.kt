@@ -7,6 +7,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -53,6 +54,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -491,7 +493,11 @@ fun LogServiceScreen(
                             val on = s.optionId in vm.selected
                             FilterChip(
                                 selected = on,
-                                onClick = { vm.toggle(s.optionId) },
+                                onClick = {
+                                    vm.toggle(s.optionId)
+                                    // Open the category it was ticked in, so the tick is in sight and not only a count on a button.
+                                    if (!on) data.categories.firstOrNull { c -> c.options.any { it.id == s.optionId } }?.let { vm.categoryId = it.id }
+                                },
                                 // Canvas: "+" offers it, a tick and the soft tint show it is on the list.
                                 label = { Text((if (on) "\u2713 " else "+ ") + s.label, fontWeight = FontWeight.SemiBold) },
                                 shape = CircleShape,
@@ -805,30 +811,40 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
     }
 }
 
+/**
+ * One category of "What was done?": a tab that opens its list below, never a tick of its own. The open
+ * one is outlined in ink with a caret, not filled, so it doesn't read as chosen; [count] is how many of
+ * its lines are ticked, said as a tick on the soft tint like the due chips.
+ */
 @Composable
 private fun CategoryButton(label: String, count: Int, active: Boolean, onClick: () -> Unit, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val state = listOfNotNull("open".takeIf { active }, "$count ticked".takeIf { count > 0 }).joinToString(", ")
     Surface(
         onClick = onClick,
-        selected = active,
-        modifier = modifier.heightIn(min = 52.dp),
+        modifier = modifier.heightIn(min = 52.dp).semantics { stateDescription = state },
         shape = RoundedCornerShape(14.dp),
-        color = if (active) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface,
-        contentColor = if (active) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface,
-        border = BorderStroke(1.5.dp, if (active) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outlineVariant),
+        color = scheme.surface,
+        contentColor = scheme.onSurface,
+        border = BorderStroke(if (active) 2.dp else 1.5.dp, if (active) scheme.onSurface else scheme.outlineVariant),
     ) {
         Row(
             Modifier.heightIn(min = 52.dp).padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
+            Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, fontWeight = if (active) FontWeight.Bold else null)
             if (count > 0) {
-                Surface(color = MaterialTheme.colorScheme.primary, shape = CircleShape, modifier = Modifier.size(22.dp)) {
-                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                        Text("$count", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                    }
+                Surface(color = scheme.primaryContainer, contentColor = scheme.onPrimaryContainer, shape = CircleShape) {
+                    Text(
+                        "\u2713 $count",
+                        Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
+            if (active) Icon(Icons.Outlined.ExpandMore, contentDescription = null, modifier = Modifier.size(20.dp))
         }
     }
 }
