@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/mcosgriff/glovebox/compare/v0.7.0...v0.7.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **home:** show the interval on a reminder counting down to its first time ([#181](https://github.com/mcosgriff/glovebox/issues/181)) ([4bab3fc](https://github.com/mcosgriff/glovebox/commit/4bab3fc334bbd2fda467a787a68246f771fa1f0c))
+
 ## [0.7.0](https://github.com/mcosgriff/glovebox/compare/v0.6.0...v0.7.0) (2026-10-15)
 
 
