@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.3.0](https://github.com/mcosgriff/glovebox/compare/v0.2.0...v0.3.0) (2026-10-14)
+
+
+### Features
+
+* **about:** about screen with privacy and open-source licences ([#94](https://github.com/mcosgriff/glovebox/issues/94)) ([bd2a5c9](https://github.com/mcosgriff/glovebox/commit/bd2a5c9ecf36e766f32e0a30d5406bc717af3f11)), closes [#26](https://github.com/mcosgriff/glovebox/issues/26)
+* **backup:** create an encrypted backup file ([#88](https://github.com/mcosgriff/glovebox/issues/88)) ([c99eb64](https://github.com/mcosgriff/glovebox/commit/c99eb64a03c00697730a26c7e34ec1f18bba604e))
+* **backup:** restore from a backup file ([#89](https://github.com/mcosgriff/glovebox/issues/89)) ([1eed8fc](https://github.com/mcosgriff/glovebox/commit/1eed8fc6dd1bfb69a8000784bb7add7304d3b7d9))
+* **export:** export service history as PDF or Markdown ([#85](https://github.com/mcosgriff/glovebox/issues/85)) ([42f4d68](https://github.com/mcosgriff/glovebox/commit/42f4d6846fe11c0bf6df9e2a6682b94f2109077a))
+* **export:** save a schedule and torque specs as import files ([#122](https://github.com/mcosgriff/glovebox/issues/122)) ([19a2180](https://github.com/mcosgriff/glovebox/commit/19a2180515f3cca8af29f37463e07089f0415e0f))
+* **history:** land on History after a save or delete, and keep Undo for 30 seconds ([#97](https://github.com/mcosgriff/glovebox/issues/97)) ([d4f6919](https://github.com/mcosgriff/glovebox/commit/d4f69197656c1f82e4f20ac1fce5f31461d646cb)), closes [#30](https://github.com/mcosgriff/glovebox/issues/30)
+* **import:** a milestone table that repeats (repeatsEveryMiles) ([#117](https://github.com/mcosgriff/glovebox/issues/117)) ([ca170f9](https://github.com/mcosgriff/glovebox/commit/ca170f9b930000807df3c05a11a831b8e6817a83))
+* **import:** import a maintenance schedule by interval ([#109](https://github.com/mcosgriff/glovebox/issues/109)) ([8bc10a7](https://github.com/mcosgriff/glovebox/commit/8bc10a7b21a25fa26695d9f7de30056669903ee6))
+* **import:** import a milestone table and show it on Milestones ([#112](https://github.com/mcosgriff/glovebox/issues/112)) ([432c8e4](https://github.com/mcosgriff/glovebox/commit/432c8e40cb1876a1c571f5879291b14ffde1e09f)), closes [#105](https://github.com/mcosgriff/glovebox/issues/105)
+* **import:** import previous maintenance as service history ([#110](https://github.com/mcosgriff/glovebox/issues/110)) ([f61b21a](https://github.com/mcosgriff/glovebox/commit/f61b21a9b2afebe1d822cab802e652f5332cee35))
+* **import:** import torque specs from a JSON file, with published schemas ([#108](https://github.com/mcosgriff/glovebox/issues/108)) ([b8ccfdb](https://github.com/mcosgriff/glovebox/commit/b8ccfdb66b59c4c2a3bd1d8e5cfdddb7c62b8681))
+* **import:** let a file give distances in kilometres ([#130](https://github.com/mcosgriff/glovebox/issues/130)) ([2666aee](https://github.com/mcosgriff/glovebox/commit/2666aee1e5538550ecd37de5314202a2d5429f91))
+* **lock:** unlock screen to the design, with cancel and error handling ([#95](https://github.com/mcosgriff/glovebox/issues/95)) ([dd6de53](https://github.com/mcosgriff/glovebox/commit/dd6de533700f8c9f415fd488139a3d2dc4aaeba3)), closes [#27](https://github.com/mcosgriff/glovebox/issues/27)
+* **log:** match the Log service form to the rendering ([#98](https://github.com/mcosgriff/glovebox/issues/98)) ([d5b58b1](https://github.com/mcosgriff/glovebox/commit/d5b58b132371a35bc8cb8f53286159602f3fc36c)), closes [#31](https://github.com/mcosgriff/glovebox/issues/31)
+* **mileage:** read the odometer from the dash with the camera ([#124](https://github.com/mcosgriff/glovebox/issues/124)) ([d6b615a](https://github.com/mcosgriff/glovebox/commit/d6b615a3dc6a657334b00f750ca2bde7bf9c38a7)), closes [#64](https://github.com/mcosgriff/glovebox/issues/64)
+* **mileage:** view, correct and delete past odometer readings ([#125](https://github.com/mcosgriff/glovebox/issues/125)) ([d8d0e66](https://github.com/mcosgriff/glovebox/commit/d8d0e66820ba533efbf224d393032e532fe93501))
+* **nav:** predictive back, opaque screens and History state that survives a restart ([#99](https://github.com/mcosgriff/glovebox/issues/99)) ([e958641](https://github.com/mcosgriff/glovebox/commit/e958641353c605b0f1f9261c8365a3370cd64f92)), closes [#32](https://github.com/mcosgriff/glovebox/issues/32)
+* **notify:** notify about due services, new recalls and stale mileage ([#87](https://github.com/mcosgriff/glovebox/issues/87)) ([6f8a3d0](https://github.com/mcosgriff/glovebox/commit/6f8a3d0b54352d69a85cad88304b3b95e9c12feb))
+* **odometer:** offset for a replaced instrument cluster ([#100](https://github.com/mcosgriff/glovebox/issues/100)) ([bad74b4](https://github.com/mcosgriff/glovebox/commit/bad74b419de6eeac2fa9a542f75bddbdcb3a80eb)), closes [#73](https://github.com/mcosgriff/glovebox/issues/73)
+* **scan:** read a printed VIN when there is no barcode ([#128](https://github.com/mcosgriff/glovebox/issues/128)) ([83c8aea](https://github.com/mcosgriff/glovebox/commit/83c8aead15e24bc13af9f436ec5d2ab3c6939311)), closes [#82](https://github.com/mcosgriff/glovebox/issues/82)
+* **schedule:** build and edit your own milestone table in the app ([#119](https://github.com/mcosgriff/glovebox/issues/119)) ([b1fd3d7](https://github.com/mcosgriff/glovebox/commit/b1fd3d705e8976060564b7a26f4de2e12ca9088c))
+* **schedule:** enter when a reminder was last done ([#101](https://github.com/mcosgriff/glovebox/issues/101)) ([71dc25f](https://github.com/mcosgriff/glovebox/commit/71dc25f4cb7752703f021521c5338c58802f1185))
+* **schedule:** let the user's own item be reset by a built-in service line ([#116](https://github.com/mcosgriff/glovebox/issues/116)) ([ab423d5](https://github.com/mcosgriff/glovebox/commit/ab423d5c1fc1c8cc1a37575a723a49015d2a5ab0))
+* **schedule:** match a maker's schedule by engine ([#139](https://github.com/mcosgriff/glovebox/issues/139)) ([6656568](https://github.com/mcosgriff/glovebox/commit/6656568bf49b6f713ebcdba067a9aa7621a9f1df))
+* **schedule:** match a maker's schedule by engine, and ask when the engine isn't on record ([#134](https://github.com/mcosgriff/glovebox/issues/134)) ([6656568](https://github.com/mcosgriff/glovebox/commit/6656568bf49b6f713ebcdba067a9aa7621a9f1df))
+* **schedule:** milestones, the schedule by mileage with what was done ([#111](https://github.com/mcosgriff/glovebox/issues/111)) ([de0bedb](https://github.com/mcosgriff/glovebox/commit/de0bedba9962696dc6e189b18f5f5439c5c31f4a))
+* **schedule:** reminders for jobs a maker schedules only under severe use ([#137](https://github.com/mcosgriff/glovebox/issues/137)) ([5d9c3a7](https://github.com/mcosgriff/glovebox/commit/5d9c3a76dbd893f177f371123151ebb4d4615a9a))
+* **schedule:** save your milestone table as an import file ([#121](https://github.com/mcosgriff/glovebox/issues/121)) ([608e23e](https://github.com/mcosgriff/glovebox/commit/608e23e8af9f76494f17ecb94cf139d9c11a471e)), closes [#118](https://github.com/mcosgriff/glovebox/issues/118)
+* **schedule:** the Mk6 GTI's maintenance schedule, 2010 to 2014 ([#134](https://github.com/mcosgriff/glovebox/issues/134)) ([eb0f8f3](https://github.com/mcosgriff/glovebox/commit/eb0f8f3189b4da76951c2c3c1d9ae3b1c7e7f137))
+* **schedule:** the Mk6 GTI's maintenance schedule, 2010 to 2014 ([#138](https://github.com/mcosgriff/glovebox/issues/138)) ([eb0f8f3](https://github.com/mcosgriff/glovebox/commit/eb0f8f3189b4da76951c2c3c1d9ae3b1c7e7f137))
+* **schedule:** use the maker's maintenance schedule where there is one, starting with the 2017–2024 4Runner ([#135](https://github.com/mcosgriff/glovebox/issues/135)) ([8e2b19c](https://github.com/mcosgriff/glovebox/commit/8e2b19c196319878efc3b06e40819d23ce02fdbd))
+* **settings:** delete all data ([#91](https://github.com/mcosgriff/glovebox/issues/91)) ([5752112](https://github.com/mcosgriff/glovebox/commit/57521126ac9f737750d28b928189cf91330f1e10)), closes [#24](https://github.com/mcosgriff/glovebox/issues/24)
+* **settings:** grouped cards, lock delay and the remaining rows ([#92](https://github.com/mcosgriff/glovebox/issues/92)) ([137df8b](https://github.com/mcosgriff/glovebox/commit/137df8b8769908c5a525cb5005f5d6af9b26d106))
+* **theme:** bundle IBM Plex fonts and fix dark-mode colours ([#96](https://github.com/mcosgriff/glovebox/issues/96)) ([e77569e](https://github.com/mcosgriff/glovebox/commit/e77569ef950ffd1c3a7d8cd665f9f85d3dc54d30)), closes [#28](https://github.com/mcosgriff/glovebox/issues/28)
+* **torque:** known specs, starting with the 4Runner's owner's manual figures ([#132](https://github.com/mcosgriff/glovebox/issues/132)) ([d357c5e](https://github.com/mcosgriff/glovebox/commit/d357c5e7aadcdf9630aa2b2f2fe347c9c1ff0932))
+* **units:** show and enter distances in kilometres, per vehicle ([#127](https://github.com/mcosgriff/glovebox/issues/127)) ([5c0a531](https://github.com/mcosgriff/glovebox/commit/5c0a5313ff0957d88822ef310e687ab24abe6957))
+* **welcome:** first-run welcome screen ([#90](https://github.com/mcosgriff/glovebox/issues/90)) ([6ffbc34](https://github.com/mcosgriff/glovebox/commit/6ffbc34fdf1dc27051eaf2ea128a7ce48bb8362d)), closes [#46](https://github.com/mcosgriff/glovebox/issues/46)
+
+
+### Bug Fixes
+
+* **lock:** a correct PIN unlocks the app on Android 10 ([#131](https://github.com/mcosgriff/glovebox/issues/131)) ([1e5469d](https://github.com/mcosgriff/glovebox/commit/1e5469dfa609de7cbc727496f954bae1b2b06f8f)), closes [#27](https://github.com/mcosgriff/glovebox/issues/27)
+* **service:** Log it on a check ticks the check on the Log service screen too ([#152](https://github.com/mcosgriff/glovebox/issues/152)) ([f898e31](https://github.com/mcosgriff/glovebox/commit/f898e314c07e54f1511d5a6f79fffff0d1797ba7))
+* **service:** Log it on a check ticks the check, not the change that includes it ([#148](https://github.com/mcosgriff/glovebox/issues/148)) ([1f112b7](https://github.com/mcosgriff/glovebox/commit/1f112b71ad68c590957b839da63e95ef464bf762))
+
 ## [0.2.0](https://github.com/mcosgriff/glovebox/compare/v0.1.0...v0.2.0) (2026-10-11)
 
 
