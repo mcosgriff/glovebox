@@ -54,6 +54,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -114,6 +116,7 @@ import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.ui.ImportRoute
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
@@ -327,6 +330,7 @@ class ImportViewModel @Inject constructor(
     private val milestones: MilestoneDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     /** The garage, then sold vehicles: those can still take service history. */
     val vehicles: StateFlow<List<VehicleEntity>?> = combine(vehicles.observeActive(), vehicles.observeArchived()) { active, sold -> active + sold }
@@ -335,7 +339,7 @@ class ImportViewModel @Inject constructor(
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
 
-    private val chosenVehicle = MutableStateFlow<Long?>(null)
+    private val chosenVehicle = MutableStateFlow(savedStateHandle.toRoute<ImportRoute>().vehicleId)
 
     /** The vehicle to import into: the one chosen, or the only one there is. */
     val vehicleId: StateFlow<Long?> = combine(this.vehicles, chosenVehicle) { list, chosen ->

@@ -289,6 +289,8 @@ fun VehicleDetailsScreen(
     onDelete: (vehicleId: Long) -> Unit,
     onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
     onOpenReadings: (vehicleId: Long) -> Unit,
+    /** The Import page with this vehicle chosen: a Carfax report, or an import file. */
+    onOpenImport: (vehicleId: Long) -> Unit,
     vm: VehicleDetailsViewModel = hiltViewModel(),
 ) {
     val details = vm.details.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -634,6 +636,12 @@ fun VehicleDetailsScreen(
                     title = "Mileage readings",
                     detail = "Every odometer reading · fix or delete a wrong one",
                     onClick = { onOpenReadings(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = "Import service history",
+                    detail = "From a Carfax report PDF, or an import file",
+                    onClick = { onOpenImport(v.id) },
                 )
             }
 

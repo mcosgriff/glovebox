@@ -142,7 +142,8 @@ DELETE, then the phone's screen lock). Odometer offset (instrument cluster repla
 readings, from Vehicle details). "When were these last done?" (a date and mileage per reminder, from
 schedule setup, the Maintenance schedule screen and vehicle home). Import (Settings: torque specs from a
 a by-interval maintenance schedule or past service history from a JSON file, with a preview and a choice
-about what differs; also the user's own milestone table). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
+about what differs; also the user's own milestone table and a Carfax report PDF; Vehicle details' "Import service
+history" row opens the same page with that vehicle chosen, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 To build: VIN scan follow-up (#83).
