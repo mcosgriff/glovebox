@@ -98,6 +98,7 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
     fun setTorque(u: TorqueUnit) = viewModelScope.launch { repo.setTorqueUnit(u) }
     fun setDistance(u: DistanceUnit) = viewModelScope.launch { repo.setDistanceUnit(u) }
     fun setRecallCadence(c: RecallCadence) = viewModelScope.launch { repo.setRecallCadence(c) }
+    fun setScannerDetails(on: Boolean) = viewModelScope.launch { repo.setScannerDetails(on) }
 }
 
 private enum class Picking { TORQUE, RECALLS, SCHEDULE, DISTANCE }
@@ -298,6 +299,15 @@ fun SettingsScreen(
             ValueRow("Notifications", SettingsText.notifications(s.notices), onOpenNotifications)
             Divider()
             ValueRow("Check for new recalls", s.recallCadence.label) { picking = Picking.RECALLS }
+        }
+
+        Section("CAMERA") {
+            ToggleRow(
+                title = "Show what the scanner sees",
+                subtitle = "The VIN scanner shows the strip it reads, any barcode it finds and what the print came to. For a scan that won't take",
+                checked = s.scannerDetails,
+                onChange = vm::setScannerDetails,
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

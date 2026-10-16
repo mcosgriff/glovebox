@@ -49,6 +49,8 @@ data class Settings(
     val backupReminder: Boolean = true,
     /** When the backup reminder last went out. */
     val backupRemindedOn: LocalDate? = null,
+    /** The VIN scanner shows what it is reading (the band, any barcode found, the print), for a scan that won't take. */
+    val scannerDetails: Boolean = false,
 ) {
     /** [lead] for a vehicle that counts in [unit]: this is what every reminder calculation takes. */
     fun leadFor(unit: DistanceUnit): LeadTime = lead.forUnit(unit, from = distanceUnit)
@@ -80,6 +82,7 @@ class SettingsRepository(private val context: Context) {
         val lastBackup = longPreferencesKey("last_backup_on")
         val backupReminder = booleanPreferencesKey("backup_reminder")
         val backupReminded = longPreferencesKey("backup_reminded_on")
+        val scannerDetails = booleanPreferencesKey("scanner_details")
     }
 
     // Facts about this phone, not choices: they mean nothing on the phone a backup is restored to.
@@ -133,6 +136,7 @@ class SettingsRepository(private val context: Context) {
             welcomeSeen = p[Keys.welcomeSeen] ?: d.welcomeSeen,
             lastBackupOn = p[Keys.lastBackup]?.let(LocalDate::ofEpochDay),
             backupReminder = p[Keys.backupReminder] ?: d.backupReminder,
+            scannerDetails = p[Keys.scannerDetails] ?: d.scannerDetails,
             backupRemindedOn = p[Keys.backupReminded]?.let(LocalDate::ofEpochDay),
         )
     }
@@ -172,4 +176,5 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLastBackup(date: LocalDate) = context.dataStore.edit { it[Keys.lastBackup] = date.toEpochDay() }
     suspend fun setBackupReminder(on: Boolean) = context.dataStore.edit { it[Keys.backupReminder] = on }
     suspend fun setBackupReminded(date: LocalDate) = context.dataStore.edit { it[Keys.backupReminded] = date.toEpochDay() }
+    suspend fun setScannerDetails(on: Boolean) = context.dataStore.edit { it[Keys.scannerDetails] = on }
 }

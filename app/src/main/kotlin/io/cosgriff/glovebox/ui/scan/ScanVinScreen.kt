@@ -82,6 +82,17 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import io.cosgriff.glovebox.ui.theme.statusColors
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import javax.inject.Inject
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.util.concurrent.Executors
 
 // The scanner sits over a live camera picture, so it keeps the canvas's own colours in both themes.
@@ -104,8 +115,15 @@ private const val START_ZOOM = 2f
  * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
  * (Tesseract, as the dash reader does). Frames are read on the phone; nothing is saved or sent.
  */
+@HiltViewModel
+class ScanVinViewModel @Inject constructor(repo: SettingsRepository) : ViewModel() {
+    /** Settings' "Show what the scanner sees". */
+    val details: StateFlow<Boolean> = repo.settings.map { it.scannerDetails }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+}
+
 @Composable
-fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
+fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit, vm: ScanVinViewModel = hiltViewModel()) {
+    val details by vm.details.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var granted by remember { mutableStateOf(context.hasCamera()) }
     // Set once the user has answered the system prompt with no.
@@ -127,7 +145,7 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
 
     Box(Modifier.fillMaxSize().background(Scrim)) {
         if (granted) {
-            Scanner(onClose, onUseVin)
+            Scanner(details, onClose, onUseVin)
         } else {
             NoCamera(
                 why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
@@ -141,7 +159,7 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
 }
 
 @Composable
-private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
+private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     /** A VIN that passed its check digit; scanning pauses while it is on screen. */
@@ -158,6 +176,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     var printRan by remember { mutableStateOf(false) }
     var view by remember { mutableStateOf<BandView?>(null) }
     val paused by rememberUpdatedState(found != null)
+    val drawing by rememberUpdatedState(details)
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
 
     val controller = remember {
@@ -210,7 +229,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     lastSeen = null
                 }
                 seen = lastSeen?.let { s -> BarcodeSeen(s.format, s.text) }
-                if (counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
+                if (drawing && counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
                 val barcode = sighting?.text
                 if (barcode != null) {
                     val vin = VinScan.vin(barcode)
@@ -307,7 +326,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
         }
         // Only a band across the middle of the frame is read; this box sits inside it.
         val guide = @Composable { Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp))) }
-        val panel = @Composable { if (found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
+        val panel = @Composable { if (details && found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
         val hint = @Composable {
             Text(
                 if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
@@ -337,7 +356,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                         guide()
                         hint()
                     }
-                    Box(Modifier.weight(2f)) { panel() }
+                    if (details) Box(Modifier.weight(2f)) { panel() }
                 }
             } else {
                 Column(
