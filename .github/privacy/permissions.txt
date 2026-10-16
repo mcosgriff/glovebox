@@ -1,0 +1,22 @@
+# Every permission the release APK may ask for, as Exodus's scanner reads it from the merged manifest.
+# exodus-scan.sh fails a build whose APK asks for anything not listed here, or no longer asks for
+# something that is: a permission can't arrive (or leave) unnoticed through a library's manifest.
+# Change this list together with the "Permissions" lines on the Privacy screen (AboutScreen.kt),
+# which name the ones the user meets.
+
+# Declared by the app (AndroidManifest.xml) and explained on the Privacy screen.
+android.permission.INTERNET
+android.permission.CAMERA
+android.permission.POST_NOTIFICATIONS
+android.permission.USE_BIOMETRIC
+
+# Merged in from libraries. All are install-time permissions the user is never asked for.
+# androidx.biometric, for Android versions before USE_BIOMETRIC:
+android.permission.USE_FINGERPRINT
+# WorkManager, which runs the daily check and the recall check:
+android.permission.WAKE_LOCK
+android.permission.ACCESS_NETWORK_STATE
+android.permission.RECEIVE_BOOT_COMPLETED
+android.permission.FOREGROUND_SERVICE
+# androidx.core, which protects the app's own unexported receivers with it:
+io.cosgriff.glovebox.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
