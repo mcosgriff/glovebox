@@ -7,6 +7,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -515,15 +523,23 @@ private fun RecallCard(
             }
             // What the owner says about the recall, as one connected group: done, or not this vehicle's.
             // Archiving is only for an open recall, so a completed one has the single button.
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                StatusButton(
-                    if (done) "Mark as open" else "Mark as done",
-                    onClick = onToggle,
-                    shape = if (done) RoundedCornerShape(12.dp) else RoundedCornerShape(12.dp, 4.dp, 4.dp, 12.dp),
-                    modifier = Modifier.weight(1f),
-                )
-                if (!done) {
-                    StatusButton("Archive", onClick = onArchive, shape = RoundedCornerShape(4.dp, 12.dp, 12.dp, 4.dp), modifier = Modifier.weight(1f))
+            // Drawn like the theme switch in Settings: a track in the page colour with the buttons inside it.
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    Modifier.weight(if (done) 1f else 2f).clip(RoundedCornerShape(14.dp)).background(scheme.background).padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    StatusButton(if (done) "Mark as open" else "Mark as done", onClick = onToggle, modifier = Modifier.weight(1f))
+                    if (!done) StatusButton("Archive", onClick = onArchive, modifier = Modifier.weight(1f))
+                }
+                Button(
+                    onClick = onFindDealer,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                ) {
+                    Text("Find a dealer", maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 }
             }
             if (!done) {
@@ -533,30 +549,20 @@ private fun RecallCard(
                     color = scheme.onSurfaceVariant,
                 )
             }
-            Button(
-                onClick = onFindDealer,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
-            ) {
-                Text("Find a dealer", maxLines = 1)
-            }
         }
     }
 }
 
-/** One half of the recall card's Mark as done / Archive group, outlined in ink. */
+/** One segment of the recall card's Mark as done / Archive group, sized and lettered like the theme switch's. */
 @Composable
-private fun StatusButton(text: String, onClick: () -> Unit, shape: RoundedCornerShape, modifier: Modifier) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 48.dp),
-        shape = shape,
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-        contentPadding = PaddingValues(horizontal = 8.dp),
+private fun StatusButton(text: String, onClick: () -> Unit, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        modifier.height(48.dp).clip(RoundedCornerShape(10.dp)).background(scheme.surface)
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(text, maxLines = 1)
+        Text(text, maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
     }
 }
 
