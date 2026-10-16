@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -71,6 +72,9 @@ import io.cosgriff.glovebox.domain.BarcodeSeen
 import io.cosgriff.glovebox.domain.ScanReport
 import io.cosgriff.glovebox.domain.VinScan
 import android.graphics.Bitmap
+import android.hardware.display.DisplayManager
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
@@ -81,6 +85,17 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import io.cosgriff.glovebox.ui.theme.statusColors
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import javax.inject.Inject
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.util.concurrent.Executors
 
 // The scanner sits over a live camera picture, so it keeps the canvas's own colours in both themes.
@@ -103,8 +118,15 @@ private const val START_ZOOM = 2f
  * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
  * (Tesseract, as the dash reader does). Frames are read on the phone; nothing is saved or sent.
  */
+@HiltViewModel
+class ScanVinViewModel @Inject constructor(repo: SettingsRepository) : ViewModel() {
+    /** Settings' "Show what the scanner sees". */
+    val details: StateFlow<Boolean> = repo.settings.map { it.scannerDetails }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+}
+
 @Composable
-fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
+fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit, vm: ScanVinViewModel = hiltViewModel()) {
+    val details by vm.details.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var granted by remember { mutableStateOf(context.hasCamera()) }
     // Set once the user has answered the system prompt with no.
@@ -126,7 +148,7 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
 
     Box(Modifier.fillMaxSize().background(Scrim)) {
         if (granted) {
-            Scanner(onClose, onUseVin)
+            Scanner(details, onClose, onUseVin)
         } else {
             NoCamera(
                 why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
@@ -140,7 +162,7 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit) {
 }
 
 @Composable
-private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
+private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     /** A VIN that passed its check digit; scanning pauses while it is on screen. */
@@ -157,6 +179,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     var printRan by remember { mutableStateOf(false) }
     var view by remember { mutableStateOf<BandView?>(null) }
     val paused by rememberUpdatedState(found != null)
+    val drawing by rememberUpdatedState(details)
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
 
     val controller = remember {
@@ -168,6 +191,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 .build()
         }
     }
+    val turn = rememberFrameTurn(controller)
     DisposableEffect(controller, lifecycleOwner) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = VinBarcodeReader()
@@ -197,7 +221,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     barcodes.clear()
                     return@use
                 }
-                val (band, width, height) = it.guideBand()
+                val (band, width, height) = it.guideBand(turn)
                 // A barcode first: it is quicker to read and carries its own error checking.
                 val sighting = reader.look(band, width, height)
                 // A barcode stays reported for a moment after it leaves the frame, so the panel doesn't flicker.
@@ -208,7 +232,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     lastSeen = null
                 }
                 seen = lastSeen?.let { s -> BarcodeSeen(s.format, s.text) }
-                if (counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
+                if (drawing && counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
                 val barcode = sighting?.text
                 if (barcode != null) {
                     val vin = VinScan.vin(barcode)
@@ -294,11 +318,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             }
         }
 
-        Column(
-            Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
-        ) {
+        val instruction = @Composable {
             Text(
                 "Line up the barcode on the door-jamb\nsticker, or the VIN printed on the dash",
                 style = MaterialTheme.typography.bodyLarge,
@@ -306,9 +326,11 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Scrim.copy(alpha = 0.55f), RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp),
             )
-            // Only a band across the middle of the frame is read; this box sits inside it.
-            Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
-            if (found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan)
+        }
+        // Only a band across the middle of the frame is read; this box sits inside it.
+        val guide = @Composable { Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp))) }
+        val panel = @Composable { if (details && found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
+        val hint = @Composable {
             Text(
                 if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
                 style = MaterialTheme.typography.bodySmall,
@@ -319,6 +341,38 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     .padding(horizontal = 10.dp, vertical = 6.dp)
                     .semantics { liveRegion = LiveRegionMode.Polite },
             )
+        }
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            if (maxWidth > maxHeight) {
+                // Held sideways there is no room for the panel under the guide: it goes beside it.
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(
+                        Modifier.weight(3f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        instruction()
+                        guide()
+                        hint()
+                    }
+                    if (details) Box(Modifier.weight(2f)) { panel() }
+                }
+            } else {
+                Column(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
+                ) {
+                    instruction()
+                    guide()
+                    panel()
+                    hint()
+                }
+            }
         }
 
         found?.let { vin ->
@@ -489,8 +543,53 @@ internal fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, 
     }
 }
 
-/** The part of a frame the on-screen guide sits in: its greyscale plane, turned upright and cut to the band across the middle. */
-internal fun ImageProxy.guideBand(): Triple<ByteArray, Int, Int> {
+/** How far each camera frame must turn clockwise to stand as the preview shows it; null until the camera is up. */
+internal class FrameTurn {
+    @Volatile var degrees: Int? = null
+}
+
+/**
+ * Keeps [FrameTurn] to the screen. A [CameraController] marks its frames with the way the motion sensor
+ * says the phone is held, not the way the screen is showing them, so a phone tipped while aimed at a
+ * door jamb or a dash had its frames turned a quarter from the picture on screen: a barcode level on
+ * screen reached the reader with its bars along the rows, and the band held only a slice of it. The
+ * user lines the guide up on the screen, so frames are turned as the screen is.
+ */
+@Composable
+internal fun rememberFrameTurn(controller: CameraController): FrameTurn {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val turn = remember { FrameTurn() }
+    DisposableEffect(controller, lifecycleOwner) {
+        val display = ContextCompat.getDisplayOrDefault(context)
+        val update = { controller.cameraInfo?.let { info -> turn.degrees = info.getSensorRotationDegrees(display.rotation) } }
+        // The camera's details are there once it is bound, which is when its zoom state first arrives.
+        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> { update() }
+        // Turning from one landscape straight to the other doesn't recreate the activity (its size is the
+        // same), so the screen's turn is followed as well; otherwise frames would arrive upside down.
+        val displays = context.getSystemService(DisplayManager::class.java)
+        val listener = object : DisplayManager.DisplayListener {
+            override fun onDisplayChanged(displayId: Int) {
+                if (displayId == display.displayId) update()
+            }
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+        }
+        controller.zoomState.observe(lifecycleOwner, observer)
+        displays.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
+        onDispose {
+            controller.zoomState.removeObserver(observer)
+            displays.unregisterDisplayListener(listener)
+        }
+    }
+    return turn
+}
+
+/**
+ * The part of a frame the on-screen guide sits in: its greyscale plane, turned upright as the screen
+ * shows it ([turn]) and cut to the band across the middle.
+ */
+internal fun ImageProxy.guideBand(turn: FrameTurn): Triple<ByteArray, Int, Int> {
     val image = this
     val plane = image.planes[0]
     val width = image.width
@@ -502,7 +601,7 @@ internal fun ImageProxy.guideBand(): Triple<ByteArray, Int, Int> {
         buffer.position(row * plane.rowStride)
         buffer.get(pixels, row * width, width)
     }
-    val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, image.imageInfo.rotationDegrees)
+    val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, turn.degrees ?: image.imageInfo.rotationDegrees)
     return VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
 }
 

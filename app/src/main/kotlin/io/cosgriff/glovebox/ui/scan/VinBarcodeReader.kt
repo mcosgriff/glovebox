@@ -167,7 +167,7 @@ class VinBarcodeReader {
         /**
          * Turns a frame upright. The camera sensor is mounted sideways, so with the phone held
          * upright a horizontal barcode arrives vertical, and a 1D reader only scans along rows.
-         * [degrees] is how far the frame must turn clockwise (CameraX's rotationDegrees).
+         * [degrees] is how far the frame must turn clockwise (see [FrameTurn]).
          */
         fun rotate(luminance: ByteArray, width: Int, height: Int, degrees: Int): Triple<ByteArray, Int, Int> = when (degrees) {
             90 -> {

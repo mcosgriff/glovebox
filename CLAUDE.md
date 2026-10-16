@@ -200,7 +200,12 @@ Notes on what's built:
   characters and a valid check digit, nothing guessed, since trying substitutions until one passed would
   pass a wrong VIN one time in eleven. A printed VIN is offered only when two of the last five frames
   read the same one (`VinScan.agreed`); a barcode is taken at once. If the recogniser can't start, the
-  scanner is a barcode scanner as before. Frames are never stored. The VIN goes back to the add screen through the nav
+  scanner is a barcode scanner as before. Frames are never stored. **Frames are turned as the screen shows
+  them (`FrameTurn`), not by the `rotationDegrees` CameraController gives:** that follows the motion sensor,
+  so a phone tipped while aiming had its frames a quarter turn from the preview and read nothing. Settings'
+  "Show what the scanner sees" (`Settings.scannerDetails`, off by default) adds a panel under the guide
+  (`ScanReport`): the band read, any barcode found outlined (green read, amber found but not decoded, from
+  zxing-cpp's `returnErrors`), frames a second and what the print came to. The VIN goes back to the add screen through the nav
   entry's saved state and is decoded at once. The scanner keeps the canvas's dark colours in both themes.
 - Add without a VIN (`ManualAddScreen`) picks year, make and model. Makes come from vPIC's car, truck and
   MPV lists and models from make + year; `NhtsaClient.makes` sends nothing about the vehicle and `.models`
