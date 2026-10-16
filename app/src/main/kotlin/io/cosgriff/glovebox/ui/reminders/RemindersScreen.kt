@@ -31,7 +31,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -290,6 +289,18 @@ private fun ReminderCard(
             }
         }
         val buttonShape = RoundedCornerShape(10.dp)
+        // "Log it" in ink, as on vehicle home: the accent on a row says it is late, so it isn't on every row's button.
+        val logIt = @Composable { modifier: Modifier ->
+            OutlinedButton(
+                onClick = onLogIt,
+                modifier = modifier.heightIn(min = 48.dp),
+                shape = buttonShape,
+                border = BorderStroke(1.5.dp, scheme.onSurface),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+            ) {
+                Text("Log it")
+            }
+        }
         if (group == ReminderGroup.NOT_LOGGED) {
             // One line and a quieter button: a new vehicle has a long list of these.
             Row(
@@ -298,7 +309,7 @@ private fun ReminderCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 title(Modifier.weight(1f))
-                FilledTonalButton(onClick = onLogIt, modifier = Modifier.heightIn(min = 48.dp), shape = buttonShape) { Text("Log it") }
+                logIt(Modifier)
             }
         } else {
             Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -309,9 +320,7 @@ private fun ReminderCard(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = onLogIt, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = buttonShape) {
-                        Text("Log it")
-                    }
+                    logIt(Modifier.weight(1f))
                     // Snoozing only does something to a reminder that is due; one that is snoozed can be woken.
                     val second = when {
                         r.status.snooze != null -> "End snooze" to onEndSnooze
