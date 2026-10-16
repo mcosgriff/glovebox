@@ -62,6 +62,29 @@ refuse to install it. Debug builds (`./gradlew :app:installDebug`) include every
 
 Design canvas: the Glovebox design artifact in Claude.
 
+## How Glovebox is made
+
+Glovebox is written with an AI coding assistant, and this says how, so nobody has to guess.
+
+- **I decide what it does and how it works.** What the app should do, what it must never do (send
+  anything but a VIN to NHTSA, guess at a service the owner didn't log, ship a torque value without a
+  named source), and the architecture that keeps those promises are my calls. They are written down,
+  with their reasons, in [`CLAUDE.md`](CLAUDE.md), including the ones I reversed after trying them.
+- **Claude writes most of the code.** It works from those decisions, one ticket at a time. Every commit
+  it had a hand in says so (`Co-Authored-By: Claude`), so the history shows which work is which.
+- **Nothing reaches `main` without me.** Every change is a pull request that I review, try and merge
+  myself; the assistant can open one but never merges.
+- **It is tested, by machine and by hand.** The business rules live in a pure Kotlin module with unit
+  tests, database migrations are tested against every past schema, and an end-to-end test drives the
+  app on an emulator from first launch to restoring a backup. CI runs all of it on every pull request.
+  Then I use the change on a real phone with a real vehicle, and send back what is wrong.
+- **What it relies on is checked, not assumed.** A library has to make no network calls and carry no
+  trackers: Google's ML Kit was turned down for its usage logging, and the barcode and text readers
+  that replaced it were checked down to their native code. Maker's schedules and torque values come
+  only from named documents, with what was read recorded in [`docs/`](docs/).
+
+If you find something that looks careless, open an issue: it is mine to fix, whoever typed it.
+
 ## License
 
 GPL-3.0. See [LICENSE](LICENSE).
