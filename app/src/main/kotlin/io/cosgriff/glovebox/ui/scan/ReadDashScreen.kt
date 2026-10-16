@@ -131,6 +131,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
                 .build()
         }
     }
+    val turn = rememberFrameTurn(controller)
     DisposableEffect(controller, lifecycleOwner) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = TextReader.digits(context.applicationContext)
@@ -143,7 +144,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
                     frames.clear()
                     return@use
                 }
-                val (band, width, height) = it.guideBand()
+                val (band, width, height) = it.guideBand(turn)
                 val text = reader.read(band, width, height)
                 if (reader.failed) {
                     unavailable = true

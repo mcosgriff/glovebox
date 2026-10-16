@@ -168,6 +168,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 .build()
         }
     }
+    val turn = rememberFrameTurn(controller)
     DisposableEffect(controller, lifecycleOwner) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = VinBarcodeReader()
@@ -197,7 +198,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     barcodes.clear()
                     return@use
                 }
-                val (band, width, height) = it.guideBand()
+                val (band, width, height) = it.guideBand(turn)
                 // A barcode first: it is quicker to read and carries its own error checking.
                 val sighting = reader.look(band, width, height)
                 // A barcode stays reported for a moment after it leaves the frame, so the panel doesn't flicker.
@@ -489,8 +490,40 @@ internal fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, 
     }
 }
 
-/** The part of a frame the on-screen guide sits in: its greyscale plane, turned upright and cut to the band across the middle. */
-internal fun ImageProxy.guideBand(): Triple<ByteArray, Int, Int> {
+/** How far each camera frame must turn clockwise to stand as the preview shows it; null until the camera is up. */
+internal class FrameTurn {
+    @Volatile var degrees: Int? = null
+}
+
+/**
+ * Keeps [FrameTurn] to the screen. A [CameraController] marks its frames with the way the motion sensor
+ * says the phone is held, not the way the screen is showing them, so a phone tipped while aimed at a
+ * door jamb or a dash had its frames turned a quarter from the picture on screen: a barcode level on
+ * screen reached the reader with its bars along the rows, and the band held only a slice of it. The
+ * user lines the guide up on the screen, so frames are turned as the screen is.
+ */
+@Composable
+internal fun rememberFrameTurn(controller: CameraController): FrameTurn {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val turn = remember { FrameTurn() }
+    DisposableEffect(controller, lifecycleOwner) {
+        // The camera's details are there once it is bound, which is when its zoom state first arrives.
+        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> {
+            val rotation = ContextCompat.getDisplayOrDefault(context).rotation
+            controller.cameraInfo?.let { info -> turn.degrees = info.getSensorRotationDegrees(rotation) }
+        }
+        controller.zoomState.observe(lifecycleOwner, observer)
+        onDispose { controller.zoomState.removeObserver(observer) }
+    }
+    return turn
+}
+
+/**
+ * The part of a frame the on-screen guide sits in: its greyscale plane, turned upright as the screen
+ * shows it ([turn]) and cut to the band across the middle.
+ */
+internal fun ImageProxy.guideBand(turn: FrameTurn): Triple<ByteArray, Int, Int> {
     val image = this
     val plane = image.planes[0]
     val width = image.width
@@ -502,7 +535,7 @@ internal fun ImageProxy.guideBand(): Triple<ByteArray, Int, Int> {
         buffer.position(row * plane.rowStride)
         buffer.get(pixels, row * width, width)
     }
-    val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, image.imageInfo.rotationDegrees)
+    val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, turn.degrees ?: image.imageInfo.rotationDegrees)
     return VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
 }
 
