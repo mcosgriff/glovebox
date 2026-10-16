@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/mcosgriff/glovebox/compare/v0.7.1...v0.8.0) (2026-10-16)
+
+
+### Features
+
+* **scan:** show what the VIN scanner is reading, live ([#207](https://github.com/mcosgriff/glovebox/issues/207)) ([0a8cc18](https://github.com/mcosgriff/glovebox/commit/0a8cc18bfc31d60593d734c093e2a9c0331e21cc))
+* **vehicle:** keep a vehicle's documents, encrypted, with backup and wipe ([#205](https://github.com/mcosgriff/glovebox/issues/205)) ([d3bc6d0](https://github.com/mcosgriff/glovebox/commit/d3bc6d07413bfafd8b8218df1cb3095cd533f911))
+
 ## [0.7.1](https://github.com/mcosgriff/glovebox/compare/v0.7.0...v0.7.1) (2026-10-15)
 
 
