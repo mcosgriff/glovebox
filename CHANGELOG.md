@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/mcosgriff/glovebox/compare/v0.8.1...v0.8.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **reminders:** draw Log it in ink, so orange on a row means it is late ([#210](https://github.com/mcosgriff/glovebox/issues/210)) ([b34da8c](https://github.com/mcosgriff/glovebox/commit/b34da8c61ba8eb74da8739bd0c372e913c4d8e69))
+
 ## [0.8.1](https://github.com/mcosgriff/glovebox/compare/v0.8.0...v0.8.1) (2026-10-16)
 
 
