@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/mcosgriff/glovebox/compare/v0.8.2...v0.9.0) (2026-10-16)
+
+
+### Features
+
+* **recalls:** make Mark as done and Archive a button group, beside Find a dealer ([#212](https://github.com/mcosgriff/glovebox/issues/212)) ([8612b66](https://github.com/mcosgriff/glovebox/commit/8612b664306066516932014d4bf11b266c4e5d10))
+
 ## [0.8.2](https://github.com/mcosgriff/glovebox/compare/v0.8.1...v0.8.2) (2026-10-16)
 
 
