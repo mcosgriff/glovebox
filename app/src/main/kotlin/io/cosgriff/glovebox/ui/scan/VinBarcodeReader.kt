@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.scan
 
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.Rect
 import zxingcpp.BarcodeReader
 
@@ -23,9 +24,19 @@ class VinBarcodeReader {
             // A QR or Data Matrix code printed light on dark; zxing-cpp doesn't invert a 1D code, and labels don't print one so.
             tryInvert = true,
             tryDownscale = true,
-            maxNumberOfSymbols = 1,
+            // Two: a code that decoded and one that didn't, so the overlay can show the second when there is no first.
+            maxNumberOfSymbols = 2,
+            // Barcodes found but not decoded come back too, marked with their error, so the scanner can say one is in
+            // view. They are never taken as a reading.
+            returnErrors = true,
         ),
     )
+
+    /**
+     * A barcode found in a frame, read or not. [text] is null when it was found but couldn't be
+     * decoded. [corners] are its outline in the frame's pixels, clockwise from top left.
+     */
+    data class Sighting(val format: String, val text: String?, val corners: List<Point>)
 
     /**
      * The text of a barcode in the frame, or null. [luminance] is [width] x [height], one byte per
@@ -34,10 +45,20 @@ class VinBarcodeReader {
      * If the frame can't be read as it is, it is tried again with the lighting evened out: a barcode
      * half in shadow or under glare otherwise reads as all black or all white on one side.
      */
-    fun read(luminance: ByteArray, width: Int, height: Int): String? =
-        attempt(luminance, width, height) ?: attempt(evenOut(luminance, width, height), width, height)
+    fun read(luminance: ByteArray, width: Int, height: Int): String? = look(luminance, width, height)?.text
 
-    private fun attempt(luminance: ByteArray, width: Int, height: Int): String? {
+    /**
+     * The barcode in the frame: one that decoded if there is one, otherwise one that was found and
+     * couldn't be, otherwise null. Tried as [read] tries it, evened out when the frame as it is gives
+     * no text.
+     */
+    fun look(luminance: ByteArray, width: Int, height: Int): Sighting? {
+        val first = attempt(luminance, width, height)
+        if (first?.text != null) return first
+        return attempt(evenOut(luminance, width, height), width, height)?.takeIf { it.text != null } ?: first
+    }
+
+    private fun attempt(luminance: ByteArray, width: Int, height: Int): Sighting? {
         // zxing-cpp takes a Bitmap; grey in all three colours, so it reads back as the same luminance.
         val pixels = IntArray(width * height) { i ->
             val l = luminance[i].toInt() and 0xFF
@@ -45,13 +66,29 @@ class VinBarcodeReader {
         }
         val bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
         return try {
-            reader.read(bitmap, Rect(0, 0, width, height), 0).firstOrNull()?.text
+            val results = reader.read(bitmap, Rect(0, 0, width, height), 0)
+            val result = results.firstOrNull { it.error == null && it.text != null } ?: results.firstOrNull() ?: return null
+            val p = result.position
+            Sighting(
+                format = name(result.format),
+                text = result.text.takeIf { result.error == null && !it.isNullOrEmpty() },
+                corners = listOf(p.topLeft, p.topRight, p.bottomRight, p.bottomLeft),
+            )
         } finally {
             bitmap.recycle()
         }
     }
 
     companion object {
+        /** How the scanner names a format to the user. */
+        fun name(format: BarcodeReader.Format): String = when (format) {
+            BarcodeReader.Format.CODE_39 -> "Code 39"
+            BarcodeReader.Format.CODE_128 -> "Code 128"
+            BarcodeReader.Format.QR_CODE -> "QR code"
+            BarcodeReader.Format.DATA_MATRIX -> "Data Matrix"
+            else -> "Barcode"
+        }
+
         /** Wider than the widest bar or gap of a barcode filling the guide, narrower than a shadow's edge is soft. */
         private const val EVEN_OUT_RADIUS = 24
 
