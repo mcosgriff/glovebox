@@ -1,5 +1,9 @@
 # Glovebox design
 
+**These are the design from before the app was built, not screenshots of it.** The app has moved on
+since (screens added, wording and layout changed); for what it looks like now, see the screenshots in
+the main [README](../README.md#screenshots). They are still the reference for the colours, spacing and look of new screens.
+
 Exported from the Claude design canvas: https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
 - `screens/*.png` — renders at 390 dp wide, 2× scale (phone screens; tall ones show the full scroll).
