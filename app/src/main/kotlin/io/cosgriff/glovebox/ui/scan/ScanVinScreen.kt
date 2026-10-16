@@ -72,6 +72,9 @@ import io.cosgriff.glovebox.domain.BarcodeSeen
 import io.cosgriff.glovebox.domain.ScanReport
 import io.cosgriff.glovebox.domain.VinScan
 import android.graphics.Bitmap
+import android.hardware.display.DisplayManager
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
@@ -558,13 +561,26 @@ internal fun rememberFrameTurn(controller: CameraController): FrameTurn {
     val lifecycleOwner = LocalLifecycleOwner.current
     val turn = remember { FrameTurn() }
     DisposableEffect(controller, lifecycleOwner) {
+        val display = ContextCompat.getDisplayOrDefault(context)
+        val update = { controller.cameraInfo?.let { info -> turn.degrees = info.getSensorRotationDegrees(display.rotation) } }
         // The camera's details are there once it is bound, which is when its zoom state first arrives.
-        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> {
-            val rotation = ContextCompat.getDisplayOrDefault(context).rotation
-            controller.cameraInfo?.let { info -> turn.degrees = info.getSensorRotationDegrees(rotation) }
+        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> { update() }
+        // Turning from one landscape straight to the other doesn't recreate the activity (its size is the
+        // same), so the screen's turn is followed as well; otherwise frames would arrive upside down.
+        val displays = context.getSystemService(DisplayManager::class.java)
+        val listener = object : DisplayManager.DisplayListener {
+            override fun onDisplayChanged(displayId: Int) {
+                if (displayId == display.displayId) update()
+            }
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
         }
         controller.zoomState.observe(lifecycleOwner, observer)
-        onDispose { controller.zoomState.removeObserver(observer) }
+        displays.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
+        onDispose {
+            controller.zoomState.removeObserver(observer)
+            displays.unregisterDisplayListener(listener)
+        }
     }
     return turn
 }
