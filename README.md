@@ -28,6 +28,15 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 - Android auto-backup and device transfer are disabled; the app's own password-protected backup file
   is the only way to move data to a new phone.
 - Delete all data destroys the Keystore keys first (crypto-erase), then deletes the files.
+- No trackers: every pull request and every release is scanned with
+  [Exodus Privacy](https://exodus-privacy.eu.org)'s tracker scanner
+  ([`exodus-standalone`](https://github.com/Exodus-Privacy/exodus-standalone)), and a tracker, or a
+  permission not in [`.github/privacy/permissions.txt`](.github/privacy/permissions.txt), stops the
+  build. Each release's notes give the result and its report is attached (`glovebox-vX.Y.Z.exodus.json`).
+  This is Glovebox's own scan with Exodus's tool, not Exodus vouching for the app, and it finds known
+  tracker libraries, not behaviour.
+
+  [![Trackers: 0 (Exodus scan of each release)](https://img.shields.io/badge/trackers-0%20%C2%B7%20Exodus%20scan-0F766E)](https://github.com/mcosgriff/glovebox/releases/latest)
 
 ## Releases (Obtainium)
 

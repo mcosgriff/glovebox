@@ -61,6 +61,15 @@ jobs:
           sha256sum "$apk" > "$apk.sha256"
           cat "$apk.sha256"
 
+      # Exodus Privacy's tracker scanner on the signed APK (#217). A tracker, or a permission that isn't in
+      # .github/privacy/permissions.txt, stops the release here, before anything is published. The keystore
+      # is already gone, and the container sees only a copy of the APK.
+      - name: Exodus tracker scan
+        run: |
+          .github/scripts/exodus-scan.sh "glovebox-${GITHUB_REF_NAME}.apk" "$RUNNER_TEMP/exodus"
+          cp "$RUNNER_TEMP/exodus/exodus.json" "glovebox-${GITHUB_REF_NAME}.exodus.json"
+          { echo; cat "$RUNNER_TEMP/exodus/exodus-summary.md"; } > exodus-notes.md
+
       # Lets anyone verify the APK came from this workflow and tag:
       #   gh attestation verify glovebox-vX.Y.Z.apk --repo <owner>/glovebox
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -69,6 +78,10 @@ jobs:
 
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
+          # release-please has written the changelog into the release; the scan's summary goes after it.
+          body_path: exodus-notes.md
+          append_body: true
           files: |
             glovebox-${{ github.ref_name }}.apk
             glovebox-${{ github.ref_name }}.apk.sha256
+            glovebox-${{ github.ref_name }}.exodus.json

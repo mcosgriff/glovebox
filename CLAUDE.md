@@ -73,6 +73,11 @@ Keep them green; lint errors fail the build.
   formatter (`Int.asDistance(unit)`, `Interval.label(unit)`, `VehicleEntity.unit`).
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
+  **CI and `release.yml` scan the release APK with Exodus Privacy's scanner** (`.github/scripts/exodus-scan.sh`,
+  #217): a tracker fails the build, and so does any permission not in `.github/privacy/permissions.txt`
+  (or one listed there that the APK no longer asks for). A new permission means updating that list and the
+  Privacy screen's "Permissions" lines together. The release's notes carry the result and the report is
+  attached to it, which is what the README's "trackers: 0" badge rests on.
 - **Barcodes are read with zxing-cpp, not ML Kit** (#161; before that, Java ZXing). ML Kit's bundled barcode
   library depends on Google's log-upload transport (`transport-backend-cct`, `transport-runtime`) plus
   Firebase and Play Services pieces, which breaks the rule above; asked again on 2026-10-15 after a failed

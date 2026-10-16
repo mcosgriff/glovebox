@@ -39,6 +39,11 @@ jobs:
       - name: Debug + release builds
         run: ./gradlew :app:assembleDebug :app:assembleRelease
 
+      # Exodus Privacy's tracker scanner on that release APK: no tracker, and no permission that isn't in
+      # .github/privacy/permissions.txt. The same check as release.yml, so a problem shows before merging.
+      - name: Exodus tracker scan
+        run: .github/scripts/exodus-scan.sh app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/exodus"
+
       # Room exports schemas during compilation. A change here that isn't committed usually
       # means a schema change without its migration — data loss on an encrypted DB.
       - name: Room schemas committed
