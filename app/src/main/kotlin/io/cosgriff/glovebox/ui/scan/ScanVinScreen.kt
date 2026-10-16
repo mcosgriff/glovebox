@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -295,11 +296,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             }
         }
 
-        Column(
-            Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
-        ) {
+        val instruction = @Composable {
             Text(
                 "Line up the barcode on the door-jamb\nsticker, or the VIN printed on the dash",
                 style = MaterialTheme.typography.bodyLarge,
@@ -307,9 +304,11 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Scrim.copy(alpha = 0.55f), RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp),
             )
-            // Only a band across the middle of the frame is read; this box sits inside it.
-            Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
-            if (found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan)
+        }
+        // Only a band across the middle of the frame is read; this box sits inside it.
+        val guide = @Composable { Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp))) }
+        val panel = @Composable { if (found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
+        val hint = @Composable {
             Text(
                 if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
                 style = MaterialTheme.typography.bodySmall,
@@ -320,6 +319,38 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                     .padding(horizontal = 10.dp, vertical = 6.dp)
                     .semantics { liveRegion = LiveRegionMode.Polite },
             )
+        }
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            if (maxWidth > maxHeight) {
+                // Held sideways there is no room for the panel under the guide: it goes beside it.
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(
+                        Modifier.weight(3f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        instruction()
+                        guide()
+                        hint()
+                    }
+                    Box(Modifier.weight(2f)) { panel() }
+                }
+            } else {
+                Column(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
+                ) {
+                    instruction()
+                    guide()
+                    panel()
+                    hint()
+                }
+            }
         }
 
         found?.let { vin ->
