@@ -53,6 +53,21 @@ The release APK is built for 64-bit ARM (`arm64-v8a`) only, which keeps it to ab
 phones sold with Android 10 or later almost without exception; a 32-bit phone or an x86 emulator will
 refuse to install it. Debug builds (`./gradlew :app:installDebug`) include every processor type.
 
+## Verify your download
+
+Every release APK is signed with the same key. Its SHA-256 certificate fingerprint is:
+
+```
+7D:61:01:C4:F2:27:19:FE:4F:80:17:83:BD:97:6B:5D:36:34:19:61:A5:AC:6A:BC:87:59:7A:DD:00:87:5E:F7
+```
+
+Check an APK before installing it with `apksigner verify --print-certs glovebox-vX.Y.Z.apk` (the
+"SHA-256 digest" line, without colons), or check the installed app with
+[AppVerifier](https://github.com/soupslurpr/AppVerifier). Android also refuses an update signed with a
+different key. The same fingerprint is published for the app's package ID at
+`https://glovebox.cosgriff.io/.well-known/assetlinks.json` (from `site/` in this repo), for
+[Privacy Guides' verified apps](https://github.com/privacyguides/verified-apps).
+
 ## Next up
 
 - Recommended schedule seeding after decode, Log service, History, Reminders tab

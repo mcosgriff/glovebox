@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/org.privacyguides.verifiedapps"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.cosgriff.glovebox",
+      "sha256_cert_fingerprints": [
+        "7D:61:01:C4:F2:27:19:FE:4F:80:17:83:BD:97:6B:5D:36:34:19:61:A5:AC:6A:BC:87:59:7A:DD:00:87:5E:F7"
+      ]
+    }
+  }
+]
