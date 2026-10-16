@@ -192,4 +192,18 @@ class ExportTest {
         assert("What it takes" !in Exports.markdown(without))
         assert("What it takes" !in Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
     }
+
+    @Test
+    fun `documents on file are listed by name only, and can be left out`() {
+        val papers = listOf(ExportPaper("Title", "Title | 2019", LocalDate.of(2019, 6, 1)), ExportPaper("Other", "Window sticker", null))
+        val md = Exports.markdown(Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assert("## Documents on file" in md) { md }
+        assert("| Title | Title \\| 2019 | Jun 1, 2019 |" in md) { md }
+        assert("| Other | Window sticker |  |" in md) { md }
+        assert(Exports.DOCUMENTS_NOTE in md)
+        assert(md.indexOf("## Documents on file") < md.indexOf("## Service records"))
+        val without = Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN, documents = false), today)
+        assert("Documents on file" !in Exports.markdown(without))
+        assert("Documents on file" !in Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
+    }
 }

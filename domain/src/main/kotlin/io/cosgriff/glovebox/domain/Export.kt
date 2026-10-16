@@ -25,6 +25,8 @@ data class ExportOptions(
     val scheduleAndRecalls: Boolean = true,
     /** "What it takes": the oil, tires, fluids and parts the owner has entered. */
     val whatItTakes: Boolean = true,
+    /** The list of documents on file: their type, name and date, never their contents. */
+    val documents: Boolean = true,
     /** Receipt and parts photos; only a PDF can carry them. */
     val photos: Boolean = true,
 ) {
@@ -53,6 +55,9 @@ data class ExportScheduleLine(val name: String, val every: String, val lastDone:
 /** [archivedOn] is the owner saying it doesn't apply to this vehicle. */
 data class ExportRecall(val campaign: String, val component: String, val completedOn: LocalDate?, val archivedOn: LocalDate? = null)
 
+/** One of the vehicle's documents as an export lists it. [type] is the type's label. */
+data class ExportPaper(val type: String, val name: String, val date: LocalDate?)
+
 data class ExportVehicle(
     /** "2019 Toyota 4Runner SR5" */
     val title: String,
@@ -73,6 +78,8 @@ data class ExportVehicle(
     val recalls: List<ExportRecall>,
     /** "What it takes", as (label, one line), only the rows the owner has filled in (WhatItTakes.lines). */
     val whatItTakes: List<Pair<String, String>> = emptyList(),
+    /** The documents the owner keeps for it, in the order the Documents screen lists them. */
+    val documents: List<ExportPaper> = emptyList(),
 ) {
     /** Null when no record in the export has a cost. */
     val totalCents: Long? get() = records.mapNotNull { it.costCents }.takeIf { it.isNotEmpty() }?.sum()
@@ -115,6 +122,7 @@ object Exports {
                 schedule = v.schedule.takeIf { options.scheduleAndRecalls }.orEmpty(),
                 recalls = v.recalls.takeIf { options.scheduleAndRecalls }.orEmpty(),
                 whatItTakes = v.whatItTakes.takeIf { options.whatItTakes }.orEmpty(),
+                documents = v.documents.takeIf { options.documents }.orEmpty(),
             )
         },
     )
@@ -176,6 +184,11 @@ object Exports {
     /** Under "What it takes": whose figures they are. */
     const val TAKES_NOTE = "Entered by the owner from their manuals and the parts they use; Glovebox hasn't checked them against the vehicle."
 
+    /** Under "Documents on file": that only the list is in the export. */
+    const val DOCUMENTS_NOTE = "Kept by the owner in Glovebox. Only this list is in the export; the documents themselves aren't."
+
+    fun paperDate(paper: ExportPaper): String = paper.date?.let { date(it) } ?: ""
+
     fun markdown(doc: ExportDocument): String = buildString {
         val today = doc.exportedOn
         doc.vehicles.forEachIndexed { i, v ->
@@ -196,6 +209,12 @@ object Exports {
                 append("\n## What it takes\n\n| | |\n|---|---|\n")
                 v.whatItTakes.forEach { (label, line) -> append("| ${cell(label)} | ${cell(line)} |\n") }
                 append("\n$TAKES_NOTE\n")
+            }
+
+            if (v.documents.isNotEmpty()) {
+                append("\n## Documents on file\n\n| Type | Name | Date |\n|---|---|---|\n")
+                v.documents.forEach { append("| ${cell(it.type)} | ${cell(it.name)} | ${paperDate(it)} |\n") }
+                append("\n$DOCUMENTS_NOTE\n")
             }
 
             append("\n## Service records\n\n")

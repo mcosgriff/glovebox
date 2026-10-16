@@ -13,6 +13,8 @@ The code is `data/.../backup/BackupFormat.kt` (the file itself, plain JVM code w
 - Every photo the database points at: receipt and parts photos, and each vehicle's own photo.
   They are stored on the phone under a device-bound key, so each is decrypted and written into
   the backup under the backup's key.
+- Every document the database points at (a vehicle's paperwork, `documents.fileName`): a PDF or
+  a JPEG kept in the same folder under the same key, and written the same way, as a photo entry.
 - The settings (theme, reminder rule and lead time, units, notification choices). The app-lock
   settings are in the file as well, but a restore leaves them as they are on the phone being
   restored to: a backup made with the lock off must not switch it off somewhere else. When the
@@ -81,7 +83,7 @@ The decrypted stream is a list of entries, then a single `0` byte.
 | 1 manifest | empty | JSON, see below. Always the first entry. |
 | 2 table | table name | JSON array of rows; each row an object of column name to value |
 | 3 settings | empty | JSON object of setting name to `{ "type": …, "value": … }` |
-| 4 photo | file name in the photo folder | The photo as plain JPEG bytes |
+| 4 photo | file name in the photo folder | The photo as plain JPEG bytes, or a document as plain PDF or JPEG bytes |
 
 A reader skips kinds it doesn't know, so a later app can add kinds without a new format version.
 
@@ -92,12 +94,13 @@ Manifest:
   "format": 1,
   "createdOn": "2026-10-11",
   "schemaVersion": 8,
-  "counts": { "vehicles": 2, "records": 14, "photos": 9 }
+  "counts": { "vehicles": 2, "records": 14, "photos": 9, "documents": 2 }
 }
 ```
 
 `schemaVersion` is the Room schema the tables were written from. `counts` is what the restore
-screen shows before anything is replaced.
+screen shows before anything is replaced. Documents go in as photo entries; `photos` counts
+the photos and `documents` the documents (schema 25 on). A file without `documents` has none.
 
 Table rows are written generically, straight from SQLite: integers and reals as JSON numbers,
 text as strings, null as null. Dates are the same integers the database holds (days since

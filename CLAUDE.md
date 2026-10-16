@@ -146,6 +146,7 @@ about what differs; also the user's own milestone table and a Carfax report PDF;
 history" row opens the same page with that vehicle chosen and no vehicle choice, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
+Documents (a vehicle's paperwork, from Vehicle details).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -328,7 +329,9 @@ Notes on what's built:
   word of its vocabulary. **A misnamed letter is learnt from the whole report** (`standIns`: the letter must
   make at least two different known words), because one word a letter away proves nothing ("Door" and
   "floor", "Lex Brodie's" and "Flex"). Tests use a made-up
-  report built word by word; **never commit a real report**. Keeping the PDF is #168's job.
+  report built word by word; **never commit a real report**. The Import page offers "Keep a copy in this
+  vehicle's documents" for a report, off by default: `PickedImport.pdf` holds the bytes in memory and
+  `ImportViewModel.import` files them through `DocumentStore.addPdf` once the import is written.
 - What an import may do: `ImportPlans.plan` sorts a file's items into new, fills (the saved row is only
   a name), same and differs before anything is written, and the page shows that. "Add new only" is the
   default; "Replace matching" writes over the rows that differ after a dialog lists each one. An import
@@ -574,7 +577,19 @@ Notes on what's built:
 - A photo is in the clear in only two places, both in the private cache and listed in
   `res/xml/file_paths.xml`: `capture/` while the camera app writes a new one (deleted as soon as it is
   encrypted) and `shared/` for the copy handed to the share sheet (emptied before the next share and on
-  launch). Taking a photo needs the camera permission because the app declares it for VIN scanning.
+  launch). A document uses the same two.
+- Documents (#168, `documents` table, schema v25; `VehicleDocuments` in `:domain`, `DocumentStore` in
+  `:data`, `DocumentsScreen` and `DocumentPicker` in app): a vehicle's paperwork, a PDF or a picture
+  (picked, or a photo taken of the paper), each with a `DocumentType`, a name and an optional date.
+  **A document is encrypted with the photo key in `PhotoCrypto.photoDir`, named `document-…`**, so
+  `RecordPhotoStore.sweep`, `BackupWriter`, `BackupRestorer` and the crypto-erase cover it as they
+  cover photos; any new place that lists photo files must list `DocumentDao.allFiles` too. A PDF is
+  kept as it came; a picture is redrawn as a JPEG of at most `VehicleDocuments.MAX_EDGE`, which drops
+  its metadata. Files are read into memory up to `MAX_BYTES` (20 MB). Opening one hands a decrypted copy
+  in `shared/` to another app (`ACTION_VIEW`); nothing is drawn from it in the app. The launchers live in
+  `MainActivity` for the lock-screen reason; a new document opens its details dialog, whose "Don't keep
+  it" removes it. Deleting is a confirmation with no Undo. An export lists them (type, name, date; its
+  own switch, `ExportOptions.documents`) and never carries their contents. Delete vehicle counts them. Taking a photo needs the camera permission because the app declares it for VIN scanning.
 - Export: `Exports.document` (domain) applies the options once (dates, costs and notes, schedule and
   recalls, photos), so the Markdown writer (`Exports.markdown`) and the PDF writer (`PdfExport`, app,
   Android's `PdfDocument`, US Letter) only lay out what they are given. `ExportSheet` is one composable

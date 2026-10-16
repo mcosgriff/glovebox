@@ -1,0 +1,136 @@
+package io.cosgriff.glovebox.data.photo
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import io.cosgriff.glovebox.data.crypto.PhotoCrypto
+import io.cosgriff.glovebox.data.db.DocumentDao
+import io.cosgriff.glovebox.data.db.DocumentEntity
+import io.cosgriff.glovebox.domain.DocumentFormat
+import io.cosgriff.glovebox.domain.DocumentType
+import io.cosgriff.glovebox.domain.PhotoSizing
+import io.cosgriff.glovebox.domain.VehicleDocuments
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.security.GeneralSecurityException
+import java.time.LocalDate
+import java.util.UUID
+
+/** What adding a document came to: the new row, or why nothing was added. */
+sealed interface AddedDocument {
+    data class Added(val id: Long) : AddedDocument
+    data class Refused(val message: String) : AddedDocument
+}
+
+/**
+ * A vehicle's paperwork, kept encrypted in [PhotoCrypto.photoDir] beside the photos. A PDF is kept
+ * as it came; a picture is redrawn as a JPEG, which drops its metadata (where and when it was taken).
+ * Like the photos, a document is only ever in the clear in the copy handed to another app.
+ */
+class DocumentStore(
+    private val context: Context,
+    private val crypto: PhotoCrypto,
+    private val documents: DocumentDao,
+    private val photos: RecordPhotoStore,
+) {
+    /**
+     * Reads the file at [source] (a PDF or a picture) and files it with [vehicleId], named from
+     * [displayName] until the owner names it. The file is read into memory, never past the size cap.
+     */
+    suspend fun add(vehicleId: Long, source: Uri, displayName: String?, today: LocalDate): AddedDocument = withContext(Dispatchers.IO) {
+        val bytes = try {
+            readCapped(source)
+        } catch (_: IOException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        } ?: return@withContext AddedDocument.Refused("That file couldn't be opened.")
+        VehicleDocuments.problem(bytes.size.toLong())?.let { return@withContext AddedDocument.Refused(it) }
+        if (VehicleDocuments.isPdf(bytes)) {
+            AddedDocument.Added(save(vehicleId, bytes, DocumentFormat.PDF, DocumentType.OTHER, VehicleDocuments.nameFromFile(displayName, DocumentType.OTHER), null, today))
+        } else {
+            val jpeg = redraw(bytes) ?: return@withContext AddedDocument.Refused("Only a PDF or a picture can be added.")
+            AddedDocument.Added(save(vehicleId, jpeg, DocumentFormat.JPEG, DocumentType.OTHER, VehicleDocuments.nameFromFile(displayName, DocumentType.OTHER), null, today))
+        }
+    }
+
+    /** Files a PDF that is already in memory, as the Carfax import has its report. */
+    suspend fun addPdf(vehicleId: Long, bytes: ByteArray, type: DocumentType, name: String, date: LocalDate?, today: LocalDate): Long =
+        withContext(Dispatchers.IO) { save(vehicleId, bytes, DocumentFormat.PDF, type, name, date, today) }
+
+    private suspend fun save(vehicleId: Long, bytes: ByteArray, format: DocumentFormat, type: DocumentType, name: String, date: LocalDate?, today: LocalDate): Long {
+        val fileName = "document-${UUID.randomUUID()}.${format.extension}"
+        crypto.encryptTo(fileName, bytes.inputStream())
+        return try {
+            documents.insert(
+                DocumentEntity(
+                    vehicleId = vehicleId,
+                    type = type.name,
+                    name = name,
+                    date = date,
+                    fileName = fileName,
+                    format = format.name,
+                    sizeBytes = bytes.size.toLong(),
+                    addedOn = today,
+                ),
+            )
+        } catch (e: Exception) {
+            // The vehicle went meanwhile; the file has nothing to belong to.
+            File(crypto.photoDir, fileName).delete()
+            throw e
+        }
+    }
+
+    /** Removes the row, then the file. No Undo: nothing else hangs off a document. */
+    suspend fun delete(document: DocumentEntity) = withContext(Dispatchers.IO) {
+        documents.delete(document.id)
+        File(crypto.photoDir, document.fileName).delete()
+    }
+
+    /**
+     * Writes a decrypted copy for another app to open and returns it, or null if the file can't be
+     * read. It goes in the share folder, which is emptied before the next share and on launch.
+     */
+    suspend fun openCopy(document: DocumentEntity): File? = withContext(Dispatchers.IO) {
+        photos.clearShared()
+        val copy = File(photos.sharedDir, VehicleDocuments.fileName(document.name, VehicleDocuments.format(document.format)))
+        try {
+            copy.outputStream().use { crypto.decrypt(document.fileName, it) }
+            copy
+        } catch (_: IOException) {
+            copy.delete()
+            null
+        } catch (_: GeneralSecurityException) {
+            copy.delete()
+            null
+        }
+    }
+
+    /** Up to the cap and one byte more, so a file over it is told apart without reading it all. */
+    private fun readCapped(source: Uri): ByteArray? = context.contentResolver.openInputStream(source)?.use { input ->
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(64 * 1024)
+        while (out.size() <= VehicleDocuments.MAX_BYTES) {
+            val n = input.read(buffer)
+            if (n < 0) break
+            out.write(buffer, 0, n)
+        }
+        out.toByteArray()
+    }
+
+    private fun redraw(bytes: ByteArray): ByteArray? = try {
+        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(ByteBuffer.wrap(bytes))) { decoder, info, _ ->
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            val (w, h) = PhotoSizing.fit(info.size.width, info.size.height, VehicleDocuments.MAX_EDGE)
+            decoder.setTargetSize(w, h)
+        }
+        ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 88, it); bitmap.recycle() }.toByteArray()
+    } catch (_: IOException) {
+        null
+    }
+}

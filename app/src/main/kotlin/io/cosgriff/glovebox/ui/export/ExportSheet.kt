@@ -94,6 +94,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import io.cosgriff.glovebox.ui.service.answering
+import io.cosgriff.glovebox.data.db.DocumentDao
+import io.cosgriff.glovebox.domain.ExportPaper
+import io.cosgriff.glovebox.domain.VehicleDocuments
+import io.cosgriff.glovebox.ui.vehicle.toStored
 import javax.inject.Inject
 
 /** A vehicle that can be exported, with everything about it read once when the sheet opens. */
@@ -106,6 +110,7 @@ class ExportViewModel @Inject constructor(
     private val schedule: ScheduleDao,
     private val recalls: RecallDao,
     private val odometer: OdometerDao,
+    private val documents: DocumentDao,
     private val settings: SettingsRepository,
     private val photos: RecordPhotoStore,
     private val saver: ExportSaver,
@@ -158,6 +163,7 @@ class ExportViewModel @Inject constructor(
             soldOn = v.archivedOn,
             clusterSwap = swap,
             whatItTakes = v.whatItTakes().lines(),
+            documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date) },
             records = records.map { r ->
                 ExportRecord(
                     date = r.record.date,
@@ -312,6 +318,8 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
                     HorizontalDivider(color = scheme.outlineVariant)
                     Tick("What it takes (oil, tires, fluids, parts)", o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
+                    Tick("List of documents on file", o.documents) { vm.change(o.copy(documents = it)) }
+                    HorizontalDivider(color = scheme.outlineVariant)
                     val pdf = o.format == ExportFormat.PDF
                     // The choice is remembered while Markdown is selected, so switching back to PDF restores it.
                     Tick(if (pdf) "Receipt photos" else "Receipt photos (PDF only)", o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
@@ -340,7 +348,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             )
 
             val n = doc.recordCount
-            val hasContent = n > 0 || doc.vehicles.any { it.schedule.isNotEmpty() || it.recalls.isNotEmpty() || it.whatItTakes.isNotEmpty() }
+            val hasContent = n > 0 || doc.vehicles.any { it.schedule.isNotEmpty() || it.recalls.isNotEmpty() || it.whatItTakes.isNotEmpty() || it.documents.isNotEmpty() }
             Button(
                 onClick = { vm.export(onStarted = onDismiss) },
                 enabled = hasContent && !vm.working,

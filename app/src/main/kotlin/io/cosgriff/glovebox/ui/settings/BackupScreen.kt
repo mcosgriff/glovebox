@@ -220,7 +220,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                     Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Includes", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            contents?.let { BackupRules.contents(it.vehicles, it.records, it.photos) } ?: "Counting…",
+                            contents?.let { BackupRules.contents(it.vehicles, it.records, it.photos, it.documents, it.documentBytes) } ?: "Counting…",
                             style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
                         )

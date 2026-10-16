@@ -57,6 +57,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.DataWipe
+import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
@@ -85,6 +86,7 @@ data class DeleteVehicleData(
     val torqueSpecs: Int,
     val recalls: Int,
     val mileageReadings: Int,
+    val documents: Int = 0,
     /** For "Archive instead": the highest reading so far. */
     val lastOdometer: Int?,
 ) {
@@ -101,6 +103,7 @@ class DeleteVehicleViewModel @Inject constructor(
     private val torque: TorqueDao,
     private val recalls: RecallDao,
     private val odometer: OdometerDao,
+    private val documents: DocumentDao,
     private val wipe: DataWipe,
     private val archiver: VehicleArchiver,
 ) : ViewModel() {
@@ -125,6 +128,7 @@ class DeleteVehicleViewModel @Inject constructor(
                 torqueSpecs = torque.observe(vehicleId).first().size,
                 recalls = recalls.recallsFor(vehicleId).size,
                 mileageReadings = readings.size,
+                documents = documents.documentsFor(vehicleId).size,
                 lastOdometer = VehicleReminders.currentOdometer(
                     records.map { it.toEntry(v.clusterSwap(), NoLinks) },
                     readings.toReadings(v.clusterSwap()),
@@ -219,6 +223,7 @@ fun DeleteVehicleScreen(
                         "Torque & fastener specs" to "${d.torqueSpecs}",
                         "Recalls and their status" to "${d.recalls}",
                         "Mileage readings" to "${d.mileageReadings}",
+                        "Documents" to "${d.documents}",
                         "Vehicle details and photo" to if (d.vehicle.photoFile != null) "1 photo" else "No photo",
                     ).forEach { (label, value) ->
                         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {

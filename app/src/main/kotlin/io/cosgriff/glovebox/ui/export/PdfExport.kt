@@ -76,6 +76,12 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
             text(Exports.TAKES_NOTE, small, before = 4f)
         }
 
+        if (v.documents.isNotEmpty()) {
+            section("Documents on file")
+            table(listOf("Type", "Name", "Date"), v.documents.map { listOf(it.type, it.name, Exports.paperDate(it)) }, fractions = listOf(0.3f, 0.45f, 0.25f))
+            text(Exports.DOCUMENTS_NOTE, small, before = 4f)
+        }
+
         section("Service records")
         if (v.records.isEmpty()) text("No service records in this period.", body)
         v.records.forEach { record(it, v.unit) }

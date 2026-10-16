@@ -137,12 +137,18 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import io.cosgriff.glovebox.ui.service.answering
 import io.cosgriff.glovebox.ui.service.toRef
+import io.cosgriff.glovebox.data.photo.DocumentStore
+import io.cosgriff.glovebox.domain.DocumentType
+import io.cosgriff.glovebox.domain.VehicleDocuments
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /** An import file the user picked: its name and what it says. Held in memory only, never written anywhere. */
-/** [file] is set when the pick was read already, as a Carfax report PDF is; otherwise [text] is parsed as an import file. */
-data class PickedImport(val name: String, val text: String, val file: ImportFile? = null)
+/**
+ * [file] is set when the pick was read already, as a Carfax report PDF is; otherwise [text] is parsed as an import file.
+ * [pdf] is the report itself, held in memory only so that it can be kept in the vehicle's documents if the user asks.
+ */
+data class PickedImport(val name: String, val text: String, val file: ImportFile? = null, val pdf: ByteArray? = null)
 
 /**
  * Lets the user pick an import file with Android's file picker. A singleton with its launcher in
@@ -187,7 +193,7 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
                     PdfWords.read(context, bytes)?.let { CarfaxReport.read(it, LocalDate.now()) }
                 }
                 if (file == null) _problem.value = "That PDF couldn't be read. A password-protected PDF can't be imported."
-                else _picked.value = PickedImport(displayName(uri) ?: "Carfax report", "", file)
+                else _picked.value = PickedImport(displayName(uri) ?: "Carfax report", "", file, pdf = bytes)
                 return@launch
             }
             val text = withContext(Dispatchers.IO) { read(uri) }
@@ -322,6 +328,8 @@ data class ImportResult(
     val stopped: Int = 0,
     /** [PlanView.note], said again now that it is saved. */
     val note: String? = null,
+    /** The report was filed in the vehicle's documents; false when it was asked for and couldn't be. */
+    val keptCopy: Boolean? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -336,6 +344,7 @@ class ImportViewModel @Inject constructor(
     private val milestones: MilestoneDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
+    private val documents: DocumentStore,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     /** The garage, then sold vehicles: those can still take service history. */
@@ -401,7 +410,24 @@ class ImportViewModel @Inject constructor(
         picker.pick()
     }
 
-    fun import(preview: ImportPreview.Ready, mode: ImportMode, stopDoubles: Boolean) = viewModelScope.launch { preview.write(mode, stopDoubles) }
+    /** [keepCopy] files a Carfax report's PDF in the vehicle's documents once the import is written. */
+    fun import(preview: ImportPreview.Ready, mode: ImportMode, stopDoubles: Boolean, keepCopy: Boolean) = viewModelScope.launch {
+        // Read first: a finished import lets go of the picked file.
+        val report = picker.picked.value?.takeIf { keepCopy }
+        val pdf = report?.pdf
+        val id = vehicleId.value
+        preview.write(mode, stopDoubles)
+        if (pdf != null && id != null) {
+            val kept = try {
+                val name = VehicleDocuments.nameFromFile(report.name, DocumentType.REPORT)
+                documents.addPdf(id, pdf, DocumentType.REPORT, name, null, LocalDate.now())
+                true
+            } catch (_: Exception) {
+                false
+            }
+            _result.value = _result.value?.copy(keptCopy = kept)
+        }
+    }
 
     private fun finish(view: PlanView, vehicleId: Long, mode: ImportMode, stopped: Int = 0) {
         val vehicle = vehicles.value?.firstOrNull { it.id == vehicleId }
@@ -701,6 +727,8 @@ fun ImportScreen(
     val uriHandler = LocalUriHandler.current
     var mode by rememberSaveable(picked?.name) { mutableStateOf(ImportMode.ADD_NEW) }
     var stopDoubles by rememberSaveable(picked?.name) { mutableStateOf(false) }
+    // Off by default: the report is only read, never kept, unless the user asks.
+    var keepCopy by rememberSaveable(picked?.name) { mutableStateOf(false) }
     var confirming by rememberSaveable { mutableStateOf(false) }
 
     val ready = preview as? ImportPreview.Ready
@@ -709,7 +737,7 @@ fun ImportScreen(
             view = ready.view,
             onConfirm = {
                 confirming = false
-                vm.import(ready, ImportMode.REPLACE_MATCHING, stopDoubles)
+                vm.import(ready, ImportMode.REPLACE_MATCHING, stopDoubles, keepCopy)
             },
             onDismiss = { confirming = false },
         )
@@ -851,9 +879,10 @@ fun ImportScreen(
                             color = scheme.onSurface,
                         )
                     } else {
+                        if (picked?.pdf != null) KeepCopyCard(keepCopy) { keepCopy = it }
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Button(
-                                onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles) },
+                                onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles, keepCopy) },
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                             ) {
                                 Text("Import ${view.count(changes)}")
@@ -1054,6 +1083,34 @@ private fun ResultCard(r: ImportResult) {
                     Text(count(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
                 r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant) }
+                when (r.keptCopy) {
+                    true -> Text("The report is kept in the vehicle's documents", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+                    false -> Text("The report couldn't be kept in the vehicle's documents. Add it from there.", style = MaterialTheme.typography.bodyMedium, color = scheme.error)
+                    null -> Unit
+                }
+            }
+        }
+    }
+}
+
+/** For a Carfax report: whether to file the PDF itself with the vehicle's documents when the import is written. */
+@Composable
+private fun KeepCopyCard(keep: Boolean, onChange: (Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Card {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = keep, role = Role.Checkbox, onValueChange = onChange),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Checkbox(checked = keep, onCheckedChange = null)
+            Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Keep a copy in this vehicle's documents", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Encrypted on this phone with the vehicle's other paperwork. Unticked, the report is only read and not kept.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
             }
         }
     }

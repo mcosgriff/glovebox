@@ -43,7 +43,7 @@ class MigrationTest {
     /** Parents before children, so every foreign key points at a row that is there. */
     private val order = listOf(
         "vehicles", "odometer_readings", "schedule_items", "service_records", "service_record_items",
-        "photos", "torque_specs", "recalls", "milestones", "milestone_jobs",
+        "photos", "torque_specs", "recalls", "milestones", "milestone_jobs", "documents",
     )
 
     private data class Column(val name: String, val type: String)
