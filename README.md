@@ -29,8 +29,11 @@ serial 000000); the recalls are NHTSA's real list for that year, make and model.
 
 | Add a vehicle from its VIN | Resolve recalls | Log service |
 |:-:|:-:|:-:|
-| <img src="docs/images/demo/add-vehicle.webp" width="250" alt="Typing a VIN, NHTSA's decode, picking the trim, then the maker's schedule"> | <img src="docs/images/demo/recalls.webp" width="250" alt="Marking a recall done and archiving one that doesn't apply"> | <img src="docs/images/demo/log-service.webp" width="250" alt="Logging an oil change, air filter and tire rotation, then the reminders moving"> |
-| Decode, confirm the trim, track the maker's schedule | Mark one done (it goes into the service history), archive one that doesn't apply | One record resets three reminders |
+| <img src="docs/images/demo/add-vehicle.webp" width="240" alt="Typing a VIN, NHTSA's decode, picking the trim, then the maker's schedule"> | <img src="docs/images/demo/recalls.webp" width="240" alt="Marking a recall done and archiving one that doesn't apply"> | <img src="docs/images/demo/log-service.webp" width="240" alt="Logging an oil change, air filter and tire rotation, then the reminders moving"> |
+
+Adding a vehicle: decode the VIN, confirm the trim, track the maker's schedule. Recalls: mark one
+done (it goes into the service history) and archive one that doesn't apply. Log service: one record
+resets three reminders.
 
 ## Screenshots
 
