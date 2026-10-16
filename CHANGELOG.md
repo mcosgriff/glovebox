@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/mcosgriff/glovebox/compare/v0.8.0...v0.8.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **scan:** read frames the way the screen shows them, and make the scanner's panel a setting ([#208](https://github.com/mcosgriff/glovebox/issues/208)) ([e5e520a](https://github.com/mcosgriff/glovebox/commit/e5e520a5aa2c47f7746c64afb742c3545102fec6))
+
 ## [0.8.0](https://github.com/mcosgriff/glovebox/compare/v0.7.1...v0.8.0) (2026-10-16)
 
 
