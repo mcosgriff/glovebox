@@ -67,7 +67,19 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.cosgriff.glovebox.domain.BarcodeSeen
+import io.cosgriff.glovebox.domain.ScanReport
 import io.cosgriff.glovebox.domain.VinScan
+import android.graphics.Bitmap
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import io.cosgriff.glovebox.ui.theme.statusColors
 import java.util.concurrent.Executors
 
@@ -138,6 +150,12 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
     /** A barcode was read but it wasn't a VIN. */
     var notAVin by remember { mutableStateOf(false) }
     var torch by remember { mutableStateOf(false) }
+    // What the scanner is doing, for the panel under the guide. Written from the analyzer's thread.
+    var rate by remember { mutableStateOf<Int?>(null) }
+    var seen by remember { mutableStateOf<BarcodeSeen?>(null) }
+    var printText by remember { mutableStateOf<String?>(null) }
+    var printRan by remember { mutableStateOf(false) }
+    var view by remember { mutableStateOf<BandView?>(null) }
     val paused by rememberUpdatedState(found != null)
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
 
@@ -158,8 +176,21 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
         val printed = ArrayDeque<String?>()
         val barcodes = ArrayDeque<String>()
         var frame = 0
+        // For the panel: frames counted over the last second, and when a barcode was last in view.
+        var counted = 0
+        var second = System.currentTimeMillis()
+        var lastSeen: VinBarcodeReader.Sighting? = null
+        var lastSeenAt = 0L
+        rate = 0
         controller.setImageAnalysisAnalyzer(executor) { image ->
             image.use {
+                val now = System.currentTimeMillis()
+                counted++
+                if (now - second >= 1000) {
+                    rate = (counted * 1000 / (now - second)).toInt()
+                    counted = 0
+                    second = now
+                }
                 if (paused) {
                     // What was read before "Rescan" says nothing about what is in front of the camera now.
                     printed.clear()
@@ -168,7 +199,17 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 }
                 val (band, width, height) = it.guideBand()
                 // A barcode first: it is quicker to read and carries its own error checking.
-                val barcode = reader.read(band, width, height)
+                val sighting = reader.look(band, width, height)
+                // A barcode stays reported for a moment after it leaves the frame, so the panel doesn't flicker.
+                if (sighting != null) {
+                    lastSeen = sighting
+                    lastSeenAt = now
+                } else if (now - lastSeenAt > HOLD_MILLIS) {
+                    lastSeen = null
+                }
+                seen = lastSeen?.let { s -> BarcodeSeen(s.format, s.text) }
+                if (counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
+                val barcode = sighting?.text
                 if (barcode != null) {
                     val vin = VinScan.vin(barcode)
                     if (vin != null) {
@@ -185,7 +226,10 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 if (frame++ % VinScan.PRINT_EVERY != 0) return@use
                 // No barcode in the frame: look for the VIN in print. If the recogniser can't run on
                 // this phone it reads nothing, and the scanner is a barcode scanner as before.
-                printed.addLast(print.read(band, width, height)?.let(VinScan::printed))
+                val text = print.read(band, width, height)
+                printRan = true
+                printText = text
+                printed.addLast(text?.let(VinScan::printed))
                 while (printed.size > VinScan.WINDOW) printed.removeFirst()
                 VinScan.agreed(printed.toList())?.let { vin ->
                     fromPrint = true
@@ -264,6 +308,7 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
             )
             // Only a band across the middle of the frame is read; this box sits inside it.
             Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
+            if (found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan)
             Text(
                 if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
                 style = MaterialTheme.typography.bodySmall,
@@ -312,6 +357,92 @@ private fun Scanner(onClose: () -> Unit, onUseVin: (String) -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** How long a barcode stays reported after the last frame it was in. */
+private const val HOLD_MILLIS = 1000L
+
+/** The panel's picture of what is read is redrawn on one frame in this many. */
+private const val THUMB_EVERY = 3
+
+/**
+ * A small greyscale copy of the band being read, for the panel, with the outline of the barcode in
+ * it, if any, as fractions of the band. Held in memory while the scanner is open, never stored.
+ */
+internal class BandView(val image: ImageBitmap, val aspect: Float, val corners: List<Offset>?, val read: Boolean) {
+    companion object {
+        private const val WIDTH = 360
+
+        fun of(band: ByteArray, width: Int, height: Int, sighting: VinBarcodeReader.Sighting?): BandView {
+            val step = (width / WIDTH).coerceAtLeast(1)
+            val w = width / step
+            val h = height / step
+            val pixels = IntArray(w * h) { i ->
+                val l = band[(i / w) * step * width + (i % w) * step].toInt() and 0xFF
+                (0xFF shl 24) or (l shl 16) or (l shl 8) or l
+            }
+            val image = Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888).asImageBitmap()
+            val corners = sighting?.corners?.map { Offset(it.x.toFloat() / width, it.y.toFloat() / height) }
+            return BandView(image, width.toFloat() / height, corners, sighting?.text != null)
+        }
+    }
+}
+
+/**
+ * What the scanner is doing, so a scan that finds nothing is seen to be trying: the strip of the
+ * frame being read, with a barcode outlined in it (green read, amber found but not readable), how
+ * many frames a second are read, and what the last barcode and print reads came to.
+ */
+@Composable
+private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: String?, printRan: Boolean) {
+    val ok = statusColors().ok
+    Column(
+        Modifier.fillMaxWidth()
+            .background(Scrim.copy(alpha = 0.75f), RoundedCornerShape(14.dp))
+            .padding(12.dp)
+            .semantics(mergeDescendants = true) {},
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.width(120.dp).aspectRatio(view?.aspect ?: 1.5f).background(Color.Black, RoundedCornerShape(6.dp))) {
+                view?.let { v ->
+                    Image(v.image, contentDescription = null, modifier = Modifier.fillMaxSize())
+                    v.corners?.let { corners ->
+                        Canvas(Modifier.fillMaxSize()) {
+                            val path = Path().apply {
+                                corners.forEachIndexed { i, c ->
+                                    val p = Offset(c.x * size.width, c.y * size.height)
+                                    if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y)
+                                }
+                                close()
+                            }
+                            drawPath(path, if (v.read) ok else Guide, style = Stroke(width = 2.dp.toPx()))
+                        }
+                    }
+                }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("WHAT THE SCANNER SEES", style = MaterialTheme.typography.labelSmall, color = OnScrimMuted)
+                Text(ScanReport.rate(rate), style = MaterialTheme.typography.bodySmall, color = OnScrim)
+            }
+        }
+        Text(
+            ScanReport.barcode(seen),
+            style = MaterialTheme.typography.bodySmall,
+            fontFamily = PlexMono,
+            color = when {
+                seen == null -> OnScrimMuted
+                seen.text == null -> Guide
+                else -> OnScrim
+            },
+        )
+        Text(
+            if (printRan) ScanReport.print(print) else "Print is read when no barcode is in the box",
+            style = MaterialTheme.typography.bodySmall,
+            fontFamily = PlexMono,
+            color = if (print.isNullOrBlank()) OnScrimMuted else OnScrim,
+        )
     }
 }
 
