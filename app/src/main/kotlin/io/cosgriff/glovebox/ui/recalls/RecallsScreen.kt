@@ -7,6 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -513,37 +523,49 @@ private fun RecallCard(
                 }
                 return@Column
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = onToggle,
-                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, scheme.onSurface),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
+            // What the owner says about the recall, as one connected group: done, or not this vehicle's.
+            // Archiving is only for an open recall, so a completed one has the single button.
+            // One outlined shape split by a line, so the two read as a group: what the owner says about the recall.
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    Modifier.weight(if (done) 1f else 2f).height(48.dp).clip(RoundedCornerShape(12.dp))
+                        .border(1.5.dp, scheme.onSurface, RoundedCornerShape(12.dp)),
                 ) {
-                    Text(if (done) "Mark as open" else "Mark as done", maxLines = 1)
+                    StatusButton(if (done) "Mark as open" else "Mark as done", onClick = onToggle, modifier = Modifier.weight(1f))
+                    if (!done) {
+                        Box(Modifier.width(1.5.dp).fillMaxHeight().background(scheme.onSurface))
+                        StatusButton("Archive", onClick = onArchive, modifier = Modifier.weight(1f))
+                    }
                 }
                 Button(
                     onClick = onFindDealer,
-                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {
-                    Text("Find a dealer", maxLines = 1)
+                    Text("Find a dealer", maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 }
             }
             if (!done) {
-                TextButton(
-                    onClick = onArchive,
-                    modifier = Modifier.heightIn(min = 48.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp),
-                ) {
-                    Text("Doesn't apply to this vehicle? Archive it")
-                }
+                Text(
+                    "Archive it if the recall doesn't apply to this vehicle.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
             }
         }
+    }
+}
+
+/** One half of the recall card's Mark as done / Archive group; the group draws the outline. */
+@Composable
+private fun StatusButton(text: String, onClick: () -> Unit, modifier: Modifier) {
+    Box(
+        modifier.fillMaxHeight().clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
