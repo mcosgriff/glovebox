@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glovebox in Obtainium</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --ground: #F4F3EF; --surface: #FFFFFF; --ink: #17191C; --muted: #5A5F66; --line: #DEDCD5; --accent: #C2410C; --on-accent: #FFFFFF; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ground: #121416; --surface: #1C1F23; --ink: #EDEBE6; --muted: #A5A9AF; --line: #2E3237; --accent: #F08A4B; --on-accent: #17191C; }
+  }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 32rem; margin: 0 auto; padding: 32px 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  h1 { font-size: 1.5rem; margin: 0 0 8px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  a.button { display: block; text-align: center; padding: 14px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none; }
+  a { color: var(--accent); }
+  code { font-size: 0.9em; word-break: break-all; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Add Glovebox to Obtainium</h1>
+    <p>On an Android phone with Obtainium installed, this opens it with Glovebox filled in, ready to install and keep up to date from its GitHub releases.</p>
+    <a class="button" href="obtainium://app/%7B%22id%22%3A%22io.cosgriff.glovebox%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fmcosgriff%2Fglovebox%22%2C%22author%22%3A%22mcosgriff%22%2C%22name%22%3A%22Glovebox%22%7D">Open in Obtainium</a>
+  </div>
+  <p style="margin-top:20px">No Obtainium yet? Get it from <a href="https://github.com/ImranR98/Obtainium/releases">its releases</a>, then come back and tap the button. Or add <code>https://github.com/mcosgriff/glovebox</code> in Obtainium by hand.</p>
+  <p>Before installing, you can check the APK's signing key against the fingerprint in <a href="https://github.com/mcosgriff/glovebox#verify-your-download">the README</a>.</p>
+</main>
+</body>
+</html>

@@ -1,7 +1,18 @@
 # Glovebox
 
+[![CI](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/mcosgriff/glovebox?sort=semver)](https://github.com/mcosgriff/glovebox/releases/latest)
+[![Licence: GPL-3.0](https://img.shields.io/github/license/mcosgriff/glovebox)](LICENSE)
+[![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](#releases-obtainium)
+
 Private, offline-first vehicle maintenance tracker for Android. Everything is stored on the phone,
 encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
+
+<a href="https://glovebox.cosgriff.io/obtainium/"><img src="docs/images/badge_obtainium.png" alt="Get it on Obtainium" height="48"></a>
+
+The badge opens a page whose button adds Glovebox to [Obtainium](https://github.com/ImranR98/Obtainium)
+in one tap (GitHub doesn't allow the app link in a README itself). Or add
+`https://github.com/mcosgriff/glovebox` in Obtainium by hand.
 
 ## Modules
 
