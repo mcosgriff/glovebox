@@ -490,12 +490,14 @@ private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: Cl
 /**
  * "Log it" drawn as an outlined button on a reminder row. It has no click of its own: the whole row
  * is the button (with "Log it" as its click label), so a tap anywhere on the row does the same.
+ * In ink, not the accent: the accent on a reminder row says it is late, and a button on every row
+ * in that colour would say it of every row.
  */
 @Composable
 private fun LogItLabel() {
     Surface(
         shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface),
         color = Color.Transparent,
     ) {
         Text(
@@ -503,7 +505,7 @@ private fun LogItLabel() {
             Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
