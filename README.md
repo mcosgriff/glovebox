@@ -1,7 +1,18 @@
 # Glovebox
 
+[![CI](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/mcosgriff/glovebox?sort=semver)](https://github.com/mcosgriff/glovebox/releases/latest)
+[![Licence: GPL-3.0](https://img.shields.io/github/license/mcosgriff/glovebox)](LICENSE)
+[![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](#releases-obtainium)
+
 Private, offline-first vehicle maintenance tracker for Android. Everything is stored on the phone,
 encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
+
+<a href="https://glovebox.cosgriff.io/obtainium/"><img src="docs/images/badge_obtainium.png" alt="Get it on Obtainium" height="48"></a>
+
+The badge opens a page whose button adds Glovebox to [Obtainium](https://github.com/ImranR98/Obtainium)
+in one tap (GitHub doesn't allow the app link in a README itself). Or add
+`https://github.com/mcosgriff/glovebox` in Obtainium by hand.
 
 ## Modules
 
@@ -61,6 +72,21 @@ encrypted. The only network calls send a VIN (or year/make/model) to NHTSA.
 The release APK is built for 64-bit ARM (`arm64-v8a`) only, which keeps it to about 22 MB. That covers
 phones sold with Android 10 or later almost without exception; a 32-bit phone or an x86 emulator will
 refuse to install it. Debug builds (`./gradlew :app:installDebug`) include every processor type.
+
+## Verify your download
+
+Every release APK is signed with the same key. Its SHA-256 certificate fingerprint is:
+
+```
+7D:61:01:C4:F2:27:19:FE:4F:80:17:83:BD:97:6B:5D:36:34:19:61:A5:AC:6A:BC:87:59:7A:DD:00:87:5E:F7
+```
+
+Check an APK before installing it with `apksigner verify --print-certs glovebox-vX.Y.Z.apk` (the
+"SHA-256 digest" line, without colons), or check the installed app with
+[AppVerifier](https://github.com/soupslurpr/AppVerifier). Android also refuses an update signed with a
+different key. The same fingerprint is published for the app's package ID at
+`https://glovebox.cosgriff.io/.well-known/assetlinks.json` (from `site/` in this repo), for
+[Privacy Guides' verified apps](https://github.com/privacyguides/verified-apps).
 
 ## Next up
 
