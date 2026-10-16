@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.height
@@ -523,19 +525,22 @@ private fun RecallCard(
             }
             // What the owner says about the recall, as one connected group: done, or not this vehicle's.
             // Archiving is only for an open recall, so a completed one has the single button.
-            // Drawn like the theme switch in Settings: a track in the page colour with the buttons inside it.
+            // One outlined shape split by a line, so the two read as a group: what the owner says about the recall.
             Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
-                    Modifier.weight(if (done) 1f else 2f).clip(RoundedCornerShape(14.dp)).background(scheme.background).padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    Modifier.weight(if (done) 1f else 2f).height(48.dp).clip(RoundedCornerShape(12.dp))
+                        .border(1.5.dp, scheme.onSurface, RoundedCornerShape(12.dp)),
                 ) {
                     StatusButton(if (done) "Mark as open" else "Mark as done", onClick = onToggle, modifier = Modifier.weight(1f))
-                    if (!done) StatusButton("Archive", onClick = onArchive, modifier = Modifier.weight(1f))
+                    if (!done) {
+                        Box(Modifier.width(1.5.dp).fillMaxHeight().background(scheme.onSurface))
+                        StatusButton("Archive", onClick = onArchive, modifier = Modifier.weight(1f))
+                    }
                 }
                 Button(
                     onClick = onFindDealer,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {
@@ -553,16 +558,14 @@ private fun RecallCard(
     }
 }
 
-/** One segment of the recall card's Mark as done / Archive group, sized and lettered like the theme switch's. */
+/** One half of the recall card's Mark as done / Archive group; the group draws the outline. */
 @Composable
 private fun StatusButton(text: String, onClick: () -> Unit, modifier: Modifier) {
-    val scheme = MaterialTheme.colorScheme
     Box(
-        modifier.height(48.dp).clip(RoundedCornerShape(10.dp)).background(scheme.surface)
-            .clickable(role = Role.Button, onClick = onClick),
+        modifier.fillMaxHeight().clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
+        Text(text, maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
