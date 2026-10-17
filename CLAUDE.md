@@ -33,6 +33,19 @@ Keep them green; lint errors fail the build.
   `adb shell am instrument -w io.cosgriff.glovebox.debug.test/androidx.test.runner.AndroidJUnitRunner`,
   which leaves the debug app and its data alone. **Don't use `connectedDebugAndroidTest`: it uninstalls
   the debug app when it finishes, which wipes that app's data on the emulator or phone.**
+- Baseline profile (#222): `./gradlew :app:generateReleaseBaselineProfile` drives the app on a Gradle managed
+  emulator (`pixel6Api34`, made and wiped by Gradle, never an emulator with data on it) through the journeys in
+  `:baselineprofile` (`BaselineProfileGenerator`: welcome, add a vehicle by hand, vehicle home, Reminders, Log
+  service, History, Maintenance schedule, Milestones) and writes `app/src/release/generated/baselineProfiles/`.
+  Commit those files. Regenerate by hand when screens change a lot, not on every build; a stale profile only
+  covers less. The journeys find things by the words on screen, so a wording change can break them as it
+  breaks `EndToEndTest`. `./gradlew :baselineprofile:pixel6Api34BenchmarkReleaseAndroidTest` measures cold
+  start and the vehicle-home scroll with and without the profile (`StartupBenchmark`; emulator figures, to
+  compare with each other). The first run downloads the emulator image. For a newer phone, boot a fresh AVD
+  and add `-Pglovebox.profileOn=connected` with `ANDROID_SERIAL` set to it (the benchmark task is then
+  `connectedBenchmarkReleaseAndroidTest`); the committed profile came from a Pixel 10 Pro AVD, API 37.
+  The benchmark asks vehicle home for "fully drawn" (`ReportDrawn`), so it times the start to the reminders. The release APK carries it as
+  `assets/dexopt/baseline.prof`, and `profileinstaller` installs it on first launch, sideloaded or not.
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.
@@ -47,6 +60,8 @@ Keep them green; lint errors fail the build.
   encryption (`PhotoCrypto`), `NhtsaClient`, `RecallRepository`, `SettingsRepository` (DataStore),
   `DataWipe`, Hilt module.
 - `:app` — Compose UI, navigation, ViewModels, `AppLock` + `LockScreen`, theme.
+- `:baselineprofile` — test module (`com.android.test`) that generates the baseline profile and benchmarks
+  startup. Nothing in it ships.
 
 ## Decisions — don't change without asking
 
@@ -97,7 +112,9 @@ Keep them green; lint errors fail the build.
   ABIs made 49. Every phone the app is meant for is arm64; a 32-bit ARM phone or an x86 emulator can't
   install a release, and Android says so at install time. Debug builds carry every ABI, so any emulator
   works. One APK per release, which is what `release.yml` and Obtainium expect: **don't add an ABI back
-  or split the APK per ABI without asking.**
+  or split the APK per ABI without asking.** The baseline profile plugin's `nonMinifiedRelease` and
+  `benchmarkRelease` build types also carry x86_64 (`finalizeDsl` in `app/build.gradle.kts`), so they run on
+  a PC's emulator; they are never released.
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.

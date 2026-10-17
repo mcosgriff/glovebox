@@ -25,4 +25,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "glovebox"
 
-include(":app", ":data", ":domain")
+include(":app", ":data", ":domain", ":baselineprofile")
