@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.1](https://github.com/mcosgriff/glovebox/compare/v0.11.0...v0.11.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* **release:** attach the APK with gh instead of action-gh-release ([#248](https://github.com/mcosgriff/glovebox/issues/248)) ([b1fc0d7](https://github.com/mcosgriff/glovebox/commit/b1fc0d76368aea53dedfa9934e84f864d84223c5))
+
+
+### Build System
+
+* **deps:** Bump actions/setup-java from 6.0.1 to 6.1.0 ([#240](https://github.com/mcosgriff/glovebox/issues/240)) ([8e4b488](https://github.com/mcosgriff/glovebox/commit/8e4b488c4a1f0a9355d06302f82c703a8072ccb5))
+* **deps:** Bump androidx.test.uiautomator:uiautomator ([6e4d803](https://github.com/mcosgriff/glovebox/commit/6e4d80366d4926d02adbbab03882ddff5228c64a))
+* **deps:** Bump androidx.test.uiautomator:uiautomator from 2.3.0 to 2.4.0 in the androidx group ([#243](https://github.com/mcosgriff/glovebox/issues/243)) ([6e4d803](https://github.com/mcosgriff/glovebox/commit/6e4d80366d4926d02adbbab03882ddff5228c64a))
+* **deps:** Bump the everything-else group across 1 directory with 3 updates ([#244](https://github.com/mcosgriff/glovebox/issues/244)) ([a99f5aa](https://github.com/mcosgriff/glovebox/commit/a99f5aa8952aa779d7a16be0a430c505b78097c9))
+
 ## [0.11.0](https://github.com/mcosgriff/glovebox/compare/v0.10.0...v0.11.0) (2026-10-17)
 
 
