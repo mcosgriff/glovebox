@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.10.0](https://github.com/mcosgriff/glovebox/compare/v0.9.0...v0.10.0) (2026-10-17)
+
+
+### Features
+
+* **documents:** view documents inside the app ([#229](https://github.com/mcosgriff/glovebox/issues/229)) ([5b20e14](https://github.com/mcosgriff/glovebox/commit/5b20e14e8961ed7620923dfa30e9d0fb5f7cea96))
+
+
+### Bug Fixes
+
+* **home:** give the Log service button a label TalkBack can read ([#226](https://github.com/mcosgriff/glovebox/issues/226)) ([23a3722](https://github.com/mcosgriff/glovebox/commit/23a37228aace80d88e54b8ab7d75acd1f6ebe927))
+
+
+### Performance Improvements
+
+* add a baseline profile for faster start and scrolling ([#225](https://github.com/mcosgriff/glovebox/issues/225)) ([5624cc1](https://github.com/mcosgriff/glovebox/commit/5624cc1490e32ac70380783e7fd19e562fb0a09b))
+
 ## [0.9.0](https://github.com/mcosgriff/glovebox/compare/v0.8.2...v0.9.0) (2026-10-16)
 
 
