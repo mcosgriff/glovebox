@@ -440,7 +440,7 @@ fun LogServiceScreen(
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        FieldLabel("Odometer (${data.unit.symbol})")
+                        FieldLabel("Odometer (${data.unit.symbolWord})")
                         OutlinedTextField(
                             value = vm.odometerText,
                             onValueChange = { vm.odometerText = it },

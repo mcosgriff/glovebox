@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.pluralWord
 import java.util.Locale
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.ui.service.unit
@@ -154,7 +155,7 @@ fun SnoozeSheet(
 
 private fun SnoozeKind.label(unit: DistanceUnit): String = when (this) {
     // 500 and 1,000 miles, or 800 and 1,600 kilometres.
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> String.format(Locale.US, "%,d %s", Snoozing.distance(this, unit), unit.plural)
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> String.format(Locale.US, "%,d %s", Snoozing.distance(this, unit), unit.pluralWord)
     SnoozeKind.WEEKS_2 -> "2 weeks"
     SnoozeKind.MONTH_1 -> "1 month"
     SnoozeKind.NEXT_OIL_CHANGE -> "With the next oil change"

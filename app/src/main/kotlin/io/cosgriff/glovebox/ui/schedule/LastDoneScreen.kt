@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.symbolWord
+import io.cosgriff.glovebox.ui.service.every
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
@@ -70,7 +72,6 @@ import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.VehicleReminders
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.LastDoneRoute
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
@@ -240,7 +241,7 @@ private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpe
         Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(row.item.name, style = MaterialTheme.typography.titleSmall)
             Text(
-                "Every ${row.item.interval.label(unit).replace(" / ", " or ")}",
+                row.item.interval.every(unit),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -329,7 +330,7 @@ fun LastDoneSheet(
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Odometer then (${unit.symbol})") },
+                label = { Text("Odometer then (${unit.symbolWord})") },
                 supportingText = note?.let { { Text(it.text) } },
                 isError = note?.tone == NoteTone.WARNING,
                 singleLine = true,

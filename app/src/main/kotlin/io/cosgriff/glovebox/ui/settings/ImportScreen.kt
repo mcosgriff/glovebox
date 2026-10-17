@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.orText
 import java.time.LocalDate
 import io.cosgriff.glovebox.domain.CarfaxReport
 import io.cosgriff.glovebox.domain.FileDistances
@@ -99,7 +100,6 @@ import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.SavedScheduleItem
 import io.cosgriff.glovebox.domain.SavedTorqueSpec
 import io.cosgriff.glovebox.domain.ScheduleImport
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.domain.Torque
 import io.cosgriff.glovebox.domain.TorqueCategory
 import io.cosgriff.glovebox.domain.TorqueImport
@@ -681,9 +681,9 @@ private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket
 
 /** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
 private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?, unit: DistanceUnit, firstAt: Int? = null): String = listOfNotNull(
-    firstAt?.let { "First at ${unit.format(it)}" },
-    normal?.let { "${if (firstAt != null) "then every" else "Every"} ${it.label(unit).replace(" / ", " or ")}" } ?: "No interval",
-    severe?.let { "severe ${it.label(unit).replace(" / ", " or ")}" },
+    firstAt?.let { "First at ${it.asDistance(unit)}" },
+    normal?.let { "${if (firstAt != null) "then every" else "Every"} ${it.orText(unit)}" } ?: "No interval",
+    severe?.let { "severe ${it.orText(unit)}" },
     rule?.ruleLabel()?.lowercase(),
     HistoryImport.services[service]?.let { "reset by \"${it.label}\"" },
 ).joinToString(" · ")

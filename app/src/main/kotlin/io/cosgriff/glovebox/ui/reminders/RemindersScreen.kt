@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.monthYear
+import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.ui.service.unit
@@ -62,7 +64,6 @@ import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageOverview
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -73,8 +74,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -89,7 +88,6 @@ class RemindersViewModel @Inject constructor(overview: GarageOverview, private v
     }
 }
 
-private val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.US)
 
 /** What's due across every vehicle. Design: 10 · Reminders tab. */
 @Composable
@@ -282,7 +280,7 @@ private fun ReminderCard(
                     )
                 }
                 Text(
-                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.label(r.vehicle.unit).every()}",
+                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.text(r.vehicle.unit).every()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )

@@ -7,6 +7,7 @@ import dagger.hilt.android.HiltAndroidApp
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.notify.NoticeScheduler
 import io.cosgriff.glovebox.notify.Notifier
+import io.cosgriff.glovebox.ui.AppText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,6 +31,7 @@ class GloveboxApp : Application() {
             super.onCreate()
             return
         }
+        AppText.install(this)
         // Before Hilt builds anything: a "Delete all data" that was cut short must finish before the database is opened.
         DataWipe.finishInterrupted(this)
         super.onCreate()

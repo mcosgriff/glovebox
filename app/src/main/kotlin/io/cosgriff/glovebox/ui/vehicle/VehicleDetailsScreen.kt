@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.titleWord
+import io.cosgriff.glovebox.ui.service.pluralWord
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.foundation.combinedClickable
@@ -319,10 +321,10 @@ fun VehicleDetailsScreen(
         val to = DistanceUnit.entries.first { it != v.unit }
         AlertDialog(
             onDismissRequest = { changingUnit = false },
-            title = { Text("Change this vehicle to ${to.plural}?") },
+            title = { Text("Change this vehicle to ${to.pluralWord}?") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("It counts in ${v.unit.plural} now.")
+                    Text("It counts in ${v.unit.pluralWord} now.")
                     Text(DistanceConversion.explain(v.unit, to))
                     Text(
                         "Changing back converts again, and a figure can come back one out. Other vehicles aren't touched.",
@@ -337,7 +339,7 @@ fun VehicleDetailsScreen(
                         changingUnit = false
                         vm.convertTo(to)
                     },
-                ) { Text("Convert to ${to.plural}") }
+                ) { Text("Convert to ${to.pluralWord}") }
             },
             dismissButton = { TextButton(onClick = { changingUnit = false }) { Text("Cancel") } },
         )
@@ -646,7 +648,7 @@ fun VehicleDetailsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(
                     title = "Distance units",
-                    detail = "${v.unit.title} · what the odometer counts in",
+                    detail = "${v.unit.titleWord} · what the odometer counts in",
                     onClick = { changingUnit = true },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

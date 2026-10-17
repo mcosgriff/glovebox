@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.titleWord
+import io.cosgriff.glovebox.ui.service.pluralWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -181,13 +183,13 @@ fun MilestoneEditor(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("DUE AT")
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    NumberField(unit.title, milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
+                    NumberField(unit.titleWord, milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
                     NumberField("Or months", monthsText, { monthsText = it }, problems.months != null, Modifier.weight(1f))
                 }
                 val wrong = listOfNotNull(problems.miles, problems.months)
                 if (wrong.isEmpty()) {
                     Text(
-                        "${unit.title} the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
+                        "${unit.titleWord} the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
                             (repeatsEveryMiles?.let { " The table repeats every ${it.asDistance(unit)}, so this comes round again each time." } ?: ""),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
@@ -336,13 +338,13 @@ fun MilestoneRepeatDialog(repeatsEveryMiles: Int?, lastMiles: Int, unit: Distanc
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many ${unit.plural} later, " +
+                    "Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many ${unit.pluralWord} later, " +
                         "with the same work. Leave it empty for a table that ends at ${lastMiles.asDistance(unit)}.",
                 )
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Repeats every (${unit.plural})") },
+                    label = { Text("Repeats every (${unit.pluralWord})") },
                     singleLine = true,
                     isError = showError && checked is RepeatEdit.Refused,
                     supportingText = (checked as? RepeatEdit.Refused)?.takeIf { showError }?.let { { Text("${it.why}.") } },

@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.ruleLabel
+import io.cosgriff.glovebox.ui.service.titleWord
+import io.cosgriff.glovebox.ui.service.pluralWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
@@ -57,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.IntervalInput
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import java.util.Locale
 
@@ -159,12 +161,12 @@ fun ScheduleItemEditor(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("REPEAT EVERY")
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    NumberField(unit.title, milesText, { milesText = it }, showErrors && typed == null, Modifier.weight(1f))
+                    NumberField(unit.titleWord, milesText, { milesText = it }, showErrors && typed == null, Modifier.weight(1f))
                     NumberField("Months", monthsText, { monthsText = it }, showErrors && typed == null, Modifier.weight(1f))
                 }
                 Text(
                     if (showErrors && typed == null) {
-                        "Enter ${unit.plural}, months, or both as whole numbers above zero."
+                        "Enter ${unit.pluralWord}, months, or both as whole numbers above zero."
                     } else {
                         "Leave one blank if it doesn't apply."
                     },
@@ -186,7 +188,7 @@ fun ScheduleItemEditor(
                         Column(Modifier.weight(1f)) {
                             Text("Severe-use interval", style = MaterialTheme.typography.titleSmall)
                             Text(
-                                suggestedSevere?.let { "Typical: ${it.label(unit)} when towing, off-road or in dust" }
+                                suggestedSevere?.let { "Typical: ${it.text(unit)} when towing, off-road or in dust" }
                                     ?: "For towing, off-road or dusty driving",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -206,10 +208,10 @@ fun ScheduleItemEditor(
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel("FIRST TIME AT (OPTIONAL)")
-                NumberField(unit.title, firstText, { firstText = it }, showErrors && firstBad, Modifier.fillMaxWidth())
+                NumberField(unit.titleWord, firstText, { firstText = it }, showErrors && firstBad, Modifier.fillMaxWidth())
                 Text(
                     if (showErrors && firstBad) {
-                        "Enter whole ${unit.plural} above zero, or leave it blank."
+                        "Enter whole ${unit.pluralWord} above zero, or leave it blank."
                     } else {
                         "For a job whose first time isn't one interval in, such as coolant first at 100,000 and then every 50,000. " +
                             "Until it has been logged once it is due at this reading; after that the interval counts from the last time. Leave blank otherwise."
@@ -478,11 +480,6 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
     }
 }
 
-private fun DueRule.label(): String = when (this) {
-    DueRule.WHICHEVER_FIRST -> "Whichever comes first"
-    DueRule.WHICHEVER_LAST -> "Whichever comes last"
-    DueRule.MILEAGE_ONLY -> "Mileage only"
-    DueRule.TIME_ONLY -> "Time only"
-}
+private fun DueRule.label(): String = ruleLabel()
 
 private fun Int?.asText(): String = this?.let { String.format(Locale.US, "%,d", it) }.orEmpty()

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -146,7 +147,7 @@ fun SettingsScreen(
             title = "Distance units",
             options = DistanceUnit.entries,
             selected = s.distanceUnit,
-            label = { it.title },
+            label = { it.titleWord },
             note = "For vehicles you add from now on. Each vehicle keeps its own unit, since that is what its odometer reads: " +
                 "to change one already in the garage, open its Vehicle details.",
             onPick = vm::setDistance,
@@ -292,7 +293,7 @@ fun SettingsScreen(
                 }
             }
             Divider()
-            ValueRow("Distance units", s.distanceUnit.title) { picking = Picking.DISTANCE }
+            ValueRow("Distance units", s.distanceUnit.titleWord) { picking = Picking.DISTANCE }
             Divider()
             ValueRow("Torque units", s.torqueUnit.symbol) { picking = Picking.TORQUE }
             Divider()

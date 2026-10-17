@@ -28,18 +28,81 @@ import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.domain.readings
 import io.cosgriff.glovebox.domain.toDash
+import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.ui.AppText
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.abs
 
-val longDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US)
+/** "Oct 17, 2026", in the app's language (see [AppText]). */
+val longDate: DateTimeFormatter get() = AppText.current.longDate
+
+/** "Oct 17": a date in the current year. */
+val shortDate: DateTimeFormatter get() = AppText.current.shortDate
+
+/** "Oct 2026" */
+val monthYear: DateTimeFormatter get() = AppText.current.monthYear
+
+/** "12,345": a count. A distance always goes through [asDistance], which says its unit. */
+fun Int.asNumber(): String = AppText.current.number.format(this)
 
 /** What this vehicle's odometer counts in; every distance stored for it is in this unit. */
 val VehicleEntity.unit: DistanceUnit get() = DistanceUnit.of(distanceUnit)
 
 /** "12,345 mi" or "12,345 km": a distance of a vehicle that counts in [unit]. There is no unit-less version on purpose. */
-fun Int.asDistance(unit: DistanceUnit): String = unit.format(this)
+fun Int.asDistance(unit: DistanceUnit): String = AppText.res.getString(
+    when (unit) {
+        DistanceUnit.MILES -> R.string.distance_mi
+        DistanceUnit.KILOMETERS -> R.string.distance_km
+    },
+    asNumber(),
+)
+
+/** "mi", beside a field or a figure typed in. */
+val DistanceUnit.symbolWord: String
+    get() = AppText.res.getString(
+        when (this) {
+            DistanceUnit.MILES -> R.string.unit_mi
+            DistanceUnit.KILOMETERS -> R.string.unit_km
+        },
+    )
+
+/** "Miles", for a field's label or a choice. */
+val DistanceUnit.titleWord: String
+    get() = AppText.res.getString(
+        when (this) {
+            DistanceUnit.MILES -> R.string.unit_miles_title
+            DistanceUnit.KILOMETERS -> R.string.unit_kilometres_title
+        },
+    )
+
+/** "miles", in a sentence. */
+val DistanceUnit.pluralWord: String
+    get() = AppText.res.getString(
+        when (this) {
+            DistanceUnit.MILES -> R.string.unit_miles
+            DistanceUnit.KILOMETERS -> R.string.unit_kilometres
+        },
+    )
+
+/** "7,500 mi / 12 mo", "30,000 mi" or "36 mo". [unit] is the vehicle's, which is what the interval is in. */
+fun Interval.text(unit: DistanceUnit): String = parts(unit, R.string.interval_slash)
+
+/** "7,500 mi or 12 mo": the same, in a sentence. */
+fun Interval.orText(unit: DistanceUnit): String = parts(unit, R.string.either_or)
+
+/** "Every 7,500 mi or 12 mo" */
+fun Interval.every(unit: DistanceUnit): String = AppText.res.getString(R.string.interval_every, orText(unit))
+
+/** "First at 100,000 mi, then every 50,000 mi / 60 mo" for a job with a first time of its own; the plain [text] otherwise. */
+fun Interval.text(unit: DistanceUnit, firstAt: Int?): String =
+    if (firstAt == null) text(unit) else AppText.res.getString(R.string.interval_first_then_every, firstAt.asDistance(unit), text(unit))
+
+private fun Interval.parts(unit: DistanceUnit, join: Int): String {
+    val distance = miles?.asDistance(unit)
+    val time = months?.let { AppText.res.getString(R.string.months_short, it.asNumber()) }
+    return if (distance != null && time != null) AppText.res.getString(join, distance, time) else distance ?: time.orEmpty()
+}
 
 /** The interval and rule in force for a schedule item; null if it has no usable interval. */
 /**
@@ -87,49 +150,56 @@ fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerRea
     swap.readings(map { OdometerReading(it.date, it.odometer) })
 
 /** "73,412 mi or Apr 10, 2027" */
-fun NextDue.text(unit: DistanceUnit): String = listOfNotNull(odometer?.asDistance(unit), date?.format(longDate)).joinToString(" or ")
+fun NextDue.text(unit: DistanceUnit): String = either(odometer?.asDistance(unit), date?.format(longDate))
 
 fun ReminderChange.text(unit: DistanceUnit): String =
-    after?.let { "${item.name} — next due ${item.interval.nextDueAfter(it).text(unit)}" }
-        ?: "${item.name} — back to not logged yet"
+    after?.let { AppText.res.getString(R.string.reminder_change_next_due, item.name, item.interval.nextDueAfter(it).text(unit)) }
+        ?: AppText.res.getString(R.string.reminder_change_not_logged, item.name)
+
+/** "A or B", or whichever of the two there is. */
+private fun either(a: String?, b: String?): String =
+    if (a != null && b != null) AppText.res.getString(R.string.either_or, a, b) else a ?: b.orEmpty()
 
 /** "In 1,688 mi", "Overdue 12 days" */
-fun DueHeadline.text(unit: DistanceUnit): String = when (this) {
-    DueHeadline.NotLogged -> "Not logged yet"
-    is DueHeadline.Miles -> when {
-        remaining < 0 -> "Overdue ${abs(remaining).asDistance(unit)}"
-        remaining == 0 -> "Due now"
-        else -> "In ${remaining.asDistance(unit)}"
+fun DueHeadline.text(unit: DistanceUnit): String {
+    val res = AppText.res
+    return when (this) {
+        DueHeadline.NotLogged -> res.getString(R.string.due_not_logged)
+        is DueHeadline.Miles -> when {
+            remaining < 0 -> res.getString(R.string.due_overdue_by, abs(remaining).asDistance(unit))
+            remaining == 0 -> res.getString(R.string.due_now)
+            else -> res.getString(R.string.due_in, remaining.asDistance(unit))
+        }
+        is DueHeadline.Days -> when {
+            remaining < 0 -> res.getString(R.string.due_overdue_by, days(abs(remaining)))
+            remaining == 0L -> res.getString(R.string.due_today)
+            else -> res.getString(R.string.due_in, days(remaining))
+        }
+        is DueHeadline.Snoozed -> res.getString(R.string.due_snoozed_until, snooze.until(unit))
     }
-    is DueHeadline.Days -> when {
-        remaining < 0 -> "Overdue ${days(abs(remaining))}"
-        remaining == 0L -> "Due today"
-        else -> "In ${days(remaining)}"
-    }
-    is DueHeadline.Snoozed -> "Snoozed until ${snooze.until(unit)}"
 }
-
-private val shortDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d", Locale.US)
 
 /** "69,412 mi", "Oct 24", or "70,100 mi or Apr 10, 2027" — the year only when it isn't this one. */
-fun Snooze.until(unit: DistanceUnit, today: LocalDate = LocalDate.now()): String = listOfNotNull(
+fun Snooze.until(unit: DistanceUnit, today: LocalDate = LocalDate.now()): String = either(
     untilOdometer?.asDistance(unit),
     untilDate?.let { it.format(if (it.year == today.year) shortDate else longDate) },
-).joinToString(" or ")
+)
 
 /** Days up to two months, then whole months — "In 151 days" is harder to picture than "In 5 months". */
-private fun days(n: Long): String = when {
-    n == 1L -> "1 day"
-    n <= 60 -> "$n days"
-    else -> "${n / 30} months"
+private fun days(n: Long): String = if (n <= 60) {
+    AppText.res.getQuantityString(R.plurals.days, n.toInt(), n.toInt().asNumber())
+} else {
+    (n / 30).toInt().let { AppText.res.getQuantityString(R.plurals.months, it, it.asNumber()) }
 }
 
-fun DueRule.ruleLabel(): String = when (this) {
-    DueRule.WHICHEVER_FIRST -> "Whichever comes first"
-    DueRule.WHICHEVER_LAST -> "Whichever comes last"
-    DueRule.MILEAGE_ONLY -> "Mileage only"
-    DueRule.TIME_ONLY -> "Time only"
-}
+fun DueRule.ruleLabel(): String = AppText.res.getString(
+    when (this) {
+        DueRule.WHICHEVER_FIRST -> R.string.rule_whichever_first
+        DueRule.WHICHEVER_LAST -> R.string.rule_whichever_last
+        DueRule.MILEAGE_ONLY -> R.string.rule_mileage_only
+        DueRule.TIME_ONLY -> R.string.rule_time_only
+    },
+)
 
 /** A torque row as an import or a file written from the vehicle sees it. */
 fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(

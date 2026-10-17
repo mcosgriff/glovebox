@@ -857,6 +857,17 @@ Notes on what's built:
   passed through as a case of its own. Wording held in saved state is worded once, when it happens.
   English stays word for word while moving, since `EndToEndTest` finds things by their words; a
   wording change is its own PR. Exports and import files keep their fixed formats.
+- **The app runs in its translation's locale, not the phone's** (`inAppLocale`, `AppText` in app):
+  `strings.xml` says which (`format_locale`, en-US), `MainActivity` wraps its context in it, and figures,
+  dates and plural forms follow it. So the English app reads "12,345 mi" and "Oct 17, 2026" on every
+  phone, and says "21 days" on a Russian one, where Russian plural rules would give "21 day". The
+  shared formatters in `Mappers.kt` (`asDistance`, `asNumber`, `longDate`, `shortDate`, `monthYear`,
+  `DueHeadline.text`, `Interval.text` / `.orText` / `.every`, `ruleLabel`, the unit words) read
+  `AppText.res`, since view models and workers call them too; so does any other wording outside a
+  composable. **Never format a figure or date with `Locale.US` or `String.format` for display**, and never
+  build a phrase by cutting up another (`removePrefix("In ")`, `.lowercase()`): give it its own resource.
+  `FormatsTest` (on a device) holds the English output of the shared formatters. Fields the user edits are
+  still filled with US grouping, because the parsers (`OdometerInput`, `Money.parseCents`) only read that.
 - Never show placeholder data as if real; mark sample values clearly.
 - Torque/interval reference values are user-verified; UI says "check your service manual". A bundled torque
   value is the one exception to "user-entered", and it is tagged DOUBLE-CHECK until the user has checked it.

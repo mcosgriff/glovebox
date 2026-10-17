@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox
 
+import android.content.Context
+import io.cosgriff.glovebox.ui.inAppLocale
 import io.cosgriff.glovebox.ui.welcome.WelcomeScreen
 import io.cosgriff.glovebox.ui.welcome.WelcomeAction
 import io.cosgriff.glovebox.ui.welcome.FirstRun
@@ -99,6 +101,9 @@ class MainActivity : FragmentActivity() {
     private val launchPhotoPicker: () -> Unit = {
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
+
+    // The app's language, not the phone's (see inAppLocale).
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(newBase.inAppLocale())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

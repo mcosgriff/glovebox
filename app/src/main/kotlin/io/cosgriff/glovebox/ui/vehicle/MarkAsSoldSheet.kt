@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
@@ -107,7 +108,7 @@ fun MarkAsSoldSheet(
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Final odometer (${unit.symbol})") },
+                label = { Text("Final odometer (${unit.symbolWord})") },
                 supportingText = {
                     Text(
                         when {

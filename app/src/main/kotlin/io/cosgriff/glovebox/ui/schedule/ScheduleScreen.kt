@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.MilestoneEntity
@@ -15,7 +16,6 @@ import io.cosgriff.glovebox.ui.export.SaveAsImportFile
 import io.cosgriff.glovebox.domain.KnownIntervalPlan
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -670,7 +670,7 @@ private fun KnownRemindersDialog(
                     Column {
                         Text(item.name, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            (if (item.severeOnly) "Only for severe use · " else "") + item.normal.label(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.label(unit)}" } ?: ""),
+                            (if (item.severeOnly) "Only for severe use · " else "") + item.normal.text(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.text(unit)}" } ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,
