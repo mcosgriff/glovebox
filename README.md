@@ -100,6 +100,7 @@ different key. The same fingerprint is published for the app's package ID at
 | `:domain` | Pure Kotlin: reminder engine (whichever first/last, mileage/time only), service-log rollback, torque units, VIN check digit. Unit-tested, no Android. |
 | `:data` | Room + SQLCipher database, Keystore key management, Tink photo encryption, NHTSA client, settings (DataStore), data wipe. |
 | `:app` | Jetpack Compose UI, Hilt, navigation, biometric app lock. |
+| `:baselineprofile` | Generates the app's baseline profile and benchmarks its startup on an emulator. Ships nothing. |
 
 ### Opening the project
 
