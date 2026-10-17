@@ -157,41 +157,46 @@ object VehicleSpecEntry {
     fun tirePressure(text: String, unit: Pressure): Int? =
         text.trim().removeSuffix(unit.symbol).removeSuffix(unit.symbol.uppercase(Locale.US)).trim().toIntOrNull()?.takeIf { it in unit.range }
 
-    /** "32 psi", "35 psi front / 38 psi rear", with " · spare 60 psi" when the spare is given. */
-    fun pressureSummary(front: Int?, rear: Int?, spare: Int?, unit: Pressure?): String? {
-        val u = (unit ?: Pressure.PSI).symbol
+    /** "32 psi", "35 psi front / 38 psi rear", then "spare 60 psi" when the spare is given. */
+    fun pressureParts(front: Int?, rear: Int?, spare: Int?, unit: Pressure?): List<TakesPart>? {
+        val u = unit ?: Pressure.PSI
+        fun p(v: Int) = TakesPart.Pressure(v, u)
         val main = when {
             front == null && rear == null -> null
-            rear == null || rear == front -> "${front ?: rear} $u"
-            front == null -> "$rear $u rear"
-            else -> "$front $u front / $rear $u rear"
+            rear == null || rear == front -> p(front ?: rear!!)
+            front == null -> TakesPart.For(TakesRole.PRESSURE_REAR, p(rear))
+            else -> TakesPart.Both(TakesPart.For(TakesRole.PRESSURE_FRONT, p(front)), TakesPart.For(TakesRole.PRESSURE_REAR, p(rear)))
         }
-        return listOfNotNull(main, spare?.let { "spare $it $u" }).joinToString(" · ").ifEmpty { null }
+        return listOfNotNull(main, spare?.let { TakesPart.For(TakesRole.PRESSURE_SPARE, p(it)) }).ifEmpty { null }
     }
 
     // ---- How each reads ----------------------------------------------------------------------------
 
     /** "0W-20 · API SP · 6.6 qt · filter 04152-YZZA1", or whatever of that there is; null when nothing is. */
-    fun oilSummary(grade: String?, approval: String?, capacity: Double?, unit: Volume?, filter: String?): String? = listOfNotNull(
-        grade,
-        approval,
-        capacity?.let { "${trimZero(it)} ${(unit ?: Volume.QUARTS).symbol}" },
-        filter?.let { "filter $it" },
-    ).joinToString(" · ").ifEmpty { null }
+    fun oilParts(grade: String?, approval: String?, capacity: Double?, unit: Volume?, filter: String?): List<TakesPart>? = listOfNotNull(
+        grade?.let(TakesPart::Entered),
+        approval?.let(TakesPart::Entered),
+        capacity?.let { TakesPart.Capacity(it, unit ?: Volume.QUARTS) },
+        filter?.let { TakesPart.For(TakesRole.OIL_FILTER, TakesPart.Entered(it)) },
+    ).ifEmpty { null }
 
     /** "P265/70R17", or "Front 225/40R18 · Rear 255/35R18" for different sizes front and rear. */
-    fun tireSummary(front: String?, rear: String?): String? = when {
+    fun tireParts(front: String?, rear: String?): List<TakesPart>? = when {
         front == null -> null
-        rear == null || rear == front -> front
-        else -> "Front $front · Rear $rear"
+        rear == null || rear == front -> listOf(TakesPart.Entered(front))
+        else -> listOf(TakesPart.For(TakesRole.TIRE_FRONT, TakesPart.Entered(front)), TakesPart.For(TakesRole.TIRE_REAR, TakesPart.Entered(rear)))
     }
 
     /** "26\" / 17\" · rear 14\" · Bosch ICON", or whatever of that there is. */
-    fun wiperSummary(driver: Int?, passenger: Int?, rear: Int?, note: String?): String? = listOfNotNull(
-        listOfNotNull(driver, passenger).takeIf { it.isNotEmpty() }?.joinToString(" / ") { "$it\"" },
-        rear?.let { "rear $it\"" },
-        note,
-    ).joinToString(" · ").ifEmpty { null }
+    fun wiperParts(driver: Int?, passenger: Int?, rear: Int?, note: String?): List<TakesPart>? = listOfNotNull(
+        when {
+            driver != null && passenger != null -> TakesPart.Both(TakesPart.Inches(driver), TakesPart.Inches(passenger))
+            else -> (driver ?: passenger)?.let(TakesPart::Inches)
+        },
+        rear?.let { TakesPart.For(TakesRole.WIPER_REAR, TakesPart.Inches(it)) },
+        note?.let(TakesPart::Entered),
+    ).ifEmpty { null }
 
+    // How a stored figure is written ("0.9 mm"): part of the entry, not of the wording.
     private fun trimZero(v: Double): String = if (v % 1.0 == 0.0) v.toInt().toString() else String.format(Locale.US, "%.1f", v)
 }

@@ -530,4 +530,188 @@
     <string name="home_last_at">last at %1$s</string>
     <!-- An estimated date, from the driving pace. -->
     <string name="home_estimate">est. %1$s</string>
+
+    <!-- What it takes (TakesText.kt): the rows and how each line reads -->
+    <string name="takes_oil">Engine oil</string>
+    <string name="takes_tires">Tires</string>
+    <string name="takes_wipers">Wiper blades</string>
+    <string name="takes_transmission">Transmission fluid</string>
+    <string name="takes_differential">Differential oil</string>
+    <string name="takes_transfer_case">Transfer case oil</string>
+    <string name="takes_coolant">Coolant</string>
+    <string name="takes_brake_fluid">Brake fluid</string>
+    <string name="takes_air_filters">Air filters</string>
+    <string name="takes_spark_plugs">Spark plugs</string>
+    <string name="takes_battery">Battery</string>
+    <string name="takes_bulbs">Headlight bulbs</string>
+    <string name="takes_quarts">%1$s qt</string>
+    <string name="takes_litres">%1$s L</string>
+    <string name="takes_psi">%1$s psi</string>
+    <string name="takes_kpa">%1$s kPa</string>
+    <!-- A wiper blade length in inches. -->
+    <string name="takes_inches">%1$s\"</string>
+    <!-- Cold cranking amps. -->
+    <string name="takes_cca">%1$s CCA</string>
+    <!-- Two of a kind: driver / passenger blades, front / rear pressures. -->
+    <string name="takes_both">%1$s / %2$s</string>
+    <!-- %1$s is a part number, size or figure the owner entered. -->
+    <string name="takes_role_filter">filter %1$s</string>
+    <string name="takes_role_tire_front">Front %1$s</string>
+    <string name="takes_role_tire_rear">Rear %1$s</string>
+    <string name="takes_role_pressure_front">%1$s front</string>
+    <string name="takes_role_pressure_rear">%1$s rear</string>
+    <string name="takes_role_spare">spare %1$s</string>
+    <string name="takes_role_wiper_rear">rear %1$s</string>
+    <string name="takes_role_engine_air">engine %1$s</string>
+    <string name="takes_role_cabin_air">cabin %1$s</string>
+    <string name="takes_role_gap">gap %1$s</string>
+    <string name="takes_role_group">group %1$s</string>
+    <string name="takes_role_low">low %1$s</string>
+    <string name="takes_role_high">high %1$s</string>
+    <string name="takes_role_fog">fog %1$s</string>
+    <string name="takes_role_transfer_case">transfer case %1$s</string>
+
+    <!-- Shared, more -->
+    <string name="front">Front</string>
+    <string name="rear">Rear</string>
+    <string name="not_set">Not set</string>
+    <string name="none_saved_yet">None saved yet</string>
+    <!-- A short message after copying, on Android 12 and earlier; %1$s is what was copied. -->
+    <string name="copied">%1$s copied</string>
+    <string name="unit_qt">qt</string>
+    <string name="unit_litre">L</string>
+    <string name="unit_psi">psi</string>
+    <string name="unit_kpa">kPa</string>
+    <string name="fluids_title">Fluids, filters &amp; parts</string>
+
+    <!-- Vehicle details (VehicleDetailsScreen), more -->
+    <!-- %1$s is miles or kilometres. -->
+    <string name="details_unit_change_title">Change this vehicle to %1$s?</string>
+    <string name="details_unit_counts_in">It counts in %1$s now.</string>
+    <!-- %1$s and %2$s are the units (miles, kilometres); %3$s to %6$s are two example figures before and after. -->
+    <string name="details_unit_explain">Every figure on this vehicle is converted from %1$s to %2$s, once, and rounded to a whole number. Odometer readings are converted exactly (%3$s becomes %4$s). Schedule intervals and milestones use the figures a manual would (%5$s becomes %6$s). Do this only if the dash now reads in %2$s, or the wrong unit was chosen.</string>
+    <string name="details_unit_change_back">Changing back converts again, and a figure can come back one out. Other vehicles aren\'t touched.</string>
+    <string name="details_unit_convert">Convert to %1$s</string>
+    <string name="details_photo_unreadable">That image couldn\'t be read. Try another photo.</string>
+    <string name="details_nickname">Nickname</string>
+    <string name="details_nickname_note">Shown instead of the model name everywhere in the app.</string>
+    <string name="details_plate">License plate</string>
+    <string name="details_section_vehicle">VEHICLE</string>
+    <string name="details_section_from_vin">FROM THE VIN</string>
+    <string name="details_vin">VIN</string>
+    <string name="details_vehicle">Vehicle</string>
+    <string name="details_drivetrain">Drivetrain</string>
+    <string name="details_body">Body</string>
+    <string name="details_copy_vin">Copy the VIN</string>
+    <string name="details_entered_by_you">Entered by you</string>
+    <string name="details_source_trim_confirmed">Source: NHTSA vPIC, decoded from the VIN · trim confirmed by you</string>
+    <string name="details_source">Source: NHTSA vPIC, decoded from the VIN</string>
+    <string name="details_section_takes">WHAT IT TAKES</string>
+    <string name="details_part_numbers">Part numbers</string>
+    <string name="details_copy_parts">Copy the part numbers</string>
+    <string name="details_takes_saved">%1$s of %2$s saved</string>
+    <string name="details_takes_note">You enter these. Glovebox doesn\'t look them up, so check your owner\'s or service manual.</string>
+    <string name="details_torque">Torque &amp; fastener specs</string>
+    <string name="details_torque_none">Socket sizes and torque · none saved yet</string>
+    <string name="details_torque_saved">Socket sizes and torque · %1$s saved</string>
+    <string name="details_schedule">Maintenance schedule</string>
+    <string name="details_schedule_none">Not set up yet</string>
+    <string name="details_recalls">Recalls</string>
+    <string name="details_recalls_not_checked">Not checked yet</string>
+    <string name="details_recalls_open">%1$s open</string>
+    <string name="details_units">Distance units</string>
+    <string name="details_units_detail">%1$s · what the odometer counts in</string>
+    <string name="details_readings_detail">Every odometer reading · fix or delete a wrong one</string>
+    <string name="details_import">Import service history</string>
+    <string name="details_import_detail">From a Carfax report PDF, or an import file</string>
+    <string name="details_clear">Clear service history</string>
+    <string name="details_clear_detail">Delete imported or all service records · keeps what it takes and specs</string>
+    <string name="details_mark_sold">Mark as sold</string>
+    <string name="details_sold_note">Sold vehicles move to an archive with their full history. Delete removes everything for good.</string>
+    <string name="details_delete">Delete vehicle and all its data</string>
+    <plurals name="details_items_tracked">
+        <item quantity="one">%1$s item tracked</item>
+        <item quantity="other">%1$s items tracked</item>
+    </plurals>
+    <string name="details_normal_driving">Normal driving</string>
+    <string name="details_severe_driving">Severe driving</string>
+    <string name="details_mixed_driving">%1$s on severe intervals</string>
+    <string name="details_change_photo">Change photo</string>
+    <string name="details_photo_of">Photo of your %1$s</string>
+    <string name="details_choose_photo">Choose another photo</string>
+    <string name="details_remove_photo">Remove photo</string>
+    <string name="details_add_photo">Add a photo of your %1$s</string>
+    <string name="details_photo_note">Stored encrypted on this phone</string>
+    <string name="details_add_vin">Add the VIN</string>
+    <string name="details_vin_or_serial">VIN or serial number</string>
+    <string name="details_vin_check_digit">The check digit doesn\'t match. That\'s normal for some imports; otherwise re-check it.</string>
+    <plurals name="details_vin_older">
+        <item quantity="one">%1$d character. Fine for an older vehicle; newer ones have 17.</item>
+        <item quantity="other">%1$d characters. Fine for an older vehicle; newer ones have 17.</item>
+    </plurals>
+    <string name="details_vin_letters">Letters and digits only, 5 to 17 characters.</string>
+    <string name="details_plate_field">Plate</string>
+    <string name="details_plate_note">Kept on this phone. Glovebox never sends it.</string>
+    <string name="details_plate_region">State or province</string>
+    <!-- A state or province and its code: Colorado (CO). -->
+    <string name="details_plate_region_item">%1$s (%2$s)</string>
+    <string name="details_spec_note">From your owner\'s or service manual. Leave a field empty to clear it.</string>
+    <string name="oil_grade">Grade</string>
+    <string name="oil_grade_error">A grade like 5W-30</string>
+    <string name="oil_grade_note">Viscosity, such as 0W-20 or 5W-30</string>
+    <string name="oil_approval">Approval (optional)</string>
+    <string name="oil_approval_error">Up to 60 characters</string>
+    <string name="oil_approval_note">Such as API SP, ILSAC GF-6 or VW 502 00</string>
+    <string name="oil_capacity">Capacity with filter</string>
+    <!-- %1$s is the most, %2$s the unit (qt or L). -->
+    <string name="oil_capacity_error">1 to %1$s %2$s, one decimal place</string>
+    <string name="oil_filter">Oil filter part number</string>
+    <string name="oil_filter_error">Letters, digits and dashes; up to three, separated by commas</string>
+    <string name="oil_filter_note">Add an alternative after a comma</string>
+    <string name="tires_size_error">As on the sidewall, such as P265/70R17, 225/40R18 92W or 33x12.50R15LT</string>
+    <string name="tires_size">Size</string>
+    <string name="tires_size_note">As printed on the sidewall</string>
+    <string name="tires_rear_differs">Different size at the rear</string>
+    <string name="tires_pressure_section">COLD PRESSURE, FROM THE DOOR PLACARD</string>
+    <!-- %1$s is the unit (psi or kPa). -->
+    <string name="tires_pressure_error">Whole %1$s, %2$s to %3$s</string>
+    <string name="tires_spare">Spare (if it differs)</string>
+    <string name="wipers_error">Whole inches, 10 to 34</string>
+    <string name="wipers_driver">Driver (in)</string>
+    <string name="wipers_passenger">Passenger (in)</string>
+    <string name="wipers_rear">Rear (in, if it has one)</string>
+    <string name="wipers_parts">Part numbers or blade type (optional)</string>
+
+    <!-- Fluids, filters &amp; parts (FluidsPartsScreen) -->
+    <string name="fluids_empty_body">Keep the fluids, part numbers and sizes you look up, so they\'re here at the parts counter. Each one shows beside its job on Log service.</string>
+    <string name="fluids_add_section">ADD</string>
+    <string name="fluids_note">You enter these. Glovebox doesn\'t look them up, so check your owner\'s or service manual. Hold a card to copy its part numbers.</string>
+    <string name="fluids_tap_to_add">Tap to add</string>
+    <string name="fluids_name_error">Up to 40 characters</string>
+    <string name="fluids_fluid">Fluid</string>
+    <string name="fluids_transmission_note">Such as ATF WS, Dexron VI or the DSG fluid\'s number</string>
+    <string name="fluids_oil">Oil</string>
+    <string name="fluids_gear_error">A grade like 75W-90 GL-5, or the oil\'s name</string>
+    <string name="fluids_differential_note">Such as 75W-85 GL-5</string>
+    <string name="fluids_transfer_note">A gear oil grade, or the fluid\'s name</string>
+    <string name="fluids_coolant_note">Such as Toyota Super Long Life or G13</string>
+    <string name="fluids_brake_error">DOT 3, DOT 4, DOT 5 or DOT 5.1</string>
+    <string name="fluids_brake_note">As on the reservoir cap: DOT 3, DOT 4…</string>
+    <string name="fluids_engine_air">Engine air filter part number</string>
+    <string name="fluids_cabin_air">Cabin air filter part number</string>
+    <string name="fluids_part_number">Part number</string>
+    <string name="fluids_gap">Gap</string>
+    <string name="fluids_gap_error">Such as 0.044 in or 1.1 mm</string>
+    <string name="fluids_gap_note">In inches or millimetres</string>
+    <string name="fluids_group">Group size</string>
+    <string name="fluids_group_error">A BCI group such as 24F, 35 or H6</string>
+    <string name="fluids_group_note">As printed on the battery</string>
+    <string name="fluids_cca">Cold-cranking amps</string>
+    <string name="fluids_cca_error">100 to 1,500</string>
+    <string name="fluids_low_beam">Low beam</string>
+    <string name="fluids_low_beam_error">A bulb code such as H11, 9006 or D4S</string>
+    <string name="fluids_high_beam">High beam</string>
+    <string name="fluids_high_beam_error">A bulb code such as 9005 or HB3</string>
+    <string name="fluids_fog">Fog light</string>
+    <string name="fluids_fog_error">A bulb code such as H11 or H16</string>
 </resources>
