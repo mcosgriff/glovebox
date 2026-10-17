@@ -39,6 +39,13 @@ class RecordPhotoStore(
     val sharedDir: File get() = File(context.cacheDir, "shared").apply { mkdirs() }
 
     /**
+     * Android 10 only: where a document is decrypted for the in-app viewer, which has no memory-only file
+     * there. Never exported through the FileProvider; a file is deleted as soon as it is open, and the
+     * folder is emptied on launch.
+     */
+    val viewingDir: File get() = File(context.cacheDir, "viewing").apply { mkdirs() }
+
+    /**
      * Encrypts the image at [source] and returns the new file's name, or null if it couldn't be
      * read. The image is redrawn as a smaller JPEG first, which also drops its metadata (where and
      * when it was taken).
@@ -101,6 +108,7 @@ class RecordPhotoStore(
     suspend fun sweep() = withContext(Dispatchers.IO) {
         clearShared()
         captureDir.listFiles()?.forEach { it.delete() }
+        viewingDir.listFiles()?.forEach { it.delete() }
         val files = crypto.photoDir.listFiles().orEmpty().filter { it.isFile }.map { StoredFile(it.name, it.lastModified()) }
         if (files.isEmpty()) return@withContext
         val referenced = (service.allPhotoFiles() + vehicles.allPhotoFiles() + documents.allFiles()).toSet()

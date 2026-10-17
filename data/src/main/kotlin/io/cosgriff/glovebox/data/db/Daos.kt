@@ -481,6 +481,9 @@ interface DocumentDao {
     @Query("SELECT * FROM documents WHERE id = :id")
     suspend fun byId(id: Long): DocumentEntity?
 
+    @Query("SELECT * FROM documents WHERE id = :id")
+    fun observeOne(id: Long): Flow<DocumentEntity?>
+
     @Query("SELECT * FROM documents WHERE vehicleId = :vehicleId")
     suspend fun documentsFor(vehicleId: Long): List<DocumentEntity>
 

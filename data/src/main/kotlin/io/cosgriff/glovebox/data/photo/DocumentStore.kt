@@ -4,6 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.os.ParcelFileDescriptor
+import android.system.ErrnoException
+import android.system.Os
+import android.system.OsConstants
+import androidx.annotation.RequiresApi
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.DocumentEntity
@@ -15,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.security.GeneralSecurityException
@@ -30,7 +37,8 @@ sealed interface AddedDocument {
 /**
  * A vehicle's paperwork, kept encrypted in [PhotoCrypto.photoDir] beside the photos. A PDF is kept
  * as it came; a picture is redrawn as a JPEG, which drops its metadata (where and when it was taken).
- * Like the photos, a document is only ever in the clear in the copy handed to another app.
+ * It is viewed in the app ([openPdf], [loadPicture]) from memory; it is only ever in the clear on
+ * disk in the copy handed to another app, or briefly on Android 10 (see [openPdf]).
  */
 class DocumentStore(
     private val context: Context,
@@ -110,6 +118,51 @@ class DocumentStore(
             null
         }
     }
+
+    /**
+     * The decrypted PDF for the in-app viewer, as a descriptor the viewer's sandboxed renderer reads, or
+     * null if the file can't be read. The caller closes it. On Android 11 and later it is an anonymous
+     * file in memory (`memfd_create`), so nothing is written to disk. Android 10 has no such call: the
+     * PDF is written to [RecordPhotoStore.viewingDir] and deleted as soon as it is open, leaving the
+     * descriptor the only way to it.
+     */
+    suspend fun openPdf(document: DocumentEntity): ParcelFileDescriptor? = withContext(Dispatchers.IO) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) inMemory(document) else viaPrivateFile(document)
+        } catch (_: IOException) {
+            null
+        } catch (_: GeneralSecurityException) {
+            null
+        } catch (_: ErrnoException) {
+            null
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private fun inMemory(document: DocumentEntity): ParcelFileDescriptor {
+        val fd = Os.memfd_create("glovebox-document", OsConstants.MFD_CLOEXEC)
+        try {
+            // Not closed: closing the stream would close the descriptor it writes to.
+            crypto.decrypt(document.fileName, FileOutputStream(fd))
+            Os.lseek(fd, 0, OsConstants.SEEK_SET)
+            return ParcelFileDescriptor.dup(fd)
+        } finally {
+            Os.close(fd)
+        }
+    }
+
+    private fun viaPrivateFile(document: DocumentEntity): ParcelFileDescriptor {
+        val file = File(photos.viewingDir, "document-${UUID.randomUUID()}")
+        try {
+            file.outputStream().use { crypto.decrypt(document.fileName, it) }
+            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+        } finally {
+            file.delete()
+        }
+    }
+
+    /** A picture document, decrypted in memory for the in-app viewer; null if it can't be read. */
+    suspend fun loadPicture(document: DocumentEntity): Bitmap? = photos.load(document.fileName, VehicleDocuments.MAX_EDGE)
 
     /** Up to the cap and one byte more, so a file over it is told apart without reading it all. */
     private fun readCapped(source: Uri): ByteArray? = context.contentResolver.openInputStream(source)?.use { input ->
