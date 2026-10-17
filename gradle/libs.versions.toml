@@ -35,6 +35,11 @@ hilt = "2.60.1"
 # Build-time only: lists the bundled libraries and their licences for the About screen. No runtime library is added.
 aboutlibraries = "15.2.0"
 hilt-androidx = "1.4.0"
+# Baseline profile (#222): the generator and the startup benchmark in :baselineprofile, and the Gradle plugin
+# that builds their variants of the app and copies the profile into it. Nothing of benchmark ships in the app.
+benchmark = "1.5.0"
+# Writes the app's baseline profile on first launch, so a sideloaded install is compiled from it too.
+profileinstaller = "1.4.1"
 
 junit = "4.13.2"
 jsonSchemaValidator = "3.0.8"
@@ -95,6 +100,8 @@ tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android"
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
 androidx-test-core = { module = "androidx.test:core", version = "1.7.0" }
 androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.3.0" }
+androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 # Test only: runs Android's SQLite on the JVM so the database migrations are tested by `./gradlew build`.
 robolectric = { module = "org.robolectric:robolectric", version = "4.16" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version = "1.3.0" }
@@ -115,4 +122,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
