@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    cooldown:
+      # Wait until a version has been out for 5 days; a bad release is usually caught and pulled by then.
+      # Security updates ignore this.
+      default-days: 5
     groups:
       # Kotlin, its compiler plugins and KSP must move together. Hilt/Dagger reads Kotlin metadata,
       # so a Kotlin bump usually needs a Hilt bump in the same change.
@@ -24,3 +28,5 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 5
