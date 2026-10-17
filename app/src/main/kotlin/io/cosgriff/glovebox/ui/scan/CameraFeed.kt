@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -253,7 +255,7 @@ internal fun CameraTopBar(title: String, closeLabel: String, torch: Boolean, onT
         if (hasFlash) {
             RoundButton(
                 Icons.Outlined.FlashOn,
-                if (torch) "Turn flashlight off" else "Turn flashlight on",
+                stringResource(if (torch) R.string.scan_flashlight_off else R.string.scan_flashlight_on),
                 container = if (torch) Guide else Color.Black.copy(alpha = 0.45f),
                 content = if (torch) Ink else OnScrim,
                 onClick = { onTorch(!torch) },
@@ -269,24 +271,24 @@ private fun NoCamera(why: String, instead: String, refused: Boolean, onAsk: () -
     val context = LocalContext.current
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
-            RoundButton(Icons.Outlined.Close, "Close scanner", container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
+            RoundButton(Icons.Outlined.Close, stringResource(R.string.scan_close_scanner), container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
         }
         Column(
             Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
         ) {
-            Text("Camera access is off", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = OnScrim)
+            Text(stringResource(R.string.scan_camera_off), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = OnScrim)
             Text(why, color = OnScrimMuted, textAlign = TextAlign.Center)
             if (refused) {
                 // After a refusal Android may stop showing its prompt, so Settings is the reliable way.
                 Button(onClick = { context.openAppSettings() }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text("Open app settings")
+                    Text(stringResource(R.string.scan_open_settings))
                 }
-                TextButton(onClick = onAsk, colors = ButtonDefaults.textButtonColors(contentColor = Guide)) { Text("Ask again") }
+                TextButton(onClick = onAsk, colors = ButtonDefaults.textButtonColors(contentColor = Guide)) { Text(stringResource(R.string.scan_ask_again)) }
             } else {
                 Button(onClick = onAsk, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text("Allow camera")
+                    Text(stringResource(R.string.scan_allow_camera))
                 }
             }
             TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = OnScrim)) { Text(instead) }
