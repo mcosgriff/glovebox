@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.service.recallComponent
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
@@ -94,13 +99,13 @@ fun MarkDoneSheet(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    "Mark recall as done",
+                    stringResource(R.string.recalls_mark_done_title),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    "NHTSA ${Recalls.campaignLabel(recall.campaign)} · ${Recalls.componentLabel(recall.component)}",
+                    stringResource(R.string.recalls_campaign_component, Recalls.campaignLabel(recall.campaign), recallComponent(recall.component)),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -112,7 +117,7 @@ fun MarkDoneSheet(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Repaired on ${date.format(longDate)}")
+                Text(stringResource(R.string.recalls_repaired_on, date.format(longDate)))
             }
 
             Row(
@@ -123,9 +128,9 @@ fun MarkDoneSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("Add to Service history", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.recalls_add_to_history), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "Turn off if it was fixed before you kept records. It won't change any reminder either way.",
+                        stringResource(R.string.recalls_add_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -137,7 +142,7 @@ fun MarkDoneSheet(
                 OutlinedTextField(
                     value = odometerText,
                     onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                    label = { Text("Odometer at the repair (${unit.symbolWord})") },
+                    label = { Text(stringResource(R.string.recalls_repair_odometer, unit.symbolWord)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
@@ -145,7 +150,7 @@ fun MarkDoneSheet(
                 OutlinedTextField(
                     value = shop,
                     onValueChange = { shop = it },
-                    label = { Text("$makeName dealer (optional)") },
+                    label = { Text(stringResource(R.string.recalls_dealer_optional, makeName)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.fillMaxWidth(),
@@ -160,7 +165,7 @@ fun MarkDoneSheet(
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
                 Button(
                     onClick = {
@@ -170,7 +175,7 @@ fun MarkDoneSheet(
                     modifier = Modifier.weight(1.4f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Mark as done", maxLines = 1)
+                    Text(stringResource(R.string.recalls_mark_done), maxLines = 1)
                 }
             }
         }

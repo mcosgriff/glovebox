@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.domain.Interval
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -106,25 +112,27 @@ fun RemindersScreen(
     val shown = garage.vehicles.filter { it.vehicle.id == filterId }.ifEmpty { garage.vehicles }
     val groups = ReminderPresentation.grouped(shown.map { it.vehicle to it.comingUp }, LocalDate.now())
 
+    val res = LocalResources.current
+    val rulesLabel = stringResource(R.string.reminder_rules_title)
     // The reminder whose snooze sheet is open; 0 = none. Looked up again each time so it stays current.
     var snoozingId by rememberSaveable { mutableLongStateOf(0L) }
     val snoozing = groups.values.flatten().firstOrNull { it.status.item.id == snoozingId && it.status.lastDone != null }
     if (snoozing != null) {
         val item = snoozing.status.item
         val owner = garage.vehicles.first { it.vehicle.id == snoozing.vehicle.id }
-        val apply = { snooze: Snooze, verb: String ->
+        val apply = { snooze: Snooze, skipped: Boolean ->
             val before = item.snooze
             snoozingId = 0
             vm.setSnooze(item.id, snooze)
-            onMessage("${item.name} $verb until ${snooze.until(snoozing.vehicle.unit)}", "Undo") { vm.setSnooze(item.id, before) }
+            onMessage(res.getString(if (skipped) R.string.reminders_skipped_until else R.string.reminders_snoozed_until, item.name, snooze.until(snoozing.vehicle.unit)), res.getString(R.string.undo)) { vm.setSnooze(item.id, before) }
         }
         SnoozeSheet(
             reminder = snoozing,
             subtitle = listOfNotNull("${snoozing.vehicle.year} ${snoozing.vehicle.shortName()}", snoozing.due()).joinToString(" · "),
             options = Snoozing.options(snoozing.status, owner.odometer, LocalDate.now(), owner.oil, snoozing.vehicle.unit),
             skip = Snoozing.skip(snoozing.status, owner.odometer, LocalDate.now()),
-            onSnooze = { apply(it, "snoozed") },
-            onSkip = { apply(it, "skipped") },
+            onSnooze = { apply(it, false) },
+            onSkip = { apply(it, true) },
             onAlreadyDone = {
                 snoozingId = 0
                 onLogIt(snoozing.vehicle.id, item.id)
@@ -137,19 +145,19 @@ fun RemindersScreen(
         item {
             Row(Modifier.padding(top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Reminders",
+                    stringResource(R.string.reminders_title),
                     Modifier.weight(1f).semantics { heading() },
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
                 OutlinedButton(
                     onClick = onOpenRules,
-                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Reminder rules" },
+                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = rulesLabel },
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                 ) {
-                    Text("Rules")
+                    Text(stringResource(R.string.reminders_rules))
                 }
             }
         }
@@ -157,7 +165,7 @@ fun RemindersScreen(
         if (garage.vehicles.size > 1) {
             item {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    VehicleChip("All vehicles", selected = shown.size > 1) { filterId = 0 }
+                    VehicleChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
                     garage.vehicles.forEach { g ->
                         VehicleChip(g.vehicle.shortName(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
                     }
@@ -177,9 +185,9 @@ fun RemindersScreen(
                 ) {
                     Row(Modifier.heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("Notifications are off", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.reminders_notifications_off), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                             Text(
-                                "Turn them on to be told when these come due.",
+                                stringResource(R.string.reminders_turn_on),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -199,7 +207,7 @@ fun RemindersScreen(
             if (group == ReminderGroup.NOT_LOGGED) {
                 item(key = "not-logged-note") {
                     Text(
-                        "Log each of these once and its countdown starts from that date and mileage.",
+                        stringResource(R.string.item_log_once),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -215,7 +223,7 @@ fun RemindersScreen(
                         val item = r.status.item
                         val before = item.snooze
                         vm.setSnooze(item.id, null)
-                        onMessage("${item.name} is no longer snoozed", "Undo") { vm.setSnooze(item.id, before) }
+                        onMessage(res.getString(R.string.reminders_unsnoozed, item.name), res.getString(R.string.undo)) { vm.setSnooze(item.id, before) }
                     },
                 )
             }
@@ -238,10 +246,10 @@ private fun groupColor(group: ReminderGroup): Color = when (group) {
 private fun GroupHeader(group: ReminderGroup) {
     Text(
         when (group) {
-            ReminderGroup.OVERDUE -> "OVERDUE"
-            ReminderGroup.NEXT_30_DAYS -> "NEXT 30 DAYS"
-            ReminderGroup.LATER -> "LATER"
-            ReminderGroup.NOT_LOGGED -> "NOT LOGGED YET"
+            ReminderGroup.OVERDUE -> stringResource(R.string.reminders_group_overdue)
+            ReminderGroup.NEXT_30_DAYS -> stringResource(R.string.reminders_group_next_30)
+            ReminderGroup.LATER -> stringResource(R.string.reminders_group_later)
+            ReminderGroup.NOT_LOGGED -> stringResource(R.string.reminders_group_not_logged)
         },
         Modifier.padding(top = 6.dp).semantics { heading() },
         style = MaterialTheme.typography.labelLarge,
@@ -273,14 +281,14 @@ private fun ReminderCard(
                     val unit = r.vehicle.unit
                     val at = r.vehicle.clusterSwap().actual(point.at).asDistance(unit)
                     Text(
-                        if (point.ago == 0) "Scheduled now, at $at · nothing logged" else "Last scheduled at $at · ${point.ago.asDistance(unit)} ago · nothing logged",
+                        if (point.ago == 0) stringResource(R.string.scheduled_now, at) else stringResource(R.string.last_scheduled, at, point.ago.asDistance(unit)),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = statusColors().soon,
                     )
                 }
                 Text(
-                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.text(r.vehicle.unit).every()}",
+                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.everyShort(r.vehicle.unit)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -296,7 +304,7 @@ private fun ReminderCard(
                 border = BorderStroke(1.5.dp, scheme.onSurface),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Log it")
+                Text(stringResource(R.string.log_it))
             }
         }
         if (group == ReminderGroup.NOT_LOGGED) {
@@ -321,8 +329,8 @@ private fun ReminderCard(
                     logIt(Modifier.weight(1f))
                     // Snoozing only does something to a reminder that is due; one that is snoozed can be woken.
                     val second = when {
-                        r.status.snooze != null -> "End snooze" to onEndSnooze
-                        r.status.status.state != DueState.OK -> "Snooze…" to onSnooze
+                        r.status.snooze != null -> stringResource(R.string.reminders_end_snooze) to onEndSnooze
+                        r.status.status.state != DueState.OK -> stringResource(R.string.reminders_snooze) to onSnooze
                         else -> null
                     }
                     second?.let { (label, action) ->
@@ -342,26 +350,31 @@ private fun ReminderCard(
 }
 
 /** "every 5,000 mi" for a single limit; "10,000 mi / 12 mo" already reads as a pair. */
-private fun String.every(): String = if (" / " in this) this else "every $this"
+@Composable
+private fun Interval.everyShort(unit: DistanceUnit): String =
+    if (miles != null && months != null) text(unit) else stringResource(R.string.reminders_every, text(unit))
 
 /** "3,312 mi over", "in 640 mi", "in 12 days", "Mar 2027" */
+@Composable
 internal fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.headline) {
     DueHeadline.NotLogged -> null
     is DueHeadline.Miles -> when {
-        h.remaining < 0 -> "${abs(h.remaining).asDistance(vehicle.unit)} over"
-        h.remaining == 0 -> "due now"
-        else -> "in ${h.remaining.asDistance(vehicle.unit)}"
+        h.remaining < 0 -> stringResource(R.string.reminders_over, abs(h.remaining).asDistance(vehicle.unit))
+        h.remaining == 0 -> stringResource(R.string.reminders_due_now)
+        else -> stringResource(R.string.reminders_in, h.remaining.asDistance(vehicle.unit))
     }
     is DueHeadline.Days -> when {
-        h.remaining < 0 -> "${days(abs(h.remaining))} over"
-        h.remaining == 0L -> "due today"
-        h.remaining <= 60 -> "in ${days(h.remaining)}"
-        else -> status.status.dueByDate?.format(monthYear) ?: "in ${days(h.remaining)}"
+        h.remaining < 0 -> stringResource(R.string.reminders_over, days(abs(h.remaining)))
+        h.remaining == 0L -> stringResource(R.string.reminders_due_today)
+        h.remaining <= 60 -> stringResource(R.string.reminders_in, days(h.remaining))
+        else -> status.status.dueByDate?.format(monthYear) ?: stringResource(R.string.reminders_in, days(h.remaining))
     }
-    is DueHeadline.Snoozed -> "Snoozed until ${h.snooze.until(vehicle.unit)}"
+    is DueHeadline.Snoozed -> stringResource(R.string.due_snoozed_until, h.snooze.until(vehicle.unit))
 }
 
-private fun days(n: Long): String = if (n == 1L) "1 day" else "$n days"
+// Days however many, unlike a headline's, which turns long ones into months.
+@Composable
+private fun days(n: Long): String = pluralStringResource(R.plurals.days, n.toInt(), n.toInt().asNumber())
 
 @Composable
 private fun VehicleChip(label: String, selected: Boolean, onClick: () -> Unit) {
@@ -388,18 +401,18 @@ private fun Empty(noVehicles: Boolean, onAddVehicle: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Nothing to remind you about yet", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.reminders_empty_title), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Text(
             if (noVehicles) {
-                "Add a vehicle and pick what to track. What's due will show up here."
+                stringResource(R.string.reminders_empty_no_vehicle)
             } else {
-                "No reminders are being tracked. Add items to a vehicle's maintenance schedule and they'll show up here."
+                stringResource(R.string.reminders_empty_none_tracked)
             },
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (noVehicles) {
-            Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Add a vehicle") }
+            Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.garage_empty_add)) }
         }
     }
 }

@@ -1,7 +1,11 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.styledStringResource
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.pluralWord
-import java.util.Locale
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -42,9 +46,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.Snooze
@@ -85,7 +87,7 @@ fun SnoozeSheet(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    "Snooze ${reminder.status.item.name}",
+                    stringResource(R.string.snooze_title, reminder.status.item.name),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -117,11 +119,7 @@ fun SnoozeSheet(
             }
 
             Text(
-                buildAnnotatedString {
-                    append("You'll be reminded again ")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(chosen.whenText(unit)) }
-                    append(".")
-                },
+                styledStringResource(R.string.snooze_reminded_again, chosen.whenText(unit), SpanStyle(fontWeight = FontWeight.Bold)),
                 style = MaterialTheme.typography.bodySmall,
             )
 
@@ -133,10 +131,10 @@ fun SnoozeSheet(
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Already done", maxLines = 1)
+                    Text(stringResource(R.string.snooze_already_done), maxLines = 1)
                 }
                 Button(onClick = { onSnooze(chosen.snooze) }, modifier = Modifier.weight(1.4f).height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text("Snooze")
+                    Text(stringResource(R.string.snooze))
                 }
             }
 
@@ -146,30 +144,33 @@ fun SnoozeSheet(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.onSurfaceVariant),
                 ) {
-                    Text("Skip this one — wait until ${skip.until(unit)}")
+                    Text(stringResource(R.string.snooze_skip, skip.until(unit)))
                 }
             }
         }
     }
 }
 
+@Composable
 private fun SnoozeKind.label(unit: DistanceUnit): String = when (this) {
     // 500 and 1,000 miles, or 800 and 1,600 kilometres.
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> String.format(Locale.US, "%,d %s", Snoozing.distance(this, unit), unit.pluralWord)
-    SnoozeKind.WEEKS_2 -> "2 weeks"
-    SnoozeKind.MONTH_1 -> "1 month"
-    SnoozeKind.NEXT_OIL_CHANGE -> "With the next oil change"
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> stringResource(R.string.snooze_distance, Snoozing.distance(this, unit).asNumber(), unit.pluralWord)
+    SnoozeKind.WEEKS_2 -> stringResource(R.string.snooze_two_weeks)
+    SnoozeKind.MONTH_1 -> stringResource(R.string.snooze_one_month)
+    SnoozeKind.NEXT_OIL_CHANGE -> stringResource(R.string.snooze_with_oil)
 }
 
 /** The oil change is an estimate of when it will be due, so it reads "~70,100 mi". */
+@Composable
 private fun SnoozeOption.hint(unit: DistanceUnit): String = when (kind) {
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until(unit)}"
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> stringResource(R.string.snooze_at, snooze.until(unit))
     SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> snooze.until(unit)
-    SnoozeKind.NEXT_OIL_CHANGE -> "~${snooze.untilOdometer?.asDistance(unit) ?: snooze.until(unit)}"
+    SnoozeKind.NEXT_OIL_CHANGE -> stringResource(R.string.snooze_about, snooze.untilOdometer?.asDistance(unit) ?: snooze.until(unit))
 }
 
+@Composable
 private fun SnoozeOption.whenText(unit: DistanceUnit): String = when (kind) {
-    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> "at ${snooze.until(unit)}"
-    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> "on ${snooze.until(unit)}"
-    SnoozeKind.NEXT_OIL_CHANGE -> "with the oil change, around ${snooze.until(unit)}"
+    SnoozeKind.MILES_500, SnoozeKind.MILES_1000 -> stringResource(R.string.snooze_at, snooze.until(unit))
+    SnoozeKind.WEEKS_2, SnoozeKind.MONTH_1 -> stringResource(R.string.snooze_on, snooze.until(unit))
+    SnoozeKind.NEXT_OIL_CHANGE -> stringResource(R.string.snooze_with_oil_around, snooze.until(unit))
 }
