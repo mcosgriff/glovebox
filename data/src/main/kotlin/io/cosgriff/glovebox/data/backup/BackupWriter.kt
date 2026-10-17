@@ -1,6 +1,12 @@
 package io.cosgriff.glovebox.data.backup
 
-import android.database.Cursor
+import androidx.room3.PooledConnection
+import androidx.room3.deferredTransaction
+import androidx.room3.useReaderConnection
+import androidx.sqlite.SQLITE_DATA_FLOAT
+import androidx.sqlite.SQLITE_DATA_INTEGER
+import androidx.sqlite.SQLITE_DATA_NULL
+import androidx.sqlite.SQLiteStatement
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.settings.SettingsRepository
@@ -33,12 +39,16 @@ class BackupWriter(
 ) {
     suspend fun contents(): BackupContents = withContext(Dispatchers.IO) {
         val documents = db.documents().allFiles().size
+        val (records, documentBytes) = db.useReaderConnection { connection ->
+            connection.count("service_records") to
+                connection.usePrepared("SELECT COALESCE(SUM(sizeBytes), 0) FROM documents") { if (it.step()) it.getLong(0) else 0L }
+        }
         BackupContents(
             vehicles = db.vehicles().all().size,
-            records = count("service_records"),
+            records = records,
             photos = photoFiles().size - documents,
             documents = documents,
-            documentBytes = db.openHelper.readableDatabase.query("SELECT COALESCE(SUM(sizeBytes), 0) FROM documents").use { c -> if (c.moveToFirst()) c.getLong(0) else 0L },
+            documentBytes = documentBytes,
         )
     }
 
@@ -52,41 +62,39 @@ class BackupWriter(
         val documents = db.documents().allFiles().size
         val prefs = settings.raw()
         BackupEntryWriter(BackupOutputStream(out, password)).use { entries ->
-            val sqlite = db.openHelper.readableDatabase
             // One read transaction, so the tables agree with each other even if something is saved meanwhile.
-            sqlite.beginTransactionNonExclusive()
-            try {
-                val tables = sqlite.query("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").use { c ->
-                    generateSequence { if (c.moveToNext()) c.getString(0) else null }.toList()
-                }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
+            db.useReaderConnection { connection ->
+                connection.deferredTransaction {
+                    val tables = usePrepared("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name") { s ->
+                        buildList { while (s.step()) add(s.getText(0)) }
+                    }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
+                    val vehicles = count("vehicles")
+                    val records = count("service_records")
+                    val schemaVersion = usePrepared("PRAGMA user_version") { s -> s.step(); s.getInt(0) }
 
-                entries.write(
-                    BackupEntryKind.MANIFEST,
-                    "",
-                    buildJsonObject {
-                        put("format", BackupFormat.VERSION)
-                        put("createdOn", today.toString())
-                        put("schemaVersion", sqlite.version)
-                        put(
-                            "counts",
-                            buildJsonObject {
-                                put("vehicles", count("vehicles"))
-                                put("records", count("service_records"))
-                                put("photos", photos.size - documents)
-                                put("documents", documents)
-                            },
-                        )
-                    }.toString().toByteArray(),
-                )
-                for (table in tables) {
-                    val rows = sqlite.query("SELECT * FROM `$table`").use { c ->
-                        JsonArray(generateSequence { if (c.moveToNext()) c.row() else null }.toList())
+                    entries.write(
+                        BackupEntryKind.MANIFEST,
+                        "",
+                        buildJsonObject {
+                            put("format", BackupFormat.VERSION)
+                            put("createdOn", today.toString())
+                            put("schemaVersion", schemaVersion)
+                            put(
+                                "counts",
+                                buildJsonObject {
+                                    put("vehicles", vehicles)
+                                    put("records", records)
+                                    put("photos", photos.size - documents)
+                                    put("documents", documents)
+                                },
+                            )
+                        }.toString().toByteArray(),
+                    )
+                    for (table in tables) {
+                        val rows = usePrepared("SELECT * FROM `$table`") { s -> JsonArray(buildList { while (s.step()) add(s.row()) }) }
+                        entries.write(BackupEntryKind.TABLE, table, rows.toString().toByteArray())
                     }
-                    entries.write(BackupEntryKind.TABLE, table, rows.toString().toByteArray())
                 }
-                sqlite.setTransactionSuccessful()
-            } finally {
-                sqlite.endTransaction()
             }
 
             entries.write(
@@ -124,16 +132,16 @@ class BackupWriter(
     /** Every encrypted file the database points at: photos, and documents, which a backup carries the same way. */
     private suspend fun photoFiles(): List<String> = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles() + db.documents().allFiles()).distinct()
 
-    private fun count(table: String): Int =
-        db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM `$table`").use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    private suspend fun PooledConnection.count(table: String): Int =
+        usePrepared("SELECT COUNT(*) FROM `$table`") { if (it.step()) it.getInt(0) else 0 }
 
-    private fun Cursor.row(): JsonObject = JsonObject(
-        (0 until columnCount).associate { i ->
-            val value: JsonElement = when (getType(i)) {
-                Cursor.FIELD_TYPE_NULL -> JsonNull
-                Cursor.FIELD_TYPE_INTEGER -> JsonPrimitive(getLong(i))
-                Cursor.FIELD_TYPE_FLOAT -> JsonPrimitive(getDouble(i))
-                else -> JsonPrimitive(getString(i))
+    private fun SQLiteStatement.row(): JsonObject = JsonObject(
+        (0 until getColumnCount()).associate { i ->
+            val value: JsonElement = when (getColumnType(i)) {
+                SQLITE_DATA_NULL -> JsonNull
+                SQLITE_DATA_INTEGER -> JsonPrimitive(getLong(i))
+                SQLITE_DATA_FLOAT -> JsonPrimitive(getDouble(i))
+                else -> JsonPrimitive(getText(i))
             }
             getColumnName(i) to value
         },

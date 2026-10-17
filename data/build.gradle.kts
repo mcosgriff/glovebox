@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -28,8 +29,8 @@ kotlin {
     jvmToolchain(17)
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -42,7 +43,6 @@ dependencies {
 
     // api: Hilt generates the app's component in :app, so it must see these binding types.
     api(libs.room.runtime)
-    implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.androidx.sqlite)
     implementation(libs.sqlcipher.android)

@@ -1,19 +1,19 @@
 package io.cosgriff.glovebox.data.db
 
 import android.content.Context
-import androidx.room.AutoMigration
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
+import androidx.room3.AutoMigration
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.ColumnTypeConverter
+import androidx.room3.ColumnTypeConverters
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.zetetic.database.sqlcipher.driver.SQLCipherDriver
 import java.time.LocalDate
 
 class Converters {
-    @TypeConverter fun fromEpochDay(value: Long?): LocalDate? = value?.let(LocalDate::ofEpochDay)
-    @TypeConverter fun toEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
+    @ColumnTypeConverter fun fromEpochDay(value: Long?): LocalDate? = value?.let(LocalDate::ofEpochDay)
+    @ColumnTypeConverter fun toEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
 }
 
 @Database(
@@ -59,7 +59,7 @@ class Converters {
         AutoMigration(from = 24, to = 25), // documents
     ],
 )
-@TypeConverters(Converters::class)
+@ColumnTypeConverters(Converters::class)
 abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun service(): ServiceDao
@@ -77,7 +77,9 @@ abstract class GloveboxDatabase : RoomDatabase() {
         fun open(context: Context, keys: DatabaseKeyManager): GloveboxDatabase {
             System.loadLibrary("sqlcipher")
             return Room.databaseBuilder(context, GloveboxDatabase::class.java, FILE_NAME)
-                .openHelperFactory(SupportOpenHelperFactory(keys.passphrase()))
+                // Opens the file exactly as the support open helper did before (#220): the same
+                // SQLiteDatabase.openDatabase with the same passphrase bytes, no hook, no error handler.
+                .setDriver(SQLCipherDriver(keys.passphrase(), null, null))
                 .build()
         }
     }
