@@ -36,9 +36,9 @@ class VehicleDocumentsTest {
 
     @Test
     fun `a starting name comes from the file's own, or the type`() {
-        assertEquals("carfax report 2026", VehicleDocuments.nameFromFile("carfax_report-2026.pdf", DocumentType.OTHER))
-        assertEquals("Title", VehicleDocuments.nameFromFile(null, DocumentType.TITLE))
-        assertEquals("Other", VehicleDocuments.nameFromFile("___.pdf", DocumentType.OTHER))
+        assertEquals("carfax report 2026", VehicleDocuments.nameFromFile("carfax_report-2026.pdf"))
+        assertNull(VehicleDocuments.nameFromFile(null))
+        assertNull(VehicleDocuments.nameFromFile("___.pdf"))
     }
 
     @Test
@@ -56,16 +56,13 @@ class VehicleDocumentsTest {
         assertEquals("1 KB", VehicleDocuments.size(10))
         assertEquals("340 KB", VehicleDocuments.size(340 * 1024))
         assertEquals("4.2 MB", VehicleDocuments.size(4_400_000))
-        assertEquals("None yet", VehicleDocuments.summary(0, 0))
-        assertEquals("1 document · 2.0 MB", VehicleDocuments.summary(1, 2 * 1024 * 1024))
-        assertEquals("3 documents · 340 KB", VehicleDocuments.summary(3, 340 * 1024))
     }
 
     @Test
     fun `an empty file or one over the cap is refused`() {
-        assertEquals("That file is empty.", VehicleDocuments.problem(0))
+        assertEquals(DocumentProblem.EMPTY, VehicleDocuments.problem(0))
         assertNull(VehicleDocuments.problem(VehicleDocuments.MAX_BYTES))
-        assertEquals("That file is too big (the most is 20 MB).", VehicleDocuments.problem(VehicleDocuments.MAX_BYTES + 1))
+        assertEquals(DocumentProblem.TOO_BIG, VehicleDocuments.problem(VehicleDocuments.MAX_BYTES + 1))
     }
 
     @Test

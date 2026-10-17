@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.VehicleDocuments
+import io.cosgriff.glovebox.domain.DocumentProblem
+import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
@@ -278,3 +281,42 @@ fun VehicleEntity.whatItTakes(): WhatItTakes = WhatItTakes(
     bulbHigh = bulbHigh,
     bulbFog = bulbFog,
 )
+
+/** "+120,000 mi", "−2,500 mi": what to add to a replaced cluster's reading to get the actual mileage. */
+fun offsetLabel(offset: Int, unit: DistanceUnit): String =
+    AppText.res.getString(if (offset < 0) R.string.offset_minus else R.string.offset_plus, abs(offset).asDistance(unit))
+
+/** "340 KB", "4.2 MB": a file's size. */
+fun fileSize(bytes: Long): String = if (bytes < 1024 * 1024) {
+    AppText.res.getString(R.string.size_kb, ((bytes + 1023) / 1024).coerceAtLeast(1).toInt().asNumber())
+} else {
+    val format = java.text.NumberFormat.getNumberInstance(AppText.locale).apply {
+        minimumFractionDigits = 1
+        maximumFractionDigits = 1
+    }
+    AppText.res.getString(R.string.size_mb, format.format(bytes / (1024.0 * 1024.0)))
+}
+
+/** "Vehicle history report" */
+val DocumentType.label: String
+    get() = AppText.res.getString(
+        when (this) {
+            DocumentType.REPORT -> R.string.document_report
+            DocumentType.TITLE -> R.string.document_title
+            DocumentType.REGISTRATION -> R.string.document_registration
+            DocumentType.PURCHASE -> R.string.document_purchase
+            DocumentType.WARRANTY -> R.string.document_warranty
+            DocumentType.INSURANCE -> R.string.document_insurance
+            DocumentType.OTHER -> R.string.document_other
+        },
+    )
+
+/** Why a document wasn't added. */
+val DocumentProblem.text: String
+    get() = when (this) {
+        DocumentProblem.EMPTY -> AppText.res.getString(R.string.document_problem_empty)
+        DocumentProblem.TOO_BIG -> AppText.res.getString(R.string.document_problem_too_big, (VehicleDocuments.MAX_BYTES / (1024 * 1024)).toInt().asNumber())
+        DocumentProblem.UNREADABLE -> AppText.res.getString(R.string.document_problem_unreadable)
+        DocumentProblem.NOT_A_DOCUMENT -> AppText.res.getString(R.string.document_problem_not_a_document)
+        DocumentProblem.FAILED -> AppText.res.getString(R.string.document_problem_failed)
+    }

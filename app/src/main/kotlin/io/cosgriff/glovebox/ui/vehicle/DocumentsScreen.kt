@@ -1,5 +1,13 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.service.fileSize
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.label
+import io.cosgriff.glovebox.domain.DocumentProblem
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -122,7 +130,7 @@ class DocumentsViewModel @Inject constructor(
     /** A document just added to this vehicle, to ask for its details. */
     val added: StateFlow<Long?> = picker.added.map { it?.takeIf { a -> a.vehicleId == vehicleId }?.id }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    val problem: StateFlow<String?> = picker.problem
+    val problem: StateFlow<DocumentProblem?> = picker.problem
     val working: StateFlow<Boolean> = picker.working
 
     fun choose() = picker.pick(vehicleId)
@@ -163,7 +171,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
     var editing by rememberSaveable { mutableStateOf<Long?>(null) }
     var isNew by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf<Long?>(null) }
-    var failed by remember { mutableStateOf<String?>(null) }
+    var failed by remember { mutableStateOf<Int?>(null) }
 
     // A document that has just been added opens its details, so it can be named.
     LaunchedEffect(added) {
@@ -179,8 +187,8 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         failed = null
         val copy = vm.copy(row)
         failed = when {
-            copy == null -> "That document couldn't be read."
-            !context.hand(copy, VehicleDocuments.format(row.format), share) -> if (share) "Nothing on this phone can take it." else "Nothing on this phone can open it."
+            copy == null -> R.string.documents_unreadable
+            !context.hand(copy, VehicleDocuments.format(row.format), share) -> if (share) R.string.documents_no_app_share else R.string.documents_no_app_open
             else -> null
         }
     }
@@ -206,8 +214,8 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         val (doc, row) = byId[id] ?: return@let
         AlertDialog(
             onDismissRequest = { deleting = null },
-            title = { Text("Delete ${doc.name}?") },
-            text = { Text("The file is removed from this phone for good. Backup files you've already saved aren't changed.") },
+            title = { Text(stringResource(R.string.documents_delete_title, doc.name)) },
+            text = { Text(stringResource(R.string.documents_delete_body)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -215,9 +223,9 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
                         deleting = null
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { deleting = null }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
@@ -228,9 +236,9 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
     ) {
         item {
             Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
                 Column(Modifier.padding(start = 8.dp)) {
-                    Text("Documents", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.documents_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     Text("${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
@@ -238,10 +246,9 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         if (d.documents.isEmpty()) {
             item {
                 Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Nothing saved yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.documents_empty_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "Keep the vehicle's paperwork with its records: a history report, the title, the registration, the purchase " +
-                            "agreement, warranty papers, an insurance card. Add a PDF or a picture, or take a photo of the paper.",
+                        stringResource(R.string.documents_empty_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
@@ -265,12 +272,11 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         item {
             Column(Modifier.padding(start = 20.dp, top = 6.dp, end = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 AddButton(working = working, onChoose = vm::choose, onTake = vm::capture)
-                (failed ?: problem)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.error) }
+                (failed?.let { stringResource(it) } ?: problem?.text)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.error) }
                 Text(
                     listOfNotNull(
-                        d.documents.takeIf { it.isNotEmpty() }?.let { VehicleDocuments.summary(it.size, d.totalBytes) + "." },
-                        "Kept encrypted on this phone and carried in your backups, and opened here in Glovebox. A document leaves " +
-                            "the phone only when you open it in another app or share it, as a copy for the app you choose. PDFs and pictures up to ${VehicleDocuments.MAX_BYTES / (1024 * 1024)} MB.",
+                        d.documents.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.sentence, documentsSummary(it.size, d.totalBytes)) },
+                        stringResource(R.string.documents_note, (VehicleDocuments.MAX_BYTES / (1024 * 1024)).toInt().asNumber()),
                     ).joinToString(" "),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
@@ -287,7 +293,7 @@ private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenEls
     Surface(modifier = modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 64.dp)
-                .clickable(role = Role.Button, onClickLabel = "Open", onClick = onView)
+                .clickable(role = Role.Button, onClickLabel = stringResource(R.string.open), onClick = onView)
                 .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -303,20 +309,20 @@ private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenEls
                     listOfNotNull(
                         document.type.label,
                         document.date?.format(longDate),
-                        (if (document.format == DocumentFormat.PDF) "PDF " else "Picture ") + VehicleDocuments.size(document.sizeBytes),
+                        stringResource(if (document.format == DocumentFormat.PDF) R.string.documents_pdf_size else R.string.documents_picture_size, fileSize(document.sizeBytes)),
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
             }
             Box {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = "More for ${document.name}") }
+                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.more_for, document.name)) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Open") }, onClick = { menu = false; onView() })
-                    DropdownMenuItem(text = { Text("Open in another app") }, onClick = { menu = false; onOpenElsewhere() })
-                    DropdownMenuItem(text = { Text("Share") }, onClick = { menu = false; onShare() })
-                    DropdownMenuItem(text = { Text("Edit details") }, onClick = { menu = false; onEdit() })
-                    DropdownMenuItem(text = { Text("Delete", color = scheme.error) }, onClick = { menu = false; onDelete() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.open)) }, onClick = { menu = false; onView() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.documents_open_elsewhere)) }, onClick = { menu = false; onOpenElsewhere() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.share)) }, onClick = { menu = false; onShare() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.documents_edit_details)) }, onClick = { menu = false; onEdit() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.delete), color = scheme.error) }, onClick = { menu = false; onDelete() })
                 }
             }
         }
@@ -349,17 +355,17 @@ private fun AddButton(working: Boolean, onChoose: () -> Unit, onTake: () -> Unit
             if (working) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(8.dp))
-                Text("Adding…")
+                Text(stringResource(R.string.documents_adding))
             } else {
                 Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Add a document")
+                Text(stringResource(R.string.documents_add))
             }
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Choose a PDF or picture") }, onClick = { open = false; onChoose() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.documents_choose)) }, onClick = { open = false; onChoose() })
             DropdownMenuItem(
-                text = { Text("Take a photo") },
+                text = { Text(stringResource(R.string.documents_take_photo)) },
                 onClick = {
                     open = false
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) onTake()
@@ -368,7 +374,7 @@ private fun AddButton(working: Boolean, onChoose: () -> Unit, onTake: () -> Unit
             )
         }
         DropdownMenu(expanded = refused, onDismissRequest = { refused = false }) {
-            DropdownMenuItem(text = { Text("Camera access is off. Choose a file instead") }, onClick = { refused = false; onChoose() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.documents_camera_off)) }, onClick = { refused = false; onChoose() })
         }
     }
 }
@@ -401,7 +407,7 @@ private fun DetailsDialog(
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (isNew) "Document added" else "Edit details") },
+        title = { Text(stringResource(if (isNew) R.string.documents_added else R.string.documents_edit_details)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ExposedDropdownMenuBox(expanded = typeOpen, onExpandedChange = { typeOpen = it }) {
@@ -409,7 +415,7 @@ private fun DetailsDialog(
                         value = type.label,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("What it is") },
+                        label = { Text(stringResource(R.string.documents_what_it_is)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeOpen) },
                         modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                     )
@@ -430,31 +436,31 @@ private fun DetailsDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { if (it.length <= VehicleDocuments.MAX_NAME) name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.documents_name)) },
                     singleLine = true,
                     isError = clean == null,
-                    supportingText = if (clean == null) ({ Text("Give it a name") }) else null,
+                    supportingText = if (clean == null) ({ Text(stringResource(R.string.documents_give_name)) }) else null,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(
-                        Modifier.weight(1f).heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Choose the date") { picking = true },
+                        Modifier.weight(1f).heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = stringResource(R.string.choose_date)) { picking = true },
                         verticalArrangement = Arrangement.Center,
                     ) {
-                        Text("Date on it (optional)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(date?.format(longDate) ?: "None", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.documents_date), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(date?.format(longDate) ?: stringResource(R.string.none), style = MaterialTheme.typography.bodyLarge)
                     }
-                    if (date != null) TextButton(onClick = { date = null }) { Text("Clear") }
+                    if (date != null) TextButton(onClick = { date = null }) { Text(stringResource(R.string.clear)) }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { clean?.let { onSave(type, it, date) } }, enabled = clean != null) { Text("Save") } },
+        confirmButton = { TextButton(onClick = { clean?.let { onSave(type, it, date) } }, enabled = clean != null) { Text(stringResource(R.string.save)) } },
         dismissButton = {
             if (isNew) {
-                TextButton(onClick = onDiscard, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text("Don't keep it") }
+                TextButton(onClick = onDiscard, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text(stringResource(R.string.documents_dont_keep)) }
             } else {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
             }
         },
     )
@@ -482,3 +488,8 @@ internal fun Context.hand(copy: File, format: DocumentFormat, share: Boolean): B
         false
     }
 }
+
+/** "3 documents · 4.2 MB", or "None yet". */
+@Composable
+fun documentsSummary(count: Int, totalBytes: Long): String =
+    if (count == 0) stringResource(R.string.documents_none_yet) else pluralStringResource(R.plurals.documents_summary, count, count.asNumber(), fileSize(totalBytes))

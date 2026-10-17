@@ -2,7 +2,6 @@ package io.cosgriff.glovebox.domain
 
 import java.time.LocalDate
 import java.util.Locale
-import kotlin.math.abs
 
 /**
  * An instrument cluster replacement. From [on], the dash reads [offset] miles less than the old
@@ -65,7 +64,4 @@ object ClusterSwaps {
         if (cleaned.isEmpty() || cleaned.length > MileageUpdate.MAX_DIGITS || !cleaned.all(Char::isDigit)) return null
         return cleaned.toInt()
     }
-
-    /** "+120,000 mi", "−2,500 mi": what to add to the dash to get the actual mileage. */
-    fun offsetLabel(offset: Int, unit: DistanceUnit): String = (if (offset < 0) "−" else "+") + unit.format(abs(offset))
 }

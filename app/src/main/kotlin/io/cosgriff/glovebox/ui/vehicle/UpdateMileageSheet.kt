@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.ui.service.shortDate
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -53,7 +56,6 @@ import io.cosgriff.glovebox.domain.MileagePreview
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.statusColors
-import java.util.Locale
 import kotlin.math.abs
 
 
@@ -100,7 +102,7 @@ fun UpdateMileageSheet(
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    "Update mileage",
+                    stringResource(R.string.update_mileage_title),
                     Modifier.weight(1f).semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -119,10 +121,10 @@ fun UpdateMileageSheet(
                     },
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text("Odometer now", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.update_mileage_now), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            String.format(Locale.US, "%,d", miles ?: 0),
+                            (miles ?: 0).asNumber(),
                             fontFamily = PlexMono,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -147,7 +149,7 @@ fun UpdateMileageSheet(
 
             if (fromDash != null && fromDash == digits) {
                 Text(
-                    "Read from the dash by the camera. Check it against the odometer before you save.",
+                    stringResource(R.string.update_mileage_from_dash),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onPrimaryContainer,
@@ -172,9 +174,9 @@ fun UpdateMileageSheet(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Key("Clear", Modifier.weight(1f), muted = true, onClick = { digits = "" }) { KeyLabel("C", Modifier.clearAndSetSemantics { }) }
+                    Key(stringResource(R.string.clear), Modifier.weight(1f), muted = true, onClick = { digits = "" }) { KeyLabel(stringResource(R.string.update_mileage_clear_key), Modifier.clearAndSetSemantics { }) }
                     DigitKey('0', Modifier.weight(1f)) { digits = MileageUpdate.press(digits, '0') }
-                    Key("Delete digit", Modifier.weight(1f), muted = true, onClick = { digits = digits.dropLast(1) }) {
+                    Key(stringResource(R.string.update_mileage_delete_digit), Modifier.weight(1f), muted = true, onClick = { digits = digits.dropLast(1) }) {
                         Icon(Icons.AutoMirrored.Outlined.Backspace, contentDescription = null)
                     }
                 }
@@ -190,7 +192,7 @@ fun UpdateMileageSheet(
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {
                     Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp))
-                    Text("Read dash", maxLines = 1)
+                    Text(stringResource(R.string.read_dash_title), maxLines = 1)
                 }
                 Button(
                     onClick = { miles?.let(onSave) },
@@ -206,9 +208,9 @@ fun UpdateMileageSheet(
                 ) {
                     Text(
                         when {
-                            miles == null -> "Enter the reading"
-                            low || far -> "Save anyway"
-                            else -> "Save ${miles.asDistance(unit)}"
+                            miles == null -> stringResource(R.string.update_mileage_enter)
+                            low || far -> stringResource(R.string.save_anyway)
+                            else -> stringResource(R.string.update_mileage_save, miles.asDistance(unit))
                         },
                         maxLines = 1,
                     )
@@ -221,33 +223,36 @@ fun UpdateMileageSheet(
 private enum class Tone { GOOD, BAD, PLAIN }
 
 /** "+538 mi since Oct 10", or what the last reading was when there's nothing to add up yet. */
+@Composable
 private fun MileagePreview.deltaLine(typed: Boolean, unit: DistanceUnit): Pair<String, Tone>? {
     val last = last ?: return null
-    val lastText = "Last reading was ${last.odometer.asDistance(unit)} on ${last.date.format(shortDate)}"
+    val lastText = stringResource(R.string.update_mileage_last, last.odometer.asDistance(unit), last.date.format(shortDate))
     val delta = delta
     return when {
         !typed || delta == null -> lastText to Tone.PLAIN
         below || far -> lastText to Tone.BAD
-        else -> "+${delta.asDistance(unit)} since ${last.date.format(shortDate)}" to Tone.GOOD
+        else -> stringResource(R.string.update_mileage_since, delta.asDistance(unit), last.date.format(shortDate)) to Tone.GOOD
     }
 }
 
 /** "Oil & filter now due in 1,150 mi · Tire rotation overdue by 3,850 mi." */
+@Composable
 private fun MileagePreview.impactLine(typed: Boolean, unit: DistanceUnit): String? = when {
     !typed -> null
-    below -> "That's lower than the last reading, so reminders will keep counting from ${last?.odometer?.asDistance(unit)}. " +
-        "If that one is wrong, correct or delete it in Vehicle details, Mileage readings."
+    below -> stringResource(R.string.update_mileage_below, last?.odometer?.asDistance(unit).orEmpty())
     // Said in place of what it would do to the reminders: if the number is wrong, those are wrong too.
-    far -> "That's ${delta?.asDistance(unit)} more than the last reading. If a digit has slipped, every mileage reminder would count from it. " +
-        "Check the number before saving."
+    far -> stringResource(R.string.update_mileage_far, delta?.asDistance(unit).orEmpty())
     impact.isEmpty() -> null
-    else -> impact.joinToString(" · ", postfix = ".") { (status, headline) ->
-        when {
-            headline.remaining < 0 -> "${status.item.name} overdue by ${abs(headline.remaining).asDistance(unit)}"
-            headline.remaining == 0 -> "${status.item.name} due now"
-            else -> "${status.item.name} now due in ${headline.remaining.asDistance(unit)}"
-        }
-    }
+    else -> stringResource(
+        R.string.sentence,
+        impact.map { (status, headline) ->
+            when {
+                headline.remaining < 0 -> stringResource(R.string.update_mileage_overdue_by, status.item.name, abs(headline.remaining).asDistance(unit))
+                headline.remaining == 0 -> stringResource(R.string.update_mileage_due_now, status.item.name)
+                else -> stringResource(R.string.update_mileage_due_in, status.item.name, headline.remaining.asDistance(unit))
+            }
+        }.joinToString(" · "),
+    )
 }
 
 @Composable

@@ -3,15 +3,24 @@ package io.cosgriff.glovebox.domain
 import java.time.LocalDate
 import java.util.Locale
 
-/** What a piece of a vehicle's paperwork is. Stored by name, so the order here is only how they are listed. */
-enum class DocumentType(val label: String) {
-    REPORT("Vehicle history report"),
-    TITLE("Title"),
-    REGISTRATION("Registration"),
-    PURCHASE("Purchase agreement"),
-    WARRANTY("Warranty"),
-    INSURANCE("Insurance card"),
-    OTHER("Other"),
+/** What a piece of a vehicle's paperwork is; `app` names them. Stored by name, so the order here is only how they are listed. */
+enum class DocumentType { REPORT, TITLE, REGISTRATION, PURCHASE, WARRANTY, INSURANCE, OTHER }
+
+/** Why a file can't be added; `app` words it. */
+enum class DocumentProblem {
+    EMPTY,
+
+    /** Over [VehicleDocuments.MAX_BYTES]. */
+    TOO_BIG,
+
+    /** It couldn't be read from where it was picked. */
+    UNREADABLE,
+
+    /** Neither a PDF nor a picture. */
+    NOT_A_DOCUMENT,
+
+    /** Anything else, such as the vehicle having been deleted meanwhile. */
+    FAILED,
 }
 
 /** How a document's file is kept: a PDF as it came, or a picture redrawn as a JPEG. */
@@ -54,9 +63,12 @@ object VehicleDocuments {
     /** The name with runs of space made single and the ends trimmed, cut to [MAX_NAME]; null when nothing is left. */
     fun cleanName(text: String): String? = text.replace(Regex("\\s+"), " ").trim().take(MAX_NAME).trim().ifEmpty { null }
 
-    /** A starting name from the picked file's own: "carfax_report-2026.pdf" is "carfax report 2026". */
-    fun nameFromFile(displayName: String?, type: DocumentType): String =
-        displayName?.substringBeforeLast('.')?.replace(Regex("[_-]+"), " ")?.let(::cleanName) ?: type.label
+    /**
+     * A starting name from the picked file's own: "carfax_report-2026.pdf" is "carfax report 2026".
+     * Null when it gives nothing usable; the caller then names it after its type.
+     */
+    fun nameFromFile(displayName: String?): String? =
+        displayName?.substringBeforeLast('.')?.replace(Regex("[_-]+"), " ")?.let(::cleanName)
 
     /** Grouped by type in [DocumentType]'s order, then newest first, undated last. */
     fun sorted(documents: List<StoredDocument>): List<StoredDocument> = documents.sortedWith(
@@ -72,17 +84,10 @@ object VehicleDocuments {
         else -> String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0))
     }
 
-    /** "3 documents · 4.2 MB", or "None yet". */
-    fun summary(count: Int, totalBytes: Long): String = when (count) {
-        0 -> "None yet"
-        1 -> "1 document · ${size(totalBytes)}"
-        else -> "$count documents · ${size(totalBytes)}"
-    }
-
     /** Why a file can't be added, or null when it can. */
-    fun problem(sizeBytes: Long): String? = when {
-        sizeBytes <= 0 -> "That file is empty."
-        sizeBytes > MAX_BYTES -> "That file is too big (the most is ${MAX_BYTES / (1024 * 1024)} MB)."
+    fun problem(sizeBytes: Long): DocumentProblem? = when {
+        sizeBytes <= 0 -> DocumentProblem.EMPTY
+        sizeBytes > MAX_BYTES -> DocumentProblem.TOO_BIG
         else -> null
     }
 
