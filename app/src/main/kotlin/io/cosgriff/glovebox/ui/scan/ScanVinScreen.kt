@@ -1,20 +1,7 @@
 package io.cosgriff.glovebox.ui.scan
 
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import android.Manifest
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.provider.Settings
-import android.util.Size
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.resolutionselector.ResolutionSelector
-import androidx.camera.core.resolutionselector.ResolutionStrategy
-import androidx.camera.view.CameraController
-import androidx.camera.view.LifecycleCameraController
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,59 +9,44 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.cosgriff.glovebox.domain.BarcodeSeen
 import io.cosgriff.glovebox.domain.ScanReport
 import io.cosgriff.glovebox.domain.VinScan
 import android.graphics.Bitmap
-import android.hardware.display.DisplayManager
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
@@ -98,22 +70,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.util.concurrent.Executors
 
-// The scanner sits over a live camera picture, so it keeps the canvas's own colours in both themes.
-// Shared with the dash reader (ReadDashScreen), which is the same kind of screen.
-internal val Scrim = Color(0xFF0E1012)
-internal val OnScrim = Color(0xFFF4F3EF)
-internal val OnScrimMuted = Color(0xFFB9B6AE)
-internal val Guide = Color(0xFFFDBA74)
-internal val Ink = Color(0xFF17191C)
-
-// The part of the frame that is read: a band across the middle, comfortably larger than the guide
-// box drawn over it, since the preview is cropped to fill the screen and the two don't line up exactly.
-internal const val GUIDE_WIDTH = 0.8
-internal const val GUIDE_HEIGHT = 0.3
-
-/** Door-jamb barcodes are small; zoomed in, the phone can sit far enough back to focus on one. */
-private const val START_ZOOM = 2f
-
 /**
  * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
  * (Tesseract, as the dash reader does). Frames are read on the phone; nothing is saved or sent.
@@ -127,44 +83,18 @@ class ScanVinViewModel @Inject constructor(repo: SettingsRepository) : ViewModel
 @Composable
 fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit, vm: ScanVinViewModel = hiltViewModel()) {
     val details by vm.details.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    var granted by remember { mutableStateOf(context.hasCamera()) }
-    // Set once the user has answered the system prompt with no.
-    var refused by rememberSaveable { mutableStateOf(false) }
-    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        granted = ok
-        refused = !ok
-    }
-    LaunchedEffect(Unit) { if (!granted) ask.launch(Manifest.permission.CAMERA) }
-    // Coming back from Settings with the permission switched on.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) granted = context.hasCamera()
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-    Box(Modifier.fillMaxSize().background(Scrim)) {
-        if (granted) {
-            Scanner(details, onClose, onUseVin)
-        } else {
-            NoCamera(
-                why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
-                instead = "Type the VIN instead",
-                refused = refused,
-                onAsk = { ask.launch(Manifest.permission.CAMERA) },
-                onClose = onClose,
-            )
-        }
+    CameraScreen(
+        why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
+        instead = "Type the VIN instead",
+        onClose = onClose,
+    ) {
+        Scanner(details, onClose, onUseVin)
     }
 }
 
 @Composable
 private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) -> Unit) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     /** A VIN that passed its check digit; scanning pauses while it is on screen. */
     var found by rememberSaveable { mutableStateOf<String?>(null) }
     /** [found] was read from print, not from a barcode. */
@@ -180,19 +110,9 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
     var view by remember { mutableStateOf<BandView?>(null) }
     val paused by rememberUpdatedState(found != null)
     val drawing by rememberUpdatedState(details)
-    val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
 
-    val controller = remember {
-        LifecycleCameraController(context).apply {
-            setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
-            // A 17-character Code 39 barcode is wide; the default analysis size is too coarse to resolve its bars.
-            imageAnalysisResolutionSelector = ResolutionSelector.Builder()
-                .setResolutionStrategy(ResolutionStrategy(Size(1920, 1080), ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
-                .build()
-        }
-    }
-    val turn = rememberFrameTurn(controller)
-    DisposableEffect(controller, lifecycleOwner) {
+    val analysis = rememberFrameAnalysis()
+    DisposableEffect(analysis) {
         val executor = Executors.newSingleThreadExecutor()
         val reader = VinBarcodeReader()
         val print = TextReader.vin(context.applicationContext)
@@ -206,7 +126,7 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
         var lastSeen: VinBarcodeReader.Sighting? = null
         var lastSeenAt = 0L
         rate = 0
-        controller.setImageAnalysisAnalyzer(executor) { image ->
+        analysis.setAnalyzer(executor) { image ->
             image.use {
                 val now = System.currentTimeMillis()
                 counted++
@@ -221,7 +141,7 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                     barcodes.clear()
                     return@use
                 }
-                val (band, width, height) = it.guideBand(turn)
+                val (band, width, height) = it.guideBand()
                 // A barcode first: it is quicker to read and carries its own error checking.
                 val sighting = reader.look(band, width, height)
                 // A barcode stays reported for a moment after it leaves the frame, so the panel doesn't flicker.
@@ -261,62 +181,17 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                 }
             }
         }
-        controller.bindToLifecycle(lifecycleOwner)
         onDispose {
-            controller.clearImageAnalysisAnalyzer()
-            controller.unbind()
+            analysis.clearAnalyzer()
             // The recogniser is closed on the thread that uses it, after any frame still being read.
             executor.execute { print.close() }
             executor.shutdown()
         }
     }
-    LaunchedEffect(torch) { controller.enableTorch(torch) }
-    // Zoom in once the camera is up and says how far it can go. Pinch still changes it afterwards.
-    DisposableEffect(controller, lifecycleOwner) {
-        var zoomed = false
-        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> { state ->
-            if (!zoomed && state != null) {
-                zoomed = true
-                controller.setZoomRatio(START_ZOOM.coerceIn(state.minZoomRatio, state.maxZoomRatio))
-            }
-        }
-        controller.zoomState.observe(lifecycleOwner, observer)
-        onDispose { controller.zoomState.removeObserver(observer) }
-    }
-
-    AndroidView(
-        factory = { ctx ->
-            PreviewView(ctx).apply {
-                scaleType = PreviewView.ScaleType.FILL_CENTER
-                this.controller = controller
-            }
-        },
-        modifier = Modifier.fillMaxSize(),
-    )
+    CameraFeed(analysis, torch)
 
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            RoundButton(Icons.Outlined.Close, "Close scanner", container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
-            Text(
-                "Scan VIN",
-                Modifier.weight(1f).semantics { heading() },
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = OnScrim,
-                textAlign = TextAlign.Center,
-            )
-            if (hasFlash) {
-                RoundButton(
-                    Icons.Outlined.FlashOn,
-                    if (torch) "Turn flashlight off" else "Turn flashlight on",
-                    container = if (torch) Guide else Color.Black.copy(alpha = 0.45f),
-                    content = if (torch) Ink else OnScrim,
-                    onClick = { torch = !torch },
-                )
-            } else {
-                Spacer(Modifier.size(48.dp))
-            }
-        }
+        CameraTopBar("Scan VIN", "Close scanner", torch, onTorch = { torch = it }, onClose = onClose)
 
         val instruction = @Composable {
             Text(
@@ -500,114 +375,3 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
     }
 }
 
-/** [why] says what the camera is for on this screen; [instead] is the way on without it. */
-@Composable
-internal fun NoCamera(why: String, instead: String, refused: Boolean, onAsk: () -> Unit, onClose: () -> Unit) {
-    val context = LocalContext.current
-    Column(Modifier.fillMaxSize()) {
-        Row(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
-            RoundButton(Icons.Outlined.Close, "Close scanner", container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
-        }
-        Column(
-            Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
-        ) {
-            Text("Camera access is off", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = OnScrim)
-            Text(why, color = OnScrimMuted, textAlign = TextAlign.Center)
-            if (refused) {
-                // After a refusal Android may stop showing its prompt, so Settings is the reliable way.
-                Button(onClick = { context.openAppSettings() }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text("Open app settings")
-                }
-                TextButton(onClick = onAsk, colors = ButtonDefaults.textButtonColors(contentColor = Guide)) { Text("Ask again") }
-            } else {
-                Button(onClick = onAsk, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text("Allow camera")
-                }
-            }
-            TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = OnScrim)) { Text(instead) }
-        }
-    }
-}
-
-@Composable
-internal fun RoundButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, container: Color, content: Color, onClick: () -> Unit) {
-    FilledIconButton(
-        onClick = onClick,
-        modifier = Modifier.size(48.dp),
-        shape = CircleShape,
-        colors = IconButtonDefaults.filledIconButtonColors(containerColor = container, contentColor = content),
-    ) {
-        Icon(icon, contentDescription = label)
-    }
-}
-
-/** How far each camera frame must turn clockwise to stand as the preview shows it; null until the camera is up. */
-internal class FrameTurn {
-    @Volatile var degrees: Int? = null
-}
-
-/**
- * Keeps [FrameTurn] to the screen. A [CameraController] marks its frames with the way the motion sensor
- * says the phone is held, not the way the screen is showing them, so a phone tipped while aimed at a
- * door jamb or a dash had its frames turned a quarter from the picture on screen: a barcode level on
- * screen reached the reader with its bars along the rows, and the band held only a slice of it. The
- * user lines the guide up on the screen, so frames are turned as the screen is.
- */
-@Composable
-internal fun rememberFrameTurn(controller: CameraController): FrameTurn {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val turn = remember { FrameTurn() }
-    DisposableEffect(controller, lifecycleOwner) {
-        val display = ContextCompat.getDisplayOrDefault(context)
-        val update = { controller.cameraInfo?.let { info -> turn.degrees = info.getSensorRotationDegrees(display.rotation) } }
-        // The camera's details are there once it is bound, which is when its zoom state first arrives.
-        val observer = androidx.lifecycle.Observer<androidx.camera.core.ZoomState> { update() }
-        // Turning from one landscape straight to the other doesn't recreate the activity (its size is the
-        // same), so the screen's turn is followed as well; otherwise frames would arrive upside down.
-        val displays = context.getSystemService(DisplayManager::class.java)
-        val listener = object : DisplayManager.DisplayListener {
-            override fun onDisplayChanged(displayId: Int) {
-                if (displayId == display.displayId) update()
-            }
-            override fun onDisplayAdded(displayId: Int) = Unit
-            override fun onDisplayRemoved(displayId: Int) = Unit
-        }
-        controller.zoomState.observe(lifecycleOwner, observer)
-        displays.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
-        onDispose {
-            controller.zoomState.removeObserver(observer)
-            displays.unregisterDisplayListener(listener)
-        }
-    }
-    return turn
-}
-
-/**
- * The part of a frame the on-screen guide sits in: its greyscale plane, turned upright as the screen
- * shows it ([turn]) and cut to the band across the middle.
- */
-internal fun ImageProxy.guideBand(turn: FrameTurn): Triple<ByteArray, Int, Int> {
-    val image = this
-    val plane = image.planes[0]
-    val width = image.width
-    val height = image.height
-    val buffer = plane.buffer
-    // Rows can be padded past the picture's width; copy just the pixels.
-    val pixels = ByteArray(width * height)
-    for (row in 0 until height) {
-        buffer.position(row * plane.rowStride)
-        buffer.get(pixels, row * width, width)
-    }
-    val (upright, w, h) = VinBarcodeReader.rotate(pixels, width, height, turn.degrees ?: image.imageInfo.rotationDegrees)
-    return VinBarcodeReader.centre(upright, w, h, GUIDE_WIDTH, GUIDE_HEIGHT)
-}
-
-internal fun Context.hasCamera(): Boolean =
-    ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-
-internal fun Context.openAppSettings() {
-    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$packageName".toUri()))
-}
