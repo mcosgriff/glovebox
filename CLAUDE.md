@@ -857,7 +857,10 @@ Notes on what's built:
   that shows it; its tests check the result, not text. Text Android supplies (a biometric error) is
   passed through as a case of its own. Wording held in saved state is worded once, when it happens.
   English stays word for word while moving, since `EndToEndTest` finds things by their words; a
-  wording change is its own PR. Exports and import files keep their fixed formats.
+  wording change is its own PR. Exports and import files keep their fixed formats. **One exception, on
+  purpose:** an import file's error messages (`ImportError.message`, the reasons in `WrittenFile.leftOut`)
+  stay in English in `:domain`, with the format they describe: they name its JSON fields and paths
+  (`items[3].torque.unit`), and `docs/import/` is the English specification they point to.
 - **The app runs in its translation's locale, not the phone's** (`inAppLocale`, `AppText` in app):
   `strings.xml` says which (`format_locale`, en-US), `MainActivity` wraps its context in it, and figures,
   dates and plural forms follow it. So the English app reads "12,345 mi" and "Oct 17, 2026" on every
