@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.ui.vehicle
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.graphics.luminance
+import androidx.activity.compose.ReportDrawn
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -199,6 +200,9 @@ fun VehicleHomeScreen(
     vm: VehicleHomeViewModel = hiltViewModel(),
 ) {
     val home = vm.home.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    // Tells Android the start is done once the reminders are drawn, which is what the startup benchmark
+    // measures (#222). Only the first time counts; later visits change nothing.
+    ReportDrawn()
     val v = home.vehicle
     val unit = v.unit
     val up = home.comingUp
