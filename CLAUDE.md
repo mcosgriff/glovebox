@@ -121,8 +121,7 @@ Keep them green; lint errors fail the build.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
 - **IDE is Android Studio.** Keep AGP current (use Studio's AGP Upgrade Assistant); no IntelliJ IDEA
   compatibility constraint.
-- minSdk 29, targetSdk 36, compileSdk 37 (current androidx/Compose/OkHttp require compiling against 37;
-  raising targetSdk is a separate decision), JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
+- minSdk 29, targetSdk 37, compileSdk 37 (Android 17's target changes checked in #232), JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
   with `@Serializable` routes. Dynamic color is off; use the theme tokens.
 
 ## Design tokens (from the canvas)
