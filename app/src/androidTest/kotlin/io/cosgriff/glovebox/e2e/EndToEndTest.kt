@@ -81,6 +81,8 @@ class EndToEndTest {
         // The first job by name is the check of the front differential oil.
         see("Inspect front differential oil (4WD)")
         see(containing("Scheduled now, at 45,000 mi"))
+        // The button's label is read by TalkBack from the same tree this test reads; it once had none.
+        see("Log service")
 
         step("Log it ticks that job's own line and saves a record")
         stale { tap(first("Log it")) }

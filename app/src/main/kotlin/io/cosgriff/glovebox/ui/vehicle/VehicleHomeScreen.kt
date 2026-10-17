@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -342,14 +343,18 @@ fun VehicleHomeScreen(
             }
         }
 
+        // The content-slot form, not `text =` and `icon =`: that one drew the label but left it out of the
+        // accessibility tree, so TalkBack said only "Button" (material3 1.4.0).
         ExtendedFloatingActionButton(
             onClick = { onLogService(v.id) },
-            icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
-            text = { Text("Log service") },
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp),
-        )
+        ) {
+            Icon(Icons.Outlined.Add, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Log service")
+        }
     }
 }
 
