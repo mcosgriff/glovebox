@@ -17,7 +17,57 @@ enum class NoteTone { PLAIN, CHANGED, WARNING }
 /** Why a record is picked out in the History list. */
 enum class RecordMark { ADDED, RESTORED }
 
-data class OdometerNote(val text: String, val tone: NoteTone)
+/** The line under an odometer field; `app` words it. Readings are as the dash reads them. */
+sealed interface OdometerNote {
+    val tone: NoteTone
+
+    /** Saving was tried with no reading. */
+    data object Missing : OdometerNote {
+        override val tone = NoteTone.WARNING
+    }
+
+    /** Below a reading from on or before this date; it is said without a unit, as a reading to look for. */
+    data class LowerThanEarlier(val earlier: Int) : OdometerNote {
+        override val tone = NoteTone.WARNING
+    }
+
+    /** Editing a record: what its reading was before. */
+    data class Was(val original: Int) : OdometerNote {
+        override val tone = NoteTone.CHANGED
+    }
+
+    data object Unchanged : OdometerNote {
+        override val tone = NoteTone.PLAIN
+    }
+
+    /** Logging a new service: the vehicle's last reading. */
+    data class LastRecorded(val reading: Int) : OdometerNote {
+        override val tone = NoteTone.PLAIN
+    }
+
+    /** "When were these last done?": above the vehicle's latest reading, which it would then become. */
+    data class HigherThanLatest(val latest: Int) : OdometerNote {
+        override val tone = NoteTone.WARNING
+    }
+
+    data class Latest(val reading: Int) : OdometerNote {
+        override val tone = NoteTone.PLAIN
+    }
+}
+
+/** Who did a record's work, as History says it; `app` words it. */
+sealed interface DoneBy {
+    /** A bare "last done" (#78), which doesn't say who. */
+    data object EnteredAsLastDone : DoneBy
+
+    data object Diy : DoneBy
+
+    /** [name] is the shop's, when one was given. */
+    data class Shop(val name: String?) : DoneBy
+}
+
+/** [imported] came from an import file; [mark] is set while the record is just added or restored. */
+data class Who(val by: DoneBy, val imported: Boolean, val mark: RecordMark?)
 
 object LogEdits {
     /**
@@ -49,43 +99,32 @@ object LogEdits {
         readings: List<OdometerReading>,
         lastOdometer: Int?,
         showErrors: Boolean,
-        unit: DistanceUnit,
     ): OdometerNote? {
         if (entered == null) {
-            return if (showErrors) OdometerNote("Enter the odometer reading in whole ${unit.plural}.", NoteTone.WARNING) else lastRecorded(lastOdometer, unit)
+            return if (showErrors) OdometerNote.Missing else lastOdometer?.let(OdometerNote::LastRecorded)
         }
         // Worth a warning, not a block: the earlier reading may be the wrong one.
         val earlier = readings.filter { !it.date.isAfter(date) && it.odometer > entered }.maxOfOrNull { it.odometer }
         return when {
-            earlier != null -> OdometerNote("Lower than an earlier reading (${miles(earlier)}). Double-check it.", NoteTone.WARNING)
-            original == null -> lastRecorded(lastOdometer, unit)
-            entered != original -> OdometerNote("Was ${miles(original)}", NoteTone.CHANGED)
-            else -> OdometerNote("Unchanged", NoteTone.PLAIN)
+            earlier != null -> OdometerNote.LowerThanEarlier(earlier)
+            original == null -> lastOdometer?.let(OdometerNote::LastRecorded)
+            entered != original -> OdometerNote.Was(original)
+            else -> OdometerNote.Unchanged
         }
     }
-
-    private fun lastRecorded(lastOdometer: Int?, unit: DistanceUnit): OdometerNote? =
-        lastOdometer?.let { OdometerNote("Last recorded: ${unit.format(it)}", NoteTone.PLAIN) }
-
-    private fun miles(value: Int): String = String.format(Locale.US, "%,d", value)
 
     /**
      * Who did the work, as the History list says it; a record just added or restored says so. A bare
      * "last done" ([enteredAsLastDone]) doesn't say who, so it says what it is instead, and a record
      * that came from an import file ([imported]) is marked as one.
      */
-    fun who(diy: Boolean, shopName: String?, mark: RecordMark?, enteredAsLastDone: Boolean = false, imported: Boolean = false): String {
+    fun who(diy: Boolean, shopName: String?, mark: RecordMark?, enteredAsLastDone: Boolean = false, imported: Boolean = false): Who {
         val by = when {
-            enteredAsLastDone -> LastDoneEntries.TAG
-            diy -> "DIY"
-            else -> shopName?.trim()?.takeIf { it.isNotEmpty() } ?: "Shop"
+            enteredAsLastDone -> DoneBy.EnteredAsLastDone
+            diy -> DoneBy.Diy
+            else -> DoneBy.Shop(shopName?.trim()?.takeIf { it.isNotEmpty() })
         }
-        val who = if (imported) "$by \u00b7 imported" else by
-        return when (mark) {
-            RecordMark.ADDED -> "$who \u00b7 just added"
-            RecordMark.RESTORED -> "$who \u00b7 restored"
-            null -> who
-        }
+        return Who(by, imported, mark)
     }
 
     /** True when [entry] is the most recent time [itemId] was done. */
@@ -109,5 +148,5 @@ fun ServiceCatalog.lineFor(templateKey: String?, service: String? = null): Catal
     return if (templateKey != null) items.firstOrNull { it.resets == templateKey } else items.firstOrNull { it.id == service }
 }
 
-/** The Log service lines that reset a reminder, as the user sees them there: see [lineFor]. */
-fun ServiceCatalog.resetters(templateKey: String?, service: String? = null): List<String> = listOfNotNull(lineFor(templateKey, service)?.label)
+/** The ids of the Log service lines that reset a reminder (`app` names them): see [lineFor]. */
+fun ServiceCatalog.resetters(templateKey: String?, service: String? = null): List<String> = listOfNotNull(lineFor(templateKey, service)?.id)

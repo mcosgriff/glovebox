@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.R
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
@@ -94,7 +97,7 @@ class RecordPhotoPicker @Inject constructor(
     private fun begin(to: PhotoTarget, room: Int): Boolean {
         _problem.value = null
         if (room <= 0) {
-            _problem.value = "A record holds up to ${RecordPhotos.MAX_PER_RECORD} photos."
+            _problem.value = AppText.res.getString(R.string.photos_full, RecordPhotos.MAX_PER_RECORD.asNumber())
             return false
         }
         target = to
@@ -112,8 +115,8 @@ class RecordPhotoPicker @Inject constructor(
             val names = wanted.mapNotNull { store.import(it) }
             deliver(to, names)
             _problem.value = when {
-                names.size < wanted.size -> "${wanted.size - names.size} of those couldn't be read."
-                uris.size > wanted.size -> "Only ${wanted.size} more would fit; a record holds up to ${RecordPhotos.MAX_PER_RECORD}."
+                names.size < wanted.size -> AppText.res.getString(R.string.photos_unreadable, (wanted.size - names.size).asNumber())
+                uris.size > wanted.size -> AppText.res.getString(R.string.photos_too_many, wanted.size.asNumber(), RecordPhotos.MAX_PER_RECORD.asNumber())
                 else -> null
             }
         }
@@ -129,7 +132,7 @@ class RecordPhotoPicker @Inject constructor(
             val name = if (saved) store.import(Uri.fromFile(file)) else null
             // The camera's copy is in the clear; it goes whether or not it could be used.
             file.delete()
-            if (name != null) deliver(to, listOf(name)) else if (saved) _problem.value = "That photo couldn't be read."
+            if (name != null) deliver(to, listOf(name)) else if (saved) _problem.value = AppText.res.getString(R.string.photo_unreadable)
         }
     }
 

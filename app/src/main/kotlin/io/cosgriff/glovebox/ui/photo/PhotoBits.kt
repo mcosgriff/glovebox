@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -73,7 +75,7 @@ fun PhotoThumb(
     val image by produceState<ImageBitmap?>(null, fileName) { value = loader.thumbnail(fileName) }
     Box(modifier) {
         Surface(
-            Modifier.fillMaxSize().then(if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = "Open photo", onClick = onClick) else Modifier),
+            Modifier.fillMaxSize().then(if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = stringResource(R.string.photo_open), onClick = onClick) else Modifier),
             color = scheme.surfaceVariant,
             shape = RoundedCornerShape(12.dp),
             border = BorderStroke(1.dp, scheme.outlineVariant),
@@ -85,12 +87,12 @@ fun PhotoThumb(
             Box(
                 Modifier.align(Alignment.TopEnd)
                     .size(48.dp)
-                    .clickable(role = Role.Button, onClickLabel = "Remove photo", onClick = onRemove),
+                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.details_remove_photo), onClick = onRemove),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     Icons.Outlined.Close,
-                    contentDescription = "Remove $description",
+                    contentDescription = stringResource(R.string.photo_remove, description),
                     modifier = Modifier.clip(CircleShape).background(scheme.scrim.copy(alpha = 0.6f)).padding(4.dp).size(18.dp),
                     tint = scheme.surface,
                 )
@@ -117,7 +119,7 @@ fun AttachMenu(onTake: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Mo
         anchor { open = true }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(
-                text = { Text("Take a photo") },
+                text = { Text(stringResource(R.string.documents_take_photo)) },
                 onClick = {
                     open = false
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -128,7 +130,7 @@ fun AttachMenu(onTake: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Mo
                 },
             )
             DropdownMenuItem(
-                text = { Text("Choose photos") },
+                text = { Text(stringResource(R.string.photo_choose)) },
                 onClick = {
                     open = false
                     onChoose()
@@ -137,7 +139,7 @@ fun AttachMenu(onTake: () -> Unit, onChoose: () -> Unit, modifier: Modifier = Mo
         }
         DropdownMenu(expanded = refused, onDismissRequest = { refused = false }) {
             DropdownMenuItem(
-                text = { Text("Camera access is off. Choose photos instead") },
+                text = { Text(stringResource(R.string.photo_camera_off)) },
                 onClick = {
                     refused = false
                     onChoose()

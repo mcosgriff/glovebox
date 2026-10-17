@@ -693,8 +693,8 @@ private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, servi
 private fun describe(labels: List<String>, who: String, costCents: Long?): String =
     listOfNotNull(labels.joinToString(", "), who, costCents?.let(Money::format)).joinToString(" · ")
 
-private fun ImportedRecord.describe() = describe(work.map { it.label }, LogEdits.who(diy, shopName, null), costCents)
-private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName, null, enteredAsLastDone), costCents)
+private fun ImportedRecord.describe() = describe(work.map { it.label }, LogEdits.who(diy, shopName, null).text, costCents)
+private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName, null, enteredAsLastDone).text, costCents)
 
 /** "Change oil, Rotate tires · or 12 months" */
 private fun describe(work: List<TableJob>, orMonths: Int?): String =

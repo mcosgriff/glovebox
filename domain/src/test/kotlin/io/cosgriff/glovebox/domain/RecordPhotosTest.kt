@@ -1,7 +1,6 @@
 package io.cosgriff.glovebox.domain
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 class RecordPhotosTest {
@@ -14,13 +13,6 @@ class RecordPhotosTest {
         assertEquals(1, RecordPhotos.room(9))
         assertEquals(0, RecordPhotos.room(10))
         assertEquals(0, RecordPhotos.room(12))
-    }
-
-    @Test
-    fun `count label is left out for no photos`() {
-        assertNull(RecordPhotos.countLabel(0))
-        assertEquals("1 photo", RecordPhotos.countLabel(1))
-        assertEquals("2 photos", RecordPhotos.countLabel(2))
     }
 
     @Test

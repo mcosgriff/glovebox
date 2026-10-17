@@ -714,4 +714,208 @@
     <string name="fluids_high_beam_error">A bulb code such as 9005 or HB3</string>
     <string name="fluids_fog">Fog light</string>
     <string name="fluids_fog_error">A bulb code such as H11 or H16</string>
+
+    <!-- Service catalog: Log service categories (CatalogText.kt) -->
+    <string name="catalog_category_engine">Oil &amp; engine</string>
+    <string name="catalog_category_tires">Tires &amp; wheels</string>
+    <string name="catalog_category_brakes">Brakes</string>
+    <string name="catalog_category_fluids">Fluids</string>
+    <string name="catalog_category_driveline">Driveline</string>
+    <string name="catalog_category_suspension">Suspension &amp; steering</string>
+    <string name="catalog_category_cabin">Cabin &amp; electrical</string>
+    <string name="catalog_category_inspection">Inspection</string>
+    <string name="catalog_category_other">Other</string>
+    <string name="catalog_category_yours">Your items</string>
+
+    <!-- Service catalog: Log service lines (CatalogText.kt). Saved with a record as they read then. -->
+    <string name="catalog_oil">Oil &amp; filter change</string>
+    <string name="catalog_engine_air">Engine air filter</string>
+    <string name="catalog_spark_plugs">Spark plugs</string>
+    <string name="catalog_belt">Serpentine belt</string>
+    <string name="catalog_belt_check">Serpentine belt check</string>
+    <string name="catalog_timing_belt">Timing belt</string>
+    <string name="catalog_fuel_filter">Fuel filter</string>
+    <string name="catalog_fuel_system">Fuel system cleaning</string>
+    <string name="catalog_pcv">PCV valve</string>
+    <string name="catalog_rotation">Tire rotation</string>
+    <string name="catalog_balance">Balance</string>
+    <string name="catalog_alignment">Alignment</string>
+    <string name="catalog_new_tires">New tires</string>
+    <string name="catalog_flat">Flat repair</string>
+    <string name="catalog_front_pads">Front pads</string>
+    <string name="catalog_rear_pads">Rear pads</string>
+    <string name="catalog_rotors">Rotors</string>
+    <string name="catalog_brake_fluid">Brake fluid flush</string>
+    <string name="catalog_brake_fluid_check">Brake fluid check</string>
+    <string name="catalog_brake_inspect">Brake inspection</string>
+    <string name="catalog_coolant">Coolant</string>
+    <string name="catalog_trans_fluid">Transmission fluid</string>
+    <string name="catalog_power_steering">Power steering fluid</string>
+    <string name="catalog_washer">Washer fluid</string>
+    <string name="catalog_diff_fluid">Differential / transfer case fluid</string>
+    <string name="catalog_front_diff_check">Front differential oil check</string>
+    <string name="catalog_front_diff">Front differential oil change</string>
+    <string name="catalog_rear_diff_check">Rear differential oil check</string>
+    <string name="catalog_rear_diff">Rear differential oil change</string>
+    <string name="catalog_transfer_case_check">Transfer case oil check</string>
+    <string name="catalog_transfer_case">Transfer case oil change</string>
+    <string name="catalog_driveshaft">Driveshaft grease</string>
+    <string name="catalog_cv_axle">CV axle / boot</string>
+    <string name="catalog_shocks">Shocks / struts</string>
+    <string name="catalog_wheel_bearing">Wheel bearing</string>
+    <string name="catalog_steering_parts">Tie rods / ball joints</string>
+    <string name="catalog_cabin_air">Cabin air filter</string>
+    <string name="catalog_wipers">Wiper blades</string>
+    <string name="catalog_battery">Battery</string>
+    <string name="catalog_battery_check">Battery test</string>
+    <string name="catalog_bulbs">Bulbs</string>
+    <string name="catalog_multi_point">Multi-point inspection</string>
+    <string name="catalog_emissions">Emissions test</string>
+    <string name="catalog_safety_inspection">Safety inspection</string>
+    <string name="catalog_recall">Recall work</string>
+    <string name="catalog_accessory">Accessory install</string>
+    <string name="catalog_body">Body / glass</string>
+    <string name="catalog_detail">Detail / wash</string>
+
+    <!-- Shared notes on records and readings -->
+    <!-- %1$s is miles or kilometres. -->
+    <string name="odometer_note_missing">Enter the odometer reading in whole %1$s.</string>
+    <string name="odometer_note_lower">Lower than an earlier reading (%1$s). Double-check it.</string>
+    <string name="odometer_note_was">Was %1$s</string>
+    <string name="odometer_note_unchanged">Unchanged</string>
+    <string name="odometer_note_last_recorded">Last recorded: %1$s</string>
+    <string name="odometer_note_higher">Higher than the latest reading (%1$s). Double-check it.</string>
+    <string name="odometer_note_latest">Latest reading: %1$s</string>
+    <!-- What a record entered as a last done says in place of who did the work. -->
+    <string name="last_done_tag">Entered as last done</string>
+    <string name="who_diy">DIY</string>
+    <string name="who_shop">Shop</string>
+    <string name="who_imported">%1$s · imported</string>
+    <string name="who_just_added">%1$s · just added</string>
+    <string name="who_restored">%1$s · restored</string>
+
+    <!-- When were these last done? (LastDoneScreen) -->
+    <!-- %1$s is last_done_tag. -->
+    <string name="last_done_sheet_intro">When it was last done. It goes in History marked \"%1$s\", and the reminder counts from it.</string>
+
+    <!-- Shared, lists and buttons -->
+    <!-- Joins a list in a sentence, pair by pair: "A and B and C". -->
+    <string name="list_and">%1$s and %2$s</string>
+    <string name="ok">OK</string>
+    <!-- A photo, for a screen reader: photo 2. -->
+    <string name="photo_number">photo %1$s</string>
+
+    <!-- Log service (LogServiceScreen) -->
+    <string name="log_edit_title">Edit service</string>
+    <string name="log_date">Date</string>
+    <string name="log_use_current">Use current</string>
+    <string name="log_due_section">DUE NOW · ONE TAP</string>
+    <string name="log_due_overdue">%1$s · overdue</string>
+    <string name="log_due_soon">%1$s · due soon</string>
+    <!-- A due chip that is ticked. -->
+    <string name="log_chip_on">✓ %1$s</string>
+    <!-- A due chip that offers itself. -->
+    <string name="log_chip_off">+ %1$s</string>
+    <string name="log_what_section">WHAT WAS DONE?</string>
+    <string name="log_custom">Custom</string>
+    <string name="log_add_custom_button">+ Add custom item</string>
+    <plurals name="log_items">
+        <item quantity="one">%1$s item</item>
+        <item quantity="other">%1$s items</item>
+    </plurals>
+    <!-- %1$s is how many items (in bold), %2$s the list of them. -->
+    <string name="log_items_summary">%1$s · %2$s</string>
+    <string name="log_pick_above">Pick what was done above</string>
+    <string name="log_changes_section">WHAT THIS CHANGES</string>
+    <string name="log_no_changes">No changes to reminders.</string>
+    <string name="log_who_section">WHO DID IT?</string>
+    <string name="log_diy">I did (DIY)</string>
+    <string name="log_a_shop">A shop</string>
+    <string name="log_shop_name">Shop name</string>
+    <string name="log_shop_hint">e.g. dealer or local shop</string>
+    <string name="log_notes_label">Notes (part numbers, oil brand, torque specs…)</string>
+    <string name="log_notes">Notes</string>
+    <string name="log_optional">Optional</string>
+    <string name="log_missing_date">a date that isn\'t in the future</string>
+    <string name="log_missing_odometer">the odometer reading</string>
+    <string name="log_missing_item">at least one item</string>
+    <string name="log_missing_cost">a valid cost</string>
+    <!-- %1$s is what is missing, joined with list_and. -->
+    <string name="log_to_save">To save, add %1$s.</string>
+    <string name="log_save_changes">Save changes</string>
+    <string name="log_save">Save service</string>
+    <string name="log_delete">Delete this record</string>
+    <string name="log_total_cost">Total cost</string>
+    <string name="log_cost_optional">Total cost, optional</string>
+    <!-- Typed with a point, whatever the language: Money.parseCents reads that. -->
+    <string name="log_cost_placeholder">0.00</string>
+    <!-- Costs are dollars and cents, whatever the language. -->
+    <string name="log_cost_prefix">$</string>
+    <string name="log_receipt">Receipt / photo</string>
+    <string name="log_attach">Attach</string>
+    <string name="log_attach_count">Attach · %1$s</string>
+    <string name="log_cost_error">Enter the cost as an amount like 45.99, or leave it empty.</string>
+    <string name="log_photos_full">That\'s the most a record holds (%1$s).</string>
+    <string name="log_photos_note">Photos are stored encrypted with the record. The copy in your gallery, if there is one, isn\'t touched.</string>
+    <string name="log_tab_open">open</string>
+    <plurals name="log_tab_ticked">
+        <item quantity="one">%1$s ticked</item>
+        <item quantity="other">%1$s ticked</item>
+    </plurals>
+    <string name="log_tab_count">✓ %1$s</string>
+    <string name="log_add_custom">Add custom item</string>
+    <string name="log_what_was_done">What was done?</string>
+
+    <!-- Shared, edit and photos -->
+    <string name="edit">Edit</string>
+    <string name="photo_of">Photo %1$s of %2$s</string>
+
+    <!-- History (HistoryScreen) -->
+    <string name="history_title">History</string>
+    <string name="history_export">Export · PDF / MD</string>
+    <!-- %1$s is the vehicle, %2$s how many records. -->
+    <string name="history_subtitle">%1$s · %2$s</string>
+    <string name="history_subtitle_archived">%1$s · %2$s · archived, read-only</string>
+    <string name="history_all">All</string>
+    <string name="history_no_vehicle">Add a vehicle in the Garage to start its service history.</string>
+    <string name="history_none_archived">No service records were logged for this vehicle.</string>
+    <string name="history_none">No service records yet. Use Log service in the Garage to add the first one.</string>
+
+    <!-- Service record (RecordDetailScreen) -->
+    <string name="record_next_due">Next due %1$s</string>
+    <string name="record_done_again">Done again since</string>
+    <string name="record_title">Service record</string>
+    <string name="record_not_entered">Not entered</string>
+    <plurals name="record_work_done">
+        <item quantity="one">WORK DONE · %1$s ITEM</item>
+        <item quantity="other">WORK DONE · %1$s ITEMS</item>
+    </plurals>
+    <string name="record_notes">NOTES</string>
+    <string name="record_photos">RECEIPTS &amp; PHOTOS</string>
+    <string name="record_add_photo">+ Add</string>
+    <string name="record_photos_note">Photos are stored encrypted with the record.</string>
+    <string name="record_archived">This vehicle is archived, so its records can\'t be changed. Move it back to the garage to edit them.</string>
+    <string name="record_delete">Delete record</string>
+    <string name="record_delete_title">Delete this service record?</string>
+    <string name="record_photos_go_too">Its receipt and parts photos are deleted too.</string>
+    <string name="record_no_change">No reminders change.</string>
+    <string name="record_go_back_to">REMINDERS WILL GO BACK TO</string>
+    <string name="record_undo_for">You can undo this for %1$s seconds afterwards.</string>
+
+    <!-- Photos (PhotoViewerScreen, PhotoBits, RecordPhotoPicker) -->
+    <string name="photos_full">A record holds up to %1$s photos.</string>
+    <string name="photos_unreadable">%1$s of those couldn\'t be read.</string>
+    <string name="photos_too_many">Only %1$s more would fit; a record holds up to %2$s.</string>
+    <string name="photo_unreadable">That photo couldn\'t be read.</string>
+    <string name="photo_share_title">Share this photo?</string>
+    <string name="photo_share_body">The app you share it with gets an unencrypted copy, and what it does with it is up to that app. The copy Glovebox makes for sharing is removed afterwards.</string>
+    <string name="photo_share_failed">This photo couldn\'t be shared.</string>
+    <string name="photo">Photo</string>
+    <string name="photo_title_of">Photo · %1$s of %2$s</string>
+    <string name="photo_share">Share photo</string>
+    <string name="photo_open">Open photo</string>
+    <!-- %1$s is the photo, such as photo 2. -->
+    <string name="photo_remove">Remove %1$s</string>
+    <string name="photo_choose">Choose photos</string>
+    <string name="photo_camera_off">Camera access is off. Choose photos instead</string>
 </resources>

@@ -84,7 +84,7 @@ class HistoryTest {
 
     @Test
     fun `resetters name the log lines that reset a reminder`() {
-        assertEquals(listOf("Oil & filter change"), ServiceCatalog.resetters("oil"))
+        assertEquals(listOf("oil"), ServiceCatalog.resetters("oil"))
         assertEquals(emptyList<String>(), ServiceCatalog.resetters(null))
         assertEquals(emptyList<String>(), ServiceCatalog.resetters("not-a-key"))
     }

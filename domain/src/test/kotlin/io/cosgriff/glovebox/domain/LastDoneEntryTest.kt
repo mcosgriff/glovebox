@@ -21,12 +21,12 @@ class LastDoneEntryTest {
 
     @Test
     fun `the note shows the latest reading and questions one above it`() {
-        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(null, 68_412, false, DistanceUnit.MILES))
-        assertEquals(OdometerNote("Latest reading: 68,412 mi", NoteTone.PLAIN), LastDoneEntries.odometerNote(60_100, 68_412, false, DistanceUnit.MILES))
-        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(70_000, 68_412, false, DistanceUnit.MILES)?.tone)
-        assertEquals(NoteTone.WARNING, LastDoneEntries.odometerNote(null, 68_412, true, DistanceUnit.MILES)?.tone)
+        assertEquals(OdometerNote.Latest(68_412), LastDoneEntries.odometerNote(null, 68_412, false))
+        assertEquals(OdometerNote.Latest(68_412), LastDoneEntries.odometerNote(60_100, 68_412, false))
+        assertEquals(OdometerNote.HigherThanLatest(68_412), LastDoneEntries.odometerNote(70_000, 68_412, false))
+        assertEquals(OdometerNote.Missing, LastDoneEntries.odometerNote(null, 68_412, true))
         // A vehicle with no mileage yet has nothing to compare with.
-        assertNull(LastDoneEntries.odometerNote(60_100, null, false, DistanceUnit.MILES))
+        assertNull(LastDoneEntries.odometerNote(60_100, null, false))
     }
 
     @Test
@@ -66,9 +66,9 @@ class LastDoneEntryTest {
 
     @Test
     fun `history says what the record is in place of who did it`() {
-        assertEquals("Entered as last done", LogEdits.who(diy = true, shopName = null, mark = null, enteredAsLastDone = true))
-        assertEquals("Entered as last done · just added", LogEdits.who(true, null, RecordMark.ADDED, true))
-        assertEquals("DIY", LogEdits.who(true, null, null))
+        assertEquals(Who(DoneBy.EnteredAsLastDone, false, null), LogEdits.who(diy = true, shopName = null, mark = null, enteredAsLastDone = true))
+        assertEquals(Who(DoneBy.EnteredAsLastDone, false, RecordMark.ADDED), LogEdits.who(true, null, RecordMark.ADDED, true))
+        assertEquals(Who(DoneBy.Diy, false, null), LogEdits.who(true, null, null))
     }
 
     @Test

@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.photoCount
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.runtime.LaunchedEffect
@@ -156,8 +163,8 @@ class RecordDetailViewModel @Inject constructor(
                     category = ServiceCatalog.categoryOf(item.catalogId)?.label,
                     reminderNote = when {
                         reminder == null -> null
-                        latest -> "Next due " + reminder.interval.nextDueAfter(LastDone(entry.date, entry.odometer)).text(unit)
-                        else -> "Done again since"
+                        latest -> AppText.res.getString(R.string.record_next_due, reminder.interval.nextDueAfter(LastDone(entry.date, entry.odometer)).text(unit))
+                        else -> AppText.res.getString(R.string.record_done_again)
                     },
                     current = latest,
                 )
@@ -199,11 +206,11 @@ fun RecordDetailScreen(
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
-            Text("Service record", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
+            Text(stringResource(R.string.record_title), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
             if (!detail.readOnly) {
                 OutlinedButton(onClick = { onEdit(record.vehicleId, record.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                    Text("Edit")
+                    Text(stringResource(R.string.edit))
                 }
             }
         }
@@ -215,21 +222,21 @@ fun RecordDetailScreen(
             WhiteCard {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "${detail.vehicleName} · ${LogEdits.who(record.diy, record.shopName, null, record.enteredAsLastDone, record.imported)}",
+                        "${detail.vehicleName} · ${LogEdits.who(record.diy, record.shopName, null, record.enteredAsLastDone, record.imported).text}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(record.date.format(longDate), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     Row {
-                        Stat("Odometer", record.odometer.asDistance(detail.unit), Modifier.weight(1f))
-                        Stat("Total cost", record.costCents?.let(Money::format) ?: "Not entered", Modifier.weight(1f))
+                        Stat(stringResource(R.string.odometer), record.odometer.asDistance(detail.unit), Modifier.weight(1f))
+                        Stat(stringResource(R.string.log_total_cost), record.costCents?.let(Money::format) ?: stringResource(R.string.record_not_entered), Modifier.weight(1f))
                     }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val n = detail.lines.size
-                SectionLabel("WORK DONE · $n ${if (n == 1) "ITEM" else "ITEMS"}")
+                SectionLabel(pluralStringResource(R.plurals.record_work_done, n, n.asNumber()))
                 WhiteCard {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         detail.lines.forEachIndexed { i, line ->
@@ -238,7 +245,7 @@ fun RecordDetailScreen(
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                                     Text(
-                                        line.category ?: "Custom",
+                                        line.category ?: stringResource(R.string.log_custom),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -258,7 +265,7 @@ fun RecordDetailScreen(
 
             record.notes?.let { notes ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel("NOTES")
+                    SectionLabel(stringResource(R.string.record_notes))
                     WhiteCard { Text(notes, Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) }
                 }
             }
@@ -267,7 +274,7 @@ fun RecordDetailScreen(
             // An archived vehicle's record shows its photos but can't take more.
             if (photos.isNotEmpty() || !detail.readOnly) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel("RECEIPTS & PHOTOS")
+                    SectionLabel(stringResource(R.string.record_photos))
                     val canAdd = !detail.readOnly && photos.size < RecordPhotos.MAX_PER_RECORD
                     // Three to a row, as on the canvas; the Add tile takes the next free place.
                     (photos.indices.toList() + listOfNotNull((-1).takeIf { canAdd })).chunked(3).forEach { row ->
@@ -276,7 +283,7 @@ fun RecordDetailScreen(
                                 if (i >= 0) {
                                     PhotoThumb(
                                         photos[i].fileName,
-                                        "Photo ${i + 1} of ${photos.size}",
+                                        stringResource(R.string.photo_of, (i + 1).asNumber(), photos.size.asNumber()),
                                         Modifier.weight(1f).aspectRatio(1f),
                                         onClick = { onOpenPhoto(record.id, i) },
                                     )
@@ -287,7 +294,7 @@ fun RecordDetailScreen(
                                             modifier = Modifier.fillMaxSize(),
                                             shape = RoundedCornerShape(12.dp),
                                             contentPadding = PaddingValues(4.dp),
-                                        ) { Text("+ Add") }
+                                        ) { Text(stringResource(R.string.record_add_photo)) }
                                     }
                                 }
                             }
@@ -296,7 +303,7 @@ fun RecordDetailScreen(
                     }
                     val problem by vm.photoProblem.collectAsStateWithLifecycle()
                     Text(
-                        problem ?: "Photos are stored encrypted with the record.",
+                        problem ?: stringResource(R.string.record_photos_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (problem != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -305,7 +312,7 @@ fun RecordDetailScreen(
 
             if (detail.readOnly) {
                 Text(
-                    "This vehicle is archived, so its records can't be changed. Move it back to the garage to edit them.",
+                    stringResource(R.string.record_archived),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -315,7 +322,7 @@ fun RecordDetailScreen(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
                     modifier = Modifier.fillMaxWidth().height(52.dp),
-                ) { Text("Delete record") }
+                ) { Text(stringResource(R.string.record_delete)) }
             }
         }
     }
@@ -327,24 +334,24 @@ fun RecordDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Delete this service record?", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.record_delete_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     val n = detail.lines.size
                     Text(
                         listOfNotNull(
                             record.date.format(longDate),
                             record.odometer.asDistance(detail.unit),
-                            "$n ${if (n == 1) "item" else "items"}",
-                            RecordPhotos.countLabel(detail.record.photos.size),
+                            pluralStringResource(R.plurals.log_items, n, n.asNumber()),
+                            photoCount(detail.record.photos.size),
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (detail.record.photos.isNotEmpty()) {
-                    Text("Its receipt and parts photos are deleted too.", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.record_photos_go_too), style = MaterialTheme.typography.bodyMedium)
                 }
                 if (detail.deleteImpact.isEmpty()) {
-                    Text("No reminders change.", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.record_no_change), style = MaterialTheme.typography.bodyMedium)
                 } else {
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
@@ -353,7 +360,7 @@ fun RecordDetailScreen(
                     ) {
                         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                "REMINDERS WILL GO BACK TO",
+                                stringResource(R.string.record_go_back_to),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -365,7 +372,7 @@ fun RecordDetailScreen(
                     }
                 }
                 Text(
-                    "You can undo this for ${LogEdits.UNDO_SECONDS} seconds afterwards.",
+                    stringResource(R.string.record_undo_for, LogEdits.UNDO_SECONDS.asNumber()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -373,7 +380,7 @@ fun RecordDetailScreen(
                     OutlinedButton(
                         onClick = { confirmingDelete = false },
                         modifier = Modifier.weight(1f).height(52.dp),
-                    ) { Text("Cancel") }
+                    ) { Text(stringResource(R.string.cancel)) }
                     Button(
                         onClick = {
                             confirmingDelete = false
@@ -384,7 +391,7 @@ fun RecordDetailScreen(
                             contentColor = MaterialTheme.colorScheme.onError,
                         ),
                         modifier = Modifier.weight(1f).height(52.dp),
-                    ) { Text("Delete") }
+                    ) { Text(stringResource(R.string.delete)) }
                 }
             }
         }
