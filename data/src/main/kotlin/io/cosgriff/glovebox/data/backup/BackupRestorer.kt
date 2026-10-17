@@ -1,6 +1,10 @@
 package io.cosgriff.glovebox.data.backup
 
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room.PooledConnection
+import androidx.room.execSQL
+import androidx.room.immediateTransaction
+import androidx.room.useReaderConnection
+import androidx.room.useWriterConnection
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -64,7 +68,7 @@ class BackupRestorer(
             BackupEntryReader(BackupInputStream(file.inputStream().buffered(), password)).use { entries ->
                 summary = summary(entries.next())
                 // Tables written by a newer version of the app may have columns this one would silently drop.
-                if (summary.schemaVersion > db.openHelper.readableDatabase.version) throw BackupException(BackupException.Reason.NEWER_VERSION)
+                if (summary.schemaVersion > schemaVersion()) throw BackupException(BackupException.Reason.NEWER_VERSION)
                 while (true) {
                     val entry = entries.next() ?: break
                     when (entry.kind) {
@@ -125,34 +129,47 @@ class BackupRestorer(
         staging.deleteRecursively()
     }
 
-    private fun replaceTables(tables: Map<String, JsonArray>) {
-        val sqlite = db.openHelper.writableDatabase
-        // Room's own transaction, so screens watching these tables refresh when it commits.
-        db.runInTransaction {
-            // Rows go in table by table, children sometimes before parents; the links are checked at commit.
-            sqlite.execSQL("PRAGMA defer_foreign_keys = ON")
-            val current = sqlite.query("SELECT name FROM sqlite_master WHERE type = 'table'").use { c ->
-                generateSequence { if (c.moveToNext()) c.getString(0) else null }.toList()
-            }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
-            current.forEach { sqlite.execSQL("DELETE FROM `$it`") }
-            for ((table, rows) in tables) {
-                if (table !in current) continue
-                val columns = sqlite.columns(table)
-                for (row in rows) {
-                    // A backup from an older version lacks newer columns; those take their defaults.
-                    val values = row.jsonObject.filterKeys { it in columns }
-                    if (values.isEmpty()) continue
-                    val names = values.keys.joinToString(", ") { "`$it`" }
-                    val marks = values.keys.joinToString(", ") { "?" }
-                    sqlite.execSQL("INSERT INTO `$table` ($names) VALUES ($marks)", values.values.map { it.sqlValue() }.toTypedArray())
+    private suspend fun schemaVersion(): Int = db.useReaderConnection { it.usePrepared("PRAGMA user_version") { s -> s.step(); s.getInt(0) } }
+
+    private suspend fun replaceTables(tables: Map<String, JsonArray>) {
+        // Room's own write connection, so screens watching these tables refresh once it is done.
+        db.useWriterConnection { connection ->
+            connection.immediateTransaction {
+                // Rows go in table by table, children sometimes before parents; the links are checked at commit.
+                execSQL("PRAGMA defer_foreign_keys = ON")
+                val current = usePrepared("SELECT name FROM sqlite_master WHERE type = 'table'") { s ->
+                    buildList { while (s.step()) add(s.getText(0)) }
+                }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
+                current.forEach { execSQL("DELETE FROM `$it`") }
+                for ((table, rows) in tables) {
+                    if (table !in current) continue
+                    val columns = columns(table)
+                    for (row in rows) {
+                        // A backup from an older version lacks newer columns; those take their defaults.
+                        val values = row.jsonObject.filterKeys { it in columns }
+                        if (values.isEmpty()) continue
+                        val names = values.keys.joinToString(", ") { "`$it`" }
+                        val marks = values.keys.joinToString(", ") { "?" }
+                        usePrepared("INSERT INTO `$table` ($names) VALUES ($marks)") { s ->
+                            values.values.forEachIndexed { i, value ->
+                                when (val v = value.sqlValue()) {
+                                    null -> s.bindNull(i + 1)
+                                    is Long -> s.bindLong(i + 1, v)
+                                    is Double -> s.bindDouble(i + 1, v)
+                                    else -> s.bindText(i + 1, v.toString())
+                                }
+                            }
+                            s.step()
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun SupportSQLiteDatabase.columns(table: String): Set<String> = query("PRAGMA table_info(`$table`)").use { c ->
-        val name = c.getColumnIndexOrThrow("name")
-        generateSequence { if (c.moveToNext()) c.getString(name) else null }.toSet()
+    private suspend fun PooledConnection.columns(table: String): Set<String> = usePrepared("PRAGMA table_info(`$table`)") { s ->
+        val name = (0 until s.getColumnCount()).first { s.getColumnName(it) == "name" }
+        buildSet { while (s.step()) add(s.getText(name)) }
     }
 
     private fun kotlinx.serialization.json.JsonElement.sqlValue(): Any? {
