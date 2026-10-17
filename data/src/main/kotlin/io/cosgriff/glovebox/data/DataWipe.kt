@@ -61,6 +61,8 @@ class DataWipe(
             keys.destroy()
             photos.destroy()
             context.deleteDatabase(GloveboxDatabase.FILE_NAME)
+            // The empty lock file Room keeps beside the database once it opens through a driver (#220).
+            File(context.getDatabasePath(GloveboxDatabase.FILE_NAME).path + ".lck").delete()
             photos.restoreDir.deleteRecursively()
             // Settings and the notification log.
             File(context.filesDir, "datastore").deleteRecursively()

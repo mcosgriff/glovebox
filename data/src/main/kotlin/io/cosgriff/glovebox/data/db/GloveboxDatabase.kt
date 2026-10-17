@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.zetetic.database.sqlcipher.driver.SQLCipherDriver
 import java.time.LocalDate
 
 class Converters {
@@ -77,7 +77,9 @@ abstract class GloveboxDatabase : RoomDatabase() {
         fun open(context: Context, keys: DatabaseKeyManager): GloveboxDatabase {
             System.loadLibrary("sqlcipher")
             return Room.databaseBuilder(context, GloveboxDatabase::class.java, FILE_NAME)
-                .openHelperFactory(SupportOpenHelperFactory(keys.passphrase()))
+                // Opens the file exactly as the support open helper did before (#220): the same
+                // SQLiteDatabase.openDatabase with the same passphrase bytes, no hook, no error handler.
+                .setDriver(SQLCipherDriver(keys.passphrase(), null, null))
                 .build()
         }
     }
