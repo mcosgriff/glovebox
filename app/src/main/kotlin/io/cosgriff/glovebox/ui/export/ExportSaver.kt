@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.R
 import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -56,7 +58,7 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     }
 
     /** Asks where to put [file], suggesting [fileName]. */
-    fun save(file: File, fileName: String, format: ExportFormat) = save(file, fileName, format.mimeType, "Exported $fileName") {}
+    fun save(file: File, fileName: String, format: ExportFormat) = save(file, fileName, format.mimeType, AppText.res.getString(R.string.export_saved, fileName)) {}
 
     /**
      * Asks where to put [file], suggesting [fileName]. [onSaved] runs only once the copy has
@@ -79,7 +81,7 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     suspend fun saveImportFile(text: String, fileName: String) {
         val file = newFile()
         withContext(Dispatchers.IO) { file.writeText(text) }
-        save(file, fileName, ImportFiles.MIME_TYPE, "Saved $fileName") {}
+        save(file, fileName, ImportFiles.MIME_TYPE, AppText.res.getString(R.string.export_saved_file, fileName)) {}
     }
 
     /** [destination] is null when the user backed out. Either way the working copy goes. */
@@ -102,7 +104,7 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
                     p.onSaved()
                     _results.send(p.done)
                 }
-                else -> _results.send("Couldn't save ${p.name}")
+                else -> _results.send(AppText.res.getString(R.string.export_couldnt_save, p.name))
             }
         }
     }
