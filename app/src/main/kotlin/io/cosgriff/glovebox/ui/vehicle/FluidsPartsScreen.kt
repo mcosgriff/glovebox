@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.annotation.StringRes
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.ui.service.line
+import io.cosgriff.glovebox.ui.service.label
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -113,10 +118,10 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
     ) {
         item {
             Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
                 Column(Modifier.padding(start = 8.dp)) {
                     Text(
-                        "Fluids, filters & parts",
+                        stringResource(R.string.fluids_title),
                         Modifier.semantics { heading() },
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
@@ -132,10 +137,9 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
         if (entered.isEmpty()) {
             item {
                 Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Nothing saved yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.documents_empty_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "Keep the fluids, part numbers and sizes you look up, so they're here at the parts counter. " +
-                            "Each one shows beside its job on Log service.",
+                        stringResource(R.string.fluids_empty_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
@@ -146,14 +150,14 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
             TakesCard(item, takes, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
         }
         if (notEntered.isNotEmpty()) {
-            item { SectionLabel("ADD", Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp)) }
+            item { SectionLabel(stringResource(R.string.fluids_add_section), Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp)) }
             items(notEntered, key = { it.name }) { item ->
                 TakesCard(item, takes, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
             }
         }
         item {
             Text(
-                "You enter these. Glovebox doesn't look them up, so check your owner's or service manual. Hold a card to copy its part numbers.",
+                stringResource(R.string.fluids_note),
                 Modifier.padding(start = 20.dp, top = 4.dp, end = 20.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
@@ -169,8 +173,9 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, 
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
-    val value = takes.summary(item)
+    val value = takes.line(item)
     val parts = takes.partNumbers(item)
+    val partsLabel = stringResource(R.string.details_part_numbers)
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = scheme.surface,
@@ -182,8 +187,8 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, 
                 .combinedClickable(
                     role = Role.Button,
                     onClick = onClick,
-                    onLongClickLabel = parts?.let { "Copy the part numbers" },
-                    onLongClick = parts?.let { p -> { copyText(context, "Part numbers", p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                    onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
+                    onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -195,7 +200,7 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, 
             }
             if (value == null) {
                 Text(
-                    "Tap to add",
+                    stringResource(R.string.fluids_tap_to_add),
                     style = MaterialTheme.typography.titleSmall,
                     fontFamily = PlexMono,
                     fontWeight = FontWeight.SemiBold,
@@ -209,33 +214,40 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, 
 }
 
 /** One field of a row past oil, tires and wipers: how it is labelled, and the check that gives its stored form. */
-private class MoreField(val label: String, val error: String, val check: (String) -> Any?, val current: Any?, val supporting: String? = null, val keyboard: KeyboardType = KeyboardType.Text)
+private class MoreField(
+    @StringRes val label: Int,
+    @StringRes val error: Int,
+    val check: (String) -> Any?,
+    val current: Any?,
+    @StringRes val supporting: Int? = null,
+    val keyboard: KeyboardType = KeyboardType.Text,
+)
 
 private fun moreFields(item: TakesItem, w: WhatItTakes): List<MoreField> {
-    val name = "Up to 40 characters"
-    val part = "Letters, digits and dashes; up to three, separated by commas"
+    val name = R.string.fluids_name_error
+    val part = R.string.oil_filter_error
     return when (item) {
-        TakesItem.TRANSMISSION -> listOf(MoreField("Fluid", name, VehicleSpecEntry::fluidName, w.transmissionFluid, "Such as ATF WS, Dexron VI or the DSG fluid's number"))
-        TakesItem.DIFFERENTIAL -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.differentialOil, "Such as 75W-85 GL-5"))
-        TakesItem.TRANSFER_CASE -> listOf(MoreField("Oil", "A grade like 75W-90 GL-5, or the oil's name", VehicleSpecEntry::gearOil, w.transferCaseOil, "A gear oil grade, or the fluid's name"))
-        TakesItem.COOLANT -> listOf(MoreField("Coolant", name, VehicleSpecEntry::fluidName, w.coolant, "Such as Toyota Super Long Life or G13"))
-        TakesItem.BRAKE_FLUID -> listOf(MoreField("Grade", "DOT 3, DOT 4, DOT 5 or DOT 5.1", VehicleSpecEntry::brakeFluid, w.brakeFluid, "As on the reservoir cap: DOT 3, DOT 4…"))
+        TakesItem.TRANSMISSION -> listOf(MoreField(R.string.fluids_fluid, name, VehicleSpecEntry::fluidName, w.transmissionFluid, R.string.fluids_transmission_note))
+        TakesItem.DIFFERENTIAL -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.differentialOil, R.string.fluids_differential_note))
+        TakesItem.TRANSFER_CASE -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.transferCaseOil, R.string.fluids_transfer_note))
+        TakesItem.COOLANT -> listOf(MoreField(R.string.takes_coolant, name, VehicleSpecEntry::fluidName, w.coolant, R.string.fluids_coolant_note))
+        TakesItem.BRAKE_FLUID -> listOf(MoreField(R.string.oil_grade, R.string.fluids_brake_error, VehicleSpecEntry::brakeFluid, w.brakeFluid, R.string.fluids_brake_note))
         TakesItem.AIR_FILTERS -> listOf(
-            MoreField("Engine air filter part number", part, VehicleSpecEntry::partNumbers, w.engineAirFilter),
-            MoreField("Cabin air filter part number", part, VehicleSpecEntry::partNumbers, w.cabinAirFilter),
+            MoreField(R.string.fluids_engine_air, part, VehicleSpecEntry::partNumbers, w.engineAirFilter),
+            MoreField(R.string.fluids_cabin_air, part, VehicleSpecEntry::partNumbers, w.cabinAirFilter),
         )
         TakesItem.SPARK_PLUGS -> listOf(
-            MoreField("Part number", part, VehicleSpecEntry::partNumbers, w.sparkPlug),
-            MoreField("Gap", "Such as 0.044 in or 1.1 mm", VehicleSpecEntry::plugGap, w.sparkPlugGap, "In inches or millimetres"),
+            MoreField(R.string.fluids_part_number, part, VehicleSpecEntry::partNumbers, w.sparkPlug),
+            MoreField(R.string.fluids_gap, R.string.fluids_gap_error, VehicleSpecEntry::plugGap, w.sparkPlugGap, R.string.fluids_gap_note),
         )
         TakesItem.BATTERY -> listOf(
-            MoreField("Group size", "A BCI group such as 24F, 35 or H6", VehicleSpecEntry::batteryGroup, w.batteryGroup, "As printed on the battery"),
-            MoreField("Cold-cranking amps", "100 to 1,500", VehicleSpecEntry::cca, w.batteryCca, keyboard = KeyboardType.Number),
+            MoreField(R.string.fluids_group, R.string.fluids_group_error, VehicleSpecEntry::batteryGroup, w.batteryGroup, R.string.fluids_group_note),
+            MoreField(R.string.fluids_cca, R.string.fluids_cca_error, VehicleSpecEntry::cca, w.batteryCca, keyboard = KeyboardType.Number),
         )
         TakesItem.BULBS -> listOf(
-            MoreField("Low beam", "A bulb code such as H11, 9006 or D4S", VehicleSpecEntry::bulbCode, w.bulbLow),
-            MoreField("High beam", "A bulb code such as 9005 or HB3", VehicleSpecEntry::bulbCode, w.bulbHigh),
-            MoreField("Fog light", "A bulb code such as H11 or H16", VehicleSpecEntry::bulbCode, w.bulbFog),
+            MoreField(R.string.fluids_low_beam, R.string.fluids_low_beam_error, VehicleSpecEntry::bulbCode, w.bulbLow),
+            MoreField(R.string.fluids_high_beam, R.string.fluids_high_beam_error, VehicleSpecEntry::bulbCode, w.bulbHigh),
+            MoreField(R.string.fluids_fog, R.string.fluids_fog_error, VehicleSpecEntry::bulbCode, w.bulbFog),
         )
         TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> emptyList()
     }
@@ -256,7 +268,7 @@ private fun MoreDialog(item: TakesItem, takes: WhatItTakes, onSave: (List<Any?>)
         onDismiss = onDismiss,
     ) {
         fields.forEachIndexed { i, f ->
-            CheckedField(texts[i], { texts[i] = it }, f.label, f.error, f.check, supporting = f.supporting, keyboard = f.keyboard)
+            CheckedField(texts[i], { texts[i] = it }, stringResource(f.label), stringResource(f.error), f.check, supporting = f.supporting?.let { stringResource(it) }, keyboard = f.keyboard)
         }
     }
 }
