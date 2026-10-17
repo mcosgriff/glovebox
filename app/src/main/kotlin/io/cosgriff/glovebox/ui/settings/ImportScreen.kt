@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.orText
 import java.time.LocalDate
 import io.cosgriff.glovebox.domain.CarfaxReport
@@ -419,7 +420,7 @@ class ImportViewModel @Inject constructor(
         preview.write(mode, stopDoubles)
         if (pdf != null && id != null) {
             val kept = try {
-                val name = VehicleDocuments.nameFromFile(report.name, DocumentType.REPORT)
+                val name = VehicleDocuments.nameFromFile(report.name) ?: DocumentType.REPORT.label
                 documents.addPdf(id, pdf, DocumentType.REPORT, name, null, LocalDate.now())
                 true
             } catch (_: Exception) {

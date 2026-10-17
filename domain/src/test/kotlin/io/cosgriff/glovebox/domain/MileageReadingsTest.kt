@@ -87,8 +87,8 @@ class MileageReadingsTest {
     @Test
     fun `an edited reading needs a number and a date that has happened`() {
         assertNull(MileageReadings.problem(84_900, jan, jan))
-        assertEquals("Enter the reading as a whole number above zero.", MileageReadings.problem(null, jan, jan))
-        assertEquals("A reading can't be dated in the future.", MileageReadings.problem(84_900, jan.plusDays(1), jan))
+        assertEquals(ReadingProblem.NOT_A_READING, MileageReadings.problem(null, jan, jan))
+        assertEquals(ReadingProblem.IN_FUTURE, MileageReadings.problem(84_900, jan.plusDays(1), jan))
     }
 
     @Test

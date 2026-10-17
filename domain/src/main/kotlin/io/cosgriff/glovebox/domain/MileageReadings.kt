@@ -102,10 +102,17 @@ object MileageReadings {
         return fits
     }
 
-    /** What is wrong with an edited reading, as a sentence, or null when it can be saved. */
-    fun problem(odometer: Int?, date: LocalDate, today: LocalDate): String? = when {
-        odometer == null -> "Enter the reading as a whole number above zero."
-        date.isAfter(today) -> "A reading can't be dated in the future."
+    /** What is wrong with an edited reading, or null when it can be saved. */
+    fun problem(odometer: Int?, date: LocalDate, today: LocalDate): ReadingProblem? = when {
+        odometer == null -> ReadingProblem.NOT_A_READING
+        date.isAfter(today) -> ReadingProblem.IN_FUTURE
         else -> null
     }
+}
+
+/** Why an edited reading can't be saved; `app` words it. */
+enum class ReadingProblem {
+    /** Not a whole number above zero. */
+    NOT_A_READING,
+    IN_FUTURE,
 }

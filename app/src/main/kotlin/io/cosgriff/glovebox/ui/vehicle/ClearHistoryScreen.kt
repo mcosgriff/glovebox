@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.styledStringResource
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.compose.ui.res.pluralStringResource
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,11 +50,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -130,7 +133,7 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         IconButton(onClick = onCancel, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
-            Icon(Icons.Outlined.Close, contentDescription = "Cancel")
+            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.cancel))
         }
         Column(
             Modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
@@ -143,14 +146,13 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "Clear the service history of the $name?",
+                    stringResource(R.string.clear_history_title, name),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    "Only service records go, with their photos. The vehicle, what it takes, torque and fastener specs, the schedule, " +
-                        "recalls, milestones and mileage updates all stay. Reminders count from whatever records are left.",
+                    stringResource(R.string.clear_history_intro),
                     color = scheme.onSurfaceVariant,
                 )
             }
@@ -163,16 +165,16 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
             ) {
                 Column {
                     Option(
-                        title = "Imported records only",
-                        detail = "${records(d.imported)} from a Carfax report or an import file",
+                        title = stringResource(R.string.clear_history_imported),
+                        detail = stringResource(R.string.clear_history_imported_detail, records(d.imported)),
                         selected = !all,
                         enabled = d.imported > 0,
                         onClick = { all = false },
                     )
                     HorizontalDivider(color = scheme.outlineVariant)
                     Option(
-                        title = "All service records",
-                        detail = "${records(d.all)}, including what you logged yourself",
+                        title = stringResource(R.string.clear_history_all),
+                        detail = stringResource(R.string.clear_history_all_detail, records(d.all)),
                         selected = all,
                         enabled = d.all > 0,
                         onClick = { all = true },
@@ -181,8 +183,11 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
             }
 
             Text(
-                "Deletes ${records(count)}" + (if (photos > 0) " and ${if (photos == 1) "1 photo" else "$photos photos"}" else "") +
-                    ". This can't be undone. Backup files you've already saved aren't changed. A recall marked done stays marked done.",
+                if (photos > 0) {
+                    stringResource(R.string.clear_history_deletes_with_photos, records(count), pluralStringResource(R.plurals.photos, photos, photos.asNumber()))
+                } else {
+                    stringResource(R.string.clear_history_deletes, records(count))
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -194,20 +199,14 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
                 border = BorderStroke(1.5.dp, scheme.onSurface),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Export first")
+                Text(stringResource(R.string.export_first))
             }
 
             OutlinedTextField(
                 value = typed,
                 onValueChange = { typed = it },
                 label = {
-                    Text(
-                        buildAnnotatedString {
-                            append("Type ")
-                            withStyle(SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)) { append(CONFIRM) }
-                            append(" to confirm")
-                        },
-                    )
+                    Text(styledStringResource(R.string.type_word_to_confirm, CONFIRM, SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)))
                 },
                 singleLine = true,
                 textStyle = TextStyle(fontFamily = PlexMono),
@@ -227,13 +226,14 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError),
             ) {
-                Text(if (count == 0) "Nothing to delete" else "Delete ${records(count)}", style = MaterialTheme.typography.titleMedium)
+                Text(if (count == 0) stringResource(R.string.clear_history_nothing) else stringResource(R.string.clear_history_delete, records(count)), style = MaterialTheme.typography.titleMedium)
             }
         }
     }
 }
 
-private fun records(n: Int) = if (n == 1) "1 record" else "$n records"
+@Composable
+private fun records(n: Int) = pluralStringResource(R.plurals.records, n, n.asNumber())
 
 @Composable
 private fun Option(title: String, detail: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {

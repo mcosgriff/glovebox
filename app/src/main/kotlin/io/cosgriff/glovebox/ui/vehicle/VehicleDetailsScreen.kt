@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.offsetLabel
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.pluralWord
 import androidx.compose.runtime.toMutableStateList
@@ -164,8 +167,8 @@ data class VehicleDetails(
     /** Null until NHTSA has answered for this vehicle. */
     val recalls: OpenRecalls?,
     val torqueSpecs: Int,
-    /** "2 documents · 4.2 MB", or "None yet". */
-    val documents: String = VehicleDocuments.summary(0, 0),
+    val documentCount: Int = 0,
+    val documentBytes: Long = 0,
 )
 
 /** The user-entered rows under "What it takes". */
@@ -202,7 +205,8 @@ class VehicleDetailsViewModel @Inject constructor(
             schedule = items.takeIf { it.isNotEmpty() }?.let { all -> ScheduleSummaries.of(all.map { it.tracked to it.useSevere }) },
             recalls = if (vehicle.recallsCheckedOn == null) null else Recalls.open(list.map { it.toStored() }),
             torqueSpecs = specs.size,
-            documents = VehicleDocuments.summary(docs.size, docs.sumOf { it.sizeBytes }),
+            documentCount = docs.size,
+            documentBytes = docs.sumOf { it.sizeBytes },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -598,7 +602,7 @@ fun VehicleDetailsScreen(
                     ) {
                         Text("Odometer offset", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
-                            swap?.let { ClusterSwaps.offsetLabel(it.offset, v.unit) } ?: "None",
+                            swap?.let { offsetLabel(it.offset, v.unit) } ?: "None",
                             Modifier.weight(1f).padding(vertical = 8.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -660,7 +664,7 @@ fun VehicleDetailsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(
                     title = "Documents",
-                    detail = "Title, registration, reports, warranty · " + details.documents.replaceFirstChar { it.lowercase() },
+                    detail = if (details.documentCount == 0) stringResource(R.string.details_documents_none) else stringResource(R.string.details_documents, documentsSummary(details.documentCount, details.documentBytes)),
                     onClick = { onOpenDocuments(v.id) },
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

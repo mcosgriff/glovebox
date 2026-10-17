@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.ui.service.offsetLabel
 import io.cosgriff.glovebox.ui.service.pluralWord
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -89,10 +92,9 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Odometer offset", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.offset_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(
-                "For a vehicle whose instrument cluster was replaced, so the dash no longer shows its real mileage. " +
-                    "Keep entering what the dash shows; Glovebox works out the rest.",
+                stringResource(R.string.offset_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.onSurfaceVariant,
             )
@@ -103,32 +105,31 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Replaced on · ${on.format(longDate)}")
+                Text(stringResource(R.string.offset_replaced_on, on.format(longDate)))
             }
 
             ReadingField(
                 value = oldText,
                 onChange = { oldText = it },
-                label = "Old cluster read (${unit.symbolWord})",
-                note = if (showErrors && oldReading == null) "Enter its last reading in whole ${unit.pluralWord}." else "Its last reading before it came out.",
+                label = stringResource(R.string.offset_old_read, unit.symbolWord),
+                note = if (showErrors && oldReading == null) stringResource(R.string.offset_old_missing, unit.pluralWord) else stringResource(R.string.offset_old_note),
                 isError = showErrors && oldReading == null,
             )
             ReadingField(
                 value = newText,
                 onChange = { newText = it },
-                label = "New cluster read (${unit.symbolWord})",
+                label = stringResource(R.string.offset_new_read, unit.symbolWord),
                 note = when {
-                    same -> "The same as the old one, so there is nothing to offset."
-                    showErrors && newReading == null -> "Enter what it read when it went in."
-                    else -> "When it went in. 0 for a brand-new one."
+                    same -> stringResource(R.string.offset_same)
+                    showErrors && newReading == null -> stringResource(R.string.offset_new_missing)
+                    else -> stringResource(R.string.offset_new_note)
                 },
                 isError = same || showErrors && newReading == null,
             )
 
             if (problems.isEmpty()) {
                 Text(
-                    "Offset ${ClusterSwaps.offsetLabel(oldReading!! - newReading!!, unit)}. Readings dated ${on.format(longDate)} or later " +
-                        "count as the new cluster's, earlier ones as the old one's. Reminders snoozed to a mileage come back.",
+                    stringResource(R.string.offset_explained, offsetLabel(oldReading!! - newReading!!, unit), on.format(longDate)),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -142,7 +143,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
                     border = BorderStroke(1.5.dp, scheme.outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
                 Button(
                     onClick = {
@@ -151,7 +152,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
                     modifier = Modifier.weight(2f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.save))
                 }
             }
             if (current != null) {
@@ -160,7 +161,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) {
-                    Text("Remove the offset", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.offset_remove), fontWeight = FontWeight.SemiBold)
                 }
             }
         }
