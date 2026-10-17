@@ -31,7 +31,8 @@ data class ImportError(val path: String, val message: String) {
 /** What reading a file came to. */
 sealed interface ImportFile {
     /** [errors] is capped at [ImportFormat.MAX_ERRORS]; [more] is how many were left off. */
-    data class Invalid(val errors: List<ImportError>, val more: Int = 0) : ImportFile
+    /** [carfax] is set, with no [errors], when a PDF was read and isn't a report that can be imported. */
+    data class Invalid(val errors: List<ImportError>, val more: Int = 0, val carfax: CarfaxRefusal? = null) : ImportFile
 
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
 

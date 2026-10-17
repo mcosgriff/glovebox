@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.domain.ReadingProblem
 import io.cosgriff.glovebox.R
@@ -305,7 +306,7 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
     var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
-    val miles = OdometerInput.parse(text)
+    val miles = OdometerInput.parse(text.typedNumber())
     val problem = MileageReadings.problem(miles, date, LocalDate.now())?.let {
         stringResource(
             when (it) {

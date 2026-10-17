@@ -187,7 +187,7 @@ private fun ArchivedCard(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        VehicleText.title(v.year, v.make, v.model, trim = null),
+                        VehicleText.title(v.year, v.make, v.model, trim = null) ?: stringResource(R.string.unknown_vehicle),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )

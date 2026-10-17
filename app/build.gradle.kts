@@ -65,6 +65,9 @@ android {
         // DashReader asks how long Tesseract's language file is before copying it out, which Android
         // can only answer for an asset stored as it is.
         noCompress += "traineddata"
+        // The app's languages for Android's per-app language setting, from the values-xx folders;
+        // res/resources.properties says the default folder is US English (#236).
+        generateLocaleConfig = true
     }
 
     compileOptions {

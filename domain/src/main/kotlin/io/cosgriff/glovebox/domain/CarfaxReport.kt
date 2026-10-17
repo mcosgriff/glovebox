@@ -46,20 +46,17 @@ object CarfaxReport {
      */
     fun read(words: List<PdfWord>, today: LocalDate): ImportFile {
         if (words.none { it.text.contains("CARFAX", ignoreCase = true) }) {
-            return refuse("This doesn't look like a Carfax vehicle history report.")
+            return refuse(CarfaxRefusal.NotAReport)
         }
         val repaired = repairLigatures(words.map { it.text })
         val reading = visits(words.mapIndexed { i, w -> w.copy(text = repaired[i]) }, today)
         if (reading.records.isEmpty()) {
-            return refuse(
-                "No service visits with a mileage were found in this report." +
-                    if (reading.withoutMileage > 0) " ${reading.withoutMileage} had no mileage, so they can't be records." else "",
-            )
+            return refuse(CarfaxRefusal.NoVisits(reading.withoutMileage))
         }
         return ImportFile.ServiceHistory(reading.records, DistanceUnit.MILES)
     }
 
-    private fun refuse(message: String) = ImportFile.Invalid(listOf(ImportError("", message)))
+    private fun refuse(why: CarfaxRefusal) = ImportFile.Invalid(emptyList(), carfax = why)
 
     private data class Line(val page: Int, val y: Float, val words: List<PdfWord>)
 
@@ -342,4 +339,12 @@ object CarfaxReport {
         val standIns = standIns(named.toSet())
         return named.map { misnamedLigature(it, standIns) }
     }
+}
+
+/** Why a PDF can't be imported as a report; `app` words it. */
+sealed interface CarfaxRefusal {
+    data object NotAReport : CarfaxRefusal
+
+    /** No visit had a mileage; [withoutMileage] had none and so can't be records. */
+    data class NoVisits(val withoutMileage: Int) : CarfaxRefusal
 }

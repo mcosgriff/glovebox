@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.text
@@ -292,7 +293,7 @@ fun LastDoneSheet(
     var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
-    val odometer = OdometerInput.parse(odometerText)
+    val odometer = OdometerInput.parse(odometerText.typedNumber())
     val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors)
 
     if (pickingDate) {

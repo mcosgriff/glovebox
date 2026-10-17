@@ -14,14 +14,14 @@ object VehicleText {
     fun clean(input: String, maxLength: Int): String? =
         input.trim().replace(Regex("\\s+"), " ").take(maxLength).trim().ifEmpty { null }
 
-    /** "2019 Toyota 4Runner SR5", leaving out whatever the decode didn't give. */
-    fun title(year: Int, make: String, model: String, trim: String?): String =
+    /** "2019 Toyota 4Runner SR5", leaving out whatever the decode didn't give; null when none of it is known, which `app` then says. */
+    fun title(year: Int, make: String, model: String, trim: String?): String? =
         listOfNotNull(
             year.takeIf { it > 0 }?.toString(),
             make.takeUnless(::unknown)?.let(Recalls::makeName),
             model.takeUnless(::unknown),
             trim?.takeUnless(::unknown),
-        ).joinToString(" ").ifEmpty { "Unknown vehicle" }
+        ).joinToString(" ").ifEmpty { null }
 
     private fun unknown(text: String) = text.isBlank() || text.equals("Unknown", ignoreCase = true)
 }

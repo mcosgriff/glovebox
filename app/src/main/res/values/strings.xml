@@ -1958,4 +1958,18 @@
     <string name="export_saved">Exported %1$s</string>
     <string name="export_saved_file">Saved %1$s</string>
     <string name="export_couldnt_save">Couldn\'t save %1$s</string>
+
+    <!-- Carfax reports and unknown vehicles -->
+    <string name="carfax_not_a_report">This doesn\'t look like a Carfax vehicle history report.</string>
+    <string name="carfax_no_visits">No service visits with a mileage were found in this report.</string>
+    <plurals name="carfax_no_visits_without_mileage">
+        <item quantity="one">No service visits with a mileage were found in this report. %1$s had no mileage, so it can\'t be a record.</item>
+        <item quantity="other">No service visits with a mileage were found in this report. %1$s had no mileage, so they can\'t be records.</item>
+    </plurals>
+    <string name="unknown_vehicle">Unknown vehicle</string>
+
+    <!-- Licences, the bundled extras (LicenceCatalog) -->
+    <string name="licences_plex">IBM Plex Sans and IBM Plex Mono (fonts)</string>
+    <string name="licences_tesseract">Tesseract4Android (Tesseract OCR, Leptonica, libjpeg, libpng and English language data)</string>
+    <string name="licences_tesseract_bundled">Leptonica, libjpeg and libpng licences</string>
 </resources>
