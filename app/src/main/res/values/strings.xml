@@ -1716,4 +1716,161 @@
     <string name="about_privacy_note">No accounts, no tracking</string>
     <string name="about_source">Source code</string>
     <string name="about_github">GitHub</string>
+
+    <!-- Shared, lists -->
+    <string name="and_more">and %1$s more</string>
+
+    <!-- Import (ImportScreen) -->
+    <string name="import_pdf_too_big">That PDF is too big (the most is 20 MB).</string>
+    <string name="import_pdf_unreadable">That PDF couldn\'t be read. A password-protected PDF can\'t be imported.</string>
+    <string name="import_carfax_report">Carfax report</string>
+    <string name="import_too_big">That file is too big to be an import file (the most is 2 MB).</string>
+    <string name="import_file">Import file</string>
+    <string name="import_sold_only_history">A sold vehicle only takes service history. Choose a vehicle in your garage for this file.</string>
+    <string name="import_caution_torque">Check every value against your service manual, whoever wrote the file.</string>
+    <string name="import_caution_schedule">These are the file\'s intervals, not the manufacturer\'s. Check them against your owner\'s manual.</string>
+    <string name="import_caution_milestones">Milestones are for reference on the Milestones screen. They don\'t create or change reminders, and they are your figures, not the manufacturer\'s.</string>
+    <string name="import_caution_history">Imported records are marked as imported in History and in exports.</string>
+    <string name="import_doubt_jump">%1$s more than the reading of %2$s on %3$s</string>
+    <string name="import_doubt_out_of_line">Doesn\'t fit the readings before and after it</string>
+    <string name="import_name_only">Name only</string>
+    <string name="import_factory_manual">factory manual</string>
+    <string name="import_first_at">First at %1$s</string>
+    <string name="import_then_every">then every %1$s</string>
+    <string name="import_no_interval">No interval</string>
+    <string name="import_severe">severe %1$s</string>
+    <string name="import_reset_by">reset by \"%1$s\"</string>
+    <string name="import_severe_only">only for severe use</string>
+    <string name="import_intro">Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.</string>
+    <string name="import_how_to">How to write a file (opens in your browser)</string>
+    <string name="import_no_vehicle">Add a vehicle first: an import goes into one of your vehicles.</string>
+    <string name="import_last_done_note">New items start as \"Not logged yet\". If you know when any were last done, say so and their reminders start counting.</string>
+    <string name="import_see_schedule">See the schedule</string>
+    <string name="import_see_milestones">See milestones</string>
+    <string name="import_see_history">See history</string>
+    <string name="import_see_torque">See torque specs</string>
+    <string name="import_another">Import another file</string>
+    <string name="import_into">IMPORT INTO</string>
+    <string name="import_sold">Sold</string>
+    <string name="import_file_section">FILE</string>
+    <string name="import_choose">Choose a file</string>
+    <string name="import_needs_vehicle">The file is fine. Choose which vehicle it goes into.</string>
+    <string name="import_add_new">Add new only</string>
+    <string name="import_add_new_note">Yours stay exactly as they are</string>
+    <string name="import_replace">Replace matching</string>
+    <plurals name="import_replace_note">
+        <item quantity="one">%1$s of yours takes the file\'s values</item>
+        <item quantity="other">%1$s of yours take the file\'s values</item>
+    </plurals>
+    <string name="import_nothing">Nothing to import: everything in this file is already on the vehicle.</string>
+    <string name="import_button">Import %1$s</string>
+    <string name="import_no_undo">Nothing on the vehicle is deleted. There is no Undo, so check the list above.</string>
+    <string name="import_in_file">%1$s · %2$s IN THE FILE</string>
+    <plurals name="import_new">
+        <item quantity="one">%1$s new</item>
+        <item quantity="other">%1$s new</item>
+    </plurals>
+    <string name="import_new_note">Added to the vehicle</string>
+    <string name="import_fills_note">Yours has only a name so far</string>
+    <plurals name="import_differs">
+        <item quantity="one">%1$s different from yours</item>
+        <item quantity="other">%1$s different from yours</item>
+    </plurals>
+    <string name="import_differs_note">Left alone unless you choose to replace them</string>
+    <plurals name="import_same">
+        <item quantity="one">%1$s already the same · left alone</item>
+        <item quantity="other">%1$s already the same · left alone</item>
+    </plurals>
+    <plurals name="import_left_out">
+        <item quantity="one">%1$s left out: its reading looks wrong. See below.</item>
+        <item quantity="other">%1$s left out: their readings look wrong. See below.</item>
+    </plurals>
+    <string name="import_yours">Yours: %1$s</string>
+    <string name="import_file_value">File: %1$s</string>
+    <string name="import_doubles">ALREADY TRACKED AS A TYPICAL ITEM</string>
+    <plurals name="import_stop_typical">
+        <item quantity="one">Stop tracking the typical item</item>
+        <item quantity="other">Stop tracking the %1$s typical items</item>
+    </plurals>
+    <plurals name="import_doubles_note">
+        <item quantity="one">Glovebox\'s typical schedule already has this, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
+        <item quantity="other">Glovebox\'s typical schedule already has these, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
+    </plurals>
+    <string name="import_readings_to_check">READINGS TO CHECK</string>
+    <string name="import_readings_note">These readings don\'t look right, so they are left out. Your odometer is the highest reading on record: one wrong reading would become it, and every mileage reminder would count from it. Tick one to import it as it is, or leave it out and log that visit yourself with the right mileage.</string>
+    <string name="import_moves">REMINDERS THAT WILL MOVE</string>
+    <string name="import_cant">THIS FILE CAN\'T BE IMPORTED</string>
+    <string name="import_fix_file">Nothing was saved. Fix the file and choose it again.</string>
+    <string name="import_imported_into">IMPORTED INTO %1$s</string>
+    <string name="import_added">%1$s added</string>
+    <string name="import_filled">%1$s filled in</string>
+    <string name="import_replaced">%1$s replaced with the file\'s values</string>
+    <plurals name="import_stopped">
+        <item quantity="one">%1$s typical item no longer tracked</item>
+        <item quantity="other">%1$s typical items no longer tracked</item>
+    </plurals>
+    <plurals name="import_unchanged">
+        <item quantity="one">%1$s left as it was</item>
+        <item quantity="other">%1$s left as they were</item>
+    </plurals>
+    <string name="import_kept_copy">The report is kept in the vehicle\'s documents</string>
+    <string name="import_copy_failed">The report couldn\'t be kept in the vehicle\'s documents. Add it from there.</string>
+    <string name="import_keep_copy">Keep a copy in this vehicle\'s documents</string>
+    <string name="import_keep_copy_note">Encrypted on this phone with the vehicle\'s other paperwork. Unticked, the report is only read and not kept.</string>
+    <string name="import_replace_title">Replace %1$s of yours?</string>
+    <string name="import_becomes">Becomes: %1$s</string>
+    <string name="import_replace_and_import">Replace and import</string>
+    <string name="import_kind_history">Service history</string>
+    <string name="import_kind_torque">Torque specs</string>
+    <string name="import_converted">This file is in %1$s. The figures here are what will be saved, in %2$s.</string>
+    <plurals name="plan_rows">
+        <item quantity="one">%1$s row</item>
+        <item quantity="other">%1$s rows</item>
+    </plurals>
+    <plurals name="plan_items">
+        <item quantity="one">%1$s item</item>
+        <item quantity="other">%1$s items</item>
+    </plurals>
+    <string name="plan_rows_differ">ROWS THAT DIFFER FROM YOURS</string>
+    <string name="plan_items_differ">ITEMS THAT DIFFER FROM YOURS</string>
+    <string name="plan_milestones_differ">MILESTONES THAT DIFFER FROM YOURS</string>
+    <string name="plan_records_differ">RECORDS THAT DIFFER FROM YOURS</string>
+    <string name="plan_rows_replace_only">Nothing to import unless you replace the rows that differ.</string>
+    <string name="plan_items_replace_only">Nothing to import unless you replace the items that differ.</string>
+    <string name="plan_milestones_replace_only">Nothing to import unless you replace the milestones that differ.</string>
+    <string name="plan_records_replace_only">Nothing to import unless you replace the records that differ.</string>
+    <plurals name="plan_rows_fill">
+        <item quantity="one">%1$s fill in a row you left empty</item>
+        <item quantity="other">%1$s fill in a row you left empty</item>
+    </plurals>
+    <plurals name="plan_items_fill">
+        <item quantity="one">%1$s fill in an item you left empty</item>
+        <item quantity="other">%1$s fill in an item you left empty</item>
+    </plurals>
+    <plurals name="plan_milestones_fill">
+        <item quantity="one">%1$s fill in a milestone you left empty</item>
+        <item quantity="other">%1$s fill in a milestone you left empty</item>
+    </plurals>
+    <plurals name="plan_records_fill">
+        <item quantity="one">%1$s fill in a record you left empty</item>
+        <item quantity="other">%1$s fill in a record you left empty</item>
+    </plurals>
+
+    <!-- Save as an import file (SaveAsImportFile) -->
+    <string name="save_file_nothing">Nothing here can go in a file</string>
+    <plurals name="save_file_left_out">
+        <item quantity="one">%1$s can\'t go in the file</item>
+        <item quantity="other">%1$s can\'t go in the file</item>
+    </plurals>
+    <string name="save_file_stricter">An import file is stricter than this screen. Change these and try again.</string>
+    <plurals name="save_file_rest">
+        <item quantity="one">An import file is stricter than this screen. %1$s can be saved without it, or change these first.</item>
+        <item quantity="other">An import file is stricter than this screen. %1$s can be saved without them, or change these first.</item>
+    </plurals>
+    <plurals name="save_file_others">
+        <item quantity="one">The other one</item>
+        <item quantity="other">The other %1$s</item>
+    </plurals>
+    <string name="save_file_rest_button">Save the rest</string>
+    <string name="save_file_button">Save as an import file</string>
 </resources>

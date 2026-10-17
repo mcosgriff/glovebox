@@ -222,7 +222,7 @@ class ImportFilesTest {
         assertEquals(schedule, FileDistances.schedule(schedule, mi, mi))
         val record = ImportedRecord(java.time.LocalDate.of(2024, 3, 1), 66_001, listOf(ImportedWork("Oil change")), diy = true)
         assertEquals(listOf(record), FileDistances.history(listOf(record), km, km))
-        assertNull(FileDistances.convertedNote(km, km))
+        assertFalse(FileDistances.converts(km, km))
     }
 
     @Test
@@ -244,7 +244,7 @@ class ImportFilesTest {
         val record = ImportedRecord(java.time.LocalDate.of(2024, 3, 1), 41_000, listOf(ImportedWork("Oil change")), diy = true)
         assertEquals(listOf(65_983), FileDistances.history(listOf(record), mi, km).map { it.odometer })
         assertEquals(listOf(41_000), FileDistances.history(listOf(record.copy(odometer = 65_983)), km, mi).map { it.odometer })
-        assertEquals("This file is in miles. The figures here are what will be saved, in kilometres.", FileDistances.convertedNote(mi, km))
+        assertTrue(FileDistances.converts(mi, km))
     }
 
     @Test
