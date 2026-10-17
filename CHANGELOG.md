@@ -17,6 +17,11 @@
 
 * add a baseline profile for faster start and scrolling ([#225](https://github.com/mcosgriff/glovebox/issues/225)) ([5624cc1](https://github.com/mcosgriff/glovebox/commit/5624cc1490e32ac70380783e7fd19e562fb0a09b))
 
+
+### Code Refactoring
+
+* **scan:** show the camera with CameraX's Compose viewfinder ([#228](https://github.com/mcosgriff/glovebox/issues/228)) ([e6c7cf4](https://github.com/mcosgriff/glovebox/commit/e6c7cf4dd7543d42005ecdfc86206e6a299068ab))
+
 ## [0.9.0](https://github.com/mcosgriff/glovebox/compare/v0.8.2...v0.9.0) (2026-10-16)
 
 
