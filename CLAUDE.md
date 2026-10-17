@@ -394,7 +394,8 @@ Notes on what's built:
   that category and resets the schedule item whose `templateKey` the catalog item `resets`. A line without
   one resets one of the user's own items when its label is that item's name (`HistoryImport.resolve`).
   The schema's `service` enum is generated from the catalog and a test holds them equal, so **adding a
-  catalog item means adding it to `service-history.schema.json` and the README table.** Records match on
+  catalog item means adding it to `service-history.schema.json` and the README table**, and its name to
+  `CatalogText.kt` and `strings.xml` (`ServiceCatalog` holds ids only; `CatalogTextTest` checks the names). Records match on
   date and odometer. A matching bare last done (#78) counts as a fill, replaced in either mode, only when
   the imported record resets every reminder it did; otherwise it is a difference. A replace keeps the
   record's id, so its photos and recall link stay, and clears `enteredAsLastDone`. The preview lists the

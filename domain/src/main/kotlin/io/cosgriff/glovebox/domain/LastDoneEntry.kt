@@ -23,9 +23,6 @@ data class LastDoneRow(
  * derived from the log, and nothing here is assumed or estimated: the user gives both figures.
  */
 object LastDoneEntries {
-    /** What such a record says in place of who did the work. */
-    const val TAG = "Entered as last done"
-
     fun problems(date: LocalDate, odometer: Int?, today: LocalDate): Set<LastDoneProblem> = buildSet {
         if (date.isAfter(today)) add(LastDoneProblem.DATE_IN_FUTURE)
         if (odometer == null) add(LastDoneProblem.ODOMETER_MISSING)
@@ -36,11 +33,10 @@ object LastDoneEntries {
      * reading above the current one is allowed, since the current one may be stale, but it would
      * move the vehicle's odometer, so it is worth a second look.
      */
-    fun odometerNote(entered: Int?, currentOdometer: Int?, showErrors: Boolean, unit: DistanceUnit): OdometerNote? = when {
-        entered == null && showErrors -> OdometerNote("Enter the odometer reading in whole ${unit.plural}.", NoteTone.WARNING)
-        entered != null && currentOdometer != null && entered > currentOdometer ->
-            OdometerNote("Higher than the latest reading (${unit.format(currentOdometer)}). Double-check it.", NoteTone.WARNING)
-        else -> currentOdometer?.let { OdometerNote("Latest reading: ${unit.format(it)}", NoteTone.PLAIN) }
+    fun odometerNote(entered: Int?, currentOdometer: Int?, showErrors: Boolean): OdometerNote? = when {
+        entered == null && showErrors -> OdometerNote.Missing
+        entered != null && currentOdometer != null && entered > currentOdometer -> OdometerNote.HigherThanLatest(currentOdometer)
+        else -> currentOdometer?.let(OdometerNote::Latest)
     }
 
     /**

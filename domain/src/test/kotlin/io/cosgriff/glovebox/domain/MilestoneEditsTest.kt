@@ -11,7 +11,7 @@ class MilestoneEditsTest {
     private val belts = TableJob("Inspect drive belts")
 
     private fun check(miles: String = "30,000", months: String = "", jobs: List<TableJob> = listOf(oil), others: List<Int> = emptyList(), repeats: Int? = null) =
-        MilestoneEdits.check(miles, months, jobs, others, repeats, DistanceUnit.MILES)
+        MilestoneEdits.check(miles, months, jobs, others, repeats, DistanceUnit.MILES) { if (it == "oil") "Oil & filter change" else it }
 
     private fun problems(edit: MilestoneEdit) = (edit as MilestoneEdit.Refused).problems
 

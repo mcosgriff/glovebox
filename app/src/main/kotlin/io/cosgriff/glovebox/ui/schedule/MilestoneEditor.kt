@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.catalogLabel
+import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.pluralWord
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -130,7 +132,7 @@ fun MilestoneEditor(
         )
     }
 
-    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles, unit)
+    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles, unit, ::catalogLabel)
     val problems = (checked as? MilestoneEdit.Refused)?.problems?.takeIf { showErrors } ?: MilestoneProblems()
 
     if (deleting) {

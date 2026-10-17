@@ -42,7 +42,16 @@ object MilestoneEdits {
      * Checks one milestone. [others] are the mileages of the table's other milestones, and
      * [repeatsEveryMiles] the cycle of a table that repeats: a milestone can't sit past the end of it.
      */
-    fun check(milesText: String, monthsText: String, jobs: List<TableJob>, others: List<Int>, repeatsEveryMiles: Int?, unit: DistanceUnit): MilestoneEdit {
+    fun check(
+        milesText: String,
+        monthsText: String,
+        jobs: List<TableJob>,
+        others: List<Int>,
+        repeatsEveryMiles: Int?,
+        unit: DistanceUnit,
+        /** A catalog line's name, from its id. */
+        serviceName: (String) -> String,
+    ): MilestoneEdit {
         val miles = OdometerInput.parse(milesText)?.takeIf { it <= MilestoneImport.MAX_MILES }
         val months = monthsText.trim().takeIf { it.isNotEmpty() }?.let { t -> t.toIntOrNull()?.takeIf { it in 1..MilestoneImport.MAX_MONTHS } ?: -1 }
         val names = jobs.map { it.name.trim() }
@@ -59,7 +68,7 @@ object MilestoneEdits {
         }
         // Two jobs for one service would be one job twice: the log couldn't tell them apart.
         MilestoneImport.repeated(jobs.map { it.service }).forEach { (i, _) ->
-            jobProblems.putIfAbsent(i, "\"${serviceLabel(jobs[i].service)}\" is already picked for another job here")
+            jobProblems.putIfAbsent(i, "\"${jobs[i].service?.let(serviceName).orEmpty()}\" is already picked for another job here")
         }
         val problems = MilestoneProblems(
             miles = when {
@@ -97,8 +106,6 @@ object MilestoneEdits {
         }
         return RepeatEdit.Ok(every)
     }
-
-    private fun serviceLabel(id: String?): String = ServiceCatalog.categories.flatMap { it.items }.firstOrNull { it.id == id }?.label ?: id.orEmpty()
 
     private fun miles(value: Int): String = String.format(Locale.US, "%,d", value)
 }

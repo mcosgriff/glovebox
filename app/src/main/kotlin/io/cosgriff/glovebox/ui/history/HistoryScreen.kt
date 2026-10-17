@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.RecordMark
@@ -188,7 +194,7 @@ fun HistoryScreen(
     Column(Modifier.fillMaxSize()) {
         if (onBack != null) {
             IconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         }
         Column(
@@ -196,7 +202,7 @@ fun HistoryScreen(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("History", Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
+                Text(stringResource(R.string.history_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
                 if (state.vehicle != null) {
                     OutlinedButton(
                         onClick = { exporting = true },
@@ -204,12 +210,12 @@ fun HistoryScreen(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) { Text("Export \u00b7 PDF / MD") }
+                    ) { Text(stringResource(R.string.history_export)) }
                 }
             }
             state.vehicle?.let { v ->
                 Text(
-                    "${v.label()} · ${shown.size} ${if (shown.size == 1) "record" else "records"}" + if (vm.archived) " · archived, read-only" else "",
+                    stringResource(if (vm.archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -225,7 +231,7 @@ fun HistoryScreen(
         }
         if (categories.isNotEmpty()) {
             ChipRow {
-                Chip("All", selected = filter == null) { vm.chooseFilter(null) }
+                Chip(stringResource(R.string.history_all), selected = filter == null) { vm.chooseFilter(null) }
                 categories.forEach { c ->
                     Chip(c.label, selected = filter == c.id) { vm.chooseFilter(c.id) }
                 }
@@ -233,9 +239,9 @@ fun HistoryScreen(
         }
 
         when {
-            state.vehicle == null -> EmptyNote("Add a vehicle in the Garage to start its service history.")
-            state.records.isEmpty() && vm.archived -> EmptyNote("No service records were logged for this vehicle.")
-            state.records.isEmpty() -> EmptyNote("No service records yet. Use Log service in the Garage to add the first one.")
+            state.vehicle == null -> EmptyNote(stringResource(R.string.history_no_vehicle))
+            state.records.isEmpty() && vm.archived -> EmptyNote(stringResource(R.string.history_none_archived))
+            state.records.isEmpty() -> EmptyNote(stringResource(R.string.history_none))
             else -> LazyColumn(
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -268,7 +274,7 @@ private fun RecordCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: Reco
             Text(r.items.joinToString(", ") { it.label })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    LogEdits.who(r.record.diy, r.record.shopName, mark, r.record.enteredAsLastDone, r.record.imported),
+                    LogEdits.who(r.record.diy, r.record.shopName, mark, r.record.enteredAsLastDone, r.record.imported).text,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

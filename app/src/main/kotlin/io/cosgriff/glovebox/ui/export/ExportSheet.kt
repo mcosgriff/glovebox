@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.wordedLines
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.whatItTakes
@@ -332,7 +333,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             if (photoCount > 0) {
                 val megabytes = RecordPhotos.pdfBytes(photoCount) / 1_000_000.0
                 Text(
-                    "${RecordPhotos.countLabel(photoCount)} will be included, adding roughly ${megabytes.megabytesText()} to the file." +
+                    "${photoCount(photoCount)} will be included, adding roughly ${megabytes.megabytesText()} to the file." +
                         if (megabytes >= RecordPhotos.LARGE_EXPORT_MB) " That's large to email; untick Receipt photos for a small file." else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (megabytes >= RecordPhotos.LARGE_EXPORT_MB) scheme.onPrimaryContainer else scheme.onSurfaceVariant,

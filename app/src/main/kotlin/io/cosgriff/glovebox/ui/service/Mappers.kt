@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.RecordMark
+import io.cosgriff.glovebox.domain.DoneBy
+import io.cosgriff.glovebox.domain.Who
+import io.cosgriff.glovebox.domain.OdometerNote
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.domain.DocumentProblem
 import io.cosgriff.glovebox.domain.DocumentType
@@ -320,3 +324,37 @@ val DocumentProblem.text: String
         DocumentProblem.NOT_A_DOCUMENT -> AppText.res.getString(R.string.document_problem_not_a_document)
         DocumentProblem.FAILED -> AppText.res.getString(R.string.document_problem_failed)
     }
+
+/** The line under an odometer field. */
+fun OdometerNote.text(unit: DistanceUnit): String = when (this) {
+    OdometerNote.Missing -> AppText.res.getString(R.string.odometer_note_missing, unit.pluralWord)
+    is OdometerNote.LowerThanEarlier -> AppText.res.getString(R.string.odometer_note_lower, earlier.asNumber())
+    is OdometerNote.Was -> AppText.res.getString(R.string.odometer_note_was, original.asNumber())
+    OdometerNote.Unchanged -> AppText.res.getString(R.string.odometer_note_unchanged)
+    is OdometerNote.LastRecorded -> AppText.res.getString(R.string.odometer_note_last_recorded, reading.asDistance(unit))
+    is OdometerNote.HigherThanLatest -> AppText.res.getString(R.string.odometer_note_higher, latest.asDistance(unit))
+    is OdometerNote.Latest -> AppText.res.getString(R.string.odometer_note_latest, reading.asDistance(unit))
+}
+
+/** "DIY", "Corner Garage · imported", "Entered as last done · just added". */
+val Who.text: String
+    get() {
+        val res = AppText.res
+        var who = when (val by = by) {
+            DoneBy.EnteredAsLastDone -> res.getString(R.string.last_done_tag)
+            DoneBy.Diy -> res.getString(R.string.who_diy)
+            is DoneBy.Shop -> by.name ?: res.getString(R.string.who_shop)
+        }
+        if (imported) who = res.getString(R.string.who_imported, who)
+        return when (mark) {
+            RecordMark.ADDED -> res.getString(R.string.who_just_added, who)
+            RecordMark.RESTORED -> res.getString(R.string.who_restored, who)
+            null -> who
+        }
+    }
+
+/** "2 photos"; null for none, so callers can leave the phrase out. */
+fun photoCount(count: Int): String? = count.takeIf { it > 0 }?.let { AppText.res.getQuantityString(R.plurals.photos, it, it.asNumber()) }
+
+/** "A", "A and B", "A and B and C": a list in a sentence. */
+fun andList(items: List<String>): String = items.reduceOrNull { a, b -> AppText.res.getString(R.string.list_and, a, b) }.orEmpty()

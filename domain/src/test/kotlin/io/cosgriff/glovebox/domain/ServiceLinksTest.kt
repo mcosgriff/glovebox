@@ -56,7 +56,7 @@ class ServiceLinksTest {
     fun `an item that answers to a catalog line is logged through that line, not listed a second time`() {
         val categories = ServiceCatalog.forVehicle(listOf(typicalOil, myOil, myWipers, myWash))
         val yours = categories.first { it.id == ServiceCatalog.YOUR_ITEMS }.options
-        assertEquals(listOf("Wash underbody"), yours.map { it.label })
+        assertEquals(listOf("Wash underbody"), yours.map { it.name })
 
         val options = categories.flatMap { it.options }.associateBy { it.id }
         // Saved against the typical item where there is one, otherwise against the user's own.
@@ -70,7 +70,7 @@ class ServiceLinksTest {
         assertEquals("oil", ServiceCatalog.lineFor(null, "oil")?.id)
         assertEquals("wipers", ServiceCatalog.lineFor(null, "wipers")?.id)
         assertNull(ServiceCatalog.lineFor(null, null))
-        assertEquals(listOf("Wiper blades"), ServiceCatalog.resetters(null, "wipers"))
-        assertEquals(listOf("Oil & filter change"), ServiceCatalog.resetters("oil"))
+        assertEquals(listOf("wipers"), ServiceCatalog.resetters(null, "wipers"))
+        assertEquals(listOf("oil"), ServiceCatalog.resetters("oil"))
     }
 }

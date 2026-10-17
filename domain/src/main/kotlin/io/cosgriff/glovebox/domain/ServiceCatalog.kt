@@ -7,9 +7,9 @@ package io.cosgriff.glovebox.domain
  * logged change resets the reminder to check it and completes that job on a milestone. It goes one
  * way only; a check never counts as a change.
  */
-data class CatalogItem(val id: String, val label: String, val resets: String? = null, val covers: Set<String> = emptySet())
+data class CatalogItem(val id: String, val resets: String? = null, val covers: Set<String> = emptySet())
 
-data class CatalogCategory(val id: String, val label: String, val items: List<CatalogItem>)
+data class CatalogCategory(val id: String, val items: List<CatalogItem>)
 
 /**
  * A schedule item as the catalog needs to see it. [service] is the [CatalogItem] id one of the
@@ -68,9 +68,15 @@ object ServiceLinks {
 }
 
 /** One tickable line on the Log service screen. [scheduleItemId] is the reminder it resets, if any. */
-data class WorkOption(val id: String, val label: String, val scheduleItemId: Long? = null)
+data class WorkOption(
+    val id: String,
+    /** The user's own item's name, under "Your items"; null for a catalog line, which `app` names by its id. */
+    val name: String? = null,
+    val scheduleItemId: Long? = null,
+)
 
-data class WorkCategory(val id: String, val label: String, val options: List<WorkOption>)
+/** `app` names it by its id ([ServiceCatalog.YOUR_ITEMS] for the user's own items). */
+data class WorkCategory(val id: String, val options: List<WorkOption>)
 
 /** The note beside a Log service line; `app` words it. */
 sealed interface WorkHint {
@@ -97,99 +103,99 @@ object ServiceCatalog {
     /** Each template key is reset by at most one catalog item, so a reminder maps to one tick box. */
     val categories: List<CatalogCategory> = listOf(
         CatalogCategory(
-            "engine", "Oil & engine",
+            "engine",
             listOf(
-                CatalogItem("oil", "Oil & filter change", resets = "oil"),
-                CatalogItem("engine-air", "Engine air filter", resets = "engine-air"),
-                CatalogItem("spark-plugs", "Spark plugs", resets = "spark-plugs"),
-                CatalogItem("belt", "Serpentine belt", covers = setOf("belt-check")),
-                CatalogItem("belt-check", "Serpentine belt check"),
-                CatalogItem("timing-belt", "Timing belt"),
-                CatalogItem("fuel-filter", "Fuel filter"),
-                CatalogItem("fuel-system", "Fuel system cleaning"),
-                CatalogItem("pcv", "PCV valve"),
+                CatalogItem("oil", resets = "oil"),
+                CatalogItem("engine-air", resets = "engine-air"),
+                CatalogItem("spark-plugs", resets = "spark-plugs"),
+                CatalogItem("belt", covers = setOf("belt-check")),
+                CatalogItem("belt-check"),
+                CatalogItem("timing-belt"),
+                CatalogItem("fuel-filter"),
+                CatalogItem("fuel-system"),
+                CatalogItem("pcv"),
             ),
         ),
         CatalogCategory(
-            "tires", "Tires & wheels",
+            "tires",
             listOf(
-                CatalogItem("rotation", "Tire rotation", resets = "rotation"),
-                CatalogItem("balance", "Balance"),
-                CatalogItem("alignment", "Alignment"),
-                CatalogItem("new-tires", "New tires"),
-                CatalogItem("flat", "Flat repair"),
+                CatalogItem("rotation", resets = "rotation"),
+                CatalogItem("balance"),
+                CatalogItem("alignment"),
+                CatalogItem("new-tires"),
+                CatalogItem("flat"),
             ),
         ),
         CatalogCategory(
-            "brakes", "Brakes",
+            "brakes",
             listOf(
-                CatalogItem("front-pads", "Front pads"),
-                CatalogItem("rear-pads", "Rear pads"),
-                CatalogItem("rotors", "Rotors"),
-                CatalogItem("brake-fluid", "Brake fluid flush", resets = "brake-fluid", covers = setOf("brake-fluid-check")),
-                CatalogItem("brake-fluid-check", "Brake fluid check"),
-                CatalogItem("brake-inspect", "Brake inspection", resets = "brake-inspect"),
+                CatalogItem("front-pads"),
+                CatalogItem("rear-pads"),
+                CatalogItem("rotors"),
+                CatalogItem("brake-fluid", resets = "brake-fluid", covers = setOf("brake-fluid-check")),
+                CatalogItem("brake-fluid-check"),
+                CatalogItem("brake-inspect", resets = "brake-inspect"),
             ),
         ),
         CatalogCategory(
-            "fluids", "Fluids",
+            "fluids",
             listOf(
-                CatalogItem("coolant", "Coolant", resets = "coolant"),
-                CatalogItem("trans-fluid", "Transmission fluid", resets = "trans-fluid"),
-                CatalogItem("power-steering", "Power steering fluid"),
-                CatalogItem("washer", "Washer fluid"),
+                CatalogItem("coolant", resets = "coolant"),
+                CatalogItem("trans-fluid", resets = "trans-fluid"),
+                CatalogItem("power-steering"),
+                CatalogItem("washer"),
             ),
         ),
         CatalogCategory(
-            "driveline", "Driveline",
+            "driveline",
             listOf(
                 CatalogItem(
-                    "diff-fluid", "Differential / transfer case fluid", resets = "diff-fluid",
+                    "diff-fluid", resets = "diff-fluid",
                     covers = setOf("front-diff-check", "rear-diff-check", "transfer-case-check"),
                 ),
-                CatalogItem("front-diff-check", "Front differential oil check"),
-                CatalogItem("front-diff", "Front differential oil change", covers = setOf("front-diff-check")),
-                CatalogItem("rear-diff-check", "Rear differential oil check"),
-                CatalogItem("rear-diff", "Rear differential oil change", covers = setOf("rear-diff-check")),
-                CatalogItem("transfer-case-check", "Transfer case oil check"),
-                CatalogItem("transfer-case", "Transfer case oil change", covers = setOf("transfer-case-check")),
-                CatalogItem("driveshaft", "Driveshaft grease"),
-                CatalogItem("cv-axle", "CV axle / boot"),
+                CatalogItem("front-diff-check"),
+                CatalogItem("front-diff", covers = setOf("front-diff-check")),
+                CatalogItem("rear-diff-check"),
+                CatalogItem("rear-diff", covers = setOf("rear-diff-check")),
+                CatalogItem("transfer-case-check"),
+                CatalogItem("transfer-case", covers = setOf("transfer-case-check")),
+                CatalogItem("driveshaft"),
+                CatalogItem("cv-axle"),
             ),
         ),
         CatalogCategory(
-            "suspension", "Suspension & steering",
+            "suspension",
             listOf(
-                CatalogItem("shocks", "Shocks / struts"),
-                CatalogItem("wheel-bearing", "Wheel bearing"),
-                CatalogItem("steering-parts", "Tie rods / ball joints"),
+                CatalogItem("shocks"),
+                CatalogItem("wheel-bearing"),
+                CatalogItem("steering-parts"),
             ),
         ),
         CatalogCategory(
-            "cabin", "Cabin & electrical",
+            "cabin",
             listOf(
-                CatalogItem("cabin-air", "Cabin air filter", resets = "cabin-air"),
-                CatalogItem("wipers", "Wiper blades"),
-                CatalogItem("battery", "Battery", covers = setOf("battery-check")),
-                CatalogItem("battery-check", "Battery test"),
-                CatalogItem("bulbs", "Bulbs"),
+                CatalogItem("cabin-air", resets = "cabin-air"),
+                CatalogItem("wipers"),
+                CatalogItem("battery", covers = setOf("battery-check")),
+                CatalogItem("battery-check"),
+                CatalogItem("bulbs"),
             ),
         ),
         CatalogCategory(
-            "inspection", "Inspection",
+            "inspection",
             listOf(
-                CatalogItem("multi-point", "Multi-point inspection"),
-                CatalogItem("emissions", "Emissions test"),
-                CatalogItem("safety-inspection", "Safety inspection"),
-                CatalogItem("recall", "Recall work"),
+                CatalogItem("multi-point"),
+                CatalogItem("emissions"),
+                CatalogItem("safety-inspection"),
+                CatalogItem("recall"),
             ),
         ),
         CatalogCategory(
-            "other", "Other",
+            "other",
             listOf(
-                CatalogItem("accessory", "Accessory install"),
-                CatalogItem("body", "Body / glass"),
-                CatalogItem("detail", "Detail / wash"),
+                CatalogItem("accessory"),
+                CatalogItem("body"),
+                CatalogItem("detail"),
             ),
         ),
     )
@@ -210,17 +216,17 @@ object ServiceCatalog {
         val linked = answering.values.flatten().toMutableSet()
         val fromCatalog = categories.map { c ->
             WorkCategory(
-                c.id, c.label,
+                c.id,
                 c.items.map { item ->
                     val target = item.resets?.let(byKey::get)?.id ?: answering[item.id]?.minOrNull()
-                    WorkOption(item.id, item.label, target)
+                    WorkOption(item.id, scheduleItemId = target)
                 },
             )
         }
         val yours = schedule
             .filter { it.tracked && it.id !in linked }
             .map { WorkOption("schedule-${it.id}", it.name, it.id) }
-        return if (yours.isEmpty()) fromCatalog else listOf(WorkCategory(YOUR_ITEMS, "Your items", yours)) + fromCatalog
+        return if (yours.isEmpty()) fromCatalog else listOf(WorkCategory(YOUR_ITEMS, yours)) + fromCatalog
     }
 }
 
