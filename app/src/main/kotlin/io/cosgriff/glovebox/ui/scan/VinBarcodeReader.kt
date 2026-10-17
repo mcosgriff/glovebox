@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.domain.BarcodeKind
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
@@ -36,7 +37,7 @@ class VinBarcodeReader {
      * A barcode found in a frame, read or not. [text] is null when it was found but couldn't be
      * decoded. [corners] are its outline in the frame's pixels, clockwise from top left.
      */
-    data class Sighting(val format: String, val text: String?, val corners: List<Point>)
+    data class Sighting(val kind: BarcodeKind, val text: String?, val corners: List<Point>)
 
     /**
      * The text of a barcode in the frame, or null. [luminance] is [width] x [height], one byte per
@@ -70,7 +71,7 @@ class VinBarcodeReader {
             val result = results.firstOrNull { it.error == null && it.text != null } ?: results.firstOrNull() ?: return null
             val p = result.position
             Sighting(
-                format = name(result.format),
+                kind = kind(result.format),
                 text = result.text.takeIf { result.error == null && !it.isNullOrEmpty() },
                 corners = listOf(p.topLeft, p.topRight, p.bottomRight, p.bottomLeft),
             )
@@ -80,13 +81,12 @@ class VinBarcodeReader {
     }
 
     companion object {
-        /** How the scanner names a format to the user. */
-        fun name(format: BarcodeReader.Format): String = when (format) {
-            BarcodeReader.Format.CODE_39 -> "Code 39"
-            BarcodeReader.Format.CODE_128 -> "Code 128"
-            BarcodeReader.Format.QR_CODE -> "QR code"
-            BarcodeReader.Format.DATA_MATRIX -> "Data Matrix"
-            else -> "Barcode"
+        fun kind(format: BarcodeReader.Format): BarcodeKind = when (format) {
+            BarcodeReader.Format.CODE_39 -> BarcodeKind.CODE_39
+            BarcodeReader.Format.CODE_128 -> BarcodeKind.CODE_128
+            BarcodeReader.Format.QR_CODE -> BarcodeKind.QR_CODE
+            BarcodeReader.Format.DATA_MATRIX -> BarcodeKind.DATA_MATRIX
+            else -> BarcodeKind.OTHER
         }
 
         /** Wider than the widest bar or gap of a barcode filling the guide, narrower than a shadow's edge is soft. */

@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.domain.PrintReport
+import io.cosgriff.glovebox.domain.BarcodeReport
+import io.cosgriff.glovebox.domain.BarcodeKind
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.provider.Settings
 import androidx.compose.foundation.background
@@ -84,8 +91,8 @@ class ScanVinViewModel @Inject constructor(repo: SettingsRepository) : ViewModel
 fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit, vm: ScanVinViewModel = hiltViewModel()) {
     val details by vm.details.collectAsStateWithLifecycle()
     CameraScreen(
-        why = "Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn't saved or sent anywhere.",
-        instead = "Type the VIN instead",
+        why = stringResource(R.string.scan_vin_camera_why),
+        instead = stringResource(R.string.scan_vin_type_instead),
         onClose = onClose,
     ) {
         Scanner(details, onClose, onUseVin)
@@ -151,7 +158,7 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                 } else if (now - lastSeenAt > HOLD_MILLIS) {
                     lastSeen = null
                 }
-                seen = lastSeen?.let { s -> BarcodeSeen(s.format, s.text) }
+                seen = lastSeen?.let { s -> BarcodeSeen(s.kind, s.text) }
                 if (drawing && counted % THUMB_EVERY == 0) view = BandView.of(band, width, height, lastSeen)
                 val barcode = sighting?.text
                 if (barcode != null) {
@@ -191,11 +198,11 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
     CameraFeed(analysis, torch)
 
     Column(Modifier.fillMaxSize()) {
-        CameraTopBar("Scan VIN", "Close scanner", torch, onTorch = { torch = it }, onClose = onClose)
+        CameraTopBar(stringResource(R.string.scan_vin_title), stringResource(R.string.scan_close_scanner), torch, onTorch = { torch = it }, onClose = onClose)
 
         val instruction = @Composable {
             Text(
-                "Line up the barcode on the door-jamb\nsticker, or the VIN printed on the dash",
+                stringResource(R.string.scan_vin_instruction),
                 style = MaterialTheme.typography.bodyLarge,
                 color = OnScrim,
                 textAlign = TextAlign.Center,
@@ -207,7 +214,7 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
         val panel = @Composable { if (details && found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
         val hint = @Composable {
             Text(
-                if (notAVin && found == null) "That barcode isn't a VIN. Aim at the one on the door-jamb sticker." else "Code 39 or QR · also reads printed VINs",
+                stringResource(if (notAVin && found == null) R.string.scan_vin_not_a_vin else R.string.scan_vin_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (notAVin && found == null) Guide else OnScrimMuted,
                 textAlign = TextAlign.Center,
@@ -260,7 +267,7 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(18.dp), tint = statusColors().ok)
                         Text(
-                            if (fromPrint) "VIN read from print · check digit valid" else "VIN detected · check digit valid",
+                            stringResource(if (fromPrint) R.string.scan_vin_from_print else R.string.scan_vin_detected),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = statusColors().ok,
@@ -277,10 +284,10 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                         ) {
-                            Text("Rescan")
+                            Text(stringResource(R.string.scan_rescan))
                         }
                         Button(onClick = { onUseVin(vin) }, modifier = Modifier.weight(2f).height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                            Text("Use this VIN")
+                            Text(stringResource(R.string.scan_use_vin))
                         }
                     }
                 }
@@ -352,12 +359,12 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("WHAT THE SCANNER SEES", style = MaterialTheme.typography.labelSmall, color = OnScrimMuted)
-                Text(ScanReport.rate(rate), style = MaterialTheme.typography.bodySmall, color = OnScrim)
+                Text(stringResource(R.string.scan_panel_heading), style = MaterialTheme.typography.labelSmall, color = OnScrimMuted)
+                Text(rateText(rate), style = MaterialTheme.typography.bodySmall, color = OnScrim)
             }
         }
         Text(
-            ScanReport.barcode(seen),
+            ScanReport.barcode(seen).text(),
             style = MaterialTheme.typography.bodySmall,
             fontFamily = PlexMono,
             color = when {
@@ -367,7 +374,7 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
             },
         )
         Text(
-            if (printRan) ScanReport.print(print) else "Print is read when no barcode is in the box",
+            if (printRan) ScanReport.print(print).text() else stringResource(R.string.scan_print_waiting),
             style = MaterialTheme.typography.bodySmall,
             fontFamily = PlexMono,
             color = if (print.isNullOrBlank()) OnScrimMuted else OnScrim,
@@ -375,3 +382,36 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
     }
 }
 
+/** "Reading 12 frames a second", or that the camera hasn't sent one yet. */
+@Composable
+private fun rateText(framesPerSecond: Int?): String = when (framesPerSecond) {
+    null -> stringResource(R.string.scan_rate_starting)
+    0 -> stringResource(R.string.scan_rate_waiting)
+    else -> pluralStringResource(R.plurals.scan_rate, framesPerSecond, framesPerSecond.asNumber())
+}
+
+@Composable
+private fun BarcodeKind.text(): String = stringResource(
+    when (this) {
+        BarcodeKind.CODE_39 -> R.string.barcode_code_39
+        BarcodeKind.CODE_128 -> R.string.barcode_code_128
+        BarcodeKind.QR_CODE -> R.string.barcode_qr
+        BarcodeKind.DATA_MATRIX -> R.string.barcode_data_matrix
+        BarcodeKind.OTHER -> R.string.barcode_other
+    },
+)
+
+@Composable
+private fun BarcodeReport.text(): String = when (this) {
+    BarcodeReport.None -> stringResource(R.string.scan_report_no_barcode)
+    is BarcodeReport.Unreadable -> stringResource(R.string.scan_report_unreadable, kind.text())
+    is BarcodeReport.Vin -> stringResource(R.string.scan_report_barcode_vin, kind.text(), vin)
+    is BarcodeReport.NotAVin -> stringResource(R.string.scan_report_barcode_not_vin, kind.text(), shown)
+}
+
+@Composable
+private fun PrintReport.text(): String = when (this) {
+    PrintReport.None -> stringResource(R.string.scan_report_no_print)
+    is PrintReport.Vin -> stringResource(R.string.scan_report_print_vin, vin)
+    is PrintReport.NotAVin -> stringResource(R.string.scan_report_print_not_vin, shown)
+}

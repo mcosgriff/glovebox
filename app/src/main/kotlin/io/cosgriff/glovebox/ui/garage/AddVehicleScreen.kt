@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.annotation.StringRes
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import kotlinx.coroutines.flow.first
 import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
@@ -92,12 +96,12 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 /** A decoded value the user can correct before the vehicle is saved. */
-enum class DecodedField(val label: String) {
-    BODY("Body class"),
-    DRIVE("Drive type"),
-    ENGINE("Engine"),
-    FUEL("Fuel"),
-    TRANSMISSION("Transmission"),
+enum class DecodedField(@StringRes val label: Int) {
+    BODY(R.string.add_vehicle_body_class),
+    DRIVE(R.string.add_vehicle_drive_type),
+    ENGINE(R.string.add_vehicle_engine),
+    FUEL(R.string.add_vehicle_fuel),
+    TRANSMISSION(R.string.add_vehicle_transmission),
 }
 
 @HiltViewModel
@@ -119,7 +123,8 @@ class AddVehicleViewModel @Inject constructor(
         private set
     var decoding by mutableStateOf(false)
         private set
-    var error by mutableStateOf<String?>(null)
+    /** NHTSA couldn't be reached for the last decode. */
+    var failed by mutableStateOf(false)
         private set
 
     /** Set once NHTSA has answered; the confirm step shows while it is. */
@@ -165,7 +170,7 @@ class AddVehicleViewModel @Inject constructor(
         val normalized = Vin.normalize(input).take(17)
         if (normalized == vin) return // e.g. an 18th character typed
         vin = normalized
-        error = null
+        failed = false
     }
 
     /** A scanned VIN has already passed its check digit, so it goes straight to NHTSA. */
@@ -176,10 +181,10 @@ class AddVehicleViewModel @Inject constructor(
 
     fun decode() = viewModelScope.launch {
         decoding = true
-        error = null
+        failed = false
         runCatching { nhtsa.decodeVin(vin) }
             .onSuccess { show(it) }
-            .onFailure { error = "Couldn't reach NHTSA. Check your connection and try again." }
+            .onFailure { failed = true }
         decoding = false
     }
 
@@ -190,6 +195,7 @@ class AddVehicleViewModel @Inject constructor(
         fields = buildMap {
             d.bodyClass?.let { put(DecodedField.BODY, it) }
             d.driveType?.let { put(DecodedField.DRIVE, it) }
+            // Stored as the vehicle's engine, in the form vPIC's figures are usually written; data, not wording.
             listOfNotNull(d.displacementL?.let { "${it}L" }, d.cylinders?.let { "$it-cyl" }).joinToString(" ").ifEmpty { null }
                 ?.let { put(DecodedField.ENGINE, it) }
             d.fuel?.let { put(DecodedField.FUEL, it) }
@@ -288,13 +294,14 @@ sealed interface RecallLookup {
 }
 
 /** Nothing can be marked done before the vehicle is saved, so every recall found is still open. */
+@Composable
 private fun RecallLookup.text(): String? = when (this) {
     RecallLookup.NotAsked -> null
-    RecallLookup.Asking -> "Checking…"
-    RecallLookup.Failed -> "Couldn't check"
+    RecallLookup.Asking -> stringResource(R.string.add_vehicle_recalls_checking)
+    RecallLookup.Failed -> stringResource(R.string.add_vehicle_recalls_failed)
     is RecallLookup.Found -> when (val n = notices.map { it.campaign }.filter { it.isNotBlank() }.distinct().size) {
-        0 -> "None found"
-        else -> "$n found · $n open"
+        0 -> stringResource(R.string.add_vehicle_recalls_none)
+        else -> stringResource(R.string.add_vehicle_recalls_found, n.asNumber())
     }
 }
 
@@ -330,15 +337,15 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        TopBar("Add a vehicle", onBack)
+        TopBar(stringResource(R.string.add_vehicle_title), onBack)
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Start with the VIN", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.add_vehicle_start_with_vin), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Text(
-                    "We look it up with NHTSA's VIN decoder and fill in year, make, model, drivetrain and engine for you.",
+                    stringResource(R.string.add_vehicle_vin_intro),
                     color = scheme.onSurfaceVariant,
                 )
             }
@@ -351,12 +358,12 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 colors = ButtonDefaults.buttonColors(containerColor = scheme.secondary, contentColor = scheme.onSecondary),
             ) {
                 Icon(Icons.Outlined.QrCodeScanner, contentDescription = null, modifier = Modifier.padding(end = 10.dp).size(22.dp))
-                Text("Scan VIN barcode", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.add_vehicle_scan), style = MaterialTheme.typography.titleMedium)
             }
 
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
-                Text("or type it", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.add_vehicle_or_type), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
             }
 
@@ -365,7 +372,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 OutlinedTextField(
                     value = vm.vin,
                     onValueChange = vm::onVinChange,
-                    label = { Text("Vehicle Identification Number") },
+                    label = { Text(stringResource(R.string.add_vehicle_vin_label)) },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     shape = RoundedCornerShape(14.dp),
@@ -375,16 +382,16 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "No I, O or Q · letters are uppercased",
+                        stringResource(R.string.add_vehicle_vin_hint),
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
                     Text(
                         when {
-                            !complete -> "${vm.vin.length} / 17"
-                            vm.vinValid -> "17 / 17 ✓ check digit"
-                            else -> "Check digit doesn't match"
+                            !complete -> stringResource(R.string.add_vehicle_vin_count, vm.vin.length)
+                            vm.vinValid -> stringResource(R.string.add_vehicle_vin_valid)
+                            else -> stringResource(R.string.add_vehicle_vin_check_digit_wrong)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = PlexMono,
@@ -398,7 +405,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 }
                 if (complete && !vm.vinValid) {
                     Text(
-                        "One of the characters is wrong. Compare it with the sticker, one character at a time.",
+                        stringResource(R.string.add_vehicle_vin_wrong_character),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.error,
                     )
@@ -407,16 +414,16 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
 
             Card {
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Where to find it", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.add_vehicle_where_heading), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     listOf(
-                        "Driver's door jamb sticker — has a scannable barcode",
-                        "Base of the windshield, driver's side",
-                        "Registration or insurance card",
+                        stringResource(R.string.add_vehicle_where_door),
+                        stringResource(R.string.add_vehicle_where_windshield),
+                        stringResource(R.string.add_vehicle_where_card),
                     ).forEachIndexed { i, place ->
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             Surface(color = scheme.primaryContainer, shape = RoundedCornerShape(8.dp), modifier = Modifier.size(28.dp)) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("${i + 1}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = scheme.onPrimaryContainer)
+                                    Text((i + 1).asNumber(), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = scheme.onPrimaryContainer)
                                 }
                             }
                             Text(place, style = MaterialTheme.typography.bodyMedium, color = statusColors().soon)
@@ -434,11 +441,11 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                if (vm.decoding) CircularProgressIndicator(Modifier.size(24.dp)) else Text("Decode VIN", style = MaterialTheme.typography.titleMedium)
+                if (vm.decoding) CircularProgressIndicator(Modifier.size(24.dp)) else Text(stringResource(R.string.add_vehicle_decode), style = MaterialTheme.typography.titleMedium)
             }
-            vm.error?.let { Text(it, color = scheme.error) }
+            if (vm.failed) Text(stringResource(R.string.add_vehicle_nhtsa_unreachable), color = scheme.error)
             TextButton(onClick = onNoVin, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text("No VIN? Enter year, make and model manually")
+                Text(stringResource(R.string.add_vehicle_no_vin))
             }
         }
     }
@@ -465,7 +472,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
         )
     } else editing?.let { field ->
         FieldDialog(
-            label = field.label,
+            label = stringResource(field.label),
             current = vm.fields[field].orEmpty(),
             onSave = {
                 vm.correct(field, it)
@@ -488,20 +495,20 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     }
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        TopBar("Is this your vehicle?", onBack = vm::backToVin)
+        TopBar(stringResource(R.string.add_vehicle_confirm_title), onBack = vm::backToVin)
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (vm.quality) {
                 DecodeQuality.PARTIAL -> Notice(
-                    "NHTSA decoded this VIN but flagged it",
-                    "Check the details below and correct anything that's wrong before you continue.",
+                    stringResource(R.string.add_vehicle_partial_title),
+                    stringResource(R.string.add_vehicle_partial_body),
                     d.errorText,
                 )
                 DecodeQuality.UNIDENTIFIED -> Notice(
-                    "NHTSA couldn't identify this VIN",
-                    "Go back and check it against the sticker, or enter the year, make and model yourself.",
+                    stringResource(R.string.add_vehicle_unidentified_title),
+                    stringResource(R.string.add_vehicle_unidentified_body),
                     d.errorText,
                 )
                 else -> Unit
@@ -517,7 +524,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(d.vin, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
                     Text(
-                        if (identified) VehicleText.title(vm.year ?: 0, vm.make, vm.model, trim = null) else "Enter year, make and model",
+                        if (identified) VehicleText.title(vm.year ?: 0, vm.make, vm.model, trim = null) else stringResource(R.string.add_vehicle_enter_ymm),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (identified) scheme.onSurface else scheme.primary,
@@ -535,29 +542,29 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     val value = vm.fields[field]
                     // The engine's model code and power are vPIC's own and aren't kept, so they aren't editable.
                     val shown = if (field == DecodedField.ENGINE) {
-                        listOfNotNull(value, d.engineModel, d.horsepower?.let { "$it hp" }).joinToString(" · ").ifEmpty { null }
+                        listOfNotNull(value, d.engineModel, d.horsepower?.let { stringResource(R.string.add_vehicle_horsepower, it) }).joinToString(" · ").ifEmpty { null }
                     } else {
                         value
                     }
-                    FieldRow(field.label, shown ?: "Add", muted = shown == null, onClick = { editing = field })
+                    FieldRow(stringResource(field.label), shown ?: stringResource(R.string.add), muted = shown == null, onClick = { editing = field })
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
                 d.gvwr?.let {
-                    FieldRow("GVWR", it)
+                    FieldRow(stringResource(R.string.add_vehicle_gvwr), it)
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
                 d.plant?.let {
-                    FieldRow("Built in", it)
+                    FieldRow(stringResource(R.string.add_vehicle_built_in), it)
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
                 vm.recalls.text()?.let {
-                    FieldRow("Recalls (NHTSA)", it)
+                    FieldRow(stringResource(R.string.add_vehicle_recalls), it)
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
                 Row(Modifier.padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                     Text(
-                        "Source: NHTSA vPIC decoder · tap the vehicle, or any of the first five values, to correct it",
+                        stringResource(R.string.add_vehicle_source),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -567,7 +574,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 DistanceUnitSwitch(vm.unit, onPick = { vm.unit = it })
                 Text(
-                    "What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.",
+                    stringResource(R.string.add_vehicle_unit_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -577,7 +584,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 OutlinedTextField(
                     value = vm.trim,
                     onValueChange = vm::onTrimChange,
-                    label = { Text(if (ambiguous && !vm.trimConfirmed) "Trim — please confirm" else "Trim") },
+                    label = { Text(stringResource(if (ambiguous && !vm.trimConfirmed) R.string.add_vehicle_trim_confirm else R.string.add_vehicle_trim)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
@@ -586,7 +593,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 OutlinedTextField(
                     value = vm.odometerText,
                     onValueChange = vm::onOdometerChange,
-                    label = { Text("Odometer (${vm.unit.symbolWord})") },
+                    label = { Text(stringResource(R.string.odometer_in, vm.unit.symbolWord)) },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     shape = RoundedCornerShape(12.dp),
@@ -597,7 +604,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
             // vPIC often has no trim (a Golf GTI, for one), so an empty field shouldn't look like a failed decode.
             if (vm.trimChoices.isEmpty() && vm.trim.isBlank()) {
                 Text(
-                    "NHTSA doesn't list a trim for this VIN. Add one if you like; it's optional.",
+                    stringResource(R.string.add_vehicle_no_trim),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -605,7 +612,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
             if (ambiguous) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        "The VIN doesn't say which trim this is. Pick yours, or type it.",
+                        stringResource(R.string.add_vehicle_pick_trim),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -634,7 +641,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text("Next: maintenance schedule", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.add_vehicle_next), style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -643,7 +650,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
 @Composable
 private fun TopBar(title: String, onBack: () -> Unit) {
     Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
         Text(
             title,
             Modifier.padding(start = 8.dp).semantics { heading() },
@@ -667,7 +674,7 @@ private fun Notice(title: String, body: String, detail: String?) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
             Text(body, style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
-            detail?.let { Text("NHTSA: $it", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+            detail?.let { Text(stringResource(R.string.add_vehicle_nhtsa_said, it), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
         }
     }
 }
@@ -688,10 +695,11 @@ private fun Card(content: @Composable () -> Unit) {
 @Composable
 private fun FieldRow(label: String, value: String, muted: Boolean = false, onClick: (() -> Unit)? = null) {
     val scheme = MaterialTheme.colorScheme
+    val correct = stringResource(R.string.add_vehicle_correct, label)
     Row(
         Modifier.fillMaxWidth()
             .heightIn(min = 48.dp)
-            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = "Correct $label", onClick = onClick) else Modifier),
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = correct, onClick = onClick) else Modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -730,13 +738,13 @@ private fun FieldDialog(label: String, current: String, onSave: (String) -> Unit
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it.take(VehicleText.MAX_SPEC) },
-                supportingText = { Text("Replaces what NHTSA decoded. Leave empty to clear it.") },
+                supportingText = { Text(stringResource(R.string.add_vehicle_field_replaces)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
         },
-        confirmButton = { TextButton(onClick = { onSave(text) }) { Text("Save") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { onSave(text) }) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 
@@ -753,7 +761,7 @@ private fun DriveDialog(current: String?, onSave: (String) -> Unit, onDismiss: (
     val other = current?.takeIf { initial == null }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(DecodedField.DRIVE.label) },
+        title = { Text(stringResource(DecodedField.DRIVE.label)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -769,8 +777,8 @@ private fun DriveDialog(current: String?, onSave: (String) -> Unit, onDismiss: (
                 }
                 Text(
                     when {
-                        other != null && chosen == null -> "NHTSA decoded \"$other\", which is kept unless you pick one."
-                        else -> "Replaces what NHTSA decoded. Leave none picked to clear it."
+                        other != null && chosen == null -> stringResource(R.string.add_vehicle_drive_kept, other)
+                        else -> stringResource(R.string.add_vehicle_drive_replaces)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
@@ -781,9 +789,9 @@ private fun DriveDialog(current: String?, onSave: (String) -> Unit, onDismiss: (
             TextButton(onClick = {
                 // Unchanged, the decoded wording is kept as it was ("FWD/Front-Wheel Drive/4x2").
                 onSave(if (chosen == initial || (chosen == null && other != null)) current.orEmpty() else chosen.orEmpty())
-            }) { Text("Save") }
+            }) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 
@@ -797,13 +805,13 @@ private fun VehicleDialog(year: Int?, make: String, model: String, onSave: (Int,
     val cleanModel = VehicleText.clean(modelText, VehicleText.MAX_NICKNAME)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Year, make and model") },
+        title = { Text(stringResource(R.string.add_vehicle_ymm_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
                     value = yearText,
                     onValueChange = { yearText = it.filter(Char::isDigit).take(4) },
-                    label = { Text("Model year") },
+                    label = { Text(stringResource(R.string.add_vehicle_model_year)) },
                     isError = yearText.length == 4 && parsedYear == null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -811,19 +819,19 @@ private fun VehicleDialog(year: Int?, make: String, model: String, onSave: (Int,
                 OutlinedTextField(
                     value = makeText,
                     onValueChange = { makeText = it },
-                    label = { Text("Make") },
+                    label = { Text(stringResource(R.string.add_vehicle_make)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
                 OutlinedTextField(
                     value = modelText,
                     onValueChange = { modelText = it },
-                    label = { Text("Model") },
+                    label = { Text(stringResource(R.string.add_vehicle_model)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
                 Text(
-                    "Recalls are looked up by these three, so spell them the way the manufacturer does.",
+                    stringResource(R.string.add_vehicle_ymm_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -833,8 +841,8 @@ private fun VehicleDialog(year: Int?, make: String, model: String, onSave: (Int,
             TextButton(
                 onClick = { onSave(parsedYear!!, cleanMake!!, cleanModel!!) },
                 enabled = parsedYear != null && cleanMake != null && cleanModel != null,
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

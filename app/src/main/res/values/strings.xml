@@ -94,4 +94,198 @@
     <string name="delete_all_confirm_screen_lock">Confirm with screen lock</string>
     <string name="delete_all_confirm">Delete everything</string>
     <string name="delete_all_no_second_check">This phone has no screen lock, so there is no second check. Pressing the button deletes everything.</string>
+
+    <!-- Shared, more -->
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="add">Add</string>
+    <!-- %1$s is the unit: mi or km. -->
+    <string name="odometer_in">Odometer (%1$s)</string>
+
+    <!-- Add vehicle (AddVehicleScreen) -->
+    <string name="add_vehicle_body_class">Body class</string>
+    <string name="add_vehicle_drive_type">Drive type</string>
+    <string name="add_vehicle_engine">Engine</string>
+    <string name="add_vehicle_fuel">Fuel</string>
+    <string name="add_vehicle_transmission">Transmission</string>
+    <string name="add_vehicle_recalls_checking">Checking…</string>
+    <string name="add_vehicle_recalls_failed">Couldn\'t check</string>
+    <string name="add_vehicle_recalls_none">None found</string>
+    <!-- Nothing can be marked done before the vehicle is saved, so every recall found is open. -->
+    <string name="add_vehicle_recalls_found">%1$s found · %1$s open</string>
+    <string name="add_vehicle_title">Add a vehicle</string>
+    <string name="add_vehicle_start_with_vin">Start with the VIN</string>
+    <string name="add_vehicle_vin_intro">We look it up with NHTSA\'s VIN decoder and fill in year, make, model, drivetrain and engine for you.</string>
+    <string name="add_vehicle_scan">Scan VIN barcode</string>
+    <string name="add_vehicle_or_type">or type it</string>
+    <string name="add_vehicle_vin_label">Vehicle Identification Number</string>
+    <string name="add_vehicle_vin_hint">No I, O or Q · letters are uppercased</string>
+    <!-- How many of the 17 characters have been typed. -->
+    <string name="add_vehicle_vin_count">%1$d / 17</string>
+    <string name="add_vehicle_vin_valid">17 / 17 ✓ check digit</string>
+    <string name="add_vehicle_vin_check_digit_wrong">Check digit doesn\'t match</string>
+    <string name="add_vehicle_vin_wrong_character">One of the characters is wrong. Compare it with the sticker, one character at a time.</string>
+    <string name="add_vehicle_where_heading">Where to find it</string>
+    <string name="add_vehicle_where_door">Driver\'s door jamb sticker — has a scannable barcode</string>
+    <string name="add_vehicle_where_windshield">Base of the windshield, driver\'s side</string>
+    <string name="add_vehicle_where_card">Registration or insurance card</string>
+    <string name="add_vehicle_decode">Decode VIN</string>
+    <string name="add_vehicle_nhtsa_unreachable">Couldn\'t reach NHTSA. Check your connection and try again.</string>
+    <string name="add_vehicle_no_vin">No VIN? Enter year, make and model manually</string>
+    <string name="add_vehicle_confirm_title">Is this your vehicle?</string>
+    <string name="add_vehicle_partial_title">NHTSA decoded this VIN but flagged it</string>
+    <string name="add_vehicle_partial_body">Check the details below and correct anything that\'s wrong before you continue.</string>
+    <string name="add_vehicle_unidentified_title">NHTSA couldn\'t identify this VIN</string>
+    <string name="add_vehicle_unidentified_body">Go back and check it against the sticker, or enter the year, make and model yourself.</string>
+    <string name="add_vehicle_enter_ymm">Enter year, make and model</string>
+    <string name="add_vehicle_horsepower">%1$s hp</string>
+    <string name="add_vehicle_gvwr">GVWR</string>
+    <string name="add_vehicle_built_in">Built in</string>
+    <string name="add_vehicle_recalls">Recalls (NHTSA)</string>
+    <string name="add_vehicle_source">Source: NHTSA vPIC decoder · tap the vehicle, or any of the first five values, to correct it</string>
+    <string name="add_vehicle_unit_note">What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.</string>
+    <string name="add_vehicle_trim_confirm">Trim — please confirm</string>
+    <string name="add_vehicle_trim">Trim</string>
+    <string name="add_vehicle_no_trim">NHTSA doesn\'t list a trim for this VIN. Add one if you like; it\'s optional.</string>
+    <string name="add_vehicle_pick_trim">The VIN doesn\'t say which trim this is. Pick yours, or type it.</string>
+    <string name="add_vehicle_next">Next: maintenance schedule</string>
+    <!-- %1$s is vPIC's own message, in English. -->
+    <string name="add_vehicle_nhtsa_said">NHTSA: %1$s</string>
+    <!-- What tapping a decoded value does, for a screen reader. %1$s is the field, such as Engine. -->
+    <string name="add_vehicle_correct">Correct %1$s</string>
+    <string name="add_vehicle_field_replaces">Replaces what NHTSA decoded. Leave empty to clear it.</string>
+    <string name="add_vehicle_drive_kept">NHTSA decoded \"%1$s\", which is kept unless you pick one.</string>
+    <string name="add_vehicle_drive_replaces">Replaces what NHTSA decoded. Leave none picked to clear it.</string>
+    <string name="add_vehicle_ymm_title">Year, make and model</string>
+    <string name="add_vehicle_model_year">Model year</string>
+    <string name="add_vehicle_make">Make</string>
+    <string name="add_vehicle_model">Model</string>
+    <string name="add_vehicle_ymm_note">Recalls are looked up by these three, so spell them the way the manufacturer does.</string>
+
+    <!-- Shared counts and states -->
+    <plurals name="garage_vehicles">
+        <item quantity="one">%1$s vehicle</item>
+        <item quantity="other">%1$s vehicles</item>
+    </plurals>
+    <plurals name="count_overdue">
+        <item quantity="one">%1$s overdue</item>
+        <item quantity="other">%1$s overdue</item>
+    </plurals>
+    <plurals name="count_due_soon">
+        <item quantity="one">%1$s due soon</item>
+        <item quantity="other">%1$s due soon</item>
+    </plurals>
+    <!-- Reminders with nothing logged yet. -->
+    <plurals name="count_to_log">
+        <item quantity="one">%1$s to log</item>
+        <item quantity="other">%1$s to log</item>
+    </plurals>
+    <plurals name="open_recalls">
+        <item quantity="one">%1$s open recall</item>
+        <item quantity="other">%1$s open recalls</item>
+    </plurals>
+    <string name="no_open_recalls">No open recalls</string>
+    <!-- %1$s is a service, such as Oil &amp; filter. -->
+    <string name="item_overdue">%1$s overdue</string>
+    <string name="item_due_soon">%1$s due soon</string>
+    <string name="up_to_date">Up to date</string>
+    <string name="overdue">Overdue</string>
+
+    <!-- Garage (GarageScreen) -->
+    <string name="garage_title">Garage</string>
+    <string name="garage_add_vehicle">Add vehicle</string>
+    <string name="garage_no_mileage">No mileage</string>
+    <!-- %1$s is a service; %2$s a distance or a number of days or months. -->
+    <string name="garage_next_in">Next: %1$s in %2$s</string>
+    <string name="garage_next_overdue">Next: %1$s overdue %2$s</string>
+    <string name="garage_next_due_now">Next: %1$s due now</string>
+    <string name="garage_next_due_today">Next: %1$s due today</string>
+    <string name="garage_next_snoozed">Next: %1$s snoozed until %2$s</string>
+    <string name="garage_next_not_logged">Next: %1$s not logged yet</string>
+    <string name="garage_nothing_else">Nothing else coming up</string>
+    <plurals name="garage_not_logged">
+        <item quantity="one">%1$s reminder not logged yet</item>
+        <item quantity="other">%1$s reminders not logged yet</item>
+    </plurals>
+    <string name="garage_none_tracked">No reminders tracked</string>
+    <string name="garage_across_both">ACROSS BOTH</string>
+    <string name="garage_across_all">ACROSS ALL</string>
+    <string name="garage_see_all_reminders">See all reminders</string>
+    <!-- %1$s is how many. -->
+    <string name="garage_archived">Archived vehicles · %1$s</string>
+    <string name="garage_empty_title">No vehicles yet</string>
+    <string name="garage_empty_body">Add one with its VIN and we\'ll fill in the details, suggest a typical maintenance schedule and look up its recalls.</string>
+    <string name="garage_empty_add">Add a vehicle</string>
+
+    <!-- Add without a VIN (ManualAddScreen) -->
+    <!-- %1$s is the model year, %2$s the make. -->
+    <string name="manual_add_no_models">NHTSA lists no %1$s %2$s models. Type the model above.</string>
+    <string name="manual_add_title">Add without a VIN</string>
+    <string name="manual_add_intro">For older, imported or kit vehicles, or when the decode fails. Pick from NHTSA\'s make and model lists or type your own.</string>
+    <string name="manual_add_year">Year</string>
+    <string name="manual_add_trim">Trim (optional)</string>
+    <string name="manual_add_year_make_first">Choose the year and make first; the model list depends on both.</string>
+    <string name="manual_add_engine">Engine (optional)</string>
+    <string name="manual_add_drivetrain">Drivetrain (optional)</string>
+    <string name="manual_add_recalls_note">Without a VIN, recalls are checked by year, make and model only, and can\'t be confirmed for your car. You can add the VIN later in Vehicle details.</string>
+    <string name="manual_add_choose">Choose</string>
+    <string name="manual_add_type_year">Type the year</string>
+    <string name="manual_add_search">Search or type your own</string>
+    <string name="manual_add_loading">Loading NHTSA\'s list…</string>
+    <string name="manual_add_load_failed">Couldn\'t load NHTSA\'s list. Type it above instead.</string>
+    <!-- %1$s is what the user typed. -->
+    <string name="manual_add_use_typed">Use “%1$s”</string>
+    <string name="retry">Retry</string>
+
+    <!-- VIN scanner and Read dash (ScanVinScreen, ReadDashScreen) -->
+    <string name="close">Close</string>
+    <string name="scan_vin_camera_why">Glovebox uses the camera here only to read the VIN, from a barcode or from print. The picture is read on this phone and isn\'t saved or sent anywhere.</string>
+    <string name="scan_vin_type_instead">Type the VIN instead</string>
+    <string name="scan_close_scanner">Close scanner</string>
+    <string name="scan_vin_title">Scan VIN</string>
+    <string name="scan_flashlight_off">Turn flashlight off</string>
+    <string name="scan_flashlight_on">Turn flashlight on</string>
+    <string name="scan_vin_instruction">Line up the barcode on the door-jamb\nsticker, or the VIN printed on the dash</string>
+    <string name="scan_vin_not_a_vin">That barcode isn\'t a VIN. Aim at the one on the door-jamb sticker.</string>
+    <string name="scan_vin_hint">Code 39 or QR · also reads printed VINs</string>
+    <string name="scan_vin_from_print">VIN read from print · check digit valid</string>
+    <string name="scan_vin_detected">VIN detected · check digit valid</string>
+    <string name="scan_rescan">Rescan</string>
+    <string name="scan_use_vin">Use this VIN</string>
+    <string name="scan_panel_heading">WHAT THE SCANNER SEES</string>
+    <string name="scan_print_waiting">Print is read when no barcode is in the box</string>
+    <string name="scan_camera_off">Camera access is off</string>
+    <string name="scan_open_settings">Open app settings</string>
+    <string name="scan_ask_again">Ask again</string>
+    <string name="scan_allow_camera">Allow camera</string>
+    <string name="scan_rate_starting">Starting the camera…</string>
+    <string name="scan_rate_waiting">Waiting for the camera…</string>
+    <plurals name="scan_rate">
+        <item quantity="one">Reading %1$s frame a second</item>
+        <item quantity="other">Reading %1$s frames a second</item>
+    </plurals>
+    <string name="barcode_code_39">Code 39</string>
+    <string name="barcode_code_128">Code 128</string>
+    <string name="barcode_qr">QR code</string>
+    <string name="barcode_data_matrix">Data Matrix</string>
+    <string name="barcode_other">Barcode</string>
+    <string name="scan_report_no_barcode">No barcode in the box</string>
+    <!-- %1$s is a kind of barcode, such as Code 39. -->
+    <string name="scan_report_unreadable">%1$s found but not readable. Hold still, closer, out of glare</string>
+    <!-- %1$s is a kind of barcode, %2$s the VIN it held. -->
+    <string name="scan_report_barcode_vin">%1$s: %2$s</string>
+    <string name="scan_report_barcode_not_vin">%1$s: “%2$s” isn\'t a VIN</string>
+    <string name="scan_report_no_print">No printed text read</string>
+    <string name="scan_report_print_vin">Print: %1$s</string>
+    <string name="scan_report_print_not_vin">Print: “%1$s” isn\'t a whole VIN</string>
+    <string name="read_dash_camera_why">Glovebox uses the camera here only to read the odometer. The picture is read on this phone and isn\'t saved or sent anywhere.</string>
+    <string name="read_dash_type_instead">Type the reading instead</string>
+    <string name="read_dash_title">Read dash</string>
+    <string name="read_dash_instruction">Put the odometer reading\nin the box</string>
+    <string name="read_dash_unavailable">Reading the dash doesn\'t work on this phone. Close this and type the reading.</string>
+    <string name="read_dash_hint_from">Hold it straight on and steady, with the digits filling the box. It looks for a reading of %1$s or more; if the dash shows less, close this and type it.</string>
+    <string name="read_dash_hint">Hold it straight on and steady. Fill the box with the digits and keep other numbers out of it.</string>
+    <string name="read_dash_check">This is what the camera read. Check it against the dash.</string>
+    <string name="read_dash_again">Read again</string>
+    <string name="read_dash_use">Use this reading</string>
 </resources>
