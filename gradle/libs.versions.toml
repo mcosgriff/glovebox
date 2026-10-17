@@ -101,7 +101,7 @@ tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android"
 # Tests that have to run on a phone or emulator (app/src/androidTest); nothing here ships in the app.
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
 androidx-test-core = { module = "androidx.test:core", version = "1.7.0" }
-androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.3.0" }
+androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.4.0" }
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 # Test only: runs Android's SQLite on the JVM so the database migrations are tested by `./gradlew build`.
