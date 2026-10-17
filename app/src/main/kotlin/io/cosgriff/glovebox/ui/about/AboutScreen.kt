@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.about
 
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,7 +79,7 @@ private fun Context.versionName(): String =
 @Composable
 internal fun AboutHeader(title: String, onBack: () -> Unit) {
     Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
         Text(title, Modifier.padding(start = 8.dp).semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
     }
 }
@@ -102,10 +106,11 @@ fun AboutScreen(
     val schedules by vm.schedules.collectAsStateWithLifecycle()
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val res = LocalResources.current
     val version = remember { context.versionName() }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AboutHeader("About", onBack)
+        AboutHeader(stringResource(R.string.about), onBack)
 
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
@@ -118,9 +123,9 @@ fun AboutScreen(
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("Glovebox", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
-                        listOf(version, "updates via Obtainium").filter { it.isNotEmpty() }.joinToString(" \u00b7 "),
+                        listOf(version, stringResource(R.string.about_updates_via)).filter { it.isNotEmpty() }.joinToString(" \u00b7 "),
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = PlexMono,
                         color = scheme.onSurfaceVariant,
@@ -129,40 +134,40 @@ fun AboutScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel("WHERE THE DATA COMES FROM", Modifier.semantics { heading() })
+                SectionLabel(stringResource(R.string.about_sources), Modifier.semantics { heading() })
                 AboutCard {
-                    Source("NHTSA vPIC", "VIN decoding, make and model lists")
+                    Source(stringResource(R.string.about_vpic), stringResource(R.string.about_vpic_note))
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Source("NHTSA recalls", "Recalls by year, make and model")
+                    Source(stringResource(R.string.about_recalls), stringResource(R.string.about_recalls_note))
                     HorizontalDivider(color = scheme.outlineVariant)
                     // Nothing of Glovebox's own: the schedule is a general starter list and torque specs are typed in.
                     // What else ships is a named list (a maker's guide or manual), offered for its model, never
                     // applied unasked, and marked to check.
-                    Source("Maintenance schedules & specs", "Typical intervals to start from, and your own entries")
+                    Source(stringResource(R.string.about_schedules), stringResource(R.string.about_schedules_note))
                     known.forEach { list ->
                         HorizontalDivider(color = scheme.outlineVariant)
-                        Source(list.source.name, "Reference torque values offered for the ${list.title}. ${list.source.note}")
+                        Source(list.source.name, stringResource(R.string.about_known_specs, list.title, list.source.note))
                     }
                     schedules.forEach { list ->
                         HorizontalDivider(color = scheme.outlineVariant)
-                        Source(list.source.name, "The maintenance table and reminders offered for the ${list.title}. ${list.source.note}")
+                        Source(list.source.name, stringResource(R.string.about_known_schedule, list.title, list.source.note))
                     }
                 }
                 Text(
-                    "Intervals and torque specs are for reference. Check your owner's or service manual before relying on them.",
+                    stringResource(R.string.about_reference),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
             }
 
             AboutCard {
-                LinkRow("Privacy", "No accounts, no tracking", onOpenPrivacy)
+                LinkRow(stringResource(R.string.privacy), stringResource(R.string.about_privacy_note), onOpenPrivacy)
                 HorizontalDivider(color = scheme.outlineVariant)
-                LinkRow("Source code", "GitHub") {
-                    if (!context.openWebPage(SOURCE_URL)) onMessage("No browser to open $SOURCE_URL")
+                LinkRow(stringResource(R.string.about_source), stringResource(R.string.about_github)) {
+                    if (!context.openWebPage(SOURCE_URL)) onMessage(res.getString(R.string.licences_no_browser, SOURCE_URL))
                 }
                 HorizontalDivider(color = scheme.outlineVariant)
-                LinkRow("Open-source licenses", "", onOpenLicences)
+                LinkRow(stringResource(R.string.licences_title), "", onOpenLicences)
             }
         }
     }
@@ -194,51 +199,20 @@ internal fun LinkRow(title: String, value: String, onClick: () -> Unit) {
 fun PrivacyScreen(onBack: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AboutHeader("Privacy", onBack)
+        AboutHeader(stringResource(R.string.privacy), onBack)
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             listOf(
-                "Everything stays on this phone" to listOf(
-                    "There is no account and no Glovebox server. Your vehicles, service records, photos, documents and settings exist only on this phone.",
-                    "The database, photos and documents are encrypted with keys held by Android Keystore.",
-                    "Documents open inside Glovebox. A PDF is drawn by a part of the app that runs walled off from the rest, with no network and no files of its own, and it is read from memory, not from a copy on the phone.",
-                    "Android's own cloud backup and device-to-device transfer are switched off for this app. The only copy that can leave is a backup file you make yourself.",
-                ),
-                "What is sent, and to whom" to listOf(
-                    "The app talks to one organisation: NHTSA, the U.S. vehicle safety agency (vpic.nhtsa.dot.gov and api.nhtsa.gov).",
-                    "Decoding a VIN sends that VIN.",
-                    "Adding a vehicle without a VIN asks for NHTSA's list of makes, then for the models of the make and year you pick.",
-                    "Checking for recalls sends the year, make and model. It does not send the VIN.",
-                    "Like any website, NHTSA can see the internet address the request came from.",
-                    "Nothing else is sent: no mileage, records, photos, documents, names, license plate or location.",
-                ),
-                "What the app never does" to listOf(
-                    "No analytics, crash reporting, advertising or tracking, and no third-party code that reports back to anyone.",
-                ),
-                "Files you save" to listOf(
-                    "A backup file is encrypted with the password you choose. Glovebox does not keep the password and cannot recover it.",
-                    "A PDF or Markdown export is not encrypted. Anyone who has the file can read it.",
-                    "A schedule, milestone table or set of torque specs saved as an import file is not encrypted either. It holds what is on that screen (items and intervals, mileages and jobs, or fasteners with your values and notes) and nothing else about your vehicle or its history.",
-                    "Deleting all data in Settings does not touch files you have already saved elsewhere.",
-                ),
-                "Files you import" to listOf(
-                    "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept unless you tick \"Keep a copy in this vehicle's documents\", and nothing is sent anywhere.",
-                ),
-                "When you leave the app" to listOf(
-                    "A manufacturer's recall page, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.",
-                    "Opening a document in another app, sharing a document or photo, or saving a file hands a copy to the app you choose.",
-                ),
-                "Permissions" to listOf(
-                    "Camera: to scan a VIN from its barcode or from print, to read the odometer off the dash, and to photograph receipts, parts and paperwork. Scanner and dash frames are read on this phone and thrown away, never stored or sent.",
-                    "Notifications: for reminders, new recalls and the backup reminder.",
-                    "Internet: for NHTSA only.",
-                    "Fingerprint, face or screen lock: Android does the checking and tells the app only whether it passed.",
-                ),
-                "Updates" to listOf(
-                    "Glovebox does not check for updates itself. If you installed it with Obtainium, Obtainium checks GitHub for new releases.",
-                ),
+                stringResource(R.string.privacy_stays) to stringArrayResource(R.array.privacy_stays).toList(),
+                stringResource(R.string.privacy_sent) to stringArrayResource(R.array.privacy_sent).toList(),
+                stringResource(R.string.privacy_never) to stringArrayResource(R.array.privacy_never).toList(),
+                stringResource(R.string.privacy_saved) to stringArrayResource(R.array.privacy_saved).toList(),
+                stringResource(R.string.privacy_imported) to stringArrayResource(R.array.privacy_imported).toList(),
+                stringResource(R.string.privacy_leaving) to stringArrayResource(R.array.privacy_leaving).toList(),
+                stringResource(R.string.privacy_permissions) to stringArrayResource(R.array.privacy_permissions).toList(),
+                stringResource(R.string.privacy_updates) to stringArrayResource(R.array.privacy_updates).toList(),
             ).forEach { (title, lines) ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(title, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)

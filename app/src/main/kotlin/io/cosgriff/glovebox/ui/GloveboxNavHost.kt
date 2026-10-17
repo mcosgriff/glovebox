@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.settings.restoreSummary
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavBackStackEntry
@@ -18,7 +24,6 @@ import io.cosgriff.glovebox.ui.about.AboutScreen
 import io.cosgriff.glovebox.ui.settings.DeleteAllScreen
 import io.cosgriff.glovebox.ui.settings.RestoreViewModel
 import io.cosgriff.glovebox.ui.settings.RestoreSheet
-import io.cosgriff.glovebox.domain.BackupRules
 import io.cosgriff.glovebox.ui.settings.BackupScreen
 import io.cosgriff.glovebox.ui.settings.ImportScreen
 import io.cosgriff.glovebox.ui.settings.NotificationsScreen
@@ -157,13 +162,13 @@ private const val SCANNED_VIN = "scannedVin"
 private const val DASH_READING = "dashReading"
 private const val CONFIRM_DELETE = "confirmDelete"
 
-private data class Tab(val route: Any, val type: KClass<*>, val label: String, val icon: ImageVector)
+private data class Tab(val route: Any, val type: KClass<*>, @StringRes val label: Int, val icon: ImageVector)
 
 private val tabs = listOf(
-    Tab(GarageRoute, GarageRoute::class, "Garage", Icons.Outlined.Home),
-    Tab(HistoryRoute, HistoryRoute::class, "History", Icons.Outlined.History),
-    Tab(RemindersRoute, RemindersRoute::class, "Reminders", Icons.Outlined.Notifications),
-    Tab(SettingsRoute, SettingsRoute::class, "Settings", Icons.Outlined.Settings),
+    Tab(GarageRoute, GarageRoute::class, R.string.garage_title, Icons.Outlined.Home),
+    Tab(HistoryRoute, HistoryRoute::class, R.string.history_title, Icons.Outlined.History),
+    Tab(RemindersRoute, RemindersRoute::class, R.string.reminders_title, Icons.Outlined.Notifications),
+    Tab(SettingsRoute, SettingsRoute::class, R.string.settings_title, Icons.Outlined.Settings),
 )
 
 @Composable
@@ -181,17 +186,21 @@ fun GloveboxNavHost() {
     val scope = rememberCoroutineScope()
     // For plain confirmations with nothing to undo.
     val showNote: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+    val res = LocalResources.current
     LaunchedEffect(Unit) {
         // Latest only: a newer change replaces the bar for an older one, whose Undo is then gone.
         recordEvents.events.collectLatest { event ->
             val (message, action) = when (event) {
-                is RecordEvent.Saved -> "Service saved · reminders updated" to "View"
-                is RecordEvent.Edited -> "Changes saved · reminders updated" to "Undo"
-                is RecordEvent.Deleted -> "Record deleted · reminders updated" to "Undo"
-                is RecordEvent.RecallDone ->
-                    if (event.recordId != null) "Recall marked done · added to Service history" to "View" else "Recall marked done" to "Undo"
+                is RecordEvent.Saved -> res.getString(R.string.event_saved) to res.getString(R.string.view)
+                is RecordEvent.Edited -> res.getString(R.string.event_edited) to res.getString(R.string.undo)
+                is RecordEvent.Deleted -> res.getString(R.string.event_deleted) to res.getString(R.string.undo)
+                is RecordEvent.RecallDone -> if (event.recordId != null) {
+                    res.getString(R.string.event_recall_done_logged) to res.getString(R.string.view)
+                } else {
+                    res.getString(R.string.event_recall_done) to res.getString(R.string.undo)
+                }
                 is RecordEvent.RecallReopened ->
-                    if (event.record != null) "Recall marked open · service record removed" to "Undo" else "Recall marked open" to "Undo"
+                    res.getString(if (event.record != null) R.string.event_recall_open_removed else R.string.event_recall_open) to res.getString(R.string.undo)
             }
             val recordId = when (event) {
                 is RecordEvent.Saved -> event.recordId
@@ -215,8 +224,8 @@ fun GloveboxNavHost() {
                         undone = true
                         recordEvents.undo(event) {
                             when (event) {
-                                is RecordEvent.Deleted -> showNote("Record restored \u00b7 reminders updated")
-                                is RecordEvent.Edited -> showNote("Changes undone \u00b7 reminders updated")
+                                is RecordEvent.Deleted -> showNote(res.getString(R.string.event_restored))
+                                is RecordEvent.Edited -> showNote(res.getString(R.string.event_undone))
                                 else -> Unit
                             }
                         }
@@ -278,14 +287,14 @@ fun GloveboxNavHost() {
     // A vehicle that left the garage takes its home and details screens with it.
     val onArchived: (String, () -> Unit) -> Unit = { name, undo ->
         nav.popBackStack<GarageRoute>(inclusive = false)
-        showMessage("$name moved to Archived vehicles", "Undo", undo)
+        showMessage(res.getString(R.string.event_archived, name), res.getString(R.string.undo), undo)
     }
 
     // Shown whenever a backup file has been picked, from whichever screen started it.
     RestoreSheet(
         onRestored = { summary ->
             nav.popBackStack<GarageRoute>(inclusive = false)
-            showNote("Restored ${BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos)}")
+            showNote(res.getString(R.string.event_restored_backup, restoreSummary(summary.vehicles, summary.records, summary.photos)))
         },
     )
 
@@ -311,7 +320,7 @@ fun GloveboxNavHost() {
                                 }
                             },
                             icon = { Icon(tab.icon, contentDescription = null) },
-                            label = { Text(tab.label) },
+                            label = { Text(stringResource(tab.label)) },
                         )
                     }
                 }
@@ -382,7 +391,7 @@ fun GloveboxNavHost() {
                     onCancel = { nav.popBackStack() },
                     onCleared = { n ->
                         nav.popBackStack()
-                        showNote(if (n == 1) "1 service record deleted" else "$n service records deleted")
+                        showNote(res.getQuantityString(R.plurals.event_records_deleted, n, n.asNumber()))
                     },
                 )
             }
@@ -404,7 +413,7 @@ fun GloveboxNavHost() {
                     onCancel = { nav.popBackStack() },
                     onDeleted = { name ->
                         nav.popBackStack<GarageRoute>(inclusive = false)
-                        showNote("$name and all its data deleted")
+                        showNote(res.getString(R.string.event_vehicle_deleted, name))
                     },
                     onArchived = onArchived,
                 )

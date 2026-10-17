@@ -7,7 +7,18 @@ data class BundledLibrary(val id: String, val name: String, val version: String?
 data class Licence(val id: String, val name: String, val url: String?, val text: String?)
 
 /** One licence and everything in the app that is under it. */
-data class LicenceGroup(val licence: Licence, val name: String, val libraries: List<BundledLibrary>)
+data class LicenceGroup(val licence: Licence, val name: LicenceName, val libraries: List<BundledLibrary>)
+
+/** What a group is called; `app` words the two that aren't a name the build gave. */
+sealed interface LicenceName {
+    data class Given(val text: String) : LicenceName
+
+    /** A library's own licence with no name: "Cipher licence". */
+    data class OwnOf(val library: String) : LicenceName
+
+    /** Libraries the build recorded no licence for. */
+    data object NotRecorded : LicenceName
+}
 
 /** Rules for the open-source licences list. */
 object Licences {
@@ -27,24 +38,31 @@ object Licences {
             .flatMap { library -> library.licences.ifEmpty { listOf(UNKNOWN) }.map { it to library } }
             .groupBy({ it.first }, { it.second })
             .map { (id, members) ->
-                val licence = licences[id] ?: Licence(id, if (id == UNKNOWN) "Licence not recorded" else id, null, null)
+                val licence = licences[id] ?: Licence(id, if (id == UNKNOWN) "" else id, null, null)
                 val sorted = members.distinctBy { it.id }.sortedBy { displayName(it).lowercase() }
                 LicenceGroup(licence, groupName(licence, sorted), sorted)
             }
-            .sortedWith(compareByDescending<LicenceGroup> { it.libraries.size }.thenBy { it.name.lowercase() })
+            .sortedWith(compareByDescending<LicenceGroup> { it.libraries.size }.thenBy { sortKey(it.name) })
 
     /** Some libraries publish their own licence with no name; it is then named after the library. */
-    private fun groupName(licence: Licence, libraries: List<BundledLibrary>): String =
-        licence.name.trim().ifEmpty { libraries.singleOrNull()?.let { "${displayName(it)} licence" } ?: licence.id }
+    private fun groupName(licence: Licence, libraries: List<BundledLibrary>): LicenceName = when {
+        licence.id == UNKNOWN -> LicenceName.NotRecorded
+        licence.name.isNotBlank() -> LicenceName.Given(licence.name.trim())
+        else -> libraries.singleOrNull()?.let { LicenceName.OwnOf(displayName(it)) } ?: LicenceName.Given(licence.id)
+    }
+
+    // Groups of the same size go alphabetically; the unrecorded one last.
+    private fun sortKey(name: LicenceName): String = when (name) {
+        is LicenceName.Given -> name.text.lowercase()
+        is LicenceName.OwnOf -> name.library.lowercase()
+        LicenceName.NotRecorded -> "\uFFFF"
+    }
 
     /** Where the wording of a library's own licence is kept when the build doesn't carry it. */
     fun assetName(libraryId: String): String = "licences/" + libraryId.replace(':', '_') + ".txt"
 
-    /** "169 libraries under 5 licences" */
-    fun summary(groups: List<LicenceGroup>): String {
-        val libraries = groups.flatMap { it.libraries }.distinctBy { it.id }.size
-        return "$libraries ${if (libraries == 1) "library" else "libraries"} under ${groups.size} ${if (groups.size == 1) "licence" else "licences"}"
-    }
+    /** How many libraries there are, each counted once whatever its licences. */
+    fun libraryCount(groups: List<LicenceGroup>): Int = groups.flatMap { it.libraries }.distinctBy { it.id }.size
 
     /**
      * A licence's wording as paragraphs for a narrow screen. Licence files are wrapped and indented for

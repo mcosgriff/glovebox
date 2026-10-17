@@ -57,19 +57,8 @@ class BackupTest {
     }
 
     @Test
-    fun `names and counts read naturally`() {
+    fun `a backup is named by its date`() {
         assertEquals("glovebox-backup-2026-10-11.glovebox", BackupRules.fileName(today, "glovebox"))
-        assertEquals("2 vehicles · 14 records · 9 photos", BackupRules.contents(2, 14, 9))
-        assertEquals("1 vehicle · 1 record · 1 photo", BackupRules.contents(1, 1, 1))
-        assertEquals("1 vehicle · 0 records · 0 photos · 2 documents (4.2 MB)", BackupRules.contents(1, 0, 0, 2, 4_400_000))
-    }
-
-    @Test
-    fun `the restore summary reads as a sentence`() {
-        assertEquals("2 vehicles, 14 service records and 9 photos", BackupRules.restoreSummary(2, 14, 9))
-        assertEquals("1 vehicle, 1 service record and 1 photo", BackupRules.restoreSummary(1, 1, 1))
-        assertEquals("0 vehicles, 0 service records and 0 photos", BackupRules.restoreSummary(0, 0, 0))
-        assertEquals("1 vehicle, 3 service records, 2 photos and 1 document", BackupRules.restoreSummary(1, 3, 2, 1))
     }
 
     @Test

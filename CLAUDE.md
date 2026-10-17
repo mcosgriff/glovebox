@@ -687,7 +687,7 @@ Notes on what's built:
   shows only while the lock is on and the phone has a screen lock. The privacy line says what is really
   sent: a VIN, or a year, make and model.
 - About (`ui/about`): the version comes from the installed package. `PrivacyScreen` states what is kept,
-  what is sent and what never happens; every line has to stay true of the code, so update it with any
+  what is sent and what never happens (its lines are the `privacy_*` string arrays in `strings.xml`); every line has to stay true of the code, so update it with any
   change to the network, permissions, backup or export. The copy names a maker's document as a source only for a
   bundled list, by that list's own `source.name`.
 - Open-source licences: the AboutLibraries Gradle plugin (build time only, no runtime library) writes the

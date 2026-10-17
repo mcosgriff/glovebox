@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.settings.servicesText
+import io.cosgriff.glovebox.ui.AppText
+import androidx.annotation.StringRes
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,7 +19,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.MainActivity
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.Notice
-import io.cosgriff.glovebox.domain.NoticeRules
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -88,9 +91,10 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
     /** Safe to call on every launch: creating a channel that exists changes nothing the user set. */
     fun createChannels() {
         val system = context.getSystemService(NotificationManager::class.java)
+        val res = AppText.res
         Channel.entries.forEach { c ->
             system.createNotificationChannel(
-                NotificationChannel(c.id, c.label, c.importance).apply { description = c.about },
+                NotificationChannel(c.id, res.getString(c.label), c.importance).apply { description = res.getString(c.about) },
             )
         }
     }
@@ -101,8 +105,8 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         show(
             Shown(
                 Channel.BACKUP,
-                if (never) "Your Glovebox data isn't backed up" else "Time for a fresh Glovebox backup",
-                "A backup file is the only way to move to a new phone or recover after a reset.",
+                AppText.res.getString(if (never) R.string.notify_backup_never else R.string.notify_backup_fresh),
+                AppText.res.getString(R.string.notify_backup_body),
                 Destination.Backup,
             ),
             id = Channel.BACKUP.ordinal * 1_000_000,
@@ -111,29 +115,32 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
 
     fun post(notice: Notice) {
         if (!allowed) return
+        val res = AppText.res
         val shown = when (notice) {
             is Notice.ServiceDue -> Shown(
                 Channel.SERVICE_DUE,
-                "${notice.vehicleName}: service coming due",
-                "${NoticeRules.list(notice.services)} ${if (notice.services.size == 1) "is" else "are"} coming due.",
+                res.getString(R.string.notify_due_title, notice.vehicleName),
+                res.getQuantityString(R.plurals.notify_due_body, notice.services.size, servicesText(notice.services)),
                 Destination.Reminders,
             )
             is Notice.Overdue -> Shown(
                 Channel.OVERDUE,
-                "${notice.vehicleName}: overdue service",
-                "${NoticeRules.list(notice.services)} ${if (notice.services.size == 1) "is" else "are"} overdue. Log it, or snooze it if it can wait.",
+                res.getString(R.string.notify_overdue_title, notice.vehicleName),
+                res.getQuantityString(R.plurals.notify_overdue_body, notice.services.size, servicesText(notice.services)),
                 Destination.Reminders,
             )
             is Notice.MileageCheckIn -> Shown(
                 Channel.MILEAGE,
-                "${notice.vehicleName}: what's the odometer at?",
-                "A quick reading keeps the mileage reminders right.",
+                res.getString(R.string.notify_mileage_title, notice.vehicleName),
+                res.getString(R.string.notify_mileage_body),
                 Destination.UpdateMileage(notice.vehicleId),
             )
             is Notice.NewRecalls -> Shown(
                 Channel.RECALLS,
-                if (notice.components.size == 1) "${notice.vehicleName}: new recall" else "${notice.vehicleName}: ${notice.components.size} new recalls",
-                notice.components.distinct().take(3).joinToString(", ") + if (notice.components.distinct().size > 3) " and more" else "",
+                res.getQuantityString(R.plurals.notify_recalls_title, notice.components.size, notice.vehicleName, notice.components.size.asNumber()),
+                notice.components.distinct().let { all ->
+                    all.take(3).joinToString(", ").let { if (all.size > 3) res.getString(R.string.notify_and_more, it) else it }
+                },
                 Destination.Recalls(notice.vehicleId),
             )
         }
@@ -161,7 +168,7 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         val shown = builder(title, text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-            .setPublicVersion(builder("Glovebox", channel.hidden).build())
+            .setPublicVersion(builder(AppText.res.getString(R.string.app_name), AppText.res.getString(channel.hidden)).build())
             .build()
         try {
             manager.notify(id, shown)
@@ -173,11 +180,11 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
     private data class Shown(val channel: Channel, val title: String, val text: String, val destination: Destination)
 
     /** [hidden] is all a locked phone shows when it is set to hide sensitive notification content. */
-    enum class Channel(val id: String, val label: String, val about: String, val hidden: String, val importance: Int) {
-        SERVICE_DUE("service_due", "Service coming due", "When a service enters the lead time you set", "A service is coming due", NotificationManager.IMPORTANCE_DEFAULT),
-        OVERDUE("overdue", "Overdue nudges", "Once a week until it's logged or snoozed", "A service is overdue", NotificationManager.IMPORTANCE_DEFAULT),
-        RECALLS("recalls", "New recalls", "When NHTSA lists a recall that wasn't on file", "A new recall was found", NotificationManager.IMPORTANCE_HIGH),
-        MILEAGE("mileage", "Mileage check-in", "A prompt to update the odometer", "Time to update the odometer", NotificationManager.IMPORTANCE_LOW),
-        BACKUP("backup", "Backup reminder", "When your last backup is more than a month old", "Time to back up", NotificationManager.IMPORTANCE_LOW),
+    enum class Channel(val id: String, @StringRes val label: Int, @StringRes val about: Int, @StringRes val hidden: Int, val importance: Int) {
+        SERVICE_DUE("service_due", R.string.channel_due, R.string.channel_due_about, R.string.channel_due_hidden, NotificationManager.IMPORTANCE_DEFAULT),
+        OVERDUE("overdue", R.string.channel_overdue, R.string.channel_overdue_about, R.string.channel_overdue_hidden, NotificationManager.IMPORTANCE_DEFAULT),
+        RECALLS("recalls", R.string.channel_recalls, R.string.channel_recalls_about, R.string.channel_recalls_hidden, NotificationManager.IMPORTANCE_HIGH),
+        MILEAGE("mileage", R.string.channel_mileage, R.string.channel_mileage_about, R.string.channel_mileage_hidden, NotificationManager.IMPORTANCE_LOW),
+        BACKUP("backup", R.string.channel_backup, R.string.channel_backup_about, R.string.channel_backup_hidden, NotificationManager.IMPORTANCE_LOW),
     }
 }
