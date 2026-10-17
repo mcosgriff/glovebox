@@ -56,7 +56,7 @@ Keep them green; lint errors fail the build.
   `ReminderEngine` (due status, whichever-first/last, mileage-only/time-only, lead time, pace),
   `ServiceLog` (last-done derivation), `Recalls` (list merge, campaign and component names),
   `Torque`/`TorqueUnit`, `Vin`.
-- `:data` — Room + SQLCipher (opened through SQLCipher's `SQLCipherDriver`, #220; code that goes around the
+- `:data` — Room 3 (`androidx.room3`, #220) + SQLCipher (opened through SQLCipher's `SQLCipherDriver`; code that goes around the
   DAOs uses `useReaderConnection` / `useWriterConnection`, never `openHelper`), Keystore key management (`DatabaseKeyManager`), Tink photo
   encryption (`PhotoCrypto`), `NhtsaClient`, `RecallRepository`, `SettingsRepository` (DataStore),
   `DataWipe`, Hilt module.
@@ -834,7 +834,10 @@ Notes on what's built:
   (`vehicles.photoFile`). The launcher is registered in `MainActivity` and answered by
   `VehiclePhotoPicker`, because returning from the picker can lock the app and the lock screen replaces
   the nav host.
-- Schema changes so far are Room auto-migrations (v20); keep exported schemas in `data/schemas`.
+- Schema changes so far are Room auto-migrations (v20); keep exported schemas in `data/schemas`, set by the
+  Room Gradle plugin (`room3 { schemaDirectory(…) }` in `data/build.gradle.kts`, one folder for every variant).
+  Room 3 writes a schema only when it is new or changed; Room 2.8's and Room 3's exports of version 25 are
+  byte-identical, so the identity hash every phone's database carries didn't change with the move.
   `MigrationTest` (`:data`, on the JVM with Robolectric, so part of `./gradlew build` and CI) makes a
   database at every exported version, fills every column of every table, opens it as the current
   database and reads each value back. **A new version is covered as soon as its schema file is in the

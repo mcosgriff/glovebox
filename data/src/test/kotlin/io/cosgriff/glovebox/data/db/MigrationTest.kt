@@ -1,11 +1,11 @@
 package io.cosgriff.glovebox.data.db
 
 import android.content.Context
-import androidx.room.PooledConnection
-import androidx.room.Room
-import androidx.room.testing.MigrationTestHelper
-import androidx.room.useReaderConnection
-import androidx.room.useWriterConnection
+import androidx.room3.PooledConnection
+import androidx.room3.Room
+import androidx.room3.testing.MigrationTestHelper
+import androidx.room3.useReaderConnection
+import androidx.room3.useWriterConnection
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
@@ -44,7 +44,7 @@ class MigrationTest {
     /** Makes the database [name] at schema [version] and hands over a connection to it, closed after [block]. */
     private fun <R> create(name: String, version: Int, block: (SQLiteConnection) -> R): R =
         MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), context.getDatabasePath(name), AndroidSQLiteDriver(), GloveboxDatabase::class)
-            .createDatabase(version).use(block)
+            .let { helper -> runBlocking { helper.createDatabase(version) } }.use(block)
 
     // Gradle runs a module's tests from the module's folder.
     private val exported: List<Int> =

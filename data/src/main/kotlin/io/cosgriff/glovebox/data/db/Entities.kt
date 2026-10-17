@@ -1,13 +1,13 @@
 package io.cosgriff.glovebox.data.db
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.ForeignKey.Companion.CASCADE
-import androidx.room.Index
-import androidx.room.PrimaryKey
-import androidx.room.Relation
+import androidx.room3.ColumnInfo
+import androidx.room3.Embedded
+import androidx.room3.Entity
+import androidx.room3.ForeignKey
+import androidx.room3.ForeignKey.Companion.CASCADE
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
+import androidx.room3.Relation
 import java.time.LocalDate
 
 // Every child table cascades from vehicles, so "Delete vehicle and all its data" is one DELETE
@@ -334,7 +334,7 @@ data class MilestoneJobEntity(
 
 data class MilestoneWithJobs(
     @Embedded val milestone: MilestoneEntity,
-    @Relation(parentColumn = "id", entityColumn = "milestoneId") val jobs: List<MilestoneJobEntity>,
+    @Relation(parentColumns = ["id"], entityColumns = ["milestoneId"]) val jobs: List<MilestoneJobEntity>,
 ) {
     /** The jobs in the order the user gave them; a relation comes in no particular order. */
     val ordered: List<MilestoneJobEntity> get() = jobs.sortedWith(compareBy({ it.position }, { it.id }))
@@ -342,6 +342,6 @@ data class MilestoneWithJobs(
 
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
-    @Relation(parentColumn = "id", entityColumn = "recordId") val items: List<ServiceRecordItemEntity>,
-    @Relation(parentColumn = "id", entityColumn = "recordId") val photos: List<PhotoEntity>,
+    @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val items: List<ServiceRecordItemEntity>,
+    @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val photos: List<PhotoEntity>,
 )

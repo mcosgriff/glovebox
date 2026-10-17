@@ -1,19 +1,19 @@
 package io.cosgriff.glovebox.data.db
 
 import android.content.Context
-import androidx.room.AutoMigration
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
+import androidx.room3.AutoMigration
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.ColumnTypeConverter
+import androidx.room3.ColumnTypeConverters
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import net.zetetic.database.sqlcipher.driver.SQLCipherDriver
 import java.time.LocalDate
 
 class Converters {
-    @TypeConverter fun fromEpochDay(value: Long?): LocalDate? = value?.let(LocalDate::ofEpochDay)
-    @TypeConverter fun toEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
+    @ColumnTypeConverter fun fromEpochDay(value: Long?): LocalDate? = value?.let(LocalDate::ofEpochDay)
+    @ColumnTypeConverter fun toEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
 }
 
 @Database(
@@ -59,7 +59,7 @@ class Converters {
         AutoMigration(from = 24, to = 25), // documents
     ],
 )
-@TypeConverters(Converters::class)
+@ColumnTypeConverters(Converters::class)
 abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun service(): ServiceDao
