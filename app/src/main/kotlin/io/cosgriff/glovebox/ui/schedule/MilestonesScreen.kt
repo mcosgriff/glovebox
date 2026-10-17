@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.outlined.CheckCircle
 import io.cosgriff.glovebox.ui.service.unit
@@ -196,7 +201,7 @@ class MilestonesViewModel @Inject constructor(
                 table = saved,
                 model = "${vehicle.year} ${vehicle.make} ${vehicle.model}",
                 repeatsEveryMiles = every,
-                startedFrom = vehicle.milestonesKnownList?.let { id -> KnownSchedules.startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
+                startedFrom = vehicle.milestonesKnownList?.let { id -> startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
             )
         }
         val done = entries.flatMap { e ->
@@ -364,12 +369,10 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     if (removing) {
         AlertDialog(
             onDismissRequest = { removing = false },
-            title = { Text("Remove your milestone table?") },
+            title = { Text(stringResource(R.string.milestones_remove_title)) },
             text = {
                 Text(
-                    "${if (state.table.size == 1) "Its one milestone goes" else "All ${state.table.size} of its milestones go"}, " +
-                        "and this screen goes back to the ones built from your schedule. " +
-                        "Your service history and reminders aren't touched. This can't be undone: to get the table back you would type it in or import it again.",
+                    pluralStringResource(R.plurals.milestones_remove_body, state.table.size, state.table.size.asNumber()),
                 )
             },
             confirmButton = {
@@ -379,9 +382,9 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                         vm.removeTable()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                ) { Text("Remove") }
+                ) { Text(stringResource(R.string.remove)) }
             },
-            dismissButton = { TextButton(onClick = { removing = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { removing = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
@@ -404,11 +407,11 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
 
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Column(Modifier.padding(start = 8.dp)) {
-                Text("Milestones", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.milestones_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                 Text(
-                    listOfNotNull(state.vehicleName, state.current?.let { "${it.asDistance(unit)}${if (state.swap != null) " actual" else ""}" }).joinToString(" · "),
+                    listOfNotNull(state.vehicleName, state.current?.let { if (state.swap != null) stringResource(R.string.milestones_actual, it.asDistance(unit)) else it.asDistance(unit) }).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -423,15 +426,12 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             item {
                 Text(
                     if (state.startedFrom != null) {
-                        "${state.startedFrom} It is shown with what your log says was done, and the jobs are in Glovebox's words. " +
-                            "It's a guide: the Reminders tab is what tells you something is due. You can edit it like a table of your own."
+                        stringResource(R.string.milestones_intro_known, state.startedFrom)
                     } else if (state.fromTable) {
-                        "Your own milestone table, with what your log says was done. " +
-                            (state.repeatsEveryMiles?.let { "It repeats every ${it.asDistance(unit)}, so after its last milestone it starts again from the first. " } ?: "") +
-                            "It's a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn't checked them."
+                        state.repeatsEveryMiles?.let { stringResource(R.string.milestones_intro_table_repeats, it.asDistance(unit)) }
+                            ?: stringResource(R.string.milestones_intro_table)
                     } else {
-                        "Your schedule laid out by mileage, the way an owner's manual prints it, with what your log says was done. " +
-                            "It's a guide: the Reminders tab is what tells you something is due. The intervals are the ones you set, not the manufacturer's."
+                        stringResource(R.string.milestones_intro_generated)
                     },
                     color = scheme.onSurfaceVariant,
                 )
@@ -439,8 +439,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             if (!state.hasMileageItems) {
                 item {
                     Text(
-                        "Milestones are built from tracked items that repeat by mileage, and none of this vehicle's do yet. " +
-                            "Give an item a mileage interval on the Maintenance schedule and it appears here.",
+                        stringResource(R.string.milestones_none),
                         color = scheme.onSurface,
                     )
                 }
@@ -448,7 +447,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             // Always there, even with nothing to build from, so HEADER_ITEMS holds.
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Expand all" to true, "Collapse all" to false).forEach { (label, open) ->
+                    listOf(stringResource(R.string.expand_all) to true, stringResource(R.string.collapse_all) to false).forEach { (label, open) ->
                         OutlinedButton(
                             onClick = { setAll(open) },
                             enabled = state.milestones.isNotEmpty(),
@@ -479,17 +478,17 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     item(key = "gap-$first") {
                         // Nothing was logged against any of these; one line says so in place of a card each.
                         Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Show them", onClick = { openedRuns = openedRuns + first }),
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = stringResource(R.string.milestones_show_them), onClick = { openedRuns = openedRuns + first }),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                "${String.format(Locale.US, "%,d", first)} to ${row.last().milestone.atMiles.asDistance(unit)} · ${row.size} with nothing logged",
+                                stringResource(R.string.milestones_folded, first.asNumber(), row.last().milestone.atMiles.asDistance(unit), row.size.asNumber()),
                                 Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
                             )
-                            Text("Show", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                            Text(stringResource(R.string.show), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
                         }
                     }
                 }
@@ -503,7 +502,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                     ) {
-                        Text("Show further ahead")
+                        Text(stringResource(R.string.milestones_further))
                     }
                 }
             }
@@ -517,33 +516,33 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                             ) {
-                                Text("Add a milestone")
+                                Text(stringResource(R.string.milestones_add))
                             }
                         }
                         Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
                             Row(
                                 Modifier.heightIn(min = 56.dp)
-                                    .clickable(role = Role.Button, onClickLabel = "Change how the table repeats", onClick = { repeating = true })
+                                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.milestones_change_repeat), onClick = { repeating = true })
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(state.repeatsEveryMiles?.let { "Repeats every ${it.asDistance(unit)}" } ?: "Doesn't repeat", style = MaterialTheme.typography.bodyLarge)
+                                    Text(state.repeatsEveryMiles?.let { stringResource(R.string.milestones_repeats_every, it.asDistance(unit)) } ?: stringResource(R.string.milestones_no_repeat), style = MaterialTheme.typography.bodyLarge)
                                     Text(
-                                        if (state.repeatsEveryMiles != null) "After the last milestone it starts again from the first" else "The table ends at its last milestone",
+                                        stringResource(if (state.repeatsEveryMiles != null) R.string.milestones_repeat_detail else R.string.milestones_ends_detail),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = scheme.onSurfaceVariant,
                                     )
                                 }
-                                Text("Change", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                                Text(stringResource(R.string.change), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
                             }
                         }
                     }
                 }
                 item {
                     SaveAsImportFile(
-                        caption = "A copy to keep, or to pass to someone with the same model. It holds this table and nothing about your vehicle or its history, and it isn't encrypted.",
+                        caption = stringResource(R.string.milestones_save_caption),
                         write = { MilestoneExport.written(state.table, state.repeatsEveryMiles, unit) },
                         onSave = vm::saveAsFile,
                     )
@@ -554,7 +553,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                     ) {
-                        Text("Remove this table", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.milestones_remove), fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -569,10 +568,10 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                                 border = BorderStroke(1.5.dp, scheme.onSurface),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                             ) {
-                                Text("Use the maker's table for the ${known.title}")
+                                Text(stringResource(R.string.milestones_use_known, known.title))
                             }
                             Text(
-                                KnownSchedules.tableOffer(known) + " It is then shown here in place of these.",
+                                stringResource(R.string.milestones_in_place, tableOffer(known)),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
                             )
@@ -582,10 +581,10 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TextButton(onClick = vm::addMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                            Text("Make my own table", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.milestones_make_own), fontWeight = FontWeight.SemiBold)
                         }
                         Text(
-                            "Type in the table from your owner's manual, a milestone at a time. It is then shown here in place of these.",
+                            stringResource(R.string.milestones_make_own_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
@@ -628,7 +627,7 @@ private fun MilestoneCard(
             Row(
                 Modifier.fillMaxWidth()
                     .heightIn(min = 56.dp)
-                    .clickable(role = Role.Button, onClickLabel = if (open) "Collapse" else "Expand", onClick = onToggle)
+                    .clickable(role = Role.Button, onClickLabel = stringResource(if (open) R.string.collapse else R.string.expand), onClick = onToggle)
                     .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -644,13 +643,13 @@ private fun MilestoneCard(
                     )
                     Text(
                         listOfNotNull(
-                            if (m.jobs.size == 1) "1 job" else "${m.jobs.size} jobs",
-                            "$completed completed".takeIf { completed > 0 },
-                            m.milestone.orMonths?.let { "or $it months" },
-                            m.milestone.repeatOf?.let { "repeat of ${it.asDistance(unit)}" },
+                            pluralStringResource(R.plurals.jobs, m.jobs.size, m.jobs.size.asNumber()),
+                            pluralStringResource(R.plurals.completed, completed, completed.asNumber()).takeIf { completed > 0 },
+                            m.milestone.orMonths?.let { pluralStringResource(R.plurals.milestones_or_months, it, it.asNumber()) },
+                            m.milestone.repeatOf?.let { stringResource(R.string.milestones_repeat_of, it.asDistance(unit)) },
                             // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
                             swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
-                                ?.let { "${(m.milestone.atMiles - it.offset).asDistance(unit)} on the dash" },
+                                ?.let { stringResource(R.string.milestones_on_dash, (m.milestone.atMiles - it.offset).asDistance(unit)) },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (completed > 0) statusColors().ok else scheme.onSurfaceVariant,
@@ -659,7 +658,7 @@ private fun MilestoneCard(
                 if (next) {
                     Surface(color = scheme.primaryContainer, shape = CircleShape) {
                         Text(
-                            current?.let { "NEXT · IN ${(m.milestone.atMiles - it).asDistance(unit).uppercase()}" } ?: "NEXT",
+                            current?.let { stringResource(R.string.milestones_next_in, (m.milestone.atMiles - it).asDistance(unit).uppercase(AppText.locale)) } ?: stringResource(R.string.milestones_next),
                             Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
@@ -669,7 +668,7 @@ private fun MilestoneCard(
                 }
                 // Every job here has a record: the whole milestone is done.
                 if (m.jobs.isNotEmpty() && completed == m.jobs.size) {
-                    Icon(Icons.Outlined.CheckCircle, contentDescription = "All completed", modifier = Modifier.size(22.dp), tint = statusColors().ok)
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = stringResource(R.string.milestones_all_completed), modifier = Modifier.size(22.dp), tint = statusColors().ok)
                 }
                 Icon(
                     if (open) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
@@ -686,7 +685,7 @@ private fun MilestoneCard(
                     if (onEdit != null) {
                         HorizontalDivider(color = scheme.outlineVariant)
                         TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text(m.milestone.repeatOf?.let { "Edit the ${it.asDistance(unit)} milestone" } ?: "Edit this milestone")
+                            Text(m.milestone.repeatOf?.let { stringResource(R.string.milestones_edit_repeat, it.asDistance(unit)) } ?: stringResource(R.string.milestones_edit))
                         }
                     }
                 }
@@ -702,7 +701,7 @@ private fun JobRow(job: MilestoneJobStatus, unit: DistanceUnit, onOpenRecord: (L
     Row(
         Modifier.fillMaxWidth()
             .heightIn(min = 48.dp)
-            .then(done?.let { d -> Modifier.clickable(role = Role.Button, onClickLabel = "Open the record", onClick = { onOpenRecord(d.recordId) }) } ?: Modifier),
+            .then(done?.let { d -> Modifier.clickable(role = Role.Button, onClickLabel = stringResource(R.string.readings_open_record), onClick = { onOpenRecord(d.recordId) }) } ?: Modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -718,8 +717,11 @@ private fun JobRow(job: MilestoneJobStatus, unit: DistanceUnit, onOpenRecord: (L
             // A job nothing in the log matches is simply listed: no "missed", no tick-box.
             if (done != null) {
                 Text(
-                    "Completed ${done.date.format(longDate)} at ${done.readMiles.asDistance(unit)}" +
-                        if (done.readMiles != done.actualMiles) " on the dash (${done.actualMiles.asDistance(unit)} actual)" else "",
+                    if (done.readMiles != done.actualMiles) {
+                        stringResource(R.string.milestones_completed_dash, done.date.format(longDate), done.readMiles.asDistance(unit), done.actualMiles.asDistance(unit))
+                    } else {
+                        stringResource(R.string.milestones_completed, done.date.format(longDate), done.readMiles.asDistance(unit))
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = statusColors().ok,
                 )

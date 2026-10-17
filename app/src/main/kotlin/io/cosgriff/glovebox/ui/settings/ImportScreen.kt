@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.schedule.text
+import io.cosgriff.glovebox.ui.schedule.repeatNote
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.orText
 import java.time.LocalDate
@@ -552,7 +554,7 @@ class ImportViewModel @Inject constructor(
         val byId = rows.associateBy { it.milestone.id }
         val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
         // A table repeats one way or not at all; a file that says otherwise goes no further.
-        MilestoneImport.repeatConflict(repeats, saved, vehicle.milestonesRepeatEveryMiles, unit)?.let { return ImportPreview.Refused(it) }
+        MilestoneImport.repeatConflict(repeats, saved, vehicle.milestonesRepeatEveryMiles)?.let { return ImportPreview.Refused(it.text(unit)) }
         val plan = MilestoneImport.plan(items, saved)
         val view = PlanView(
             kind = ImportKind.MILESTONE_SCHEDULE,
@@ -563,7 +565,7 @@ class ImportViewModel @Inject constructor(
             differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asDistance(unit), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
             same = plan.same.size,
             caution = "Milestones are for reference on the Milestones screen. They don't create or change reminders, and they are your figures, not the manufacturer's.",
-            note = listOfNotNull(MilestoneImport.repeatNote(repeats, unit), FileDistances.convertedNote(file.unit, unit)).joinToString(" "),
+            note = listOfNotNull(repeatNote(repeats, unit), FileDistances.convertedNote(file.unit, unit)).joinToString(" "),
         )
         return ImportPreview.Ready(view) { mode, _ ->
             fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }

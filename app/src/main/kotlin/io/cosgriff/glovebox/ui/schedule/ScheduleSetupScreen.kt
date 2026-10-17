@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.text
 import androidx.compose.material3.ButtonDefaults
@@ -173,7 +178,7 @@ class ScheduleSetupViewModel @Inject constructor(
                 knownItems(list, v)
             } else {
                 ScheduleTemplates.generic(v?.drivetrain, v?.fuel, unit).map {
-                    DraftItem(key = it.key, name = it.name, normal = it.normal, severe = it.severe, template = it)
+                    DraftItem(key = it.key, name = it.label, normal = it.normal, severe = it.severe, template = it)
                 }
             }
         }
@@ -314,9 +319,9 @@ fun ScheduleSetupScreen(
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDone) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
             }
-            Text(if (vm.known != null) "Maintenance schedule" else "Recommended maintenance", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(if (vm.known != null) R.string.details_schedule else R.string.setup_title), style = MaterialTheme.typography.titleLarge)
         }
 
         Column(
@@ -327,19 +332,17 @@ fun ScheduleSetupScreen(
                 val known = vm.known
                 Text(
                     if (known != null) {
-                        "The maker's schedule for your ${vm.vehicle.displayName()}, from the ${known.source.name}. " +
-                            "Pick what to track — you can edit any interval later."
+                        stringResource(R.string.setup_intro_known, vm.vehicle.displayName(), known.source.name)
                     } else {
-                        "A typical schedule to start from for your ${vm.vehicle.displayName()}. " +
-                            "Pick what to track — you can edit any interval later."
+                        stringResource(R.string.setup_intro, vm.vehicle.displayName())
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     if (known != null) {
-                        "${known.source.note} It has the jobs the guide's table repeats; the whole table, inspections included, is on the Milestones screen."
+                        stringResource(R.string.setup_known_note, known.source.note)
                     } else {
-                        "These are common intervals, not the manufacturer's. Check your owner's manual and edit anything that differs."
+                        stringResource(R.string.setup_typical_note)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -350,10 +353,9 @@ fun ScheduleSetupScreen(
                 Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
                     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         val source = vm.engineChoices.first().source.name
-                        Text("Which engine does it have?", style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.setup_engine_title), style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "The $source has a schedule for each of these, and this vehicle's engine isn't on record. " +
-                                "Pick yours to start from the maker's schedule in place of the typical one below.",
+                            stringResource(R.string.setup_engine_body, source),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -364,7 +366,7 @@ fun ScheduleSetupScreen(
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                             ) { Text(list.engine?.label ?: list.title) }
                         }
-                        TextButton(onClick = vm::declineEngines, modifier = Modifier.heightIn(min = 48.dp)) { Text("Neither, or I'm not sure") }
+                        TextButton(onClick = vm::declineEngines, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.setup_engine_neither)) }
                     }
                 }
             }
@@ -372,15 +374,15 @@ fun ScheduleSetupScreen(
             // Only where it changes something: a schedule none of whose jobs differs under severe use has no use for it.
             if (items.any { it.severe != null || it.severeOnly }) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SectionLabel("HOW DO YOU DRIVE IT?")
+                    SectionLabel(stringResource(R.string.schedule_how_driven))
                     DrivingUseSwitch(severe = vm.severeUse, onPick = vm::chooseSevereUse)
                 }
             }
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                SectionLabel("$count OF ${items.size} SELECTED", Modifier.weight(1f))
+                SectionLabel(stringResource(R.string.setup_selected, count.asNumber(), items.size.asNumber()), Modifier.weight(1f))
                 TextButton(onClick = vm::toggleAll) {
-                    Text(if (count == items.size) "Clear all" else "Select all")
+                    Text(stringResource(if (count == items.size) R.string.clear_all else R.string.select_all))
                 }
             }
 
@@ -394,7 +396,7 @@ fun ScheduleSetupScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Text("+ Add your own item")
+                        Text(stringResource(R.string.schedule_add_own))
                     }
                 }
             }
@@ -406,10 +408,10 @@ fun ScheduleSetupScreen(
                 enabled = count > 0,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
-                Text(if (count == 1) "Track 1 item" else "Track $count items")
+                Text(pluralStringResource(R.plurals.setup_track, count, count.asNumber()))
             }
             TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text("Skip — I'll set up reminders myself")
+                Text(stringResource(R.string.setup_skip))
             }
         }
     }
@@ -424,13 +426,15 @@ fun ScheduleSetupScreen(
 @Composable
 private fun LastDoneChoice(enterNow: Boolean, onPick: (enterNow: Boolean) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    fun text(now: Boolean) = if (now) "I'll enter the ones I know next" else "I'll enter them as I go"
+    val next = stringResource(R.string.setup_last_done_next)
+    val asIGo = stringResource(R.string.setup_last_done_as_i_go)
+    fun text(now: Boolean) = if (now) next else asIGo
     ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
         OutlinedTextField(
             value = text(enterNow),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Know when these were last done? (optional)") },
+            label = { Text(stringResource(R.string.setup_last_done_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
@@ -470,7 +474,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
                 )
                 if (item.severeOnly) {
                     Text(
-                        if (item.dormant) "Only for severe use. Off while you're on normal use." else "Only for severe use.",
+                        stringResource(if (item.dormant) R.string.setup_severe_only_off else R.string.setup_severe_only),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -479,7 +483,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
             if (item.showsSevere) {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
                     Text(
-                        "SEVERE",
+                        stringResource(R.string.setup_severe_tag),
                         Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
@@ -489,7 +493,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
             }
         }
         IconButton(onClick = onEdit) {
-            Icon(Icons.Outlined.Edit, contentDescription = "Edit ${item.name}")
+            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.edit_item, item.name))
         }
     }
 }
@@ -505,7 +509,10 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
         activeContentColor = MaterialTheme.colorScheme.onSecondary,
     )
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().height(64.dp)) {
-        listOf(false to ("Normal" to "Commuting, highway"), true to ("Severe" to "Towing, off-road, dusty")).forEachIndexed { i, (value, text) ->
+        listOf(
+            false to (stringResource(R.string.use_normal) to stringResource(R.string.use_normal_detail)),
+            true to (stringResource(R.string.use_severe) to stringResource(R.string.use_severe_detail)),
+        ).forEachIndexed { i, (value, text) ->
             SegmentedButton(
                 selected = severe == value,
                 onClick = { onPick(value) },
@@ -552,4 +559,4 @@ internal fun SectionLabel(text: String, modifier: Modifier = Modifier) {
 }
 
 private fun VehicleEntity?.displayName(): String =
-    if (this == null) "vehicle" else listOfNotNull("$year", nickname ?: model, engine).joinToString(" ")
+    if (this == null) AppText.res.getString(R.string.setup_vehicle) else listOfNotNull("$year", nickname ?: model, engine).joinToString(" ")

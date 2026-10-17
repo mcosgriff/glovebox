@@ -8,13 +8,20 @@ import java.util.Locale
  */
 data class ScheduleTemplateItem(
     val key: String,
-    val name: String,
+    /** `app` words it; the user's copy of the item keeps the name it had when it was added. */
+    val name: TemplateName,
     val normal: Interval,
     val severe: Interval? = null,
 ) {
     fun interval(severeUse: Boolean): Interval = if (severeUse) severe ?: normal else normal
 
     val changesWhenSevere: Boolean get() = severe != null && severe != normal
+}
+
+/** The typical items' names. One key can have two ("Coolant" on an electric vehicle). */
+enum class TemplateName {
+    OIL, ROTATION, ENGINE_AIR, CABIN_AIR, BRAKE_INSPECTION, BRAKE_FLUID, TRANSMISSION_FLUID,
+    DIFF_AND_TRANSFER, DIFF, ENGINE_COOLANT, COOLANT, SPARK_PLUGS,
 }
 
 object ScheduleTemplates {
@@ -34,24 +41,24 @@ object ScheduleTemplates {
 
     private fun inMiles(drivetrain: String?, fuel: String?): List<ScheduleTemplateItem> = buildList {
         val engine = !isElectric(fuel)
-        if (engine) add(ScheduleTemplateItem("oil", "Engine oil & filter", Interval(7_500, 12), Interval(5_000, 6)))
-        add(ScheduleTemplateItem("rotation", "Tire rotation", Interval(5_000, 6)))
-        if (engine) add(ScheduleTemplateItem("engine-air", "Engine air filter", Interval(30_000, null), Interval(15_000, null)))
-        add(ScheduleTemplateItem("cabin-air", "Cabin air filter", Interval(15_000, 12)))
-        add(ScheduleTemplateItem("brake-inspect", "Brake inspection", Interval(15_000, 12)))
-        add(ScheduleTemplateItem("brake-fluid", "Brake fluid", Interval(null, 36)))
-        add(ScheduleTemplateItem("trans-fluid", "Transmission fluid", Interval(60_000, null), Interval(30_000, null)))
+        if (engine) add(ScheduleTemplateItem("oil", TemplateName.OIL, Interval(7_500, 12), Interval(5_000, 6)))
+        add(ScheduleTemplateItem("rotation", TemplateName.ROTATION, Interval(5_000, 6)))
+        if (engine) add(ScheduleTemplateItem("engine-air", TemplateName.ENGINE_AIR, Interval(30_000, null), Interval(15_000, null)))
+        add(ScheduleTemplateItem("cabin-air", TemplateName.CABIN_AIR, Interval(15_000, 12)))
+        add(ScheduleTemplateItem("brake-inspect", TemplateName.BRAKE_INSPECTION, Interval(15_000, 12)))
+        add(ScheduleTemplateItem("brake-fluid", TemplateName.BRAKE_FLUID, Interval(null, 36)))
+        add(ScheduleTemplateItem("trans-fluid", TemplateName.TRANSMISSION_FLUID, Interval(60_000, null), Interval(30_000, null)))
         when (templateDrive(drivetrain)) {
             TemplateDrive.FOUR_OR_ALL_WHEEL -> add(
-                ScheduleTemplateItem("diff-fluid", "Differential & transfer case fluid", Interval(60_000, null), Interval(30_000, null)),
+                ScheduleTemplateItem("diff-fluid", TemplateName.DIFF_AND_TRANSFER, Interval(60_000, null), Interval(30_000, null)),
             )
             TemplateDrive.REAR -> add(
-                ScheduleTemplateItem("diff-fluid", "Differential fluid", Interval(60_000, null), Interval(30_000, null)),
+                ScheduleTemplateItem("diff-fluid", TemplateName.DIFF, Interval(60_000, null), Interval(30_000, null)),
             )
             TemplateDrive.OTHER -> Unit
         }
-        add(ScheduleTemplateItem("coolant", if (engine) "Engine coolant" else "Coolant", Interval(100_000, 120)))
-        if (engine) add(ScheduleTemplateItem("spark-plugs", "Spark plugs", Interval(100_000, null)))
+        add(ScheduleTemplateItem("coolant", if (engine) TemplateName.ENGINE_COOLANT else TemplateName.COOLANT, Interval(100_000, 120)))
+        if (engine) add(ScheduleTemplateItem("spark-plugs", TemplateName.SPARK_PLUGS, Interval(100_000, null)))
     }
 
     /**

@@ -1,15 +1,56 @@
 package io.cosgriff.glovebox.domain
 
-import java.util.Locale
-
-/** What is wrong with a milestone as typed, each a sentence for under its field. [jobs] is by the job's place in the list. */
+/** What is wrong with a milestone as typed, for under each field; `app` words it. [jobs] is by the job's place in the list. */
 data class MilestoneProblems(
-    val miles: String? = null,
-    val months: String? = null,
+    val miles: MilesProblem? = null,
+    /** Not whole months from 1 to [MilestoneImport.MAX_MONTHS]. */
+    val months: Boolean = false,
     /** About the list of jobs as a whole. */
-    val work: String? = null,
-    val jobs: Map<Int, String> = emptyMap(),
+    val work: WorkProblem? = null,
+    val jobs: Map<Int, JobProblem> = emptyMap(),
 )
+
+sealed interface MilesProblem {
+    /** Not a whole number from 1 to [MilestoneImport.MAX_MILES]. */
+    data object NotANumber : MilesProblem
+
+    /** The table has a milestone at [miles] already. */
+    data class Taken(val miles: Int) : MilesProblem
+
+    /** Past the end of a table that repeats [every]. */
+    data class PastCycle(val every: Int) : MilesProblem
+}
+
+enum class WorkProblem {
+    NONE,
+
+    /** More than [MilestoneImport.MAX_WORK]. */
+    TOO_MANY,
+}
+
+sealed interface JobProblem {
+    data object NoName : JobProblem
+
+    /** Over [MilestoneImport.MAX_NAME] characters. */
+    data object TooLong : JobProblem
+
+    data object NotOneLine : JobProblem
+
+    /** Another job here has the same name. */
+    data object Repeated : JobProblem
+
+    /** Another job here is for the same catalog line. */
+    data class ServiceTaken(val service: String) : JobProblem
+}
+
+/** Why a cycle can't be saved. */
+sealed interface RepeatProblem {
+    /** Not a whole number from 1 to [MilestoneImport.MAX_MILES]. */
+    data object NotANumber : RepeatProblem
+
+    /** Shorter than the table, whose last milestone is at [lastMiles]. */
+    data class ShorterThanTable(val lastMiles: Int) : RepeatProblem
+}
 
 sealed interface MilestoneEdit {
     data class Ok(val milestone: ImportedMilestone) : MilestoneEdit
@@ -19,7 +60,7 @@ sealed interface MilestoneEdit {
 sealed interface RepeatEdit {
     /** [everyMiles] null: the table ends at its last milestone. */
     data class Ok(val everyMiles: Int?) : RepeatEdit
-    data class Refused(val why: String) : RepeatEdit
+    data class Refused(val problem: RepeatProblem) : RepeatEdit
 }
 
 /**
@@ -48,40 +89,36 @@ object MilestoneEdits {
         jobs: List<TableJob>,
         others: List<Int>,
         repeatsEveryMiles: Int?,
-        unit: DistanceUnit,
-        /** A catalog line's name, from its id. */
-        serviceName: (String) -> String,
     ): MilestoneEdit {
         val miles = OdometerInput.parse(milesText)?.takeIf { it <= MilestoneImport.MAX_MILES }
         val months = monthsText.trim().takeIf { it.isNotEmpty() }?.let { t -> t.toIntOrNull()?.takeIf { it in 1..MilestoneImport.MAX_MONTHS } ?: -1 }
         val names = jobs.map { it.name.trim() }
-        val jobProblems = mutableMapOf<Int, String>()
+        val jobProblems = mutableMapOf<Int, JobProblem>()
         names.forEachIndexed { i, name ->
             when {
-                name.isEmpty() -> jobProblems[i] = "Give it a name, or remove it"
-                name.length > MilestoneImport.MAX_NAME -> jobProblems[i] = "Keep the name to ${MilestoneImport.MAX_NAME} characters"
-                name.any { it.isISOControl() } -> jobProblems[i] = "The name has to be on one line"
+                name.isEmpty() -> jobProblems[i] = JobProblem.NoName
+                name.length > MilestoneImport.MAX_NAME -> jobProblems[i] = JobProblem.TooLong
+                name.any { it.isISOControl() } -> jobProblems[i] = JobProblem.NotOneLine
             }
         }
         MilestoneImport.repeated(names.map { n -> n.takeIf { it.isNotEmpty() }?.let(MilestoneImport::nameKey) }).forEach { (i, _) ->
-            jobProblems.putIfAbsent(i, "This job is already in the milestone")
+            jobProblems.putIfAbsent(i, JobProblem.Repeated)
         }
         // Two jobs for one service would be one job twice: the log couldn't tell them apart.
         MilestoneImport.repeated(jobs.map { it.service }).forEach { (i, _) ->
-            jobProblems.putIfAbsent(i, "\"${jobs[i].service?.let(serviceName).orEmpty()}\" is already picked for another job here")
+            jobProblems.putIfAbsent(i, JobProblem.ServiceTaken(jobs[i].service!!))
         }
         val problems = MilestoneProblems(
             miles = when {
-                miles == null -> "Enter the mileage as a whole number from 1 to ${miles(MilestoneImport.MAX_MILES)}"
-                miles in others -> "There is already a milestone at ${unit.format(miles)}. Add the work to that one"
-                repeatsEveryMiles != null && !MilestoneImport.cycleCovers(repeatsEveryMiles, miles) ->
-                    "This table repeats every ${unit.format(repeatsEveryMiles)}, so a milestone can't be past that. Change how it repeats first"
+                miles == null -> MilesProblem.NotANumber
+                miles in others -> MilesProblem.Taken(miles)
+                repeatsEveryMiles != null && !MilestoneImport.cycleCovers(repeatsEveryMiles, miles) -> MilesProblem.PastCycle(repeatsEveryMiles)
                 else -> null
             },
-            months = "Enter whole months from 1 to ${MilestoneImport.MAX_MONTHS}, or leave it empty".takeIf { months == -1 },
+            months = months == -1,
             work = when {
-                jobs.isEmpty() -> "Add at least one job"
-                jobs.size > MilestoneImport.MAX_WORK -> "A milestone can have ${MilestoneImport.MAX_WORK} jobs at most"
+                jobs.isEmpty() -> WorkProblem.NONE
+                jobs.size > MilestoneImport.MAX_WORK -> WorkProblem.TOO_MANY
                 else -> null
             },
             jobs = jobProblems,
@@ -97,15 +134,11 @@ object MilestoneEdits {
      * How the table repeats, as typed: empty means it ends at its last milestone. [lastMiles] is the
      * table's highest mileage, which the cycle can't be shorter than.
      */
-    fun repeat(text: String, lastMiles: Int, unit: DistanceUnit): RepeatEdit {
+    fun repeat(text: String, lastMiles: Int): RepeatEdit {
         if (text.isBlank()) return RepeatEdit.Ok(null)
         val every = OdometerInput.parse(text)?.takeIf { it <= MilestoneImport.MAX_MILES }
-            ?: return RepeatEdit.Refused("Enter whole ${unit.plural} from 1 to ${miles(MilestoneImport.MAX_MILES)}, or leave it empty for a table that ends")
-        if (!MilestoneImport.cycleCovers(every, lastMiles)) {
-            return RepeatEdit.Refused("It is the length of the whole cycle, so it can't be less than your last milestone (${unit.format(lastMiles)})")
-        }
+            ?: return RepeatEdit.Refused(RepeatProblem.NotANumber)
+        if (!MilestoneImport.cycleCovers(every, lastMiles)) return RepeatEdit.Refused(RepeatProblem.ShorterThanTable(lastMiles))
         return RepeatEdit.Ok(every)
     }
-
-    private fun miles(value: Int): String = String.format(Locale.US, "%,d", value)
 }

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.ruleInSentence
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.titleWord
@@ -111,9 +116,9 @@ fun ScheduleItemEditor(
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close)) }
             Text(
-                if (isNew) "Add schedule item" else "Edit schedule item",
+                stringResource(if (isNew) R.string.item_add_title else R.string.item_edit_title),
                 Modifier.weight(1f),
                 style = MaterialTheme.typography.titleLarge,
             )
@@ -137,7 +142,7 @@ fun ScheduleItemEditor(
                         )
                     }
                 },
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.save)) }
         }
 
         Column(
@@ -147,11 +152,11 @@ fun ScheduleItemEditor(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text(stringResource(R.string.documents_name)) },
                 singleLine = true,
                 isError = showErrors && name.isBlank(),
                 supportingText = if (showErrors && name.isBlank()) {
-                    { Text("Give it a name") }
+                    { Text(stringResource(R.string.documents_give_name)) }
                 } else {
                     null
                 },
@@ -160,16 +165,16 @@ fun ScheduleItemEditor(
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("REPEAT EVERY")
+                SectionLabel(stringResource(R.string.item_repeat_every))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     NumberField(unit.titleWord, milesText, { milesText = it }, showErrors && typed == null, Modifier.weight(1f))
-                    NumberField("Months", monthsText, { monthsText = it }, showErrors && typed == null, Modifier.weight(1f))
+                    NumberField(stringResource(R.string.item_months), monthsText, { monthsText = it }, showErrors && typed == null, Modifier.weight(1f))
                 }
                 Text(
                     if (showErrors && typed == null) {
-                        "Enter ${unit.pluralWord}, months, or both as whole numbers above zero."
+                        stringResource(R.string.item_interval_error, unit.pluralWord)
                     } else {
-                        "Leave one blank if it doesn't apply."
+                        stringResource(R.string.item_interval_note)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (showErrors && typed == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -177,8 +182,7 @@ fun ScheduleItemEditor(
 
                 if (item.severeOnly) {
                     Text(
-                        "This job is only for severe use (towing, heavy loads, dust), and this is its interval then. " +
-                            "It reminds you while the schedule is set to severe use, and is switched off on normal use.",
+                        stringResource(R.string.item_severe_only_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -187,10 +191,10 @@ fun ScheduleItemEditor(
                 if (severe != null) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("Severe-use interval", style = MaterialTheme.typography.titleSmall)
+                            Text(stringResource(R.string.item_severe_interval), style = MaterialTheme.typography.titleSmall)
                             Text(
-                                suggestedSevere?.let { "Typical: ${it.text(unit)} when towing, off-road or in dust" }
-                                    ?: "For towing, off-road or dusty driving",
+                                suggestedSevere?.let { stringResource(R.string.item_severe_typical, it.text(unit)) }
+                                    ?: stringResource(R.string.item_severe_for),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -208,14 +212,13 @@ fun ScheduleItemEditor(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("FIRST TIME AT (OPTIONAL)")
+                SectionLabel(stringResource(R.string.item_first_at))
                 NumberField(unit.titleWord, firstText, { firstText = it }, showErrors && firstBad, Modifier.fillMaxWidth())
                 Text(
                     if (showErrors && firstBad) {
-                        "Enter whole ${unit.pluralWord} above zero, or leave it blank."
+                        stringResource(R.string.item_first_error, unit.pluralWord)
                     } else {
-                        "For a job whose first time isn't one interval in, such as coolant first at 100,000 and then every 50,000. " +
-                            "Until it has been logged once it is due at this reading; after that the interval counts from the last time. Leave blank otherwise."
+                        stringResource(R.string.item_first_note)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (showErrors && firstBad) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -249,11 +252,11 @@ fun ScheduleItemEditor(
                             load(if (useSevere) template.severe ?: template.normal else template.normal)
                         },
                         modifier = Modifier.heightIn(min = 48.dp),
-                    ) { Text("Reset to the suggested interval") }
+                    ) { Text(stringResource(R.string.item_reset)) }
                 }
                 if (!isNew && item.tracked) {
                     TextButton(onClick = onStopTracking, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Text("Stop tracking this item", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.item_stop_tracking), color = MaterialTheme.colorScheme.error)
                     }
                 }
             }
@@ -297,13 +300,14 @@ data class ItemHistory(
 @Composable
 private fun RuleDropdown(rule: DueRule?, defaultRule: DueRule, onPick: (DueRule?) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    fun text(r: DueRule?) = r?.label() ?: "Use my default (${defaultRule.label().lowercase(Locale.US)})"
+    val useDefault = stringResource(R.string.item_rule_default, defaultRule.ruleInSentence())
+    fun text(r: DueRule?) = r?.label() ?: useDefault
     ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
         OutlinedTextField(
             value = text(rule),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Which comes due") },
+            label = { Text(stringResource(R.string.item_rule_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
@@ -335,16 +339,16 @@ private fun ServiceDropdown(service: String?, onPick: (String?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
             OutlinedTextField(
-                value = chosen?.first?.label ?: "This item, under Your items",
+                value = chosen?.first?.label ?: stringResource(R.string.item_service_own),
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Logging this resets it") },
+                label = { Text(stringResource(R.string.item_resets_it)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
                 modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
             )
             ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
                 DropdownMenuItem(
-                    text = { Text("This item, under Your items") },
+                    text = { Text(stringResource(R.string.item_service_own)) },
                     onClick = {
                         onPick(null)
                         open = false
@@ -368,9 +372,9 @@ private fun ServiceDropdown(service: String?, onPick: (String?) -> Unit) {
         }
         Text(
             if (chosen == null) {
-                "Pick one of Glovebox's service lines if this is the same job, and logging that line will count for this item."
+                stringResource(R.string.item_service_pick)
             } else {
-                "Ticking \"${chosen.first.label}\" when you log a service counts for this item, including the times it is already in your history."
+                stringResource(R.string.item_service_chosen, chosen.first.label)
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -382,7 +386,7 @@ private fun ServiceDropdown(service: String?, onPick: (String?) -> Unit) {
 private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("LAST DONE")
+        SectionLabel(stringResource(R.string.item_last_done))
         Surface(
             Modifier.fillMaxWidth(),
             color = scheme.surface,
@@ -399,12 +403,12 @@ private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        last?.let { "${it.date.format(longDate)} · ${it.odometer.asDistance(unit)}" } ?: "Not logged yet",
+                        last?.let { "${it.date.format(longDate)} · ${it.odometer.asDistance(unit)}" } ?: stringResource(R.string.due_not_logged),
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     if (last == null && history.onEnterLastDone != null) {
-                        Text("Enter it", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+                        Text(stringResource(R.string.item_enter_it), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
                         Icon(
                             Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                             contentDescription = null,
@@ -413,7 +417,7 @@ private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
                         )
                     }
                     if (last != null && history.onOpenRecord != null) {
-                        Text(if (history.entered) "Entered by you" else "From your log", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        Text(stringResource(if (history.entered) R.string.details_entered_by_you else R.string.from_your_log), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         Icon(
                             Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                             contentDescription = null,
@@ -426,11 +430,12 @@ private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
                     HorizontalDivider(color = scheme.outlineVariant)
                     Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
-                            if (resetBy.size == 1) "Logging this resets it" else "Logging any of these resets it",
+                            // None is this item itself, said as a list of one: "any of these".
+                            pluralStringResource(R.plurals.item_resets, if (resetBy.size == 1) 1 else 2),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Text(
-                            resetBy.joinToString(" · ").ifEmpty { "This item, under Your items in Log service" },
+                            resetBy.joinToString(" · ").ifEmpty { stringResource(R.string.item_service_own_log) },
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
@@ -454,23 +459,23 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
         border = BorderStroke(1.dp, scheme.primary.copy(alpha = 0.3f)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("NEXT DUE", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+            Text(stringResource(R.string.item_next_due), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
             when {
                 last == null -> {
-                    Text("Not logged yet", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.due_not_logged), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
-                        "Log it once and the countdown starts from that date and mileage.",
+                        stringResource(R.string.item_log_once),
                         style = MaterialTheme.typography.bodySmall,
                         color = statusColors().soon,
                     )
                 }
-                interval == null -> Text("Enter an interval above", style = MaterialTheme.typography.titleMedium)
+                interval == null -> Text(stringResource(R.string.item_enter_interval), style = MaterialTheme.typography.titleMedium)
                 else -> {
                     Text(interval.nextDueAfter(last).text(unit), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         listOfNotNull(
                             rule.label().takeIf { interval.miles != null && interval.months != null },
-                            history.estimate?.takeIf { showEstimate }?.let { "est. ${it.format(longDate)} at your pace" },
+                            history.estimate?.takeIf { showEstimate }?.let { stringResource(R.string.item_estimate, it.format(longDate)) },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = statusColors().soon,
