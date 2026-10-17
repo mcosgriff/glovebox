@@ -76,12 +76,24 @@ jobs:
         with:
           subject-path: glovebox-${{ github.ref_name }}.apk
 
-      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        with:
-          # release-please has written the changelog into the release; the scan's summary goes after it.
-          body_path: exodus-notes.md
-          append_body: true
-          files: |
-            glovebox-${{ github.ref_name }}.apk
-            glovebox-${{ github.ref_name }}.apk.sha256
-            glovebox-${{ github.ref_name }}.exodus.json
+      # Attach the files and add the scan's summary after the changelog release-please wrote. Done with gh
+      # rather than softprops/action-gh-release: from 0.11.0 GitHub refused that action's "update a release"
+      # call (403, "Resource not accessible by integration"), which also sends the tag name and commit.
+      # `gh release upload` and `gh release edit --notes-file` send only the assets and the notes.
+      - name: Attach to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            # A tag pushed by hand has no release yet.
+            gh release create "$tag" --verify-tag --title "$tag" --notes ""
+          fi
+          gh release upload "$tag" --clobber \
+            "glovebox-$tag.apk" "glovebox-$tag.apk.sha256" "glovebox-$tag.exodus.json"
+          # A re-run must not add the summary twice.
+          gh release view "$tag" --json body -q .body > notes.md
+          if ! grep -q "Exodus Privacy scan" notes.md; then
+            cat exodus-notes.md >> notes.md
+            gh release edit "$tag" --notes-file notes.md
+          fi
