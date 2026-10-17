@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/mcosgriff/glovebox/compare/v0.11.1...v0.12.0) (2026-10-17)
+
+
+### Features
+
+* target Android 17 (API 37) ([#249](https://github.com/mcosgriff/glovebox/issues/249)) ([e23936a](https://github.com/mcosgriff/glovebox/commit/e23936acc97fcf51d55d5d47997f54be4bf4298b))
+
 ## [0.11.1](https://github.com/mcosgriff/glovebox/compare/v0.11.0...v0.11.1) (2026-10-17)
 
 
