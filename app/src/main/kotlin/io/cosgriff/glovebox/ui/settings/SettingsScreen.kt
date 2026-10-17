@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.torque.symbolWord
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
@@ -138,7 +139,7 @@ fun SettingsScreen(
             title = "Torque units",
             options = TorqueUnit.entries,
             selected = s.torqueUnit,
-            label = { it.symbol },
+            label = { it.symbolWord },
             note = "Torque is stored once and converted for display, so switching loses nothing.",
             onPick = vm::setTorque,
             onDismiss = { picking = null },
@@ -295,7 +296,7 @@ fun SettingsScreen(
             Divider()
             ValueRow("Distance units", s.distanceUnit.titleWord) { picking = Picking.DISTANCE }
             Divider()
-            ValueRow("Torque units", s.torqueUnit.symbol) { picking = Picking.TORQUE }
+            ValueRow("Torque units", s.torqueUnit.symbolWord) { picking = Picking.TORQUE }
             Divider()
             ValueRow("Notifications", SettingsText.notifications(s.notices), onOpenNotifications)
             Divider()

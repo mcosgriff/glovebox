@@ -49,7 +49,7 @@ class TorqueSpecsTest {
 
     @Test
     fun `starter rows are names only`() {
-        assertTrue(TorqueSpecs.common.map { it.name }.containsAll(listOf("Oil drain plug", "Lug nuts")))
-        assertEquals(TorqueSpecs.common.size, TorqueSpecs.common.map { it.name }.toSet().size)
+        assertTrue(TorqueSpecs.common.map { it.key }.containsAll(listOf("oil-drain-plug", "lug-nuts")))
+        assertEquals(TorqueSpecs.common.size, TorqueSpecs.common.map { it.key }.toSet().size)
     }
 }

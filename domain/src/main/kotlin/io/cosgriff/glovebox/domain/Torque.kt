@@ -13,14 +13,13 @@ enum class TorqueUnit(val symbol: String, val newtonMetersPerUnit: Double) {
 value class Torque(val newtonMeters: Double) {
     fun inUnit(unit: TorqueUnit): Double = newtonMeters / unit.newtonMetersPerUnit
 
-    /** Display string, rounded the way a torque wrench is read. */
-    fun format(unit: TorqueUnit): String {
+    /** Rounded the way a torque wrench is read, for showing; `app` adds the unit. */
+    fun rounded(unit: TorqueUnit): Int {
         val v = inUnit(unit)
-        val rounded = when (unit) {
+        return when (unit) {
             TorqueUnit.INCH_POUND -> (v / 5).roundToInt() * 5 // in-lb wrenches step in 5s
             else -> v.roundToInt()
         }
-        return "$rounded ${unit.symbol}"
     }
 
     companion object {
