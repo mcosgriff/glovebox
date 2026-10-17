@@ -1,6 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
@@ -17,16 +16,11 @@ import kotlin.math.roundToInt
  * - one of Glovebox's own figures in miles (a typical interval, the lead distance, a snooze step)
  *   is used for a kilometre vehicle.
  */
+/** [symbol] and [plural] are how an import file's error messages name it (`app` has its own words). */
 enum class DistanceUnit(val symbol: String, val plural: String) {
     MILES("mi", "miles"),
     KILOMETERS("km", "kilometres"),
     ;
-
-    /** "Miles", for a field's label or a choice. */
-    val title: String get() = plural.replaceFirstChar { it.uppercase() }
-
-    /** "12,345 mi" */
-    fun format(distance: Int): String = String.format(Locale.US, "%,d %s", distance, symbol)
 
     /**
      * A **measurement** in miles in this unit, as exactly as a whole number allows: an odometer

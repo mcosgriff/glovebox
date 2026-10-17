@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.domain.WorkProblem
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -64,7 +66,6 @@ import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import java.util.Locale
 
 /** A milestone of the user's own table open in the editor. [id] is null for one not saved yet. */
 data class MilestoneDraft(val id: Long?, val atMiles: Int?, val orMonths: Int?, val jobs: List<TableJob>)
@@ -96,7 +97,7 @@ fun MilestoneEditor(
 ) {
     val scheme = MaterialTheme.colorScheme
     val isNew = draft.id == null
-    var milesText by remember(draft) { mutableStateOf(draft.atMiles?.let { String.format(Locale.US, "%,d", it) }.orEmpty()) }
+    var milesText by remember(draft) { mutableStateOf(draft.atMiles?.asNumber().orEmpty()) }
     var monthsText by remember(draft) { mutableStateOf(draft.orMonths?.toString().orEmpty()) }
     var nextKey by remember(draft) { mutableIntStateOf(draft.jobs.size + 1) }
     // A new milestone starts with one empty job, since it can't be saved without one.
@@ -134,7 +135,7 @@ fun MilestoneEditor(
         )
     }
 
-    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles)
+    val checked = MilestoneEdits.check(milesText.typedNumber(), monthsText.typedNumber(), jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles)
     val problems = (checked as? MilestoneEdit.Refused)?.problems?.takeIf { showErrors } ?: MilestoneProblems()
 
     if (deleting) {
@@ -327,9 +328,9 @@ private fun JobServiceDropdown(service: String?, onPick: (String?) -> Unit) {
 @Composable
 fun MilestoneRepeatDialog(repeatsEveryMiles: Int?, lastMiles: Int, unit: DistanceUnit, onSave: (Int?) -> Unit, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    var text by remember { mutableStateOf(repeatsEveryMiles?.let { String.format(Locale.US, "%,d", it) }.orEmpty()) }
+    var text by remember { mutableStateOf(repeatsEveryMiles?.asNumber().orEmpty()) }
     var showError by remember { mutableStateOf(false) }
-    val checked = MilestoneEdits.repeat(text, lastMiles)
+    val checked = MilestoneEdits.repeat(text.typedNumber(), lastMiles)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.milestone_repeat_title)) },

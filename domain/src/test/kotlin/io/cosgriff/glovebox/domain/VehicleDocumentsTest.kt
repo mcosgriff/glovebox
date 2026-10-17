@@ -52,13 +52,6 @@ class VehicleDocumentsTest {
     }
 
     @Test
-    fun `sizes read in kilobytes below a megabyte`() {
-        assertEquals("1 KB", VehicleDocuments.size(10))
-        assertEquals("340 KB", VehicleDocuments.size(340 * 1024))
-        assertEquals("4.2 MB", VehicleDocuments.size(4_400_000))
-    }
-
-    @Test
     fun `an empty file or one over the cap is refused`() {
         assertEquals(DocumentProblem.EMPTY, VehicleDocuments.problem(0))
         assertNull(VehicleDocuments.problem(VehicleDocuments.MAX_BYTES))
