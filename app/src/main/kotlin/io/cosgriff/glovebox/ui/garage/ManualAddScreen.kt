@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.symbolWord
 import kotlinx.coroutines.flow.first
 import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
 import io.cosgriff.glovebox.data.settings.SettingsRepository
@@ -322,7 +323,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
             OutlinedTextField(
                 value = vm.odometerText,
                 onValueChange = vm::onOdometerChange,
-                label = { Text("Odometer (${vm.unit.symbol})") },
+                label = { Text("Odometer (${vm.unit.symbolWord})") },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                 shape = RoundedCornerShape(12.dp),

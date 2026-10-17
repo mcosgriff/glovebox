@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.titleWord
+import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -88,7 +90,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
@@ -182,7 +183,6 @@ class ReminderRulesViewModel @Inject constructor(
     fun setOverride(scheduleItemId: Long, rule: DueRule?) = viewModelScope.launch { schedule.setRuleOverride(scheduleItemId, rule?.name) }
 }
 
-private val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.US)
 
 /** Which interval decides when a service is due, and how early to say so. Design: 7 · Reminder rules. */
 @Composable
@@ -462,7 +462,7 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
             OutlinedTextField(
                 value = miles,
                 onValueChange = { update(it, days) },
-                label = { Text("${unit.title} before") },
+                label = { Text("${unit.titleWord} before") },
                 singleLine = true,
                 isError = LeadTimeInput.parse(miles, "0") == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

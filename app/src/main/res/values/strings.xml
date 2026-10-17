@@ -1,5 +1,48 @@
 <resources>
     <string name="app_name">Glovebox</string>
+    <!-- The locale figures and dates are written in: this translation's own, so "12,345" and
+         "Oct 17, 2026" read the same on every phone. A translation sets its own (de-DE). -->
+    <string name="format_locale" translatable="false">en-US</string>
+
+    <!-- Shared formatters (Mappers.kt): distances, intervals, due headlines -->
+    <!-- %1$s is a number already formatted ("12,345"). -->
+    <string name="distance_mi">%1$s mi</string>
+    <string name="distance_km">%1$s km</string>
+    <string name="unit_mi">mi</string>
+    <string name="unit_km">km</string>
+    <string name="unit_miles">miles</string>
+    <string name="unit_kilometres">kilometres</string>
+    <string name="unit_miles_title">Miles</string>
+    <string name="unit_kilometres_title">Kilometres</string>
+    <string name="months_short">%1$s mo</string>
+    <!-- A distance and a time: "7,500 mi / 12 mo". -->
+    <string name="interval_slash">%1$s / %2$s</string>
+    <!-- Two ways a thing can happen: "7,500 mi or 12 mo", "73,412 mi or Apr 10, 2027". -->
+    <string name="either_or">%1$s or %2$s</string>
+    <string name="interval_every">Every %1$s</string>
+    <string name="interval_first_then_every">First at %1$s, then every %2$s</string>
+    <!-- %1$s is a service, %2$s where it is due next. -->
+    <string name="reminder_change_next_due">%1$s — next due %2$s</string>
+    <string name="reminder_change_not_logged">%1$s — back to not logged yet</string>
+    <string name="due_not_logged">Not logged yet</string>
+    <!-- %1$s is a distance or a number of days or months. -->
+    <string name="due_overdue_by">Overdue %1$s</string>
+    <string name="due_now">Due now</string>
+    <string name="due_in">In %1$s</string>
+    <string name="due_today">Due today</string>
+    <string name="due_snoozed_until">Snoozed until %1$s</string>
+    <plurals name="days">
+        <item quantity="one">%1$s day</item>
+        <item quantity="other">%1$s days</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">%1$s month</item>
+        <item quantity="other">%1$s months</item>
+    </plurals>
+    <string name="rule_whichever_first">Whichever comes first</string>
+    <string name="rule_whichever_last">Whichever comes last</string>
+    <string name="rule_mileage_only">Mileage only</string>
+    <string name="rule_time_only">Time only</string>
 
     <!-- Unlock (LockScreen) -->
     <string name="unlock_prompt_title">Unlock Glovebox</string>

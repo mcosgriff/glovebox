@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.pluralWord
+import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -107,14 +109,14 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
             ReadingField(
                 value = oldText,
                 onChange = { oldText = it },
-                label = "Old cluster read (${unit.symbol})",
-                note = if (showErrors && oldReading == null) "Enter its last reading in whole ${unit.plural}." else "Its last reading before it came out.",
+                label = "Old cluster read (${unit.symbolWord})",
+                note = if (showErrors && oldReading == null) "Enter its last reading in whole ${unit.pluralWord}." else "Its last reading before it came out.",
                 isError = showErrors && oldReading == null,
             )
             ReadingField(
                 value = newText,
                 onChange = { newText = it },
-                label = "New cluster read (${unit.symbol})",
+                label = "New cluster read (${unit.symbolWord})",
                 note = when {
                     same -> "The same as the old one, so there is nothing to offset."
                     showErrors && newReading == null -> "Enter what it read when it went in."

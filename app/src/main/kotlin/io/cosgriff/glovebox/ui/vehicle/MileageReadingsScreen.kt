@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.BorderStroke
@@ -330,7 +331,7 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Odometer (${unit.symbol})") },
+                label = { Text("Odometer (${unit.symbolWord})") },
                 supportingText = problem?.takeIf { showErrors }?.let { { Text(it) } },
                 isError = showErrors && problem != null,
                 singleLine = true,

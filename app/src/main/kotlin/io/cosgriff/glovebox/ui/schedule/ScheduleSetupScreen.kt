@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.titleWord
+import io.cosgriff.glovebox.ui.service.text
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import io.cosgriff.glovebox.data.db.MilestoneDao
@@ -75,7 +77,6 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.ScheduleSetupRoute
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
@@ -462,7 +463,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
             Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(item.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    item.active.label(unit, item.firstAt),
+                    item.active.text(unit, item.firstAt),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
                     color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -539,7 +540,7 @@ internal fun DistanceUnitSwitch(unit: DistanceUnit, onPick: (DistanceUnit) -> Un
                 icon = {},
                 modifier = Modifier.fillMaxHeight(),
             ) {
-                Text(u.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(u.titleWord, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             }
         }
     }
