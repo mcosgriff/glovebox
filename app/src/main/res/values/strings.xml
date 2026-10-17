@@ -16,4 +16,39 @@
     <string name="unlock_wait">Too many tries. Wait a moment and try again.</string>
     <string name="unlock_off_until_screen_lock">Too many tries. Fingerprint and face are off until you use your screen lock.</string>
     <string name="unlock_couldnt_check">Couldn\'t check just now. Try again.</string>
+
+    <!-- Shared -->
+    <string name="cancel">Cancel</string>
+    <!-- %1$s is the word to type, drawn in mono. -->
+    <string name="type_word_to_confirm">Type %1$s to confirm</string>
+
+    <!-- Welcome (WelcomeScreen) -->
+    <string name="welcome_title">Welcome to Glovebox</string>
+    <string name="welcome_intro">Maintenance records, reminders and recalls for your vehicles. Everything stays on this phone, encrypted.</string>
+    <string name="welcome_set_up">SET UP</string>
+    <string name="welcome_lock_title">Unlock with fingerprint</string>
+    <string name="welcome_lock_fallback">Device PIN works as a fallback</string>
+    <string name="welcome_lock_no_screen_lock">This phone has no screen lock, so the app can\'t be locked yet. Set one in Android\'s settings, then turn this on in Glovebox\'s Settings.</string>
+    <string name="welcome_notifications_title">Reminder notifications</string>
+    <string name="welcome_notifications_off">Off. Reminders still show inside the app</string>
+    <string name="welcome_notifications_ask">Android will ask for permission next</string>
+    <string name="welcome_notifications_on">When a service is due, a recall appears, or a backup is overdue</string>
+    <string name="welcome_add_vehicle">Add your first vehicle</string>
+    <string name="welcome_restore">Restore from a backup</string>
+    <string name="welcome_privacy">Only a VIN, or a year, make and model, is ever sent out, and only to NHTSA. No account, no ads, no tracking.</string>
+
+    <!-- Delete all data (DeleteAllScreen) -->
+    <string name="delete_all_prompt_title">Delete everything in Glovebox</string>
+    <string name="delete_all_prompt_subtitle">This can\'t be undone</string>
+    <string name="delete_all_title">Delete everything in Glovebox?</string>
+    <string name="delete_all_what_goes">All vehicles, archived vehicles, records, photos, specs, reminders and settings. The app goes back to its welcome screen.</string>
+    <string name="delete_all_how_heading">How it\'s erased</string>
+    <string name="delete_all_how">We delete the encryption keys from the phone\'s secure hardware, then the database and photos. Without the keys, nothing left behind can be read.</string>
+    <string name="delete_all_files_elsewhere">Backup and export files you\'ve saved elsewhere aren\'t touched. Delete those yourself if you want them gone.</string>
+    <string name="delete_all_cant_undo">This can\'t be undone.</string>
+    <string name="delete_all_backup_first">Make a backup first</string>
+    <string name="delete_all_confirm_fingerprint">Confirm with fingerprint</string>
+    <string name="delete_all_confirm_screen_lock">Confirm with screen lock</string>
+    <string name="delete_all_confirm">Delete everything</string>
+    <string name="delete_all_no_second_check">This phone has no screen lock, so there is no second check. Pressing the button deletes everything.</string>
 </resources>
