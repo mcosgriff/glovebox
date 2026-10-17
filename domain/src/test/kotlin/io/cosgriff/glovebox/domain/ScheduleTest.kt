@@ -30,9 +30,9 @@ class ScheduleTest {
     @Test
     fun `differential fluid is only suggested when the drivetrain has one to service`() {
         fun diff(drivetrain: String?) = ScheduleTemplates.generic(drivetrain, null, DistanceUnit.MILES).firstOrNull { it.key == "diff-fluid" }?.name
-        assertEquals("Differential & transfer case fluid", diff("4WD/4-Wheel Drive/4x4"))
-        assertEquals("Differential & transfer case fluid", diff("AWD/All-Wheel Drive"))
-        assertEquals("Differential fluid", diff("RWD/Rear-Wheel Drive"))
+        assertEquals(TemplateName.DIFF_AND_TRANSFER, diff("4WD/4-Wheel Drive/4x4"))
+        assertEquals(TemplateName.DIFF_AND_TRANSFER, diff("AWD/All-Wheel Drive"))
+        assertEquals(TemplateName.DIFF, diff("RWD/Rear-Wheel Drive"))
         assertNull(diff("FWD/Front-Wheel Drive"))
         assertNull(diff(null))
     }

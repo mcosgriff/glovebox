@@ -1,6 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
-import io.cosgriff.glovebox.ui.service.catalogLabel
+import io.cosgriff.glovebox.domain.WorkProblem
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.pluralWord
@@ -117,8 +119,8 @@ fun MilestoneEditor(
     if (discarding) {
         AlertDialog(
             onDismissRequest = { discarding = false },
-            title = { Text(if (isNew) "Discard this milestone?" else "Discard your changes?") },
-            text = { Text(if (isNew) "What you have typed hasn't been saved." else "The milestone stays as it was.") },
+            title = { Text(stringResource(if (isNew) R.string.milestone_discard_new else R.string.discard_changes)) },
+            text = { Text(stringResource(if (isNew) R.string.milestone_discard_new_body else R.string.milestone_discard_body)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -126,26 +128,25 @@ fun MilestoneEditor(
                         onClose()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                ) { Text("Discard") }
+                ) { Text(stringResource(R.string.discard)) }
             },
-            dismissButton = { TextButton(onClick = { discarding = false }) { Text("Keep editing") } },
+            dismissButton = { TextButton(onClick = { discarding = false }) { Text(stringResource(R.string.keep_editing)) } },
         )
     }
 
-    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles, unit, ::catalogLabel)
+    val checked = MilestoneEdits.check(milesText, monthsText, jobs.map { TableJob(it.name, it.service) }, others, repeatsEveryMiles)
     val problems = (checked as? MilestoneEdit.Refused)?.problems?.takeIf { showErrors } ?: MilestoneProblems()
 
     if (deleting) {
         AlertDialog(
             onDismissRequest = { deleting = false },
-            title = { Text("Delete this milestone?") },
+            title = { Text(stringResource(R.string.milestone_delete_title)) },
             text = {
                 Text(
                     if (endsTable) {
-                        "It is the only milestone in your table, so the table goes with it and the Milestones screen goes back to the ones built from your schedule. " +
-                            "Your service history and reminders aren't touched."
+                        stringResource(R.string.milestone_delete_last)
                     } else {
-                        "The milestone and its jobs go from your table. Your service history and reminders aren't touched. This can't be undone."
+                        stringResource(R.string.milestone_delete_body)
                     },
                 )
             },
@@ -156,18 +157,18 @@ fun MilestoneEditor(
                         onDelete()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { deleting = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
     Column(Modifier.fillMaxSize().imePadding()) {
         // Save stays put above the form: a milestone with many jobs is a long scroll.
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = ::close) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
-            Text(if (isNew) "Add milestone" else "Edit milestone", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
-            Button(onClick = { if (checked is MilestoneEdit.Ok) onSave(checked.milestone) else showErrors = true }) { Text("Save") }
+            IconButton(onClick = ::close) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close)) }
+            Text(stringResource(if (isNew) R.string.milestone_add_title else R.string.milestone_edit_title), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            Button(onClick = { if (checked is MilestoneEdit.Ok) onSave(checked.milestone) else showErrors = true }) { Text(stringResource(R.string.save)) }
         }
 
         Column(
@@ -176,38 +177,37 @@ fun MilestoneEditor(
         ) {
             if (startsTable) {
                 Text(
-                    "Saving this starts your own table. The Milestones screen then shows your table in place of the milestones built from your schedule, " +
-                        "and no longer follows the schedule. Remove the table to go back. Your reminders aren't affected either way.",
+                    stringResource(R.string.milestone_starts_table),
                     color = scheme.onSurfaceVariant,
                 )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("DUE AT")
+                SectionLabel(stringResource(R.string.milestone_due_at))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     NumberField(unit.titleWord, milesText, { milesText = it }, problems.miles != null, Modifier.weight(1f))
-                    NumberField("Or months", monthsText, { monthsText = it }, problems.months != null, Modifier.weight(1f))
+                    NumberField(stringResource(R.string.milestone_or_months), monthsText, { monthsText = it }, problems.months, Modifier.weight(1f))
                 }
-                val wrong = listOfNotNull(problems.miles, problems.months)
+                val wrong = listOfNotNull(problems.miles?.text(unit), monthsProblem.takeIf { problems.months })
                 if (wrong.isEmpty()) {
                     Text(
-                        "${unit.titleWord} the vehicle has covered, as your manual gives them. Months are optional: the vehicle's age, shown for reference." +
-                            (repeatsEveryMiles?.let { " The table repeats every ${it.asDistance(unit)}, so this comes round again each time." } ?: ""),
+                        repeatsEveryMiles?.let { stringResource(R.string.milestone_due_note_repeats, unit.titleWord, it.asDistance(unit)) }
+                            ?: stringResource(R.string.milestone_due_note, unit.titleWord),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
                 } else {
-                    wrong.forEach { Text("$it.", style = MaterialTheme.typography.bodySmall, color = scheme.error) }
+                    wrong.forEach { Text(stringResource(R.string.sentence, it), style = MaterialTheme.typography.bodySmall, color = scheme.error) }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("JOBS")
+                SectionLabel(stringResource(R.string.milestone_jobs))
                 jobs.forEachIndexed { i, job ->
                     key(job.key) {
                         JobCard(
                             job = job,
-                            problem = problems.jobs[i],
+                            problem = problems.jobs[i]?.text,
                             canMoveUp = i > 0,
                             canMoveDown = i < jobs.lastIndex,
                             onChange = { jobs[i] = it },
@@ -216,21 +216,19 @@ fun MilestoneEditor(
                         )
                     }
                 }
-                problems.work?.let { Text("$it.", style = MaterialTheme.typography.bodySmall, color = scheme.error) }
+                problems.work?.let { Text(stringResource(R.string.sentence, it.text), style = MaterialTheme.typography.bodySmall, color = scheme.error) }
                 if (MilestoneEdits.canAddJob(jobs.size)) {
                     OutlinedButton(
                         onClick = { jobs.add(JobRow(nextKey++, "", null)) },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    ) { Text("Add a job") }
+                    ) { Text(stringResource(R.string.milestone_add_job)) }
                 } else {
-                    Text("A milestone can have ${MilestoneImport.MAX_WORK} jobs at most.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text(stringResource(R.string.sentence, WorkProblem.TOO_MANY.text), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
                 Text(
-                    "A job shows as completed when your log has that work. Pick one of Glovebox's service lines and logging that line completes it; " +
-                        "otherwise it is completed by logged work with exactly the job's name. " +
-                        "Milestones never create reminders: for one, add the job to the Maintenance schedule.",
+                    stringResource(R.string.milestone_jobs_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -238,7 +236,7 @@ fun MilestoneEditor(
 
             if (!isNew) {
                 TextButton(onClick = { deleting = true }, modifier = Modifier.heightIn(min = 48.dp)) {
-                    Text("Delete this milestone", color = scheme.error)
+                    Text(stringResource(R.string.milestone_delete), color = scheme.error)
                 }
             }
         }
@@ -262,19 +260,19 @@ private fun JobCard(
                 value = job.name,
                 // Longer text couldn't be saved, so it isn't taken.
                 onValueChange = { onChange(job.copy(name = it.take(MilestoneImport.MAX_NAME))) },
-                label = { Text("Job") },
+                label = { Text(stringResource(R.string.milestone_job)) },
                 singleLine = true,
                 isError = problem != null,
-                supportingText = problem?.let { { Text("$it.") } },
+                supportingText = problem?.let { { Text(stringResource(R.string.sentence, it)) } },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 modifier = Modifier.fillMaxWidth(),
             )
             JobServiceDropdown(job.service, onPick = { onChange(job.copy(service = it)) })
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { onMove(-1) }, enabled = canMoveUp) { Icon(Icons.Outlined.KeyboardArrowUp, contentDescription = "Move up") }
-                IconButton(onClick = { onMove(1) }, enabled = canMoveDown) { Icon(Icons.Outlined.KeyboardArrowDown, contentDescription = "Move down") }
+                IconButton(onClick = { onMove(-1) }, enabled = canMoveUp) { Icon(Icons.Outlined.KeyboardArrowUp, contentDescription = stringResource(R.string.move_up)) }
+                IconButton(onClick = { onMove(1) }, enabled = canMoveDown) { Icon(Icons.Outlined.KeyboardArrowDown, contentDescription = stringResource(R.string.move_down)) }
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onRemove, modifier = Modifier.heightIn(min = 48.dp)) { Text("Remove", color = scheme.error) }
+                TextButton(onClick = onRemove, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.remove), color = scheme.error) }
             }
         }
     }
@@ -288,16 +286,16 @@ private fun JobServiceDropdown(service: String?, onPick: (String?) -> Unit) {
     val lines = remember { ServiceCatalog.categories.flatMap { c -> c.items.map { it to c.label } } }
     ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
         OutlinedTextField(
-            value = lines.firstOrNull { it.first.id == service }?.first?.label ?: NO_SERVICE,
+            value = lines.firstOrNull { it.first.id == service }?.first?.label ?: stringResource(R.string.milestone_no_service),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Completed by logging") },
+            label = { Text(stringResource(R.string.milestone_completed_by)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(
-                text = { Text(NO_SERVICE) },
+                text = { Text(stringResource(R.string.milestone_no_service)) },
                 onClick = {
                     onPick(null)
                     open = false
@@ -321,8 +319,6 @@ private fun JobServiceDropdown(service: String?, onPick: (String?) -> Unit) {
     }
 }
 
-/** Nothing is suggested from the name: which service a job is, is the user's to say. */
-private const val NO_SERVICE = "None of these: work with this name"
 
 /**
  * Whether the table starts again after its last milestone, and over what cycle. Empty means it ends.
@@ -333,31 +329,30 @@ fun MilestoneRepeatDialog(repeatsEveryMiles: Int?, lastMiles: Int, unit: Distanc
     val scheme = MaterialTheme.colorScheme
     var text by remember { mutableStateOf(repeatsEveryMiles?.let { String.format(Locale.US, "%,d", it) }.orEmpty()) }
     var showError by remember { mutableStateOf(false) }
-    val checked = MilestoneEdits.repeat(text, lastMiles, unit)
+    val checked = MilestoneEdits.repeat(text, lastMiles)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Does the table repeat?") },
+        title = { Text(stringResource(R.string.milestone_repeat_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many ${unit.pluralWord} later, " +
-                        "with the same work. Leave it empty for a table that ends at ${lastMiles.asDistance(unit)}.",
+                    stringResource(R.string.milestone_repeat_body, unit.pluralWord, lastMiles.asDistance(unit)),
                 )
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Repeats every (${unit.pluralWord})") },
+                    label = { Text(stringResource(R.string.milestone_repeats_every, unit.pluralWord)) },
                     singleLine = true,
                     isError = showError && checked is RepeatEdit.Refused,
-                    supportingText = (checked as? RepeatEdit.Refused)?.takeIf { showError }?.let { { Text("${it.why}.") } },
+                    supportingText = (checked as? RepeatEdit.Refused)?.takeIf { showError }?.let { { Text(stringResource(R.string.sentence, it.problem.text(unit))) } },
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text("Months aren't repeated: they are the vehicle's age the first time round.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.milestone_months_not_repeated), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = { if (checked is RepeatEdit.Ok) onSave(checked.everyMiles) else showError = true }) { Text("Save") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { if (checked is RepeatEdit.Ok) onSave(checked.everyMiles) else showError = true }) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

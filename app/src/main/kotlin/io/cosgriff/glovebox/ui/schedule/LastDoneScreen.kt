@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -179,10 +181,10 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onDone) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onDone) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Column(Modifier.padding(start = 8.dp)) {
                 Text(
-                    "When were these last done?",
+                    stringResource(R.string.last_done_title),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -196,18 +198,17 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Text(
-                "Give the date and mileage for any you know, from a receipt or the sticker on the windshield. " +
-                    "Each one starts that reminder counting. Leave the rest: they stay \"Not logged yet\" until the work is next done.",
+                stringResource(R.string.last_done_intro),
                 color = scheme.onSurfaceVariant,
             )
 
             if (state.rows.isEmpty()) {
-                Text("No reminders are being tracked for this vehicle yet.", color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.home_none_tracked), color = scheme.onSurfaceVariant)
             } else {
                 SectionLabel(
                     when (val n = state.pending) {
-                        0 -> "ALL ${state.rows.size} HAVE A LAST DONE"
-                        else -> "$n OF ${state.rows.size} NOT LOGGED YET"
+                        0 -> stringResource(R.string.last_done_all, state.rows.size.asNumber())
+                        else -> stringResource(R.string.last_done_pending, n.asNumber(), state.rows.size.asNumber())
                     },
                 )
                 Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = scheme.surface)) {
@@ -220,7 +221,7 @@ fun LastDoneScreen(onDone: () -> Unit, onOpenRecord: (recordId: Long) -> Unit, v
                 }
             }
 
-            Button(onClick = onDone, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Done") }
+            Button(onClick = onDone, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.done)) }
         }
     }
 }
@@ -235,7 +236,7 @@ private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpe
             .heightIn(min = 60.dp)
             .clickable(
                 role = Role.Button,
-                onClickLabel = if (last == null) "Enter when it was last done" else "Open the record",
+                onClickLabel = stringResource(if (last == null) R.string.last_done_enter else R.string.readings_open_record),
                 onClick = { if (last == null || recordId == null) onEnter() else onOpenRecord(recordId) },
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -250,7 +251,7 @@ private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpe
             )
         }
         if (last == null) {
-            Text("Add", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
+            Text(stringResource(R.string.add), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.onPrimaryContainer)
         } else {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
@@ -261,7 +262,7 @@ private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpe
                 )
                 // An entered one is never passed off as a service logged at the time.
                 Text(
-                    if (row.entered) "Entered by you" else "From your log",
+                    stringResource(if (row.entered) R.string.details_entered_by_you else R.string.from_your_log),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -327,13 +328,13 @@ fun LastDoneSheet(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Date · ${date.format(longDate)}")
+                Text(stringResource(R.string.date_button, date.format(longDate)))
             }
 
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Odometer then (${unit.symbolWord})") },
+                label = { Text(stringResource(R.string.last_done_odometer, unit.symbolWord)) },
                 supportingText = note?.let { { Text(it.text(unit)) } },
                 isError = note?.tone == NoteTone.WARNING,
                 singleLine = true,
@@ -351,7 +352,7 @@ fun LastDoneSheet(
                     border = BorderStroke(1.5.dp, scheme.outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
                 Button(
                     onClick = {
@@ -360,7 +361,7 @@ fun LastDoneSheet(
                     modifier = Modifier.weight(2f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.save))
                 }
             }
         }

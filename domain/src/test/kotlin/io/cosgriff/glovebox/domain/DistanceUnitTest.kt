@@ -42,8 +42,8 @@ class DistanceUnitTest {
     fun `every typical interval goes to kilometres and back unchanged`() {
         for (item in ScheduleTemplates.generic(null, null, DistanceUnit.MILES)) {
             for (miles in listOfNotNull(item.normal.miles, item.severe?.miles)) {
-                assertEquals(item.name, miles, km.scheduledInMiles(km.scheduled(miles)))
-                assertEquals("${item.name}: $miles mi should be a round figure in km", 0, km.scheduled(miles) % 100)
+                assertEquals(item.key, miles, km.scheduledInMiles(km.scheduled(miles)))
+                assertEquals("${item.key}: $miles mi should be a round figure in km", 0, km.scheduled(miles) % 100)
             }
         }
     }
