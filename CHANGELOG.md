@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/mcosgriff/glovebox/compare/v0.10.0...v0.11.0) (2026-10-17)
+
+
+### Code Refactoring
+
+* **data:** open the database through SQLCipher's driver and Room's connections ([#231](https://github.com/mcosgriff/glovebox/issues/231)) ([af9d983](https://github.com/mcosgriff/glovebox/commit/af9d983b8c5b6c09e1f4b371596b1cc78115d18f))
+
+
+### Continuous Integration
+
+* **release:** count refactor and build commits as releasable ([#241](https://github.com/mcosgriff/glovebox/issues/241)) ([fc779a8](https://github.com/mcosgriff/glovebox/commit/fc779a895d457596067e038c9bb01434618a4ba4))
+
 ## [0.10.0](https://github.com/mcosgriff/glovebox/compare/v0.9.0...v0.10.0) (2026-10-17)
 
 
