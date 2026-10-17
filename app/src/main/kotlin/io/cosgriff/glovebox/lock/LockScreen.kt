@@ -58,8 +58,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.Unlock
 import io.cosgriff.glovebox.domain.UnlockError
+import io.cosgriff.glovebox.domain.UnlockMessage
+import io.cosgriff.glovebox.domain.UnlockPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
@@ -161,10 +165,10 @@ fun LockScreen(onUnlocked: () -> Unit) {
     var message by rememberSaveable { mutableStateOf<String?>(null) }
 
     val check = rememberScreenLockCheck(
-        title = "Unlock Glovebox",
-        subtitle = "Your data is locked and encrypted",
+        title = stringResource(R.string.unlock_prompt_title),
+        subtitle = stringResource(R.string.unlock_locked_and_encrypted),
         onPassed = onUnlocked,
-        onError = { error, systemMessage -> message = Unlock.message(error, activity.screenLock(), systemMessage) },
+        onError = { error, systemMessage -> message = Unlock.message(error, activity.screenLock(), systemMessage)?.let(activity::words) },
     )
 
     fun prompt(screenLockOnly: Boolean = false) {
@@ -186,10 +190,10 @@ fun LockScreen(onUnlocked: () -> Unit) {
                     Icon(Icons.Outlined.Build, contentDescription = null, modifier = Modifier.size(38.dp), tint = scheme.onPrimary)
                 }
             }
-            Text("Glovebox", Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.app_name), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
-                Text("Your data is locked and encrypted", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.unlock_locked_and_encrypted), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
 
             if (options == null) return@Column // about to open
@@ -210,12 +214,12 @@ fun LockScreen(onUnlocked: () -> Unit) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         if (options.fingerprint) Icons.Outlined.Fingerprint else Icons.Outlined.Lock,
-                        contentDescription = options.buttonLabel,
+                        contentDescription = stringResource(options.prompt.buttonLabel),
                         modifier = Modifier.size(48.dp),
                     )
                 }
             }
-            Text(options.instruction, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+            Text(stringResource(options.prompt.instruction), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
             message?.let {
                 Text(
                     it,
@@ -225,13 +229,13 @@ fun LockScreen(onUnlocked: () -> Unit) {
                     textAlign = TextAlign.Center,
                 )
             }
-            options.screenLockLink?.let { label ->
+            if (options.screenLockLink) {
                 Box(
                     Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { prompt(screenLockOnly = true) }.padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        label,
+                        stringResource(R.string.unlock_use_screen_lock),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = ring,
@@ -241,4 +245,28 @@ fun LockScreen(onUnlocked: () -> Unit) {
             }
         }
     }
+}
+
+private val UnlockPrompt.instruction: Int
+    get() = when (this) {
+        UnlockPrompt.SCREEN_LOCK -> R.string.unlock_instruction_screen_lock
+        UnlockPrompt.FINGERPRINT -> R.string.unlock_instruction_fingerprint
+        UnlockPrompt.BIOMETRIC -> R.string.unlock_instruction_biometric
+    }
+
+/** What the round button does, for a screen reader. */
+private val UnlockPrompt.buttonLabel: Int
+    get() = when (this) {
+        UnlockPrompt.SCREEN_LOCK -> R.string.unlock_button_screen_lock
+        UnlockPrompt.FINGERPRINT -> R.string.unlock_button_fingerprint
+        UnlockPrompt.BIOMETRIC -> R.string.unlock_button_biometric
+    }
+
+// Worded once, when it happens, so the saved message is plain text.
+private fun Context.words(message: UnlockMessage): String = when (message) {
+    UnlockMessage.WaitOrUseScreenLock -> getString(R.string.unlock_wait_or_use_screen_lock)
+    UnlockMessage.Wait -> getString(R.string.unlock_wait)
+    UnlockMessage.OffUntilScreenLock -> getString(R.string.unlock_off_until_screen_lock)
+    is UnlockMessage.FromSystem -> message.text
+    UnlockMessage.CouldntCheck -> getString(R.string.unlock_couldnt_check)
 }
