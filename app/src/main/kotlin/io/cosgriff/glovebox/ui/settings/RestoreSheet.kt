@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.Context
 import android.net.Uri
@@ -122,7 +125,7 @@ class RestorePicker @Inject constructor(@ApplicationContext private val context:
                     false
                 }
             }
-            if (ok) _picked.value = PickedBackup(copy, displayName(uri) ?: "Backup file") else _problem.value = "That file couldn't be opened."
+            if (ok) _picked.value = PickedBackup(copy, displayName(uri) ?: AppText.res.getString(R.string.restore_backup_file)) else _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
         }
     }
 
@@ -185,7 +188,7 @@ class RestoreViewModel @Inject constructor(private val picker: RestorePicker, pr
             } catch (e: BackupException) {
                 error = e.message()
             } catch (_: IOException) {
-                error = "That file couldn't be read."
+                error = AppText.res.getString(R.string.restore_unreadable)
             }
             checking = false
         }
@@ -204,20 +207,20 @@ class RestoreViewModel @Inject constructor(private val picker: RestorePicker, pr
                 onDone(done)
             } catch (e: BackupException) {
                 progress = null
-                error = e.message() + " Nothing on this phone was changed."
+                error = AppText.res.getString(R.string.restore_nothing_changed, e.message())
             } catch (_: IOException) {
                 progress = null
-                error = "The backup couldn't be read to the end. Nothing on this phone was changed."
+                error = AppText.res.getString(R.string.restore_cut_short)
             }
         }
     }
 
     private fun BackupException.message(): String = when (reason) {
-        BackupException.Reason.WRONG_PASSWORD -> "That password doesn't open this backup."
-        BackupException.Reason.DAMAGED -> "This backup is damaged and can't be restored."
-        BackupException.Reason.INCOMPLETE -> "This backup is incomplete: the file was cut short, perhaps by an interrupted copy or download."
-        BackupException.Reason.NEWER_VERSION -> "This backup was made by a newer version of Glovebox. Update the app, then restore it."
-        BackupException.Reason.NOT_A_BACKUP -> "That isn't a Glovebox backup file."
+        BackupException.Reason.WRONG_PASSWORD -> AppText.res.getString(R.string.restore_wrong_password)
+        BackupException.Reason.DAMAGED -> AppText.res.getString(R.string.restore_damaged)
+        BackupException.Reason.INCOMPLETE -> AppText.res.getString(R.string.restore_incomplete)
+        BackupException.Reason.NEWER_VERSION -> AppText.res.getString(R.string.restore_newer)
+        BackupException.Reason.NOT_A_BACKUP -> AppText.res.getString(R.string.restore_not_a_backup)
     }
 }
 
@@ -241,13 +244,13 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Restore from backup", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.restore_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(picked.name, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
 
             OutlinedTextField(
                 value = vm.password,
                 onValueChange = { vm.password = it },
-                label = { Text("Backup password") },
+                label = { Text(stringResource(R.string.backup_password)) },
                 singleLine = true,
                 // Once the file is open the password is fixed; changing it would mean checking again.
                 enabled = summary == null && !busy,
@@ -255,7 +258,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
                 trailingIcon = {
                     IconButton(onClick = { show = !show }) {
-                        Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = if (show) "Hide password" else "Show password")
+                        Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password))
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
@@ -267,11 +270,12 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
             }
 
             if (summary == null) {
-                Text("We can't recover a forgotten password.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.restore_cant_recover), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             } else {
                 Text(
-                    BackupRules.restoreSummary(summary.vehicles, summary.records, summary.photos, summary.documents) +
-                        (summary.createdOn?.let { ", backed up ${it.format(longDate)}." } ?: "."),
+                    restoreSummary(summary.vehicles, summary.records, summary.photos, summary.documents).let { what ->
+                        summary.createdOn?.let { stringResource(R.string.restore_summary_dated, what, it.format(longDate)) } ?: stringResource(R.string.sentence, what)
+                    },
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -279,16 +283,16 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                 if (vm.replaces) {
                     Surface(color = scheme.errorContainer, contentColor = scheme.onSurface, shape = RoundedCornerShape(14.dp), border = BorderStroke(1.5.dp, scheme.error)) {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("This replaces everything on this phone", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.restore_replaces), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(
-                                "The vehicles, records and photos here now are removed and the backup's take their place. It can't be undone.",
+                                stringResource(R.string.restore_replaces_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = statusColors().soon,
                             )
                             OutlinedTextField(
                                 value = typed,
                                 onValueChange = { typed = it },
-                                label = { Text("Type ${BackupRules.REPLACE_WORD} to confirm") },
+                                label = { Text(stringResource(R.string.type_word_to_confirm, BackupRules.REPLACE_WORD)) },
                                 singleLine = true,
                                 enabled = !busy,
                                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
@@ -303,7 +307,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
             vm.progress?.let { p ->
                 Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth())
-                    Text("Restoring. Keep the app open.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text(stringResource(R.string.restore_keep_open), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
 
@@ -314,7 +318,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Cancel", color = scheme.onSurface)
+                    Text(stringResource(R.string.cancel), color = scheme.onSurface)
                 }
                 if (summary == null) {
                     Button(
@@ -323,7 +327,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                         modifier = Modifier.weight(2f).height(52.dp),
                         shape = RoundedCornerShape(14.dp),
                     ) {
-                        Text(if (vm.checking) "Checking…" else "Open backup")
+                        Text(stringResource(if (vm.checking) R.string.add_vehicle_recalls_checking else R.string.restore_open))
                     }
                 } else {
                     val confirmed = !vm.replaces || TypedConfirmation.matches(typed, BackupRules.REPLACE_WORD)
@@ -334,7 +338,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                         shape = RoundedCornerShape(14.dp),
                         colors = if (vm.replaces) ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError) else ButtonDefaults.buttonColors(),
                     ) {
-                        Text(if (vm.progress != null) "Restoring…" else if (vm.replaces) "Replace and restore" else "Restore")
+                        Text(stringResource(if (vm.progress != null) R.string.restore_restoring else if (vm.replaces) R.string.restore_replace else R.string.restore))
                     }
                 }
             }

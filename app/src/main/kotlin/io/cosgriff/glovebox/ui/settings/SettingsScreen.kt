@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.torque.symbolWord
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -68,7 +71,6 @@ import io.cosgriff.glovebox.data.settings.ThemeMode
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.LockDelay
 import io.cosgriff.glovebox.domain.RecallCadence
-import io.cosgriff.glovebox.domain.SettingsText
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.lock.canLockApp
 import io.cosgriff.glovebox.ui.export.ExportSheet
@@ -136,39 +138,38 @@ fun SettingsScreen(
     var picking by rememberSaveable { mutableStateOf<Picking?>(null) }
     when (picking) {
         Picking.TORQUE -> ChoiceDialog(
-            title = "Torque units",
+            title = stringResource(R.string.settings_torque_units),
             options = TorqueUnit.entries,
             selected = s.torqueUnit,
             label = { it.symbolWord },
-            note = "Torque is stored once and converted for display, so switching loses nothing.",
+            note = stringResource(R.string.settings_torque_note),
             onPick = vm::setTorque,
             onDismiss = { picking = null },
         )
         Picking.DISTANCE -> ChoiceDialog(
-            title = "Distance units",
+            title = stringResource(R.string.details_units),
             options = DistanceUnit.entries,
             selected = s.distanceUnit,
             label = { it.titleWord },
-            note = "For vehicles you add from now on. Each vehicle keeps its own unit, since that is what its odometer reads: " +
-                "to change one already in the garage, open its Vehicle details.",
+            note = stringResource(R.string.settings_distance_note),
             onPick = vm::setDistance,
             onDismiss = { picking = null },
         )
         Picking.RECALLS -> ChoiceDialog(
-            title = "Check for new recalls",
+            title = stringResource(R.string.settings_recall_checks),
             options = RecallCadence.entries,
             selected = s.recallCadence,
             label = { it.label },
-            note = "Only the year, make and model are sent to NHTSA. With Never, recalls are checked only when you tap Refresh.",
+            note = stringResource(R.string.settings_recall_note),
             onPick = vm::setRecallCadence,
             onDismiss = { picking = null },
         )
         Picking.SCHEDULE -> ChoiceDialog(
-            title = "Maintenance schedule",
+            title = stringResource(R.string.details_schedule),
             options = vehicles,
             selected = null,
             label = { it.name },
-            note = "Each vehicle has its own schedule.",
+            note = stringResource(R.string.settings_schedule_note),
             onPick = { onOpenSchedule(it.id) },
             onDismiss = { picking = null },
         )
@@ -179,11 +180,11 @@ fun SettingsScreen(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Text("Settings", Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.settings_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
 
-        Section("APPEARANCE") {
+        Section(stringResource(R.string.settings_appearance)) {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Theme", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Row(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(scheme.background).padding(4.dp).selectableGroup(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -197,7 +198,7 @@ fun SettingsScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                mode.name.lowercase().replaceFirstChar(Char::titlecase),
+                                stringResource(mode.label),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (on) scheme.surface else scheme.onSurface,
@@ -206,21 +207,21 @@ fun SettingsScreen(
                     }
                 }
                 Text(
-                    SettingsText.theme(followsPhone = s.theme == ThemeMode.SYSTEM, dark = dark),
+                    themeText(followsPhone = s.theme == ThemeMode.SYSTEM, dark = dark),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
             }
         }
 
-        Section("SECURITY") {
+        Section(stringResource(R.string.settings_security)) {
             ToggleRow(
-                title = "Unlock with biometrics",
+                title = stringResource(R.string.settings_biometrics),
                 subtitle = if (canLock) {
-                    "Fingerprint or face \u00b7 device PIN as fallback"
+                    stringResource(R.string.settings_biometrics_note)
                 } else {
                     // Said plainly: with no screen lock there is nothing for the app to lock with.
-                    "This phone has no screen lock, so the app can't be locked. Set one in Android's settings first."
+                    stringResource(R.string.settings_no_screen_lock)
                 },
                 checked = s.biometricLock && canLock,
                 enabled = canLock,
@@ -229,7 +230,7 @@ fun SettingsScreen(
             Divider()
             if (s.biometricLock && canLock) {
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Lock the app", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_lock_the_app), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     val current = LockDelay.fromSeconds(s.lockAfterSeconds)
                     FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         LockDelay.entries.forEach { delay ->
@@ -259,8 +260,8 @@ fun SettingsScreen(
                 Divider()
             }
             ToggleRow(
-                title = "Hide in recent apps",
-                subtitle = "Blocks screenshots and blurs the app switcher",
+                title = stringResource(R.string.settings_hide_recents),
+                subtitle = stringResource(R.string.settings_hide_recents_note),
                 checked = s.hideInRecents,
                 onChange = vm::setHideInRecents,
             )
@@ -275,9 +276,9 @@ fun SettingsScreen(
                     Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(20.dp)) }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Text("Encrypted on this device", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_encrypted), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "All vehicles, service records and photos are stored with AES-256. The keys are held by Android Keystore and never leave the phone. Always on.",
+                        stringResource(R.string.settings_encrypted_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -285,46 +286,46 @@ fun SettingsScreen(
             }
         }
 
-        Section("MAINTENANCE") {
-            ValueRow("Reminder rule", s.defaultRule.ruleLabel(), onOpenRules)
-            SettingsText.schedules(vehicles.map { it.name })?.let { value ->
+        Section(stringResource(R.string.settings_maintenance)) {
+            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onOpenRules)
+            schedulesText(vehicles.map { it.name })?.let { value ->
                 Divider()
-                ValueRow("Maintenance schedule", value) {
+                ValueRow(stringResource(R.string.details_schedule), value) {
                     vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { picking = Picking.SCHEDULE }
                 }
             }
             Divider()
-            ValueRow("Distance units", s.distanceUnit.titleWord) { picking = Picking.DISTANCE }
+            ValueRow(stringResource(R.string.details_units), s.distanceUnit.titleWord) { picking = Picking.DISTANCE }
             Divider()
-            ValueRow("Torque units", s.torqueUnit.symbolWord) { picking = Picking.TORQUE }
+            ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { picking = Picking.TORQUE }
             Divider()
-            ValueRow("Notifications", SettingsText.notifications(s.notices), onOpenNotifications)
+            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onOpenNotifications)
             Divider()
-            ValueRow("Check for new recalls", s.recallCadence.label) { picking = Picking.RECALLS }
+            ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { picking = Picking.RECALLS }
         }
 
-        Section("CAMERA") {
+        Section(stringResource(R.string.settings_camera)) {
             ToggleRow(
-                title = "Show what the scanner sees",
-                subtitle = "The VIN scanner shows the strip it reads, any barcode it finds and what the print came to. For a scan that won't take",
+                title = stringResource(R.string.settings_scanner_details),
+                subtitle = stringResource(R.string.settings_scanner_details_note),
                 checked = s.scannerDetails,
                 onChange = vm::setScannerDetails,
             )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Section("YOUR DATA") {
+            Section(stringResource(R.string.settings_your_data)) {
                 Column(
                     Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenBackup).padding(vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Encrypted backup", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.bodyLarge)
                         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                     Text(
-                        s.lastBackupOn?.let { "Last backup ${it.format(longDate)} \u00b7 password-protected file you keep" }
-                            ?: "Never backed up \u00b7 password-protected file you keep",
+                        s.lastBackupOn?.let { stringResource(R.string.settings_backup_last, it.format(longDate)) }
+                            ?: stringResource(R.string.settings_backup_never),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -332,16 +333,16 @@ fun SettingsScreen(
                 Divider()
                 Column(Modifier.padding(vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text("Export history", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.settings_export), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "Service records, schedule and recalls \u00b7 exported files are not encrypted",
+                            stringResource(R.string.settings_export_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ExportButton("PDF", "For resale or a shop", Modifier.weight(1f)) { exporting = ExportFormat.PDF }
-                        ExportButton("Markdown", "Plain text, .md", Modifier.weight(1f)) { exporting = ExportFormat.MARKDOWN }
+                        ExportButton(stringResource(R.string.export_pdf), stringResource(R.string.export_pdf_note), Modifier.weight(1f)) { exporting = ExportFormat.PDF }
+                        ExportButton(stringResource(R.string.export_markdown), stringResource(R.string.export_markdown_note), Modifier.weight(1f)) { exporting = ExportFormat.MARKDOWN }
                     }
                 }
                 // Needs a vehicle to import into; with none there is nowhere for it to lead.
@@ -352,11 +353,11 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Import", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.settings_import), style = MaterialTheme.typography.bodyLarge)
                             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
                         }
                         Text(
-                            "History, schedules or torque specs from a JSON file \u00b7 nothing of yours changes unless you say so",
+                            stringResource(R.string.settings_import_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
@@ -367,11 +368,11 @@ fun SettingsScreen(
                     Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDeleteAll),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Delete all data", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = scheme.error)
+                    Text(stringResource(R.string.settings_delete_all), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = scheme.error)
                 }
             }
             Text(
-                "Only a VIN, or a year, make and model, is sent to NHTSA, to decode it and look up recalls. Nothing else leaves your phone.",
+                stringResource(R.string.settings_privacy_line),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -387,7 +388,7 @@ fun SettingsScreen(
                 Modifier.heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onOpenAbout).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("About Glovebox", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.about_title), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                 Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
             }
         }
@@ -500,6 +501,13 @@ private fun <T> ChoiceDialog(
                 Text(note, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
+
+private val ThemeMode.label: Int
+    get() = when (this) {
+        ThemeMode.SYSTEM -> R.string.theme_system
+        ThemeMode.LIGHT -> R.string.theme_light_title
+        ThemeMode.DARK -> R.string.theme_dark_title
+    }

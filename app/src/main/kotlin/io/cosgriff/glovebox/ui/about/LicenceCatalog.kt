@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.settings.title
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.R
@@ -73,7 +74,7 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
         val group = loaded.firstOrNull { it.licence.id == id } ?: return@withContext null
         // A library's own licence comes without its wording; the app keeps a copy for each of those.
         val text = group.licence.text ?: group.libraries.singleOrNull()?.let { asset(Licences.assetName(it.id)) }
-        LicenceDocument(group.name, group.licence.url, text)
+        LicenceDocument(group.title, group.licence.url, text)
     }
 
     private companion object {

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.about
 
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.ui.settings.licencesSummary
+import io.cosgriff.glovebox.ui.settings.title
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +62,7 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
     val groups = vm.groups
 
     Column(Modifier.fillMaxSize()) {
-        AboutHeader("Open-source licenses", onBack)
+        AboutHeader(stringResource(R.string.licences_title), onBack)
         if (groups == null) return@Column // first frame while the list is read
 
         LazyColumn(
@@ -67,13 +72,12 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Glovebox is free software. You can read, change and share its source code under the ${Licences.APP_LICENCE_NAME}. " +
-                            "It comes with no warranty.",
+                        stringResource(R.string.licences_free_software, Licences.APP_LICENCE_NAME),
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    AboutCard { LinkRow("Glovebox", "GPL-3.0") { onOpenLicence(Licences.APP_LICENCE_ID) } }
+                    AboutCard { LinkRow(stringResource(R.string.app_name), stringResource(R.string.licences_gpl)) { onOpenLicence(Licences.APP_LICENCE_ID) } }
                     Text(
-                        "It is built with the libraries below. ${Licences.summary(groups)}, as built into this version.",
+                        stringResource(R.string.licences_built_with, licencesSummary(groups)),
                         Modifier.padding(top = 8.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
@@ -83,7 +87,7 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
             groups.forEach { group ->
                 item(key = "licence:${group.licence.id}") {
                     Column(Modifier.padding(top = 14.dp)) {
-                        AboutCard { LinkRow(group.name, "Read", onClick = { onOpenLicence(group.licence.id) }) }
+                        AboutCard { LinkRow(group.title, stringResource(R.string.licences_read), onClick = { onOpenLicence(group.licence.id) }) }
                     }
                 }
                 items(group.libraries, key = { "${group.licence.id}:${it.id}" }) { library ->
@@ -122,10 +126,11 @@ class LicenceTextViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 fun LicenceTextScreen(onBack: () -> Unit, onMessage: (String) -> Unit, vm: LicenceTextViewModel = hiltViewModel()) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val res = LocalResources.current
     val document = vm.document
 
     Column(Modifier.fillMaxSize()) {
-        AboutHeader(document?.name ?: "License", onBack)
+        AboutHeader(document?.name ?: stringResource(R.string.licences_licence), onBack)
         if (vm.loading) return@Column
 
         // A long licence is drawn a paragraph at a time.
@@ -141,7 +146,7 @@ fun LicenceTextScreen(onBack: () -> Unit, onMessage: (String) -> Unit, vm: Licen
                             Text(
                                 url,
                                 Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button) {
-                                    if (!context.openWebPage(url)) onMessage("No browser to open $url")
+                                    if (!context.openWebPage(url)) onMessage(res.getString(R.string.licences_no_browser, url))
                                 }.padding(vertical = 12.dp),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
@@ -155,7 +160,7 @@ fun LicenceTextScreen(onBack: () -> Unit, onMessage: (String) -> Unit, vm: Licen
                     item {
                         Text(
                             // Said plainly rather than showing an empty page.
-                            if (document?.url != null) "This version doesn't carry the wording of this licence. It is published at the address above." else "This version doesn't carry the wording of this licence.",
+                            stringResource(if (document?.url != null) R.string.licences_no_text_url else R.string.licences_no_text),
                             Modifier.semantics { heading() },
                             style = MaterialTheme.typography.bodyMedium,
                         )
