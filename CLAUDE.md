@@ -56,7 +56,8 @@ Keep them green; lint errors fail the build.
   `ReminderEngine` (due status, whichever-first/last, mileage-only/time-only, lead time, pace),
   `ServiceLog` (last-done derivation), `Recalls` (list merge, campaign and component names),
   `Torque`/`TorqueUnit`, `Vin`.
-- `:data` — Room + SQLCipher, Keystore key management (`DatabaseKeyManager`), Tink photo
+- `:data` — Room + SQLCipher (opened through SQLCipher's `SQLCipherDriver`, #220; code that goes around the
+  DAOs uses `useReaderConnection` / `useWriterConnection`, never `openHelper`), Keystore key management (`DatabaseKeyManager`), Tink photo
   encryption (`PhotoCrypto`), `NhtsaClient`, `RecallRepository`, `SettingsRepository` (DataStore),
   `DataWipe`, Hilt module.
 - `:app` — Compose UI, navigation, ViewModels, `AppLock` + `LockScreen`, theme.
@@ -838,7 +839,9 @@ Notes on what's built:
   database at every exported version, fills every column of every table, opens it as the current
   database and reads each value back. **A new version is covered as soon as its schema file is in the
   folder; a new table has to be added to the test's `order` list**, which the test says if it is missing.
-  A hand-written migration, when one is ever needed, is tested by the same test.
+  A hand-written migration, when one is ever needed, is tested by the same test. It opens the database
+  through Android's own driver (`AndroidSQLiteDriver`, Robolectric's SQLite), since SQLCipher's native
+  library doesn't load on the JVM; the migrations and schema checks are Room's either way.
 
 ## Conventions
 
