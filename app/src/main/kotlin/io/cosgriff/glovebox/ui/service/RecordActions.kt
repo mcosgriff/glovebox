@@ -142,7 +142,7 @@ class RecordActions @Inject constructor(
     suspend fun completeRecall(recallId: Long, completedOn: LocalDate, record: ServiceRecordEntity?) {
         val recall = recalls.byId(recallId)?.takeIf { it.completedOn == null } ?: return
         val recordId = record?.let {
-            val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = Recalls.serviceLabel(recall.toNotice()))
+            val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = recallServiceLine(recall.toNotice()))
             service.insertWithItems(it, listOf(line))
         }
         recalls.setDone(recall.id, completedOn, recordId)

@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.ruleInSentence
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.ui.service.unit
@@ -90,7 +96,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.util.Locale
 import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
@@ -194,8 +199,8 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
 
     Column(Modifier.fillMaxSize().imePadding()) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
-            Text("Reminder rules", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge)
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
+            Text(stringResource(R.string.reminder_rules_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge)
         }
 
         Column(
@@ -203,7 +208,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Text(
-                "Most services have a mileage interval and a time interval. Choose which one sets the due date.",
+                stringResource(R.string.rules_intro),
                 color = scheme.onSurfaceVariant,
             )
 
@@ -234,7 +239,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
             LeadTimeFields(rules.lead, rules.unit, onChange = vm::setLead)
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionTitle("PER-SERVICE OVERRIDES")
+                SectionTitle(stringResource(R.string.rules_overrides))
                 val overridden = rules.items.filter { it.rule != null }
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -252,7 +257,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 Text(item.label, Modifier.weight(1f))
-                                Text("${item.rule!!.ruleLabel()} ›", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.rules_override_value, item.rule!!.ruleLabel()), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
                             }
                             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = scheme.outlineVariant)
                         }
@@ -260,9 +265,9 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
                             Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(if (overridden.isEmpty()) "Every service" else "Everything else", Modifier.weight(1f))
+                            Text(stringResource(if (overridden.isEmpty()) R.string.rules_every_service else R.string.rules_everything_else), Modifier.weight(1f))
                             Text(
-                                "Uses default",
+                                stringResource(R.string.rules_uses_default),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = scheme.onSurfaceVariant,
@@ -271,7 +276,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
                     }
                 }
                 if (rules.items.any { it.rule == null }) {
-                    TextButton(onClick = { editing = -1 }, modifier = Modifier.heightIn(min = 48.dp)) { Text("+ Add override") }
+                    TextButton(onClick = { editing = -1 }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rules_add_override)) }
                 }
             }
         }
@@ -279,7 +284,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
 
     when {
         editing == -1L -> PickDialog(
-            title = "Override which service?",
+            title = stringResource(R.string.rules_override_which),
             options = rules.items.filter { it.rule == null }.map { it.id to it.label },
             selected = null,
             onPick = { editing = it },
@@ -289,7 +294,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
             PickDialog(
                 title = item.label,
                 // Key 0 stands for "use the default".
-                options = listOf(0L to "Use default (${rules.defaultRule.ruleLabel().lowercase(Locale.US)})") +
+                options = listOf(0L to stringResource(R.string.rules_use_default, rules.defaultRule.ruleInSentence())) +
                     DueRule.entries.map { (it.ordinal + 1).toLong() to it.ruleLabel() },
                 selected = item.rule?.let { (it.ordinal + 1).toLong() } ?: 0L,
                 onPick = { key ->
@@ -302,12 +307,15 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
     }
 }
 
-private fun DueRule.description(): String = when (this) {
-    DueRule.WHICHEVER_FIRST -> "Recommended. Mileage or time, the earlier one — how most schedules are written."
-    DueRule.WHICHEVER_LAST -> "Waits until both the mileage and the time interval have passed."
-    DueRule.MILEAGE_ONLY -> "Ignore time. Good if you drive a lot."
-    DueRule.TIME_ONLY -> "Ignore mileage. Good for a weekend vehicle."
-}
+@Composable
+private fun DueRule.description(): String = stringResource(
+    when (this) {
+        DueRule.WHICHEVER_FIRST -> R.string.rules_first_about
+        DueRule.WHICHEVER_LAST -> R.string.rules_last_about
+        DueRule.MILEAGE_ONLY -> R.string.rules_mileage_about
+        DueRule.TIME_ONLY -> R.string.rules_time_about
+    },
+)
 
 @Composable
 private fun SectionTitle(text: String) {
@@ -330,9 +338,9 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
     ) {
         Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             if (source == null) {
-                Text("PREVIEW", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.rules_preview), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = scheme.onSurfaceVariant)
                 Text(
-                    "Once you've logged a service that has both a mileage and a time interval, this shows how the rule works out for it.",
+                    stringResource(R.string.rules_preview_none),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 return@Column
@@ -340,28 +348,33 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
             val unit = source.unit
             val p = RulePreviews.preview(source.interval, source.last, rule, source.odometer, LocalDate.now(), source.milesPerDay)
             Text(
-                "PREVIEW · ${source.title.uppercase(Locale.US)}",
+                stringResource(R.string.rules_preview_of, source.title.uppercase(AppText.locale)),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = scheme.onSurfaceVariant,
             )
             Text(
-                "Every ${source.interval.miles!!.asDistance(unit)} or ${source.interval.months} months · " +
-                    "last done ${source.last.date.format(longDate)} at ${source.lastRead.odometer.asDistance(unit)}",
+                stringResource(
+                    R.string.rules_preview_source,
+                    source.interval.miles!!.asDistance(unit),
+                    pluralStringResource(R.plurals.months, source.interval.months!!, source.interval.months!!.asNumber()),
+                    source.last.date.format(longDate),
+                    source.lastRead.odometer.asDistance(unit),
+                ),
                 style = MaterialTheme.typography.bodySmall,
             )
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 LimitBar(
-                    label = "Mileage · ${p.dueAtOdometer.asDistance(unit)}",
+                    label = stringResource(R.string.rules_bar_mileage, p.dueAtOdometer.asDistance(unit)),
                     date = when {
-                        p.milesFraction >= 1.0 -> "reached"
-                        else -> p.mileageDate?.let { "~${it.format(monthYear)}" } ?: "no estimate yet"
+                        p.milesFraction >= 1.0 -> stringResource(R.string.rules_reached)
+                        else -> p.mileageDate?.let { stringResource(R.string.snooze_about, it.format(monthYear)) } ?: stringResource(R.string.rules_no_estimate)
                     },
                     fraction = p.milesFraction,
                     deciding = p.decidedBy == DecidedBy.MILEAGE,
                 )
                 LimitBar(
-                    label = "Time · ${source.interval.months} months",
+                    label = stringResource(R.string.rules_bar_time, pluralStringResource(R.plurals.months, source.interval.months!!, source.interval.months!!.asNumber())),
                     date = p.dueByDate.format(longDate),
                     fraction = p.timeFraction,
                     deciding = p.decidedBy == DecidedBy.TIME,
@@ -370,14 +383,14 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
             HorizontalDivider(color = scheme.outlineVariant)
             val (line, why) = p.nextReminder(rule, source.interval.months!!, unit)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Next reminder", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.rules_next_reminder), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 Text(line, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(why, style = MaterialTheme.typography.bodySmall)
             }
             if (p.canExceedInterval) {
                 Surface(color = scheme.primaryContainer, shape = RoundedCornerShape(10.dp)) {
                     Text(
-                        "This can push services past the recommended interval.",
+                        stringResource(R.string.rules_can_exceed),
                         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onPrimaryContainer,
@@ -386,8 +399,8 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
             }
             Text(
                 source.milesPerDay?.let {
-                    "Dates estimated from your average of ~${RulePreviews.milesPerMonth(it).asDistance(unit)}/month"
-                } ?: "Mileage dates need two odometer readings at least a week apart.",
+                    stringResource(R.string.rules_pace, RulePreviews.milesPerMonth(it).asDistance(unit))
+                } ?: stringResource(R.string.rules_no_pace),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -396,24 +409,31 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
 }
 
 /** The headline and the reason under it. */
+@Composable
 private fun RulePreview.nextReminder(rule: DueRule, months: Int, unit: DistanceUnit): Pair<String, String> {
     val odometer = dueAtOdometer.asDistance(unit)
     val timeDate = dueByDate.format(longDate)
+    val reached = milesFraction >= 1.0
+    val estimated = mileageDate?.format(longDate)
     // "~" marks a date worked out from the driving pace; a limit already reached needs no estimate.
-    val mileageDate = mileageDate?.let { if (milesFraction >= 1.0) "Due now" else "~${it.format(longDate)}" }
-    val afterLast = "$months months after the last service"
+    val mileageDate = estimated?.let { if (reached) stringResource(R.string.due_now) else stringResource(R.string.snooze_about, it) }
+    val afterLast = pluralStringResource(R.plurals.rules_after_last, months, months.asNumber())
     return when (rule) {
-        DueRule.MILEAGE_ONLY -> odometer to (mileageDate?.let { if (it == "Due now") "The mileage interval has passed" else "Est. around ${it.drop(1)}" } ?: "No date estimate yet")
+        DueRule.MILEAGE_ONLY -> odometer to when {
+            estimated == null -> stringResource(R.string.rules_no_date)
+            reached -> stringResource(R.string.rules_mileage_passed)
+            else -> stringResource(R.string.rules_est_around, estimated)
+        }
         DueRule.TIME_ONLY -> timeDate to afterLast
         DueRule.WHICHEVER_FIRST -> when (decidedBy) {
-            DecidedBy.MILEAGE -> mileageDate!! to "Mileage hits first, at $odometer"
-            DecidedBy.TIME -> timeDate to "Time hits first, $afterLast"
-            null -> "$odometer or $timeDate" to "Whichever comes first — there's no driving pace yet to say which"
+            DecidedBy.MILEAGE -> mileageDate!! to stringResource(R.string.rules_mileage_first, odometer)
+            DecidedBy.TIME -> timeDate to stringResource(R.string.rules_time_first, afterLast)
+            null -> stringResource(R.string.either_or, odometer, timeDate) to stringResource(R.string.rules_first_no_pace)
         }
         DueRule.WHICHEVER_LAST -> when (decidedBy) {
-            DecidedBy.MILEAGE -> mileageDate!! to "Mileage hits last, at $odometer"
-            DecidedBy.TIME -> timeDate to (odometerAtTimeDue?.let { "Time hits last — est. ~${it.asDistance(unit)} by then" } ?: "Time hits last")
-            null -> "$odometer and $timeDate" to "Once both have passed — there's no driving pace yet to say which is later"
+            DecidedBy.MILEAGE -> mileageDate!! to stringResource(R.string.rules_mileage_last, odometer)
+            DecidedBy.TIME -> timeDate to (odometerAtTimeDue?.let { stringResource(R.string.rules_time_last_est, it.asDistance(unit)) } ?: stringResource(R.string.rules_time_last))
+            null -> stringResource(R.string.rules_both, odometer, timeDate) to stringResource(R.string.rules_last_no_pace)
         }
     }
 }
@@ -457,12 +477,12 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
     }
     val valid = LeadTimeInput.parse(miles, days) != null
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionTitle("REMIND ME EARLY")
+        SectionTitle(stringResource(R.string.rules_remind_early))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedTextField(
                 value = miles,
                 onValueChange = { update(it, days) },
-                label = { Text("${unit.titleWord} before") },
+                label = { Text(stringResource(R.string.rules_distance_before, unit.titleWord)) },
                 singleLine = true,
                 isError = LeadTimeInput.parse(miles, "0") == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -471,7 +491,7 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
             OutlinedTextField(
                 value = days,
                 onValueChange = { update(miles, it) },
-                label = { Text("Days before") },
+                label = { Text(stringResource(R.string.rules_days_before)) },
                 singleLine = true,
                 isError = LeadTimeInput.parse("0", days) == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -480,9 +500,9 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
         }
         Text(
             if (valid) {
-                "A reminder shows as due soon this far ahead of its limit. For a vehicle that counts in the other unit the distance is converted (500 mi is 800 km)."
+                stringResource(R.string.rules_lead_note)
             } else {
-                "Use whole numbers: up to ${LeadTimeInput.MAX_MILES.asDistance(unit)} and up to ${LeadTimeInput.MAX_DAYS} days. Not saved yet."
+                stringResource(R.string.rules_lead_error, LeadTimeInput.MAX_MILES.asDistance(unit), LeadTimeInput.MAX_DAYS.asNumber())
             },
             style = MaterialTheme.typography.bodySmall,
             color = if (valid) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
@@ -522,6 +542,6 @@ private fun PickDialog(
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

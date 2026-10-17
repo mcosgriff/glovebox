@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.BackupRules
 import android.content.Context
@@ -121,7 +122,7 @@ class RecallCheckWorker(context: Context, params: WorkerParameters) : CoroutineW
                 is RecallRefresh.Checked ->
                     if (!firstCheck && settings.notices.recalls && result.added.isNotEmpty()) {
                         deps.notifier().post(
-                            Notice.NewRecalls(v.id, "${v.year} ${v.nickname ?: v.model}", result.added.map { Recalls.componentLabel(it.component) }),
+                            Notice.NewRecalls(v.id, "${v.year} ${v.nickname ?: v.model}", result.added.map { recallComponent(it.component) }),
                         )
                     }
                 RecallRefresh.Failed -> failed = true
