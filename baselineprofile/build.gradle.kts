@@ -22,7 +22,7 @@ android {
     defaultConfig {
         // Generation needs API 28 or later; collecting on an emulator needs 33 (no root).
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 37
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // The timings are compared with each other on the same emulator, never taken as a phone's.
         testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR"
