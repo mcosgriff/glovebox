@@ -2,6 +2,7 @@ package io.cosgriff.glovebox
 
 import io.cosgriff.glovebox.data.DataWipe
 import android.app.Application
+import android.os.Process
 import dagger.hilt.android.HiltAndroidApp
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.notify.NoticeScheduler
@@ -23,6 +24,12 @@ class GloveboxApp : Application() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
+        // The PDF viewer's renderer runs in an isolated process of this app (#224), which starts the
+        // Application as well. It has no files, network or notification service: nothing of the app runs there.
+        if (Process.isIsolated()) {
+            super.onCreate()
+            return
+        }
         // Before Hilt builds anything: a "Delete all data" that was cut short must finish before the database is opened.
         DataWipe.finishInterrupted(this)
         super.onCreate()

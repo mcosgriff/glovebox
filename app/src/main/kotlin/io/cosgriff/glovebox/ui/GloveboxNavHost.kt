@@ -76,6 +76,7 @@ import io.cosgriff.glovebox.ui.vehicle.ArchivedVehiclesScreen
 import io.cosgriff.glovebox.ui.vehicle.ClearHistoryScreen
 import io.cosgriff.glovebox.ui.vehicle.DeleteVehicleScreen
 import io.cosgriff.glovebox.ui.vehicle.FluidsPartsScreen
+import io.cosgriff.glovebox.ui.vehicle.DocumentViewerScreen
 import io.cosgriff.glovebox.ui.vehicle.DocumentsScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
@@ -138,6 +139,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long)
 @Serializable data class FluidsPartsRoute(val vehicleId: Long)
 @Serializable data class DocumentsRoute(val vehicleId: Long)
+@Serializable data class DocumentViewerRoute(val documentId: Long)
 /** One archived vehicle's history, read-only. */
 @Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
 
@@ -392,7 +394,10 @@ fun GloveboxNavHost() {
                 )
             }
             screen<FluidsPartsRoute> { FluidsPartsScreen(onBack = { nav.popBackStack() }) }
-            screen<DocumentsRoute> { DocumentsScreen(onBack = { nav.popBackStack() }) }
+            screen<DocumentsRoute> {
+                DocumentsScreen(onBack = { nav.popBackStack() }, onView = { documentId -> nav.navigate(DocumentViewerRoute(documentId)) })
+            }
+            screen<DocumentViewerRoute> { DocumentViewerScreen(onClose = { nav.popBackStack() }) }
             screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }
             screen<DeleteVehicleRoute> {
                 DeleteVehicleScreen(

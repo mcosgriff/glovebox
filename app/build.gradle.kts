@@ -158,6 +158,9 @@ dependencies {
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.compose)
+    // Documents open in the app (#224). Its OCR add-on (pdf-ocr-play-services) is never on the classpath.
+    implementation(libs.androidx.pdf.compose)
+    implementation(libs.androidx.pdf.document.service)
     implementation(libs.zxing.cpp)
     implementation(libs.pdfbox.android) {
         // Only needed to open encrypted PDFs, and it would clash with the app's own BouncyCastle.

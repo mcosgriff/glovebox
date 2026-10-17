@@ -152,7 +152,7 @@ fun DocumentEntity.toStored() = StoredDocument(
 
 /** A vehicle's paperwork: a history report, the title, the registration. Opened from Vehicle details. */
 @Composable
-fun DocumentsScreen(onBack: () -> Unit, vm: DocumentsViewModel = hiltViewModel()) {
+fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsViewModel = hiltViewModel()) {
     val d = vm.data.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val added by vm.added.collectAsStateWithLifecycle()
     val problem by vm.problem.collectAsStateWithLifecycle()
@@ -251,7 +251,8 @@ fun DocumentsScreen(onBack: () -> Unit, vm: DocumentsViewModel = hiltViewModel()
         items(d.documents, key = { it.first.id }) { (doc, row) ->
             DocumentCard(
                 document = doc,
-                onOpen = { open(row, share = false) },
+                onView = { onView(doc.id) },
+                onOpenElsewhere = { open(row, share = false) },
                 onShare = { open(row, share = true) },
                 onEdit = {
                     editing = doc.id
@@ -268,8 +269,8 @@ fun DocumentsScreen(onBack: () -> Unit, vm: DocumentsViewModel = hiltViewModel()
                 Text(
                     listOfNotNull(
                         d.documents.takeIf { it.isNotEmpty() }?.let { VehicleDocuments.summary(it.size, d.totalBytes) + "." },
-                        "Kept encrypted on this phone and carried in your backups. A document leaves the phone only when you open or share one, " +
-                            "as a copy for the app you choose. PDFs and pictures up to ${VehicleDocuments.MAX_BYTES / (1024 * 1024)} MB.",
+                        "Kept encrypted on this phone and carried in your backups, and opened here in Glovebox. A document leaves " +
+                            "the phone only when you open it in another app or share it, as a copy for the app you choose. PDFs and pictures up to ${VehicleDocuments.MAX_BYTES / (1024 * 1024)} MB.",
                     ).joinToString(" "),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
@@ -280,13 +281,13 @@ fun DocumentsScreen(onBack: () -> Unit, vm: DocumentsViewModel = hiltViewModel()
 }
 
 @Composable
-private fun DocumentCard(document: StoredDocument, onOpen: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
+private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenElsewhere: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
     Surface(modifier = modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 64.dp)
-                .clickable(role = Role.Button, onClickLabel = "Open", onClick = onOpen)
+                .clickable(role = Role.Button, onClickLabel = "Open", onClick = onView)
                 .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -311,7 +312,8 @@ private fun DocumentCard(document: StoredDocument, onOpen: () -> Unit, onShare: 
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = "More for ${document.name}") }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Open") }, onClick = { menu = false; onOpen() })
+                    DropdownMenuItem(text = { Text("Open") }, onClick = { menu = false; onView() })
+                    DropdownMenuItem(text = { Text("Open in another app") }, onClick = { menu = false; onOpenElsewhere() })
                     DropdownMenuItem(text = { Text("Share") }, onClick = { menu = false; onShare() })
                     DropdownMenuItem(text = { Text("Edit details") }, onClick = { menu = false; onEdit() })
                     DropdownMenuItem(text = { Text("Delete", color = scheme.error) }, onClick = { menu = false; onDelete() })
@@ -459,7 +461,7 @@ private fun DetailsDialog(
 }
 
 /** Hands a decrypted copy to another app to view, or to the share sheet. False if nothing on the phone can take it. */
-private fun Context.hand(copy: File, format: DocumentFormat, share: Boolean): Boolean {
+internal fun Context.hand(copy: File, format: DocumentFormat, share: Boolean): Boolean {
     val uri = FileProvider.getUriForFile(this, "$packageName.files", copy)
     val intent = if (share) {
         Intent.createChooser(

@@ -22,6 +22,7 @@ sqlcipher = "4.19.1"
 tink = "1.23.0"
 ktor = "3.6.0"
 camerax = "1.6.2"
+pdf = "1.0.0-beta01"
 # Barcode reading. Pure Java with no network code; ML Kit was ruled out because it uploads usage logs.
 zxing = "3.5.4"
 # Reads the odometer off the dash (#64). Tesseract and Leptonica as native libraries: no network code, no
@@ -85,6 +86,8 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 camerax-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
+androidx-pdf-compose = { module = "androidx.pdf:pdf-compose", version.ref = "pdf" }
+androidx-pdf-document-service = { module = "androidx.pdf:pdf-document-service", version.ref = "pdf" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 # Reads the VIN barcodes (#161): the C++ successor to ZXing, far better on blurred and unevenly lit camera frames.

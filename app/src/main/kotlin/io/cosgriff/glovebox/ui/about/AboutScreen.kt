@@ -203,6 +203,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
                 "Everything stays on this phone" to listOf(
                     "There is no account and no Glovebox server. Your vehicles, service records, photos, documents and settings exist only on this phone.",
                     "The database, photos and documents are encrypted with keys held by Android Keystore.",
+                    "Documents open inside Glovebox. A PDF is drawn by a part of the app that runs walled off from the rest, with no network and no files of its own, and it is read from memory, not from a copy on the phone.",
                     "Android's own cloud backup and device-to-device transfer are switched off for this app. The only copy that can leave is a backup file you make yourself.",
                 ),
                 "What is sent, and to whom" to listOf(
@@ -226,8 +227,8 @@ fun PrivacyScreen(onBack: () -> Unit) {
                     "Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept unless you tick \"Keep a copy in this vehicle's documents\", and nothing is sent anywhere.",
                 ),
                 "When you leave the app" to listOf(
-                    "A manufacturer's recall page, Find a dealer and the source code open in your browser or maps app. What those do is up to them.",
-                    "Opening or sharing a document, sharing a photo or saving a file hands a copy to the app you choose.",
+                    "A manufacturer's recall page, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.",
+                    "Opening a document in another app, sharing a document or photo, or saving a file hands a copy to the app you choose.",
                 ),
                 "Permissions" to listOf(
                     "Camera: to scan a VIN from its barcode or from print, to read the odometer off the dash, and to photograph receipts, parts and paperwork. Scanner and dash frames are read on this phone and thrown away, never stored or sent.",
