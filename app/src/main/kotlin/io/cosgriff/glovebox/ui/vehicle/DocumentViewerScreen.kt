@@ -1,6 +1,5 @@
 package io.cosgriff.glovebox.ui.vehicle
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -192,7 +192,7 @@ private fun PdfPages(row: DocumentEntity, vm: DocumentViewerViewModel, onOpenEls
         }
         val document = try {
             // The address only names this document to the renderer; the pages come from the descriptor.
-            loader.openDocument(Uri.parse("glovebox://document/${row.id}"), descriptor)
+            loader.openDocument("glovebox://document/${row.id}".toUri(), descriptor)
         } catch (e: CancellationException) {
             descriptor.close()
             throw e

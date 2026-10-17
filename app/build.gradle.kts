@@ -82,6 +82,10 @@ android {
         baseline = file("lint-baseline.xml")
         abortOnError = true
         warningsAsErrors = false
+        // Dependabot proposes new versions, after its 5-day cooldown; lint would flag them on day one.
+        disable += "NewerVersionAvailable"
+        // The release is 64-bit ARM only on purpose (abiFilters above); no ChromeOS x86_64 build.
+        disable += "ChromeOsAbiSupport"
     }
 }
 

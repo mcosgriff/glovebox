@@ -23,7 +23,6 @@ import android.os.PersistableBundle
 import android.os.Build
 import android.content.Context
 import android.content.ClipboardManager
-import android.content.ClipDescription
 import android.content.ClipData
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.data.db.UnitDao
@@ -1089,9 +1088,13 @@ private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -
  * Puts [text] on the clipboard. A [sensitive] one (the VIN) is marked so Android hides it in its clipboard
  * preview. Android 13 and later say "Copied" themselves; earlier versions get a short message here.
  */
+private const val IS_SENSITIVE = "android.content.extra.IS_SENSITIVE"
+
 internal fun copyText(context: Context, label: String, text: String, sensitive: Boolean) {
     val clip = ClipData.newPlainText(label, text).apply {
-        if (sensitive) description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+        // ClipDescription.EXTRA_IS_SENSITIVE is API 33; before that the same key, spelled out, is what keyboards
+        // and clipboard tools read.
+        if (sensitive) description.extras = PersistableBundle().apply { putBoolean(IS_SENSITIVE, true) }
     }
     context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) Toast.makeText(context, "$label copied", Toast.LENGTH_SHORT).show()
