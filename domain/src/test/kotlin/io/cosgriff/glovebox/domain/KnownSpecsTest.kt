@@ -124,15 +124,6 @@ class KnownSpecsTest {
     }
 
     @Test
-    fun `the offer says whose values they are and what happens to the user's own`() {
-        val text = KnownSpecs.offer(roadster, KnownSpecs.plan(roadster, emptyList()))
-        assertTrue(text.startsWith("4 reference values. Source: example.test. A made-up list."))
-        assertTrue("DOUBLE-CHECK" in text)
-        val some = KnownSpecs.offer(roadster, KnownSpecs.plan(roadster, listOf(saved(2, "Oil drain plug", TorqueCategory.ENGINE, Torque(40.0)))))
-        assertTrue(some.startsWith("3 reference values") && some.endsWith("1 fastener you have already filled in is left as it is."))
-    }
-
-    @Test
     fun `a reference value stays one until it is vouched for or changed`() {
         val ref = TorqueSource.REFERENCE
         val value = Torque.of(85.0, TorqueUnit.FOOT_POUND)

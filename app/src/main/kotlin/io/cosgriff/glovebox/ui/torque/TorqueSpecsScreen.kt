@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.torque
 
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.flow
 import io.cosgriff.glovebox.domain.KnownSpecs
 import io.cosgriff.glovebox.domain.KnownSpecPlan
@@ -202,8 +205,8 @@ class TorqueSpecsViewModel @Inject constructor(
     fun addCommon() = viewModelScope.launch {
         val have = state.value?.specs.orEmpty().map { it.name.lowercase() }.toSet()
         torque.insertAll(
-            TorqueSpecs.common.filter { it.name.lowercase() !in have }
-                .map { TorqueSpecEntity(vehicleId = vehicleId, name = it.name, category = it.category.name) },
+            TorqueSpecs.common.filter { it.label.lowercase() !in have }
+                .map { TorqueSpecEntity(vehicleId = vehicleId, name = it.label, category = it.category.name) },
         )
     }
 }
@@ -217,6 +220,7 @@ fun TorqueSpecsScreen(
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
     vm: TorqueSpecsViewModel = hiltViewModel(),
 ) {
+    val res = LocalResources.current
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val v = state.vehicle
     val scheme = MaterialTheme.colorScheme
@@ -236,7 +240,7 @@ fun TorqueSpecsScreen(
         if (id == 0L || spec != null) {
             SpecEditorSheet(
                 spec = spec,
-                listSource = spec?.knownList?.let { state.knownSources[it] ?: "a reference list" },
+                listSource = spec?.knownList?.let { state.knownSources[it] ?: stringResource(R.string.torque_a_reference_list) },
                 unit = unit,
                 startCategory = category ?: TorqueCategory.ENGINE,
                 onSave = {
@@ -245,7 +249,7 @@ fun TorqueSpecsScreen(
                 },
                 onDelete = {
                     editing = null
-                    spec?.let { s -> vm.delete(s) { undo -> onMessage("${s.name} deleted", "Undo", undo) } }
+                    spec?.let { s -> vm.delete(s) { undo -> onMessage(res.getString(R.string.torque_deleted, s.name), res.getString(R.string.undo), undo) } }
                 },
                 onDismiss = { editing = null },
             )
@@ -263,10 +267,10 @@ fun TorqueSpecsScreen(
     ) {
         item {
             Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
                 Column(Modifier.padding(start = 8.dp)) {
                     Text(
-                        "Torque & fastener specs",
+                        stringResource(R.string.details_torque),
                         Modifier.semantics { heading() },
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
@@ -283,10 +287,9 @@ fun TorqueSpecsScreen(
         if (state.specs.isEmpty()) {
             item {
                 Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Nothing saved yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.documents_empty_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "Keep the socket sizes and torque values you look up, so they're here next time. " +
-                            "Glovebox has no factory values: you enter them from the service manual.",
+                        stringResource(R.string.torque_empty_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
@@ -297,10 +300,10 @@ fun TorqueSpecsScreen(
                         border = BorderStroke(1.5.dp, scheme.onSurface),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                     ) {
-                        Text("Start with common fasteners")
+                        Text(stringResource(R.string.torque_start_common))
                     }
                     Text(
-                        "Adds named rows such as Oil drain plug and Lug nuts, with the values left for you to fill in.",
+                        stringResource(R.string.torque_start_common_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -313,7 +316,7 @@ fun TorqueSpecsScreen(
                     OutlinedTextField(
                         value = query,
                         onValueChange = { query = it },
-                        placeholder = { Text("Search — drain plug, lug nut…") },
+                        placeholder = { Text(stringResource(R.string.torque_search)) },
                         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
@@ -321,7 +324,7 @@ fun TorqueSpecsScreen(
                     )
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            "SHOW TORQUE IN",
+                            stringResource(R.string.torque_show_in),
                             Modifier.weight(1f),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
@@ -331,7 +334,7 @@ fun TorqueSpecsScreen(
                     }
                     if (categories.size > 1) {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Chip("All", selected = category == null) { categoryName = null }
+                            Chip(stringResource(R.string.history_all), selected = category == null) { categoryName = null }
                             categories.forEach { c -> Chip(c.label, selected = category == c) { categoryName = c.name } }
                         }
                     }
@@ -339,14 +342,14 @@ fun TorqueSpecsScreen(
             }
             if (shown.isEmpty()) {
                 item {
-                    Text("Nothing matches.", Modifier.padding(horizontal = 20.dp, vertical = 12.dp), color = scheme.onSurfaceVariant)
+                    Text(stringResource(R.string.torque_nothing_matches), Modifier.padding(horizontal = 20.dp, vertical = 12.dp), color = scheme.onSurfaceVariant)
                 }
             }
             items(shown, key = { it.id }) { spec ->
                 SpecCard(
                     spec,
                     unit,
-                    listSource = spec.knownList?.let { state.knownSources[it] ?: "a reference list" },
+                    listSource = spec.knownList?.let { state.knownSources[it] ?: stringResource(R.string.torque_a_reference_list) },
                     onClick = { editing = spec.id },
                     modifier = Modifier.padding(horizontal = 20.dp),
                 )
@@ -362,24 +365,22 @@ fun TorqueSpecsScreen(
                     border = BorderStroke(1.5.dp, scheme.outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("+ Add a spec")
+                    Text(stringResource(R.string.torque_add))
                 }
-                if (state.specs.isNotEmpty() && TorqueSpecs.common.any { t -> state.specs.none { it.name.equals(t.name, ignoreCase = true) } }) {
+                if (state.specs.isNotEmpty() && TorqueSpecs.common.any { t -> state.specs.none { it.name.equals(t.label, ignoreCase = true) } }) {
                     TextButton(onClick = vm::addCommon, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
-                        Text("Add the common fasteners that are missing")
+                        Text(stringResource(R.string.torque_add_missing))
                     }
                 }
                 if (state.specs.isNotEmpty()) state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = vm::addKnown) }
                 Text(
-                    "Enter torque in any unit — it converts automatically. Always check the factory service manual; " +
-                        "a wrong torque on lug nuts or drain plugs can cause damage.",
+                    stringResource(R.string.torque_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
                 if (state.specs.isNotEmpty()) {
                     SaveAsImportFile(
-                        caption = "A copy to keep, or to pass to someone with the same model. It holds these rows and nothing else about your vehicle, and it isn't encrypted. " +
-                            "Every value in it is the one you entered: whoever uses the file should check each against their own service manual.",
+                        caption = stringResource(R.string.torque_save_caption),
                         write = vm::written,
                         onSave = vm::saveAsFile,
                     )
@@ -404,7 +405,7 @@ internal fun UnitSwitch(unit: TorqueUnit, onPick: (TorqueUnit) -> Unit, modifier
                     activeContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
                 icon = {},
-            ) { Text(u.symbol, maxLines = 1) }
+            ) { Text(u.symbolWord, maxLines = 1) }
         }
     }
 }
@@ -442,26 +443,26 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: Strin
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         spec.socketSize?.let { Tag(it, scheme.surfaceVariant, statusColors().soon, mono = true) }
                         when {
-                            torque == null -> Tag("NEEDS VALUE", scheme.primaryContainer, scheme.onPrimaryContainer)
+                            torque == null -> Tag(stringResource(R.string.torque_tag_needs_value), scheme.primaryContainer, scheme.onPrimaryContainer)
                             // Somebody else's figure, not yet checked: the loudest tag on the screen.
-                            TorqueSource.of(spec.source) == TorqueSource.REFERENCE -> Tag("DOUBLE-CHECK", scheme.primary, scheme.onPrimary)
-                            TorqueSource.of(spec.source) == TorqueSource.FACTORY -> Tag("FACTORY MANUAL", scheme.tertiaryContainer, scheme.onTertiaryContainer)
-                            else -> Tag("YOUR ENTRY", scheme.surfaceVariant, statusColors().soon)
+                            TorqueSource.of(spec.source) == TorqueSource.REFERENCE -> Tag(stringResource(R.string.torque_tag_double_check), scheme.primary, scheme.onPrimary)
+                            TorqueSource.of(spec.source) == TorqueSource.FACTORY -> Tag(stringResource(R.string.torque_tag_factory), scheme.tertiaryContainer, scheme.onTertiaryContainer)
+                            else -> Tag(stringResource(R.string.torque_tag_yours), scheme.surfaceVariant, statusColors().soon)
                         }
                     }
                 }
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (torque != null) {
-                        Text(torque.format(unit), style = MaterialTheme.typography.titleLarge, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                        Text(torque.text(unit), style = MaterialTheme.typography.titleLarge, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                         Text(
-                            TorqueUnit.entries.filter { it != unit }.joinToString(" · ") { torque.format(it) },
+                            TorqueUnit.entries.filter { it != unit }.joinToString(" · ") { torque.text(it) },
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,
                         )
                     } else {
                         Text(
-                            "Tap to add",
+                            stringResource(R.string.fluids_tap_to_add),
                             style = MaterialTheme.typography.titleSmall,
                             fontFamily = PlexMono,
                             fontWeight = FontWeight.SemiBold,
@@ -472,7 +473,7 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: Strin
             }
             spec.note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = statusColors().soon) }
             // Stays for good, whatever the tag above says now: this row began as somebody else's figure.
-            listSource?.let { Text("Started from the $it list", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+            listSource?.let { Text(stringResource(R.string.torque_started_from, it), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
         }
     }
 }
@@ -492,9 +493,9 @@ private fun KnownOffer(list: KnownSpecList, plan: KnownSpecPlan, onAdd: () -> Un
             border = BorderStroke(1.5.dp, scheme.onSurface),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
         ) {
-            Text("Add known specs for the ${list.title}")
+            Text(stringResource(R.string.torque_add_known, list.title))
         }
-        Text(KnownSpecs.offer(list, plan), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        Text(offer(list, plan), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 

@@ -1351,4 +1351,70 @@
     <string name="rules_days_before">Days before</string>
     <string name="rules_lead_note">A reminder shows as due soon this far ahead of its limit. For a vehicle that counts in the other unit the distance is converted (500 mi is 800 km).</string>
     <string name="rules_lead_error">Use whole numbers: up to %1$s and up to %2$s days. Not saved yet.</string>
+
+    <!-- Torque specs shared (TorqueText.kt) -->
+    <string name="torque_category_engine">Engine &amp; oil</string>
+    <string name="torque_category_wheels">Wheels &amp; brakes</string>
+    <string name="torque_category_driveline">Driveline</string>
+    <string name="torque_category_suspension">Suspension &amp; steering</string>
+    <string name="torque_category_other">Other</string>
+    <string name="fastener_oil_drain_plug">Oil drain plug</string>
+    <string name="fastener_oil_filter">Oil filter</string>
+    <string name="fastener_spark_plugs">Spark plugs</string>
+    <string name="fastener_lug_nuts">Lug nuts</string>
+    <string name="fastener_front_caliper">Front caliper bracket bolts</string>
+    <string name="fastener_rear_caliper">Rear caliper bracket bolts</string>
+    <string name="fastener_transmission_drain_plug">Transmission drain plug</string>
+    <string name="torque_unit_nm">N·m</string>
+    <string name="torque_unit_ft_lb">ft-lb</string>
+    <string name="torque_unit_in_lb">in-lb</string>
+    <!-- A torque and its unit: 83 ft-lb. -->
+    <string name="torque_value">%1$s %2$s</string>
+    <plurals name="known_specs_values">
+        <item quantity="one">%1$s reference value</item>
+        <item quantity="other">%1$s reference values</item>
+    </plurals>
+    <!-- %1$s is how many values (capitalised as a sentence start), %2$s the source, %3$s its note in English as it ships. -->
+    <string name="known_specs_offer">%1$s. Source: %2$s. %3$s Each is tagged DOUBLE-CHECK until you have checked it against a service or repair manual and said so.</string>
+    <plurals name="known_specs_kept">
+        <item quantity="one">%1$s fastener you have already filled in is left as it is.</item>
+        <item quantity="other">%1$s fasteners you have already filled in are left as they are.</item>
+    </plurals>
+
+    <!-- Torque specs (TorqueSpecsScreen, SpecEditorSheet) -->
+    <string name="torque_a_reference_list">a reference list</string>
+    <string name="torque_deleted">%1$s deleted</string>
+    <string name="torque_empty_body">Keep the socket sizes and torque values you look up, so they\'re here next time. Glovebox has no factory values: you enter them from the service manual.</string>
+    <string name="torque_start_common">Start with common fasteners</string>
+    <string name="torque_start_common_note">Adds named rows such as Oil drain plug and Lug nuts, with the values left for you to fill in.</string>
+    <string name="torque_search">Search — drain plug, lug nut…</string>
+    <string name="torque_show_in">SHOW TORQUE IN</string>
+    <string name="torque_nothing_matches">Nothing matches.</string>
+    <string name="torque_add">+ Add a spec</string>
+    <string name="torque_add_missing">Add the common fasteners that are missing</string>
+    <string name="torque_note">Enter torque in any unit — it converts automatically. Always check the factory service manual; a wrong torque on lug nuts or drain plugs can cause damage.</string>
+    <string name="torque_save_caption">A copy to keep, or to pass to someone with the same model. It holds these rows and nothing else about your vehicle, and it isn\'t encrypted. Every value in it is the one you entered: whoever uses the file should check each against their own service manual.</string>
+    <string name="torque_tag_needs_value">NEEDS VALUE</string>
+    <string name="torque_tag_double_check">DOUBLE-CHECK</string>
+    <string name="torque_tag_factory">FACTORY MANUAL</string>
+    <string name="torque_tag_yours">YOUR ENTRY</string>
+    <string name="torque_started_from">Started from the %1$s list</string>
+    <string name="torque_add_known">Add known specs for the %1$s</string>
+    <string name="torque_add_title">Add a spec</string>
+    <string name="torque_edit_title">Edit spec</string>
+    <string name="torque_fastener">Fastener</string>
+    <string name="torque_socket">Socket or tool size (optional)</string>
+    <string name="torque_socket_hint">14 mm</string>
+    <string name="torque_in">Torque in %1$s</string>
+    <string name="torque_bad">Enter a torque above zero, up to %1$s.</string>
+    <!-- The same torque in the other units. -->
+    <string name="torque_equals">= %1$s</string>
+    <string name="torque_leave_empty">Leave empty to add the value later.</string>
+    <string name="torque_checked">I\'ve checked this value</string>
+    <string name="torque_checked_note">It is from %1$s and nobody has checked it for you. Switch this on once a service or repair manual agrees, and it becomes your entry. If the figure is wrong, change it above.</string>
+    <string name="torque_factory">From the factory service manual</string>
+    <string name="torque_factory_note">Tags the value so you know you didn\'t get it from a forum or a guess.</string>
+    <string name="torque_note_label">Note (optional)</string>
+    <string name="torque_note_hint">Replace the gasket every change</string>
+    <string name="torque_delete">Delete this spec</string>
 </resources>

@@ -9,14 +9,14 @@ class TorqueAndVinTest {
     @Test
     fun `15 N·m is about 11 ft-lb, not 2`() {
         val t = Torque.of(15.0, TorqueUnit.NEWTON_METER)
-        assertEquals("11 ft-lb", t.format(TorqueUnit.FOOT_POUND))
-        assertEquals("135 in-lb", t.format(TorqueUnit.INCH_POUND))
+        assertEquals(11, t.rounded(TorqueUnit.FOOT_POUND))
+        assertEquals(135, t.rounded(TorqueUnit.INCH_POUND))
     }
 
     @Test
     fun `lug nuts 83 ft-lb round-trip`() {
         val t = Torque.of(83.0, TorqueUnit.FOOT_POUND)
-        assertEquals("113 N·m", t.format(TorqueUnit.NEWTON_METER))
+        assertEquals(113, t.rounded(TorqueUnit.NEWTON_METER))
         assertEquals(83.0, t.inUnit(TorqueUnit.FOOT_POUND), 1e-9)
     }
 
