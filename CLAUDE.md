@@ -618,8 +618,19 @@ Notes on what's built:
   `RecordPhotoStore.sweep`, `BackupWriter`, `BackupRestorer` and the crypto-erase cover it as they
   cover photos; any new place that lists photo files must list `DocumentDao.allFiles` too. A PDF is
   kept as it came; a picture is redrawn as a JPEG of at most `VehicleDocuments.MAX_EDGE`, which drops
-  its metadata. Files are read into memory up to `MAX_BYTES` (20 MB). Opening one hands a decrypted copy
-  in `shared/` to another app (`ACTION_VIEW`); nothing is drawn from it in the app. The launchers live in
+  its metadata. Files are read into memory up to `MAX_BYTES` (20 MB). **A document opens inside Glovebox**
+  (#224, the user's decision of 2026-10-16, reversing "handed to another app"): `DocumentViewerScreen`
+  (`DocumentViewerRoute`) shows a picture with the photo viewer's `ZoomableImage` and a PDF with Jetpack's
+  `androidx.pdf` (`pdf-compose`'s `PdfViewer`, `pdf-document-service`'s `SandboxedPdfLoader`). The PDF is
+  rendered in an **isolated process** of the app (`PdfDocumentServiceImpl`, no network, no files), which
+  starts `GloveboxApp` too, so **`GloveboxApp.onCreate` does nothing in an isolated process**; keep anything
+  new there behind that check. `DocumentStore.openPdf` hands the renderer a descriptor of the decrypted
+  PDF: an anonymous memory file (`memfd_create`) on Android 11+, so nothing touches disk; Android 10 has no
+  such call, so there it goes through `cache/viewing/`, deleted as soon as it is open and emptied by the
+  sweep, never exported by the FileProvider. The document is opened in composition and closed on leaving
+  it, so locking the app closes it. `pdf-ocr-play-services` (OCR through Play services) must never be on
+  the classpath; check `releaseRuntimeClasspath` on an upgrade. "Open in another app" and Share still hand
+  a decrypted copy in `shared/` to another app (`ACTION_VIEW` / `ACTION_SEND`), only when chosen. The launchers live in
   `MainActivity` for the lock-screen reason; a new document opens its details dialog, whose "Don't keep
   it" removes it. Deleting is a confirmation with no Undo. An export lists them (type, name, date; its
   own switch, `ExportOptions.documents`) and never carries their contents. Delete vehicle counts them. Taking a photo needs the camera permission because the app declares it for VIN scanning.
