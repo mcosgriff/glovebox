@@ -1,10 +1,10 @@
 package io.cosgriff.glovebox.data.backup
 
-import androidx.room.PooledConnection
-import androidx.room.execSQL
-import androidx.room.immediateTransaction
-import androidx.room.useReaderConnection
-import androidx.room.useWriterConnection
+import androidx.room3.PooledConnection
+import androidx.room3.executeSQL
+import androidx.room3.immediateTransaction
+import androidx.room3.useReaderConnection
+import androidx.room3.useWriterConnection
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -136,11 +136,11 @@ class BackupRestorer(
         db.useWriterConnection { connection ->
             connection.immediateTransaction {
                 // Rows go in table by table, children sometimes before parents; the links are checked at commit.
-                execSQL("PRAGMA defer_foreign_keys = ON")
+                executeSQL("PRAGMA defer_foreign_keys = ON")
                 val current = usePrepared("SELECT name FROM sqlite_master WHERE type = 'table'") { s ->
                     buildList { while (s.step()) add(s.getText(0)) }
                 }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
-                current.forEach { execSQL("DELETE FROM `$it`") }
+                current.forEach { executeSQL("DELETE FROM `$it`") }
                 for ((table, rows) in tables) {
                     if (table !in current) continue
                     val columns = columns(table)

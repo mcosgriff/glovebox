@@ -1,8 +1,8 @@
 package io.cosgriff.glovebox.data.backup
 
-import androidx.room.PooledConnection
-import androidx.room.deferredTransaction
-import androidx.room.useReaderConnection
+import androidx.room3.PooledConnection
+import androidx.room3.deferredTransaction
+import androidx.room3.useReaderConnection
 import androidx.sqlite.SQLITE_DATA_FLOAT
 import androidx.sqlite.SQLITE_DATA_INTEGER
 import androidx.sqlite.SQLITE_DATA_NULL
