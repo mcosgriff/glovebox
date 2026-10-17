@@ -204,7 +204,10 @@ Notes on what's built:
   filled in by hand. vPIC trims that list several ("SR5/SR5 Premium") are offered as choices, and
   `vehicles.trimConfirmed` records that the user picked or typed one. The vehicle is saved before the
   schedule screen, so Back from there keeps it.
-- VIN scanning (`ScanVinScreen`): CameraX's `LifecycleCameraController` feeds frames at about 1080p to
+- VIN scanning (`ScanVinScreen`): the shared camera set-up in `CameraFeed.kt` (#223) binds a `Preview` and an
+  `ImageAnalysis` (`rememberFrameAnalysis`) with `ProcessCameraProvider` and shows the picture with
+  camera-compose's `CameraXViewfinder` (Crop, `EMBEDDED`, so it moves with a predictive back swipe; pinch zooms
+  and a tap focuses through its coordinate transformer). The analysis feeds frames at about 1080p to
   `VinBarcodeReader`, which takes the luminance plane, turns it upright (a 1D reader only scans along
   rows), cuts out a band across the middle where the guide is, and asks zxing-cpp for a Code 39, QR, Data Matrix
   or Code 128 code.
@@ -223,8 +226,11 @@ Notes on what's built:
   pass a wrong VIN one time in eleven. A printed VIN is offered only when two of the last five frames
   read the same one (`VinScan.agreed`); a barcode is taken at once. If the recogniser can't start, the
   scanner is a barcode scanner as before. Frames are never stored. **Frames are turned as the screen shows
-  them (`FrameTurn`), not by the `rotationDegrees` CameraController gives:** that follows the motion sensor,
-  so a phone tipped while aiming had its frames a quarter turn from the preview and read nothing. Settings'
+  them:** `CameraFeed` keeps both use cases' `targetRotation` at the display's rotation (and follows a turn
+  from one landscape to the other, which doesn't recreate the activity), so a frame's `rotationDegrees` is
+  the screen's. The `LifecycleCameraController` used before set it from the motion sensor, so a phone
+  tipped while aiming had its frames a quarter turn from the preview and read nothing; never set the
+  target rotation from an orientation listener. Settings'
   "Show what the scanner sees" (`Settings.scannerDetails`, off by default) adds a panel under the guide
   (`ScanReport`): the band read, any barcode found outlined (green read, amber found but not decoded, from
   zxing-cpp's `returnErrors`), frames a second and what the print came to. The VIN goes back to the add screen through the nav
@@ -538,8 +544,8 @@ Notes on what's built:
   where it is edited. Readings are shown as typed and compared in dash terms, like everything else with
   a replaced cluster. The final odometer logged when a vehicle is sold is an ordinary reading here.
 - "Read dash" on that sheet (`ReadDashScreen`, `TextReader.digits`, `DashReading` in `:domain`) points the camera
-  at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`guideBand()`,
-  `NoCamera`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark
+  at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`CameraScreen`,
+  `CameraFeed`, `CameraTopBar`, `guideBand()`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark
   frame is turned into its negative, since most odometers are lit digits on black), words under
   70% confidence are dropped (a VIN keeps every word, since its check digit vouches for it), and `DashReading.pick` chooses the number. **With a last
   reading, only a number from it to 200,000 miles past it is ever offered**; that is what keeps a trip
