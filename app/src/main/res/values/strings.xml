@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Glovebox</string>
+
+    <!-- Unlock (LockScreen) -->
+    <string name="unlock_prompt_title">Unlock Glovebox</string>
+    <string name="unlock_locked_and_encrypted">Your data is locked and encrypted</string>
+    <string name="unlock_instruction_screen_lock">Use your screen lock to open your Glovebox</string>
+    <string name="unlock_instruction_fingerprint">Touch the sensor to open your Glovebox</string>
+    <string name="unlock_instruction_biometric">Unlock to open your Glovebox</string>
+    <string name="unlock_button_screen_lock">Unlock with screen lock</string>
+    <string name="unlock_button_fingerprint">Unlock with fingerprint</string>
+    <string name="unlock_button_biometric">Unlock</string>
+    <!-- A phone's lock may be a pattern or a password, so it isn't called a PIN. -->
+    <string name="unlock_use_screen_lock">Use screen lock instead</string>
+    <string name="unlock_wait_or_use_screen_lock">Too many tries. Wait a moment, or use your screen lock.</string>
+    <string name="unlock_wait">Too many tries. Wait a moment and try again.</string>
+    <string name="unlock_off_until_screen_lock">Too many tries. Fingerprint and face are off until you use your screen lock.</string>
+    <string name="unlock_couldnt_check">Couldn\'t check just now. Try again.</string>
 </resources>

@@ -848,6 +848,15 @@ Notes on what's built:
 ## Conventions
 
 - Business logic goes in `:domain` with a test; ViewModels stay thin.
+- Wording lives in `res/values/strings.xml` (#236; being moved there screen by screen, `Unlock` and the
+  lock screen first). Composables use `stringResource` / `pluralStringResource`, with figures passed as
+  arguments that already carry their unit (`Int.asDistance(unit)`). Names are `<screen>_<what>`
+  (`unlock_wait`). **`:domain` returns no English:** it returns a typed result (an enum, or a sealed type
+  carrying the figures, as `UnlockPrompt` and `UnlockMessage` do) and `app` words it beside the screen
+  that shows it; its tests check the result, not text. Text Android supplies (a biometric error) is
+  passed through as a case of its own. Wording held in saved state is worded once, when it happens.
+  English stays word for word while moving, since `EndToEndTest` finds things by their words; a
+  wording change is its own PR. Exports and import files keep their fixed formats.
 - Never show placeholder data as if real; mark sample values clearly.
 - Torque/interval reference values are user-verified; UI says "check your service manual". A bundled torque
   value is the one exception to "user-entered", and it is tagged DOUBLE-CHECK until the user has checked it.

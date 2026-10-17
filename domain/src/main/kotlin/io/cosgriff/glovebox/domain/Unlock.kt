@@ -17,17 +17,45 @@ enum class UnlockError {
     OTHER,
 }
 
+/** What the unlock screen asks for; `app` words it. */
+enum class UnlockPrompt {
+    /** The PIN, pattern or password: the phone has no biometric. */
+    SCREEN_LOCK,
+
+    /** The phone has a fingerprint sensor, so the user is told to touch it. */
+    FINGERPRINT,
+
+    /** A biometric, but no sensor to point at (face, say): Android doesn't say which is enrolled. */
+    BIOMETRIC,
+}
+
 /** What the unlock screen offers on this phone. */
 data class UnlockOptions(
-    /** Under the round button. */
-    val instruction: String,
-    /** What the round button does, for a screen reader. */
-    val buttonLabel: String,
+    val prompt: UnlockPrompt,
+    /** Whether there is a link under the instruction that skips the fingerprint or face. */
+    val screenLockLink: Boolean,
+) {
     /** Whether the round button shows a fingerprint; otherwise a padlock. */
-    val fingerprint: Boolean,
-    /** The link under the instruction that skips the fingerprint or face; null when there is nothing to skip to. */
-    val screenLockLink: String?,
-)
+    val fingerprint: Boolean get() = prompt == UnlockPrompt.FINGERPRINT
+}
+
+/** What to tell the user after a failed attempt; `app` words it. */
+sealed interface UnlockMessage {
+    /** Too many tries; the biometric comes back after a wait, and the screen lock works now. */
+    data object WaitOrUseScreenLock : UnlockMessage
+
+    /** Too many tries, and nothing else to offer. */
+    data object Wait : UnlockMessage
+
+    /** Too many tries; the biometric stays off until the screen lock is used. */
+    data object OffUntilScreenLock : UnlockMessage
+
+    /** Android said what went wrong, and that is the most useful thing to show. */
+    data class FromSystem(val text: String) : UnlockMessage
+
+    /** Something failed and nobody said what. */
+    data object CouldntCheck : UnlockMessage
+}
 
 object Unlock {
     /**
@@ -40,18 +68,10 @@ object Unlock {
      */
     fun options(lock: ScreenLock, fingerprintSensor: Boolean, screenLockAlone: Boolean): UnlockOptions? = when (lock) {
         ScreenLock.NONE -> null
-        ScreenLock.CREDENTIAL -> UnlockOptions(
-            instruction = "Use your screen lock to open your Glovebox",
-            buttonLabel = "Unlock with screen lock",
-            fingerprint = false,
-            screenLockLink = null,
-        )
+        ScreenLock.CREDENTIAL -> UnlockOptions(UnlockPrompt.SCREEN_LOCK, screenLockLink = false)
         ScreenLock.BIOMETRIC -> UnlockOptions(
-            instruction = if (fingerprintSensor) "Touch the sensor to open your Glovebox" else "Unlock to open your Glovebox",
-            buttonLabel = if (fingerprintSensor) "Unlock with fingerprint" else "Unlock",
-            fingerprint = fingerprintSensor,
-            // A phone's lock may be a pattern or a password, so it isn't called a PIN.
-            screenLockLink = if (screenLockAlone) "Use screen lock instead" else null,
+            prompt = if (fingerprintSensor) UnlockPrompt.FINGERPRINT else UnlockPrompt.BIOMETRIC,
+            screenLockLink = screenLockAlone,
         )
     }
 
@@ -59,11 +79,11 @@ object Unlock {
      * What to tell the user after a failed attempt; null when nothing needs saying (they cancelled).
      * [systemMessage] is Android's own wording, used when the app has nothing more useful to add.
      */
-    fun message(error: UnlockError, lock: ScreenLock, systemMessage: String?): String? = when (error) {
+    fun message(error: UnlockError, lock: ScreenLock, systemMessage: String?): UnlockMessage? = when (error) {
         UnlockError.CANCELLED -> null
-        UnlockError.LOCKED_OUT ->
-            if (lock == ScreenLock.BIOMETRIC) "Too many tries. Wait a moment, or use your screen lock." else "Too many tries. Wait a moment and try again."
-        UnlockError.LOCKED_OUT_UNTIL_SCREEN_LOCK -> "Too many tries. Fingerprint and face are off until you use your screen lock."
-        UnlockError.UNAVAILABLE, UnlockError.OTHER -> systemMessage?.trim()?.takeIf { it.isNotEmpty() } ?: "Couldn't check just now. Try again."
+        UnlockError.LOCKED_OUT -> if (lock == ScreenLock.BIOMETRIC) UnlockMessage.WaitOrUseScreenLock else UnlockMessage.Wait
+        UnlockError.LOCKED_OUT_UNTIL_SCREEN_LOCK -> UnlockMessage.OffUntilScreenLock
+        UnlockError.UNAVAILABLE, UnlockError.OTHER ->
+            systemMessage?.trim()?.takeIf { it.isNotEmpty() }?.let(UnlockMessage::FromSystem) ?: UnlockMessage.CouldntCheck
     }
 }
