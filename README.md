@@ -71,6 +71,11 @@ different key. The same fingerprint is published for the app's package ID at
 `https://glovebox.cosgriff.io/.well-known/assetlinks.json` (from `site/` in this repo), for
 [Privacy Guides' verified apps](https://github.com/privacyguides/verified-apps).
 
+To check that an APK was built by this repo's release workflow from its tag, use its build provenance:
+`gh attestation verify glovebox-vX.Y.Z.apk --repo mcosgriff/glovebox`. Releases after v0.11.1 also
+carry the signed provenance as `glovebox-vX.Y.Z.apk.intoto.jsonl`, which `gh attestation verify` takes
+with `--bundle`.
+
 ## Security model
 
 - Database: SQLCipher with a random 32-byte passphrase, wrapped by an AES-256-GCM key in Android Keystore

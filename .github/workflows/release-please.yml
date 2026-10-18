@@ -8,14 +8,17 @@ on:
   push:
     branches: [main]
 
+# Read-only unless a job says otherwise (OpenSSF Scorecard's Token-Permissions, #246).
 permissions:
-  contents: write       # tag, GitHub Release, and the release branch
-  pull-requests: write  # open and update the release PR
-  actions: write        # start release.yml for the new tag
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # tag, GitHub Release, and the release branch
+      pull-requests: write  # open and update the release PR
+      actions: write        # start release.yml for the new tag
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release

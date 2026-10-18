@@ -12,16 +12,19 @@ on:
     tags: ['v*']
   workflow_dispatch: # run against a v* tag (release-please.yml does this)
 
+# Read-only unless a job says otherwise (OpenSSF Scorecard's Token-Permissions, #246).
 permissions:
-  contents: write      # create the GitHub Release
-  id-token: write      # sign the provenance attestation
-  attestations: write  # store the attestation
+  contents: read
 
 jobs:
   build:
     # Only ever build a release from a version tag.
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # create the GitHub Release
+      id-token: write      # sign the provenance attestation
+      attestations: write  # store the attestation
     # The signing secrets live in this environment, which requires approval and only accepts v* tags.
     environment: release
     steps:
@@ -72,9 +75,17 @@ jobs:
 
       # Lets anyone verify the APK came from this workflow and tag:
       #   gh attestation verify glovebox-vX.Y.Z.apk --repo <owner>/glovebox
+      # The same signed provenance is attached to the release as glovebox-vX.Y.Z.apk.intoto.jsonl, for
+      # verifying without GitHub's API and for OpenSSF Scorecard's Signed-Releases check (#246).
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        id: attest
         with:
           subject-path: glovebox-${{ github.ref_name }}.apk
+
+      - name: Keep the provenance bundle
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: cp "$BUNDLE" "glovebox-${GITHUB_REF_NAME}.apk.intoto.jsonl"
 
       # Attach the files and add the scan's summary after the changelog release-please wrote. Done with gh
       # rather than softprops/action-gh-release: from 0.11.0 GitHub refused that action's "update a release"
@@ -90,7 +101,8 @@ jobs:
             gh release create "$tag" --verify-tag --title "$tag" --notes ""
           fi
           gh release upload "$tag" --clobber \
-            "glovebox-$tag.apk" "glovebox-$tag.apk.sha256" "glovebox-$tag.exodus.json"
+            "glovebox-$tag.apk" "glovebox-$tag.apk.sha256" "glovebox-$tag.exodus.json" \
+            "glovebox-$tag.apk.intoto.jsonl"
           # A re-run must not add the summary twice.
           gh release view "$tag" --json body -q .body > notes.md
           if ! grep -q "Exodus Privacy scan" notes.md; then
