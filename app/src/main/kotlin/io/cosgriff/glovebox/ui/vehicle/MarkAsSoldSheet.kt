@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -90,7 +92,7 @@ fun MarkAsSoldSheet(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(
-                "Mark $vehicleName as sold",
+                stringResource(R.string.sold_title, vehicleName),
                 Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -102,19 +104,19 @@ fun MarkAsSoldSheet(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Date sold · ${sale.soldOn.format(longDate)}")
+                Text(stringResource(R.string.sold_date, sale.soldOn.format(longDate)))
             }
 
             OutlinedTextField(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text("Final odometer (${unit.symbolWord})") },
+                label = { Text(stringResource(R.string.sold_final_odometer, unit.symbolWord)) },
                 supportingText = {
                     Text(
                         when {
-                            tooLow -> "Lower than the last reading, ${lastOdometer?.asDistance(unit)}."
-                            lastOdometer == null -> "Optional."
-                            else -> "Last reading was ${lastOdometer.asDistance(unit)}."
+                            tooLow -> stringResource(R.string.sold_too_low, lastOdometer?.asDistance(unit).orEmpty())
+                            lastOdometer == null -> stringResource(R.string.optional)
+                            else -> stringResource(R.string.sold_last_reading, lastOdometer.asDistance(unit))
                         },
                     )
                 },
@@ -132,12 +134,11 @@ fun MarkAsSoldSheet(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Export service history PDF for the buyer")
+                Text(stringResource(R.string.sold_export))
             }
 
             Text(
-                "It moves to Archived vehicles with its full history. Reminders and recall checks stop, " +
-                    "and you can move it back to the garage at any time.",
+                stringResource(R.string.sold_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
@@ -150,7 +151,7 @@ fun MarkAsSoldSheet(
                     border = BorderStroke(1.5.dp, scheme.outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
                 Button(
                     onClick = { onArchive(sale) },
@@ -158,7 +159,7 @@ fun MarkAsSoldSheet(
                     modifier = Modifier.weight(2f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Archive vehicle")
+                    Text(stringResource(R.string.sold_archive))
                 }
             }
         }

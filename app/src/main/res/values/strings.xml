@@ -288,4 +288,246 @@
     <string name="read_dash_check">This is what the camera read. Check it against the dash.</string>
     <string name="read_dash_again">Read again</string>
     <string name="read_dash_use">Use this reading</string>
+
+    <!-- Shared formatters, more -->
+    <!-- A replaced cluster's offset; %1$s is a distance. -->
+    <string name="offset_plus">+%1$s</string>
+    <string name="offset_minus">−%1$s</string>
+    <string name="size_kb">%1$s KB</string>
+    <string name="size_mb">%1$s MB</string>
+    <string name="document_report">Vehicle history report</string>
+    <string name="document_title">Title</string>
+    <string name="document_registration">Registration</string>
+    <string name="document_purchase">Purchase agreement</string>
+    <string name="document_warranty">Warranty</string>
+    <string name="document_insurance">Insurance card</string>
+    <string name="document_other">Other</string>
+    <string name="document_problem_empty">That file is empty.</string>
+    <string name="document_problem_too_big">That file is too big (the most is %1$s MB).</string>
+    <string name="document_problem_unreadable">That file couldn\'t be opened.</string>
+    <string name="document_problem_not_a_document">Only a PDF or a picture can be added.</string>
+    <string name="document_problem_failed">That couldn\'t be added.</string>
+
+    <!-- Shared actions -->
+    <string name="delete">Delete</string>
+    <string name="open">Open</string>
+    <string name="share">Share</string>
+    <string name="clear">Clear</string>
+    <string name="none">None</string>
+    <!-- A menu button, for a screen reader; %1$s is what it is for. -->
+    <string name="more_for">More for %1$s</string>
+    <string name="choose_date">Choose the date</string>
+
+    <!-- Documents (DocumentsScreen) -->
+    <string name="documents_unreadable">That document couldn\'t be read.</string>
+    <string name="documents_no_app_share">Nothing on this phone can take it.</string>
+    <string name="documents_no_app_open">Nothing on this phone can open it.</string>
+    <string name="documents_delete_title">Delete %1$s?</string>
+    <string name="documents_delete_body">The file is removed from this phone for good. Backup files you\'ve already saved aren\'t changed.</string>
+    <string name="documents_title">Documents</string>
+    <string name="documents_empty_title">Nothing saved yet</string>
+    <string name="documents_empty_body">Keep the vehicle\'s paperwork with its records: a history report, the title, the registration, the purchase agreement, warranty papers, an insurance card. Add a PDF or a picture, or take a photo of the paper.</string>
+    <string name="documents_note">Kept encrypted on this phone and carried in your backups, and opened here in Glovebox. A document leaves the phone only when you open it in another app or share it, as a copy for the app you choose. PDFs and pictures up to %1$s MB.</string>
+    <string name="documents_pdf_size">PDF %1$s</string>
+    <string name="documents_picture_size">Picture %1$s</string>
+    <string name="documents_edit_details">Edit details</string>
+    <string name="documents_open_elsewhere">Open in another app</string>
+    <string name="documents_pdf_password">This PDF is protected by a password, which Glovebox can\'t open. Open it in another app.</string>
+    <string name="documents_pdf_unreadable">This PDF couldn\'t be shown here. Open it in another app.</string>
+    <string name="documents_adding">Adding…</string>
+    <string name="documents_add">Add a document</string>
+    <string name="documents_choose">Choose a PDF or picture</string>
+    <string name="documents_take_photo">Take a photo</string>
+    <string name="documents_camera_off">Camera access is off. Choose a file instead</string>
+    <string name="documents_added">Document added</string>
+    <string name="documents_what_it_is">What it is</string>
+    <string name="documents_name">Name</string>
+    <string name="documents_give_name">Give it a name</string>
+    <string name="documents_date">Date on it (optional)</string>
+    <string name="documents_dont_keep">Don\'t keep it</string>
+    <string name="documents_none_yet">None yet</string>
+    <plurals name="documents_summary">
+        <item quantity="one">%1$s document · %2$s</item>
+        <item quantity="other">%1$s documents · %2$s</item>
+    </plurals>
+
+    <!-- Vehicle details (VehicleDetailsScreen) -->
+    <string name="details_documents_none">Title, registration, reports, warranty · none yet</string>
+    <!-- %1$s is the summary, such as 3 documents · 4.2 MB. -->
+    <string name="details_documents">Title, registration, reports, warranty · %1$s</string>
+
+    <!-- Shared, snackbars and dates -->
+    <string name="undo">Undo</string>
+    <!-- A button that opens the date picker; %1$s is the date. -->
+    <string name="date_button">Date · %1$s</string>
+
+    <!-- Mileage readings (MileageReadingsScreen) -->
+    <string name="readings_corrected">Reading corrected · %1$s</string>
+    <string name="readings_deleted">Reading deleted · %1$s</string>
+    <string name="readings_title">Mileage readings</string>
+    <string name="readings_intro">The odometer is the highest reading here, and mileage reminders count from it. If one was typed wrong, tap it to correct or delete it. A reading logged with a service is corrected on its record.</string>
+    <string name="readings_swap">The instrument cluster was replaced on %1$s. Readings are shown as they were typed; ones from before that day were on the old cluster.</string>
+    <string name="readings_none">No readings yet. Update the mileage from the vehicle\'s page, or log a service.</string>
+    <plurals name="readings_count">
+        <item quantity="one">%1$s READING</item>
+        <item quantity="other">%1$s READINGS</item>
+    </plurals>
+    <!-- %1$s is the count of readings, %2$s how many to check. -->
+    <string name="readings_count_to_check">%1$s · %2$s TO CHECK</string>
+    <string name="readings_open_record">Open the record</string>
+    <string name="readings_correct_or_delete">Correct or delete</string>
+    <string name="readings_odometer_tag">ODOMETER</string>
+    <string name="readings_from_service">%1$s · logged with a service</string>
+    <string name="readings_from_update">%1$s · mileage update</string>
+    <string name="readings_out_of_line">Doesn\'t fit the readings around it. An odometer only goes up, so check this one.</string>
+    <string name="readings_jump">%1$s more than the reading before it. Check a digit hasn\'t slipped.</string>
+    <string name="readings_problem_not_a_reading">Enter the reading as a whole number above zero.</string>
+    <string name="readings_problem_future">A reading can\'t be dated in the future.</string>
+    <string name="readings_correct_title">Correct a reading</string>
+    <string name="readings_was">Was %1$s on %2$s. Reminders are worked out again from whatever you save.</string>
+    <string name="readings_delete">Delete this reading</string>
+
+    <!-- Shared sentences and buttons -->
+    <!-- Closes a sentence built from parts. A language that ends sentences differently changes it here. -->
+    <string name="sentence">%1$s.</string>
+    <string name="save_anyway">Save anyway</string>
+
+    <!-- Update mileage (UpdateMileageSheet) -->
+    <string name="update_mileage_title">Update mileage</string>
+    <string name="update_mileage_now">Odometer now</string>
+    <string name="update_mileage_from_dash">Read from the dash by the camera. Check it against the odometer before you save.</string>
+    <!-- The keypad key that clears the number. -->
+    <string name="update_mileage_clear_key">C</string>
+    <string name="update_mileage_delete_digit">Delete digit</string>
+    <string name="update_mileage_enter">Enter the reading</string>
+    <string name="update_mileage_save">Save %1$s</string>
+    <string name="update_mileage_last">Last reading was %1$s on %2$s</string>
+    <string name="update_mileage_since">+%1$s since %2$s</string>
+    <string name="update_mileage_below">That\'s lower than the last reading, so reminders will keep counting from %1$s. If that one is wrong, correct or delete it in Vehicle details, Mileage readings.</string>
+    <string name="update_mileage_far">That\'s %1$s more than the last reading. If a digit has slipped, every mileage reminder would count from it. Check the number before saving.</string>
+    <!-- %1$s is a service, %2$s a distance. -->
+    <string name="update_mileage_overdue_by">%1$s overdue by %2$s</string>
+    <string name="update_mileage_due_now">%1$s due now</string>
+    <string name="update_mileage_due_in">%1$s now due in %2$s</string>
+
+    <!-- Odometer offset (OdometerOffsetSheet) -->
+    <string name="offset_title">Odometer offset</string>
+    <string name="offset_intro">For a vehicle whose instrument cluster was replaced, so the dash no longer shows its real mileage. Keep entering what the dash shows; Glovebox works out the rest.</string>
+    <string name="offset_replaced_on">Replaced on · %1$s</string>
+    <string name="offset_old_read">Old cluster read (%1$s)</string>
+    <string name="offset_old_missing">Enter its last reading in whole %1$s.</string>
+    <string name="offset_old_note">Its last reading before it came out.</string>
+    <string name="offset_new_read">New cluster read (%1$s)</string>
+    <string name="offset_same">The same as the old one, so there is nothing to offset.</string>
+    <string name="offset_new_missing">Enter what it read when it went in.</string>
+    <string name="offset_new_note">When it went in. 0 for a brand-new one.</string>
+    <string name="offset_explained">Offset %1$s. Readings dated %2$s or later count as the new cluster\'s, earlier ones as the old one\'s. Reminders snoozed to a mileage come back.</string>
+    <string name="offset_remove">Remove the offset</string>
+
+    <!-- Mark as sold (MarkAsSoldSheet) -->
+    <string name="sold_title">Mark %1$s as sold</string>
+    <string name="sold_date">Date sold · %1$s</string>
+    <string name="sold_final_odometer">Final odometer (%1$s)</string>
+    <string name="sold_too_low">Lower than the last reading, %1$s.</string>
+    <string name="optional">Optional.</string>
+    <string name="sold_last_reading">Last reading was %1$s.</string>
+    <string name="sold_export">Export service history PDF for the buyer</string>
+    <string name="sold_note">It moves to Archived vehicles with its full history. Reminders and recall checks stop, and you can move it back to the garage at any time.</string>
+    <string name="sold_archive">Archive vehicle</string>
+
+    <!-- Shared counts -->
+    <plurals name="service_records">
+        <item quantity="one">%1$s service record</item>
+        <item quantity="other">%1$s service records</item>
+    </plurals>
+    <plurals name="records">
+        <item quantity="one">%1$s record</item>
+        <item quantity="other">%1$s records</item>
+    </plurals>
+    <plurals name="photos">
+        <item quantity="one">%1$s photo</item>
+        <item quantity="other">%1$s photos</item>
+    </plurals>
+    <string name="export">Export</string>
+    <string name="export_first">Export first</string>
+
+    <!-- Archived vehicles (ArchivedVehiclesScreen) -->
+    <string name="archived_title">Archived vehicles</string>
+    <string name="archived_empty">Nothing is archived. Mark a vehicle as sold from its details to move it here.</string>
+    <string name="archived_intro">Sold or retired vehicles keep their full history here. They don\'t get reminders or recall checks.</string>
+    <string name="archived_moved_back">%1$s is back in the garage</string>
+    <string name="archived_sold_on">Sold %1$s</string>
+    <!-- The final odometer reading, after the sale date. -->
+    <string name="archived_final">final %1$s</string>
+    <string name="archived_sold_tag">SOLD</string>
+    <string name="archived_view_history">View history</string>
+    <string name="archived_move_back">Move back to garage</string>
+
+    <!-- Clear service history (ClearHistoryScreen) -->
+    <!-- %1$s is the vehicle, such as 2019 4Runner. -->
+    <string name="clear_history_title">Clear the service history of the %1$s?</string>
+    <string name="clear_history_intro">Only service records go, with their photos. The vehicle, what it takes, torque and fastener specs, the schedule, recalls, milestones and mileage updates all stay. Reminders count from whatever records are left.</string>
+    <string name="clear_history_imported">Imported records only</string>
+    <string name="clear_history_imported_detail">%1$s from a Carfax report or an import file</string>
+    <string name="clear_history_all">All service records</string>
+    <string name="clear_history_all_detail">%1$s, including what you logged yourself</string>
+    <string name="clear_history_deletes">Deletes %1$s. This can\'t be undone. Backup files you\'ve already saved aren\'t changed. A recall marked done stays marked done.</string>
+    <string name="clear_history_deletes_with_photos">Deletes %1$s and %2$s. This can\'t be undone. Backup files you\'ve already saved aren\'t changed. A recall marked done stays marked done.</string>
+    <string name="clear_history_nothing">Nothing to delete</string>
+    <string name="clear_history_delete">Delete %1$s</string>
+
+    <!-- Delete vehicle (DeleteVehicleScreen) -->
+    <!-- %1$s is the vehicle, such as 2019 4Runner. -->
+    <string name="delete_vehicle_title">Delete %1$s and all its data?</string>
+    <string name="delete_vehicle_removes">This permanently removes from this phone:</string>
+    <string name="delete_vehicle_records">Service records</string>
+    <string name="delete_vehicle_photos">Receipt &amp; parts photos</string>
+    <string name="delete_vehicle_schedule">Schedule items &amp; reminders</string>
+    <string name="delete_vehicle_torque">Torque &amp; fastener specs</string>
+    <string name="delete_vehicle_recalls">Recalls and their status</string>
+    <string name="delete_vehicle_details">Vehicle details and photo</string>
+    <string name="delete_vehicle_no_photo">No photo</string>
+    <string name="delete_vehicle_cant_undo">This can\'t be undone. Backup files you\'ve already saved aren\'t changed.</string>
+    <string name="delete_vehicle_archive_instead">Archive instead</string>
+    <string name="delete_vehicle_button">Delete vehicle permanently</string>
+
+    <!-- Shared reminder rows -->
+    <string name="log_it">Log it</string>
+    <string name="log_service">Log service</string>
+    <string name="odometer">Odometer</string>
+    <!-- %1$s is a distance. -->
+    <string name="scheduled_now">Scheduled now, at %1$s · nothing logged</string>
+    <!-- %1$s is where the schedule put it, %2$s how far back that is. -->
+    <string name="last_scheduled">Last scheduled at %1$s · %2$s ago · nothing logged</string>
+
+    <!-- Vehicle home (VehicleHomeScreen) -->
+    <string name="home_mileage_updated">Mileage updated · %1$s</string>
+    <string name="home_all_vehicles">All vehicles</string>
+    <string name="home_vehicle_details">Vehicle details</string>
+    <string name="home_tap_hint">Tap one to log it.</string>
+    <!-- %1$s is the hint to tap one, home_tap_hint. -->
+    <string name="home_not_logged_intro">Log each of these once and its countdown starts from that date and mileage. If you know when one was last done, you can enter just that. %1$s</string>
+    <string name="home_enter_last_done">Enter when these were last done</string>
+    <string name="home_coming_up">Coming up</string>
+    <string name="home_none_tracked">No reminders are being tracked for this vehicle yet.</string>
+    <string name="home_not_recorded">Not recorded</string>
+    <string name="home_actual">%1$s actual · cluster replaced</string>
+    <string name="home_recalls_free">Recall repairs are free of charge</string>
+    <plurals name="home_pill_overdue">
+        <item quantity="one">%1$s OVERDUE</item>
+        <item quantity="other">%1$s OVERDUE</item>
+    </plurals>
+    <plurals name="home_pill_due_soon">
+        <item quantity="one">%1$s DUE SOON</item>
+        <item quantity="other">%1$s DUE SOON</item>
+    </plurals>
+    <plurals name="home_pill_to_log">
+        <item quantity="one">%1$s TO LOG</item>
+        <item quantity="other">%1$s TO LOG</item>
+    </plurals>
+    <string name="home_pill_up_to_date">UP TO DATE</string>
+    <string name="home_last_on">last on %1$s</string>
+    <string name="home_last_at">last at %1$s</string>
+    <!-- An estimated date, from the driving pace. -->
+    <string name="home_estimate">est. %1$s</string>
 </resources>

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.compose.ui.res.pluralStringResource
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.every
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -209,6 +214,7 @@ fun VehicleHomeScreen(
     val up = home.comingUp
     val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
     var updatingMileage by rememberSaveable { mutableStateOf(vm.startWithMileage) }
+    val res = LocalResources.current
 
     if (updatingMileage) {
         UpdateMileageSheet(
@@ -217,7 +223,7 @@ fun VehicleHomeScreen(
             preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now(), unit) },
             onSave = { miles ->
                 updatingMileage = false
-                vm.saveMileage(miles) { id -> onMessage("Mileage updated · ${miles.asDistance(unit)}", "Undo") { vm.undoMileage(id) } }
+                vm.saveMileage(miles) { id -> onMessage(res.getString(R.string.home_mileage_updated, miles.asDistance(unit)), res.getString(R.string.undo)) { vm.undoMileage(id) } }
             },
             onDismiss = { updatingMileage = false },
             onReadDash = { onReadDash(home.odometer, unit) },
@@ -235,7 +241,7 @@ fun VehicleHomeScreen(
                     modifier = Modifier.heightIn(min = 48.dp),
                 ) {
                     Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = null)
-                    Text("All vehicles", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.home_all_vehicles), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleSmall)
                 }
                 Spacer(Modifier.weight(1f))
                 OutlinedIconButton(
@@ -243,7 +249,7 @@ fun VehicleHomeScreen(
                     modifier = Modifier.size(48.dp),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                 ) {
-                    Icon(Icons.Outlined.MoreVert, contentDescription = "Vehicle details")
+                    Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.home_vehicle_details))
                 }
             }
 
@@ -258,13 +264,12 @@ fun VehicleHomeScreen(
 
                 // Three groups, each row one tap from Log service with that job ticked. Not logged yet comes
                 // first: these have nothing to count from, so they are what needs doing first.
-                val tapHint = "Tap one to log it."
+                val tapHint = stringResource(R.string.home_tap_hint)
                 if (up.notLogged.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Not logged yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.due_not_logged), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text(
-                            "Log each of these once and its countdown starts from that date and mileage. " +
-                                "If you know when one was last done, you can enter just that. $tapHint",
+                            stringResource(R.string.home_not_logged_intro, tapHint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -274,7 +279,7 @@ fun VehicleHomeScreen(
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Row(
                                 Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                                    .clickable(role = Role.Button, onClickLabel = "Log it") { onLogItem(v.id, status.item.id) }
+                                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.log_it)) { onLogItem(v.id, status.item.id) }
                                     .padding(vertical = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -286,7 +291,7 @@ fun VehicleHomeScreen(
                                     status.lastScheduled?.let { point ->
                                         val at = v.clusterSwap().actual(point.at).asDistance(unit)
                                         Text(
-                                            if (point.ago == 0) "Scheduled now, at $at · nothing logged" else "Last scheduled at $at · ${point.ago.asDistance(unit)} ago · nothing logged",
+                                            if (point.ago == 0) stringResource(R.string.scheduled_now, at) else stringResource(R.string.last_scheduled, at, point.ago.asDistance(unit)),
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.SemiBold,
                                             color = statusColors().soon,
@@ -309,12 +314,12 @@ fun VehicleHomeScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
-                        Text("Enter when these were last done")
+                        Text(stringResource(R.string.home_enter_last_done))
                     }
                 }
 
                 // The rule link sits by the first of these two headings that is shown.
-                val groups = listOf("Overdue" to up.overdueNow, "Coming up" to up.upcoming).filter { it.second.isNotEmpty() }
+                val groups = listOf(stringResource(R.string.overdue) to up.overdueNow, stringResource(R.string.home_coming_up) to up.upcoming).filter { it.second.isNotEmpty() }
                 groups.forEachIndexed { g, (title, rows) ->
                     Column {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -340,7 +345,7 @@ fun VehicleHomeScreen(
 
                 if (up.counting.isEmpty() && up.notLogged.isEmpty()) {
                     Text(
-                        "No reminders are being tracked for this vehicle yet.",
+                        stringResource(R.string.home_none_tracked),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -357,7 +362,7 @@ fun VehicleHomeScreen(
         ) {
             Icon(Icons.Outlined.Add, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text("Log service")
+            Text(stringResource(R.string.log_service))
         }
     }
 }
@@ -380,9 +385,9 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
             }
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("Odometer", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.odometer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        odometer?.asDistance(v.unit) ?: "Not recorded",
+                        odometer?.asDistance(v.unit) ?: stringResource(R.string.home_not_recorded),
                         style = MaterialTheme.typography.headlineSmall,
                         fontFamily = PlexMono,
                     )
@@ -390,7 +395,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     val swap = v.clusterSwap()
                     if (swap != null && odometer != null) {
                         Text(
-                            "${swap.actual(odometer).asDistance(v.unit)} actual · cluster replaced",
+                            stringResource(R.string.home_actual, swap.actual(odometer).asDistance(v.unit)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -402,7 +407,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                 ) {
-                    Text("Update mileage")
+                    Text(stringResource(R.string.update_mileage_title))
                 }
             }
         }
@@ -428,13 +433,13 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
             Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(22.dp), tint = statusColors().overdue)
             Column(Modifier.weight(1f)) {
                 Text(
-                    listOfNotNull(if (open.count == 1) "1 open recall" else "${open.count} open recalls", open.only).joinToString(" · "),
+                    listOfNotNull(pluralStringResource(R.plurals.open_recalls, open.count, open.count.asNumber()), open.only).joinToString(" · "),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = scheme.onSurface,
                 )
                 // Not "at a $makeName dealer": NHTSA also lists recalled aftermarket parts for the model.
-                Text("Recall repairs are free of charge", style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
+                Text(stringResource(R.string.home_recalls_free), style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
             }
             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = statusColors().overdue)
         }
@@ -447,12 +452,14 @@ private fun StatusPill(up: ComingUp) {
     val scheme = MaterialTheme.colorScheme
     val (text, container, content) = when {
         // Canvas: a soft tint with dark orange text in light; in dark the tint would vanish into the card, so it is solid.
-        up.overdue > 0 && scheme.background.luminance() < 0.5f -> Triple("${up.overdue} OVERDUE", scheme.onPrimaryContainer, scheme.onPrimary)
-        up.overdue > 0 -> Triple("${up.overdue} OVERDUE", scheme.primaryContainer, scheme.onPrimaryContainer)
-        up.dueSoon > 0 -> Triple("${up.dueSoon} DUE SOON", scheme.surfaceVariant, scheme.onSurface)
+        up.overdue > 0 && scheme.background.luminance() < 0.5f ->
+            Triple(pluralStringResource(R.plurals.home_pill_overdue, up.overdue, up.overdue.asNumber()), scheme.onPrimaryContainer, scheme.onPrimary)
+        up.overdue > 0 -> Triple(pluralStringResource(R.plurals.home_pill_overdue, up.overdue, up.overdue.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
+        up.dueSoon > 0 -> Triple(pluralStringResource(R.plurals.home_pill_due_soon, up.dueSoon, up.dueSoon.asNumber()), scheme.surfaceVariant, scheme.onSurface)
         // Nothing to be up to date on while there is work the log doesn't have.
-        up.notLogged.isNotEmpty() -> Triple("${up.notLogged.size} TO LOG", scheme.surfaceVariant, statusColors().soon)
-        up.counting.isNotEmpty() -> Triple("UP TO DATE", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        up.notLogged.isNotEmpty() ->
+            Triple(pluralStringResource(R.plurals.home_pill_to_log, up.notLogged.size, up.notLogged.size.asNumber()), scheme.surfaceVariant, statusColors().soon)
+        up.counting.isNotEmpty() -> Triple(stringResource(R.string.home_pill_up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
         else -> return
     }
     Surface(color = container, shape = CircleShape) {
@@ -475,7 +482,7 @@ private fun ReminderRow(status: ItemStatus, progress: ReminderProgress, swap: Cl
         DueState.OK -> colors.ok
     }
     Column(
-        Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Log it", onClick = onClick).padding(vertical = 12.dp),
+        Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = stringResource(R.string.log_it), onClick = onClick).padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -510,7 +517,7 @@ private fun LogItLabel() {
         color = Color.Transparent,
     ) {
         Text(
-            "Log it",
+            stringResource(R.string.log_it),
             Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
@@ -547,19 +554,20 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
  * "Every 5,000 mi or 6 mo · last at 60,100 mi · est. Nov 5, 2026". A job counting down to its first
  * time has no last, so it gets the interval alone (and an estimate, when there is one).
  */
+@Composable
 private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit): String {
     val every = item.interval.every(unit)
     // As it was read at the time, which is what the record says.
     val last = lastDone?.let { swap.asReadOn(it) }
     val lastText = when {
         last == null -> null
-        progress.headline is DueHeadline.Days -> "last on ${last.date.format(longDate)}"
-        else -> "last at ${last.odometer.asDistance(unit)}"
+        progress.headline is DueHeadline.Days -> stringResource(R.string.home_last_on, last.date.format(longDate))
+        else -> stringResource(R.string.home_last_at, last.odometer.asDistance(unit))
     }
     // Only worth an estimate when mileage decides it and the date comes from the driving pace.
     val estimate = status.estimatedDueDate
         ?.takeIf { progress.headline is DueHeadline.Miles && status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE }
-        ?.let { "est. ${it.format(longDate)}" }
+        ?.let { stringResource(R.string.home_estimate, it.format(longDate)) }
     return listOfNotNull(every, lastText, estimate).joinToString(" · ")
 }
 

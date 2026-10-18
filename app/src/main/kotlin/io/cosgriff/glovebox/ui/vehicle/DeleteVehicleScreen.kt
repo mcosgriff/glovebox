@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.styledStringResource
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.compose.ui.res.pluralStringResource
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
@@ -44,11 +49,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -187,7 +190,7 @@ fun DeleteVehicleScreen(
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         IconButton(onClick = onCancel, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
-            Icon(Icons.Outlined.Close, contentDescription = "Cancel")
+            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.cancel))
         }
 
         Column(
@@ -201,12 +204,12 @@ fun DeleteVehicleScreen(
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "Delete ${d.vehicle.year} ${d.name} and all its data?",
+                    stringResource(R.string.delete_vehicle_title, "${d.vehicle.year} ${d.name}"),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
-                Text("This permanently removes from this phone:", color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.delete_vehicle_removes), color = scheme.onSurfaceVariant)
             }
 
             Surface(
@@ -217,14 +220,15 @@ fun DeleteVehicleScreen(
             ) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     listOf(
-                        "Service records" to "${d.records}",
-                        "Receipt & parts photos" to "${d.photos}",
-                        "Schedule items & reminders" to "${d.scheduleItems}",
-                        "Torque & fastener specs" to "${d.torqueSpecs}",
-                        "Recalls and their status" to "${d.recalls}",
-                        "Mileage readings" to "${d.mileageReadings}",
-                        "Documents" to "${d.documents}",
-                        "Vehicle details and photo" to if (d.vehicle.photoFile != null) "1 photo" else "No photo",
+                        stringResource(R.string.delete_vehicle_records) to d.records.asNumber(),
+                        stringResource(R.string.delete_vehicle_photos) to d.photos.asNumber(),
+                        stringResource(R.string.delete_vehicle_schedule) to d.scheduleItems.asNumber(),
+                        stringResource(R.string.delete_vehicle_torque) to d.torqueSpecs.asNumber(),
+                        stringResource(R.string.delete_vehicle_recalls) to d.recalls.asNumber(),
+                        stringResource(R.string.readings_title) to d.mileageReadings.asNumber(),
+                        stringResource(R.string.documents_title) to d.documents.asNumber(),
+                        stringResource(R.string.delete_vehicle_details) to
+                            if (d.vehicle.photoFile != null) pluralStringResource(R.plurals.photos, 1, 1.asNumber()) else stringResource(R.string.delete_vehicle_no_photo),
                     ).forEach { (label, value) ->
                         Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
@@ -233,7 +237,7 @@ fun DeleteVehicleScreen(
                         HorizontalDivider(color = scheme.outlineVariant)
                     }
                     Text(
-                        "This can't be undone. Backup files you've already saved aren't changed.",
+                        stringResource(R.string.delete_vehicle_cant_undo),
                         Modifier.padding(vertical = 10.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
@@ -249,7 +253,7 @@ fun DeleteVehicleScreen(
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Export first")
+                    Text(stringResource(R.string.export_first))
                 }
                 // Already archived vehicles have nothing gentler left to offer.
                 if (d.vehicle.archivedOn == null) {
@@ -260,7 +264,7 @@ fun DeleteVehicleScreen(
                         border = BorderStroke(1.5.dp, scheme.onSurface),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                     ) {
-                        Text("Archive instead")
+                        Text(stringResource(R.string.delete_vehicle_archive_instead))
                     }
                 }
             }
@@ -269,13 +273,7 @@ fun DeleteVehicleScreen(
                 value = typed,
                 onValueChange = { typed = it },
                 label = {
-                    Text(
-                        buildAnnotatedString {
-                            append("Type ")
-                            withStyle(SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)) { append(d.name) }
-                            append(" to confirm")
-                        },
-                    )
+                    Text(styledStringResource(R.string.type_word_to_confirm, d.name, SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)))
                 },
                 singleLine = true,
                 textStyle = TextStyle(fontFamily = PlexMono),
@@ -295,7 +293,7 @@ fun DeleteVehicleScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError),
             ) {
-                Text("Delete vehicle permanently", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.delete_vehicle_button), style = MaterialTheme.typography.titleMedium)
             }
         }
     }

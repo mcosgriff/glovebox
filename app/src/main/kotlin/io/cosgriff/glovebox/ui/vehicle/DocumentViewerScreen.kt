@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -56,6 +58,7 @@ import androidx.pdf.SandboxedPdfLoader
 import androidx.pdf.compose.PdfViewer
 import androidx.pdf.compose.rememberPdfViewerState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.data.photo.DocumentStore
@@ -117,22 +120,22 @@ fun DocumentViewerScreen(onClose: () -> Unit, vm: DocumentViewerViewModel = hilt
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
-    var failed by remember { mutableStateOf<String?>(null) }
+    var failed by remember { mutableStateOf<Int?>(null) }
     val format = VehicleDocuments.format(row.format)
 
     fun handOut(share: Boolean) = scope.launch {
         failed = null
         val copy = vm.copy(row)
         failed = when {
-            copy == null -> "That document couldn't be read."
-            !context.hand(copy, format, share) -> if (share) "Nothing on this phone can take it." else "Nothing on this phone can open it."
+            copy == null -> R.string.documents_unreadable
+            !context.hand(copy, format, share) -> if (share) R.string.documents_no_app_share else R.string.documents_no_app_open
             else -> null
         }
     }
 
     Column(Modifier.fillMaxSize().background(Backdrop)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Close", tint = OnBackdrop) }
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = OnBackdrop) }
             Text(
                 row.name,
                 Modifier.weight(1f).padding(horizontal = 8.dp).semantics { heading() },
@@ -144,16 +147,16 @@ fun DocumentViewerScreen(onClose: () -> Unit, vm: DocumentViewerViewModel = hilt
                 overflow = TextOverflow.Ellipsis,
             )
             Box {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = "More for ${row.name}", tint = OnBackdrop) }
+                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.more_for, row.name), tint = OnBackdrop) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Open in another app") }, onClick = { menu = false; handOut(share = false) })
-                    DropdownMenuItem(text = { Text("Share") }, onClick = { menu = false; handOut(share = true) })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.documents_open_elsewhere)) }, onClick = { menu = false; handOut(share = false) })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.share)) }, onClick = { menu = false; handOut(share = true) })
                 }
             }
         }
         failed?.let {
             Text(
-                it,
+                stringResource(it),
                 Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp).semantics { liveRegion = LiveRegionMode.Polite },
                 style = MaterialTheme.typography.bodySmall,
                 color = OnBackdrop,
@@ -175,7 +178,7 @@ fun DocumentViewerScreen(onClose: () -> Unit, vm: DocumentViewerViewModel = hilt
 private sealed interface PdfState {
     data object Loading : PdfState
     data class Open(val document: PdfDocument) : PdfState
-    data class Failed(val message: String) : PdfState
+    data class Failed(@StringRes val message: Int) : PdfState
 }
 
 // Jetpack's Compose PDF viewer is still marked experimental at 1.0.0-beta01.
@@ -187,7 +190,7 @@ private fun PdfPages(row: DocumentEntity, vm: DocumentViewerViewModel, onOpenEls
     val state by produceState<PdfState>(PdfState.Loading, row.id, row.fileName) {
         val descriptor = vm.pdf(row)
         if (descriptor == null) {
-            value = PdfState.Failed("That document couldn't be read.")
+            value = PdfState.Failed(R.string.documents_unreadable)
             return@produceState
         }
         val document = try {
@@ -197,11 +200,11 @@ private fun PdfPages(row: DocumentEntity, vm: DocumentViewerViewModel, onOpenEls
             descriptor.close()
             throw e
         } catch (_: PdfPasswordException) {
-            value = PdfState.Failed("This PDF is protected by a password, which Glovebox can't open. Open it in another app.")
+            value = PdfState.Failed(R.string.documents_pdf_password)
             return@produceState
         } catch (_: Exception) {
             // The loader has already closed the descriptor for a PDF it couldn't read.
-            value = PdfState.Failed("This PDF couldn't be shown here. Open it in another app.")
+            value = PdfState.Failed(R.string.documents_pdf_unreadable)
             return@produceState
         }
         value = PdfState.Open(document)
@@ -216,8 +219,8 @@ private fun PdfPages(row: DocumentEntity, vm: DocumentViewerViewModel, onOpenEls
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
         ) {
-            Text(s.message, color = OnBackdropMuted, textAlign = TextAlign.Center)
-            OutlinedButton(onClick = onOpenElsewhere, colors = ButtonDefaults.outlinedButtonColors(contentColor = OnBackdrop)) { Text("Open in another app") }
+            Text(stringResource(s.message), color = OnBackdropMuted, textAlign = TextAlign.Center)
+            OutlinedButton(onClick = onOpenElsewhere, colors = ButtonDefaults.outlinedButtonColors(contentColor = OnBackdrop)) { Text(stringResource(R.string.documents_open_elsewhere)) }
         }
     }
 }

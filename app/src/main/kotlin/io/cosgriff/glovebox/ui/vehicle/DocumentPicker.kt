@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.label
+import io.cosgriff.glovebox.domain.DocumentType
+import io.cosgriff.glovebox.domain.DocumentProblem
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -48,10 +51,10 @@ class DocumentPicker @Inject constructor(
     /** The last document added, until the screen has opened it ([consumeAdded]). */
     val added: StateFlow<NewDocument?> = _added.asStateFlow()
 
-    private val _problem = MutableStateFlow<String?>(null)
+    private val _problem = MutableStateFlow<DocumentProblem?>(null)
 
     /** Why the last attempt added nothing; cleared by the next attempt. */
-    val problem: StateFlow<String?> = _problem.asStateFlow()
+    val problem: StateFlow<DocumentProblem?> = _problem.asStateFlow()
 
     private val _working = MutableStateFlow(false)
 
@@ -112,16 +115,16 @@ class DocumentPicker @Inject constructor(
     private suspend fun add(vehicleId: Long, uri: Uri, name: String?) {
         _working.value = true
         val result = try {
-            store.add(vehicleId, uri, name, LocalDate.now())
+            store.add(vehicleId, uri, name, DocumentType.OTHER.label, LocalDate.now())
         } catch (_: Exception) {
             // The vehicle was deleted while the picker was open.
-            AddedDocument.Refused("That couldn't be added.")
+            AddedDocument.Refused(DocumentProblem.FAILED)
         } finally {
             _working.value = false
         }
         when (result) {
             is AddedDocument.Added -> _added.value = NewDocument(vehicleId, result.id)
-            is AddedDocument.Refused -> _problem.value = result.message
+            is AddedDocument.Refused -> _problem.value = result.problem
         }
     }
 

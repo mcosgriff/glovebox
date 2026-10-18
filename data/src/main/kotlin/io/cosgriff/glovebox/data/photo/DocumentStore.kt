@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.data.photo
 
+import io.cosgriff.glovebox.domain.DocumentProblem
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -31,7 +32,7 @@ import java.util.UUID
 /** What adding a document came to: the new row, or why nothing was added. */
 sealed interface AddedDocument {
     data class Added(val id: Long) : AddedDocument
-    data class Refused(val message: String) : AddedDocument
+    data class Refused(val problem: DocumentProblem) : AddedDocument
 }
 
 /**
@@ -48,22 +49,24 @@ class DocumentStore(
 ) {
     /**
      * Reads the file at [source] (a PDF or a picture) and files it with [vehicleId], named from
-     * [displayName] until the owner names it. The file is read into memory, never past the size cap.
+     * [displayName] until the owner names it, or [unnamed] (the type's name) when that gives none.
+     * The file is read into memory, never past the size cap.
      */
-    suspend fun add(vehicleId: Long, source: Uri, displayName: String?, today: LocalDate): AddedDocument = withContext(Dispatchers.IO) {
+    suspend fun add(vehicleId: Long, source: Uri, displayName: String?, unnamed: String, today: LocalDate): AddedDocument = withContext(Dispatchers.IO) {
         val bytes = try {
             readCapped(source)
         } catch (_: IOException) {
             null
         } catch (_: SecurityException) {
             null
-        } ?: return@withContext AddedDocument.Refused("That file couldn't be opened.")
+        } ?: return@withContext AddedDocument.Refused(DocumentProblem.UNREADABLE)
         VehicleDocuments.problem(bytes.size.toLong())?.let { return@withContext AddedDocument.Refused(it) }
+        val name = VehicleDocuments.nameFromFile(displayName) ?: unnamed
         if (VehicleDocuments.isPdf(bytes)) {
-            AddedDocument.Added(save(vehicleId, bytes, DocumentFormat.PDF, DocumentType.OTHER, VehicleDocuments.nameFromFile(displayName, DocumentType.OTHER), null, today))
+            AddedDocument.Added(save(vehicleId, bytes, DocumentFormat.PDF, DocumentType.OTHER, name, null, today))
         } else {
-            val jpeg = redraw(bytes) ?: return@withContext AddedDocument.Refused("Only a PDF or a picture can be added.")
-            AddedDocument.Added(save(vehicleId, jpeg, DocumentFormat.JPEG, DocumentType.OTHER, VehicleDocuments.nameFromFile(displayName, DocumentType.OTHER), null, today))
+            val jpeg = redraw(bytes) ?: return@withContext AddedDocument.Refused(DocumentProblem.NOT_A_DOCUMENT)
+            AddedDocument.Added(save(vehicleId, jpeg, DocumentFormat.JPEG, DocumentType.OTHER, name, null, today))
         }
     }
 

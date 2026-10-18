@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.platform.LocalResources
+import io.cosgriff.glovebox.ui.service.asNumber
+import androidx.compose.ui.res.pluralStringResource
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.runtime.setValue
@@ -121,6 +126,7 @@ fun ArchivedVehiclesScreen(
     val archived = vm.archived.collectAsStateWithLifecycle().value ?: return // first frame while loading
     var exporting by rememberSaveable { mutableStateOf<Long?>(null) }
     exporting?.let { id -> ExportSheet(vehicleId = id, onDismiss = { exporting = null }) }
+    val res = LocalResources.current
 
     LazyColumn(
         Modifier.fillMaxSize(),
@@ -129,9 +135,9 @@ fun ArchivedVehiclesScreen(
     ) {
         item {
             Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
                 Text(
-                    "Archived vehicles",
+                    stringResource(R.string.archived_title),
                     Modifier.padding(start = 8.dp).semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -140,11 +146,7 @@ fun ArchivedVehiclesScreen(
         }
         item {
             Text(
-                if (archived.isEmpty()) {
-                    "Nothing is archived. Mark a vehicle as sold from its details to move it here."
-                } else {
-                    "Sold or retired vehicles keep their full history here. They don't get reminders or recall checks."
-                },
+                stringResource(if (archived.isEmpty()) R.string.archived_empty else R.string.archived_intro),
                 Modifier.padding(horizontal = 20.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -156,7 +158,7 @@ fun ArchivedVehiclesScreen(
                 a,
                 onViewHistory = { onViewHistory(a.vehicle.id) },
                 onExport = { exporting = a.vehicle.id },
-                onMoveBack = { vm.moveBack(a.vehicle) { undo -> onMessage("$name is back in the garage", "Undo", undo) } },
+                onMoveBack = { vm.moveBack(a.vehicle) { undo -> onMessage(res.getString(R.string.archived_moved_back, name), res.getString(R.string.undo), undo) } },
                 onDelete = { onDelete(a.vehicle.id) },
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
@@ -192,8 +194,8 @@ private fun ArchivedCard(
                     Text(
                         listOfNotNull(
                             v.nickname,
-                            v.archivedOn?.let { "Sold ${it.format(longDate)}" },
-                            a.finalOdometer?.let { "final ${it.asDistance(v.unit)}" },
+                            v.archivedOn?.let { stringResource(R.string.archived_sold_on, it.format(longDate)) },
+                            a.finalOdometer?.let { stringResource(R.string.archived_final, it.asDistance(v.unit)) },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
@@ -201,7 +203,7 @@ private fun ArchivedCard(
                 }
                 Surface(color = scheme.surfaceVariant, shape = CircleShape) {
                     Text(
-                        "SOLD",
+                        stringResource(R.string.archived_sold_tag),
                         Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
@@ -211,18 +213,14 @@ private fun ArchivedCard(
             }
             Text(
                 listOfNotNull(
-                    if (a.records == 1) "1 service record" else "${a.records} service records",
-                    when (a.photos) {
-                        0 -> null
-                        1 -> "1 photo"
-                        else -> "${a.photos} photos"
-                    },
+                    pluralStringResource(R.plurals.service_records, a.records, a.records.asNumber()),
+                    a.photos.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.photos, it, it.asNumber()) },
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = statusColors().soon,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("View history" to onViewHistory, "Export" to onExport).forEach { (label, action) ->
+                listOf(stringResource(R.string.archived_view_history) to onViewHistory, stringResource(R.string.export) to onExport).forEach { (label, action) ->
                     OutlinedButton(
                         onClick = action,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp),
@@ -240,7 +238,7 @@ private fun ArchivedCard(
                     modifier = Modifier.heightIn(min = 48.dp),
                     contentPadding = PaddingValues(horizontal = 4.dp),
                 ) {
-                    Text("Move back to garage", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.archived_move_back), fontWeight = FontWeight.SemiBold)
                 }
                 TextButton(
                     onClick = onDelete,
@@ -248,7 +246,7 @@ private fun ArchivedCard(
                     contentPadding = PaddingValues(horizontal = 4.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) {
-                    Text("Delete", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.delete), fontWeight = FontWeight.SemiBold)
                 }
             }
         }
