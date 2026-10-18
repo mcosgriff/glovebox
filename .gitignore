@@ -16,3 +16,6 @@ keystore.properties
 
 # Dependency verification writes a binary copy of the keyring too; the .keys file is the one kept.
 gradle/verification-keyring.gpg
+
+# The Android Developer Console's ownership snippet, put there only while registration-apk.sh builds (#267).
+app/src/main/assets/adi-registration.properties
