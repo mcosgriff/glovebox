@@ -53,12 +53,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
@@ -77,7 +77,7 @@ class PhotoViewerViewModel @Inject constructor(
     service: ServiceDao,
     private val store: RecordPhotoStore,
 ) : ViewModel() {
-    private val route = savedStateHandle.toRoute<PhotoViewerRoute>()
+    private val route = savedStateHandle.route<PhotoViewerRoute>()
     val start: Int = route.start
 
     /** The record's photo files in the order the grid shows them. Null while loading. */

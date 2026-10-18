@@ -95,11 +95,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
@@ -212,7 +212,7 @@ class LogServiceViewModel @Inject constructor(
         photoPicker.discardDraft(photoKey)
     }
 
-    private val route = savedStateHandle.toRoute<LogServiceRoute>()
+    private val route = savedStateHandle.route<LogServiceRoute>()
     private val vehicleId = route.vehicleId
     val editing: Boolean = route.recordId != 0L
 

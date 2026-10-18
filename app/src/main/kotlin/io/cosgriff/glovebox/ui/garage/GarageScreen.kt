@@ -56,7 +56,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -112,12 +112,15 @@ fun GarageScreen(
     // Not saved: stays set while this screen animates out, and is fresh again on the way back.
     var leaving by remember { mutableStateOf(false) }
     val skipList = !checkedSingle && garage.vehicles.size == 1
-    LaunchedEffect(Unit) {
+    // Keyed on the decision, not run once: coming back, the list can show its last count for a frame
+    // before the new one arrives. An empty garage doesn't use the skip up, so the first vehicle, once
+    // added and set up, is opened too.
+    LaunchedEffect(skipList) {
         if (skipList) {
             leaving = true
             onOpenVehicle(garage.vehicles.single().vehicle.id)
         }
-        checkedSingle = true
+        if (garage.vehicles.isNotEmpty()) checkedSingle = true
     }
     if (skipList || leaving) return
 

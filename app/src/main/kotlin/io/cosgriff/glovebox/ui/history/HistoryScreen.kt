@@ -3,6 +3,8 @@ package io.cosgriff.glovebox.ui.history
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.ui.ArchivedHistoryRoute
+import io.cosgriff.glovebox.ui.routeOrNull
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.label
@@ -52,7 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -105,7 +107,7 @@ class HistoryViewModel @Inject constructor(
     private val actions: RecordActions,
 ) : ViewModel() {
     /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
-    private val archivedId: Long? = savedStateHandle.get<Long>("vehicleId")
+    private val archivedId: Long? = savedStateHandle.routeOrNull<ArchivedHistoryRoute>()?.vehicleId
     val archived: Boolean get() = archivedId != null
 
     // Both choices are kept in the saved state, so the tab comes back as it was left even if Android

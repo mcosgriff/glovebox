@@ -61,12 +61,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
@@ -126,7 +126,7 @@ class MileageReadingsViewModel @Inject constructor(
     private val odometer: OdometerDao,
     private val undo: MileageReadingUndo,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<MileageReadingsRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<MileageReadingsRoute>().vehicleId
 
     private var entities: Map<Long, OdometerReadingEntity> = emptyMap()
 

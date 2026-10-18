@@ -75,12 +75,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
@@ -139,7 +139,7 @@ class RecallsViewModel @Inject constructor(
     private val repository: RecallRepository,
     private val actions: RecordActions,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<RecallsRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<RecallsRoute>().vehicleId
 
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<RecallsState?> = combine(

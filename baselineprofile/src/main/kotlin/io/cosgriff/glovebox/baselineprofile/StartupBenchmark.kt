@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.baselineprofile
 
+import android.os.SystemClock
 import androidx.benchmark.macro.BaselineProfileMode
 import androidx.benchmark.macro.CompilationMode
 import androidx.benchmark.macro.FrameTimingMetric
@@ -49,6 +50,10 @@ class StartupBenchmark {
     ) {
         startActivityAndWait()
         Screen(device).see("Update mileage")
+        // The words can be found in the same frame as `ReportDrawn`, before that frame is drawn; a trace
+        // stopped there has no end to time "fully drawn" to, and the metric fails. This is after the
+        // figures are taken, so it doesn't change them.
+        SystemClock.sleep(500)
     }
 
     private fun scroll(mode: CompilationMode) = rule.measureRepeated(

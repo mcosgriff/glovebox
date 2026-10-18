@@ -7,13 +7,10 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.annotation.StringRes
 import io.cosgriff.glovebox.domain.DistanceUnit
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavBackStackEntry
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
-import androidx.compose.animation.AnimatedContentScope
 import io.cosgriff.glovebox.domain.LogEdits
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.collectLatest
@@ -47,18 +44,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.Stable
+import androidx.lifecycle.viewmodel.ViewModelStoreProvider
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.cosgriff.glovebox.ui.garage.AddVehicleScreen
 import io.cosgriff.glovebox.ui.export.ExportResultsViewModel
 import io.cosgriff.glovebox.ui.garage.GarageScreen
@@ -69,7 +76,6 @@ import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
-import androidx.navigation.toRoute
 import io.cosgriff.glovebox.ui.scan.ReadDashScreen
 import io.cosgriff.glovebox.ui.vehicle.MileageReadingsScreen
 import io.cosgriff.glovebox.ui.scan.ScanVinScreen
@@ -92,93 +98,163 @@ import io.cosgriff.glovebox.ui.settings.SettingsScreen
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
 // Type-safe routes. Matches the navigation map on the design canvas.
-@Serializable object GarageRoute
-@Serializable object HistoryRoute
-@Serializable object RemindersRoute
-@Serializable object SettingsRoute
-@Serializable object AddVehicleRoute
-@Serializable object ManualAddRoute
-@Serializable object ScanVinRoute
-@Serializable data class MileageReadingsRoute(val vehicleId: Long)
+@Serializable data object GarageRoute : NavKey
+@Serializable data object HistoryRoute : NavKey
+@Serializable data object RemindersRoute : NavKey
+@Serializable data object SettingsRoute : NavKey
+@Serializable data object AddVehicleRoute : NavKey
+@Serializable data object ManualAddRoute : NavKey
+@Serializable data object ScanVinRoute : NavKey
+@Serializable data class MileageReadingsRoute(val vehicleId: Long) : NavKey
 
 /** [last] is the vehicle's latest known reading in dash terms, to tell the odometer from the other numbers in view. */
-@Serializable data class ReadDashRoute(val last: Int? = null, val unit: String = "MILES")
-@Serializable object ReminderRulesRoute
-@Serializable object NotificationsRoute
-@Serializable object BackupRoute
+@Serializable data class ReadDashRoute(val last: Int? = null, val unit: String = "MILES") : NavKey
+@Serializable data object ReminderRulesRoute : NavKey
+@Serializable data object NotificationsRoute : NavKey
+@Serializable data object BackupRoute : NavKey
 /** Adds data from a JSON file the user picks to one vehicle. */
 /** [vehicleId] starts the page with that vehicle chosen, as Vehicle details opens it. */
-@Serializable data class ImportRoute(val vehicleId: Long? = null)
-@Serializable object DeleteAllRoute
-@Serializable object AboutRoute
-@Serializable object PrivacyRoute
-@Serializable object LicencesRoute
-@Serializable data class LicenceTextRoute(val id: String)
-@Serializable data class ScheduleSetupRoute(val vehicleId: Long)
+@Serializable data class ImportRoute(val vehicleId: Long? = null) : NavKey
+@Serializable data object DeleteAllRoute : NavKey
+@Serializable data object AboutRoute : NavKey
+@Serializable data object PrivacyRoute : NavKey
+@Serializable data object LicencesRoute : NavKey
+@Serializable data class LicenceTextRoute(val id: String) : NavKey
+@Serializable data class ScheduleSetupRoute(val vehicleId: Long) : NavKey
 /** A vehicle's schedule once it has been set up. */
-@Serializable data class ScheduleRoute(val vehicleId: Long)
+@Serializable data class ScheduleRoute(val vehicleId: Long) : NavKey
 /** "When were these last done?": a date and mileage for reminders that have never been logged. */
-@Serializable data class LastDoneRoute(val vehicleId: Long)
+@Serializable data class LastDoneRoute(val vehicleId: Long) : NavKey
 /** The schedule laid out by mileage, with what the log says was done at each point. */
-@Serializable data class MilestonesRoute(val vehicleId: Long)
+@Serializable data class MilestonesRoute(val vehicleId: Long) : NavKey
 /** [updateMileage] opens the Update mileage sheet straight away, for the mileage check-in notification. */
-@Serializable data class VehicleHomeRoute(val vehicleId: Long, val updateMileage: Boolean = false)
+@Serializable data class VehicleHomeRoute(val vehicleId: Long, val updateMileage: Boolean = false) : NavKey
 /**
  * [recordId] 0 logs a new record; otherwise that record is edited. [scheduleItemId] ticks that
  * reminder's work to start with (new records only).
  */
-@Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0)
-@Serializable data class RecordDetailRoute(val recordId: Long)
+@Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0) : NavKey
+@Serializable data class RecordDetailRoute(val recordId: Long) : NavKey
 /** One of a record's photos, full screen; [start] is its place in the grid. */
-@Serializable data class PhotoViewerRoute(val recordId: Long, val start: Int)
-@Serializable data class RecallsRoute(val vehicleId: Long)
-@Serializable data class VehicleDetailsRoute(val vehicleId: Long)
-@Serializable object ArchivedVehiclesRoute
-@Serializable data class DeleteVehicleRoute(val vehicleId: Long)
+@Serializable data class PhotoViewerRoute(val recordId: Long, val start: Int) : NavKey
+@Serializable data class RecallsRoute(val vehicleId: Long) : NavKey
+@Serializable data class VehicleDetailsRoute(val vehicleId: Long) : NavKey
+@Serializable data object ArchivedVehiclesRoute : NavKey
+@Serializable data class DeleteVehicleRoute(val vehicleId: Long) : NavKey
 /** Deletes a vehicle's service records (imported, or all) and nothing else. */
-@Serializable data class ClearHistoryRoute(val vehicleId: Long)
-@Serializable data class TorqueSpecsRoute(val vehicleId: Long)
-@Serializable data class FluidsPartsRoute(val vehicleId: Long)
-@Serializable data class DocumentsRoute(val vehicleId: Long)
-@Serializable data class DocumentViewerRoute(val documentId: Long)
+@Serializable data class ClearHistoryRoute(val vehicleId: Long) : NavKey
+@Serializable data class TorqueSpecsRoute(val vehicleId: Long) : NavKey
+@Serializable data class FluidsPartsRoute(val vehicleId: Long) : NavKey
+@Serializable data class DocumentsRoute(val vehicleId: Long) : NavKey
+@Serializable data class DocumentViewerRoute(val documentId: Long) : NavKey
 /** One archived vehicle's history, read-only. */
-@Serializable data class ArchivedHistoryRoute(val vehicleId: Long)
+@Serializable data class ArchivedHistoryRoute(val vehicleId: Long) : NavKey
 
 /**
  * A destination with the page colour behind it. Screens draw no background of their own, and without
- * one the screen underneath shows through while a back swipe is held or a transition runs.
+ * one the screen underneath shows through while a back swipe is held or a transition runs. Its
+ * ViewModels are told the route ([ProvideRoute]).
  */
-private inline fun <reified T : Any> NavGraphBuilder.screen(
-    noinline content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
-) = composable<T> { entry ->
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) { content(entry) }
-}
+private inline fun <reified T : NavKey> EntryProviderScope<NavKey>.screen(noinline content: @Composable (T) -> Unit) =
+    entry<T> { key ->
+        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            ProvideRoute(key) { content(key) }
+        }
+    }
 
 private const val SCANNED_VIN = "scannedVin"
 private const val DASH_READING = "dashReading"
 private const val CONFIRM_DELETE = "confirmDelete"
 
-private data class Tab(val route: Any, val type: KClass<*>, @StringRes val label: Int, val icon: ImageVector)
+private data class Tab(val route: NavKey, @StringRes val label: Int, val icon: ImageVector)
 
 private val tabs = listOf(
-    Tab(GarageRoute, GarageRoute::class, R.string.garage_title, Icons.Outlined.Home),
-    Tab(HistoryRoute, HistoryRoute::class, R.string.history_title, Icons.Outlined.History),
-    Tab(RemindersRoute, RemindersRoute::class, R.string.reminders_title, Icons.Outlined.Notifications),
-    Tab(SettingsRoute, SettingsRoute::class, R.string.settings_title, Icons.Outlined.Settings),
+    Tab(GarageRoute, R.string.garage_title, Icons.Outlined.Home),
+    Tab(HistoryRoute, R.string.history_title, Icons.Outlined.History),
+    Tab(RemindersRoute, R.string.reminders_title, Icons.Outlined.Notifications),
+    Tab(SettingsRoute, R.string.settings_title, Icons.Outlined.Settings),
 )
+private const val GARAGE_TAB = 0
+private const val HISTORY_TAB = 1
+private const val REMINDERS_TAB = 2
+
+/** How many back stacks there are, one per tab; `MainActivity` keeps a ViewModel store for each. */
+const val TAB_COUNT = 4
+
+/**
+ * Each tab's own back stack, and which tab is showing. Every stack starts at its tab's screen and
+ * is never emptied. What is shown is the current tab's stack over the Garage list, so Back from a
+ * tab's first screen goes to Garage, and from there out of the app.
+ */
+@Stable
+private class Navigator(val stacks: List<NavBackStack<NavKey>>, tab: MutableIntState) {
+    var tab by tab
+    private val stack get() = stacks[tab]
+    val top: NavKey get() = stack.last()
+
+    /** [singleTop] doesn't stack a screen on itself. */
+    fun push(key: NavKey, singleTop: Boolean = false) {
+        if (singleTop && top == key) return
+        stack.add(key)
+    }
+
+    fun pop() {
+        if (stack.size > 1) stack.removeAt(stack.lastIndex) else if (tab != GARAGE_TAB) toGarageList()
+    }
+
+    /** Puts [key] in place of the last [T] and everything above it, so Back doesn't return to them. */
+    inline fun <reified T : NavKey> replace(key: NavKey) {
+        val at = stacks[tab].indexOfLast { it is T }
+        if (at > 0) stacks[tab].trimTo(at)
+        push(key)
+    }
+
+    /** A tab comes back as it was left. */
+    fun switchTo(index: Int) {
+        tab = index
+    }
+
+    /** The Garage list, with nothing above it: what is left when a vehicle goes, or everything is restored. */
+    fun toGarageList() {
+        stack.trimTo(1)
+        stacks[GARAGE_TAB].trimTo(1)
+        tab = GARAGE_TAB
+    }
+
+    /** History's list, which [RecordActions.focus] points at a vehicle and record. The tab left keeps its screens. */
+    fun showHistory() {
+        stacks[HISTORY_TAB].trimTo(1)
+        tab = HISTORY_TAB
+    }
+
+    /** The entries to show, given each tab's: Garage's first screen under the current tab's. */
+    fun <T : Any> shown(entries: List<List<NavEntry<T>>>): List<NavEntry<T>> =
+        if (tab == GARAGE_TAB) entries[GARAGE_TAB] else listOf(entries[GARAGE_TAB].first()) + entries[tab]
+}
 
 @Composable
-fun GloveboxNavHost() {
-    val nav = rememberNavController()
-    val entry by nav.currentBackStackEntryAsState()
-    val destination = entry?.destination
+private fun rememberNavigator(): Navigator {
+    val stacks = tabs.map { rememberNavBackStack(it.route) }
+    val tab = rememberSaveable { mutableIntStateOf(GARAGE_TAB) }
+    return remember(stacks, tab) { Navigator(stacks, tab) }
+}
+
+/**
+ * [screenModels] holds each tab's screens' ViewModels. It lives above the lock in `MainActivity`:
+ * the lock takes this host out of composition, and a store made in here would clear every screen's
+ * ViewModels when it did.
+ */
+@Composable
+fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
+    val nav = rememberNavigator()
+    val top = nav.top
     // Vehicle home sits under the Garage tab and keeps the bar, as on the design.
-    val onVehicleHome = destination?.hasRoute(VehicleHomeRoute::class) == true
-    val showBar = onVehicleHome || tabs.any { t -> destination?.hasRoute(t.type) == true }
+    val onVehicleHome = top is VehicleHomeRoute
+    val showBar = onVehicleHome || tabs.any { it.route == top }
+    val results = rememberSaveable(saver = ResultsSaver) { mutableStateMapOf() }
 
     // Service log changes are announced here so Undo works whichever screen the user lands on.
     val recordEvents: RecordEventsViewModel = hiltViewModel()
@@ -219,7 +295,7 @@ fun GloveboxNavHost() {
                 }
                 if (result == SnackbarResult.ActionPerformed) {
                     if (recordId != null) {
-                        nav.navigate(RecordDetailRoute(recordId))
+                        nav.push(RecordDetailRoute(recordId))
                     } else {
                         undone = true
                         recordEvents.undo(event) {
@@ -248,16 +324,12 @@ fun GloveboxNavHost() {
             if (waiting == null) return@collect
             when (val to = destinations.take()) {
                 null -> Unit
-                Destination.Reminders -> nav.navigate(RemindersRoute) {
-                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
+                Destination.Reminders -> nav.switchTo(REMINDERS_TAB)
                 // Opened over the Garage tab, so Back from either lands there.
-                is Destination.Recalls -> nav.navigate(RecallsRoute(to.vehicleId))
-                is Destination.UpdateMileage -> nav.navigate(VehicleHomeRoute(to.vehicleId, updateMileage = true))
-                Destination.Backup -> nav.navigate(BackupRoute) { launchSingleTop = true }
-                Destination.AddVehicle -> nav.navigate(AddVehicleRoute) { launchSingleTop = true }
+                is Destination.Recalls -> nav.push(RecallsRoute(to.vehicleId))
+                is Destination.UpdateMileage -> nav.push(VehicleHomeRoute(to.vehicleId, updateMileage = true))
+                Destination.Backup -> nav.push(BackupRoute, singleTop = true)
+                Destination.AddVehicle -> nav.push(AddVehicleRoute, singleTop = true)
             }
         }
     }
@@ -277,23 +349,18 @@ fun GloveboxNavHost() {
 
     // A saved or deleted record ends on the History list, which RecordActions.focus points at the right vehicle.
     // The tab the user was on keeps its screens for when they go back to it.
-    val showHistory: () -> Unit = {
-        nav.navigate(HistoryRoute) {
-            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-            launchSingleTop = true
-        }
-    }
+    val showHistory: () -> Unit = { nav.showHistory() }
 
     // A vehicle that left the garage takes its home and details screens with it.
     val onArchived: (String, () -> Unit) -> Unit = { name, undo ->
-        nav.popBackStack<GarageRoute>(inclusive = false)
+        nav.toGarageList()
         showMessage(res.getString(R.string.event_archived, name), res.getString(R.string.undo), undo)
     }
 
     // Shown whenever a backup file has been picked, from whichever screen started it.
     RestoreSheet(
         onRestored = { summary ->
-            nav.popBackStack<GarageRoute>(inclusive = false)
+            nav.toGarageList()
             showNote(res.getString(R.string.event_restored_backup, restoreSummary(summary.vehicles, summary.records, summary.photos)))
         },
     )
@@ -303,21 +370,12 @@ fun GloveboxNavHost() {
         bottomBar = {
             if (showBar) {
                 NavigationBar {
-                    tabs.forEach { tab ->
+                    tabs.forEachIndexed { index, tab ->
                         NavigationBarItem(
-                            selected = destination?.hasRoute(tab.type) == true ||
-                                (onVehicleHome && tab.route == GarageRoute),
+                            selected = nav.tab == index,
                             onClick = {
                                 // Re-tapping Garage from a vehicle goes back to the list.
-                                if (onVehicleHome && tab.route == GarageRoute) {
-                                    nav.popBackStack<GarageRoute>(inclusive = false)
-                                    return@NavigationBarItem
-                                }
-                                nav.navigate(tab.route) {
-                                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                if (onVehicleHome && index == GARAGE_TAB) nav.toGarageList() else nav.switchTo(index)
                             },
                             icon = { Icon(tab.icon, contentDescription = null) },
                             label = { Text(stringResource(tab.label)) },
@@ -327,92 +385,88 @@ fun GloveboxNavHost() {
             }
         },
     ) { padding ->
-        NavHost(nav, startDestination = GarageRoute, modifier = Modifier.padding(padding)) {
+        val destinations = entryProvider<NavKey> {
             screen<GarageRoute> {
                 GarageScreen(
-                    onAddVehicle = { nav.navigate(AddVehicleRoute) },
-                    onOpenVehicle = { vehicleId -> nav.navigate(VehicleHomeRoute(vehicleId)) },
-                    onOpenArchive = { nav.navigate(ArchivedVehiclesRoute) },
+                    onAddVehicle = { nav.push(AddVehicleRoute) },
+                    onOpenVehicle = { vehicleId -> nav.push(VehicleHomeRoute(vehicleId)) },
+                    onOpenArchive = { nav.push(ArchivedVehiclesRoute) },
                     onRestore = { restore.pick() },
                     onSeeReminders = {
-                        nav.navigate(RemindersRoute) {
-                            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        nav.switchTo(REMINDERS_TAB)
                     },
                 )
             }
-            screen<ReadDashRoute> { entry ->
+            screen<ReadDashRoute> { route ->
                 ReadDashScreen(
-                    last = entry.toRoute<ReadDashRoute>().last,
-                    unit = DistanceUnit.of(entry.toRoute<ReadDashRoute>().unit),
-                    onClose = { nav.popBackStack() },
+                    last = route.last,
+                    unit = DistanceUnit.of(route.unit),
+                    onClose = { nav.pop() },
                     onUse = { miles ->
-                        nav.previousBackStackEntry?.savedStateHandle?.set(DASH_READING, miles)
-                        nav.popBackStack()
+                        results[DASH_READING] = miles
+                        nav.pop()
                     },
                 )
             }
-            screen<VehicleHomeRoute> { entry ->
-                // What the camera read comes back through this entry's saved state, as a scanned VIN does.
-                val dashReading by entry.savedStateHandle.getStateFlow<Int?>(DASH_READING, null).collectAsStateWithLifecycle()
+            screen<VehicleHomeRoute> {
+                // What the camera read comes back through the results, as a scanned VIN does.
+                val dashReading = results[DASH_READING] as Int?
                 VehicleHomeScreen(
-                    onReadDash = { last, unit -> nav.navigate(ReadDashRoute(last, unit.name)) },
+                    onReadDash = { last, unit -> nav.push(ReadDashRoute(last, unit.name)) },
                     dashReading = dashReading,
-                    onDashReadingUsed = { entry.savedStateHandle[DASH_READING] = null },
-                    onBack = { nav.popBackStack() },
-                    onLogService = { vehicleId -> nav.navigate(LogServiceRoute(vehicleId)) },
-                    onLogItem = { vehicleId, scheduleItemId -> nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId)) },
-                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
-                    onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
-                    onOpenDetails = { vehicleId -> nav.navigate(VehicleDetailsRoute(vehicleId)) },
-                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
+                    onDashReadingUsed = { results.remove(DASH_READING) },
+                    onBack = { nav.pop() },
+                    onLogService = { vehicleId -> nav.push(LogServiceRoute(vehicleId)) },
+                    onLogItem = { vehicleId, scheduleItemId -> nav.push(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId)) },
+                    onOpenRules = { nav.push(ReminderRulesRoute) },
+                    onOpenRecalls = { vehicleId -> nav.push(RecallsRoute(vehicleId)) },
+                    onOpenDetails = { vehicleId -> nav.push(VehicleDetailsRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.push(LastDoneRoute(vehicleId)) },
                     onMessage = showMessage,
                 )
             }
             screen<VehicleDetailsRoute> {
                 VehicleDetailsScreen(
-                    onBack = { nav.popBackStack() },
-                    onOpenRecalls = { vehicleId -> nav.navigate(RecallsRoute(vehicleId)) },
-                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
+                    onBack = { nav.pop() },
+                    onOpenRecalls = { vehicleId -> nav.push(RecallsRoute(vehicleId)) },
+                    onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
                     onArchived = onArchived,
-                    onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
-                    onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
-                    onOpenMoreTakes = { vehicleId -> nav.navigate(FluidsPartsRoute(vehicleId)) },
-                    onOpenReadings = { vehicleId -> nav.navigate(MileageReadingsRoute(vehicleId)) },
-                    onOpenImport = { vehicleId -> nav.navigate(ImportRoute(vehicleId)) },
-                    onOpenDocuments = { vehicleId -> nav.navigate(DocumentsRoute(vehicleId)) },
-                    onClearHistory = { vehicleId -> nav.navigate(ClearHistoryRoute(vehicleId)) },
+                    onDelete = { vehicleId -> nav.push(DeleteVehicleRoute(vehicleId)) },
+                    onOpenTorqueSpecs = { vehicleId -> nav.push(TorqueSpecsRoute(vehicleId)) },
+                    onOpenMoreTakes = { vehicleId -> nav.push(FluidsPartsRoute(vehicleId)) },
+                    onOpenReadings = { vehicleId -> nav.push(MileageReadingsRoute(vehicleId)) },
+                    onOpenImport = { vehicleId -> nav.push(ImportRoute(vehicleId)) },
+                    onOpenDocuments = { vehicleId -> nav.push(DocumentsRoute(vehicleId)) },
+                    onClearHistory = { vehicleId -> nav.push(ClearHistoryRoute(vehicleId)) },
                 )
             }
             screen<ClearHistoryRoute> {
                 ClearHistoryScreen(
-                    onCancel = { nav.popBackStack() },
+                    onCancel = { nav.pop() },
                     onCleared = { n ->
-                        nav.popBackStack()
+                        nav.pop()
                         showNote(res.getQuantityString(R.plurals.event_records_deleted, n, n.asNumber()))
                     },
                 )
             }
             screen<MileageReadingsRoute> {
                 MileageReadingsScreen(
-                    onBack = { nav.popBackStack() },
-                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
+                    onBack = { nav.pop() },
+                    onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
                     onMessage = showMessage,
                 )
             }
-            screen<FluidsPartsRoute> { FluidsPartsScreen(onBack = { nav.popBackStack() }) }
+            screen<FluidsPartsRoute> { FluidsPartsScreen(onBack = { nav.pop() }) }
             screen<DocumentsRoute> {
-                DocumentsScreen(onBack = { nav.popBackStack() }, onView = { documentId -> nav.navigate(DocumentViewerRoute(documentId)) })
+                DocumentsScreen(onBack = { nav.pop() }, onView = { documentId -> nav.push(DocumentViewerRoute(documentId)) })
             }
-            screen<DocumentViewerRoute> { DocumentViewerScreen(onClose = { nav.popBackStack() }) }
-            screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.popBackStack() }, onMessage = showMessage) }
+            screen<DocumentViewerRoute> { DocumentViewerScreen(onClose = { nav.pop() }) }
+            screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.pop() }, onMessage = showMessage) }
             screen<DeleteVehicleRoute> {
                 DeleteVehicleScreen(
-                    onCancel = { nav.popBackStack() },
+                    onCancel = { nav.pop() },
                     onDeleted = { name ->
-                        nav.popBackStack<GarageRoute>(inclusive = false)
+                        nav.toGarageList()
                         showNote(res.getString(R.string.event_vehicle_deleted, name))
                     },
                     onArchived = onArchived,
@@ -420,162 +474,171 @@ fun GloveboxNavHost() {
             }
             screen<ArchivedVehiclesRoute> {
                 ArchivedVehiclesScreen(
-                    onBack = { nav.popBackStack() },
-                    onViewHistory = { vehicleId -> nav.navigate(ArchivedHistoryRoute(vehicleId)) },
-                    onDelete = { vehicleId -> nav.navigate(DeleteVehicleRoute(vehicleId)) },
+                    onBack = { nav.pop() },
+                    onViewHistory = { vehicleId -> nav.push(ArchivedHistoryRoute(vehicleId)) },
+                    onDelete = { vehicleId -> nav.push(DeleteVehicleRoute(vehicleId)) },
                     onMessage = showMessage,
                 )
             }
             screen<ArchivedHistoryRoute> {
                 HistoryScreen(
-                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
-                    onBack = { nav.popBackStack() },
+                    onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
+                    onBack = { nav.pop() },
                 )
             }
-            screen<RecallsRoute> { RecallsScreen(onBack = { nav.popBackStack() }) }
-            screen<AddVehicleRoute> { entry ->
-                // The scanner hands its VIN back through this entry's saved state.
-                val scannedVin by entry.savedStateHandle.getStateFlow<String?>(SCANNED_VIN, null).collectAsStateWithLifecycle()
+            screen<RecallsRoute> { RecallsScreen(onBack = { nav.pop() }) }
+            screen<AddVehicleRoute> {
+                // The scanner hands its VIN back through the results.
+                val scannedVin = results[SCANNED_VIN] as String?
                 AddVehicleScreen(
-                    onBack = { nav.popBackStack() },
-                    onNoVin = { nav.navigate(ManualAddRoute) },
-                    onScan = { nav.navigate(ScanVinRoute) },
+                    onBack = { nav.pop() },
+                    onNoVin = { nav.push(ManualAddRoute) },
+                    onScan = { nav.push(ScanVinRoute) },
                     scannedVin = scannedVin,
-                    onScannedVinUsed = { entry.savedStateHandle[SCANNED_VIN] = null },
+                    onScannedVinUsed = { results.remove(SCANNED_VIN) },
                     onSaved = { vehicleId ->
-                        nav.navigate(ScheduleSetupRoute(vehicleId)) {
-                            popUpTo<AddVehicleRoute> { inclusive = true }
-                        }
+                        nav.replace<AddVehicleRoute>(ScheduleSetupRoute(vehicleId))
                     },
                 )
             }
             screen<ScanVinRoute> {
                 ScanVinScreen(
-                    onClose = { nav.popBackStack() },
+                    onClose = { nav.pop() },
                     onUseVin = { vin ->
-                        nav.previousBackStackEntry?.savedStateHandle?.set(SCANNED_VIN, vin)
-                        nav.popBackStack()
+                        results[SCANNED_VIN] = vin
+                        nav.pop()
                     },
                 )
             }
             screen<ManualAddRoute> {
                 ManualAddScreen(
-                    onBack = { nav.popBackStack() },
+                    onBack = { nav.pop() },
                     onSaved = { vehicleId ->
                         // Both add screens go, so Back from the schedule lands on the garage.
-                        nav.navigate(ScheduleSetupRoute(vehicleId)) {
-                            popUpTo<AddVehicleRoute> { inclusive = true }
-                        }
+                        nav.replace<AddVehicleRoute>(ScheduleSetupRoute(vehicleId))
                     },
                 )
             }
             screen<LogServiceRoute> {
                 LogServiceScreen(
-                    onDone = { nav.popBackStack() },
+                    onDone = { nav.pop() },
                     onAdded = {
-                        nav.popBackStack()
+                        nav.pop()
                         showHistory()
                     },
                     onDeleteInstead = {
                         // Editing is only reached from the record's own screen, which has the confirmation.
-                        nav.previousBackStackEntry?.savedStateHandle?.set(CONFIRM_DELETE, true)
-                        nav.popBackStack()
+                        results[CONFIRM_DELETE] = true
+                        nav.pop()
                     },
                 )
             }
             screen<ScheduleSetupRoute> {
                 ScheduleSetupScreen(
-                    onDone = { nav.popBackStack() },
+                    onDone = { nav.pop() },
                     // Takes setup's place, so Back from the list doesn't offer the schedule a second time.
-                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) { popUpTo<ScheduleSetupRoute> { inclusive = true } } },
+                    onEnterLastDone = { vehicleId -> nav.replace<ScheduleSetupRoute>(LastDoneRoute(vehicleId)) },
                 )
             }
             screen<MilestonesRoute> {
-                MilestonesScreen(onBack = { nav.popBackStack() }, onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
+                MilestonesScreen(onBack = { nav.pop() }, onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) })
             }
             screen<LastDoneRoute> {
-                LastDoneScreen(onDone = { nav.popBackStack() }, onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
+                LastDoneScreen(onDone = { nav.pop() }, onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) })
             }
             screen<ScheduleRoute> {
                 ScheduleScreen(
-                    onBack = { nav.popBackStack() },
-                    onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) },
-                    onSetUp = { vehicleId -> nav.navigate(ScheduleSetupRoute(vehicleId)) },
-                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
-                    onOpenMilestones = { vehicleId -> nav.navigate(MilestonesRoute(vehicleId)) },
+                    onBack = { nav.pop() },
+                    onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
+                    onSetUp = { vehicleId -> nav.push(ScheduleSetupRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.push(LastDoneRoute(vehicleId)) },
+                    onOpenMilestones = { vehicleId -> nav.push(MilestonesRoute(vehicleId)) },
                 )
             }
             screen<HistoryRoute> {
-                HistoryScreen(onOpenRecord = { recordId -> nav.navigate(RecordDetailRoute(recordId)) })
+                HistoryScreen(onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) })
             }
-            screen<RecordDetailRoute> { entry ->
-                val confirmDelete by entry.savedStateHandle.getStateFlow(CONFIRM_DELETE, false).collectAsStateWithLifecycle()
+            screen<RecordDetailRoute> {
+                val confirmDelete = results[CONFIRM_DELETE] == true
                 RecordDetailScreen(
-                    onBack = { nav.popBackStack() },
+                    onBack = { nav.pop() },
                     onDeleted = {
-                        nav.popBackStack()
+                        nav.pop()
                         showHistory()
                     },
                     confirmDelete = confirmDelete,
-                    onConfirmDeleteShown = { entry.savedStateHandle[CONFIRM_DELETE] = false },
-                    onEdit = { vehicleId, recordId -> nav.navigate(LogServiceRoute(vehicleId, recordId)) },
-                    onOpenPhoto = { recordId, index -> nav.navigate(PhotoViewerRoute(recordId, index)) },
+                    onConfirmDeleteShown = { results.remove(CONFIRM_DELETE) },
+                    onEdit = { vehicleId, recordId -> nav.push(LogServiceRoute(vehicleId, recordId)) },
+                    onOpenPhoto = { recordId, index -> nav.push(PhotoViewerRoute(recordId, index)) },
                 )
             }
-            screen<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.popBackStack() }) }
+            screen<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.pop() }) }
             screen<RemindersRoute> {
                 RemindersScreen(
                     onLogIt = { vehicleId, scheduleItemId ->
-                        nav.navigate(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
+                        nav.push(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId))
                     },
-                    onAddVehicle = { nav.navigate(AddVehicleRoute) },
-                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
-                    onOpenNotifications = { nav.navigate(NotificationsRoute) },
+                    onAddVehicle = { nav.push(AddVehicleRoute) },
+                    onOpenRules = { nav.push(ReminderRulesRoute) },
+                    onOpenNotifications = { nav.push(NotificationsRoute) },
                     onMessage = showMessage,
                 )
             }
-            screen<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.popBackStack() }) }
+            screen<ReminderRulesRoute> { ReminderRulesScreen(onBack = { nav.pop() }) }
             screen<SettingsRoute> {
                 SettingsScreen(
-                    onOpenRules = { nav.navigate(ReminderRulesRoute) },
-                    onOpenNotifications = { nav.navigate(NotificationsRoute) },
-                    onOpenBackup = { nav.navigate(BackupRoute) },
-                    onOpenImport = { nav.navigate(ImportRoute()) },
-                    onDeleteAll = { nav.navigate(DeleteAllRoute) },
-                    onOpenAbout = { nav.navigate(AboutRoute) },
-                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
+                    onOpenRules = { nav.push(ReminderRulesRoute) },
+                    onOpenNotifications = { nav.push(NotificationsRoute) },
+                    onOpenBackup = { nav.push(BackupRoute) },
+                    onOpenImport = { nav.push(ImportRoute()) },
+                    onDeleteAll = { nav.push(DeleteAllRoute) },
+                    onOpenAbout = { nav.push(AboutRoute) },
+                    onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
                 )
             }
             screen<AboutRoute> {
                 AboutScreen(
-                    onBack = { nav.popBackStack() },
-                    onOpenPrivacy = { nav.navigate(PrivacyRoute) },
-                    onOpenLicences = { nav.navigate(LicencesRoute) },
+                    onBack = { nav.pop() },
+                    onOpenPrivacy = { nav.push(PrivacyRoute) },
+                    onOpenLicences = { nav.push(LicencesRoute) },
                     onMessage = showNote,
                 )
             }
-            screen<PrivacyRoute> { PrivacyScreen(onBack = { nav.popBackStack() }) }
+            screen<PrivacyRoute> { PrivacyScreen(onBack = { nav.pop() }) }
             screen<LicencesRoute> {
-                LicencesScreen(onBack = { nav.popBackStack() }, onOpenLicence = { id -> nav.navigate(LicenceTextRoute(id)) })
+                LicencesScreen(onBack = { nav.pop() }, onOpenLicence = { id -> nav.push(LicenceTextRoute(id)) })
             }
-            screen<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.popBackStack() }, onMessage = showNote) }
+            screen<LicenceTextRoute> { LicenceTextScreen(onBack = { nav.pop() }, onMessage = showNote) }
             screen<DeleteAllRoute> {
-                DeleteAllScreen(onCancel = { nav.popBackStack() }, onBackupFirst = { nav.navigate(BackupRoute) })
+                DeleteAllScreen(onCancel = { nav.pop() }, onBackupFirst = { nav.push(BackupRoute) })
             }
             screen<ImportRoute> {
                 ImportScreen(
-                    onBack = { nav.popBackStack() },
-                    onOpenTorqueSpecs = { vehicleId -> nav.navigate(TorqueSpecsRoute(vehicleId)) },
-                    onOpenSchedule = { vehicleId -> nav.navigate(ScheduleRoute(vehicleId)) },
-                    onEnterLastDone = { vehicleId -> nav.navigate(LastDoneRoute(vehicleId)) },
-                    onOpenMilestones = { vehicleId -> nav.navigate(MilestonesRoute(vehicleId)) },
-                    onOpenHistory = { vehicleId, archived -> if (archived) nav.navigate(ArchivedHistoryRoute(vehicleId)) else showHistory() },
+                    onBack = { nav.pop() },
+                    onOpenTorqueSpecs = { vehicleId -> nav.push(TorqueSpecsRoute(vehicleId)) },
+                    onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
+                    onEnterLastDone = { vehicleId -> nav.push(LastDoneRoute(vehicleId)) },
+                    onOpenMilestones = { vehicleId -> nav.push(MilestonesRoute(vehicleId)) },
+                    onOpenHistory = { vehicleId, archived -> if (archived) nav.push(ArchivedHistoryRoute(vehicleId)) else showHistory() },
                 )
             }
-            screen<BackupRoute> { BackupScreen(onBack = { nav.popBackStack() }, onRestore = { restore.pick() }) }
+            screen<BackupRoute> { BackupScreen(onBack = { nav.pop() }, onRestore = { restore.pick() }) }
             screen<NotificationsRoute> {
-                NotificationsScreen(onBack = { nav.popBackStack() }, onOpenRules = { nav.navigate(ReminderRulesRoute) })
+                NotificationsScreen(onBack = { nav.pop() }, onOpenRules = { nav.push(ReminderRulesRoute) })
             }
         }
+        // Every tab's entries are kept, not only the shown ones, so a tab's screens and their state
+        // are still there when the user comes back to it.
+        val entries = tabs.indices.map { index ->
+            rememberDecoratedNavEntries(
+                backStack = nav.stacks[index],
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(screenModels[index]),
+                ),
+                entryProvider = destinations,
+            )
+        }
+        NavDisplay(entries = nav.shown(entries), modifier = Modifier.padding(padding), onBack = nav::pop)
     }
 }

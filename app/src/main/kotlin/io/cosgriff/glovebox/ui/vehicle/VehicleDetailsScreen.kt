@@ -117,12 +117,12 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.OdometerDao
@@ -196,7 +196,7 @@ class VehicleDetailsViewModel @Inject constructor(
     private val archiver: VehicleArchiver,
     private val units: UnitDao,
 ) : ViewModel() {
-    val vehicleId = savedStateHandle.toRoute<VehicleDetailsRoute>().vehicleId
+    val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
 
     /** Null while loading, and if the vehicle no longer exists. */
     val details: StateFlow<VehicleDetails?> = combine(

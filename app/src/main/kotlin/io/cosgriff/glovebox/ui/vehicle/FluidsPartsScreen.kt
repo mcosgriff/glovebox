@@ -46,12 +46,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -73,7 +73,7 @@ class FluidsPartsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<FluidsPartsRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<FluidsPartsRoute>().vehicleId
 
     /** Null while loading, and if the vehicle no longer exists. */
     val vehicle: StateFlow<VehicleEntity?> = vehicles.observe(vehicleId)

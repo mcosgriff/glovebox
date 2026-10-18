@@ -65,12 +65,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
@@ -128,7 +128,7 @@ class ScheduleSetupViewModel @Inject constructor(
     private val catalog: KnownScheduleCatalog,
     private val milestones: MilestoneDao,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<ScheduleSetupRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<ScheduleSetupRoute>().vehicleId
 
     /**
      * The maker's schedule that ships for this vehicle, when there is one. It is then the schedule

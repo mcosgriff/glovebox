@@ -34,6 +34,8 @@ import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.lock.AppLock
 import io.cosgriff.glovebox.lock.LockScreen
 import io.cosgriff.glovebox.ui.GloveboxNavHost
+import io.cosgriff.glovebox.ui.TAB_COUNT
+import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreProvider
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import io.cosgriff.glovebox.ui.vehicle.DocumentPicker
@@ -141,6 +143,9 @@ class MainActivity : FragmentActivity() {
             // and dialogs included) is on screen or readable while locked. Their saved state is kept
             // here, which puts the user back where they were once they unlock.
             val place = rememberSaveableStateHolder()
+            // The screens' ViewModels, one store per tab, kept here for the same reason: made inside the nav
+            // host, they would be cleared each time the lock took it away.
+            val screenModels = List(TAB_COUNT) { rememberViewModelStoreProvider(key = "screens-$it") }
 
             val welcome by firstRun.needsWelcome.collectAsStateWithLifecycle()
 
@@ -162,7 +167,7 @@ class MainActivity : FragmentActivity() {
                         },
                     )
                     locked && settings?.biometricLock == true -> LockScreen(onUnlocked = appLock::unlock)
-                    else -> place.SaveableStateProvider(APP_SCREENS) { GloveboxNavHost() }
+                    else -> place.SaveableStateProvider(APP_SCREENS) { GloveboxNavHost(screenModels) }
                 }
             }
         }

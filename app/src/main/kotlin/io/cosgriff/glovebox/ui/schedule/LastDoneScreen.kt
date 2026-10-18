@@ -58,12 +58,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
@@ -119,7 +119,7 @@ class LastDoneViewModel @Inject constructor(
     settings: SettingsRepository,
     private val actions: RecordActions,
 ) : ViewModel() {
-    val vehicleId = savedStateHandle.toRoute<LastDoneRoute>().vehicleId
+    val vehicleId = savedStateHandle.route<LastDoneRoute>().vehicleId
 
     private var entities: Map<Long, ScheduleItemEntity> = emptyMap()
 

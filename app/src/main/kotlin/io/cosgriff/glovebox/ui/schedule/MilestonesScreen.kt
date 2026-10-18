@@ -56,12 +56,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.MilestoneEntity
@@ -149,7 +149,7 @@ class MilestonesViewModel @Inject constructor(
     private val saver: ExportSaver,
     catalog: KnownScheduleCatalog,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<MilestonesRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<MilestonesRoute>().vehicleId
 
     /** How many milestones past the odometer are shown; "Show more" raises it. */
     private val ahead = MutableStateFlow(savedStateHandle.get<Int>(AHEAD) ?: Milestones.AHEAD)
