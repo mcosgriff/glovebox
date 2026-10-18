@@ -186,6 +186,24 @@ fun Snooze.until(unit: DistanceUnit, today: LocalDate = LocalDate.now()): String
 )
 
 /** Days up to two months, then whole months — "In 151 days" is harder to picture than "In 5 months". */
+/**
+ * How far off or overdue, without saying which: "1,688 mi", "21 days". Null when there is no amount
+ * (due now, due today, snoozed, not logged). For a phrase of a screen's own ("Next: Oil in 1,688 mi").
+ */
+fun DueHeadline.amount(unit: DistanceUnit): String? = when (this) {
+    is DueHeadline.Miles -> remaining.takeIf { it != 0 }?.let { abs(it).asDistance(unit) }
+    is DueHeadline.Days -> remaining.takeIf { it != 0L }?.let { days(abs(it)) }
+    else -> null
+}
+
+/** Whether the headline counts down (true), is past (false), or neither (null). */
+val DueHeadline.ahead: Boolean?
+    get() = when (this) {
+        is DueHeadline.Miles -> if (remaining == 0) null else remaining > 0
+        is DueHeadline.Days -> if (remaining == 0L) null else remaining > 0
+        else -> null
+    }
+
 private fun days(n: Long): String = if (n <= 60) {
     AppText.res.getQuantityString(R.plurals.days, n.toInt(), n.toInt().asNumber())
 } else {

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import kotlinx.coroutines.flow.first
 import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
@@ -207,7 +209,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
 
     when (picking) {
         Picking.YEAR -> PickerDialog(
-            title = "Model year",
+            title = stringResource(R.string.add_vehicle_model_year),
             list = PickList.Loaded(VehiclePick.years(thisYear).map { it.toString() }),
             numeric = true,
             // Every year that can be chosen is in the list, so typing only narrows it.
@@ -219,7 +221,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
             onDismiss = { picking = null },
         )
         Picking.MAKE -> PickerDialog(
-            title = "Make",
+            title = stringResource(R.string.add_vehicle_make),
             list = vm.makes,
             display = Recalls::makeName,
             onRetry = vm::loadMakes,
@@ -230,9 +232,9 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
             onDismiss = { picking = null },
         )
         Picking.MODEL -> PickerDialog(
-            title = "Model",
+            title = stringResource(R.string.add_vehicle_model),
             list = vm.models,
-            emptyNote = "NHTSA lists no ${vm.year ?: ""} ${Recalls.makeName(vm.make)} models. Type the model above.",
+            emptyNote = stringResource(R.string.manual_add_no_models, vm.year?.toString().orEmpty(), Recalls.makeName(vm.make)),
             onPick = {
                 vm.chooseModel(it)
                 picking = null
@@ -244,9 +246,9 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Text(
-                "Add without a VIN",
+                stringResource(R.string.manual_add_title),
                 Modifier.padding(start = 8.dp).semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
@@ -258,17 +260,17 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                "For older, imported or kit vehicles, or when the decode fails. Pick from NHTSA's make and model lists or type your own.",
+                stringResource(R.string.manual_add_intro),
                 color = scheme.onSurfaceVariant,
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                PickField("Year", vm.year?.toString(), Modifier.weight(1f)) { picking = Picking.YEAR }
-                PickField("Make", vm.make.takeIf { it.isNotEmpty() }?.let(Recalls::makeName), Modifier.weight(1f)) { picking = Picking.MAKE }
+                PickField(stringResource(R.string.manual_add_year), vm.year?.toString(), Modifier.weight(1f)) { picking = Picking.YEAR }
+                PickField(stringResource(R.string.add_vehicle_make), vm.make.takeIf { it.isNotEmpty() }?.let(Recalls::makeName), Modifier.weight(1f)) { picking = Picking.MAKE }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 PickField(
-                    "Model",
+                    stringResource(R.string.add_vehicle_model),
                     vm.model.takeIf { it.isNotEmpty() },
                     Modifier.weight(1f),
                     enabled = vm.year != null && vm.make.isNotEmpty(),
@@ -276,7 +278,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 OutlinedTextField(
                     value = vm.trim,
                     onValueChange = { vm.trim = it.take(VehicleText.MAX_NICKNAME) },
-                    label = { Text("Trim (optional)") },
+                    label = { Text(stringResource(R.string.manual_add_trim)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
@@ -284,20 +286,20 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 )
             }
             if (vm.year == null || vm.make.isEmpty()) {
-                Text("Choose the year and make first; the model list depends on both.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.manual_add_year_make_first), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
 
             OutlinedTextField(
                 value = vm.engine,
                 onValueChange = { vm.engine = it.take(VehicleText.MAX_SPEC) },
-                label = { Text("Engine (optional)") },
+                label = { Text(stringResource(R.string.manual_add_engine)) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Drivetrain (optional)", style = MaterialTheme.typography.labelLarge, color = statusColors().soon)
+                Text(stringResource(R.string.manual_add_drivetrain), style = MaterialTheme.typography.labelLarge, color = statusColors().soon)
                 // Nothing is chosen to begin with, and tapping the chosen one clears it: a guess is never saved.
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     VehiclePick.drivetrains.forEachIndexed { i, d ->
@@ -317,13 +319,13 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 DistanceUnitSwitch(vm.unit, onPick = { vm.unit = it })
-                Text("What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.add_vehicle_unit_note), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
 
             OutlinedTextField(
                 value = vm.odometerText,
                 onValueChange = vm::onOdometerChange,
-                label = { Text("Odometer (${vm.unit.symbolWord})") },
+                label = { Text(stringResource(R.string.odometer_in, vm.unit.symbolWord)) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                 shape = RoundedCornerShape(12.dp),
@@ -333,8 +335,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
 
             Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Without a VIN, recalls are checked by year, make and model only, and can't be confirmed for your car. " +
-                        "You can add the VIN later in Vehicle details.",
+                    stringResource(R.string.manual_add_recalls_note),
                     Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = statusColors().soon,
@@ -350,7 +351,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text("Next: maintenance schedule", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.add_vehicle_next), style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -372,7 +373,7 @@ private fun PickField(label: String, value: String?, modifier: Modifier, enabled
             Column(Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                 Text(
-                    value ?: "Choose",
+                    value ?: stringResource(R.string.manual_add_choose),
                     style = MaterialTheme.typography.bodyLarge,
                     color = when {
                         !enabled -> scheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -418,7 +419,7 @@ private fun PickerDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = if (numeric) it.filter(Char::isDigit).take(4) else it.take(VehicleText.MAX_NICKNAME) },
-                    label = { Text(if (numeric) "Type the year" else "Search or type your own") },
+                    label = { Text(stringResource(if (numeric) R.string.manual_add_type_year else R.string.manual_add_search)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
@@ -427,22 +428,22 @@ private fun PickerDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 when {
-                    list == PickList.Loading -> Text("Loading NHTSA's list…", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    list == PickList.Loading -> Text(stringResource(R.string.manual_add_loading), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                     list == PickList.Unavailable -> Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Couldn't load NHTSA's list. Type it above instead.",
+                            stringResource(R.string.manual_add_load_failed),
                             Modifier.weight(1f),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
-                        if (onRetry != null) TextButton(onClick = onRetry) { Text("Retry") }
+                        if (onRetry != null) TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
                     }
                     options.isEmpty() && emptyNote != null -> Text(emptyNote, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
                 LazyColumn(Modifier.heightIn(max = 320.dp)) {
                     if (typed != null) {
                         item {
-                            PickRow("Use “$typed”", accent = true) { onPick(typed) }
+                            PickRow(stringResource(R.string.manual_add_use_typed, typed), accent = true) { onPick(typed) }
                             HorizontalDivider(color = scheme.outlineVariant)
                         }
                     }
@@ -451,7 +452,7 @@ private fun PickerDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 

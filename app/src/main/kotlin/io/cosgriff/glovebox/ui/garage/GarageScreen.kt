@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.until
+import io.cosgriff.glovebox.ui.service.ahead
+import io.cosgriff.glovebox.ui.service.amount
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -143,7 +150,7 @@ private fun Header(garage: Garage, onAddVehicle: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                "Garage",
+                stringResource(R.string.garage_title),
                 Modifier.semantics { heading() },
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -155,24 +162,21 @@ private fun Header(garage: Garage, onAddVehicle: () -> Unit) {
             modifier = Modifier.size(48.dp),
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
         ) {
-            Icon(Icons.Outlined.Add, contentDescription = "Add vehicle")
+            Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.garage_add_vehicle))
         }
     }
 }
 
 /** "2 vehicles · 1 overdue · 1 open recall" — never-logged reminders aren't counted. */
+@Composable
 private fun Garage.subtitle(): String = listOfNotNull(
-    if (vehicles.size == 1) "1 vehicle" else "${vehicles.size} vehicles",
+    pluralStringResource(R.plurals.garage_vehicles, vehicles.size, vehicles.size.asNumber()),
     when {
-        overdue > 0 -> "$overdue overdue"
-        dueSoon > 0 -> "$dueSoon due soon"
+        overdue > 0 -> pluralStringResource(R.plurals.count_overdue, overdue, overdue.asNumber())
+        dueSoon > 0 -> pluralStringResource(R.plurals.count_due_soon, dueSoon, dueSoon.asNumber())
         else -> null
     },
-    when (openRecalls) {
-        0 -> null
-        1 -> "1 open recall"
-        else -> "$openRecalls open recalls"
-    },
+    openRecalls.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.open_recalls, it, it.asNumber()) },
 ).joinToString(" · ")
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -200,7 +204,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
                     )
                 }
                 Text(
-                    g.odometer?.asDistance(v.unit) ?: "No mileage",
+                    g.odometer?.asDistance(v.unit) ?: stringResource(R.string.garage_no_mileage),
                     style = MaterialTheme.typography.titleMedium,
                     fontFamily = PlexMono,
                     fontWeight = FontWeight.SemiBold,
@@ -230,11 +234,19 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
 private fun AttentionChip(a: Attention) {
     val scheme = MaterialTheme.colorScheme
     val (text, container, content) = when {
-        a.toLog > 0 -> Triple("${a.toLog} to log", scheme.surfaceVariant, statusColors().soon)
+        a.toLog > 0 -> Triple(pluralStringResource(R.plurals.count_to_log, a.toLog, a.toLog.asNumber()), scheme.surfaceVariant, statusColors().soon)
         else -> when (a.state) {
-        DueState.OVERDUE -> Triple(a.only?.let { "$it overdue" } ?: "${a.count} overdue", scheme.primary, scheme.onPrimary)
-        DueState.DUE_SOON -> Triple(a.only?.let { "$it due soon" } ?: "${a.count} due soon", scheme.surfaceVariant, statusColors().soon)
-        DueState.OK -> Triple("Up to date", scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        DueState.OVERDUE -> Triple(
+            a.only?.let { stringResource(R.string.item_overdue, it) } ?: pluralStringResource(R.plurals.count_overdue, a.count, a.count.asNumber()),
+            scheme.primary,
+            scheme.onPrimary,
+        )
+        DueState.DUE_SOON -> Triple(
+            a.only?.let { stringResource(R.string.item_due_soon, it) } ?: pluralStringResource(R.plurals.count_due_soon, a.count, a.count.asNumber()),
+            scheme.surfaceVariant,
+            statusColors().soon,
+        )
+        DueState.OK -> Triple(stringResource(R.string.up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
         }
     }
     Surface(color = container, shape = CircleShape) {
@@ -252,9 +264,8 @@ private fun AttentionChip(a: Attention) {
 private fun RecallChip(open: OpenRecalls) {
     val scheme = MaterialTheme.colorScheme
     val (text, container, content) = when (open.count) {
-        0 -> Triple("No open recalls", scheme.tertiaryContainer, scheme.onTertiaryContainer)
-        1 -> Triple("1 open recall", scheme.primaryContainer, scheme.onPrimaryContainer)
-        else -> Triple("${open.count} open recalls", scheme.primaryContainer, scheme.onPrimaryContainer)
+        0 -> Triple(stringResource(R.string.no_open_recalls), scheme.tertiaryContainer, scheme.onTertiaryContainer)
+        else -> Triple(pluralStringResource(R.plurals.open_recalls, open.count, open.count.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
     }
     Surface(color = container, shape = CircleShape) {
         Text(
@@ -268,15 +279,25 @@ private fun RecallChip(open: OpenRecalls) {
 }
 
 /** "Next: Oil & filter in 1,688 mi" */
+@Composable
 private fun ComingUp.nextLine(unit: DistanceUnit): String {
     next?.let { (status, progress) ->
-        return "Next: ${status.item.name} ${progress.headline.text(unit).replaceFirstChar(Char::lowercase)}"
+        val name = status.item.name
+        val h = progress.headline
+        val amount = h.amount(unit)
+        return when {
+            amount != null && h.ahead == true -> stringResource(R.string.garage_next_in, name, amount)
+            amount != null -> stringResource(R.string.garage_next_overdue, name, amount)
+            h is DueHeadline.Miles -> stringResource(R.string.garage_next_due_now, name)
+            h is DueHeadline.Days -> stringResource(R.string.garage_next_due_today, name)
+            h is DueHeadline.Snoozed -> stringResource(R.string.garage_next_snoozed, name, h.snooze.until(unit))
+            else -> stringResource(R.string.garage_next_not_logged, name)
+        }
     }
     return when {
-        counting.isNotEmpty() -> "Nothing else coming up"
-        notLogged.size == 1 -> "1 reminder not logged yet"
-        notLogged.isNotEmpty() -> "${notLogged.size} reminders not logged yet"
-        else -> "No reminders tracked"
+        counting.isNotEmpty() -> stringResource(R.string.garage_nothing_else)
+        notLogged.isNotEmpty() -> pluralStringResource(R.plurals.garage_not_logged, notLogged.size, notLogged.size.asNumber())
+        else -> stringResource(R.string.garage_none_tracked)
     }
 }
 
@@ -285,7 +306,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            if (vehicleCount == 2) "ACROSS BOTH" else "ACROSS ALL",
+            stringResource(if (vehicleCount == 2) R.string.garage_across_both else R.string.garage_across_all),
             Modifier.semantics { heading() },
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
@@ -311,7 +332,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Text(
-                            if (overdue) "Overdue" else item.progress.headline.remaining(item.vehicle.unit),
+                            if (overdue) stringResource(R.string.overdue) else item.progress.headline.remaining(item.vehicle.unit),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = if (overdue) statusColors().overdue else statusColors().soon,
@@ -323,7 +344,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
                     Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onSeeReminders),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("See all reminders", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.primary)
+                    Text(stringResource(R.string.garage_see_all_reminders), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = scheme.primary)
                     Icon(
                         Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         contentDescription = null,
@@ -337,7 +358,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
 }
 
 /** "640 mi", "12 days" — "In 640 mi" without the "In", for a right-hand column. */
-private fun DueHeadline.remaining(unit: DistanceUnit): String = text(unit).removePrefix("In ")
+private fun DueHeadline.remaining(unit: DistanceUnit): String = amount(unit)?.takeIf { ahead == true } ?: text(unit)
 
 @Composable
 private fun ArchivedRow(count: Int, onClick: () -> Unit) {
@@ -346,7 +367,7 @@ private fun ArchivedRow(count: Int, onClick: () -> Unit) {
         Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Archived vehicles · $count", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
+        Text(stringResource(R.string.garage_archived, count.asNumber()), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp), tint = color)
     }
 }
@@ -358,15 +379,15 @@ private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
     ) {
-        Text("No vehicles yet", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.garage_empty_title), style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Add one with its VIN and we'll fill in the details, suggest a typical maintenance schedule and look up its recalls.",
+            stringResource(R.string.garage_empty_body),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Add a vehicle") }
+        Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.garage_empty_add)) }
         // A new phone starts here: this is how the data from the old one comes back.
-        TextButton(onClick = onRestore, modifier = Modifier.heightIn(min = 48.dp)) { Text("Restore from a backup") }
+        TextButton(onClick = onRestore, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.welcome_restore)) }
         // With every vehicle sold, this is the only way back to them.
         if (archived > 0) ArchivedRow(archived, onOpenArchive)
     }

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,8 +58,8 @@ import java.util.concurrent.Executors
 @Composable
 fun ReadDashScreen(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (miles: Int) -> Unit) {
     CameraScreen(
-        why = "Glovebox uses the camera here only to read the odometer. The picture is read on this phone and isn't saved or sent anywhere.",
-        instead = "Type the reading instead",
+        why = stringResource(R.string.read_dash_camera_why),
+        instead = stringResource(R.string.read_dash_type_instead),
         onClose = onClose,
     ) {
         Reader(last, unit, onClose, onUse)
@@ -108,7 +110,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
     CameraFeed(analysis, torch)
 
     Column(Modifier.fillMaxSize()) {
-        CameraTopBar("Read dash", "Close", torch, onTorch = { torch = it }, onClose = onClose)
+        CameraTopBar(stringResource(R.string.read_dash_title), stringResource(R.string.close), torch, onTorch = { torch = it }, onClose = onClose)
 
         Column(
             Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp),
@@ -116,7 +118,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
         ) {
             Text(
-                "Put the odometer reading\nin the box",
+                stringResource(R.string.read_dash_instruction),
                 style = MaterialTheme.typography.bodyLarge,
                 color = OnScrim,
                 textAlign = TextAlign.Center,
@@ -126,10 +128,9 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
             Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp)))
             Text(
                 when {
-                    unavailable -> "Reading the dash doesn't work on this phone. Close this and type the reading."
-                    last != null -> "Hold it straight on and steady, with the digits filling the box. " +
-                        "It looks for a reading of ${last.asDistance(unit)} or more; if the dash shows less, close this and type it."
-                    else -> "Hold it straight on and steady. Fill the box with the digits and keep other numbers out of it."
+                    unavailable -> stringResource(R.string.read_dash_unavailable)
+                    last != null -> stringResource(R.string.read_dash_hint_from, last.asDistance(unit))
+                    else -> stringResource(R.string.read_dash_hint)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = if (unavailable) Guide else OnScrimMuted,
@@ -150,7 +151,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     // Never "detected" or a tick: a camera can misread a digit, and the dash is right there to check.
                     Text(
-                        "This is what the camera read. Check it against the dash.",
+                        stringResource(R.string.read_dash_check),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -165,7 +166,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
                             // The default padding leaves too little of a third of the row for two words on one line.
                             contentPadding = PaddingValues(horizontal = 8.dp),
                         ) {
-                            Text("Read again", maxLines = 1, softWrap = false)
+                            Text(stringResource(R.string.read_dash_again), maxLines = 1, softWrap = false)
                         }
                         Button(
                             onClick = { onUse(miles) },
@@ -173,7 +174,7 @@ private fun Reader(last: Int?, unit: DistanceUnit, onClose: () -> Unit, onUse: (
                             shape = RoundedCornerShape(14.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp),
                         ) {
-                            Text("Use this reading", maxLines = 1, softWrap = false)
+                            Text(stringResource(R.string.read_dash_use), maxLines = 1, softWrap = false)
                         }
                     }
                 }
