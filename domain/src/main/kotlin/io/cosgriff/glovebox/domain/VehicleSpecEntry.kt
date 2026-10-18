@@ -4,8 +4,8 @@ import java.util.Locale
 
 /**
  * What a vehicle takes, as entered under "What it takes" on Vehicle details: checked as it is typed and
- * written back in one standard form, so it reads the same everywhere it is shown. Nothing here is
- * looked up or suggested from the model; it is all the owner's own entry.
+ * written back in one standard form, so it reads the same everywhere it is shown. A list that ships
+ * with the app ([KnownTakes]) is held to the same forms, so a filled row reads as if it were typed.
  */
 object VehicleSpecEntry {
     // ---- Engine oil ------------------------------------------------------------------------------

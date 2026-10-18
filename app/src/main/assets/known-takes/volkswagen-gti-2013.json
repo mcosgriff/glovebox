@@ -1,0 +1,43 @@
+{
+  "id": "volkswagen-gti-2013",
+  "title": "2013 GTI",
+  "make": "Volkswagen",
+  "model": "GTI",
+  "years": {
+    "from": 2013,
+    "to": 2013
+  },
+  "source": {
+    "name": "Volkswagen fluid capacity data",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10156237-9999.pdf",
+    "retrieved": "2026-10-18",
+    "note": "Read from Volkswagen's fluid capacity chart for the GTI, filed with NHTSA. Fluid part numbers are Volkswagen's, for reference. Check each against the manual for your own car.",
+    "basis": "Facts from Volkswagen's own 2013 GTI fluid capacity chart (MC-10156237) and 2013 Quick Reference Specification Book (MC-10156123, spark plug), both filed with NHTSA. Only the figures are taken; no text or layout is copied."
+  },
+  "takes": {
+    "oil": {
+      "approval": "VW 502 00",
+      "capacity": 4.9,
+      "capacityUnit": "qt"
+    },
+    "coolant": "VW G 12 plus-plus (purple)",
+    "brakeFluid": "DOT 4",
+    "sparkPlugs": {
+      "part": "101 905 631 H"
+    }
+  },
+  "variants": [
+    {
+      "gearbox": "manual",
+      "takes": {
+        "transmission": "VW gear oil G 052 171 A2"
+      }
+    },
+    {
+      "gearbox": "automatic",
+      "takes": {
+        "transmission": "VW DSG fluid G 052 182 A2"
+      }
+    }
+  ]
+}

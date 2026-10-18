@@ -1,0 +1,23 @@
+{
+  "id": "volkswagen-gti-2010-2012",
+  "title": "2010–2012 GTI",
+  "make": "Volkswagen",
+  "model": "GTI",
+  "years": {
+    "from": 2010,
+    "to": 2012
+  },
+  "source": {
+    "name": "Volkswagen fluid capacity data",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10121998-9999.pdf",
+    "retrieved": "2026-10-18",
+    "note": "Read from Volkswagen's table of engine oil capacities, filed with NHTSA; it gives only the oil capacity for these years. Check it against the manual for your own car.",
+    "basis": "Facts from Volkswagen's own Job Aid of engine oil capacities by model year (MC-10121998, filed with NHTSA). Only the figure is taken. No fluid chart for these years was found, so nothing else is given."
+  },
+  "takes": {
+    "oil": {
+      "capacity": 4.9,
+      "capacityUnit": "qt"
+    }
+  }
+}

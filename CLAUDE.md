@@ -70,6 +70,7 @@ Keep them green; lint errors fail the build.
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests:
   `ReminderEngine` (due status, whichever-first/last, mileage-only/time-only, lead time, pace),
   `ServiceLog` (last-done derivation), `Recalls` (list merge, campaign and component names),
+  `KnownSpecs` / `KnownSchedules` / `KnownTakes` (bundled lists from named sources),
   `Torque`/`TorqueUnit`, `Vin`.
 - `:data` — Room 3 (`androidx.room3`, #220) + SQLCipher (opened through SQLCipher's `SQLCipherDriver`; code that goes around the
   DAOs uses `useReaderConnection` / `useWriterConnection`, never `openHelper`), Keystore key management (`DatabaseKeyManager`), Tink photo
@@ -195,7 +196,8 @@ about what differs; also the user's own milestone table and a Carfax report PDF;
 history" row opens the same page with that vehicle chosen and no vehicle choice, `ImportRoute(vehicleId)`). Mileage readings (every odometer reading, correct or delete a wrong one, from Vehicle details). Milestones (the schedule by mileage with what was done, from the Maintenance schedule
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
-Documents (a vehicle's paperwork, from Vehicle details).
+Documents (a vehicle's paperwork, from Vehicle details). Fill "What it takes" from a maker's manual
+(a bundled list, rows tagged DOUBLE-CHECK until checked).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -791,8 +793,8 @@ Notes on what's built:
   it differs) and **wiper blades** (driver, passenger and rear lengths in whole inches, 10 to 34, plus part
   numbers or type). Save is offered only when every filled-in field is valid; empty clears it. Text entered
   before this (schema v21) stays in `oilSpec`, `tireSize` and `wiperBlades` and the editor asks for it to
-  be put right. The one-line summaries feed Log service's hints. Nothing is looked up or suggested from the
-  model.
+  be put right. The one-line summaries feed Log service's hints. Nothing is looked up, and nothing is
+  suggested from the model except from a named maker's list (next note but one).
 - Past oil, tires and wipers (#166): transmission fluid, differential and transfer case oil (a gear grade is
   normalised, "75W-90 GL-5", anything else is taken as the fluid's name), coolant, brake fluid (DOT grade),
   air filters, spark plugs (part number, gap in inches or mm), battery (BCI group, CCA) and headlight
@@ -804,6 +806,33 @@ Notes on what's built:
   export's lines. Map a vehicle row to it with `VehicleEntity.whatItTakes()`. Tires carry the door
   placard's cold pressures (psi or kPa, front, rear, spare). Exports have a "What it takes" section before
   the records, with its own switch on the export sheet (`ExportOptions.whatItTakes`). Schema v22.
+- Known "What it takes" (`KnownTakes` in `:domain`, `KnownTakesUi.kt` in app, `docs/known-takes.md`, schema
+  v26; the user's decision of 2026-10-18 to allow named lists, as torque has). **A list is what a maker's
+  own documents print for one model and run of years, every figure cited by document and page in the doc;
+  never a parts site or a compilation.** `docs/known-takes.md` also records where each maker publishes its
+  manuals (Toyota, Subaru, Honda, VW, Mazda), for adding the next. A file in `assets/known-takes/` gives
+  `takes` (the whole model) and `variants` (a drive or a gearbox, used only for a vehicle **known** to have
+  it: a fluid for the wrong gearbox is worse than an empty row), every value in the stored form its row's
+  editor writes (the reader refuses anything else). Several tire sizes are only offered as chips in the
+  tire editor, never filled; a figure given as a range or alternatives is left out. "Fill in from the
+  manual for the …" on Vehicle details and Fluids, filters & parts fills only **empty rows, each whole**
+  (`KnownTakes.plan`, `VehicleDao.fillTakes`), records `vehicles.takesKnownList` and tags each filled row
+  DOUBLE-CHECK (`vehicles.takesToCheck`); the source is named once per screen while any is tagged. The
+  tag clears when the row's editor is saved with "I've checked this against my manual" ticked or the row
+  changed (`KnownTakes.stillToCheck`, `KnownTakesRows.saved`). The lists that ship: the 4Runner 2017–2024
+  (three lists: the oil approval changed for 2022, the bulbs for 2021) from Toyota's owner's manuals, and
+  the Mk6 GTI from Volkswagen's fluid charts filed with NHTSA (2013, 2014; 2010–2012 has only the oil
+  capacity, from VW's job aid), since VW's manuals for those years are VIN-only.
+- Maker's documents (`MakerDocuments` in `:domain`, `MakerDocumentsUi.kt` in app, `assets/maker-documents/`,
+  `docs/known-takes.md`): Vehicle details' "From the maker" card links each covered year's owner's
+  manual, warranty and maintenance guide and fluid chart, which **open in the browser; the app fetches
+  nothing** (the privacy screen's "When you leave the app" says so). Links may only point at a host in
+  `MakerDocuments.hosts` (the makers' own servers and `static.nhtsa.gov`), and a year has one document
+  of a kind unless the maker splits it by `edition` (the 4Runner's 2022 manual, by production date).
+  Which code is which year comes from the maker's own data (Toyota's `downloadableManuals` endpoint).
+  A row with `vinLookup` (Volkswagen's digital manuals, 2012 on) opens the maker's VIN page and copies the
+  VIN, marked sensitive, for the owner to paste: **the VIN never goes in a link and the app never sends it
+  to a maker** (Volkswagen's manual link needs a token got by sending the VIN, so it isn't built).
 - License plate (schema v24, `vehicles.plate`, `.plateRegion`, `LicensePlates` in `:domain`): a row under the
   nickname on Vehicle details opens a dialog with the plate (capitals, letters, digits, spaces and dashes,
   `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the
@@ -937,7 +966,8 @@ Notes on what's built:
   per-app language list from the folders (`generateLocaleConfig`, `res/resources.properties`).
 - Never show placeholder data as if real; mark sample values clearly.
 - Torque/interval reference values are user-verified; UI says "check your service manual". A bundled torque
-  value is the one exception to "user-entered", and it is tagged DOUBLE-CHECK until the user has checked it.
+  value or "What it takes" row is the exception to "user-entered", and it is tagged DOUBLE-CHECK until the
+  user has checked it.
 - Any Python helper scripts: use `uv run` with inline script dependencies.
 - Public repo: never commit real personal data (VINs, records, photos), keystores, `local.properties`
   or `.idea/`. Test fixtures use made-up values.
