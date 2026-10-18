@@ -17,7 +17,7 @@ class VehicleDetailsTest {
         assertEquals("2019 Toyota 4Runner SR5", VehicleText.title(2019, "TOYOTA", "4Runner", "SR5"))
         assertEquals("2019 Toyota 4Runner", VehicleText.title(2019, "TOYOTA", "4Runner", null))
         assertEquals("4Runner", VehicleText.title(0, "Unknown", "4Runner", " "))
-        assertEquals("Unknown vehicle", VehicleText.title(0, "Unknown", "Unknown", null))
+        assertNull(VehicleText.title(0, "Unknown", "Unknown", null))
     }
 
     @Test

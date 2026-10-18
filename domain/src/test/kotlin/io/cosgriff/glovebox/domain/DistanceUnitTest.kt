@@ -8,13 +8,6 @@ class DistanceUnitTest {
     private val km = DistanceUnit.KILOMETERS
 
     @Test
-    fun `a distance is written with its unit`() {
-        assertEquals("12,345 mi", mi.format(12_345))
-        assertEquals("12,345 km", km.format(12_345))
-        assertEquals("Kilometres", km.title)
-    }
-
-    @Test
     fun `a vehicle in miles is never converted`() {
         for (n in listOf(1, 499, 5_000, 123_457)) {
             assertEquals(n, mi.measured(n))

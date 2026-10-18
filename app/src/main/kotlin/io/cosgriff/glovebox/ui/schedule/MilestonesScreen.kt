@@ -103,7 +103,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Locale
 import io.cosgriff.glovebox.ui.service.answering
 import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject

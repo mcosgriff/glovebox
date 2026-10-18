@@ -8,13 +8,6 @@ import org.junit.Test
 
 class ScheduleTest {
     @Test
-    fun `interval labels`() {
-        assertEquals("7,500 mi / 12 mo", Interval(7_500, 12).label(DistanceUnit.MILES))
-        assertEquals("30,000 mi", Interval(30_000, null).label(DistanceUnit.MILES))
-        assertEquals("36 mo", Interval(null, 36).label(DistanceUnit.MILES))
-    }
-
-    @Test
     fun `severe use switches only the items that have a severe interval`() {
         val items = ScheduleTemplates.generic(null, null, DistanceUnit.MILES).associateBy { it.key }
         val oil = items.getValue("oil")

@@ -7,6 +7,8 @@ import org.junit.Test
 import java.time.LocalDate
 
 class ExportTest {
+    private val text = ExportText(EnglishExportWords)
+
     private val today = LocalDate.of(2026, 10, 11)
 
     // Made-up vehicle and records.
@@ -52,15 +54,15 @@ class ExportTest {
         val v = Exports.document(listOf(truck), ExportOptions(costsAndNotes = false), today).vehicles.single()
         assertTrue(v.records.all { it.costCents == null && it.notes == null })
         assertEquals(null, v.totalCents)
-        assertEquals("3 records", Exports.summary(v))
+        assertEquals("3 records", text.summary(v))
     }
 
     @Test
     fun `the total adds only the records in the export`() {
         val all = Exports.document(listOf(truck), ExportOptions(), today).vehicles.single()
-        assertEquals("3 records · \$472.50 total", Exports.summary(all))
+        assertEquals("3 records · \$472.50 total", text.summary(all))
         val year = Exports.document(listOf(truck), ExportOptions(dates = ExportDates.ThisYear), today).vehicles.single()
-        assertEquals("2 records · \$62.50 total", Exports.summary(year))
+        assertEquals("2 records · \$62.50 total", text.summary(year))
     }
 
     @Test
@@ -88,7 +90,7 @@ class ExportTest {
 
     @Test
     fun `markdown has the vehicle, each record and both tables`() {
-        val md = Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val md = text.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue(md.startsWith("# Service history: 2019 Toyota 4Runner SR5\n"))
         assertTrue("- VIN: `1M8GDM9AXKP042788`" in md)
         assertTrue("- License plate: `CO · ABC 1234`" in md)
@@ -103,20 +105,20 @@ class ExportTest {
         assertTrue("| Brake fluid | 36 mo | Not logged |" in md)
         assertTrue("| 20V-682 | Fuel pump | Open |" in md)
         assertTrue("| 19V-670 | Steering | Marked done Feb 2, 2026 |" in md)
-        assertTrue(Exports.RECALL_NOTE in md)
+        assertTrue(text.phrase(ExportPhrase.RECALL_NOTE) in md)
     }
 
     @Test
     fun `a replaced cluster is explained, with the actual mileage`() {
         val swapped = truck.copy(odometer = 2_412, clusterSwap = ClusterSwaps.of(LocalDate.of(2026, 9, 1), oldReading = 67_000, newReading = 1_000))
-        val md = Exports.markdown(Exports.document(listOf(swapped), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val md = text.markdown(Exports.document(listOf(swapped), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue(md.contains("- Odometer: 2,412 mi (highest reading on record)"))
         assertTrue(md.contains("- Actual mileage: 68,412 mi"))
         assertTrue(md.contains("- Instrument cluster: Replaced Sep 1, 2026. Readings from that date are the replacement's, which shows 66,000 mi less"))
         // Records keep the reading that was on the dash that day.
         assertTrue(md.contains("### Aug 1, 2026 · 66,000 mi"))
 
-        val plain = Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val plain = text.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertFalse(plain.contains("Actual mileage"))
         assertFalse(plain.contains("Instrument cluster"))
     }
@@ -124,22 +126,22 @@ class ExportTest {
     @Test
     fun `a last done entered afterwards is not passed off as a logged service`() {
         val entered = ExportRecord(LocalDate.of(2024, 3, 1), 41_000, listOf("Coolant"), "DIY", null, null, enteredAsLastDone = true)
-        val md = Exports.markdown(Exports.document(listOf(truck.copy(records = listOf(entered, oil))), ExportOptions(format = ExportFormat.MARKDOWN), today))
-        assertTrue(md.contains("### Mar 1, 2024 · 41,000 mi\n\n- Coolant\n\n${Exports.LAST_DONE_NOTE}\n"))
+        val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(entered, oil))), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertTrue(md.contains("### Mar 1, 2024 · 41,000 mi\n\n- Coolant\n\n${text.phrase(ExportPhrase.LAST_DONE_NOTE)}\n"))
         assertTrue(md.contains("Done by: DIY"))
     }
 
     @Test
     fun `an imported record says so`() {
         val imported = oil.copy(imported = true)
-        val md = Exports.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))
-        assertEquals(1, Regex(Regex.escape(Exports.IMPORTED_NOTE)).findAll(md).count())
-        assertTrue(md.contains("Done by: DIY · Cost: $62.50\n\n${Exports.IMPORTED_NOTE}"))
+        val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertEquals(1, Regex(Regex.escape(text.phrase(ExportPhrase.IMPORTED_NOTE))).findAll(md).count())
+        assertTrue(md.contains("Done by: DIY · Cost: $62.50\n\n${text.phrase(ExportPhrase.IMPORTED_NOTE)}"))
     }
 
     @Test
     fun `markdown leaves out what was switched off`() {
-        val md = Exports.markdown(
+        val md = text.markdown(
             Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false, scheduleAndRecalls = false), today),
         )
         assertFalse("Cost:" in md)
@@ -151,7 +153,7 @@ class ExportTest {
     @Test
     fun `markdown says so when a period has no records`() {
         val dates = ExportDates.Custom(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        val md = Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, dates = dates), today))
+        val md = text.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN, dates = dates), today))
         assertTrue("No service records in this period." in md)
         assertTrue("- Period: Jan 1, 2020 to Dec 31, 2020" in md)
     }
@@ -163,7 +165,7 @@ class ExportTest {
             records = listOf(oil.copy(items = listOf("Pads | rotors"), notes = "see [receipt]")),
             schedule = listOf(ExportScheduleLine("Belt | tensioner", "60,000 mi", null)),
         )
-        val md = Exports.markdown(Exports.document(listOf(odd), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val md = text.markdown(Exports.document(listOf(odd), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue("- Nickname: \\# \\*Blue\\*" in md)
         assertTrue("- Pads \\| rotors" in md)
         assertTrue("> see \\[receipt\\]" in md)
@@ -173,7 +175,7 @@ class ExportTest {
     @Test
     fun `several vehicles are written one after another`() {
         val second = truck.copy(title = "2011 Volkswagen GTI", nickname = null, vin = null, records = emptyList(), schedule = emptyList(), recalls = emptyList())
-        val md = Exports.markdown(Exports.document(listOf(truck, second), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val md = text.markdown(Exports.document(listOf(truck, second), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue(md.indexOf("# Service history: 2019 Toyota 4Runner SR5") < md.indexOf("\n---\n"))
         assertTrue(md.indexOf("\n---\n") < md.indexOf("# Service history: 2011 Volkswagen GTI"))
     }
@@ -182,28 +184,28 @@ class ExportTest {
     fun `what it takes is its own section, and can be left out`() {
         val takes = listOf("Engine oil" to "0W-20 \u00b7 6.6 qt \u00b7 filter 04152-YZZA1", "Tires" to "P265/70R17 \u00b7 32 psi")
         val with = Exports.document(listOf(truck.copy(whatItTakes = takes)), ExportOptions(format = ExportFormat.MARKDOWN), today)
-        val md = Exports.markdown(with)
+        val md = text.markdown(with)
         assert("## What it takes" in md)
         assert("| Engine oil | 0W-20 \u00b7 6.6 qt \u00b7 filter 04152-YZZA1 |" in md) { md }
-        assert(Exports.TAKES_NOTE in md)
+        assert(text.phrase(ExportPhrase.TAKES_NOTE) in md)
         // Before the records, where someone taking the car over looks first.
         assert(md.indexOf("## What it takes") < md.indexOf("## Service records"))
         val without = Exports.document(listOf(truck.copy(whatItTakes = takes)), ExportOptions(format = ExportFormat.MARKDOWN, whatItTakes = false), today)
-        assert("What it takes" !in Exports.markdown(without))
-        assert("What it takes" !in Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
+        assert("What it takes" !in text.markdown(without))
+        assert("What it takes" !in text.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
     }
 
     @Test
     fun `documents on file are listed by name only, and can be left out`() {
         val papers = listOf(ExportPaper("Title", "Title | 2019", LocalDate.of(2019, 6, 1)), ExportPaper("Other", "Window sticker", null))
-        val md = Exports.markdown(Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        val md = text.markdown(Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assert("## Documents on file" in md) { md }
         assert("| Title | Title \\| 2019 | Jun 1, 2019 |" in md) { md }
         assert("| Other | Window sticker |  |" in md) { md }
-        assert(Exports.DOCUMENTS_NOTE in md)
+        assert(text.phrase(ExportPhrase.DOCUMENTS_NOTE) in md)
         assert(md.indexOf("## Documents on file") < md.indexOf("## Service records"))
         val without = Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN, documents = false), today)
-        assert("Documents on file" !in Exports.markdown(without))
-        assert("Documents on file" !in Exports.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
+        assert("Documents on file" !in text.markdown(without))
+        assert("Documents on file" !in text.markdown(Exports.document(listOf(truck), ExportOptions(format = ExportFormat.MARKDOWN), today)))
     }
 }

@@ -78,12 +78,6 @@ object VehicleDocuments {
             .thenBy { it.id },
     )
 
-    /** "340 KB", "4.2 MB". */
-    fun size(bytes: Long): String = when {
-        bytes < 1024 * 1024 -> "${((bytes + 1023) / 1024).coerceAtLeast(1)} KB"
-        else -> String.format(Locale.US, "%.1f MB", bytes / (1024.0 * 1024.0))
-    }
-
     /** Why a file can't be added, or null when it can. */
     fun problem(sizeBytes: Long): DocumentProblem? = when {
         sizeBytes <= 0 -> DocumentProblem.EMPTY

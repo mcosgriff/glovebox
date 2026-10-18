@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.domain.DistanceUnit
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,9 +15,9 @@ import androidx.core.graphics.withTranslation
 import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportVehicle
+import io.cosgriff.glovebox.domain.ExportPhrase
+import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.domain.Exports
-import io.cosgriff.glovebox.domain.Money
-import io.cosgriff.glovebox.domain.format
 import java.io.OutputStream
 
 /**
@@ -24,6 +25,8 @@ import java.io.OutputStream
  * arrives filtered and ordered, so this only decides where things go on the page.
  */
 class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
+    private val words = ExportText(AppExportWords)
+
     private val title = paint(20f, bold = true)
     private val heading = paint(13f, bold = true)
     private val strong = paint(10.5f, bold = true)
@@ -44,7 +47,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
 
     suspend fun write(doc: ExportDocument, out: OutputStream) {
         pdf = PdfDocument()
-        exportedLine = "Exported from Glovebox on ${Exports.date(doc.exportedOn)}"
+        exportedLine = words.phrase(ExportPhrase.EXPORTED_ON, words.date(doc.exportedOn))
         try {
             doc.vehicles.forEach { vehicle(it, doc) }
             if (doc.vehicles.isEmpty()) newPage()
@@ -57,61 +60,61 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
 
     private suspend fun vehicle(v: ExportVehicle, doc: ExportDocument) {
         newPage() // each vehicle starts its own page, so one can be handed over on its own
-        text("Service history", small)
+        text(words.phrase(ExportPhrase.SERVICE_HISTORY), small)
         text(v.title, title, after = 6f)
-        v.nickname?.let { labelled("Nickname", it) }
-        v.vin?.let { labelled("VIN", it, mono) }
-        v.plate?.let { labelled("License plate", it, mono) }
-        v.odometer?.let { labelled("Odometer", "${Exports.distance(it, v.unit)} (highest reading on record)") }
-        Exports.actualMileage(v)?.let { labelled("Actual mileage", Exports.distance(it, v.unit)) }
-        v.clusterSwap?.let { labelled("Instrument cluster", Exports.clusterNote(it, v.unit)) }
-        v.soldOn?.let { labelled("Sold", Exports.date(it)) }
-        labelled("Period", Exports.datesLabel(doc.options.dates, doc.exportedOn))
-        labelled("Records", Exports.summary(v))
+        v.nickname?.let { labelled(words.phrase(ExportPhrase.NICKNAME), it) }
+        v.vin?.let { labelled(words.phrase(ExportPhrase.VIN), it, mono) }
+        v.plate?.let { labelled(words.phrase(ExportPhrase.PLATE), it, mono) }
+        v.odometer?.let { labelled(words.phrase(ExportPhrase.ODOMETER), words.phrase(ExportPhrase.ODOMETER_HIGHEST, words.distance(it, v.unit))) }
+        Exports.actualMileage(v)?.let { labelled(words.phrase(ExportPhrase.ACTUAL_MILEAGE), words.distance(it, v.unit)) }
+        v.clusterSwap?.let { labelled(words.phrase(ExportPhrase.INSTRUMENT_CLUSTER), words.clusterNote(it, v.unit)) }
+        v.soldOn?.let { labelled(words.phrase(ExportPhrase.SOLD), words.date(it)) }
+        labelled(words.phrase(ExportPhrase.PERIOD), words.datesLabel(doc.options.dates, doc.exportedOn))
+        labelled(words.phrase(ExportPhrase.RECORDS), words.summary(v))
         gap(10f)
 
         if (v.whatItTakes.isNotEmpty()) {
-            section("What it takes")
+            section(words.phrase(ExportPhrase.WHAT_IT_TAKES))
             table(listOf("", ""), v.whatItTakes.map { (label, line) -> listOf(label, line) }, fractions = listOf(0.3f, 0.7f))
-            text(Exports.TAKES_NOTE, small, before = 4f)
+            text(words.phrase(ExportPhrase.TAKES_NOTE), small, before = 4f)
         }
 
         if (v.documents.isNotEmpty()) {
-            section("Documents on file")
-            table(listOf("Type", "Name", "Date"), v.documents.map { listOf(it.type, it.name, Exports.paperDate(it)) }, fractions = listOf(0.3f, 0.45f, 0.25f))
-            text(Exports.DOCUMENTS_NOTE, small, before = 4f)
+            section(words.phrase(ExportPhrase.DOCUMENTS_ON_FILE))
+            table(listOf(words.phrase(ExportPhrase.TYPE), words.phrase(ExportPhrase.NAME), words.phrase(ExportPhrase.DATE)), v.documents.map { listOf(it.type, it.name, words.paperDate(it)) }, fractions = listOf(0.3f, 0.45f, 0.25f))
+            text(words.phrase(ExportPhrase.DOCUMENTS_NOTE), small, before = 4f)
         }
 
-        section("Service records")
-        if (v.records.isEmpty()) text("No service records in this period.", body)
+        section(words.phrase(ExportPhrase.SERVICE_RECORDS))
+        if (v.records.isEmpty()) text(words.phrase(ExportPhrase.NO_RECORDS), body)
         v.records.forEach { record(it, v.unit) }
 
         if (v.schedule.isNotEmpty()) {
-            section("Maintenance schedule")
-            table(listOf("Item", "Every", "Last done"), v.schedule.map { listOf(it.name, it.every, Exports.lastDone(it, v.unit)) })
-            text(Exports.SCHEDULE_NOTE, small, before = 4f)
+            section(words.phrase(ExportPhrase.MAINTENANCE_SCHEDULE))
+            table(listOf(words.phrase(ExportPhrase.ITEM), words.phrase(ExportPhrase.EVERY), words.phrase(ExportPhrase.LAST_DONE)), v.schedule.map { listOf(it.name, it.every, words.lastDone(it, v.unit)) })
+            text(words.phrase(ExportPhrase.SCHEDULE_NOTE), small, before = 4f)
         }
         if (v.recalls.isNotEmpty()) {
-            section("Recalls")
-            table(listOf("Campaign", "Component", "Status"), v.recalls.map { listOf(it.campaign, it.component, Exports.recallStatus(it)) })
-            text(Exports.RECALL_NOTE, small, before = 4f)
+            section(words.phrase(ExportPhrase.RECALLS))
+            table(listOf(words.phrase(ExportPhrase.CAMPAIGN), words.phrase(ExportPhrase.COMPONENT), words.phrase(ExportPhrase.STATUS)), v.recalls.map { listOf(it.campaign, it.component, words.recallStatus(it)) })
+            text(words.phrase(ExportPhrase.RECALL_NOTE), small, before = 4f)
         }
     }
 
     private suspend fun record(r: ExportRecord, unit: DistanceUnit) {
-        val head = "${Exports.date(r.date)} · ${Exports.distance(r.odometer, unit)}"
+        val head = "${words.date(r.date)} · ${words.distance(r.odometer, unit)}"
         val lines = r.items.map { "•  $it" }
         // Keep a record's heading with its work, so a page never ends on a bare date.
         room(height(head, strong) + lines.sumOf { height(it, body).toDouble() }.toFloat() + 24f)
         val top = y
         text(head, strong, after = 2f)
         r.costCents?.let {
-            val cost = Money.format(it)
+            val cost = words.money(it)
             canvas.drawText(cost, RIGHT - strong.measureText(cost), top - strong.ascent(), strong)
         }
         lines.forEach { text(it, body) }
-        text(if (r.enteredAsLastDone) Exports.LAST_DONE_NOTE else "Done by ${r.doneBy}", small, before = 2f)
-        if (r.imported) text(Exports.IMPORTED_NOTE, small, before = 2f)
+        text(if (r.enteredAsLastDone) words.phrase(ExportPhrase.LAST_DONE_NOTE) else words.phrase(ExportPhrase.DONE_BY, r.doneBy), small, before = 2f)
+        if (r.imported) text(words.phrase(ExportPhrase.IMPORTED_NOTE), small, before = 2f)
         r.notes?.let { text(it, body, before = 3f, indent = 10f) }
         r.photoFiles.forEach { photo(it) }
         gap(6f)
@@ -124,7 +127,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
     private suspend fun photo(fileName: String) {
         val bitmap = loadPhoto(fileName)
         if (bitmap == null) {
-            text("[A photo attached to this record couldn't be read]", small, before = 3f)
+            text(words.phrase(ExportPhrase.PHOTO_UNREADABLE), small, before = 3f)
             return
         }
         val scale = minOf(WIDTH / bitmap.width, MAX_PHOTO_HEIGHT / bitmap.height, 1f)
@@ -214,7 +217,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         val p = page ?: return
         val baseline = PAGE_HEIGHT - 30f
         p.canvas.drawText(exportedLine, LEFT, baseline, small)
-        val number = "Page $pageNumber"
+        val number = words.phrase(ExportPhrase.PAGE, pageNumber.asNumber())
         p.canvas.drawText(number, RIGHT - small.measureText(number), baseline, small)
         pdf.finishPage(p)
         page = null
