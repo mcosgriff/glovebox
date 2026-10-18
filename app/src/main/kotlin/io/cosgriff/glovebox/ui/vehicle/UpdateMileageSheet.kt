@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.symbolWord
+import io.cosgriff.glovebox.ui.service.shortDate
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
@@ -51,11 +53,9 @@ import io.cosgriff.glovebox.domain.MileagePreview
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.statusColors
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 
-private val shortDate: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d", Locale.US)
 
 /** Records the current odometer without logging a service. Design: 4b · Update mileage. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,7 +128,7 @@ fun UpdateMileageSheet(
                             fontWeight = FontWeight.SemiBold,
                             color = if (miles == null) scheme.onSurfaceVariant else scheme.onSurface,
                         )
-                        Text(unit.symbol, Modifier.padding(bottom = 6.dp), color = scheme.onSurfaceVariant)
+                        Text(unit.symbolWord, Modifier.padding(bottom = 6.dp), color = scheme.onSurfaceVariant)
                     }
                     shown.deltaLine(typed = miles != null, unit)?.let { (text, tone) ->
                         Text(

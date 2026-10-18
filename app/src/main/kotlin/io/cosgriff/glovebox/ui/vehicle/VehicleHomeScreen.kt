@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.every
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.graphics.luminance
@@ -90,7 +91,6 @@ import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ReminderProgress
 import io.cosgriff.glovebox.domain.VehicleReminders
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.VehicleHomeRoute
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
@@ -293,7 +293,7 @@ fun VehicleHomeScreen(
                                         )
                                     }
                                     Text(
-                                        "Every ${status.item.interval.label(unit).replace(" / ", " or ")}",
+                                        status.item.interval.every(unit),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -548,7 +548,7 @@ private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp,
  * time has no last, so it gets the interval alone (and an estimate, when there is one).
  */
 private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit): String {
-    val every = "Every ${item.interval.label(unit).replace(" / ", " or ")}"
+    val every = item.interval.every(unit)
     // As it was read at the time, which is what the record says.
     val last = lastDone?.let { swap.asReadOn(it) }
     val lastText = when {
