@@ -176,9 +176,13 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
     The cards from the time say every 20,000 or every 2 years: the 2012 and 2014 GTI cards, and the
     2010 card. So this is Volkswagen revising the interval for every year, not a 2011 or 2013
     difference. The list keeps the cards of the time.
-  - **Oil:** the reissues also time the oil: "10,000 miles or 1 year after delivery" for the first
-    service, then each service every 20,000 or 2 years. The old cards print no months, so the list
-    has none.
+  - **Oil:** the reissues give it a time limit too. Both the minor and the standard service change
+    the oil (standard includes "Perform Minor Maintenance").
+    - Minor services fall at 10,000 (or 1 year from delivery), then every 20,000 or 2 years: 10,000,
+      30,000, 50,000 and so on.
+    - Standard services fall every 20,000 or 2 years: 20,000, 40,000 and so on.
+    - So the oil is still changed every 10,000, or about once a year.
+    The old cards print no months, so the list has none.
   - **The table** is the old cards' 12 columns. The reissues' minor/standard/extended layout isn't the
     same table.
   - The owner of a 2011 or 2013 should still check the list against the booklet in the car.
