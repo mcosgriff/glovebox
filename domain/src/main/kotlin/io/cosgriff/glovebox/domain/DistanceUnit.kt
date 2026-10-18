@@ -76,14 +76,6 @@ object DistanceConversion {
         var floor = 0
         return ascending.map { at -> maxOf(convert(at, from, to, DistanceKind.SCHEDULED), floor + 1).also { floor = it } }
     }
-
-    /** What the user is told before a vehicle's unit is changed. */
-    fun explain(from: DistanceUnit, to: DistanceUnit): String =
-        "Every figure on this vehicle is converted from ${from.plural} to ${to.plural}, once, and rounded to a whole number. " +
-            "Odometer readings are converted exactly (100 ${from.symbol} becomes ${to.format(convert(100, from, to, DistanceKind.MEASURED))}). " +
-            "Schedule intervals and milestones use the figures a manual would (" +
-            "${from.format(if (from == DistanceUnit.MILES) 5_000 else 8_000)} becomes ${to.format(convert(if (from == DistanceUnit.MILES) 5_000 else 8_000, from, to, DistanceKind.SCHEDULED))}). " +
-            "Do this only if the dash now reads in ${to.plural}, or the wrong unit was chosen."
 }
 
 /**

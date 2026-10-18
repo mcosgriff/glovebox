@@ -550,7 +550,7 @@ fun LogServiceScreen(
                         data.categories.first { it.id == vm.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
-                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs, data.unit),
+                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs)?.text(data.unit),
                                 checked = option.id in vm.selected,
                                 onToggle = { vm.toggle(option.id) },
                             )

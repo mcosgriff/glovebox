@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.wordedLines
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.service.unit
@@ -163,7 +164,7 @@ class ExportViewModel @Inject constructor(
             odometer = VehicleReminders.currentOdometer(entries, readings),
             soldOn = v.archivedOn,
             clusterSwap = swap,
-            whatItTakes = v.whatItTakes().lines(),
+            whatItTakes = v.whatItTakes().wordedLines(),
             documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date) },
             records = records.map { r ->
                 ExportRecord(

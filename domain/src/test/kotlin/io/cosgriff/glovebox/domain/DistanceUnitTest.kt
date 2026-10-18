@@ -1,7 +1,6 @@
 package io.cosgriff.glovebox.domain
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DistanceUnitTest {
@@ -75,11 +74,10 @@ class DistanceUnitTest {
     }
 
     @Test
-    fun `the explanation names both units and gives an example of each conversion`() {
-        val text = DistanceConversion.explain(mi, km)
-        assertTrue("100 mi becomes 161 km" in text)
-        assertTrue("5,000 mi becomes 8,000 km" in text)
-        assertTrue("8,000 km becomes 5,000 mi" in DistanceConversion.explain(km, mi))
+    fun `the examples Vehicle details gives come out as it says`() {
+        assertEquals(161, DistanceConversion.convert(100, mi, km, DistanceKind.MEASURED))
+        assertEquals(8_000, DistanceConversion.convert(5_000, mi, km, DistanceKind.SCHEDULED))
+        assertEquals(5_000, DistanceConversion.convert(8_000, km, mi, DistanceKind.SCHEDULED))
     }
 
     @Test

@@ -72,7 +72,15 @@ data class WorkOption(val id: String, val label: String, val scheduleItemId: Lon
 
 data class WorkCategory(val id: String, val label: String, val options: List<WorkOption>)
 
-/** What the user has written down on Vehicle details. Any of it may be missing. */
+/** The note beside a Log service line; `app` words it. */
+sealed interface WorkHint {
+    /** What this vehicle takes for the job, as the owner wrote it down. */
+    data class Takes(val parts: List<TakesPart>) : WorkHint
+
+    /** How often the reminder it resets comes round. */
+    data class Every(val interval: Interval) : WorkHint
+}
+
 
 object ServiceCatalog {
     /**
@@ -81,10 +89,8 @@ object ServiceCatalog {
      * [interval] is that reminder's, when the line resets a tracked one. Null when there is nothing
      * worth saying. Nothing here is looked up: it is all the user's own data.
      */
-    fun hint(optionId: String, interval: Interval?, specs: WhatItTakes, unit: DistanceUnit): String? {
-        val spec = specs.hint(optionId)?.trim()?.takeIf { it.isNotEmpty() }
-        return spec ?: interval?.let { "Every ${it.label(unit)}" }
-    }
+    fun hint(optionId: String, interval: Interval?, specs: WhatItTakes): WorkHint? =
+        specs.hint(optionId)?.let(WorkHint::Takes) ?: interval?.let(WorkHint::Every)
 
     const val YOUR_ITEMS = "yours"
 

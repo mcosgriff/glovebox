@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.domain
 
+import io.cosgriff.glovebox.domain.TakesPart.Inches
+import io.cosgriff.glovebox.domain.TakesPart.For
+import io.cosgriff.glovebox.domain.TakesPart.Entered
 import io.cosgriff.glovebox.domain.VehicleSpecEntry.Volume
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -58,17 +61,27 @@ class VehicleSpecEntryTest {
     }
 
     @Test
-    fun `each reads as one line`() {
-        assertEquals("0W-20 · API SP · 6.6 qt · filter 04152-YZZA1", VehicleSpecEntry.oilSummary("0W-20", "API SP", 6.6, Volume.QUARTS, "04152-YZZA1"))
-        assertEquals("5W-40 · VW 502 00 · 5.7 L", VehicleSpecEntry.oilSummary("5W-40", "VW 502 00", 5.7, Volume.LITRES, null))
-        assertEquals("6 qt", VehicleSpecEntry.oilSummary(null, null, 6.0, Volume.QUARTS, null))
-        assertNull(VehicleSpecEntry.oilSummary(null, null, null, null, null))
-        assertEquals("P265/70R17", VehicleSpecEntry.tireSummary("P265/70R17", null))
-        assertEquals("P265/70R17", VehicleSpecEntry.tireSummary("P265/70R17", "P265/70R17"))
-        assertEquals("Front 225/40R18 · Rear 255/35R18", VehicleSpecEntry.tireSummary("225/40R18", "255/35R18"))
-        assertEquals("26\" / 17\" · rear 14\"", VehicleSpecEntry.wiperSummary(26, 17, 14, null))
-        assertEquals("22\" / 22\" · Bosch ICON", VehicleSpecEntry.wiperSummary(22, 22, null, "Bosch ICON"))
-        assertNull(VehicleSpecEntry.wiperSummary(null, null, null, null))
+    fun `each reads as one line of parts`() {
+        assertEquals(
+            listOf(Entered("0W-20"), Entered("API SP"), TakesPart.Capacity(6.6, Volume.QUARTS), For(TakesRole.OIL_FILTER, Entered("04152-YZZA1"))),
+            VehicleSpecEntry.oilParts("0W-20", "API SP", 6.6, Volume.QUARTS, "04152-YZZA1"),
+        )
+        assertEquals(listOf(Entered("5W-40"), Entered("VW 502 00"), TakesPart.Capacity(5.7, Volume.LITRES)), VehicleSpecEntry.oilParts("5W-40", "VW 502 00", 5.7, Volume.LITRES, null))
+        assertEquals(listOf(TakesPart.Capacity(6.0, Volume.QUARTS)), VehicleSpecEntry.oilParts(null, null, 6.0, null, null))
+        assertNull(VehicleSpecEntry.oilParts(null, null, null, null, null))
+        assertEquals(listOf(Entered("P265/70R17")), VehicleSpecEntry.tireParts("P265/70R17", null))
+        assertEquals(listOf(Entered("P265/70R17")), VehicleSpecEntry.tireParts("P265/70R17", "P265/70R17"))
+        assertEquals(
+            listOf(For(TakesRole.TIRE_FRONT, Entered("225/40R18")), For(TakesRole.TIRE_REAR, Entered("255/35R18"))),
+            VehicleSpecEntry.tireParts("225/40R18", "255/35R18"),
+        )
+        assertEquals(
+            listOf(TakesPart.Both(Inches(26), Inches(17)), For(TakesRole.WIPER_REAR, Inches(14))),
+            VehicleSpecEntry.wiperParts(26, 17, 14, null),
+        )
+        assertEquals(listOf(TakesPart.Both(Inches(22), Inches(22)), Entered("Bosch ICON")), VehicleSpecEntry.wiperParts(22, 22, null, "Bosch ICON"))
+        assertEquals(listOf(Inches(24)), VehicleSpecEntry.wiperParts(24, null, null, null))
+        assertNull(VehicleSpecEntry.wiperParts(null, null, null, null))
     }
 
     @Test
@@ -109,9 +122,17 @@ class VehicleSpecEntryTest {
         assertEquals(32, VehicleSpecEntry.tirePressure("32", VehicleSpecEntry.Pressure.PSI))
         assertEquals(240, VehicleSpecEntry.tirePressure("240 kPa", VehicleSpecEntry.Pressure.KPA))
         listOf("10", "120", "32.5", "").forEach { assertNull(it, VehicleSpecEntry.tirePressure(it, VehicleSpecEntry.Pressure.PSI)) }
-        assertEquals("32 psi", VehicleSpecEntry.pressureSummary(32, 32, null, VehicleSpecEntry.Pressure.PSI))
-        assertEquals("35 psi front / 38 psi rear \u00b7 spare 60 psi", VehicleSpecEntry.pressureSummary(35, 38, 60, null))
-        assertEquals("230 kPa", VehicleSpecEntry.pressureSummary(230, null, null, VehicleSpecEntry.Pressure.KPA))
+        val psi = VehicleSpecEntry.Pressure.PSI
+        assertEquals(listOf(TakesPart.Pressure(32, psi)), VehicleSpecEntry.pressureParts(32, 32, null, psi))
+        assertEquals(
+            listOf(
+                TakesPart.Both(For(TakesRole.PRESSURE_FRONT, TakesPart.Pressure(35, psi)), For(TakesRole.PRESSURE_REAR, TakesPart.Pressure(38, psi))),
+                For(TakesRole.PRESSURE_SPARE, TakesPart.Pressure(60, psi)),
+            ),
+            VehicleSpecEntry.pressureParts(35, 38, 60, null),
+        )
+        assertEquals(listOf(TakesPart.Pressure(230, VehicleSpecEntry.Pressure.KPA)), VehicleSpecEntry.pressureParts(230, null, null, VehicleSpecEntry.Pressure.KPA))
+        assertEquals(listOf(For(TakesRole.PRESSURE_REAR, TakesPart.Pressure(38, psi))), VehicleSpecEntry.pressureParts(null, 38, null, psi))
     }
 
     @Test
@@ -124,10 +145,13 @@ class VehicleSpecEntryTest {
         assertEquals(listOf(TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS), some.basics())
         assertEquals(listOf(TakesItem.TRANSMISSION, TakesItem.AIR_FILTERS), some.entered())
         assertEquals(TakesItem.entries.size - 5, some.notEntered().size)
-        assertEquals("P265/70R17 \u00b7 32 psi", some.summary(TakesItem.TIRES))
-        assertEquals("engine 17801-0P051 \u00b7 cabin 87139-YZZ08", some.summary(TakesItem.AIR_FILTERS))
+        assertEquals(listOf(Entered("P265/70R17"), TakesPart.Pressure(32, VehicleSpecEntry.Pressure.PSI)), some.summary(TakesItem.TIRES))
+        assertEquals(
+            listOf(For(TakesRole.ENGINE_AIR, Entered("17801-0P051")), For(TakesRole.CABIN_AIR, Entered("87139-YZZ08"))),
+            some.summary(TakesItem.AIR_FILTERS),
+        )
         assertEquals("17801-0P051, 87139-YZZ08", some.partNumbers(TakesItem.AIR_FILTERS))
-        assertEquals(listOf("Tires", "Transmission fluid", "Air filters"), some.lines().map { it.first })
-        assertEquals("32 psi", some.hint("rotation"))
+        assertEquals(listOf(TakesItem.TIRES, TakesItem.TRANSMISSION, TakesItem.AIR_FILTERS), some.lines().map { it.first })
+        assertEquals(listOf(TakesPart.Pressure(32, VehicleSpecEntry.Pressure.PSI)), some.hint("rotation"))
     }
 }
