@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.RecallNotice
+import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.domain.DoneBy
 import io.cosgriff.glovebox.domain.Who
@@ -368,3 +370,10 @@ fun photoCount(count: Int): String? = count.takeIf { it > 0 }?.let { AppText.res
 
 /** "A", "A and B", "A and B and C": a list in a sentence. */
 fun andList(items: List<String>): String = items.reduceOrNull { a, b -> AppText.res.getString(R.string.list_and, a, b) }.orEmpty()
+
+/** "Fuel pump": NHTSA's component, or "Recall" when it named none. */
+fun recallComponent(component: String): String = Recalls.componentLabel(component) ?: AppText.res.getString(R.string.recall)
+
+/** The line a completed recall adds to the service log, saved as it reads then: "Recall 20V-682 · Fuel pump". */
+fun recallServiceLine(notice: RecallNotice): String =
+    AppText.res.getString(R.string.recall_service_line, Recalls.campaignLabel(notice.campaign), recallComponent(notice.component))

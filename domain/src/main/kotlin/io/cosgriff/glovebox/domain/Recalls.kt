@@ -80,17 +80,14 @@ object Recalls {
 
     /**
      * NHTSA components are paths like "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP"; the last part
-     * that says something ("Fuel pump") is the name people recognise.
+     * that says something ("Fuel pump") is the name people recognise. NHTSA's words, in English as it
+     * sends them; null when it sent none, and `app` says "Recall".
      */
-    fun componentLabel(component: String): String {
+    fun componentLabel(component: String): String? {
         val parts = component.split(':').map { it.trim() }.filter { it.isNotEmpty() }
-        val part = parts.lastOrNull { !it.equals("OTHER", ignoreCase = true) } ?: parts.lastOrNull() ?: return "Recall"
+        val part = parts.lastOrNull { !it.equals("OTHER", ignoreCase = true) } ?: parts.lastOrNull() ?: return null
         return part.lowercase().replaceFirstChar(Char::uppercase)
     }
-
-    /** The line a completed recall adds to the service log: "Recall 20V-682 · Fuel pump". */
-    fun serviceLabel(notice: RecallNotice): String =
-        "Recall ${campaignLabel(notice.campaign)} · ${componentLabel(notice.component)}"
 
     /** NHTSA looks recalls up by year, make and model, so all three have to be real. */
     fun canCheck(year: Int, make: String, model: String): Boolean =

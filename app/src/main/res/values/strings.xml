@@ -1191,4 +1191,164 @@
     <string name="last_done_pending">%1$s OF %2$s NOT LOGGED YET</string>
     <string name="last_done_enter">Enter when it was last done</string>
     <string name="last_done_odometer">Odometer then (%1$s)</string>
+
+    <!-- Recalls, shared -->
+    <!-- A recall whose component NHTSA didn't name. -->
+    <string name="recall">Recall</string>
+    <!-- %1$s is the campaign (20V-682), %2$s the component (Fuel pump). -->
+    <string name="recall_service_line">Recall %1$s · %2$s</string>
+
+    <!-- Recalls (RecallsScreen, MarkDoneSheet) -->
+    <string name="recalls_tab_open">Open</string>
+    <string name="recalls_tab_done">Completed</string>
+    <string name="recalls_tab_archived">Archived</string>
+    <!-- The end of the VIN. -->
+    <string name="recalls_vin_end">VIN …%1$s</string>
+    <string name="recalls_verify_with">Verify my VIN with %1$s</string>
+    <string name="recalls_check_nhtsa">Check my VIN at NHTSA</string>
+    <string name="recalls_none_open">No open recalls.</string>
+    <string name="recalls_none_archived">Nothing archived.</string>
+    <string name="recalls_none_done">Nothing marked done yet.</string>
+    <!-- %1$s is the make. -->
+    <string name="recalls_note">Recall list from NHTSA by year, make and model. NHTSA can\'t say whether the repair was already done on this VIN: confirm that with %1$s, then mark it here. Marking one done can add it to Service history. One that doesn\'t apply to your vehicle can be archived, and moved back if it turns out it does.</string>
+    <string name="recalls_cant_check">Recalls can\'t be checked</string>
+    <string name="recalls_checking_nhtsa">Checking NHTSA…</string>
+    <!-- After a large 0. -->
+    <string name="recalls_all_clear">open recalls — all clear</string>
+    <plurals name="recalls_need_attention">
+        <item quantity="one">open recall needs attention</item>
+        <item quantity="other">open recalls need attention</item>
+    </plurals>
+    <string name="refresh">Refresh</string>
+    <string name="recalls_missing_ymm">NHTSA lists recalls by year, make and model, and this vehicle is missing one of them. You can still look up its VIN.</string>
+    <string name="recalls_asking">Asking NHTSA about the %1$s. Only the year, make and model are sent.</string>
+    <string name="recalls_refresh_to_ask">Refresh to ask NHTSA about the %1$s. Only the year, make and model are sent.</string>
+    <string name="recalls_none_listed">NHTSA lists no recalls for the %1$s.</string>
+    <plurals name="recalls_on_file">
+        <item quantity="one">%1$s recall on file for this vehicle.</item>
+        <item quantity="other">%1$s recalls on file for this vehicle.</item>
+    </plurals>
+    <string name="recalls_failed_list_from">%1$s Couldn\'t reach NHTSA just now, so this is the list from %2$s.</string>
+    <string name="recalls_checked_today">Checked today.</string>
+    <string name="recalls_checked_yesterday">Checked yesterday.</string>
+    <string name="recalls_checked_on">Checked %1$s.</string>
+    <string name="recalls_campaign">NHTSA %1$s</string>
+    <string name="recalls_pill_completed">COMPLETED</string>
+    <string name="recalls_pill_archived">ARCHIVED</string>
+    <string name="recalls_pill_open">OPEN</string>
+    <string name="recalls_no_summary">NHTSA gave no summary for this recall.</string>
+    <string name="recalls_risk">Risk</string>
+    <string name="recalls_remedy">Remedy</string>
+    <!-- A label in bold, then NHTSA's text: "Remedy: Dealers will replace…". -->
+    <string name="recalls_labelled">%1$s: %2$s</string>
+    <string name="recalls_reported">Reported %1$s</string>
+    <string name="recalls_marked_done">marked done %1$s</string>
+    <string name="recalls_archived_on">archived %1$s as not applying to this vehicle</string>
+    <string name="recalls_show_less">Show less</string>
+    <string name="recalls_show_full">Show the full notice</string>
+    <string name="recalls_move_back">Move back to open</string>
+    <string name="recalls_mark_open">Mark as open</string>
+    <string name="recalls_mark_done">Mark as done</string>
+    <string name="recalls_archive">Archive</string>
+    <string name="recalls_find_dealer">Find a dealer</string>
+    <string name="recalls_archive_note">Archive it if the recall doesn\'t apply to this vehicle.</string>
+    <!-- What is searched for in the maps app. -->
+    <string name="recalls_dealer_search">%1$s dealer</string>
+    <string name="recalls_mark_done_title">Mark recall as done</string>
+    <string name="recalls_campaign_component">NHTSA %1$s · %2$s</string>
+    <string name="recalls_repaired_on">Repaired on %1$s</string>
+    <string name="recalls_add_to_history">Add to Service history</string>
+    <string name="recalls_add_note">Turn off if it was fixed before you kept records. It won\'t change any reminder either way.</string>
+    <string name="recalls_repair_odometer">Odometer at the repair (%1$s)</string>
+    <string name="recalls_dealer_optional">%1$s dealer (optional)</string>
+
+    <!-- Reminders (RemindersScreen, SnoozeSheet) -->
+    <string name="reminders_snoozed_until">%1$s snoozed until %2$s</string>
+    <string name="reminders_skipped_until">%1$s skipped until %2$s</string>
+    <string name="reminders_unsnoozed">%1$s is no longer snoozed</string>
+    <string name="reminders_title">Reminders</string>
+    <string name="reminders_rules">Rules</string>
+    <string name="reminder_rules_title">Reminder rules</string>
+    <string name="reminders_notifications_off">Notifications are off</string>
+    <string name="reminders_turn_on">Turn them on to be told when these come due.</string>
+    <string name="reminders_group_overdue">OVERDUE</string>
+    <string name="reminders_group_next_30">NEXT 30 DAYS</string>
+    <string name="reminders_group_later">LATER</string>
+    <string name="reminders_group_not_logged">NOT LOGGED YET</string>
+    <string name="reminders_end_snooze">End snooze</string>
+    <string name="reminders_snooze">Snooze…</string>
+    <string name="reminders_every">every %1$s</string>
+    <!-- How far overdue: 3,312 mi over. -->
+    <string name="reminders_over">%1$s over</string>
+    <string name="reminders_due_now">due now</string>
+    <string name="reminders_in">in %1$s</string>
+    <string name="reminders_due_today">due today</string>
+    <string name="reminders_empty_title">Nothing to remind you about yet</string>
+    <string name="reminders_empty_no_vehicle">Add a vehicle and pick what to track. What\'s due will show up here.</string>
+    <string name="reminders_empty_none_tracked">No reminders are being tracked. Add items to a vehicle\'s maintenance schedule and they\'ll show up here.</string>
+    <string name="snooze_title">Snooze %1$s</string>
+    <!-- %1$s, in bold, is when: at 70,100 mi, on Oct 24. -->
+    <string name="snooze_reminded_again">You\'ll be reminded again %1$s.</string>
+    <string name="snooze_already_done">Already done</string>
+    <string name="snooze">Snooze</string>
+    <string name="snooze_skip">Skip this one — wait until %1$s</string>
+    <!-- 500 miles: a figure and the unit's word. -->
+    <string name="snooze_distance">%1$s %2$s</string>
+    <string name="snooze_two_weeks">2 weeks</string>
+    <string name="snooze_one_month">1 month</string>
+    <string name="snooze_with_oil">With the next oil change</string>
+    <string name="snooze_at">at %1$s</string>
+    <!-- An estimate of the mileage. -->
+    <string name="snooze_about">~%1$s</string>
+    <string name="snooze_on">on %1$s</string>
+    <string name="snooze_with_oil_around">with the oil change, around %1$s</string>
+
+    <!-- Reminder rules (ReminderRulesScreen) -->
+    <string name="rules_intro">Most services have a mileage interval and a time interval. Choose which one sets the due date.</string>
+    <string name="rules_overrides">PER-SERVICE OVERRIDES</string>
+    <string name="rules_override_value">%1$s ›</string>
+    <string name="rules_every_service">Every service</string>
+    <string name="rules_everything_else">Everything else</string>
+    <string name="rules_uses_default">Uses default</string>
+    <string name="rules_add_override">+ Add override</string>
+    <string name="rules_override_which">Override which service?</string>
+    <!-- %1$s is the rule in a sentence, such as whichever comes first. -->
+    <string name="rules_use_default">Use default (%1$s)</string>
+    <string name="rules_first_about">Recommended. Mileage or time, the earlier one — how most schedules are written.</string>
+    <string name="rules_last_about">Waits until both the mileage and the time interval have passed.</string>
+    <string name="rules_mileage_about">Ignore time. Good if you drive a lot.</string>
+    <string name="rules_time_about">Ignore mileage. Good for a weekend vehicle.</string>
+    <string name="rules_preview">PREVIEW</string>
+    <string name="rules_preview_none">Once you\'ve logged a service that has both a mileage and a time interval, this shows how the rule works out for it.</string>
+    <string name="rules_preview_of">PREVIEW · %1$s</string>
+    <string name="rules_preview_source">Every %1$s or %2$s · last done %3$s at %4$s</string>
+    <string name="rules_bar_mileage">Mileage · %1$s</string>
+    <string name="rules_bar_time">Time · %1$s</string>
+    <string name="rules_reached">reached</string>
+    <string name="rules_no_estimate">no estimate yet</string>
+    <string name="rules_next_reminder">Next reminder</string>
+    <string name="rules_can_exceed">This can push services past the recommended interval.</string>
+    <string name="rules_pace">Dates estimated from your average of ~%1$s/month</string>
+    <string name="rules_no_pace">Mileage dates need two odometer readings at least a week apart.</string>
+    <plurals name="rules_after_last">
+        <item quantity="one">%1$s month after the last service</item>
+        <item quantity="other">%1$s months after the last service</item>
+    </plurals>
+    <string name="rules_no_date">No date estimate yet</string>
+    <string name="rules_mileage_passed">The mileage interval has passed</string>
+    <string name="rules_est_around">Est. around %1$s</string>
+    <string name="rules_mileage_first">Mileage hits first, at %1$s</string>
+    <!-- %1$s is rules_after_last. -->
+    <string name="rules_time_first">Time hits first, %1$s</string>
+    <string name="rules_first_no_pace">Whichever comes first — there\'s no driving pace yet to say which</string>
+    <string name="rules_mileage_last">Mileage hits last, at %1$s</string>
+    <string name="rules_time_last_est">Time hits last — est. ~%1$s by then</string>
+    <string name="rules_time_last">Time hits last</string>
+    <string name="rules_both">%1$s and %2$s</string>
+    <string name="rules_last_no_pace">Once both have passed — there\'s no driving pace yet to say which is later</string>
+    <string name="rules_remind_early">REMIND ME EARLY</string>
+    <string name="rules_distance_before">%1$s before</string>
+    <string name="rules_days_before">Days before</string>
+    <string name="rules_lead_note">A reminder shows as due soon this far ahead of its limit. For a vehicle that counts in the other unit the distance is converted (500 mi is 800 km).</string>
+    <string name="rules_lead_error">Use whole numbers: up to %1$s and up to %2$s days. Not saved yet.</string>
 </resources>

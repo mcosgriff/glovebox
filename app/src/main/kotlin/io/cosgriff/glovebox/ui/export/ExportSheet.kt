@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.wordedLines
 import io.cosgriff.glovebox.ui.service.label
@@ -187,7 +188,7 @@ class ExportViewModel @Inject constructor(
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
                 val row = stored.getValue(r.id)
-                ExportRecall(Recalls.campaignLabel(r.notice.campaign), Recalls.componentLabel(r.notice.component), row.completedOn, row.archivedOn)
+                ExportRecall(Recalls.campaignLabel(r.notice.campaign), recallComponent(r.notice.component), row.completedOn, row.archivedOn)
             },
         )
     }

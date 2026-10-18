@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.styledStringResource
+import androidx.annotation.StringRes
+import io.cosgriff.glovebox.ui.service.recallComponent
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
@@ -194,7 +201,7 @@ class RecallsViewModel @Inject constructor(
     fun unarchive(recall: RecallEntity) = viewModelScope.launch { recalls.setArchived(recall.id, null) }
 }
 
-private enum class RecallTab(val label: String) { ALL("All"), OPEN("Open"), DONE("Completed"), ARCHIVED("Archived") }
+private enum class RecallTab(@StringRes val label: Int) { ALL(R.string.history_all), OPEN(R.string.recalls_tab_open), DONE(R.string.recalls_tab_done), ARCHIVED(R.string.recalls_tab_archived) }
 
 /** Design: 8 · Recalls. */
 @Composable
@@ -232,11 +239,11 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
             Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
                 Column(Modifier.padding(start = 8.dp)) {
-                    Text("Recalls", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.details_recalls), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     Text(
-                        listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.vin?.let { "VIN …${it.takeLast(6)}" }).joinToString(" · "),
+                        listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.vin?.let { stringResource(R.string.recalls_vin_end, it.takeLast(6)) }).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -249,7 +256,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 state = state,
                 refreshing = vm.refreshing,
                 failed = vm.failed,
-                lookupLabel = site?.let { "Verify my VIN with ${it.name}" } ?: "Check my VIN at NHTSA",
+                lookupLabel = site?.let { stringResource(R.string.recalls_verify_with, it.name) } ?: stringResource(R.string.recalls_check_nhtsa),
                 onRefresh = vm::refresh,
                 onLookup = { context.openInBrowser(site?.recallUrl ?: Recalls.NHTSA_LOOKUP_URL) },
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
@@ -267,7 +274,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                         FilterChip(
                             selected = t == tab,
                             onClick = { tab = t },
-                            label = { Text(t.label) },
+                            label = { Text(stringResource(t.label)) },
                             // Canvas: the chosen filter is solid ink.
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.secondary,
@@ -281,9 +288,9 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 item {
                     Text(
                         when (tab) {
-                            RecallTab.OPEN -> "No open recalls."
-                            RecallTab.ARCHIVED -> "Nothing archived."
-                            else -> "Nothing marked done yet."
+                            RecallTab.OPEN -> stringResource(R.string.recalls_none_open)
+                            RecallTab.ARCHIVED -> stringResource(R.string.recalls_none_archived)
+                            else -> stringResource(R.string.recalls_none_done)
                         },
                         Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -314,9 +321,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    "Recall list from NHTSA by year, make and model. NHTSA can't say whether the repair was already done on " +
-                        "this VIN: confirm that with ${state.makeName}, then mark it here. Marking one done can add it to Service history. " +
-                        "One that doesn't apply to your vehicle can be archived, and moved back if it turns out it does.",
+                    stringResource(R.string.recalls_note, state.makeName),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -360,22 +365,18 @@ private fun SummaryCard(
                 if (checked == null) {
                     Text(
                         when {
-                            !state.canCheck -> "Recalls can't be checked"
-                            refreshing -> "Checking NHTSA…"
-                            else -> "Not checked yet"
+                            !state.canCheck -> stringResource(R.string.recalls_cant_check)
+                            refreshing -> stringResource(R.string.recalls_checking_nhtsa)
+                            else -> stringResource(R.string.details_recalls_not_checked)
                         },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("$open", fontFamily = PlexMono, fontSize = 40.sp, fontWeight = FontWeight.SemiBold, color = accent)
+                        Text(open.asNumber(), fontFamily = PlexMono, fontSize = 40.sp, fontWeight = FontWeight.SemiBold, color = accent)
                         Text(
-                            when (open) {
-                                0 -> "open recalls — all clear"
-                                1 -> "open recall needs attention"
-                                else -> "open recalls need attention"
-                            },
+                            if (open == 0) stringResource(R.string.recalls_all_clear) else pluralStringResource(R.plurals.recalls_need_attention, open),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -398,7 +399,7 @@ private fun SummaryCard(
                         colors = ButtonDefaults.outlinedButtonColors(containerColor = scheme.surface, contentColor = scheme.onSurface),
                         contentPadding = PaddingValues(horizontal = 8.dp),
                     ) {
-                        Text(if (refreshing) "Checking…" else "Refresh", maxLines = 1)
+                        Text(stringResource(if (refreshing) R.string.add_vehicle_recalls_checking else R.string.refresh), maxLines = 1)
                     }
                 }
                 Button(
@@ -415,30 +416,26 @@ private fun SummaryCard(
 }
 
 /** "2 recalls on file for this vehicle. Checked today." */
+@Composable
 private fun RecallsState.summaryLine(refreshing: Boolean, failed: Boolean, today: LocalDate): String {
     val name = "${vehicle.year} $makeName ${vehicle.model}"
     val checked = vehicle.recallsCheckedOn
-    if (!canCheck) {
-        return "NHTSA lists recalls by year, make and model, and this vehicle is missing one of them. You can still look up its VIN."
-    }
+    if (!canCheck) return stringResource(R.string.recalls_missing_ymm)
     if (checked == null) {
         return when {
-            refreshing -> "Asking NHTSA about the $name. Only the year, make and model are sent."
-            failed -> "Couldn't reach NHTSA. Check your connection and try again."
-            else -> "Refresh to ask NHTSA about the $name. Only the year, make and model are sent."
+            refreshing -> stringResource(R.string.recalls_asking, name)
+            failed -> stringResource(R.string.add_vehicle_nhtsa_unreachable)
+            else -> stringResource(R.string.recalls_refresh_to_ask, name)
         }
     }
-    val onFile = when (recalls.size) {
-        0 -> "NHTSA lists no recalls for the $name."
-        1 -> "1 recall on file for this vehicle."
-        else -> "${recalls.size} recalls on file for this vehicle."
-    }
+    val onFile = if (recalls.isEmpty()) stringResource(R.string.recalls_none_listed, name) else pluralStringResource(R.plurals.recalls_on_file, recalls.size, recalls.size.asNumber())
+    if (failed) return stringResource(R.string.recalls_failed_list_from, onFile, checked.format(longDate))
     val checkedText = when (ChronoUnit.DAYS.between(checked, today)) {
-        0L -> "Checked today."
-        1L -> "Checked yesterday."
-        else -> "Checked ${checked.format(longDate)}."
+        0L -> stringResource(R.string.recalls_checked_today)
+        1L -> stringResource(R.string.recalls_checked_yesterday)
+        else -> stringResource(R.string.recalls_checked_on, checked.format(longDate))
     }
-    return if (failed) "$onFile Couldn't reach NHTSA just now, so this is the list from ${checked.format(longDate)}." else "$onFile $checkedText"
+    return "$onFile $checkedText"
 }
 
 @Composable
@@ -467,7 +464,7 @@ private fun RecallCard(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "NHTSA ${Recalls.campaignLabel(recall.campaign)}",
+                    stringResource(R.string.recalls_campaign, Recalls.campaignLabel(recall.campaign)),
                     Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,
                     fontFamily = PlexMono,
@@ -475,29 +472,29 @@ private fun RecallCard(
                     color = body,
                 )
                 when {
-                    done -> Pill("COMPLETED", container = scheme.tertiaryContainer, content = scheme.onTertiaryContainer)
-                    archived -> Pill("ARCHIVED", container = scheme.surfaceVariant, content = scheme.onSurfaceVariant)
-                    else -> Pill("OPEN", container = scheme.primaryContainer, content = scheme.onPrimaryContainer)
+                    done -> Pill(stringResource(R.string.recalls_pill_completed), container = scheme.tertiaryContainer, content = scheme.onTertiaryContainer)
+                    archived -> Pill(stringResource(R.string.recalls_pill_archived), container = scheme.surfaceVariant, content = scheme.onSurfaceVariant)
+                    else -> Pill(stringResource(R.string.recalls_pill_open), container = scheme.primaryContainer, content = scheme.onPrimaryContainer)
                 }
             }
-            Text(Recalls.componentLabel(recall.component), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(recallComponent(recall.component), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(
-                recall.summary.ifEmpty { "NHTSA gave no summary for this recall." },
+                recall.summary.ifEmpty { stringResource(R.string.recalls_no_summary) },
                 style = MaterialTheme.typography.bodyMedium,
                 color = body,
                 maxLines = if (expanded) Int.MAX_VALUE else 4,
                 overflow = TextOverflow.Ellipsis,
                 onTextLayout = { if (!expanded) clipped = clipped || it.hasVisualOverflow },
             )
-            if (expanded) recall.consequence?.let { Labelled("Risk", it) }
+            if (expanded) recall.consequence?.let { Labelled(stringResource(R.string.recalls_risk), it) }
             recall.remedy?.let {
-                Labelled("Remedy", it, maxLines = if (expanded) Int.MAX_VALUE else 3, onClipped = { if (!expanded) clipped = true })
+                Labelled(stringResource(R.string.recalls_remedy), it, maxLines = if (expanded) Int.MAX_VALUE else 3, onClipped = { if (!expanded) clipped = true })
             }
             Text(
                 listOfNotNull(
-                    recall.reportedOn?.let { "Reported ${it.format(longDate)}" },
-                    recall.completedOn?.let { "marked done ${it.format(longDate)}" },
-                    recall.archivedOn?.takeIf { archived }?.let { "archived ${it.format(longDate)} as not applying to this vehicle" },
+                    recall.reportedOn?.let { stringResource(R.string.recalls_reported, it.format(longDate)) },
+                    recall.completedOn?.let { stringResource(R.string.recalls_marked_done, it.format(longDate)) },
+                    recall.archivedOn?.takeIf { archived }?.let { stringResource(R.string.recalls_archived_on, it.format(longDate)) },
                 ).joinToString(" · ").replaceFirstChar(Char::uppercase),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
@@ -508,7 +505,7 @@ private fun RecallCard(
                     modifier = Modifier.heightIn(min = 48.dp),
                     contentPadding = PaddingValues(horizontal = 4.dp),
                 ) {
-                    Text(if (expanded) "Show less" else "Show the full notice")
+                    Text(stringResource(if (expanded) R.string.recalls_show_less else R.string.recalls_show_full))
                 }
             }
             if (archived) {
@@ -519,7 +516,7 @@ private fun RecallCard(
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Move back to open", maxLines = 1)
+                    Text(stringResource(R.string.recalls_move_back), maxLines = 1)
                 }
                 return@Column
             }
@@ -531,10 +528,10 @@ private fun RecallCard(
                     Modifier.weight(if (done) 1f else 2f).height(48.dp).clip(RoundedCornerShape(12.dp))
                         .border(1.5.dp, scheme.onSurface, RoundedCornerShape(12.dp)),
                 ) {
-                    StatusButton(if (done) "Mark as open" else "Mark as done", onClick = onToggle, modifier = Modifier.weight(1f))
+                    StatusButton(stringResource(if (done) R.string.recalls_mark_open else R.string.recalls_mark_done), onClick = onToggle, modifier = Modifier.weight(1f))
                     if (!done) {
                         Box(Modifier.width(1.5.dp).fillMaxHeight().background(scheme.onSurface))
-                        StatusButton("Archive", onClick = onArchive, modifier = Modifier.weight(1f))
+                        StatusButton(stringResource(R.string.recalls_archive), onClick = onArchive, modifier = Modifier.weight(1f))
                     }
                 }
                 Button(
@@ -544,12 +541,12 @@ private fun RecallCard(
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {
-                    Text("Find a dealer", maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.recalls_find_dealer), maxLines = 1, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 }
             }
             if (!done) {
                 Text(
-                    "Archive it if the recall doesn't apply to this vehicle.",
+                    stringResource(R.string.recalls_archive_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -573,10 +570,7 @@ private fun StatusButton(text: String, onClick: () -> Unit, modifier: Modifier) 
 @Composable
 private fun Labelled(label: String, text: String, maxLines: Int = Int.MAX_VALUE, onClipped: () -> Unit = {}) {
     Text(
-        buildAnnotatedString {
-            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold, color = statusColors().soon)) { append("$label: ") }
-            append(text)
-        },
+        styledStringResource(R.string.recalls_labelled, label, SpanStyle(fontWeight = FontWeight.SemiBold, color = statusColors().soon), text),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         maxLines = maxLines,
@@ -610,7 +604,7 @@ private fun Context.openInBrowser(url: String) {
 /** Hands "<make> dealer" to the phone's maps app, or the manufacturer's site if there isn't one. */
 private fun Context.findDealer(makeName: String, fallbackUrl: String) {
     try {
-        startActivity(Intent(Intent.ACTION_VIEW, ("geo:0,0?q=" + Uri.encode("$makeName dealer")).toUri()))
+        startActivity(Intent(Intent.ACTION_VIEW, ("geo:0,0?q=" + Uri.encode(getString(R.string.recalls_dealer_search, makeName))).toUri()))
     } catch (_: ActivityNotFoundException) {
         openInBrowser(fallbackUrl)
     }

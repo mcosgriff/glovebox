@@ -87,12 +87,12 @@ class RecallsTest {
         assertEquals("Labels", Recalls.componentLabel("EQUIPMENT:OTHER:LABELS"))
         assertEquals("Electrical system", Recalls.componentLabel("ELECTRICAL SYSTEM:OTHER"))
         assertEquals("Other", Recalls.componentLabel("OTHER"))
-        assertEquals("Recall", Recalls.componentLabel(""))
+        assertNull(Recalls.componentLabel(""))
     }
 
     @Test
-    fun `service log line names the campaign and component`() {
-        assertEquals("Recall 20V-682 · Fuel pump", Recalls.serviceLabel(fuelPump))
+    fun `a campaign reads the way NHTSA and dealers write it`() {
+        assertEquals("20V-682", Recalls.campaignLabel(fuelPump.campaign))
     }
 
     @Test
