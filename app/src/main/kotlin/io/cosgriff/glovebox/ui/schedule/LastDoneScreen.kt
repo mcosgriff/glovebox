@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.ui.service.every
 import io.cosgriff.glovebox.ui.service.unit
@@ -289,7 +292,7 @@ fun LastDoneSheet(
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
     val odometer = OdometerInput.parse(odometerText)
-    val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors, unit)
+    val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors)
 
     if (pickingDate) {
         DatePickerSheet(
@@ -313,7 +316,7 @@ fun LastDoneSheet(
         ) {
             Text(itemName, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(
-                "When it was last done. It goes in History marked \"${LastDoneEntries.TAG}\", and the reminder counts from it.",
+                stringResource(R.string.last_done_sheet_intro, stringResource(R.string.last_done_tag)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.onSurfaceVariant,
             )
@@ -331,7 +334,7 @@ fun LastDoneSheet(
                 value = odometerText,
                 onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
                 label = { Text("Odometer then (${unit.symbolWord})") },
-                supportingText = note?.let { { Text(it.text) } },
+                supportingText = note?.let { { Text(it.text(unit)) } },
                 isError = note?.tone == NoteTone.WARNING,
                 singleLine = true,
                 textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),

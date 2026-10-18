@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.ui.styledStringResource
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.compose.ui.text.style.TextOverflow
@@ -140,7 +144,7 @@ import io.cosgriff.glovebox.domain.ServiceLinks
 import javax.inject.Inject
 
 /** A tracked reminder that's due, offered as a one-tap chip. [optionId] is the tick box it sets. */
-data class DueSuggestion(val optionId: String, val label: String)
+data class DueSuggestion(val optionId: String, val name: String, val overdue: Boolean)
 
 /** What the form needs from the database, loaded once when the screen opens. */
 data class LogServiceData(
@@ -292,14 +296,14 @@ class LogServiceViewModel @Inject constructor(
                     .sortedBy { it.status.state != DueState.OVERDUE }
                     .mapNotNull { s ->
                         val option = optionFor[s.item.id] ?: return@mapNotNull null
-                        val why = if (s.status.state == DueState.OVERDUE) "overdue" else "due soon"
-                        DueSuggestion(option.id, "${option.label} · $why")
+                        DueSuggestion(option.id, option.label, overdue = s.status.state == DueState.OVERDUE)
                     }
             }
 
             if (original != null) {
                 val r = original.record
                 date = r.date
+                // US grouping, as OdometerInput reads it, whatever the language.
                 odometerText = String.format(Locale.US, "%,d", r.odometer)
                 diy = r.diy
                 shopName = r.shopName.orEmpty()
@@ -404,11 +408,12 @@ fun LogServiceScreen(
     val data = vm.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
     var addingCustom by remember { mutableStateOf(false) }
+    val notesLabel = stringResource(R.string.log_notes)
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onDone) { Icon(Icons.Outlined.Close, contentDescription = "Close") }
-            Text(if (vm.editing) "Edit service" else "Log service", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            IconButton(onClick = onDone) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close)) }
+            Text(stringResource(if (vm.editing) R.string.log_edit_title else R.string.log_service), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
             Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape) {
                 Text(
                     data.vehicleName,
@@ -425,7 +430,7 @@ fun LogServiceScreen(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        FieldLabel("Date")
+                        FieldLabel(stringResource(R.string.log_date))
                         // Drawn as the odometer field's twin; it opens the date picker instead of the keyboard.
                         Surface(
                             onClick = { pickingDate = true },
@@ -440,7 +445,7 @@ fun LogServiceScreen(
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        FieldLabel("Odometer (${data.unit.symbolWord})")
+                        FieldLabel(stringResource(R.string.odometer_in, data.unit.symbolWord))
                         OutlinedTextField(
                             value = vm.odometerText,
                             onValueChange = { vm.odometerText = it },
@@ -459,7 +464,7 @@ fun LogServiceScreen(
                                 onClick = { vm.odometerText = String.format(Locale.US, "%,d", current) },
                                 modifier = Modifier.heightIn(min = 48.dp),
                                 contentPadding = PaddingValues(horizontal = 4.dp),
-                            ) { Text("Use current") }
+                            ) { Text(stringResource(R.string.log_use_current)) }
                         }
                     }
                 }
@@ -471,10 +476,9 @@ fun LogServiceScreen(
                     readings = data.readings.map { it.copy(odometer = data.swap.asReadOn(it.odometer, vm.date)) },
                     lastOdometer = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) },
                     showErrors = vm.showErrors,
-                    unit = data.unit,
                 )?.let { note ->
                     Text(
-                        note.text,
+                        note.text(data.unit),
                         style = MaterialTheme.typography.bodySmall,
                         color = when (note.tone) {
                             NoteTone.WARNING -> MaterialTheme.colorScheme.error
@@ -487,7 +491,7 @@ fun LogServiceScreen(
 
             if (data.due.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SectionLabel("DUE NOW · ONE TAP")
+                    SectionLabel(stringResource(R.string.log_due_section))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         data.due.forEach { s ->
                             val on = s.optionId in vm.selected
@@ -499,7 +503,10 @@ fun LogServiceScreen(
                                     if (!on) data.categories.firstOrNull { c -> c.options.any { it.id == s.optionId } }?.let { vm.categoryId = it.id }
                                 },
                                 // Canvas: "+" offers it, a tick and the soft tint show it is on the list.
-                                label = { Text((if (on) "\u2713 " else "+ ") + s.label, fontWeight = FontWeight.SemiBold) },
+                                label = {
+                                    val due = stringResource(if (s.overdue) R.string.log_due_overdue else R.string.log_due_soon, s.name)
+                                    Text(stringResource(if (on) R.string.log_chip_on else R.string.log_chip_off, due), fontWeight = FontWeight.SemiBold)
+                                },
                                 shape = CircleShape,
                                 colors = FilterChipDefaults.filterChipColors(
                                     containerColor = MaterialTheme.colorScheme.surface,
@@ -523,7 +530,7 @@ fun LogServiceScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("WHAT WAS DONE?")
+                SectionLabel(stringResource(R.string.log_what_section))
                 data.categories.chunked(2).forEach { pair ->
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         pair.forEach { category ->
@@ -557,11 +564,11 @@ fun LogServiceScreen(
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         vm.customItems.forEach { label ->
-                            CheckRow(label = label, hint = "Custom", checked = true, onToggle = { vm.removeCustom(label) })
+                            CheckRow(label = label, hint = stringResource(R.string.log_custom), checked = true, onToggle = { vm.removeCustom(label) })
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         TextButton(onClick = { addingCustom = true }, modifier = Modifier.heightIn(min = 48.dp)) {
-                            Text("+ Add custom item")
+                            Text(stringResource(R.string.log_add_custom_button))
                         }
                     }
                 }
@@ -573,12 +580,10 @@ fun LogServiceScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val labels = data.categories.flatMap { it.options }.filter { it.id in vm.selected }.map { it.label } + vm.customItems
+                val count = pluralStringResource(R.plurals.log_items, labels.size, labels.size.asNumber())
+                val listed = if (labels.isEmpty()) stringResource(R.string.log_pick_above) else labels.joinToString(", ")
                 Text(
-                    buildAnnotatedString {
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("${labels.size} ${if (labels.size == 1) "item" else "items"}") }
-                        append(" \u00b7 ")
-                        append(if (labels.isEmpty()) "Pick what was done above" else labels.joinToString(", "))
-                    },
+                    styledStringResource(R.string.log_items_summary, count, SpanStyle(fontWeight = FontWeight.Bold), listed),
                     Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -593,13 +598,13 @@ fun LogServiceScreen(
                 ) {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            "WHAT THIS CHANGES",
+                            stringResource(R.string.log_changes_section),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = if (changes.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         if (changes.isEmpty()) {
-                            Text("No changes to reminders.", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.log_no_changes), style = MaterialTheme.typography.bodyMedium)
                         } else {
                             changes.forEach {
                                 Text(it.text(data.unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -610,7 +615,7 @@ fun LogServiceScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionLabel("WHO DID IT?")
+                SectionLabel(stringResource(R.string.log_who_section))
                 // Canvas: the chosen side is solid ink.
                 val colors = SegmentedButtonDefaults.colors(
                     activeContainerColor = MaterialTheme.colorScheme.secondary,
@@ -623,21 +628,21 @@ fun LogServiceScreen(
                         shape = SegmentedButtonDefaults.itemShape(0, 2),
                         colors = colors,
                         icon = {}, // canvas: the solid fill is the mark
-                    ) { Text("I did (DIY)") }
+                    ) { Text(stringResource(R.string.log_diy)) }
                     SegmentedButton(
                         selected = !vm.diy,
                         onClick = { vm.diy = false },
                         shape = SegmentedButtonDefaults.itemShape(1, 2),
                         colors = colors,
                         icon = {},
-                    ) { Text("A shop") }
+                    ) { Text(stringResource(R.string.log_a_shop)) }
                 }
                 if (!vm.diy) {
                     OutlinedTextField(
                         value = vm.shopName,
                         onValueChange = { vm.shopName = it },
-                        label = { Text("Shop name") },
-                        placeholder = { Text("e.g. dealer or local shop") },
+                        label = { Text(stringResource(R.string.log_shop_name)) },
+                        placeholder = { Text(stringResource(R.string.log_shop_hint)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                         shape = RoundedCornerShape(12.dp),
@@ -649,30 +654,30 @@ fun LogServiceScreen(
             CostAndPhotos(vm)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel("Notes (part numbers, oil brand, torque specs\u2026)")
+                FieldLabel(stringResource(R.string.log_notes_label))
                 OutlinedTextField(
                     value = vm.notes,
                     onValueChange = { vm.notes = it },
-                    placeholder = { Text("Optional") },
+                    placeholder = { Text(stringResource(R.string.log_optional)) },
                     minLines = 3,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     shape = RoundedCornerShape(12.dp),
                     colors = fieldColors(),
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Notes" },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = notesLabel },
                 )
             }
 
             // The fields with problems may be scrolled out of view, so repeat what's missing here.
             val missing = listOfNotNull(
                 // The picker refuses future days, so this is only ever a form left open across a clock change.
-                "a date that isn't in the future".takeIf { vm.date.isAfter(LocalDate.now()) },
-                "the odometer reading".takeIf { vm.odometer == null },
-                "at least one item".takeIf { vm.itemCount == 0 },
-                "a valid cost".takeIf { !vm.costValid },
+                stringResource(R.string.log_missing_date).takeIf { vm.date.isAfter(LocalDate.now()) },
+                stringResource(R.string.log_missing_odometer).takeIf { vm.odometer == null },
+                stringResource(R.string.log_missing_item).takeIf { vm.itemCount == 0 },
+                stringResource(R.string.log_missing_cost).takeIf { !vm.costValid },
             )
             if (vm.showErrors && missing.isNotEmpty()) {
                 Text(
-                    "To save, add ${missing.joinToString(" and ")}.",
+                    stringResource(R.string.log_to_save, andList(missing)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -682,14 +687,14 @@ fun LogServiceScreen(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(if (vm.editing) "Save changes" else "Save service")
+                Text(stringResource(if (vm.editing) R.string.log_save_changes else R.string.log_save))
             }
             if (vm.editing) {
                 TextButton(
                     onClick = onDeleteInstead,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text("Delete this record") }
+                ) { Text(stringResource(R.string.log_delete)) }
             }
         }
     }
@@ -736,26 +741,27 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
     val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
     val problem by vm.photoProblem.collectAsStateWithLifecycle()
     val count = vm.keptPhotos.size + newPhotos.size
+    val costLabel = stringResource(R.string.log_cost_optional)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel("Total cost")
+                FieldLabel(stringResource(R.string.log_total_cost))
                 OutlinedTextField(
                     value = vm.costText,
                     onValueChange = { vm.costText = it },
-                    placeholder = { Text("0.00", fontFamily = PlexMono) },
-                    prefix = { Text("$", fontFamily = PlexMono) },
+                    placeholder = { Text(stringResource(R.string.log_cost_placeholder), fontFamily = PlexMono) },
+                    prefix = { Text(stringResource(R.string.log_cost_prefix), fontFamily = PlexMono) },
                     singleLine = true,
                     isError = !vm.costValid,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     shape = RoundedCornerShape(12.dp),
                     colors = fieldColors(),
-                    modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = "Total cost, optional" },
+                    modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = costLabel },
                 )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel("Receipt / photo")
+                FieldLabel(stringResource(R.string.log_receipt))
                 AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
                     val enabled = vm.photoRoom > 0
                     val ink = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
@@ -777,7 +783,7 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
                     ) {
                         Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp), tint = ink)
                         Text(
-                            RecordPhotos.countLabel(count)?.let { "Attach \u00b7 $it" } ?: "Attach",
+                            photoCount(count)?.let { stringResource(R.string.log_attach_count, it) } ?: stringResource(R.string.log_attach),
                             style = MaterialTheme.typography.labelLarge,
                             color = ink,
                             maxLines = 1,
@@ -787,23 +793,23 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
             }
         }
         if (!vm.costValid) {
-            Text("Enter the cost as an amount like 45.99, or leave it empty.", style = MaterialTheme.typography.bodySmall, color = scheme.error)
+            Text(stringResource(R.string.log_cost_error), style = MaterialTheme.typography.bodySmall, color = scheme.error)
         }
         if (count > 0) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 vm.keptPhotos.forEachIndexed { i, photo ->
-                    PhotoThumb(photo.fileName, "photo ${i + 1}", Modifier.size(96.dp), onRemove = { vm.removeKeptPhoto(photo) })
+                    PhotoThumb(photo.fileName, stringResource(R.string.photo_number, (i + 1).asNumber()), Modifier.size(96.dp), onRemove = { vm.removeKeptPhoto(photo) })
                 }
                 newPhotos.forEachIndexed { i, name ->
-                    PhotoThumb(name, "photo ${vm.keptPhotos.size + i + 1}", Modifier.size(96.dp), onRemove = { vm.removeNewPhoto(name) })
+                    PhotoThumb(name, stringResource(R.string.photo_number, (vm.keptPhotos.size + i + 1).asNumber()), Modifier.size(96.dp), onRemove = { vm.removeNewPhoto(name) })
                 }
             }
         }
         Text(
             problem ?: if (vm.photoRoom == 0) {
-                "That's the most a record holds (${RecordPhotos.MAX_PER_RECORD})."
+                stringResource(R.string.log_photos_full, RecordPhotos.MAX_PER_RECORD.asNumber())
             } else {
-                "Photos are stored encrypted with the record. The copy in your gallery, if there is one, isn't touched."
+                stringResource(R.string.log_photos_note)
             },
             style = MaterialTheme.typography.bodySmall,
             color = if (problem != null) scheme.error else scheme.onSurfaceVariant,
@@ -819,7 +825,10 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
 @Composable
 private fun CategoryButton(label: String, count: Int, active: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
-    val state = listOfNotNull("open".takeIf { active }, "$count ticked".takeIf { count > 0 }).joinToString(", ")
+    val state = listOfNotNull(
+        stringResource(R.string.log_tab_open).takeIf { active },
+        pluralStringResource(R.plurals.log_tab_ticked, count, count.asNumber()).takeIf { count > 0 },
+    ).joinToString(", ")
     Surface(
         onClick = onClick,
         modifier = modifier.heightIn(min = 52.dp).semantics { stateDescription = state },
@@ -837,7 +846,7 @@ private fun CategoryButton(label: String, count: Int, active: Boolean, onClick: 
             if (count > 0) {
                 Surface(color = scheme.primaryContainer, contentColor = scheme.onPrimaryContainer, shape = CircleShape) {
                     Text(
-                        "\u2713 $count",
+                        stringResource(R.string.log_tab_count, count.asNumber()),
                         Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
@@ -893,9 +902,9 @@ internal fun DatePickerSheet(initial: LocalDate, onPick: (LocalDate) -> Unit, on
                 onClick = {
                     state.selectedDateMillis?.let { onPick(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()) }
                 },
-            ) { Text("OK") }
+            ) { Text(stringResource(R.string.ok)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     ) { DatePicker(state = state) }
 }
 
@@ -904,17 +913,17 @@ private fun CustomItemDialog(onAdd: (String) -> Unit, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add custom item") },
+        title = { Text(stringResource(R.string.log_add_custom)) },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                label = { Text("What was done?") },
+                label = { Text(stringResource(R.string.log_what_was_done)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
         },
-        confirmButton = { TextButton(onClick = { onAdd(text) }, enabled = text.isNotBlank()) { Text("Add") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { onAdd(text) }, enabled = text.isNotBlank()) { Text(stringResource(R.string.add)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

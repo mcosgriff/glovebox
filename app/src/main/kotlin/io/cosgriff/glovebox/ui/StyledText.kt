@@ -9,15 +9,19 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 
 /**
- * A string resource with one `%1$s`, the argument drawn in [style] ("Type **DELETE** to confirm").
- * The placeholder stays in the resource so a translation can put the argument where its grammar wants it.
+ * A string resource whose `%1$s` is drawn in [style] ("Type **DELETE** to confirm"); [others] fill
+ * `%2$s` on, as plain text. The placeholders stay in the resource so a translation can put the
+ * styled part where its grammar wants it.
  */
 @Composable
-fun styledStringResource(@StringRes id: Int, arg: String, style: SpanStyle): AnnotatedString {
-    val (before, after) = stringResource(id).split("%1\$s", limit = 2).let { it[0] to it.getOrElse(1) { "" } }
+fun styledStringResource(@StringRes id: Int, styled: String, style: SpanStyle, vararg others: String): AnnotatedString {
+    val (before, after) = stringResource(id, MARK, *others).split(MARK, limit = 2).let { it[0] to it.getOrElse(1) { "" } }
     return buildAnnotatedString {
         append(before)
-        withStyle(style) { append(arg) }
+        withStyle(style) { append(styled) }
         append(after)
     }
 }
+
+// Stands in for the styled part while the rest is formatted; a private-use character no text holds.
+private const val MARK = ""

@@ -36,13 +36,6 @@ object RecordPhotos {
     /** How many more photos a record with [have] can take. */
     fun room(have: Int): Int = (MAX_PER_RECORD - have).coerceAtLeast(0)
 
-    /** "2 photos", "1 photo"; null for none, so callers can leave the phrase out. */
-    fun countLabel(count: Int): String? = when {
-        count <= 0 -> null
-        count == 1 -> "1 photo"
-        else -> "$count photos"
-    }
-
     /**
      * Files nothing points at any more: a photo whose record was deleted and not brought back, or
      * one attached to a form that was abandoned. [referenced] is every file name the database

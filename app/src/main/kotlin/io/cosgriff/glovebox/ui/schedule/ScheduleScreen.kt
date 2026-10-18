@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.catalogLabel
+import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
@@ -425,7 +427,7 @@ fun ScheduleScreen(
                     onOpenRecord = log?.recordId?.let { id -> { onOpenRecord(id) } },
                     entered = log?.entered == true,
                     onEnterLastDone = { enteringLastDone = true },
-                    resetBy = if (editing.own) null else ServiceCatalog.resetters(state.templateKeys[editing.key]),
+                    resetBy = if (editing.own) null else ServiceCatalog.resetters(state.templateKeys[editing.key]).map(::catalogLabel),
                     estimate = log?.estimate,
                 )
             },

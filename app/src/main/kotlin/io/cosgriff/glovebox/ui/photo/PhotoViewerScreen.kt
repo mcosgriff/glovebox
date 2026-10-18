@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -109,11 +112,10 @@ fun PhotoViewerScreen(onClose: () -> Unit, vm: PhotoViewerViewModel = hiltViewMo
     if (confirmingShare) {
         AlertDialog(
             onDismissRequest = { confirmingShare = false },
-            title = { Text("Share this photo?") },
+            title = { Text(stringResource(R.string.photo_share_title)) },
             text = {
                 Text(
-                    "The app you share it with gets an unencrypted copy, and what it does with it is up to that app. " +
-                        "The copy Glovebox makes for sharing is removed afterwards.",
+                    stringResource(R.string.photo_share_body),
                 )
             },
             confirmButton = {
@@ -126,37 +128,37 @@ fun PhotoViewerScreen(onClose: () -> Unit, vm: PhotoViewerViewModel = hiltViewMo
                             if (copy == null || !context.share(copy)) shareFailed = true
                         }
                     },
-                ) { Text("Share") }
+                ) { Text(stringResource(R.string.share)) }
             },
-            dismissButton = { TextButton(onClick = { confirmingShare = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { confirmingShare = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
     if (shareFailed) {
         AlertDialog(
             onDismissRequest = { shareFailed = false },
-            text = { Text("This photo couldn't be shared.") },
-            confirmButton = { TextButton(onClick = { shareFailed = false }) { Text("OK") } },
+            text = { Text(stringResource(R.string.photo_share_failed)) },
+            confirmButton = { TextButton(onClick = { shareFailed = false }) { Text(stringResource(R.string.ok)) } },
         )
     }
 
     Column(Modifier.fillMaxSize().background(Backdrop)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Close", tint = OnBackdrop) }
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = OnBackdrop) }
             Text(
-                if (files.size == 1) "Photo" else "Photo · ${pager.currentPage + 1} of ${files.size}",
+                if (files.size == 1) stringResource(R.string.photo) else stringResource(R.string.photo_title_of, (pager.currentPage + 1).asNumber(), files.size.asNumber()),
                 Modifier.weight(1f).semantics { heading() },
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = OnBackdrop,
                 textAlign = TextAlign.Center,
             )
-            IconButton(onClick = { confirmingShare = true }) { Icon(Icons.Outlined.Share, contentDescription = "Share photo", tint = OnBackdrop) }
+            IconButton(onClick = { confirmingShare = true }) { Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.photo_share), tint = OnBackdrop) }
         }
         // Swiping moves between photos only while the one on screen isn't zoomed in.
         HorizontalPager(state = pager, userScrollEnabled = !zoomed, modifier = Modifier.weight(1f)) { page ->
             ZoomablePhoto(
                 fileName = files[page],
-                description = "Photo ${page + 1} of ${files.size}",
+                description = stringResource(R.string.photo_of, (page + 1).asNumber(), files.size.asNumber()),
                 loader = loader,
                 onZoomChange = { if (page == pager.currentPage) zoomed = it },
             )
