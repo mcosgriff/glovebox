@@ -683,12 +683,20 @@ fun VehicleDetailsScreen(
                     Card {
                         maker.documents.forEachIndexed { i, doc ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            val code = doc.edition?.let { stringResource(R.string.maker_doc_code_edition, doc.code, it) } ?: doc.code
                             val res = LocalResources.current
+                            val vinLabel = stringResource(R.string.details_vin)
                             LinkRow(
                                 title = stringResource(doc.titleRes),
-                                detail = stringResource(if (doc.viaNhtsa) R.string.maker_doc_from_nhtsa else R.string.maker_doc_from, maker.make, code),
+                                detail = when {
+                                    doc.vinLookup -> stringResource(if (v.vin != null) R.string.maker_doc_vin_lookup else R.string.maker_doc_vin_lookup_none, maker.make)
+                                    else -> {
+                                        val code = doc.code.orEmpty().let { c -> doc.edition?.let { stringResource(R.string.maker_doc_code_edition, c, it) } ?: c }
+                                        stringResource(if (doc.viaNhtsa) R.string.maker_doc_from_nhtsa else R.string.maker_doc_from, maker.make, code)
+                                    }
+                                },
                                 onClick = {
+                                    // The VIN never goes in the link: it is copied, marked sensitive, for the owner to paste on the maker's page.
+                                    if (doc.vinLookup) v.vin?.let { copyText(context, vinLabel, it, sensitive = true) }
                                     if (!context.openWebPage(doc.url)) Toast.makeText(context, res.getString(R.string.licences_no_browser, doc.url), Toast.LENGTH_LONG).show()
                                 },
                             )

@@ -201,8 +201,16 @@ The links live in `app/src/main/assets/maker-documents/<make>-<model>.json`, rea
 ] }
 ```
 
-- **`kind`** is `owners-manual`, `maintenance-guide` or `fluid-chart`.
+- **`kind`** is `owners-manual`, `maintenance-guide`, `warranty` or `fluid-chart`.
 - **`code`** is the document's own code, or NHTSA's id for a filed copy.
+- **`vinLookup: true`** marks a maker's page that finds the document by VIN (Volkswagen's digital
+  manuals), and then there is no `code`. **The VIN never goes in the link.** Tapping the row copies it,
+  marked sensitive, and the owner pastes it on the maker's page.
+  - Volkswagen's page gets the manual in two steps: it sends the VIN to
+    `api.ownersmanualvw.com/bbo-token/token/create/<VIN>/lang/en-us` for a token, then opens
+    `www.ownersmanualvw.com/#/vin/<VIN>/token/<TOKEN>/lang/en-us`.
+  - Building that link would mean the app sending the VIN to Volkswagen, which the network rule
+    forbids.
 - **One document of a kind per year**, unless the maker splits a year. Then each has an `edition` in
   the maker's words.
 - **Links go only to a host in `MakerDocuments.hosts`** (the makers' own servers and
@@ -212,7 +220,7 @@ The links live in `app/src/main/assets/maker-documents/<make>-<model>.json`, rea
 | Vehicle | Owner's manual | Maintenance guide | Fluid chart |
 |---|---|---|---|
 | 4Runner 2017–2024 | Each year's, as Toyota's endpoint lists it | `T-MMS-<yy>4Runner`, each year | — |
-| GTI 2010–2014 | None: Volkswagen's are VIN-only | 2010 (all-models card), 2012, 2014, from NHTSA | 2013, 2014, from NHTSA |
+| GTI 2010–2014 | 2012–2014: Volkswagen's VIN lookup (its digital manuals run 2012–2022, per the owner; 2011 has none) | 2010–2013: Volkswagen's all-model maintenance cards from its owners-literature site; 2014: the GTI card filed with NHTSA. Warranty booklets 2010, 2012, 2013 | 2013, 2014, from NHTSA |
 
 **The 4Runner's 2022 manuals.** Toyota lists two:
 - `OM35B72U`, "through Oct. 2021 production" (PDF made 18 Oct 2021)
@@ -221,6 +229,11 @@ The links live in `app/src/main/assets/maker-documents/<make>-<model>.json`, rea
 Those dates suggest the labels may be the wrong way round. The two differ mainly in a steering lock
 section that only B65 has. Both are linked with Toyota's own labels, and every figure in the 2022–2024
 "What it takes" list is the same in both.
+
+Volkswagen's owners-literature site lists its documents through undocumented endpoints (not a
+published API; may change). `…/owners-literature-service/v1/documents?model-year=<y>&model-code=5K1`
+lists them; importer `444` is the USA. `…/v1/document/<id>` serves a PDF, which is the address VW's own
+pages link to. 2014 lists nothing for `5K1`, so that year keeps the NHTSA copy.
 
 ## Not yet done
 

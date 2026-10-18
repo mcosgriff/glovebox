@@ -1384,14 +1384,18 @@
     <!-- The maker's own documents, linked from Vehicle details (MakerDocumentsUi) -->
     <string name="details_section_maker">FROM THE MAKER</string>
     <string name="maker_doc_owners_manual">Owner\'s manual</string>
-    <string name="maker_doc_maintenance_guide">Warranty &amp; maintenance guide</string>
+    <string name="maker_doc_maintenance_guide">Maintenance guide</string>
+    <string name="maker_doc_warranty">Warranty booklet</string>
     <string name="maker_doc_fluid_chart">Fluid capacity chart</string>
     <!-- %1$s is the make, %2$s the document's code ("OM35B48U"). -->
     <string name="maker_doc_from">%1$s · %2$s</string>
     <string name="maker_doc_from_nhtsa">%1$s, filed with NHTSA · %2$s</string>
     <!-- %1$s is the document's code, %2$s which of a year's documents it is, in the maker's words ("through Oct. 2021 production"). -->
     <string name="maker_doc_code_edition">%1$s, %2$s</string>
-    <string name="details_maker_note">These open in your browser, from the maker\'s own site or NHTSA\'s copy of what the maker filed. Glovebox sends nothing about your vehicle.</string>
+    <!-- A maker's page that finds the manual by VIN. %1$s is the make. -->
+    <string name="maker_doc_vin_lookup">%1$s · find it by VIN; yours is copied when you tap</string>
+    <string name="maker_doc_vin_lookup_none">%1$s · find it by VIN</string>
+    <string name="details_maker_note">These open in your browser, from the maker\'s own site or NHTSA\'s copy of what the maker filed. Glovebox sends nothing about your vehicle: where the maker asks for the VIN, you paste it in yourself.</string>
 
     <!-- What it takes from a maker's manual that ships with the app (KnownTakesUi) -->
     <!-- %1$s is the vehicle as the list names it: "2017–2020 4Runner". -->

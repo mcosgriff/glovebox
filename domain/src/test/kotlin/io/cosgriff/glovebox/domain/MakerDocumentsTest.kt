@@ -40,14 +40,18 @@ class MakerDocumentsTest {
     }
 
     @Test
-    fun `the GTI has only what Volkswagen filed with NHTSA`() {
-        fun kinds(year: Int) = MakerDocuments.forVehicle(bundled, year, "VOLKSWAGEN", "GTI")?.documents.orEmpty().map { it.kind }
-        assertEquals(listOf(MakerDocumentKind.MAINTENANCE_GUIDE), kinds(2010))
-        assertEquals(emptyList<MakerDocumentKind>(), kinds(2011))
-        assertEquals(listOf(MakerDocumentKind.MAINTENANCE_GUIDE), kinds(2012))
-        assertEquals(listOf(MakerDocumentKind.FLUID_CHART), kinds(2013))
-        assertEquals(listOf(MakerDocumentKind.MAINTENANCE_GUIDE, MakerDocumentKind.FLUID_CHART), kinds(2014))
-        assertTrue(MakerDocuments.forVehicle(bundled, 2014, "Volkswagen", "GTI")!!.documents.all { it.viaNhtsa })
+    fun `the GTI has Volkswagen's own cards and booklets, and its manual lookup from 2012`() {
+        fun docs(year: Int) = MakerDocuments.forVehicle(bundled, year, "VOLKSWAGEN", "GTI")!!.documents
+        fun kinds(year: Int) = docs(year).map { it.kind }
+        val (manual, guide, warranty, chart) = MakerDocumentKind.entries
+        assertEquals(listOf(guide, warranty), kinds(2010))
+        assertEquals(listOf(guide), kinds(2011)) // Volkswagen has no digital manual or warranty booklet for 2011
+        assertEquals(listOf(manual, guide, warranty), kinds(2012))
+        assertEquals(listOf(manual, guide, warranty, chart), kinds(2013))
+        assertEquals(listOf(manual, guide, chart), kinds(2014))
+        // The manual is found on Volkswagen's site by VIN, which never goes in the link.
+        for (year in 2012..2014) assertTrue(docs(year).first().vinLookup && docs(year).first().code == null)
+        assertTrue(docs(2011).single().url.startsWith("https://ownersliterature.vw.com/"))
     }
 
     @Test
@@ -56,6 +60,10 @@ class MakerDocumentsTest {
         assertTrue(MakerDocuments.parse(doc("https://static.nhtsa.gov/odi/tsbs/2012/x.pdf")) is MakerDocumentFile.Ok)
         assertTrue(errors(doc("http://static.nhtsa.gov/x.pdf")).any { "https" in it })
         assertTrue(errors(doc("https://manuals.example.test/x.pdf")).any { "manuals.example.test" in it })
+        // A VIN lookup page has no code; a document must have one.
+        val lookup = file("""[{ "kind": "owners-manual", "years": { "from": 2001, "to": 2001 }, "vinLookup": true, "url": "https://www.vw.com/x.html" }]""")
+        assertTrue(MakerDocuments.parse(lookup) is MakerDocumentFile.Ok)
+        assertTrue(errors(file("""[{ "kind": "owners-manual", "years": { "from": 2001, "to": 2001 }, "url": "https://www.vw.com/x.html" }]""")).any { "code" in it })
     }
 
     @Test

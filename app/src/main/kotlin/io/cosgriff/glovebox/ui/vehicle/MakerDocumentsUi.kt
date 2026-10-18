@@ -40,5 +40,6 @@ val MakerDocument.titleRes: Int
     get() = when (kind) {
         MakerDocumentKind.OWNERS_MANUAL -> R.string.maker_doc_owners_manual
         MakerDocumentKind.MAINTENANCE_GUIDE -> R.string.maker_doc_maintenance_guide
+        MakerDocumentKind.WARRANTY -> R.string.maker_doc_warranty
         MakerDocumentKind.FLUID_CHART -> R.string.maker_doc_fluid_chart
     }

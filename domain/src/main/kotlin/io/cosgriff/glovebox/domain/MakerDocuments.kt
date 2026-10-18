@@ -2,11 +2,13 @@ package io.cosgriff.glovebox.domain
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import java.net.URI
 import java.net.URISyntaxException
 
 /** What a maker's document is; `app` names each. */
-enum class MakerDocumentKind { OWNERS_MANUAL, MAINTENANCE_GUIDE, FLUID_CHART }
+enum class MakerDocumentKind { OWNERS_MANUAL, MAINTENANCE_GUIDE, WARRANTY, FLUID_CHART }
 
 /**
  * One of a maker's own documents for a model and run of years, where the maker publishes it: the
@@ -17,13 +19,21 @@ data class MakerDocument(
     val kind: MakerDocumentKind,
     val years: IntRange,
     val url: String,
-    /** The document's own code ("OM35B48U"), or NHTSA's id for a copy filed there: what to quote to find it again. */
-    val code: String,
+    /**
+     * The document's own code ("OM35B48U"), or NHTSA's id for a copy filed there: what to quote to find
+     * it again. Null only for a [vinLookup].
+     */
+    val code: String?,
     /**
      * Which of two documents for one year this is, in the maker's words, where the maker splits a
      * year ("through Oct. 2021 production"); passed through as it comes. Null where there is one.
      */
     val edition: String? = null,
+    /**
+     * The link is the maker's page that finds the document by VIN, not the document: Volkswagen's
+     * digital manuals. Glovebox copies the VIN for the owner to paste there and never puts it in the link.
+     */
+    val vinLookup: Boolean = false,
 ) {
     /** A copy the maker filed with NHTSA, rather than one on the maker's own site. */
     val viaNhtsa: Boolean get() = URI(url).host == "static.nhtsa.gov"
@@ -48,11 +58,12 @@ object MakerDocuments {
      * Where a link may point: the makers' own publication servers and NHTSA's copies of what makers
      * file with it. A new maker's host is added here, which a test checks every file against.
      */
-    val hosts = setOf("assets.sipb.toyota.com", "static.nhtsa.gov")
+    val hosts = setOf("assets.sipb.toyota.com", "www.vw.com", "ownersliterature.vw.com", "static.nhtsa.gov")
 
     private val kinds = mapOf(
         "owners-manual" to MakerDocumentKind.OWNERS_MANUAL,
         "maintenance-guide" to MakerDocumentKind.MAINTENANCE_GUIDE,
+        "warranty" to MakerDocumentKind.WARRANTY,
         "fluid-chart" to MakerDocumentKind.FLUID_CHART,
     )
 
@@ -70,7 +81,7 @@ object MakerDocuments {
         val documents = o["documents"]?.let { d ->
             check.array(d, "documents", 1, 100)?.mapIndexedNotNull { i, e ->
                 val path = ImportCheck.at("documents", i)
-                check.obj(e, path, setOf("kind", "years", "url", "code", "edition"), required = setOf("kind", "years", "url", "code"))?.let { doc ->
+                check.obj(e, path, setOf("kind", "years", "url", "code", "edition", "vinLookup"), required = setOf("kind", "years", "url"))?.let { doc ->
                     val kind = doc["kind"]?.let { check.choice(it, ImportCheck.at(path, "kind"), kinds) }
                     val years = doc["years"]?.let { y ->
                         check.obj(y, ImportCheck.at(path, "years"), setOf("from", "to"), required = setOf("from", "to"))?.let { r ->
@@ -91,7 +102,13 @@ object MakerDocuments {
                     }
                     val code = doc["code"]?.let { check.string(it, ImportCheck.at(path, "code"), 40) }
                     val edition = doc["edition"]?.let { check.string(it, ImportCheck.at(path, "edition"), 60) }
-                    if (kind != null && years != null && url != null && code != null && ("edition" !in doc || edition != null)) MakerDocument(kind, years, url, code, edition) else null
+                    val lookup = doc["vinLookup"]?.let { v ->
+                        (v as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull
+                            ?: null.also { check.fail(ImportCheck.at(path, "vinLookup"), "must be true or false, without quotes") }
+                    } == true
+                    // A document is quoted by its code; a lookup page has none of its own.
+                    if (lookup == ("code" in doc)) check.fail(ImportCheck.at(path, "code"), if (lookup) "isn't given for a VIN lookup page" else "is required")
+                    if (kind != null && years != null && url != null && (lookup || code != null) && ("edition" !in doc || edition != null)) MakerDocument(kind, years, url, code, edition, lookup) else null
                 }
             }
         }.orEmpty()

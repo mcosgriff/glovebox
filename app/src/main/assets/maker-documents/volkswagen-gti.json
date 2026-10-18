@@ -3,13 +3,31 @@
   "model": "GTI",
   "documents": [
     {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2012,
+        "to": 2014
+      },
+      "vinLookup": true,
+      "url": "https://www.vw.com/en/owners-and-services/about-my-vehicle/owners-manuals.html"
+    },
+    {
       "kind": "maintenance-guide",
       "years": {
         "from": 2010,
         "to": 2010
       },
-      "code": "MC-10156104",
-      "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10156104-9999.pdf"
+      "code": "USA5R503621",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/de8b259f-8d11-4511-8754-d2a1cda75fc1"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2011,
+        "to": 2011
+      },
+      "code": "USA5R504821",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/ce283b19-b48b-41b2-baab-a1f04c81af4f"
     },
     {
       "kind": "maintenance-guide",
@@ -17,8 +35,17 @@
         "from": 2012,
         "to": 2012
       },
-      "code": "MC-10072614",
-      "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10072614-5448.pdf"
+      "code": "USA5R505021",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/903e84e8-1ae4-4437-9640-90a1a8a31586"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2013,
+        "to": 2013
+      },
+      "code": "USA5R505321",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/8db4252c-5991-4f79-a654-5c725d09bdf8"
     },
     {
       "kind": "maintenance-guide",
@@ -28,6 +55,33 @@
       },
       "code": "MC-10155950",
       "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10155950-9999.pdf"
+    },
+    {
+      "kind": "warranty",
+      "years": {
+        "from": 2010,
+        "to": 2010
+      },
+      "code": "103.5W5.WAM.23",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/6f895a20-0597-4e41-affc-457b4eab4880"
+    },
+    {
+      "kind": "warranty",
+      "years": {
+        "from": 2012,
+        "to": 2012
+      },
+      "code": "122.5U3.WAR.23",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/3f6b5423-1bec-4749-8301-1e7203a2c8ae"
+    },
+    {
+      "kind": "warranty",
+      "years": {
+        "from": 2013,
+        "to": 2013
+      },
+      "code": "1325U3WAR23",
+      "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/f0ebfd2a-5a08-49bd-85a4-a085db2d9b73"
     },
     {
       "kind": "fluid-chart",

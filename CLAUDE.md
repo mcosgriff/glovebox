@@ -830,6 +830,9 @@ Notes on what's built:
   `MakerDocuments.hosts` (the makers' own servers and `static.nhtsa.gov`), and a year has one document
   of a kind unless the maker splits it by `edition` (the 4Runner's 2022 manual, by production date).
   Which code is which year comes from the maker's own data (Toyota's `downloadableManuals` endpoint).
+  A row with `vinLookup` (Volkswagen's digital manuals, 2012 on) opens the maker's VIN page and copies the
+  VIN, marked sensitive, for the owner to paste: **the VIN never goes in a link and the app never sends it
+  to a maker** (Volkswagen's manual link needs a token got by sending the VIN, so it isn't built).
 - License plate (schema v24, `vehicles.plate`, `.plateRegion`, `LicensePlates` in `:domain`): a row under the
   nickname on Vehicle details opens a dialog with the plate (capitals, letters, digits, spaces and dashes,
   `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the
