@@ -143,6 +143,8 @@ androidComponents {
 
 dependencies {
     implementation(project(":data"))
+    // TEST ONLY (#246): proves dependency review refuses this. Never merge.
+    implementation("org.apache.commons:commons-text:1.9")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
