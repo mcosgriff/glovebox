@@ -103,8 +103,12 @@ These were checked on 2026-10-18. A URL marked *fetched* was downloaded and foun
 
 Manuals rarely print their model year.
 
-- **Toyota:** take the document code from a catalogue that lists one per year, then check it against
-  the PDF's creation date ([known-specs.md](known-specs.md)).
+- **Toyota:** toyota.com's Warranty & Owner's Manuals page fills its list from an undocumented JSON
+  endpoint (not a published API; may change), `https://www.toyota.com/service/tcom/downloadableManuals/<model>/<year>`
+  (`4runner`). It gives each year's owner's manual with its code ("Toyota 2019 4Runner Owner's Manual
+  (OM35B48U)") and the Warranty & Maintenance Guide. That is Toyota's own word on which code is which
+  year, and better than the catalogues [known-specs.md](known-specs.md) used. Toyota's links are on
+  `assets.sipb.toyota.com`; `assets.sia.toyota.com` serves the same paths.
 - **Subaru:** the file name has the year: `MSA5M` + `<yy>` + document number + edition, e.g.
   `MSA5M1903B`. The API's title says it too ("2019 Outback Owner's Manual"). Subaru's PDF links are
   signed and expire after a day, so cite the file name and "subaru.com Vehicle Resources", not the
@@ -180,6 +184,43 @@ Left out:
   DSG 02E.
 
 The fluid part numbers are Volkswagen's "for reference only"; the list's note says so.
+
+## Links to the maker's documents
+
+Vehicle details has a "From the maker" card when Glovebox knows where the maker publishes the
+vehicle's documents. It lists the owner's manual, the warranty and maintenance guide and the fluid
+chart, and each opens in the browser. The app fetches nothing; the browser does, as for a recall page.
+
+The links live in `app/src/main/assets/maker-documents/<make>-<model>.json`, read by
+`MakerDocuments`:
+
+```json
+{ "make": "Toyota", "model": "4Runner", "documents": [
+  { "kind": "owners-manual", "years": { "from": 2019, "to": 2019 }, "code": "OM35B48U",
+    "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B48U/pdf/OM35B48U.pdf" }
+] }
+```
+
+- **`kind`** is `owners-manual`, `maintenance-guide` or `fluid-chart`.
+- **`code`** is the document's own code, or NHTSA's id for a filed copy.
+- **One document of a kind per year**, unless the maker splits a year. Then each has an `edition` in
+  the maker's words.
+- **Links go only to a host in `MakerDocuments.hosts`** (the makers' own servers and
+  `static.nhtsa.gov`), over https. A new maker's host is added there.
+- **Link a document only where it is that year's.** Check every URL returns the PDF.
+
+| Vehicle | Owner's manual | Maintenance guide | Fluid chart |
+|---|---|---|---|
+| 4Runner 2017–2024 | Each year's, as Toyota's endpoint lists it | `T-MMS-<yy>4Runner`, each year | — |
+| GTI 2010–2014 | None: Volkswagen's are VIN-only | 2010 (all-models card), 2012, 2014, from NHTSA | 2013, 2014, from NHTSA |
+
+**The 4Runner's 2022 manuals.** Toyota lists two:
+- `OM35B72U`, "through Oct. 2021 production" (PDF made 18 Oct 2021)
+- `OM35B65U`, "from Nov. 2021 production" (PDF made 2 Jul 2021)
+
+Those dates suggest the labels may be the wrong way round. The two differ mainly in a steering lock
+section that only B65 has. Both are linked with Toyota's own labels, and every figure in the 2022–2024
+"What it takes" list is the same in both.
 
 ## Not yet done
 

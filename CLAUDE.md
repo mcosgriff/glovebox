@@ -823,6 +823,13 @@ Notes on what's built:
   (three lists: the oil approval changed for 2022, the bulbs for 2021) from Toyota's owner's manuals, and
   the Mk6 GTI from Volkswagen's fluid charts filed with NHTSA (2013, 2014; 2010–2012 has only the oil
   capacity, from VW's job aid), since VW's manuals for those years are VIN-only.
+- Maker's documents (`MakerDocuments` in `:domain`, `MakerDocumentsUi.kt` in app, `assets/maker-documents/`,
+  `docs/known-takes.md`): Vehicle details' "From the maker" card links each covered year's owner's
+  manual, warranty and maintenance guide and fluid chart, which **open in the browser; the app fetches
+  nothing** (the privacy screen's "When you leave the app" says so). Links may only point at a host in
+  `MakerDocuments.hosts` (the makers' own servers and `static.nhtsa.gov`), and a year has one document
+  of a kind unless the maker splits it by `edition` (the 4Runner's 2022 manual, by production date).
+  Which code is which year comes from the maker's own data (Toyota's `downloadableManuals` endpoint).
 - License plate (schema v24, `vehicles.plate`, `.plateRegion`, `LicensePlates` in `:domain`): a row under the
   nickname on Vehicle details opens a dialog with the plate (capitals, letters, digits, spaces and dashes,
   `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the

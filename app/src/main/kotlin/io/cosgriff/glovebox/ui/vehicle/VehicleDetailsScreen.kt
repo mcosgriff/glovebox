@@ -18,6 +18,11 @@ import androidx.compose.foundation.combinedClickable
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.domain.TakesItem
+import androidx.compose.ui.platform.LocalResources
+import kotlinx.coroutines.flow.flow
+import io.cosgriff.glovebox.ui.about.openWebPage
+import io.cosgriff.glovebox.domain.MakerDocuments
+import io.cosgriff.glovebox.domain.MakerDocumentList
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.horizontalScroll
@@ -197,12 +202,18 @@ class VehicleDetailsViewModel @Inject constructor(
     private val archiver: VehicleArchiver,
     private val units: UnitDao,
     private val knownTakes: KnownTakesRows,
+    makerDocuments: MakerDocumentCatalog,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
 
     /** A maker's list for this vehicle's "What it takes", and the rows filled from one still to check. */
     val known: StateFlow<TakesKnown> = knownTakes.observe(vehicles.observe(vehicleId))
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TakesKnown())
+
+    /** The maker's own manual and guides for this vehicle's make, model and year, to open in the browser. */
+    val makerDocs: StateFlow<MakerDocumentList?> = combine(vehicles.observe(vehicleId), flow { emit(makerDocuments.lists()) }) { v, lists ->
+        v?.let { MakerDocuments.forVehicle(lists, it.year, it.make, it.model) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
 
@@ -347,6 +358,7 @@ fun VehicleDetailsScreen(
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
     val takes = v.whatItTakes()
     val known by vm.known.collectAsStateWithLifecycle()
+    val makerDocs by vm.makerDocs.collectAsStateWithLifecycle()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
@@ -663,6 +675,31 @@ fun VehicleDetailsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+
+            makerDocs?.let { maker ->
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(stringResource(R.string.details_section_maker))
+                    Card {
+                        maker.documents.forEachIndexed { i, doc ->
+                            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            val code = doc.edition?.let { stringResource(R.string.maker_doc_code_edition, doc.code, it) } ?: doc.code
+                            val res = LocalResources.current
+                            LinkRow(
+                                title = stringResource(doc.titleRes),
+                                detail = stringResource(if (doc.viaNhtsa) R.string.maker_doc_from_nhtsa else R.string.maker_doc_from, maker.make, code),
+                                onClick = {
+                                    if (!context.openWebPage(doc.url)) Toast.makeText(context, res.getString(R.string.licences_no_browser, doc.url), Toast.LENGTH_LONG).show()
+                                },
+                            )
+                        }
+                    }
+                    Text(
+                        stringResource(R.string.details_maker_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             Card {

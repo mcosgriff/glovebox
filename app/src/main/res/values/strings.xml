@@ -1381,6 +1381,18 @@
         <item quantity="other">%1$s fasteners you have already filled in are left as they are.</item>
     </plurals>
 
+    <!-- The maker's own documents, linked from Vehicle details (MakerDocumentsUi) -->
+    <string name="details_section_maker">FROM THE MAKER</string>
+    <string name="maker_doc_owners_manual">Owner\'s manual</string>
+    <string name="maker_doc_maintenance_guide">Warranty &amp; maintenance guide</string>
+    <string name="maker_doc_fluid_chart">Fluid capacity chart</string>
+    <!-- %1$s is the make, %2$s the document's code ("OM35B48U"). -->
+    <string name="maker_doc_from">%1$s · %2$s</string>
+    <string name="maker_doc_from_nhtsa">%1$s, filed with NHTSA · %2$s</string>
+    <!-- %1$s is the document's code, %2$s which of a year's documents it is, in the maker's words ("through Oct. 2021 production"). -->
+    <string name="maker_doc_code_edition">%1$s, %2$s</string>
+    <string name="details_maker_note">These open in your browser, from the maker\'s own site or NHTSA\'s copy of what the maker filed. Glovebox sends nothing about your vehicle.</string>
+
     <!-- What it takes from a maker's manual that ships with the app (KnownTakesUi) -->
     <!-- %1$s is the vehicle as the list names it: "2017–2020 4Runner". -->
     <string name="known_takes_fill">Fill in from the manual for the %1$s</string>
@@ -1716,7 +1728,7 @@
     </string-array>
     <string name="privacy_leaving">When you leave the app</string>
     <string-array name="privacy_leaving">
-        <item>A manufacturer\'s recall page, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.</item>
+        <item>A manufacturer\'s recall page, a maker\'s manual or guide, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.</item>
         <item>Opening a document in another app, sharing a document or photo, or saving a file hands a copy to the app you choose.</item>
     </string-array>
     <string name="privacy_permissions">Permissions</string>

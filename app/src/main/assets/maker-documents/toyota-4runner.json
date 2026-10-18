@@ -1,0 +1,161 @@
+{
+  "make": "Toyota",
+  "model": "4Runner",
+  "documents": [
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2017,
+        "to": 2017
+      },
+      "code": "OM35B37U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B37U/pdf/OM35B37U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2018,
+        "to": 2018
+      },
+      "code": "OM35B46U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B46U/pdf/OM35B46U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2019,
+        "to": 2019
+      },
+      "code": "OM35B48U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B48U/pdf/OM35B48U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2020,
+        "to": 2020
+      },
+      "code": "OM35B54U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B54U/pdf/OM35B54U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2021,
+        "to": 2021
+      },
+      "code": "OM35B41U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B41U/pdf/OM35B41U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2022,
+        "to": 2022
+      },
+      "code": "OM35B72U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B72U/pdf/OM35B72U.pdf",
+      "edition": "through Oct. 2021 production"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2022,
+        "to": 2022
+      },
+      "code": "OM35B65U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B65U/pdf/OM35B65U.pdf",
+      "edition": "from Nov. 2021 production"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2023,
+        "to": 2023
+      },
+      "code": "OM35B73U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35B73U/pdf/OM35B73U.pdf"
+    },
+    {
+      "kind": "owners-manual",
+      "years": {
+        "from": 2024,
+        "to": 2024
+      },
+      "code": "OM35C03U",
+      "url": "https://assets.sipb.toyota.com/publications/en/om-s/OM35C03U/pdf/OM35C03U.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2017,
+        "to": 2017
+      },
+      "code": "T-MMS-174Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-174Runner/pdf/T-MMS-174Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2018,
+        "to": 2018
+      },
+      "code": "T-MMS-184Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-184Runner/pdf/T-MMS-184Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2019,
+        "to": 2019
+      },
+      "code": "T-MMS-194Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-194Runner/pdf/T-MMS-194Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2020,
+        "to": 2020
+      },
+      "code": "T-MMS-204Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-204Runner/pdf/T-MMS-204Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2021,
+        "to": 2021
+      },
+      "code": "T-MMS-214Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-214Runner/pdf/T-MMS-214Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2022,
+        "to": 2022
+      },
+      "code": "T-MMS-224Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-224Runner/pdf/T-MMS-224Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2023,
+        "to": 2023
+      },
+      "code": "T-MMS-234Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-234Runner/pdf/T-MMS-234Runner.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2024,
+        "to": 2024
+      },
+      "code": "T-MMS-244Runner",
+      "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-244Runner/pdf/T-MMS-244Runner.pdf"
+    }
+  ]
+}

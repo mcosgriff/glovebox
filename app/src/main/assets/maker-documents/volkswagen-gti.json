@@ -1,0 +1,51 @@
+{
+  "make": "Volkswagen",
+  "model": "GTI",
+  "documents": [
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2010,
+        "to": 2010
+      },
+      "code": "MC-10156104",
+      "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10156104-9999.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2012,
+        "to": 2012
+      },
+      "code": "MC-10072614",
+      "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10072614-5448.pdf"
+    },
+    {
+      "kind": "maintenance-guide",
+      "years": {
+        "from": 2014,
+        "to": 2014
+      },
+      "code": "MC-10155950",
+      "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10155950-9999.pdf"
+    },
+    {
+      "kind": "fluid-chart",
+      "years": {
+        "from": 2013,
+        "to": 2013
+      },
+      "code": "MC-10156237",
+      "url": "https://static.nhtsa.gov/odi/tsbs/2012/MC-10156237-9999.pdf"
+    },
+    {
+      "kind": "fluid-chart",
+      "years": {
+        "from": 2014,
+        "to": 2014
+      },
+      "code": "MC-10155821",
+      "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10155821-9999.pdf"
+    }
+  ]
+}
