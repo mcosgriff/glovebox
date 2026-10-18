@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/mcosgriff/glovebox/compare/v0.12.0...v0.13.0) (2026-10-18)
+
+
+### Features
+
+* fill "What it takes" from a maker's manual, and link the maker's documents ([#277](https://github.com/mcosgriff/glovebox/issues/277)) ([6dbe1e1](https://github.com/mcosgriff/glovebox/commit/6dbe1e13fb52ea29d1bf392b376ce7bf247877ae))
+
 ## [0.12.0](https://github.com/mcosgriff/glovebox/compare/v0.11.1...v0.12.0) (2026-10-18)
 
 
