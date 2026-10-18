@@ -6,6 +6,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Started by dependabot-verification.yml after it pushes updated verification metadata to a
+  # Dependabot branch: a push made with GITHUB_TOKEN doesn't start workflows by itself.
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -21,6 +21,19 @@ Keep them green; lint errors fail the build.
 - `./gradlew :domain:test` — fast pure-Kotlin tests (reminder engine, torque, VIN). Run often.
 - `./gradlew build` — everything, including the database migration tests (`:data`).
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
+- **Dependency verification** (#246): every jar, POM and plugin Gradle downloads must match
+  `gradle/verification-metadata.xml` (a SHA-256 each, or a trusted PGP key for the group; keys in
+  `gradle/verification-keyring.keys`), or the build fails, locally and in CI. After changing a dependency
+  or plugin by hand, run
+  `./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache build :app:assembleDebugAndroidTest :baselineprofile:assemble`
+  and commit both files (not `verification-keyring.gpg`, which is ignored). `--refresh-dependencies` matters:
+  with a warm cache Gradle records less than CI's cold one fetches (a BOM's `.pom` beside its `.module`). It adds what the change
+  resolves to and keeps old entries; read the diff, since it is the list of what is now trusted. Those
+  tasks cover every configuration CI and `release.yml` use. Dependabot's Gradle PRs get the same command
+  from `dependabot-verification.yml`, which commits the result to the PR and starts CI on it. Old entries
+  pile up: to prune, delete both files and run the command again. Tesseract4Android (JitPack) has no
+  signature, so only its checksum vouches for it; **never accept a changed checksum for a version that
+  was already in the file.**
 - On-device tests (`app/src/androidTest`): the text reader (`TextReaderTest`) and **`EndToEndTest`**, the app
   driven with UI Automator from first launch through the maker's schedule, "Log it", a mileage update, an
   encrypted backup and its restore. It finds things only by the words on screen, turns airplane mode on
@@ -94,6 +107,11 @@ Keep them green; lint errors fail the build.
   (or one listed there that the APK no longer asks for). A new permission means updating that list and the
   Privacy screen's "Permissions" lines together. The release's notes carry the result and the report is
   attached to it, which is what the README's "trackers: 0" badge rests on.
+  **A PR is also checked by GitHub's dependency review** (`dependencies.yml`, #246): a dependency it adds
+  to the release classpaths with a known vulnerability, or a licence not in
+  `.github/dependency-review-config.yml`'s GPL-3.0-compatible list, fails it. A new dependency whose
+  licence GitHub can't name is added there by name, with its licence text in `assets/licences/`.
+  OpenSSF Scorecard (`scorecard.yml`) reports on the repository's practices weekly and blocks nothing.
 - **Barcodes are read with zxing-cpp, not ML Kit** (#161; before that, Java ZXing). ML Kit's bundled barcode
   library depends on Google's log-upload transport (`transport-backend-cct`, `transport-runtime`) plus
   Firebase and Play Services pieces, which breaks the rule above; asked again on 2026-10-15 after a failed
