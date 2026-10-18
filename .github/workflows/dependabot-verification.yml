@@ -52,6 +52,7 @@ jobs:
             build :app:assembleDebugAndroidTest :baselineprofile:assemble \
             || echo "::warning::The build failed; the metadata was written anyway. CI will show the failure."
           rm -f gradle/verification-keyring.gpg
+          python3 .github/scripts/verification-tidy.py
 
       - id: diff
         run: |

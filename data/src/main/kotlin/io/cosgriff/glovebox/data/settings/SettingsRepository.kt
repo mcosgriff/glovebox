@@ -51,6 +51,11 @@ data class Settings(
     val backupRemindedOn: LocalDate? = null,
     /** The VIN scanner shows what it is reading (the band, any barcode found, the print), for a scan that won't take. */
     val scannerDetails: Boolean = false,
+    /**
+     * The home-screen widget is offered (#238). Off by default: it shows vehicles and their next service
+     * outside the app lock. The widget's receiver is switched on and off with it.
+     */
+    val homeWidget: Boolean = false,
 ) {
     /** [lead] for a vehicle that counts in [unit]: this is what every reminder calculation takes. */
     fun leadFor(unit: DistanceUnit): LeadTime = lead.forUnit(unit, from = distanceUnit)
@@ -83,13 +88,15 @@ class SettingsRepository(private val context: Context) {
         val backupReminder = booleanPreferencesKey("backup_reminder")
         val backupReminded = longPreferencesKey("backup_reminded_on")
         val scannerDetails = booleanPreferencesKey("scanner_details")
+        val homeWidget = booleanPreferencesKey("home_widget")
     }
 
     // Facts about this phone, not choices: they mean nothing on the phone a backup is restored to.
     private val deviceOnly = setOf(Keys.lastBackup.name, Keys.backupReminded.name, Keys.welcomeSeen.name)
 
     // This phone's own security choices. A backup made on a phone with the lock off must not switch it off here.
-    private val keptOnRestore = setOf(Keys.biometric.name, Keys.lockAfter.name, Keys.hideRecents.name)
+    // The widget is one of them: it shows the garage without unlocking.
+    private val keptOnRestore = setOf(Keys.biometric.name, Keys.lockAfter.name, Keys.hideRecents.name, Keys.homeWidget.name)
 
     /**
      * Puts back settings read from a backup: name to value, as [raw] wrote them. Security settings
@@ -137,6 +144,7 @@ class SettingsRepository(private val context: Context) {
             lastBackupOn = p[Keys.lastBackup]?.let(LocalDate::ofEpochDay),
             backupReminder = p[Keys.backupReminder] ?: d.backupReminder,
             scannerDetails = p[Keys.scannerDetails] ?: d.scannerDetails,
+            homeWidget = p[Keys.homeWidget] ?: d.homeWidget,
             backupRemindedOn = p[Keys.backupReminded]?.let(LocalDate::ofEpochDay),
         )
     }
@@ -177,4 +185,5 @@ class SettingsRepository(private val context: Context) {
     suspend fun setBackupReminder(on: Boolean) = context.dataStore.edit { it[Keys.backupReminder] = on }
     suspend fun setBackupReminded(date: LocalDate) = context.dataStore.edit { it[Keys.backupReminded] = date.toEpochDay() }
     suspend fun setScannerDetails(on: Boolean) = context.dataStore.edit { it[Keys.scannerDetails] = on }
+    suspend fun setHomeWidget(on: Boolean) = context.dataStore.edit { it[Keys.homeWidget] = on }
 }

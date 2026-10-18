@@ -328,6 +328,8 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 // Opened over the Garage tab, so Back from either lands there.
                 is Destination.Recalls -> nav.push(RecallsRoute(to.vehicleId))
                 is Destination.UpdateMileage -> nav.push(VehicleHomeRoute(to.vehicleId, updateMileage = true))
+                // Not stacked on itself when the app was already showing that vehicle.
+                is Destination.VehicleHome -> nav.push(VehicleHomeRoute(to.vehicleId), singleTop = true)
                 Destination.Backup -> nav.push(BackupRoute, singleTop = true)
                 Destination.AddVehicle -> nav.push(AddVehicleRoute, singleTop = true)
             }

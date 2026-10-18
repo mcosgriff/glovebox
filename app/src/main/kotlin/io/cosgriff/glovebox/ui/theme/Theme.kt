@@ -18,7 +18,8 @@ import io.cosgriff.glovebox.data.settings.ThemeMode
 
 // Tokens from the Glovebox design canvas. Dynamic (wallpaper) color is intentionally off.
 
-private val Light = lightColorScheme(
+/** The canvas colours; also read by the home-screen widget, which has no MaterialTheme. */
+internal val LightScheme = lightColorScheme(
     primary = Color(0xFFC2410C),
     onPrimary = Color(0xFFFFFFFF),
     inversePrimary = Color(0xFFF08A4B), // snackbar actions sit on a dark bar
@@ -44,7 +45,7 @@ private val Light = lightColorScheme(
     errorContainer = Color(0xFFFDE8E7),
 )
 
-private val Dark = darkColorScheme(
+internal val DarkScheme = darkColorScheme(
     primary = Color(0xFFF08A4B),
     onPrimary = Color(0xFF17191C),
     inversePrimary = Color(0xFFC2410C),
@@ -126,17 +127,18 @@ fun GloveboxTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () ->
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = GloveboxTypography) {
+    MaterialTheme(colorScheme = if (dark) DarkScheme else LightScheme, typography = GloveboxTypography) {
         CompositionLocalProvider(LocalStatusColors provides statusColors(), content = content)
     }
 }
 
 @Composable
-fun statusColors(): StatusColors {
-    val dark = MaterialTheme.colorScheme.background == Dark.background
-    return if (dark) {
+fun statusColors(): StatusColors = statusColors(dark = MaterialTheme.colorScheme.background == DarkScheme.background)
+
+/** The same, outside composition: the home-screen widget picks by the phone's own light or dark. */
+fun statusColors(dark: Boolean): StatusColors =
+    if (dark) {
         StatusColors(overdue = Color(0xFFF59E6B), soon = Color(0xFFC4C1BA), ok = Color(0xFF5EEAD4))
     } else {
         StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
     }
-}

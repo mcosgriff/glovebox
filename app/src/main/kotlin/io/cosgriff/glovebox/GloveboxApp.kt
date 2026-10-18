@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.ui.garage.GarageOverview
+import io.cosgriff.glovebox.widget.GarageWidgets
+import io.cosgriff.glovebox.widget.WidgetView
+import kotlinx.coroutines.flow.collectLatest
 import io.cosgriff.glovebox.data.DataWipe
 import android.app.Application
 import android.os.Process
@@ -21,6 +25,9 @@ class GloveboxApp : Application() {
     @Inject lateinit var notifier: Notifier
     @Inject lateinit var scheduler: NoticeScheduler
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var widgets: GarageWidgets
+    // Lazy: nothing reads the garage for the widget while it is off.
+    @Inject lateinit var garage: dagger.Lazy<GarageOverview>
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -40,6 +47,15 @@ class GloveboxApp : Application() {
         scope.launch {
             settings.settings.map { it.notices to it.recallCadence }.distinctUntilChanged().collect { (notices, recalls) ->
                 scheduler.sync(notices, recalls)
+            }
+        }
+        // The home-screen widget (#238) follows its switch on every launch, so a restore, a wipe or a
+        // reinstall can't leave it offered while the setting says off. While it is on, it is redrawn
+        // whenever what it shows changes: a record, a reading, the schedule, a setting, a restore.
+        scope.launch {
+            settings.settings.map { it.homeWidget }.distinctUntilChanged().collectLatest { on ->
+                widgets.follow(on)
+                if (on) garage.get().garage.map(WidgetView::of).distinctUntilChanged().collect { widgets.refresh() }
             }
         }
     }

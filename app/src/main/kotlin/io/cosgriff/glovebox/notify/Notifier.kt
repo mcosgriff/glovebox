@@ -31,6 +31,9 @@ sealed interface Destination {
     /** The vehicle's home with the Update mileage sheet open. */
     data class UpdateMileage(val vehicleId: Long) : Destination
 
+    /** The vehicle's home. Not from a notification: where a row of the home-screen widget leads (#238). */
+    data class VehicleHome(val vehicleId: Long) : Destination
+
     /** The Encrypted backup screen. */
     data object Backup : Destination
 
@@ -42,6 +45,7 @@ sealed interface Destination {
             Reminders -> "reminders"
             is Recalls -> "recalls"
             is UpdateMileage -> "mileage"
+            is VehicleHome -> "vehicle"
             Backup -> "backup"
             AddVehicle -> "add"
         })
@@ -49,6 +53,7 @@ sealed interface Destination {
             Reminders, Backup, AddVehicle -> 0L
             is Recalls -> vehicleId
             is UpdateMileage -> vehicleId
+            is VehicleHome -> vehicleId
         })
     }
 
@@ -63,6 +68,7 @@ sealed interface Destination {
                 "reminders" -> Reminders
                 "recalls" -> Recalls(vehicle)
                 "mileage" -> UpdateMileage(vehicle)
+                "vehicle" -> VehicleHome(vehicle)
                 "backup" -> Backup
                 "add" -> AddVehicle
                 else -> null
