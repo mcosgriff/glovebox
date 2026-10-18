@@ -39,6 +39,12 @@ internal val LightScheme = lightColorScheme(
     surfaceVariant = Color(0xFFE9E7E0),
     onSurfaceVariant = Color(0xFF5A5F66),
     surfaceContainer = Color(0xFFFFFFFF),
+    // Named so nothing falls back to Material's lavender: dialogs and date pickers (High), switch tracks and
+    // filled fields (Highest), sheets (Low).
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF4F3EF),
+    surfaceContainerHigh = Color(0xFFFFFFFF),
+    surfaceContainerHighest = Color(0xFFE9E7E0),
     outline = Color(0xFFB9B6AE),
     outlineVariant = Color(0xFFDEDCD5),
     error = Color(0xFFB42318),
@@ -65,6 +71,10 @@ internal val DarkScheme = darkColorScheme(
     surfaceVariant = Color(0xFF24282D),
     onSurfaceVariant = Color(0xFFA5A9AF),
     surfaceContainer = Color(0xFF1C1F23),
+    surfaceContainerLowest = Color(0xFF121416),
+    surfaceContainerLow = Color(0xFF121416),
+    surfaceContainerHigh = Color(0xFF24282D),
+    surfaceContainerHighest = Color(0xFF2E3338),
     outline = Color(0xFF4A4F55),
     outlineVariant = Color(0xFF2E3338),
     error = Color(0xFFF97066),

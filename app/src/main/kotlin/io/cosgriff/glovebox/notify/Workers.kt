@@ -21,6 +21,7 @@ import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -189,23 +190,42 @@ class PendingDestination @Inject constructor() {
         if (destination != null) _destination.value = destination
     }
 
-    /** Taken exactly once, by the nav host. */
+    /** Taken exactly once. */
     fun take(): Destination? = _destination.value.also { _destination.value = null }
+
+    /** Done with [destination]; false, and nothing cleared, when a newer one has arrived since. */
+    fun clear(destination: Destination): Boolean = _destination.compareAndSet(destination, null)
 }
 
-/** Hands the nav host a tapped notification's destination, dropping it if its vehicle is gone or sold. */
+/** A destination with what the nav host needs to act on it straight away, without waiting on the database. */
+data class Arrival(val to: Destination, val activeVehicleIds: List<Long> = emptyList())
+
+/** Hands the nav host a tapped notification's or shortcut's destination, dropping it if its vehicle is gone or sold. */
 @dagger.hilt.android.lifecycle.HiltViewModel
 class DestinationViewModel @Inject constructor(private val holder: PendingDestination, private val vehicles: VehicleDao) : androidx.lifecycle.ViewModel() {
     val pending = holder.destination
 
-    suspend fun take(): Destination? {
-        val to = holder.take() ?: return null
-        val vehicleId = when (to) {
-            Destination.Reminders, Destination.Backup, Destination.AddVehicle -> return to
-            is Destination.Recalls -> to.vehicleId
-            is Destination.UpdateMileage -> to.vehicleId
-            is Destination.VehicleHome -> to.vehicleId
+    /**
+     * The waiting destination, looked up and then cleared, in that order: the lock can take the nav host away
+     * while the lookup waits on the database (a tap while the app is in the background), which cancels it, and
+     * the destination has to still be waiting when the host comes back after unlocking. Null when there is none
+     * or its vehicle has gone, or when a newer one arrived meanwhile (it comes next). The caller acts on the
+     * result without suspending.
+     */
+    suspend fun take(): Arrival? {
+        val to = holder.destination.value ?: return null
+        val arrival = when (to) {
+            Destination.Reminders, Destination.Backup, Destination.AddVehicle -> Arrival(to)
+            is Destination.Shortcut -> Arrival(to, vehicles.active().map { it.id })
+            is Destination.Recalls -> Arrival(to).takeIf { inGarage(to.vehicleId) }
+            is Destination.UpdateMileage -> Arrival(to).takeIf { inGarage(to.vehicleId) }
+            is Destination.VehicleHome -> Arrival(to).takeIf { inGarage(to.vehicleId) }
         }
-        return to.takeIf { vehicles.byId(vehicleId)?.archivedOn == null && vehicles.byId(vehicleId) != null }
+        return arrival.takeIf { holder.clear(to) }
     }
+
+    private suspend fun inGarage(vehicleId: Long) = vehicles.byId(vehicleId)?.let { it.archivedOn == null } == true
+
+    /** The vehicles a shortcut can be for, kept current while the user chooses one: those in the garage, not sold ones. */
+    val activeVehicles = vehicles.observeActive()
 }

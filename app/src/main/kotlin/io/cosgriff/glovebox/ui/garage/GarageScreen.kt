@@ -98,6 +98,7 @@ class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: Rec
 
 @Composable
 fun GarageScreen(
+    showing: Boolean,
     onAddVehicle: () -> Unit,
     onOpenVehicle: (vehicleId: Long) -> Unit,
     onSeeReminders: () -> Unit,
@@ -108,11 +109,13 @@ fun GarageScreen(
     val garage = vm.garage.collectAsStateWithLifecycle().value ?: return // first frame while loading
 
     // With a single vehicle the list has nothing to choose from, so the app opens on that vehicle.
-    // Once only: "All vehicles" still comes back here, which is where a second one gets added.
+    // Once only: "All vehicles" still comes back here, which is where a second one gets added. Only while
+    // the list is what shows: a notification or shortcut that opened something over it on a cold start
+    // used the launch up, and Back from there comes to the list.
     var checkedSingle by rememberSaveable { mutableStateOf(false) }
     // Not saved: stays set while this screen animates out, and is fresh again on the way back.
     var leaving by remember { mutableStateOf(false) }
-    val skipList = !checkedSingle && garage.vehicles.size == 1
+    val skipList = !checkedSingle && showing && garage.vehicles.size == 1
     // Keyed on the decision, not run once: coming back, the list can show its last count for a frame
     // before the new one arrives. An empty garage doesn't use the skip up, so the first vehicle, once
     // added and set up, is opened too.

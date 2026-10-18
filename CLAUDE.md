@@ -187,7 +187,8 @@ draws through RemoteViews, which can't use bundled fonts, so it is in the system
 and is listed on the licences screen by hand in `LicenceCatalog`, since fonts aren't Maven dependencies.
 Accent text on the soft-orange tint is `onPrimaryContainer`, not `primary` (4.4:1 in light, below the
 4.5:1 text needs); `primary` there is fine for icons and large figures. Colours that Material doesn't name
-come from `statusColors()`. In dark the urgent pill is solid (`onPrimaryContainer` behind dark text).
+come from `statusColors()`. Every `surfaceContainer…` role is set in `Theme.kt` (dialogs and date pickers
+use High, sheets Low): one left out falls back to Material's lavender. In dark the urgent pill is solid (`onPrimaryContainer` behind dark text).
 Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehicle name / DELETE).
 
 ## Screens (canvas board → status)
@@ -219,7 +220,7 @@ history" row opens the same page with that vehicle chosen and no vehicle choice,
 screen; the user's own table is built and edited there, and saved from there as an import file). Known
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 Documents (a vehicle's paperwork, from Vehicle details). Fill "What it takes" from a maker's manual
-(a bundled list, rows tagged DOUBLE-CHECK until checked).
+(a bundled list, rows tagged DOUBLE-CHECK until checked). Launcher shortcuts (Log service, Update mileage).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -579,7 +580,9 @@ Notes on what's built:
   tracked job has something to count from;** with work still to log the badge on vehicle home and the
   garage chip say "N to log" (`ComingUp.attention`, `Attention.toLog`), after anything overdue or due soon.
 - The garage list is skipped once per launch when there is exactly one vehicle (`GarageScreen`); "All
-  vehicles" still returns to it, which is where another vehicle is added.
+  vehicles" still returns to it, which is where another vehicle is added. Only while the list is what
+  shows (`showing`): a notification or shortcut that opened a screen over it on a cold start uses the
+  launch up, or the skip would land on top of that screen.
 - Update mileage adds an `odometer_readings` row dated today, with Undo on the snackbar. The sheet's
   preview comes from `MileageUpdate.preview`. A reading further above the last one than a vehicle is
   driven in the time (`MileageReadings.farAhead`: over 10,000 miles and over 150 a day) turns Save into
@@ -706,6 +709,17 @@ Notes on what's built:
   working copy is deleted either way. Android's PDF writer stores photos without JPEG compression, so
   they go in at 1,000 px and the sheet's size figure is an estimate (`RecordPhotos.PDF_BYTES_PER_PHOTO`).
   An export is not encrypted, and every recall or schedule table carries a note saying what it is.
+- Launcher shortcuts (#235, `res/xml/shortcuts.xml`, `ShortcutActivity`): Log service and Update mileage,
+  static, with generic labels (a launcher shows them, and Kvaesitso's search finds them by their long
+  labels, without Glovebox unlocked), so **no per-vehicle dynamic or pinned shortcuts**. They open
+  `ShortcutActivity`, never `MainActivity`: Android starts a static shortcut with `CLEAR_TASK`, which would
+  end the running app and lose a half-filled form, so that trampoline has a task of its own
+  (`taskAffinity=""`) and forwards a `Destination.Shortcut` the way a notification does. The nav host
+  then opens the only active vehicle's Log service or update-mileage sheet, asks which one
+  (`ChooseVehicleDialog`, year, make and model with the nickname under it) when there are several, and
+  shows the garage when there are none; the welcome on a fresh install drops it. A shortcut names its
+  app by package, so the debug build has its own copy in `src/debug/res/xml/`; `ShortcutsTest` holds the
+  two the same and every `ShortcutTask` covered.
 - Home-screen widget (#238, `widget/GarageWidget.kt`, Glance; `HomeWidget` in `:domain`): each active
   vehicle (at most five, then "N more") with its garage chip and "Next:" line. **It works nothing out:**
   rows come from `GarageOverview`, worded by the same `Attention.label` and `ComingUp.nextLine`
@@ -734,7 +748,12 @@ Notes on what's built:
 - A notification carries a `Destination` on its intent. `MainActivity` puts it in `PendingDestination`
   and the nav host, which only exists once the app is unlocked, takes it from there, so nothing is drawn
   before unlock. Collect that flow; don't key an effect on it (taking it clears it, and a keyed effect
-  cancels its own vehicle lookup on a cold start). Each kind has its own channel, and the lock-screen
+  cancels its own vehicle lookup on a cold start). `DestinationViewModel.take` does its database lookup
+  **before** clearing it, and the nav host acts on the result without suspending: a tap while the app is
+  in the background reaches a host the lock is about to take away, which cancels the lookup, and the
+  destination must still be waiting after unlock. A task begun by such an intent has it at its root, which
+  the launcher's doesn't match, so a later tap on the icon would stack a second `MainActivity`; that copy
+  finishes at once in `onCreate` (`!isTaskRoot` and a launcher intent). Each kind has its own channel, and the lock-screen
   version of a notification says only what kind it is.
 - Backup: the file format is specified in `docs/backup-format.md` and implemented in
   `data/.../backup/BackupFormat.kt`, plain JVM code with its tests in `BackupFormatTest`. Change the two

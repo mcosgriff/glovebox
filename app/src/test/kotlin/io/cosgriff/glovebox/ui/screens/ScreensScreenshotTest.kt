@@ -5,6 +5,9 @@ import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.WrittenFile
+import io.cosgriff.glovebox.notify.ShortcutTask
+import io.cosgriff.glovebox.ui.ChooseVehicleDialog
+import io.cosgriff.glovebox.ui.asChoice
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageContent
 import io.cosgriff.glovebox.ui.history.HistoryContent
@@ -67,6 +70,17 @@ class ScreensScreenshotTest(private val shade: Shade) {
             onReadDash = {},
             dashReading = null,
             onDashReadingUsed = {},
+        )
+    }
+
+    // A launcher shortcut with several vehicles (#235); the third has no nickname.
+    @Test
+    fun chooseVehicle() = compose.shootScreen("choose_vehicle", shade) {
+        ChooseVehicleDialog(
+            ShortcutTask.LOG_SERVICE,
+            listOf(Fixtures.truck, Fixtures.hatch, Fixtures.truck.copy(id = 3, year = 2021, nickname = null)).map { it.asChoice() },
+            onChoose = {},
+            onDismiss = {},
         )
     }
 

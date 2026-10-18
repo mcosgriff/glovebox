@@ -1632,6 +1632,15 @@
     <string name="notifications_widget_note">Each vehicle\'s next service on your home screen. It shows without unlocking Glovebox.</string>
     <string name="notifications_widget_add">Add to home screen</string>
     <string name="notifications_widget_from_launcher">Add it from your launcher\'s widget list.</string>
+    <!-- Launcher shortcuts (#235). The launcher shows them, and its search finds them, without Glovebox
+         being unlocked, so they name no vehicle. The long labels are also what a launcher's search matches. -->
+    <string name="shortcut_log_short">Log service</string>
+    <string name="shortcut_log_long">Log a service</string>
+    <string name="shortcut_mileage_short">Update mileage</string>
+    <string name="shortcut_mileage_long">Update the mileage</string>
+    <!-- Asked when a shortcut is used with several vehicles in the garage. -->
+    <string name="choose_vehicle_log">Log a service for which vehicle?</string>
+    <string name="choose_vehicle_mileage">Update the mileage of which vehicle?</string>
     <string name="widget_description">Each vehicle\'s next service</string>
     <!-- A row's vehicle with its nickname: "Big Red · 2008 Ford F-150". -->
     <string name="widget_name_nicknamed">%1$s · %2$s</string>

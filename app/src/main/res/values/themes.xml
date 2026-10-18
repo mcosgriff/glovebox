@@ -5,4 +5,7 @@
     </style>
     <color name="ground">#F4F3EF</color>
     <color name="launcher_background">#C2410C</color>
+    <!-- Launcher shortcut icons (#235): accent on accent-soft, as the canvas draws an icon on a tint. -->
+    <color name="shortcut_background">#FBE9DF</color>
+    <color name="shortcut_glyph">#C2410C</color>
 </resources>

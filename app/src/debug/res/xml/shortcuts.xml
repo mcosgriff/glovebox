@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Launcher shortcuts (#235). The debug build's copy of src/main/res/xml/shortcuts.xml, differing only in the package.
+    Labels name no vehicle: a launcher shows them, and its search finds them, without Glovebox unlocked.
+    Each opens ShortcutActivity, which hands the extra to MainActivity as a Destination.Shortcut; the
+    extra's value is ShortcutTask.kind.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="log_service"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_log"
+        android:shortcutShortLabel="@string/shortcut_log_short"
+        android:shortcutLongLabel="@string/shortcut_log_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.cosgriff.glovebox.debug"
+            android:targetClass="io.cosgriff.glovebox.ShortcutActivity">
+            <extra android:name="glovebox.destination" android:value="log-service" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="update_mileage"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_mileage"
+        android:shortcutShortLabel="@string/shortcut_mileage_short"
+        android:shortcutLongLabel="@string/shortcut_mileage_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.cosgriff.glovebox.debug"
+            android:targetClass="io.cosgriff.glovebox.ShortcutActivity">
+            <extra android:name="glovebox.destination" android:value="update-mileage" />
+        </intent>
+    </shortcut>
+</shortcuts>
