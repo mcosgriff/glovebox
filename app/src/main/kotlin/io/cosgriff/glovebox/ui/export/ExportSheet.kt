@@ -163,7 +163,7 @@ class ExportViewModel @Inject constructor(
         val readings = odometer.readingsFor(v.id).toReadings(swap)
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         return ExportVehicle(
-            title = VehicleText.title(v.year, v.make, v.model, v.trim),
+            title = VehicleText.title(v.year, v.make, v.model, v.trim) ?: AppText.res.getString(R.string.unknown_vehicle),
             nickname = v.nickname,
             vin = v.vin,
             plate = LicensePlates.label(v.plate, v.plateRegion),

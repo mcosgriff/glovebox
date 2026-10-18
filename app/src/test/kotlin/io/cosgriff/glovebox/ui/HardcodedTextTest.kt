@@ -1,0 +1,41 @@
+package io.cosgriff.glovebox.ui
+
+import org.junit.Assert.assertEquals
+import org.junit.Test
+import java.io.File
+
+/**
+ * Android lint's hard-coded-text check only looks at XML layouts, so this does it for the Compose
+ * code: no words typed straight into what the UI shows (#236). Wording goes in `strings.xml`; text
+ * that is only data, such as `"${v.year} ${v.model}"`, is fine.
+ */
+class HardcodedTextTest {
+    private val calls = Regex(
+        """\b(Text|SectionLabel|SectionTitle|FieldLabel|AboutHeader|TopBar|Chip|Tag|Pill|LinkRow|ValueRow|SwitchRow|ChoiceRow|""" +
+            """StatusButton|Source|Group|Choice|Tick|PickField|NumberField|CheckRow|FieldRow|labelled|onMessage|showNote|showMessage)\(\s*"((?:[^"\\]|\\.)*)"""",
+    )
+    private val named = Regex(
+        """\b(contentDescription|onClickLabel|onLongClickLabel|label|title|subtitle|caption|note|detail|placeholder|why|instead|""" +
+            """emptyNote|supporting|hint|caution|text)\s*=\s*"((?:[^"\\]|\\.)*)"""",
+    )
+
+    @Test
+    fun `no words are typed straight into the UI`() {
+        val found = File("src/main/kotlin").walk().filter { it.extension == "kt" }.flatMap { file ->
+            file.readLines().withIndex().flatMap { (i, line) ->
+                val code = line.substringBefore("//").trim()
+                if (code.startsWith("*") || code.startsWith("import ")) emptyList()
+                else (calls.findAll(code) + named.findAll(code))
+                    .map { it.groupValues[2] }
+                    .filter { words(it) }
+                    .map { "${file.path}:${i + 1}: \"$it\"" }
+                    .toList()
+            }
+        }.toList()
+        assertEquals("Move these into strings.xml:\n" + found.joinToString("\n"), emptyList<String>(), found)
+    }
+
+    /** Letters left once the interpolated data is taken out. */
+    private fun words(literal: String): Boolean =
+        literal.replace(Regex("""\$\{[^}]*\}|\$\w+"""), "").any { it.isLetter() }
+}

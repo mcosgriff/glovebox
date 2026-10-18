@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.domain.KnownSpecs
@@ -90,7 +91,7 @@ fun SpecEditorSheet(
     val reference = spec?.source?.let(TorqueSource::of) == TorqueSource.REFERENCE
     var checked by rememberSaveable { mutableStateOf(false) }
 
-    val torque = TorqueSpecs.parse(torqueText, entryUnit)
+    val torque = TorqueSpecs.parse(torqueText.typedDecimal(), entryUnit)
     val torqueBad = torqueText.isNotBlank() && torque == null
     val cleanName = VehicleText.clean(name, VehicleText.MAX_SPEC)
 

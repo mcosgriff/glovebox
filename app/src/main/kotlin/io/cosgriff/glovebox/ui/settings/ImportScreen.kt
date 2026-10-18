@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.CarfaxRefusal
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import io.cosgriff.glovebox.ui.service.pluralWord
@@ -1063,6 +1064,20 @@ private fun ErrorsCard(file: ImportFile.Invalid) {
         SectionLabel(stringResource(R.string.import_cant))
         Card {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                file.carfax?.let { why ->
+                    Text(
+                        when (why) {
+                            CarfaxRefusal.NotAReport -> stringResource(R.string.carfax_not_a_report)
+                            is CarfaxRefusal.NoVisits ->
+                                if (why.withoutMileage == 0) {
+                                    stringResource(R.string.carfax_no_visits)
+                                } else {
+                                    pluralStringResource(R.plurals.carfax_no_visits_without_mileage, why.withoutMileage, why.withoutMileage.asNumber())
+                                }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 file.errors.forEach { e ->
                     Column {
                         if (e.path.isNotEmpty()) Text(e.path, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold, color = scheme.error)
