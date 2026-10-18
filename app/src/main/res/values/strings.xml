@@ -1589,6 +1589,20 @@
     <string name="notifications_how_early">How early to remind</string>
     <string name="notifications_note">Mileage reminders only work if the odometer is current, so we\'ll ask you for a quick reading on a schedule. The time of day is approximate: Android runs background checks when it suits the battery.</string>
 
+    <!-- The home-screen widget (#238): its switch on Notifications, and the widget itself. -->
+    <string name="notifications_widget">Home-screen widget</string>
+    <string name="notifications_widget_note">Each vehicle\'s next service on your home screen. It shows without unlocking Glovebox.</string>
+    <string name="notifications_widget_add">Add to home screen</string>
+    <string name="notifications_widget_from_launcher">Add it from your launcher\'s widget list.</string>
+    <string name="widget_description">Each vehicle\'s next service</string>
+    <!-- A row's vehicle with its nickname: "Big Red · 2008 Ford F-150". -->
+    <string name="widget_name_nicknamed">%1$s · %2$s</string>
+    <string name="widget_empty">No vehicles yet. Tap to open Glovebox.</string>
+    <plurals name="widget_more">
+        <item quantity="one">%1$s more vehicle in Glovebox</item>
+        <item quantity="other">%1$s more vehicles in Glovebox</item>
+    </plurals>
+
     <!-- Backup and restore (BackupScreen, RestoreSheet) -->
     <string name="backup_saved">Backup saved</string>
     <string name="backup_last">Last backup: %1$s</string>
@@ -1656,6 +1670,7 @@
         <item>The database, photos and documents are encrypted with keys held by Android Keystore.</item>
         <item>Documents open inside Glovebox. A PDF is drawn by a part of the app that runs walled off from the rest, with no network and no files of its own, and it is read from memory, not from a copy on the phone.</item>
         <item>Android\'s own cloud backup and device-to-device transfer are switched off for this app. The only copy that can leave is a backup file you make yourself.</item>
+        <item>The home-screen widget is off unless you switch it on in Notifications. While it is on, your vehicles\' names and their next service show on the home screen without unlocking Glovebox.</item>
     </string-array>
     <string name="privacy_sent">What is sent, and to whom</string>
     <string-array name="privacy_sent">

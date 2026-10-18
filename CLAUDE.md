@@ -26,7 +26,9 @@ Keep them green; lint errors fail the build.
   `gradle/verification-keyring.keys`), or the build fails, locally and in CI. After changing a dependency
   or plugin by hand, run
   `./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache build :app:assembleDebugAndroidTest :baselineprofile:assemble`
-  and commit both files (not `verification-keyring.gpg`, which is ignored). `--refresh-dependencies` matters:
+  then `uv run .github/scripts/verification-tidy.py`, and commit both files (not `verification-keyring.gpg`,
+  which is ignored). The script drops a key listed as ignored (a key server didn't answer on an earlier
+  run) that this run trusts; Gradle keeps both, the ignored one wins, and what it signs fails. `--refresh-dependencies` matters:
   with a warm cache Gradle records less than CI's cold one fetches (a BOM's `.pom` beside its `.module`). It adds what the change
   resolves to and keeps old entries; read the diff, since it is the list of what is now trusted. Those
   tasks cover every configuration CI and `release.yml` use. Dependabot's Gradle PRs get the same command
@@ -157,7 +159,8 @@ accent `#F08A4B` (on-accent `#17191C`), accent-soft `#3A2418`/`#FDBA74`, ok `#5E
 Light mode shows importance with tints (soft orange = needs attention, solid orange = most urgent),
 not black panels. Fonts: IBM Plex Sans + IBM Plex Mono, bundled in `res/font` and set in `Theme.kt`
 (`PlexSans` through `MaterialTheme.typography`, `PlexMono` by name for mileage, VINs, torque and other
-figures). Never use `FontFamily.Monospace`. Their licence (OFL 1.1) is `assets/licences/com.ibm_plex.txt`
+figures). Never use `FontFamily.Monospace`. **The one exception is the home-screen widget** (#238): Glance
+draws through RemoteViews, which can't use bundled fonts, so it is in the system font. Their licence (OFL 1.1) is `assets/licences/com.ibm_plex.txt`
 and is listed on the licences screen by hand in `LicenceCatalog`, since fonts aren't Maven dependencies.
 Accent text on the soft-orange tint is `onPrimaryContainer`, not `primary` (4.4:1 in light, below the
 4.5:1 text needs); `primary` there is fine for icons and large figures. Colours that Material doesn't name
@@ -679,6 +682,20 @@ Notes on what's built:
   working copy is deleted either way. Android's PDF writer stores photos without JPEG compression, so
   they go in at 1,000 px and the sheet's size figure is an estimate (`RecordPhotos.PDF_BYTES_PER_PHOTO`).
   An export is not encrypted, and every recall or schedule table carries a note saying what it is.
+- Home-screen widget (#238, `widget/GarageWidget.kt`, Glance; `HomeWidget` in `:domain`): each active
+  vehicle (at most five, then "N more") with its garage chip and "Next:" line. **It works nothing out:**
+  rows come from `GarageOverview`, worded by the same `Attention.label` and `ComingUp.nextLine`
+  (`GarageWords.kt`) as the garage list, so the two can't disagree. **Off by default**, because it shows
+  the garage outside the app lock: `Settings.homeWidget`, a switch on Notifications (with "Add to home
+  screen" only where `isRequestPinAppWidgetSupported`; Kvaesitso can't pin), kept on restore like the
+  lock settings. The receiver is declared `android:enabled="false"` and `GarageWidgets.follow` sets it
+  from the setting on every launch (`GloveboxApp`), so it isn't in the launcher's picker while off, turning
+  it off removes placed widgets, and Delete all data (which removes the setting) turns it off on the
+  restart. While on, `GloveboxApp` redraws it whenever `GarageOverview`'s garage changes (any record,
+  reading, schedule, setting or restore), and `DailyCheckWorker` once a day for what falls due with the
+  date; `updatePeriodMillis` is 0. A row opens `Destination.VehicleHome` through `PendingDestination`, so
+  the lock comes first; nothing on it acts. System font, canvas colours by the phone's light or dark
+  (`LightScheme` / `DarkScheme`, `statusColors(dark)`), corners from `system_app_widget_background_radius`.
 - Notifications: two WorkManager jobs, kept in step with the settings by `GloveboxApp` through
   `NoticeScheduler`. `DailyCheckWorker` runs at about the chosen time and uses no network; what it says
   is decided by `NoticeRules.daily` (domain): a service is announced once when it enters its lead time,

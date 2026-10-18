@@ -5,6 +5,7 @@ import io.cosgriff.glovebox.ui.service.ahead
 import io.cosgriff.glovebox.ui.service.amount
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
@@ -221,7 +222,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(g.comingUp.nextLine(v.unit), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(g.comingUp.nextLine(LocalResources.current, v.unit), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 Icon(
                     Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
@@ -236,21 +237,12 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
 @Composable
 private fun AttentionChip(a: Attention) {
     val scheme = MaterialTheme.colorScheme
-    val (text, container, content) = when {
-        a.toLog > 0 -> Triple(pluralStringResource(R.plurals.count_to_log, a.toLog, a.toLog.asNumber()), scheme.surfaceVariant, statusColors().soon)
-        else -> when (a.state) {
-        DueState.OVERDUE -> Triple(
-            a.only?.let { stringResource(R.string.item_overdue, it) } ?: pluralStringResource(R.plurals.count_overdue, a.count, a.count.asNumber()),
-            scheme.primary,
-            scheme.onPrimary,
-        )
-        DueState.DUE_SOON -> Triple(
-            a.only?.let { stringResource(R.string.item_due_soon, it) } ?: pluralStringResource(R.plurals.count_due_soon, a.count, a.count.asNumber()),
-            scheme.surfaceVariant,
-            statusColors().soon,
-        )
-        DueState.OK -> Triple(stringResource(R.string.up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
-        }
+    val text = a.label(LocalResources.current)
+    val (container, content) = when {
+        a.toLog > 0 -> scheme.surfaceVariant to statusColors().soon
+        a.state == DueState.OVERDUE -> scheme.primary to scheme.onPrimary
+        a.state == DueState.DUE_SOON -> scheme.surfaceVariant to statusColors().soon
+        else -> scheme.tertiaryContainer to scheme.onTertiaryContainer
     }
     Surface(color = container, shape = CircleShape) {
         Text(
@@ -278,29 +270,6 @@ private fun RecallChip(open: OpenRecalls) {
             fontWeight = FontWeight.SemiBold,
             color = content,
         )
-    }
-}
-
-/** "Next: Oil & filter in 1,688 mi" */
-@Composable
-private fun ComingUp.nextLine(unit: DistanceUnit): String {
-    next?.let { (status, progress) ->
-        val name = status.item.name
-        val h = progress.headline
-        val amount = h.amount(unit)
-        return when {
-            amount != null && h.ahead == true -> stringResource(R.string.garage_next_in, name, amount)
-            amount != null -> stringResource(R.string.garage_next_overdue, name, amount)
-            h is DueHeadline.Miles -> stringResource(R.string.garage_next_due_now, name)
-            h is DueHeadline.Days -> stringResource(R.string.garage_next_due_today, name)
-            h is DueHeadline.Snoozed -> stringResource(R.string.garage_next_snoozed, name, h.snooze.until(unit))
-            else -> stringResource(R.string.garage_next_not_logged, name)
-        }
-    }
-    return when {
-        counting.isNotEmpty() -> stringResource(R.string.garage_nothing_else)
-        notLogged.isNotEmpty() -> pluralStringResource(R.plurals.garage_not_logged, notLogged.size, notLogged.size.asNumber())
-        else -> stringResource(R.string.garage_none_tracked)
     }
 }
 

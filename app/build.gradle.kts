@@ -155,6 +155,8 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.work.runtime)
+    // The home-screen widget (#238). androidx only, no network, no permissions; checked as CLAUDE.md asks.
+    implementation(libs.androidx.glance.appwidget)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(platform(libs.compose.bom))

@@ -58,6 +58,7 @@ interface NotifyEntryPoint {
     fun noticeLog(): NoticeLogStore
     fun recalls(): RecallRepository
     fun notifier(): Notifier
+    fun widgets(): io.cosgriff.glovebox.widget.GarageWidgets
 }
 
 private fun Context.notify(): NotifyEntryPoint = EntryPointAccessors.fromApplication(applicationContext, NotifyEntryPoint::class.java)
@@ -101,6 +102,9 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
             deps.settings().setBackupReminded(today)
             deps.notifier().postBackupReminder(never = settings.lastBackupOn == null)
         }
+
+        // A reminder can fall due with the date alone, which no change in the database announces.
+        if (settings.homeWidget) deps.widgets().refresh()
         return Result.success()
     }
 }
@@ -200,6 +204,7 @@ class DestinationViewModel @Inject constructor(private val holder: PendingDestin
             Destination.Reminders, Destination.Backup, Destination.AddVehicle -> return to
             is Destination.Recalls -> to.vehicleId
             is Destination.UpdateMileage -> to.vehicleId
+            is Destination.VehicleHome -> to.vehicleId
         }
         return to.takeIf { vehicles.byId(vehicleId)?.archivedOn == null && vehicles.byId(vehicleId) != null }
     }

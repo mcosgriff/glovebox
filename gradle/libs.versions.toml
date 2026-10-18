@@ -15,6 +15,7 @@ biometric = "1.1.0"
 fragment = "1.9.1"
 datastore = "1.2.1"
 work = "2.12.0"
+glance = "1.2.0"
 
 room = "3.0.3"
 sqlite = "2.7.1"
@@ -64,6 +65,7 @@ androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "b
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }

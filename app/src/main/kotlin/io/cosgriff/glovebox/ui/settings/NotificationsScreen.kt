@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.settings
 
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.PaddingValues
+import io.cosgriff.glovebox.widget.GarageWidgetReceiver
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import android.appwidget.AppWidgetManager
 import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -90,6 +95,9 @@ class NotificationsViewModel @Inject constructor(private val repo: SettingsRepos
 
     /** The background jobs follow these on their own: the app watches the settings and reschedules. */
     fun change(prefs: NoticePrefs) = viewModelScope.launch { repo.setNotices(prefs) }
+
+    /** The app switches the widget's receiver to follow (GloveboxApp), as it does the background jobs. */
+    fun setHomeWidget(on: Boolean) = viewModelScope.launch { repo.setHomeWidget(on) }
 }
 
 /** Design: 9a · Notifications. */
@@ -225,6 +233,9 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     }
                     HorizontalDivider(color = scheme.outlineVariant)
                     SwitchRow(stringResource(R.string.channel_mileage), stringResource(R.string.notifications_mileage_note), prefs.mileage) { vm.change(prefs.copy(mileage = it)) }
+                    HorizontalDivider(color = scheme.outlineVariant)
+                    SwitchRow(stringResource(R.string.notifications_widget), stringResource(R.string.notifications_widget_note), settings.homeWidget, vm::setHomeWidget)
+                    if (settings.homeWidget) AddWidget()
                 }
             }
 
@@ -272,6 +283,33 @@ private fun SwitchRow(title: String, about: String, checked: Boolean, onChange: 
             Text(about, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
+/**
+ * Where to find the widget once it is on. Android can offer to place it, but not every launcher takes the
+ * request (Kvaesitso doesn't), so the button is only shown where it can work; otherwise a line says where.
+ */
+@Composable
+private fun AddWidget() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val canPin = remember { AppWidgetManager.getInstance(context).isRequestPinAppWidgetSupported }
+    if (canPin) {
+        TextButton(
+            onClick = { scope.launch { GlanceAppWidgetManager(context).requestPinGlanceAppWidget(GarageWidgetReceiver::class.java) } },
+            modifier = Modifier.heightIn(min = 48.dp).padding(bottom = 4.dp),
+            contentPadding = PaddingValues(0.dp),
+        ) {
+            Text(stringResource(R.string.notifications_widget_add))
+        }
+    } else {
+        Text(
+            stringResource(R.string.notifications_widget_from_launcher),
+            Modifier.padding(bottom = 12.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
