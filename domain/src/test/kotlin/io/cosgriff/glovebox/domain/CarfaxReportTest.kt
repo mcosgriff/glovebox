@@ -86,15 +86,15 @@ class CarfaxReportTest {
         assertEquals(listOf(40_000), records(words).map { it.odometer })
         val onlyWithout = report { entry("07/07/2022", null, listOf("Acme Motors"), listOf("Vehicle serviced")) }
         val refused = CarfaxReport.read(onlyWithout, today) as ImportFile.Invalid
-        assertTrue(refused.errors.single().message.contains("1 had no mileage"))
+        assertEquals(CarfaxRefusal.NoVisits(withoutMileage = 1), refused.carfax)
     }
 
     @Test
     fun `a PDF that isn't a Carfax report, or has no visits, is refused with a reason`() {
         val notCarfax = Page(1).apply { at(55f, "Quarterly statement"); y += 20f; entry("06/14/2019", "12,480", listOf("Bank"), listOf("Payment received")) }.words
-        assertTrue((CarfaxReport.read(notCarfax, today) as ImportFile.Invalid).errors.single().message.contains("doesn't look like a Carfax"))
+        assertEquals(CarfaxRefusal.NotAReport, (CarfaxReport.read(notCarfax, today) as ImportFile.Invalid).carfax)
         val noVisits = report { entry("04/02/2019", null, listOf("Ohio", "Motor Vehicle Dept."), listOf("Title issued or updated")) }
-        assertTrue((CarfaxReport.read(noVisits, today) as ImportFile.Invalid).errors.single().message.contains("No service visits"))
+        assertTrue((CarfaxReport.read(noVisits, today) as ImportFile.Invalid).carfax is CarfaxRefusal.NoVisits)
     }
 
     @Test

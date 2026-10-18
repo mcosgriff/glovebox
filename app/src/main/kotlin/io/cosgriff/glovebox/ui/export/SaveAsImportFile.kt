@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,21 +43,20 @@ fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: S
         val text = file.text
         AlertDialog(
             onDismissRequest = { asking = null },
-            title = { Text(if (text == null) "Nothing here can go in a file" else if (file.leftOut.size == 1) "1 can't go in the file" else "${file.leftOut.size} can't go in the file") },
+            title = { Text(if (text == null) stringResource(R.string.save_file_nothing) else pluralStringResource(R.plurals.save_file_left_out, file.leftOut.size, file.leftOut.size.asNumber())) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     file.leftOut.forEach { left ->
                         Column {
                             Text(left.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                            Text(left.why.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                            Text(left.why.replaceFirstChar { it.uppercase(AppText.locale) }, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         }
                     }
                     Text(
                         if (text == null) {
-                            "An import file is stricter than this screen. Change these and try again."
+                            stringResource(R.string.save_file_stricter)
                         } else {
-                            "An import file is stricter than this screen. The other ${if (file.count == 1) "one" else file.count.toString()} can be saved without " +
-                                (if (file.leftOut.size == 1) "it" else "them") + ", or change these first."
+                            pluralStringResource(R.plurals.save_file_rest, file.leftOut.size, pluralStringResource(R.plurals.save_file_others, file.count, file.count.asNumber()))
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
@@ -66,10 +70,10 @@ fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: S
                             asking = null
                             onSave(text)
                         },
-                    ) { Text("Save the rest") }
+                    ) { Text(stringResource(R.string.save_file_rest_button)) }
                 }
             },
-            dismissButton = { TextButton(onClick = { asking = null }) { Text(if (text == null) "OK" else "Cancel") } },
+            dismissButton = { TextButton(onClick = { asking = null }) { Text(stringResource(if (text == null) R.string.ok else R.string.cancel)) } },
         )
     }
 
@@ -82,7 +86,7 @@ fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: S
             },
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         ) {
-            Text("Save as an import file", fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.save_file_button), fontWeight = FontWeight.SemiBold)
         }
         Text(caption, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }

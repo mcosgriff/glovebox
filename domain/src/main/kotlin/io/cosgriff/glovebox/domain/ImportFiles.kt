@@ -125,7 +125,6 @@ object FileDistances {
     fun history(items: List<ImportedRecord>, from: DistanceUnit, to: DistanceUnit): List<ImportedRecord> =
         if (from == to) items else items.map { it.copy(odometer = DistanceConversion.convert(it.odometer, from, to, DistanceKind.MEASURED)) }
 
-    /** Said under a preview when the file's unit isn't the vehicle's: what the page lists is what will be saved, not what the file says. */
-    fun convertedNote(from: DistanceUnit, to: DistanceUnit): String? =
-        "This file is in ${from.plural}. The figures here are what will be saved, in ${to.plural}.".takeIf { from != to }
+    /** Whether a file's figures are converted on the way in: the Import page then says that what it lists is what will be saved, not what the file says. */
+    fun converts(from: DistanceUnit, to: DistanceUnit): Boolean = from != to
 }

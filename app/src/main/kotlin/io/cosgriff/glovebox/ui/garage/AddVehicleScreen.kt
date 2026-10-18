@@ -524,7 +524,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(d.vin, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
                     Text(
-                        if (identified) VehicleText.title(vm.year ?: 0, vm.make, vm.model, trim = null) else stringResource(R.string.add_vehicle_enter_ymm),
+                        VehicleText.title(vm.year ?: 0, vm.make, vm.model, trim = null)?.takeIf { identified } ?: stringResource(R.string.add_vehicle_enter_ymm),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (identified) scheme.onSurface else scheme.primary,

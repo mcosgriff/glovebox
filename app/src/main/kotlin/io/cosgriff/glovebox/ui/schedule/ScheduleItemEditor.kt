@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.ruleInSentence
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -67,7 +68,6 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.IntervalInput
 import io.cosgriff.glovebox.domain.ServiceCatalog
-import java.util.Locale
 
 /**
  * Edits one schedule item. Stateless towards the database: the caller decides what Save means,
@@ -97,11 +97,11 @@ fun ScheduleItemEditor(
     var monthsText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.months.asText()) }
     var firstText by remember(item.key) { mutableStateOf(item.firstAt.asText()) }
     // Blank is "one interval in, like any other"; otherwise a whole distance above zero.
-    val firstTyped = firstText.filterNot { it == ',' || it.isWhitespace() }.let { if (it.isEmpty()) null else it.toIntOrNull()?.takeIf { n -> n > 0 } }
+    val firstTyped = firstText.typedNumber().filterNot { it == ',' || it.isWhitespace() }.let { if (it.isEmpty()) null else it.toIntOrNull()?.takeIf { n -> n > 0 } }
     val firstBad = firstText.isNotBlank() && firstTyped == null
     var showErrors by remember(item.key) { mutableStateOf(false) }
 
-    val typed = IntervalInput.parse(milesText, monthsText)
+    val typed = IntervalInput.parse(milesText.typedNumber(), monthsText.typedNumber())
 
     fun load(interval: Interval) {
         milesText = interval.miles.asText()
@@ -488,4 +488,4 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
 
 private fun DueRule.label(): String = ruleLabel()
 
-private fun Int?.asText(): String = this?.let { String.format(Locale.US, "%,d", it) }.orEmpty()
+private fun Int?.asText(): String = this?.asNumber().orEmpty()

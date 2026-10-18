@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.offsetLabel
@@ -67,8 +68,8 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
 
     val on = LocalDate.ofEpochDay(day)
     // The old cluster had miles on it or there would be nothing to offset; a new one may start at zero.
-    val oldReading = ClusterSwaps.parseReading(oldText)?.takeIf { it > 0 }
-    val newReading = ClusterSwaps.parseReading(newText)
+    val oldReading = ClusterSwaps.parseReading(oldText.typedNumber())?.takeIf { it > 0 }
+    val newReading = ClusterSwaps.parseReading(newText.typedNumber())
     val problems = ClusterSwaps.problems(on, oldReading, newReading, LocalDate.now())
     val same = SwapProblem.SAME_READING in problems
 

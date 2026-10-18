@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.ruleInSentence
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -473,9 +474,9 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
     val update = { m: String, d: String ->
         miles = m
         days = d
-        LeadTimeInput.parse(m, d)?.let(onChange)
+        LeadTimeInput.parse(m.typedNumber(), d.typedNumber())?.let(onChange)
     }
-    val valid = LeadTimeInput.parse(miles, days) != null
+    val valid = LeadTimeInput.parse(miles.typedNumber(), days.typedNumber()) != null
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionTitle(stringResource(R.string.rules_remind_early))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -484,7 +485,7 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
                 onValueChange = { update(it, days) },
                 label = { Text(stringResource(R.string.rules_distance_before, unit.titleWord)) },
                 singleLine = true,
-                isError = LeadTimeInput.parse(miles, "0") == null,
+                isError = LeadTimeInput.parse(miles.typedNumber(), "0") == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
             )
@@ -493,7 +494,7 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
                 onValueChange = { update(miles, it) },
                 label = { Text(stringResource(R.string.rules_days_before)) },
                 singleLine = true,
-                isError = LeadTimeInput.parse("0", days) == null,
+                isError = LeadTimeInput.parse("0", days.typedNumber()) == null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
             )
