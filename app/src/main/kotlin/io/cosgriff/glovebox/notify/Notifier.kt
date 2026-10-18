@@ -40,6 +40,12 @@ sealed interface Destination {
     /** Add a vehicle. Not from a notification: where the welcome's first button leads. */
     data object AddVehicle : Destination
 
+    /**
+     * A launcher shortcut (#235, `res/xml/shortcuts.xml`): [task] for a vehicle the shortcut can't name,
+     * so the nav host picks the only one or asks which.
+     */
+    data class Shortcut(val task: ShortcutTask) : Destination
+
     fun putInto(intent: Intent) {
         intent.putExtra(KIND, when (this) {
             Reminders -> "reminders"
@@ -48,9 +54,10 @@ sealed interface Destination {
             is VehicleHome -> "vehicle"
             Backup -> "backup"
             AddVehicle -> "add"
+            is Shortcut -> task.kind
         })
         intent.putExtra(VEHICLE, when (this) {
-            Reminders, Backup, AddVehicle -> 0L
+            Reminders, Backup, AddVehicle, is Shortcut -> 0L
             is Recalls -> vehicleId
             is UpdateMileage -> vehicleId
             is VehicleHome -> vehicleId
@@ -71,10 +78,16 @@ sealed interface Destination {
                 "vehicle" -> VehicleHome(vehicle)
                 "backup" -> Backup
                 "add" -> AddVehicle
-                else -> null
+                else -> ShortcutTask.entries.firstOrNull { it.kind == intent.getStringExtra(KIND) }?.let(::Shortcut)
             }
         }
     }
+}
+
+/** What a launcher shortcut does. [kind] is the extra `res/xml/shortcuts.xml` sets, so it never changes. */
+enum class ShortcutTask(val kind: String) {
+    LOG_SERVICE("log-service"),
+    UPDATE_MILEAGE("update-mileage"),
 }
 
 /**

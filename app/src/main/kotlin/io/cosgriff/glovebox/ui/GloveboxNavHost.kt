@@ -26,6 +26,7 @@ import io.cosgriff.glovebox.ui.settings.ImportScreen
 import io.cosgriff.glovebox.ui.settings.NotificationsScreen
 import io.cosgriff.glovebox.notify.DestinationViewModel
 import io.cosgriff.glovebox.notify.Destination
+import io.cosgriff.glovebox.notify.ShortcutTask
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
@@ -44,6 +45,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -314,16 +317,25 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
         }
     }
 
-    // A tapped notification's destination. This host only exists once the app is unlocked, so nothing
+    // A tapped notification's or launcher shortcut's destination. This host only exists once the app is unlocked, so nothing
     // is shown before then; the destination waits in PendingDestination until it is.
     val destinations: DestinationViewModel = hiltViewModel()
+    // A launcher shortcut's task while the user picks which vehicle it is for. Saved, so it comes back after the lock.
+    var choosingFor by rememberSaveable { mutableStateOf<ShortcutTask?>(null) }
+    val forVehicle: (ShortcutTask, Long) -> Unit = { task, vehicleId ->
+        when (task) {
+            ShortcutTask.LOG_SERVICE -> nav.push(LogServiceRoute(vehicleId))
+            ShortcutTask.UPDATE_MILEAGE -> nav.push(VehicleHomeRoute(vehicleId, updateMileage = true))
+        }
+    }
     LaunchedEffect(Unit) {
         // Collected, not keyed on: taking the destination clears it, and an effect keyed on it would
-        // cancel itself mid-lookup. On a cold start that lookup waits for the database to open.
+        // cancel itself mid-lookup. On a cold start that lookup waits for the database to open. Nothing
+        // here suspends after take(), which clears it only once it has been looked up.
         destinations.pending.collect { waiting ->
             if (waiting == null) return@collect
-            when (val to = destinations.take()) {
-                null -> Unit
+            val arrival = destinations.take() ?: return@collect
+            when (val to = arrival.to) {
                 Destination.Reminders -> nav.switchTo(REMINDERS_TAB)
                 // Opened over the Garage tab, so Back from either lands there.
                 is Destination.Recalls -> nav.push(RecallsRoute(to.vehicleId))
@@ -332,7 +344,27 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 is Destination.VehicleHome -> nav.push(VehicleHomeRoute(to.vehicleId), singleTop = true)
                 Destination.Backup -> nav.push(BackupRoute, singleTop = true)
                 Destination.AddVehicle -> nav.push(AddVehicleRoute, singleTop = true)
+                // No vehicle to do it for: the garage, where one is added (or the sold ones are).
+                is Destination.Shortcut -> when (arrival.activeVehicleIds.size) {
+                    0 -> nav.toGarageList()
+                    1 -> forVehicle(to.task, arrival.activeVehicleIds.single())
+                    else -> choosingFor = to.task
+                }
             }
+        }
+    }
+    choosingFor?.let { task ->
+        val active by destinations.activeVehicles.collectAsStateWithLifecycle(initialValue = null)
+        active?.let { vehicles ->
+            ChooseVehicleDialog(
+                task = task,
+                vehicles = vehicles.map { it.asChoice() },
+                onChoose = { vehicleId ->
+                    choosingFor = null
+                    forVehicle(task, vehicleId)
+                },
+                onDismiss = { choosingFor = null },
+            )
         }
     }
 
@@ -390,6 +422,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
         val destinations = entryProvider<NavKey> {
             screen<GarageRoute> {
                 GarageScreen(
+                    showing = nav.tab == GARAGE_TAB && top == GarageRoute,
                     onAddVehicle = { nav.push(AddVehicleRoute) },
                     onOpenVehicle = { vehicleId -> nav.push(VehicleHomeRoute(vehicleId)) },
                     onOpenArchive = { nav.push(ArchivedVehiclesRoute) },

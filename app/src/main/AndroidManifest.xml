@@ -32,7 +32,20 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Where the launcher shortcuts lead (#235). A task of its own, so the CLEAR_TASK Android starts a
+             static shortcut with doesn't end the running app; it forwards to MainActivity and closes. -->
+        <activity
+            android:name=".ShortcutActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay" />
 
         <!-- Lets the camera app write a new photo, and a share target read one, without either
              getting at anything else in the app's storage. -->

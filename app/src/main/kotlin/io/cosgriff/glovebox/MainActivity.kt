@@ -109,6 +109,13 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A task begun by a notification, the widget or a launcher shortcut has their intent at its root, which
+        // the launcher's own doesn't match, so tapping the icon later would stack a fresh copy of the app on the
+        // running one. This copy closes and the running one shows, as left.
+        if (!isTaskRoot && intent.action == Intent.ACTION_MAIN && intent.hasCategory(Intent.CATEGORY_LAUNCHER)) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
         // Only a fresh launch carries a new tap; a restored activity would replay an old one.
         if (savedInstanceState == null) pendingDestination.set(Destination.from(intent))
@@ -159,6 +166,8 @@ class MainActivity : FragmentActivity() {
                                 firstRun.finish(choice)
                                 // They have just set the lock up; asking for a fingerprint straight away would only get in the way.
                                 appLock.unlock()
+                                // A launcher shortcut used while the welcome showed doesn't follow it (#235): the welcome's choice is where they go.
+                                pendingDestination.take()
                                 when (then) {
                                     WelcomeAction.ADD_VEHICLE -> pendingDestination.set(Destination.AddVehicle)
                                     WelcomeAction.RESTORE -> restorePicker.pick()
@@ -173,7 +182,7 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    /** A notification tapped while the app is already open. */
+    /** A notification or launcher shortcut tapped while the app is already open. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         pendingDestination.set(Destination.from(intent))
