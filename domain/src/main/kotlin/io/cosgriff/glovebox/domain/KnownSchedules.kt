@@ -231,24 +231,4 @@ object KnownSchedules {
 
     /** "Toyota Warranty and Maintenance Guide, 2017–2024 4Runner" */
     fun credit(list: KnownScheduleList): String = "${list.source.name}, ${list.title}"
-
-    /** What is said where the table is offered. */
-    fun tableOffer(list: KnownScheduleList): String =
-        "${count(list.milestones.size, "milestone")}, as the ${list.source.name} lists them. ${list.source.note} " +
-            "It is for reference here: it doesn't create or change a reminder."
-
-    /** What is said where the reminders are offered. */
-    fun intervalOffer(list: KnownScheduleList, plan: KnownIntervalPlan): String =
-        "${count(plan.new.size, "reminder")} from the ${list.source.name}: the jobs its table repeats evenly. ${list.source.note}" +
-            when (plan.kept.size) {
-                0 -> ""
-                1 -> " 1 item of your own with the same name is left as it is."
-                else -> " ${plan.kept.size} items of your own with the same names are left as they are."
-            }
-
-    /** The line kept beside whatever came from a list. */
-    fun startedFrom(credit: String?): String =
-        "Started from the ${credit ?: "maker's maintenance guide"}. Check it against the guide for your own vehicle."
-
-    private fun count(n: Int, noun: String) = if (n == 1) "1 $noun" else "$n ${noun}s"
 }

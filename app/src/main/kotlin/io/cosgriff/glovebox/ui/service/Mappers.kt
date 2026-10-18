@@ -217,6 +217,16 @@ private fun days(n: Long): String = if (n <= 60) {
     (n / 30).toInt().let { AppText.res.getQuantityString(R.plurals.months, it, it.asNumber()) }
 }
 
+/** "whichever comes first": the rule inside a sentence. */
+fun DueRule.ruleInSentence(): String = AppText.res.getString(
+    when (this) {
+        DueRule.WHICHEVER_FIRST -> R.string.rule_whichever_first_sentence
+        DueRule.WHICHEVER_LAST -> R.string.rule_whichever_last_sentence
+        DueRule.MILEAGE_ONLY -> R.string.rule_mileage_only_sentence
+        DueRule.TIME_ONLY -> R.string.rule_time_only_sentence
+    },
+)
+
 fun DueRule.ruleLabel(): String = AppText.res.getString(
     when (this) {
         DueRule.WHICHEVER_FIRST -> R.string.rule_whichever_first

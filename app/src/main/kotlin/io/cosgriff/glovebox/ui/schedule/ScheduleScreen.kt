@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.text
@@ -234,7 +238,7 @@ class ScheduleViewModel @Inject constructor(
             },
             odometer = VehicleReminders.currentOdometer(entries, updates),
             notLogged = statuses.values.count { !it.counting },
-            startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { KnownSchedules.startedFrom(credits[it]) },
+            startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel)
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
@@ -342,7 +346,7 @@ class ScheduleViewModel @Inject constructor(
             s.missing.map {
                 ScheduleItemEntity(
                     vehicleId = vehicleId,
-                    name = it.name,
+                    name = it.label,
                     templateKey = it.key,
                     intervalMiles = it.normal.miles,
                     intervalMonths = it.normal.months,
@@ -441,10 +445,10 @@ fun ScheduleScreen(
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Column(Modifier.padding(start = 8.dp)) {
                 Text(
-                    "Maintenance schedule",
+                    stringResource(R.string.details_schedule),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -464,21 +468,21 @@ fun ScheduleScreen(
             if (state.items.isEmpty()) {
                 Text(
                     if (state.known != null) {
-                        "Nothing is set up for this vehicle yet. Start from the maker's schedule, or add your own items one at a time."
+                        stringResource(R.string.schedule_empty_known)
                     } else {
-                        "Nothing is set up for this vehicle yet. Start from a typical schedule, or add your own items one at a time."
+                        stringResource(R.string.schedule_empty)
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Button(onClick = { onSetUp(v.id) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-                    Text(if (state.known != null) "Start from the maker's schedule" else "Start from a typical schedule")
+                    Text(stringResource(if (state.known != null) R.string.schedule_start_known else R.string.schedule_start_typical))
                 }
                 // An imported table doesn't need a schedule to be worth looking at.
                 if (hasMilestoneTable) MilestonesRow(onClick = { onOpenMilestones(v.id) })
             } else {
                 if (state.items.any { it.severe != null || it.severeOnly }) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        SectionLabel("HOW DO YOU DRIVE IT?")
+                        SectionLabel(stringResource(R.string.schedule_how_driven))
                         DrivingUseSwitch(
                             severe = when (state.use) {
                                 DrivingUse.NORMAL -> false
@@ -489,7 +493,7 @@ fun ScheduleScreen(
                         )
                         if (state.use == DrivingUse.MIXED) {
                             Text(
-                                "Some items are on their severe interval and some aren't. Picking one here sets them all.",
+                                stringResource(R.string.schedule_mixed),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -501,7 +505,7 @@ fun ScheduleScreen(
                         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
-                                "$text Items added or edited since are yours.",
+                                stringResource(R.string.schedule_started_from, text),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -511,11 +515,11 @@ fun ScheduleScreen(
                 // A tracked item that repeats by mileage is all the milestones view needs; so is a table of the user's own.
                 if (hasMilestoneTable || state.items.any { it.tracked && it.active.miles != null }) MilestonesRow(onClick = { onOpenMilestones(v.id) })
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel("$tracked OF ${state.items.size} TRACKED", Modifier.weight(1f))
+                    SectionLabel(stringResource(R.string.schedule_tracked, tracked.asNumber(), state.items.size.asNumber()), Modifier.weight(1f))
                     // As on setup: everything on, or with everything on, everything off.
                     val all = tracked == state.items.size
                     TextButton(onClick = { vm.setAllTracked(!all) }, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Text(if (all) "Clear all" else "Select all")
+                        Text(stringResource(if (all) R.string.clear_all else R.string.select_all))
                     }
                 }
             }
@@ -527,11 +531,10 @@ fun ScheduleScreen(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
-                        Text("Enter when they were last done")
+                        Text(stringResource(R.string.schedule_enter_last_done))
                     }
                     Text(
-                        (if (state.notLogged == 1) "1 tracked item hasn't" else "${state.notLogged} tracked items haven't") +
-                            " been logged yet, so there is nothing to count from.",
+                        pluralStringResource(R.plurals.schedule_not_logged, state.notLogged, state.notLogged.asNumber()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -548,7 +551,7 @@ fun ScheduleScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
-                        Text("+ Add your own item")
+                        Text(stringResource(R.string.schedule_add_own))
                     }
                 }
             }
@@ -562,11 +565,10 @@ fun ScheduleScreen(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
-                        Text("Use the maker's schedule")
+                        Text(stringResource(R.string.schedule_use_known))
                     }
                     Text(
-                        "For the ${list.title}. " + KnownSchedules.intervalOffer(list, plan) +
-                            if (hasMilestoneTable) "" else " Its table becomes this vehicle's milestones.",
+                        stringResource(if (hasMilestoneTable) R.string.schedule_known_offer else R.string.schedule_known_offer_table, list.title, intervalOffer(list, plan)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -594,10 +596,10 @@ fun ScheduleScreen(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
                         val n = state.missing.size
-                        Text(if (n == 1) "Add 1 typical item" else "Add $n typical items")
+                        Text(pluralStringResource(R.plurals.schedule_add_typical, n, n.asNumber()))
                     }
                     Text(
-                        state.missing.joinToString(", ") { it.name } + ". They're added unticked, so tick the ones to track.",
+                        stringResource(R.string.schedule_missing, state.missing.joinToString(", ") { it.label }),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -605,16 +607,14 @@ fun ScheduleScreen(
             }
 
             Text(
-                "Unticked items stay here but don't remind you. The suggested intervals are common ones, not the " +
-                    "manufacturer's: check your owner's manual and edit anything that differs.",
+                stringResource(R.string.schedule_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             if (tracked > 0) {
                 SaveAsImportFile(
-                    caption = "A copy to keep, or to pass to someone with the same model. It holds the ticked items and their intervals as you have them, " +
-                        "not when anything was last done and nothing else about your vehicle. They are your intervals, not the manufacturer's, and the file isn't encrypted.",
+                    caption = stringResource(R.string.schedule_save_caption),
                     write = vm::written,
                     onSave = { vm.saveAsFile(it, "${v.year} ${v.make} ${v.model}") },
                 )
@@ -635,8 +635,8 @@ private fun MilestonesRow(onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Milestones", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Text("This schedule by mileage, with what was done", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.milestones_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.schedule_milestones_row), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(
                 Icons.AutoMirrored.Outlined.KeyboardArrowRight,
@@ -664,15 +664,19 @@ private fun KnownRemindersDialog(
     var stop by rememberSaveable { mutableStateOf(plan.doubles.map { it.id }) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Reminders from the ${list.source.name}") },
+        title = { Text(stringResource(R.string.schedule_known_title, list.source.name)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Added as items of your own, ticked. You can edit or untick any of them afterwards.", color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.schedule_known_added), color = scheme.onSurfaceVariant)
                 plan.new.forEach { item ->
                     Column {
                         Text(item.name, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            (if (item.severeOnly) "Only for severe use · " else "") + item.normal.text(unit, item.firstAt) + (item.severe?.let { " · severe use ${it.text(unit)}" } ?: ""),
+                            listOfNotNull(
+                                stringResource(R.string.schedule_severe_only_short).takeIf { item.severeOnly },
+                                item.normal.text(unit, item.firstAt),
+                                item.severe?.let { stringResource(R.string.schedule_severe_use, it.text(unit)) },
+                            ).joinToString(" · "),
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,
                             color = scheme.onSurfaceVariant,
@@ -681,8 +685,7 @@ private fun KnownRemindersDialog(
                 }
                 if (plan.doubles.isNotEmpty()) {
                     Text(
-                        "These typical items are the same jobs. Ticked ones are taken off the list, so each job is there once. " +
-                            "One with a service logged against it stays, unticked, so its history keeps its link.",
+                        stringResource(R.string.schedule_doubles),
                         color = scheme.onSurfaceVariant,
                     )
                     plan.doubles.forEach { double ->
@@ -694,13 +697,13 @@ private fun KnownRemindersDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Checkbox(checked = ticked, onCheckedChange = null)
-                            Text("Replace “${double.name}”")
+                            Text(stringResource(R.string.schedule_replace, double.name))
                         }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onAdd(stop.toSet()) }) { Text(if (plan.new.size == 1) "Add 1 reminder" else "Add ${plan.new.size} reminders") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = { onAdd(stop.toSet()) }) { Text(pluralStringResource(R.plurals.schedule_add_reminders, plan.new.size, plan.new.size.asNumber())) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

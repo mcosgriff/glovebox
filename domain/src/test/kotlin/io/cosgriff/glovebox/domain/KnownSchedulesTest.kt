@@ -220,12 +220,9 @@ class KnownSchedulesTest {
     fun `what is said names the guide and says to check it`() {
         val list = roadster
         assertEquals("Acme service booklet, Made-up Roadster", KnownSchedules.credit(list))
-        assertTrue(KnownSchedules.tableOffer(list).startsWith("4 milestones, as the Acme service booklet lists them."))
-        assertTrue("doesn't create or change a reminder" in KnownSchedules.tableOffer(list))
         val plan = KnownSchedules.plan(list.intervals, listOf(saved(1, "Change the oil")))
-        assertTrue(KnownSchedules.intervalOffer(list, plan).startsWith("1 reminder from the Acme service booklet"))
-        assertTrue("1 item of your own with the same name is left as it is." in KnownSchedules.intervalOffer(list, plan))
-        assertTrue("Check it against the guide for your own vehicle." in KnownSchedules.startedFrom(KnownSchedules.credit(list)))
+        assertEquals(1, plan.new.size)
+        assertEquals(1, plan.kept.size)
     }
 
     @Test

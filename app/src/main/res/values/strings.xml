@@ -918,4 +918,277 @@
     <string name="photo_remove">Remove %1$s</string>
     <string name="photo_choose">Choose photos</string>
     <string name="photo_camera_off">Camera access is off. Choose photos instead</string>
+
+    <!-- Schedule shared wording (ScheduleText.kt) -->
+    <string name="template_oil">Engine oil &amp; filter</string>
+    <string name="template_rotation">Tire rotation</string>
+    <string name="template_engine_air">Engine air filter</string>
+    <string name="template_cabin_air">Cabin air filter</string>
+    <string name="template_brake_inspection">Brake inspection</string>
+    <string name="template_brake_fluid">Brake fluid</string>
+    <string name="template_transmission_fluid">Transmission fluid</string>
+    <string name="template_diff_and_transfer">Differential &amp; transfer case fluid</string>
+    <string name="template_diff">Differential fluid</string>
+    <string name="template_engine_coolant">Engine coolant</string>
+    <string name="template_coolant">Coolant</string>
+    <string name="template_spark_plugs">Spark plugs</string>
+    <string name="milestone_miles_bad">Enter the mileage as a whole number from 1 to %1$s</string>
+    <string name="milestone_miles_taken">There is already a milestone at %1$s. Add the work to that one</string>
+    <string name="milestone_miles_past_cycle">This table repeats every %1$s, so a milestone can\'t be past that. Change how it repeats first</string>
+    <string name="milestone_work_none">Add at least one job</string>
+    <string name="milestone_work_too_many">A milestone can have %1$s jobs at most</string>
+    <string name="milestone_job_no_name">Give it a name, or remove it</string>
+    <string name="milestone_job_too_long">Keep the name to %1$s characters</string>
+    <string name="milestone_job_one_line">The name has to be on one line</string>
+    <string name="milestone_job_repeated">This job is already in the milestone</string>
+    <string name="milestone_job_service_taken">\"%1$s\" is already picked for another job here</string>
+    <string name="milestone_months_bad">Enter whole months from 1 to %1$s, or leave it empty</string>
+    <string name="milestone_repeat_bad">Enter whole %1$s from 1 to %2$s, or leave it empty for a table that ends</string>
+    <string name="milestone_repeat_shorter">It is the length of the whole cycle, so it can\'t be less than your last milestone (%1$s)</string>
+    <string name="repeat_says_every">repeats every %1$s</string>
+    <string name="repeat_says_not">doesn\'t repeat</string>
+    <!-- %1$s and %2$s are repeat_says_every or repeat_says_not. -->
+    <string name="repeat_conflict">The milestone table on this vehicle %1$s, and this file\'s %2$s. To change that, remove the table on the Milestones screen and import this file again; to add to the table as it is, make the file say the same.</string>
+    <string name="repeat_note_every">This table repeats every %1$s: after its last milestone it starts again from the first.</string>
+    <string name="repeat_note_ends">This table ends at its last milestone; it doesn\'t repeat.</string>
+    <plurals name="milestones">
+        <item quantity="one">%1$s milestone</item>
+        <item quantity="other">%1$s milestones</item>
+    </plurals>
+    <plurals name="reminders">
+        <item quantity="one">%1$s reminder</item>
+        <item quantity="other">%1$s reminders</item>
+    </plurals>
+    <!-- %2$s is the source, such as Toyota Warranty and Maintenance Guide; %3$s its note, in English as the list gives it. -->
+    <string name="known_table_offer">%1$s, as the %2$s lists them. %3$s It is for reference here: it doesn\'t create or change a reminder.</string>
+    <string name="known_interval_offer">%1$s from the %2$s: the jobs its table repeats evenly. %3$s</string>
+    <string name="known_interval_offer_kept">%1$s %2$s</string>
+    <plurals name="known_kept">
+        <item quantity="one">%1$s item of your own with the same name is left as it is.</item>
+        <item quantity="other">%1$s items of your own with the same names are left as they are.</item>
+    </plurals>
+    <string name="known_started_from">Started from the %1$s. Check it against the guide for your own vehicle.</string>
+    <string name="known_makers_guide">maker\'s maintenance guide</string>
+
+    <!-- Shared, editing -->
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+    <string name="discard_changes">Discard your changes?</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="remove">Remove</string>
+
+    <!-- Milestone editor (MilestoneEditor) -->
+    <string name="milestone_discard_new">Discard this milestone?</string>
+    <string name="milestone_discard_new_body">What you have typed hasn\'t been saved.</string>
+    <string name="milestone_discard_body">The milestone stays as it was.</string>
+    <string name="milestone_delete_title">Delete this milestone?</string>
+    <string name="milestone_delete_last">It is the only milestone in your table, so the table goes with it and the Milestones screen goes back to the ones built from your schedule. Your service history and reminders aren\'t touched.</string>
+    <string name="milestone_delete_body">The milestone and its jobs go from your table. Your service history and reminders aren\'t touched. This can\'t be undone.</string>
+    <string name="milestone_add_title">Add milestone</string>
+    <string name="milestone_edit_title">Edit milestone</string>
+    <string name="milestone_starts_table">Saving this starts your own table. The Milestones screen then shows your table in place of the milestones built from your schedule, and no longer follows the schedule. Remove the table to go back. Your reminders aren\'t affected either way.</string>
+    <string name="milestone_due_at">DUE AT</string>
+    <string name="milestone_or_months">Or months</string>
+    <!-- %1$s is Miles or Kilometres. -->
+    <string name="milestone_due_note">%1$s the vehicle has covered, as your manual gives them. Months are optional: the vehicle\'s age, shown for reference.</string>
+    <string name="milestone_due_note_repeats">%1$s the vehicle has covered, as your manual gives them. Months are optional: the vehicle\'s age, shown for reference. The table repeats every %2$s, so this comes round again each time.</string>
+    <string name="milestone_jobs">JOBS</string>
+    <string name="milestone_add_job">Add a job</string>
+    <string name="milestone_jobs_note">A job shows as completed when your log has that work. Pick one of Glovebox\'s service lines and logging that line completes it; otherwise it is completed by logged work with exactly the job\'s name. Milestones never create reminders: for one, add the job to the Maintenance schedule.</string>
+    <string name="milestone_delete">Delete this milestone</string>
+    <string name="milestone_job">Job</string>
+    <!-- Nothing is suggested from the name: which service a job is, is the user's to say. -->
+    <string name="milestone_no_service">None of these: work with this name</string>
+    <string name="milestone_completed_by">Completed by logging</string>
+    <string name="milestone_repeat_title">Does the table repeat?</string>
+    <string name="milestone_repeat_body">Many manuals end with \"then repeat from the beginning\". Enter the length of the whole cycle and every milestone comes round again that many %1$s later, with the same work. Leave it empty for a table that ends at %2$s.</string>
+    <string name="milestone_repeats_every">Repeats every (%1$s)</string>
+    <string name="milestone_months_not_repeated">Months aren\'t repeated: they are the vehicle\'s age the first time round.</string>
+
+    <!-- Shared, lists -->
+    <string name="expand_all">Expand all</string>
+    <string name="collapse_all">Collapse all</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
+    <string name="show">Show</string>
+    <string name="change">Change</string>
+    <plurals name="jobs">
+        <item quantity="one">%1$s job</item>
+        <item quantity="other">%1$s jobs</item>
+    </plurals>
+    <plurals name="completed">
+        <item quantity="one">%1$s completed</item>
+        <item quantity="other">%1$s completed</item>
+    </plurals>
+
+    <!-- Milestones (MilestonesScreen) -->
+    <string name="milestones_remove_title">Remove your milestone table?</string>
+    <plurals name="milestones_remove_body">
+        <item quantity="one">Its one milestone goes, and this screen goes back to the ones built from your schedule. Your service history and reminders aren\'t touched. This can\'t be undone: to get the table back you would type it in or import it again.</item>
+        <item quantity="other">All %1$s of its milestones go, and this screen goes back to the ones built from your schedule. Your service history and reminders aren\'t touched. This can\'t be undone: to get the table back you would type it in or import it again.</item>
+    </plurals>
+    <string name="milestones_title">Milestones</string>
+    <string name="milestones_actual">%1$s actual</string>
+    <!-- %1$s is known_started_from. -->
+    <string name="milestones_intro_known">%1$s It is shown with what your log says was done, and the jobs are in Glovebox\'s words. It\'s a guide: the Reminders tab is what tells you something is due. You can edit it like a table of your own.</string>
+    <string name="milestones_intro_table">Your own milestone table, with what your log says was done. It\'s a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn\'t checked them.</string>
+    <string name="milestones_intro_table_repeats">Your own milestone table, with what your log says was done. It repeats every %1$s, so after its last milestone it starts again from the first. It\'s a guide: the Reminders tab is what tells you something is due. The figures are the ones you typed or imported; Glovebox hasn\'t checked them.</string>
+    <string name="milestones_intro_generated">Your schedule laid out by mileage, the way an owner\'s manual prints it, with what your log says was done. It\'s a guide: the Reminders tab is what tells you something is due. The intervals are the ones you set, not the manufacturer\'s.</string>
+    <string name="milestones_none">Milestones are built from tracked items that repeat by mileage, and none of this vehicle\'s do yet. Give an item a mileage interval on the Maintenance schedule and it appears here.</string>
+    <string name="milestones_show_them">Show them</string>
+    <!-- A folded run of milestones: from %1$s (a figure) to %2$s (a distance), %3$s of them. -->
+    <string name="milestones_folded">%1$s to %2$s · %3$s with nothing logged</string>
+    <string name="milestones_further">Show further ahead</string>
+    <string name="milestones_add">Add a milestone</string>
+    <string name="milestones_change_repeat">Change how the table repeats</string>
+    <string name="milestones_repeats_every">Repeats every %1$s</string>
+    <string name="milestones_no_repeat">Doesn\'t repeat</string>
+    <string name="milestones_repeat_detail">After the last milestone it starts again from the first</string>
+    <string name="milestones_ends_detail">The table ends at its last milestone</string>
+    <string name="milestones_save_caption">A copy to keep, or to pass to someone with the same model. It holds this table and nothing about your vehicle or its history, and it isn\'t encrypted.</string>
+    <string name="milestones_remove">Remove this table</string>
+    <string name="milestones_use_known">Use the maker\'s table for the %1$s</string>
+    <string name="milestones_in_place">%1$s It is then shown here in place of these.</string>
+    <string name="milestones_make_own">Make my own table</string>
+    <string name="milestones_make_own_note">Type in the table from your owner\'s manual, a milestone at a time. It is then shown here in place of these.</string>
+    <plurals name="milestones_or_months">
+        <item quantity="one">or %1$s month</item>
+        <item quantity="other">or %1$s months</item>
+    </plurals>
+    <string name="milestones_repeat_of">repeat of %1$s</string>
+    <string name="milestones_on_dash">%1$s on the dash</string>
+    <string name="milestones_next_in">NEXT · IN %1$s</string>
+    <string name="milestones_next">NEXT</string>
+    <string name="milestones_all_completed">All completed</string>
+    <string name="milestones_edit_repeat">Edit the %1$s milestone</string>
+    <string name="milestones_edit">Edit this milestone</string>
+    <string name="milestones_completed">Completed %1$s at %2$s</string>
+    <string name="milestones_completed_dash">Completed %1$s at %2$s on the dash (%3$s actual)</string>
+
+    <!-- Shared, selection -->
+    <string name="clear_all">Clear all</string>
+    <string name="select_all">Select all</string>
+
+    <!-- Maintenance schedule (ScheduleScreen) -->
+    <string name="schedule_empty_known">Nothing is set up for this vehicle yet. Start from the maker\'s schedule, or add your own items one at a time.</string>
+    <string name="schedule_empty">Nothing is set up for this vehicle yet. Start from a typical schedule, or add your own items one at a time.</string>
+    <string name="schedule_start_known">Start from the maker\'s schedule</string>
+    <string name="schedule_start_typical">Start from a typical schedule</string>
+    <string name="schedule_how_driven">HOW DO YOU DRIVE IT?</string>
+    <string name="schedule_mixed">Some items are on their severe interval and some aren\'t. Picking one here sets them all.</string>
+    <!-- %1$s is known_started_from. -->
+    <string name="schedule_started_from">%1$s Items added or edited since are yours.</string>
+    <string name="schedule_tracked">%1$s OF %2$s TRACKED</string>
+    <string name="schedule_enter_last_done">Enter when they were last done</string>
+    <plurals name="schedule_not_logged">
+        <item quantity="one">%1$s tracked item hasn\'t been logged yet, so there is nothing to count from.</item>
+        <item quantity="other">%1$s tracked items haven\'t been logged yet, so there is nothing to count from.</item>
+    </plurals>
+    <string name="schedule_add_own">+ Add your own item</string>
+    <string name="schedule_use_known">Use the maker\'s schedule</string>
+    <!-- %1$s is the model and years, %2$s known_interval_offer. -->
+    <string name="schedule_known_offer">For the %1$s. %2$s</string>
+    <string name="schedule_known_offer_table">For the %1$s. %2$s Its table becomes this vehicle\'s milestones.</string>
+    <plurals name="schedule_add_typical">
+        <item quantity="one">Add %1$s typical item</item>
+        <item quantity="other">Add %1$s typical items</item>
+    </plurals>
+    <!-- %1$s is the list of items. -->
+    <string name="schedule_missing">%1$s. They\'re added unticked, so tick the ones to track.</string>
+    <string name="schedule_note">Unticked items stay here but don\'t remind you. The suggested intervals are common ones, not the manufacturer\'s: check your owner\'s manual and edit anything that differs.</string>
+    <string name="schedule_save_caption">A copy to keep, or to pass to someone with the same model. It holds the ticked items and their intervals as you have them, not when anything was last done and nothing else about your vehicle. They are your intervals, not the manufacturer\'s, and the file isn\'t encrypted.</string>
+    <string name="schedule_milestones_row">This schedule by mileage, with what was done</string>
+    <string name="schedule_known_title">Reminders from the %1$s</string>
+    <string name="schedule_known_added">Added as items of your own, ticked. You can edit or untick any of them afterwards.</string>
+    <string name="schedule_severe_only_short">Only for severe use</string>
+    <string name="schedule_severe_use">severe use %1$s</string>
+    <string name="schedule_doubles">These typical items are the same jobs. Ticked ones are taken off the list, so each job is there once. One with a service logged against it stays, unticked, so its history keeps its link.</string>
+    <string name="schedule_replace">Replace “%1$s”</string>
+    <plurals name="schedule_add_reminders">
+        <item quantity="one">Add %1$s reminder</item>
+        <item quantity="other">Add %1$s reminders</item>
+    </plurals>
+
+    <!-- Schedule setup (ScheduleSetupScreen) -->
+    <string name="setup_title">Recommended maintenance</string>
+    <!-- %1$s is the vehicle, %2$s the guide. -->
+    <string name="setup_intro_known">The maker\'s schedule for your %1$s, from the %2$s. Pick what to track — you can edit any interval later.</string>
+    <string name="setup_intro">A typical schedule to start from for your %1$s. Pick what to track — you can edit any interval later.</string>
+    <!-- %1$s is the list's own note, in English as it ships. -->
+    <string name="setup_known_note">%1$s It has the jobs the guide\'s table repeats; the whole table, inspections included, is on the Milestones screen.</string>
+    <string name="setup_typical_note">These are common intervals, not the manufacturer\'s. Check your owner\'s manual and edit anything that differs.</string>
+    <string name="setup_engine_title">Which engine does it have?</string>
+    <string name="setup_engine_body">The %1$s has a schedule for each of these, and this vehicle\'s engine isn\'t on record. Pick yours to start from the maker\'s schedule in place of the typical one below.</string>
+    <string name="setup_engine_neither">Neither, or I\'m not sure</string>
+    <string name="setup_selected">%1$s OF %2$s SELECTED</string>
+    <plurals name="setup_track">
+        <item quantity="one">Track %1$s item</item>
+        <item quantity="other">Track %1$s items</item>
+    </plurals>
+    <string name="setup_skip">Skip — I\'ll set up reminders myself</string>
+    <string name="setup_last_done_next">I\'ll enter the ones I know next</string>
+    <string name="setup_last_done_as_i_go">I\'ll enter them as I go</string>
+    <string name="setup_last_done_label">Know when these were last done? (optional)</string>
+    <string name="setup_severe_only_off">Only for severe use. Off while you\'re on normal use.</string>
+    <string name="setup_severe_only">Only for severe use.</string>
+    <string name="setup_severe_tag">SEVERE</string>
+    <string name="edit_item">Edit %1$s</string>
+    <string name="use_normal">Normal</string>
+    <string name="use_normal_detail">Commuting, highway</string>
+    <string name="use_severe">Severe</string>
+    <string name="use_severe_detail">Towing, off-road, dusty</string>
+    <!-- In "for your vehicle", when the vehicle isn't known. -->
+    <string name="setup_vehicle">vehicle</string>
+
+    <!-- Shared formatters, rules in a sentence -->
+    <string name="rule_whichever_first_sentence">whichever comes first</string>
+    <string name="rule_whichever_last_sentence">whichever comes last</string>
+    <string name="rule_mileage_only_sentence">mileage only</string>
+    <string name="rule_time_only_sentence">time only</string>
+
+    <!-- Schedule item editor (ScheduleItemEditor) -->
+    <string name="item_add_title">Add schedule item</string>
+    <string name="item_edit_title">Edit schedule item</string>
+    <string name="item_repeat_every">REPEAT EVERY</string>
+    <string name="item_months">Months</string>
+    <string name="item_interval_error">Enter %1$s, months, or both as whole numbers above zero.</string>
+    <string name="item_interval_note">Leave one blank if it doesn\'t apply.</string>
+    <string name="item_severe_only_note">This job is only for severe use (towing, heavy loads, dust), and this is its interval then. It reminds you while the schedule is set to severe use, and is switched off on normal use.</string>
+    <string name="item_severe_interval">Severe-use interval</string>
+    <string name="item_severe_typical">Typical: %1$s when towing, off-road or in dust</string>
+    <string name="item_severe_for">For towing, off-road or dusty driving</string>
+    <string name="item_first_at">FIRST TIME AT (OPTIONAL)</string>
+    <string name="item_first_error">Enter whole %1$s above zero, or leave it blank.</string>
+    <string name="item_first_note">For a job whose first time isn\'t one interval in, such as coolant first at 100,000 and then every 50,000. Until it has been logged once it is due at this reading; after that the interval counts from the last time. Leave blank otherwise.</string>
+    <string name="item_reset">Reset to the suggested interval</string>
+    <string name="item_stop_tracking">Stop tracking this item</string>
+    <!-- %1$s is the rule in a sentence, such as whichever comes first. -->
+    <string name="item_rule_default">Use my default (%1$s)</string>
+    <string name="item_rule_label">Which comes due</string>
+    <string name="item_service_own">This item, under Your items</string>
+    <string name="item_resets_it">Logging this resets it</string>
+    <string name="item_service_pick">Pick one of Glovebox\'s service lines if this is the same job, and logging that line will count for this item.</string>
+    <string name="item_service_chosen">Ticking \"%1$s\" when you log a service counts for this item, including the times it is already in your history.</string>
+    <string name="item_last_done">LAST DONE</string>
+    <string name="item_enter_it">Enter it</string>
+    <string name="from_your_log">From your log</string>
+    <plurals name="item_resets">
+        <item quantity="one">Logging this resets it</item>
+        <item quantity="other">Logging any of these resets it</item>
+    </plurals>
+    <string name="item_service_own_log">This item, under Your items in Log service</string>
+    <string name="item_next_due">NEXT DUE</string>
+    <string name="item_log_once">Log it once and the countdown starts from that date and mileage.</string>
+    <string name="item_enter_interval">Enter an interval above</string>
+    <string name="item_estimate">est. %1$s at your pace</string>
+
+    <!-- When were these last done? (LastDoneScreen), more -->
+    <string name="done">Done</string>
+    <string name="last_done_title">When were these last done?</string>
+    <string name="last_done_intro">Give the date and mileage for any you know, from a receipt or the sticker on the windshield. Each one starts that reminder counting. Leave the rest: they stay \"Not logged yet\" until the work is next done.</string>
+    <string name="last_done_all">ALL %1$s HAVE A LAST DONE</string>
+    <string name="last_done_pending">%1$s OF %2$s NOT LOGGED YET</string>
+    <string name="last_done_enter">Enter when it was last done</string>
+    <string name="last_done_odometer">Odometer then (%1$s)</string>
 </resources>
