@@ -1,0 +1,35 @@
+# Read by actions/dependency-review-action in .github/workflows/dependencies.yml (#246).
+
+# Any known vulnerability, of any severity, in a dependency the PR adds or moves to.
+fail-on-severity: low
+
+# Licences that can be combined with the app's GPL-3.0 in one APK. Apache-2.0 is compatible with
+# GPL-3.0 (not with GPL-2.0 only). Not listed, so a PR bringing one in stops for a decision:
+# EPL (compatible only with its secondary-licence clause), CDDL, and anything proprietary or unknown.
+allow-licenses:
+  - Apache-2.0
+  - MIT
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - ISC
+  - 0BSD
+  - Zlib
+  - CC0-1.0
+  - Unlicense
+  - MPL-2.0
+  - LGPL-2.1-or-later
+  - LGPL-3.0-only
+  - LGPL-3.0-or-later
+  - GPL-3.0-only
+  - GPL-3.0-or-later
+
+# Dependencies whose licence GitHub can't name, each checked by hand: the app ships its text in
+# app/src/main/assets/licences/. A new version of one of these is still reviewed for vulnerabilities.
+allow-dependencies-licenses:
+  # SQLCipher Community Edition: its own BSD-style licence.
+  - pkg:maven/net.zetetic/sqlcipher-android
+  # Bouncy Castle: its own MIT-style licence.
+  - pkg:maven/org.bouncycastle/bcprov-jdk18on
+  # Tesseract4Android: its POM on JitPack names no licence. It and Tesseract are Apache-2.0; the
+  # Leptonica, libjpeg and libpng it bundles are under their own permissive terms.
+  - pkg:maven/cz.adaptech.tesseract4android/tesseract4android

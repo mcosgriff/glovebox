@@ -90,6 +90,7 @@ different key. The same fingerprint is published for the app's package ID at
   tracker libraries, not behaviour.
 
   [![Trackers: 0 (Exodus scan of each release)](https://img.shields.io/badge/trackers-0%20%C2%B7%20Exodus%20scan-0F766E)](https://github.com/mcosgriff/glovebox/releases/latest)
+  [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/mcosgriff/glovebox/badge)](https://scorecard.dev/viewer/?uri=github.com/mcosgriff/glovebox)
 
 ## Building
 

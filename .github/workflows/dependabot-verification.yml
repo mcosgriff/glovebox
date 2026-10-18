@@ -1,0 +1,119 @@
+# Dependabot changes versions but not gradle/verification-metadata.xml (#246), so its Gradle PRs would
+# fail dependency verification. This adds the new versions' checksums and keys to the PR, where its
+# diff shows exactly which ones changed: review that diff like the version bump itself.
+#
+# Two jobs, so the PR's build code never runs with a token that can write:
+#   regenerate  runs Gradle on the PR (read-only token) and hands over only the two metadata files;
+#   commit      runs no Gradle, commits those two files to the PR branch, and starts ci.yml and
+#               dependencies.yml on it, since a push made with GITHUB_TOKEN starts no workflow itself.
+# Once this pushes, Dependabot stops rebasing the PR; comment "@dependabot recreate" to start over.
+name: dependabot-verification
+
+on:
+  pull_request:
+    paths:
+      - 'gradle/libs.versions.toml'
+      - 'gradle/wrapper/gradle-wrapper.properties'
+      - '**/*.gradle.kts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-verification-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      # The same command as CLAUDE.md's: it adds what the new versions resolve to and keeps the rest.
+      # These tasks resolve every configuration CI and release.yml use, the device tests' runner
+      # included. The file is written even when the build fails, and a failing build is CI's to
+      # report on the new commit, so it doesn't stop this job.
+      - name: Update verification metadata
+        run: |
+          ./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache --continue \
+            build :app:assembleDebugAndroidTest :baselineprofile:assemble \
+            || echo "::warning::The build failed; the metadata was written anyway. CI will show the failure."
+          rm -f gradle/verification-keyring.gpg
+
+      - id: diff
+        run: |
+          if git diff --quiet -- gradle/verification-metadata.xml gradle/verification-keyring.keys; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- gradle/
+          fi
+
+      - if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verification-metadata
+          path: |
+            gradle/verification-metadata.xml
+            gradle/verification-keyring.keys
+          retention-days: 1
+
+  commit:
+    needs: regenerate
+    if: needs.regenerate.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # To start ci.yml and dependencies.yml on the new commit.
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      # Lands on gradle/verification-metadata.xml and gradle/verification-keyring.keys only.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: verification-metadata
+          path: gradle
+
+      - name: Commit and push
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Dependabot moved the branch since this run began: its own new run will do this.
+          if [ "$(git rev-parse HEAD)" != "$HEAD_SHA" ]; then
+            echo "The branch has moved on; leaving it to the newer run."
+            exit 0
+          fi
+          if [ -n "$(git status --porcelain -- . ':!gradle/verification-metadata.xml' ':!gradle/verification-keyring.keys')" ]; then
+            echo "::error::Something besides the verification metadata changed."
+            git status --porcelain
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add gradle/verification-metadata.xml gradle/verification-keyring.keys
+          git commit -m 'build(deps): update Gradle verification metadata'
+          git push
+
+      - name: Start CI on the new commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          gh workflow run ci.yml --ref "$BRANCH"
+          gh workflow run dependencies.yml --ref "$BRANCH"

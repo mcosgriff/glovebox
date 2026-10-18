@@ -13,3 +13,6 @@ build/
 *.jks
 *.keystore
 keystore.properties
+
+# Dependency verification writes a binary copy of the keyring too; the .keys file is the one kept.
+gradle/verification-keyring.gpg

@@ -1,0 +1,65 @@
+# What a change does to the dependencies that ship (#246).
+#
+# On main, the resolved dependency graph of the release build goes to GitHub, which is what Dependabot
+# alerts and the dependency review below compare against. On a pull request, the PR's graph is sent too
+# and the review fails the PR if it adds a dependency with a known vulnerability or a licence that
+# .github/dependency-review-config.yml doesn't allow.
+#
+# Only the release runtime classpaths are sent: what goes into the APK. Build plugins and test
+# libraries aren't distributed, so their licences don't bind the app, and Gradle's dependency
+# verification already checks that every jar, theirs included, is the one in verification-metadata.xml.
+name: dependencies
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Started by dependabot-verification.yml on a Dependabot branch it has pushed to, in place of
+  # the pull_request run that a GITHUB_TOKEN push doesn't start. Reviewed against main.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependencies-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    permissions:
+      # Submitting a dependency snapshot is a write to the repository's dependency graph.
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/dependency-submission@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          # :app's release classpath, and :data's and :domain's, which it takes in.
+          dependency-graph-include-configurations: '^(releaseRuntimeClasspath|runtimeClasspath)$'
+          dependency-graph-include-projects: '^:(app|data|domain)$'
+
+  review:
+    if: github.event_name != 'push'
+    needs: submit
+    runs-on: ubuntu-latest
+    steps:
+      # For the review's config file.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          config-file: ./.github/dependency-review-config.yml
+          # Given only on a dispatched run; on a pull request the action takes them from the event.
+          base-ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || '' }}
+          head-ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || '' }}
+          # The PR's snapshot was only just submitted; wait for GitHub to have it.
+          retry-on-snapshot-warnings: true
