@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.12.0](https://github.com/mcosgriff/glovebox/compare/v0.11.1...v0.12.0) (2026-10-18)
+
+
+### Features
+
+* target Android 17 (API 37) ([#249](https://github.com/mcosgriff/glovebox/issues/249)) ([e23936a](https://github.com/mcosgriff/glovebox/commit/e23936acc97fcf51d55d5d47997f54be4bf4298b))
+* **widget:** add a home-screen widget, off by default ([#276](https://github.com/mcosgriff/glovebox/issues/276)) ([1a16b43](https://github.com/mcosgriff/glovebox/commit/1a16b430b2a30f5a85734954223d6d1d16e351a4)), closes [#238](https://github.com/mcosgriff/glovebox/issues/238)
+
+
+### Code Refactoring
+
+* **garage:** move Garage, Add vehicle and scanner wording into string resources ([#255](https://github.com/mcosgriff/glovebox/issues/255)) ([d93fc62](https://github.com/mcosgriff/glovebox/commit/d93fc6225400e42e18804bfb293f6d6fb558db7b)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **i18n:** move the shared formatters into string resources ([#254](https://github.com/mcosgriff/glovebox/issues/254)) ([ce88fb3](https://github.com/mcosgriff/glovebox/commit/ce88fb30c323249faffed9fb66af34a6c2326a98)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* move user-facing text into string resources ([#252](https://github.com/mcosgriff/glovebox/issues/252)) ([7823978](https://github.com/mcosgriff/glovebox/commit/782397826f97e8caa7b1453804ae4135ee5bf24e))
+* **navigation:** move to Navigation 3 ([#268](https://github.com/mcosgriff/glovebox/issues/268)) ([6ab51b1](https://github.com/mcosgriff/glovebox/commit/6ab51b1774c9b65183e2fdacaf6131dd2516498e)), closes [#237](https://github.com/mcosgriff/glovebox/issues/237)
+* **reminders:** move Reminders, Reminder rules and Recalls wording into string resources ([#260](https://github.com/mcosgriff/glovebox/issues/260)) ([834028f](https://github.com/mcosgriff/glovebox/commit/834028f5fd1c4ec6e82d36d8c36ddd495e40bdb4)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **schedule:** move Schedule, setup, last done and Milestones wording into string resources ([#259](https://github.com/mcosgriff/glovebox/issues/259)) ([1552366](https://github.com/mcosgriff/glovebox/commit/15523666615ece4a81dbdc5df37b3e6c816d941d)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **service:** move Log service, History and photo wording into string resources ([#258](https://github.com/mcosgriff/glovebox/issues/258)) ([062858a](https://github.com/mcosgriff/glovebox/commit/062858a586c915fe0e4679f6b60040c25550511c)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **settings:** move Settings, notifications, backup, restore and About wording into string resources ([#262](https://github.com/mcosgriff/glovebox/issues/262)) ([d9f6dd3](https://github.com/mcosgriff/glovebox/commit/d9f6dd3baa75484831b1449840224d20795c3ad0))
+* **torque:** move Torque specs wording into string resources ([#261](https://github.com/mcosgriff/glovebox/issues/261)) ([22e5fd3](https://github.com/mcosgriff/glovebox/commit/22e5fd3caf468b1f83b3301f224a5be9e534d1a2)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **unlock:** move the unlock screen's wording into string resources ([7823978](https://github.com/mcosgriff/glovebox/commit/782397826f97e8caa7b1453804ae4135ee5bf24e)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **vehicle:** move Vehicle details and Fluids, filters & parts wording into string resources ([#257](https://github.com/mcosgriff/glovebox/issues/257)) ([8ae08c6](https://github.com/mcosgriff/glovebox/commit/8ae08c67b58bcbdad08fa94c200a048005d2d7a4)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **vehicle:** move Vehicle home and the vehicle sheets' wording into string resources ([#256](https://github.com/mcosgriff/glovebox/issues/256)) ([aa87360](https://github.com/mcosgriff/glovebox/commit/aa8736048a810c0ddcc81c49693a9ca38b31e034)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+* **welcome:** move Welcome and Delete all data wording into string resources ([#253](https://github.com/mcosgriff/glovebox/issues/253)) ([935c3c3](https://github.com/mcosgriff/glovebox/commit/935c3c339b0fe77e30e166b3c88b5819f31f5369)), closes [#236](https://github.com/mcosgriff/glovebox/issues/236)
+
+
+### Build System
+
+* add a script for the developer verification ownership APK ([#274](https://github.com/mcosgriff/glovebox/issues/274)) ([b7fc27b](https://github.com/mcosgriff/glovebox/commit/b7fc27b556c9a15ad3c439ceb19e3eaf0cfd4256)), closes [#267](https://github.com/mcosgriff/glovebox/issues/267)
+
 ## [0.11.1](https://github.com/mcosgriff/glovebox/compare/v0.11.0...v0.11.1) (2026-10-17)
 
 
