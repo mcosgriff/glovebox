@@ -1,6 +1,9 @@
 package io.cosgriff.glovebox.ui.settings
 
 import io.cosgriff.glovebox.ui.theme.PlexMono
+import io.cosgriff.glovebox.ui.styledStringResource
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.R
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.LocalActivity
@@ -44,11 +47,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
@@ -105,11 +106,15 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
 
     fun wipe() = vm.delete { activity.restartFromScratch() }
     // Cancelling does nothing: the button is still there.
-    val confirm = rememberScreenLockCheck("Delete everything in Glovebox", "This can't be undone", onPassed = ::wipe)
+    val confirm = rememberScreenLockCheck(
+        stringResource(R.string.delete_all_prompt_title),
+        stringResource(R.string.delete_all_prompt_subtitle),
+        onPassed = ::wipe,
+    )
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         IconButton(onClick = onCancel, enabled = !vm.deleting, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
-            Icon(Icons.Outlined.Close, contentDescription = "Cancel")
+            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.cancel))
         }
 
         Column(
@@ -123,13 +128,13 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "Delete everything in Glovebox?",
+                    stringResource(R.string.delete_all_title),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    "All vehicles, archived vehicles, records, photos, specs, reminders and settings. The app goes back to its welcome screen.",
+                    stringResource(R.string.delete_all_what_goes),
                     color = scheme.onSurfaceVariant,
                 )
             }
@@ -141,17 +146,16 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 border = BorderStroke(1.dp, scheme.outlineVariant),
             ) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("How it's erased", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.delete_all_how_heading), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "We delete the encryption keys from the phone's secure hardware, then the database and photos. " +
-                            "Without the keys, nothing left behind can be read.",
+                        stringResource(R.string.delete_all_how),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
-                        "Backup and export files you've saved elsewhere aren't touched. Delete those yourself if you want them gone.",
+                        stringResource(R.string.delete_all_files_elsewhere),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    Text("This can't be undone.", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.delete_all_cant_undo), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -163,7 +167,7 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 border = BorderStroke(1.5.dp, scheme.onSurface),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
             ) {
-                Text("Make a backup first")
+                Text(stringResource(R.string.delete_all_backup_first))
             }
 
             OutlinedTextField(
@@ -171,11 +175,11 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 onValueChange = { typed = it },
                 label = {
                     Text(
-                        buildAnnotatedString {
-                            append("Type ")
-                            withStyle(SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)) { append(DeleteAll.WORD) }
-                            append(" to confirm")
-                        },
+                        styledStringResource(
+                            R.string.type_word_to_confirm,
+                            DeleteAll.WORD,
+                            SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
+                        ),
                     )
                 },
                 singleLine = true,
@@ -206,11 +210,19 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 if (lock == ScreenLock.BIOMETRIC) {
                     Icon(Icons.Outlined.Fingerprint, contentDescription = null, modifier = Modifier.padding(end = 8.dp).size(20.dp))
                 }
-                Text(DeleteAll.confirmLabel(lock), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(lock.confirmLabel), style = MaterialTheme.typography.titleMedium)
             }
-            DeleteAll.note(lock)?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            if (!DeleteAll.asksForScreenLock(lock)) {
+                Text(stringResource(R.string.delete_all_no_second_check), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
     }
 }
+
+/** The button says what pressing it will really do next. */
+private val ScreenLock.confirmLabel: Int
+    get() = when (this) {
+        ScreenLock.BIOMETRIC -> R.string.delete_all_confirm_fingerprint
+        ScreenLock.CREDENTIAL -> R.string.delete_all_confirm_screen_lock
+        ScreenLock.NONE -> R.string.delete_all_confirm
+    }

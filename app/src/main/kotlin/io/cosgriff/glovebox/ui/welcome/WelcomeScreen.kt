@@ -47,6 +47,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.Welcome
@@ -137,42 +139,42 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
                     }
                 }
                 Text(
-                    "Welcome to Glovebox",
+                    stringResource(R.string.welcome_title),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    "Maintenance records, reminders and recalls for your vehicles. Everything stays on this phone, encrypted.",
+                    stringResource(R.string.welcome_intro),
                     style = MaterialTheme.typography.bodyLarge,
                     color = scheme.onSurfaceVariant,
                 )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel("SET UP")
+                SectionLabel(stringResource(R.string.welcome_set_up))
                 Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         SwitchRow(
-                            title = "Unlock with fingerprint",
-                            about = if (canLock) {
-                                "Device PIN works as a fallback"
-                            } else {
+                            title = stringResource(R.string.welcome_lock_title),
+                            about = stringResource(
                                 // Said plainly: with no screen lock there is nothing for the app to lock with.
-                                "This phone has no screen lock, so the app can't be locked yet. Set one in Android's settings, then turn this on in Glovebox's Settings."
-                            },
+                                if (canLock) R.string.welcome_lock_fallback else R.string.welcome_lock_no_screen_lock,
+                            ),
                             checked = lockApp && canLock,
                             enabled = canLock,
                             onChange = { lockApp = it },
                         )
                         HorizontalDivider(color = scheme.outlineVariant)
                         SwitchRow(
-                            title = "Reminder notifications",
-                            about = when {
-                                !notifications -> "Off. Reminders still show inside the app"
-                                asks -> "Android will ask for permission next"
-                                else -> "When a service is due, a recall appears, or a backup is overdue"
-                            },
+                            title = stringResource(R.string.welcome_notifications_title),
+                            about = stringResource(
+                                when {
+                                    !notifications -> R.string.welcome_notifications_off
+                                    asks -> R.string.welcome_notifications_ask
+                                    else -> R.string.welcome_notifications_on
+                                },
+                            ),
                             checked = notifications,
                             onChange = { notifications = it },
                         )
@@ -188,7 +190,7 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Text("Add your first vehicle", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.welcome_add_vehicle), style = MaterialTheme.typography.titleMedium)
                 }
                 OutlinedButton(
                     onClick = { go(WelcomeAction.RESTORE) },
@@ -197,10 +199,10 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
-                    Text("Restore from a backup")
+                    Text(stringResource(R.string.welcome_restore))
                 }
                 Text(
-                    "Only a VIN, or a year, make and model, is ever sent out, and only to NHTSA. No account, no ads, no tracking.",
+                    stringResource(R.string.welcome_privacy),
                     Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
