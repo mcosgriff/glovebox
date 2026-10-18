@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/mcosgriff/glovebox/compare/v0.13.0...v0.14.0) (2026-10-18)
+
+
+### Features
+
+* launcher shortcuts for Log service and Update mileage ([#281](https://github.com/mcosgriff/glovebox/issues/281)) ([0b12f8a](https://github.com/mcosgriff/glovebox/commit/0b12f8adea385e1883e6f7f073e125594367aa41)), closes [#235](https://github.com/mcosgriff/glovebox/issues/235)
+
 ## [0.13.0](https://github.com/mcosgriff/glovebox/compare/v0.12.0...v0.13.0) (2026-10-18)
 
 
