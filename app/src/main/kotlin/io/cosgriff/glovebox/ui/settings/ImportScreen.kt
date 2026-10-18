@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.torque.text
 import io.cosgriff.glovebox.ui.schedule.text
 import io.cosgriff.glovebox.ui.schedule.repeatNote
 import io.cosgriff.glovebox.ui.service.label
@@ -677,7 +678,7 @@ class ImportViewModel @Inject constructor(
 
 /** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
 private fun describe(torque: Torque?, socket: String?, note: String?, unit: TorqueUnit): String =
-    listOfNotNull(torque?.format(unit), socket, note).joinToString(" · ").ifEmpty { "Name only" }
+    listOfNotNull(torque?.text(unit), socket, note).joinToString(" · ").ifEmpty { "Name only" }
 
 private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY) " · factory manual" else ""
 private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""

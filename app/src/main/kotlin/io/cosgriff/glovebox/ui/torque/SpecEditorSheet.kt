@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.domain.KnownSpecs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -102,7 +104,7 @@ fun SpecEditorSheet(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(
-                if (spec == null) "Add a spec" else "Edit spec",
+                stringResource(if (spec == null) R.string.torque_add_title else R.string.torque_edit_title),
                 Modifier.semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -111,8 +113,8 @@ fun SpecEditorSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it.take(VehicleText.MAX_SPEC) },
-                label = { Text("Fastener") },
-                placeholder = { Text("Oil drain plug") },
+                label = { Text(stringResource(R.string.torque_fastener)) },
+                placeholder = { Text(stringResource(R.string.fastener_oil_drain_plug)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 modifier = Modifier.fillMaxWidth(),
@@ -125,8 +127,8 @@ fun SpecEditorSheet(
             OutlinedTextField(
                 value = size,
                 onValueChange = { size = it.take(30) },
-                label = { Text("Socket or tool size (optional)") },
-                placeholder = { Text("14 mm") },
+                label = { Text(stringResource(R.string.torque_socket)) },
+                placeholder = { Text(stringResource(R.string.torque_socket_hint)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -135,13 +137,13 @@ fun SpecEditorSheet(
                 OutlinedTextField(
                     value = torqueText,
                     onValueChange = { torqueText = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' }.take(7) },
-                    label = { Text("Torque in ${entryUnit.symbol}") },
+                    label = { Text(stringResource(R.string.torque_in, entryUnit.symbolWord)) },
                     supportingText = {
                         Text(
                             when {
-                                torqueBad -> "Enter a torque above zero, up to ${Torque(TorqueSpecs.MAX_NEWTON_METERS).format(entryUnit)}."
-                                torque != null -> "= " + TorqueUnit.entries.filter { it != entryUnit }.joinToString(" · ") { torque.format(it) }
-                                else -> "Leave empty to add the value later."
+                                torqueBad -> stringResource(R.string.torque_bad, Torque(TorqueSpecs.MAX_NEWTON_METERS).text(entryUnit))
+                                torque != null -> stringResource(R.string.torque_equals, TorqueUnit.entries.filter { it != entryUnit }.joinToString(" · ") { torque.text(it) })
+                                else -> stringResource(R.string.torque_leave_empty)
                             },
                         )
                     },
@@ -161,10 +163,9 @@ fun SpecEditorSheet(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text("I've checked this value", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.torque_checked), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "It is from $listSource and nobody has checked it for you. Switch this on once a service or repair manual agrees, " +
-                                "and it becomes your entry. If the figure is wrong, change it above.",
+                            stringResource(R.string.torque_checked_note, listSource.orEmpty()),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
@@ -179,9 +180,9 @@ fun SpecEditorSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("From the factory service manual", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.torque_factory), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "Tags the value so you know you didn't get it from a forum or a guess.",
+                        stringResource(R.string.torque_factory_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -192,8 +193,8 @@ fun SpecEditorSheet(
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it.take(MAX_NOTE) },
-                label = { Text("Note (optional)") },
-                placeholder = { Text("Replace the gasket every change") },
+                label = { Text(stringResource(R.string.torque_note_label)) },
+                placeholder = { Text(stringResource(R.string.torque_note_hint)) },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -217,7 +218,7 @@ fun SpecEditorSheet(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(14.dp),
             ) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
 
             if (spec != null) {
@@ -226,7 +227,7 @@ fun SpecEditorSheet(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) {
-                    Text("Delete this spec", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.torque_delete), fontWeight = FontWeight.SemiBold)
                 }
             }
         }

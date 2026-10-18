@@ -2,13 +2,13 @@ package io.cosgriff.glovebox.domain
 
 import java.util.Locale
 
-/** How torque specs are grouped. Stored by [name] in `torque_specs.category`. */
-enum class TorqueCategory(val label: String) {
-    ENGINE("Engine & oil"),
-    WHEELS("Wheels & brakes"),
-    DRIVELINE("Driveline"),
-    SUSPENSION("Suspension & steering"),
-    OTHER("Other"),
+/** How torque specs are grouped; `app` names them. Stored by [name] in `torque_specs.category`. */
+enum class TorqueCategory {
+    ENGINE,
+    WHEELS,
+    DRIVELINE,
+    SUSPENSION,
+    OTHER,
     ;
 
     companion object {
@@ -37,8 +37,11 @@ enum class TorqueSource {
     }
 }
 
-/** A fastener most vehicles have, offered as a named row with nothing filled in. */
-data class TorqueTemplate(val name: String, val category: TorqueCategory)
+/**
+ * A fastener most vehicles have, offered as a named row with nothing filled in. `app` names it by
+ * [key]; the row keeps the name it was added with, like anything typed.
+ */
+data class TorqueTemplate(val key: String, val category: TorqueCategory)
 
 object TorqueSpecs {
     /** No wrench a car owner uses goes higher; catches a slipped decimal or the wrong unit. */
@@ -49,13 +52,13 @@ object TorqueSpecs {
      * them in from the service manual. (Values come only from a named list: see [KnownSpecs].)
      */
     val common: List<TorqueTemplate> = listOf(
-        TorqueTemplate("Oil drain plug", TorqueCategory.ENGINE),
-        TorqueTemplate("Oil filter", TorqueCategory.ENGINE),
-        TorqueTemplate("Spark plugs", TorqueCategory.ENGINE),
-        TorqueTemplate("Lug nuts", TorqueCategory.WHEELS),
-        TorqueTemplate("Front caliper bracket bolts", TorqueCategory.WHEELS),
-        TorqueTemplate("Rear caliper bracket bolts", TorqueCategory.WHEELS),
-        TorqueTemplate("Transmission drain plug", TorqueCategory.DRIVELINE),
+        TorqueTemplate("oil-drain-plug", TorqueCategory.ENGINE),
+        TorqueTemplate("oil-filter", TorqueCategory.ENGINE),
+        TorqueTemplate("spark-plugs", TorqueCategory.ENGINE),
+        TorqueTemplate("lug-nuts", TorqueCategory.WHEELS),
+        TorqueTemplate("front-caliper-bracket", TorqueCategory.WHEELS),
+        TorqueTemplate("rear-caliper-bracket", TorqueCategory.WHEELS),
+        TorqueTemplate("transmission-drain-plug", TorqueCategory.DRIVELINE),
     )
 
     /** What was typed, in [unit]; null unless it is a positive number a torque wrench could be set to. */
