@@ -319,11 +319,15 @@ private fun ReminderCard(
             }
         }
         val buttonShape = RoundedCornerShape(10.dp)
+        // Every card has the same buttons, so TalkBack is told whose they are (#234): "Log it: Brake fluid, 2019 Blue truck".
+        val job = r.status.item.name
+        val vehicle = "${r.vehicle.year} ${r.vehicle.shortName()}"
+        val logItFor = stringResource(R.string.reminders_log_it_for, job, vehicle)
         // "Log it" in ink, as on vehicle home: the accent on a row says it is late, so it isn't on every row's button.
         val logIt = @Composable { modifier: Modifier ->
             OutlinedButton(
                 onClick = onLogIt,
-                modifier = modifier.heightIn(min = 48.dp),
+                modifier = modifier.heightIn(min = 48.dp).semantics { contentDescription = logItFor },
                 shape = buttonShape,
                 border = BorderStroke(1.5.dp, scheme.onSurface),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
@@ -353,14 +357,14 @@ private fun ReminderCard(
                     logIt(Modifier.weight(1f))
                     // Snoozing only does something to a reminder that is due; one that is snoozed can be woken.
                     val second = when {
-                        r.status.snooze != null -> stringResource(R.string.reminders_end_snooze) to onEndSnooze
-                        r.status.status.state != DueState.OK -> stringResource(R.string.reminders_snooze) to onSnooze
+                        r.status.snooze != null -> Triple(stringResource(R.string.reminders_end_snooze), stringResource(R.string.reminders_end_snooze_for, job, vehicle), onEndSnooze)
+                        r.status.status.state != DueState.OK -> Triple(stringResource(R.string.reminders_snooze), stringResource(R.string.reminders_snooze_for, job, vehicle), onSnooze)
                         else -> null
                     }
-                    second?.let { (label, action) ->
+                    second?.let { (label, described, action) ->
                         Button(
                             onClick = action,
-                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp).semantics { contentDescription = described },
                             shape = buttonShape,
                             colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
                         ) {

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -237,6 +238,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
 
     ModalBottomSheet(
         onDismissRequest = { if (vm.progress == null) vm.close() },
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {

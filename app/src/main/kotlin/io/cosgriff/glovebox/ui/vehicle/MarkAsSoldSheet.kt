@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
@@ -84,6 +85,7 @@ fun MarkAsSoldSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {

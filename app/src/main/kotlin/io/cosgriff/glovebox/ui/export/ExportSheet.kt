@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.ui.AppText
@@ -254,6 +255,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {

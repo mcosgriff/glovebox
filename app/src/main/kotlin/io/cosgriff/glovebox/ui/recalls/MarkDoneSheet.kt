@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -90,6 +91,7 @@ fun MarkDoneSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {

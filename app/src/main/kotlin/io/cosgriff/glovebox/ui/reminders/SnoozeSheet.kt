@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -78,6 +79,7 @@ fun SnoozeSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {

@@ -612,7 +612,10 @@ internal fun VehicleDetailsContent(
                                             .semantics { onLongClick(label = copyVinLabel) { copy(); true } }
                                     },
                                 )
+                                // 48dp: the VIN row is a touch target (a long press copies it), and the rest match it.
+                                .heightIn(min = 48.dp)
                                 .padding(vertical = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

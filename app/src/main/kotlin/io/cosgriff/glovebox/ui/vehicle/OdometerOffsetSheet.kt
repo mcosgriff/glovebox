@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -86,6 +87,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { SheetHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = scheme.background,
     ) {
