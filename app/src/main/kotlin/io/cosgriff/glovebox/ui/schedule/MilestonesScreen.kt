@@ -306,50 +306,6 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val scheme = MaterialTheme.colorScheme
     val unit = state.unit
-    val list = rememberLazyListState()
-    // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
-    var placed by rememberSaveable { mutableStateOf(false) }
-    val rows = Milestones.folded(state.milestones)
-    // Open or closed is the user's once they touch it: a card they tapped, or everything through the two
-    // buttons. Until then only the next milestone is open, so the screen reads as a list of mileages.
-    var all by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var openedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
-    var closedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
-    // Runs of empty milestones the user has unfolded, by their first milestone.
-    var openedRuns by rememberSaveable { mutableStateOf(emptyList<Int>()) }
-    fun isOpen(m: MilestoneStatus): Boolean {
-        val at = m.milestone.atMiles
-        return when {
-            at in openedCards -> true
-            at in closedCards -> false
-            else -> all ?: (m.place == MilestonePlace.NEXT)
-        }
-    }
-    fun toggle(m: MilestoneStatus) {
-        val at = m.milestone.atMiles
-        if (isOpen(m)) {
-            openedCards = openedCards - at
-            closedCards = closedCards + at
-        } else {
-            closedCards = closedCards - at
-            openedCards = openedCards + at
-        }
-    }
-    fun setAll(open: Boolean) {
-        all = open
-        openedCards = emptyList()
-        closedCards = emptyList()
-        // Expanding everything unfolds the empty runs too; collapsing puts them back.
-        openedRuns = if (open) rows.filter { it.size > 1 }.map { it.first().milestone.atMiles } else emptyList()
-    }
-    LaunchedEffect(rows.isNotEmpty()) {
-        if (!placed && rows.isNotEmpty()) {
-            val next = rows.indexOfFirst { it.first().place == MilestonePlace.NEXT }
-            if (next > 0) list.scrollToItem(next + HEADER_ITEMS)
-            placed = true
-        }
-    }
-
     var repeating by rememberSaveable { mutableStateOf(false) }
     if (repeating && state.table.isNotEmpty()) {
         MilestoneRepeatDialog(
@@ -402,6 +358,74 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             onClose = vm::closeEditor,
         )
         return
+    }
+
+    MilestonesContent(
+        state, onBack, onOpenRecord,
+        onEdit = vm::edit, onShowMore = vm::showMore, onAddMilestone = vm::addMilestone, onChangeRepeat = { repeating = true },
+        onSaveFile = vm::saveAsFile, onRemove = { removing = true }, onAddKnown = vm::addKnown,
+    )
+}
+
+/** Milestones as given, with no ViewModel: what [MilestonesScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun MilestonesContent(
+    state: MilestonesState,
+    onBack: () -> Unit,
+    onOpenRecord: (recordId: Long) -> Unit,
+    /** Opens the editor on the user's own milestone at that mileage. */
+    onEdit: (atMiles: Int) -> Unit,
+    onShowMore: () -> Unit,
+    onAddMilestone: () -> Unit,
+    onChangeRepeat: () -> Unit,
+    onSaveFile: (text: String) -> Unit,
+    onRemove: () -> Unit,
+    onAddKnown: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val unit = state.unit
+    val list = rememberLazyListState()
+    // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
+    var placed by rememberSaveable { mutableStateOf(false) }
+    val rows = Milestones.folded(state.milestones)
+    // Open or closed is the user's once they touch it: a card they tapped, or everything through the two
+    // buttons. Until then only the next milestone is open, so the screen reads as a list of mileages.
+    var all by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    var openedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    var closedCards by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    // Runs of empty milestones the user has unfolded, by their first milestone.
+    var openedRuns by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    fun isOpen(m: MilestoneStatus): Boolean {
+        val at = m.milestone.atMiles
+        return when {
+            at in openedCards -> true
+            at in closedCards -> false
+            else -> all ?: (m.place == MilestonePlace.NEXT)
+        }
+    }
+    fun toggle(m: MilestoneStatus) {
+        val at = m.milestone.atMiles
+        if (isOpen(m)) {
+            openedCards = openedCards - at
+            closedCards = closedCards + at
+        } else {
+            closedCards = closedCards - at
+            openedCards = openedCards + at
+        }
+    }
+    fun setAll(open: Boolean) {
+        all = open
+        openedCards = emptyList()
+        closedCards = emptyList()
+        // Expanding everything unfolds the empty runs too; collapsing puts them back.
+        openedRuns = if (open) rows.filter { it.size > 1 }.map { it.first().milestone.atMiles } else emptyList()
+    }
+    LaunchedEffect(rows.isNotEmpty()) {
+        if (!placed && rows.isNotEmpty()) {
+            val next = rows.indexOfFirst { it.first().place == MilestonePlace.NEXT }
+            if (next > 0) list.scrollToItem(next + HEADER_ITEMS)
+            placed = true
+        }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -469,7 +493,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                             onToggle = { toggle(m) },
                             onOpenRecord = onOpenRecord,
                             // Only the user's own table can be edited; a repeat is the milestone it repeats.
-                            onEdit = if (state.fromTable) ({ vm.edit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
+                            onEdit = if (state.fromTable) ({ onEdit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
                             unit = unit,
                         )
                     }
@@ -496,7 +520,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
             if (state.milestones.isNotEmpty() && (!state.fromTable || state.repeatsEveryMiles != null)) {
                 item {
                     OutlinedButton(
-                        onClick = vm::showMore,
+                        onClick = onShowMore,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
@@ -510,7 +534,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         if (MilestoneEdits.canAdd(state.table.size)) {
                             OutlinedButton(
-                                onClick = vm::addMilestone,
+                                onClick = onAddMilestone,
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
@@ -521,7 +545,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                         Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
                             Row(
                                 Modifier.heightIn(min = 56.dp)
-                                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.milestones_change_repeat), onClick = { repeating = true })
+                                    .clickable(role = Role.Button, onClickLabel = stringResource(R.string.milestones_change_repeat), onClick = onChangeRepeat)
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -543,12 +567,12 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     SaveAsImportFile(
                         caption = stringResource(R.string.milestones_save_caption),
                         write = { MilestoneExport.written(state.table, state.repeatsEveryMiles, unit) },
-                        onSave = vm::saveAsFile,
+                        onSave = onSaveFile,
                     )
                 }
                 item {
                     TextButton(
-                        onClick = { removing = true },
+                        onClick = onRemove,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                     ) {
@@ -561,7 +585,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             OutlinedButton(
-                                onClick = vm::addKnown,
+                                onClick = onAddKnown,
                                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                                 shape = RoundedCornerShape(14.dp),
                                 border = BorderStroke(1.5.dp, scheme.onSurface),
@@ -579,7 +603,7 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 }
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        TextButton(onClick = vm::addMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        TextButton(onClick = onAddMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                             Text(stringResource(R.string.milestones_make_own), fontWeight = FontWeight.SemiBold)
                         }
                         Text(

@@ -61,6 +61,17 @@ Keep them green; lint errors fail the build.
   `connectedBenchmarkReleaseAndroidTest`); the committed profile came from a Pixel 10 Pro AVD, API 37.
   The benchmark asks vehicle home for "fully drawn" (`ReportDrawn`), so it times the start to the reminders. The release APK carries it as
   `assets/dexopt/baseline.prof`, and `profileinstaller` installs it on first launch, sideloaded or not.
+- **Screenshot tests** (#233, `app/src/test/.../ui/screens`): Roborazzi under Robolectric draws the main screens
+  in light and dark from made-up `Fixtures` (no database, no ViewModel) and compares them with the references in
+  `app/src/test/screenshots/`, pixel for pixel. They run with the unit tests, so `./gradlew build` and CI fail
+  on any change (`roborazzi.test.verify=true` in `gradle.properties`); a failure leaves each screen as drawn
+  now and its difference in `app/build/outputs/roborazzi/`, which CI uploads. After a change meant to alter
+  how a screen looks, run `./gradlew :app:recordRoborazziDebug`, look at every image it changed, and commit
+  them. **A screen is tested through its `…Content` composable**, which takes plain state and callbacks; the
+  `…Screen` around it only reads the ViewModel and holds the sheets and dialogs. Keep new screens that way
+  and add them to `ScreensScreenshotTest`. Fixtures are made up (a public repo): VINs that pass the check
+  digit and belong to no one, invented records, no photos, and no real torque figures. Dates are drawn on
+  `Fixtures.TODAY`, so a `…Content` that needs today takes it as a parameter, never `LocalDate.now()`.
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.

@@ -107,16 +107,13 @@ fun RemindersScreen(
     vm: RemindersViewModel = hiltViewModel(),
 ) {
     val garage = vm.garage.collectAsStateWithLifecycle().value ?: return // first frame while loading
-    // 0 = all vehicles. A vehicle that has since gone falls back to all.
-    var filterId by rememberSaveable { mutableLongStateOf(0L) }
-    val shown = garage.vehicles.filter { it.vehicle.id == filterId }.ifEmpty { garage.vehicles }
-    val groups = ReminderPresentation.grouped(shown.map { it.vehicle to it.comingUp }, LocalDate.now())
-
+    val today = LocalDate.now()
     val res = LocalResources.current
-    val rulesLabel = stringResource(R.string.reminder_rules_title)
     // The reminder whose snooze sheet is open; 0 = none. Looked up again each time so it stays current.
+    // Item ids are unique across vehicles, so the vehicle filter doesn't matter here.
     var snoozingId by rememberSaveable { mutableLongStateOf(0L) }
-    val snoozing = groups.values.flatten().firstOrNull { it.status.item.id == snoozingId && it.status.lastDone != null }
+    val snoozing = ReminderPresentation.grouped(garage.vehicles.map { it.vehicle to it.comingUp }, today).values.flatten()
+        .firstOrNull { it.status.item.id == snoozingId && it.status.lastDone != null }
     if (snoozing != null) {
         val item = snoozing.status.item
         val owner = garage.vehicles.first { it.vehicle.id == snoozing.vehicle.id }
@@ -129,8 +126,8 @@ fun RemindersScreen(
         SnoozeSheet(
             reminder = snoozing,
             subtitle = listOfNotNull("${snoozing.vehicle.year} ${snoozing.vehicle.shortName()}", snoozing.due()).joinToString(" · "),
-            options = Snoozing.options(snoozing.status, owner.odometer, LocalDate.now(), owner.oil, snoozing.vehicle.unit),
-            skip = Snoozing.skip(snoozing.status, owner.odometer, LocalDate.now()),
+            options = Snoozing.options(snoozing.status, owner.odometer, today, owner.oil, snoozing.vehicle.unit),
+            skip = Snoozing.skip(snoozing.status, owner.odometer, today),
             onSnooze = { apply(it, false) },
             onSkip = { apply(it, true) },
             onAlreadyDone = {
@@ -140,6 +137,38 @@ fun RemindersScreen(
             onDismiss = { snoozingId = 0 },
         )
     }
+
+    RemindersContent(
+        garage, today, notificationsAllowed = vm.notifier.allowed,
+        onLogIt = onLogIt, onAddVehicle = onAddVehicle, onOpenRules = onOpenRules, onOpenNotifications = onOpenNotifications,
+        onSnooze = { snoozingId = it.status.item.id },
+        onEndSnooze = { r ->
+            val item = r.status.item
+            val before = item.snooze
+            vm.setSnooze(item.id, null)
+            onMessage(res.getString(R.string.reminders_unsnoozed, item.name), res.getString(R.string.undo)) { vm.setSnooze(item.id, before) }
+        },
+    )
+}
+
+/** The Reminders tab as given, with no ViewModel: what [RemindersScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun RemindersContent(
+    garage: Garage,
+    today: LocalDate,
+    notificationsAllowed: Boolean,
+    onLogIt: (vehicleId: Long, scheduleItemId: Long) -> Unit,
+    onAddVehicle: () -> Unit,
+    onOpenRules: () -> Unit,
+    onOpenNotifications: () -> Unit,
+    onSnooze: (UrgentItem<VehicleEntity>) -> Unit,
+    onEndSnooze: (UrgentItem<VehicleEntity>) -> Unit,
+) {
+    // 0 = all vehicles. A vehicle that has since gone falls back to all.
+    var filterId by rememberSaveable { mutableLongStateOf(0L) }
+    val shown = garage.vehicles.filter { it.vehicle.id == filterId }.ifEmpty { garage.vehicles }
+    val groups = ReminderPresentation.grouped(shown.map { it.vehicle to it.comingUp }, today)
+    val rulesLabel = stringResource(R.string.reminder_rules_title)
 
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
@@ -174,7 +203,7 @@ fun RemindersScreen(
         }
 
         // The moment reminders exist is the moment being told about them is worth something.
-        if (groups.isNotEmpty() && !vm.notifier.allowed) {
+        if (groups.isNotEmpty() && !notificationsAllowed) {
             item {
                 Surface(
                     onClick = onOpenNotifications,
@@ -218,13 +247,8 @@ fun RemindersScreen(
                     group = group,
                     r = r,
                     onLogIt = { onLogIt(r.vehicle.id, r.status.item.id) },
-                    onSnooze = { snoozingId = r.status.item.id },
-                    onEndSnooze = {
-                        val item = r.status.item
-                        val before = item.snooze
-                        vm.setSnooze(item.id, null)
-                        onMessage(res.getString(R.string.reminders_unsnoozed, item.name), res.getString(R.string.undo)) { vm.setSnooze(item.id, before) }
-                    },
+                    onSnooze = { onSnooze(r) },
+                    onEndSnooze = { onEndSnooze(r) },
                 )
             }
         }

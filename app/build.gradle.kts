@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.roborazzi)
 }
 
 // CI passes -PversionName=1.2.0 -PversionCode=<run number>. Local builds use version.txt, which the
@@ -78,6 +79,9 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // The screenshot tests (#233) draw screens under Robolectric, which needs the app's resources and fonts.
+    testOptions.unitTests.isIncludeAndroidResources = true
 
     lint {
         // Existing warnings live in the baseline; CI fails only on new issues.
@@ -196,4 +200,12 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.junit)
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
+    // The empty activity the Compose test rule draws into; only in the debug manifest, never the release.
+    debugImplementation(libs.compose.ui.test.manifest)
 }

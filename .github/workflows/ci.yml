@@ -57,6 +57,16 @@ jobs:
             exit 1
           fi
 
+      # The screenshot tests (#233) run with the unit tests: on a mismatch, Roborazzi writes each screen as
+      # drawn now beside its reference and the difference (`*_compare.png`).
+      - name: Upload screenshot differences
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screenshot-differences
+          path: app/build/outputs/roborazzi
+          if-no-files-found: ignore
+
       - name: Upload lint report
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
