@@ -137,9 +137,9 @@ Keep them green; lint errors fail the build.
 - **NHTSA recalls are by year/make/model**; the public API can't confirm repair status for a VIN.
   UI lets the user mark recalls done and links to the manufacturer's VIN lookup.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
-  Android developer verification (#267) registers the package with that key's certificate in the
-  Android Developer Console (a full-distribution account: sideloading worldwide needs one from 2027), so
-  a new key would also mean registering again. The ownership-challenge APK is built on the maintainer's
+  **The package is registered for Android developer verification** (#267, 2026-10-17) with that key's
+  certificate in the Android Developer Console (a full-distribution account: sideloading worldwide needs
+  one from 2027), so a new key would also mean registering again. The ownership-challenge APK is built on the maintainer's
   machine by `.github/scripts/registration-apk.sh` (the console's snippet in
   `assets/adi-registration.properties`, git-ignored, for that one build), uploaded to the console only,
   never published. Releases carry no snippet and nothing in the app changes for verification.
