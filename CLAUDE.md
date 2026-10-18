@@ -72,6 +72,17 @@ Keep them green; lint errors fail the build.
   and add them to `ScreensScreenshotTest`. Fixtures are made up (a public repo): VINs that pass the check
   digit and belong to no one, invented records, no photos, and no real torque figures. Dates are drawn on
   `Fixtures.TODAY`, so a `…Content` that needs today takes it as a parameter, never `LocalDate.now()`.
+- **Accessibility checks** (#234) run in the same tests, before each image is compared: Google's Accessibility
+  Test Framework (latest preset, through `roborazzi-accessibility-check`) over every window drawn, in light and
+  dark, failing on a warning as on an error (touch targets under 48dp, text contrast under 4.5:1, missing
+  labels, clickable items that read the same). **A new screen test gets them by using `shoot` or
+  `shootScreen`.** Compose's own `enableAccessibilityChecks()` switches itself off under Robolectric, which
+  is why it isn't used. A deliberate finding is suppressed in `Screenshots.kt` with `allowed(check, …)` for
+  that one kind of element, with a comment saying why; the only one is text contrast on a disabled control
+  (WCAG leaves inactive controls out). Only what is on screen is checked, so a long screen's lower part
+  isn't. `EndToEndTest` drives the app with UI Automator and has no accessibility pass: the screen tests
+  are where these checks live. Bottom sheets take `dragHandle = { SheetHandle() }` (`Sheets.kt`), Material's
+  handle in a 48dp slot; Material's alone is a 32dp target.
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.

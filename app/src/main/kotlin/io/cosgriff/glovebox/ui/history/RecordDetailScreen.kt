@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -212,7 +213,7 @@ fun RecordDetailScreen(
 
     if (confirmingDelete) {
 
-        ModalBottomSheet(onDismissRequest = { confirmingDelete = false }) {
+        ModalBottomSheet(onDismissRequest = { confirmingDelete = false }, dragHandle = { SheetHandle() }) {
             Column(
                 Modifier.navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),

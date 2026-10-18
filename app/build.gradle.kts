@@ -206,6 +206,7 @@ dependencies {
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.roborazzi.accessibility.check)
     // The empty activity the Compose test rule draws into; only in the debug manifest, never the release.
     debugImplementation(libs.compose.ui.test.manifest)
 }
