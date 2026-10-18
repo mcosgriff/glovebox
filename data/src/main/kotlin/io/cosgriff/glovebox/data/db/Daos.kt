@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.TakesItem
+import io.cosgriff.glovebox.domain.WhatItTakes
 import java.time.LocalDate
 
 @Dao
@@ -101,6 +103,41 @@ interface VehicleDao {
 
     @Query("UPDATE vehicles SET wiperDriverIn = :driver, wiperPassengerIn = :passenger, wiperRearIn = :rear, wiperBlades = :note WHERE id = :id")
     suspend fun setWipers(id: Long, driver: Int?, passenger: Int?, rear: Int?, note: String?)
+
+    /** [toCheck] is the TakesItem names still tagged DOUBLE-CHECK, comma-separated; null for none. */
+    @Query("UPDATE vehicles SET takesKnownList = :list, takesToCheck = :toCheck WHERE id = :id")
+    suspend fun setTakesKnown(id: Long, list: String?, toCheck: String?)
+
+    @Query("UPDATE vehicles SET takesToCheck = :toCheck WHERE id = :id")
+    suspend fun setTakesToCheck(id: Long, toCheck: String?)
+
+    /**
+     * Writes [items] of [takes] (rows of "What it takes" filled from the bundled list [list]) and
+     * records them as still to check, all at once. Only those rows are written, each whole.
+     */
+    @Transaction
+    suspend fun fillTakes(id: Long, takes: WhatItTakes, items: List<TakesItem>, list: String, toCheck: String?) {
+        for (item in items) {
+            when (item) {
+                TakesItem.OIL -> setOil(id, takes.oilGrade, takes.oilApproval, takes.oilCapacity, takes.oilCapacityUnit?.name.takeIf { takes.oilCapacity != null }, takes.oilFilter)
+                TakesItem.TIRES -> setTires(
+                    id, takes.tireSize, takes.tireSizeRear.takeIf { takes.tireSize != null },
+                    takes.tirePressureFront, takes.tirePressureRear, takes.tirePressureSpare, takes.tirePressureUnit?.name,
+                )
+                TakesItem.WIPERS -> setWipers(id, takes.wiperDriver, takes.wiperPassenger, takes.wiperRear, takes.wiperNote)
+                TakesItem.TRANSMISSION -> setTransmissionFluid(id, takes.transmissionFluid)
+                TakesItem.DIFFERENTIAL -> setDifferentialOil(id, takes.differentialOil)
+                TakesItem.TRANSFER_CASE -> setTransferCaseOil(id, takes.transferCaseOil)
+                TakesItem.COOLANT -> setCoolant(id, takes.coolant)
+                TakesItem.BRAKE_FLUID -> setBrakeFluid(id, takes.brakeFluid)
+                TakesItem.AIR_FILTERS -> setAirFilters(id, takes.engineAirFilter, takes.cabinAirFilter)
+                TakesItem.SPARK_PLUGS -> setSparkPlugs(id, takes.sparkPlug, takes.sparkPlugGap)
+                TakesItem.BATTERY -> setBattery(id, takes.batteryGroup, takes.batteryCca)
+                TakesItem.BULBS -> setBulbs(id, takes.bulbLow, takes.bulbHigh, takes.bulbFog)
+            }
+        }
+        setTakesKnown(id, list, toCheck)
+    }
 
     @Query("UPDATE vehicles SET photoFile = :fileName WHERE id = :id")
     suspend fun setPhotoFile(id: Long, fileName: String?)

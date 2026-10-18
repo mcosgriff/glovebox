@@ -30,7 +30,7 @@ class Converters {
         MilestoneJobEntity::class,
         DocumentEntity::class,
     ],
-    version = 25,
+    version = 26,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -57,6 +57,7 @@ class Converters {
         AutoMigration(from = 22, to = 23), // recalls.archivedOn
         AutoMigration(from = 23, to = 24), // vehicles.plate, plateRegion
         AutoMigration(from = 24, to = 25), // documents
+        AutoMigration(from = 25, to = 26), // vehicles.takesKnownList, takesToCheck
     ],
 )
 @ColumnTypeConverters(Converters::class)

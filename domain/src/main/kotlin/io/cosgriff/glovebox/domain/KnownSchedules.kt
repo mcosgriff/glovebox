@@ -106,15 +106,7 @@ object KnownSchedules {
         }.orEmpty().map(MilestoneImport::nameKey).toSet()
         val fourWheel = jobs("fourWheelDriveOnly")
         val notManual = jobs("manualExcluded")
-        val engine = o["engine"]?.let { e ->
-            check.obj(e, "engine", setOf("label", "displacementL", "fuel"), required = setOf("label", "displacementL"))?.let { en ->
-                val label = en["label"]?.let { check.string(it, "engine.label", 40) }
-                val litres = en["displacementL"]?.let { check.number(it, "engine.displacementL") }
-                val fuel = en["fuel"]?.let { check.string(it, "engine.fuel", 30) }
-                if (litres != null && (litres < 0.1 || litres > 20.0)) check.fail("engine.displacementL", "must be between 0.1 and 20")
-                if (label != null && litres != null && ("fuel" !in en || fuel != null)) KnownEngine(label, litres, fuel) else null
-            }
-        }
+        val engine = o["engine"]?.let { KnownLists.engine(it, check) }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
@@ -158,23 +150,14 @@ object KnownSchedules {
     private fun forModel(lists: List<KnownScheduleList>, year: Int, make: String, model: String) =
         lists.filter { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
 
-    private fun sameSize(list: KnownEngine, litres: Double) = kotlin.math.abs(list.displacementL - litres) < 0.05
-
-    private fun fuelFits(list: KnownEngine, fuel: String?): Boolean? =
-        if (list.fuel == null) true else fuel?.takeIf { it.isNotBlank() }?.contains(list.fuel, ignoreCase = true)
-
     /**
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
      * give that engine's size, and [fuel] its fuel where the list says one: **an engine that isn't
      * known matches no engine's list**, and the owner is asked instead ([engineChoices]).
      */
-    fun match(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): KnownScheduleList? {
-        val candidates = forModel(lists, year, make, model)
-        val litres = Engines.displacementL(engine)
-        return candidates.firstOrNull { c -> c.engine != null && litres != null && sameSize(c.engine, litres) && fuelFits(c.engine, fuel) == true }
-            ?: candidates.firstOrNull { it.engine == null }
-    }
+    fun match(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): KnownScheduleList? =
+        KnownLists.forEngine(forModel(lists, year, make, model), KnownScheduleList::engine, engine, fuel)
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
@@ -182,13 +165,8 @@ object KnownSchedules {
      * doesn't rule out. Empty when nothing is offered for the model, or the vehicle has an engine none
      * of them is for. The pick is the owner's; nothing here chooses for them.
      */
-    fun engineChoices(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): List<KnownScheduleList> {
-        if (match(lists, year, make, model, engine, fuel) != null) return emptyList()
-        val litres = Engines.displacementL(engine)
-        return forModel(lists, year, make, model).filter { c ->
-            c.engine != null && (litres == null || sameSize(c.engine, litres)) && fuelFits(c.engine, fuel) != false
-        }
-    }
+    fun engineChoices(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): List<KnownScheduleList> =
+        KnownLists.engineChoices(forModel(lists, year, make, model), KnownScheduleList::engine, engine, fuel)
 
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one

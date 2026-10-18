@@ -72,6 +72,7 @@ import javax.inject.Inject
 class FluidsPartsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
+    private val knownTakes: KnownTakesRows,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<FluidsPartsRoute>().vehicleId
 
@@ -79,9 +80,34 @@ class FluidsPartsViewModel @Inject constructor(
     val vehicle: StateFlow<VehicleEntity?> = vehicles.observe(vehicleId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    /** One of the rows past oil, tires and wipers; [values] are its fields in order, each checked, null for empty. */
-    fun save(item: TakesItem, values: List<Any?>) = viewModelScope.launch {
+    /** A maker's list for this vehicle's "What it takes", and the rows filled from one still to check. */
+    val known: StateFlow<TakesKnown> = knownTakes.observe(vehicles.observe(vehicleId))
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TakesKnown())
+
+    fun fillKnown() = viewModelScope.launch { vehicle.value?.let { knownTakes.fill(it) } }
+
+    /**
+     * One of the rows past oil, tires and wipers; [values] are its fields in order, each checked, null for
+     * empty. [checked] is the owner saying they checked a row filled from a list against their manual.
+     */
+    fun save(item: TakesItem, values: List<Any?>, checked: Boolean) = viewModelScope.launch {
         fun s(i: Int) = values.getOrNull(i) as String?
+        vehicle.value?.let { v ->
+            val w = v.whatItTakes()
+            val after = when (item) {
+                TakesItem.TRANSMISSION -> w.copy(transmissionFluid = s(0))
+                TakesItem.DIFFERENTIAL -> w.copy(differentialOil = s(0))
+                TakesItem.TRANSFER_CASE -> w.copy(transferCaseOil = s(0))
+                TakesItem.COOLANT -> w.copy(coolant = s(0))
+                TakesItem.BRAKE_FLUID -> w.copy(brakeFluid = s(0))
+                TakesItem.AIR_FILTERS -> w.copy(engineAirFilter = s(0), cabinAirFilter = s(1))
+                TakesItem.SPARK_PLUGS -> w.copy(sparkPlug = s(0), sparkPlugGap = s(1))
+                TakesItem.BATTERY -> w.copy(batteryGroup = s(0), batteryCca = values.getOrNull(1) as Int?)
+                TakesItem.BULBS -> w.copy(bulbLow = s(0), bulbHigh = s(1), bulbFog = s(2))
+                TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> w
+            }
+            knownTakes.saved(v, item, after, checked)
+        }
         when (item) {
             TakesItem.TRANSMISSION -> vehicles.setTransmissionFluid(vehicleId, s(0))
             TakesItem.DIFFERENTIAL -> vehicles.setDifferentialOil(vehicleId, s(0))
@@ -105,9 +131,12 @@ class FluidsPartsViewModel @Inject constructor(
 fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewModel()) {
     val v = vm.vehicle.collectAsStateWithLifecycle().value ?: return // first frame while loading
     val takes = v.whatItTakes()
+    val known by vm.known.collectAsStateWithLifecycle()
     val scheme = MaterialTheme.colorScheme
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
-    editing?.let { item -> MoreDialog(item, takes, onSave = { vm.save(item, it); editing = null }, onDismiss = { editing = null }) }
+    editing?.let { item ->
+        MoreDialog(item, takes, toCheck = item in known.toCheck, onSave = { values, ok -> vm.save(item, values, ok); editing = null }, onDismiss = { editing = null })
+    }
 
     val entered = takes.entered()
     val notEntered = takes.notEntered()
@@ -146,13 +175,15 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
                 }
             }
         }
+        known.toCheckFrom?.let { from -> item { KnownTakesNote(from, Modifier.padding(horizontal = 20.dp)) } }
         items(entered, key = { it.name }) { item ->
-            TakesCard(item, takes, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
+            TakesCard(item, takes, toCheck = item in known.toCheck, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
         }
+        known.list?.let { list -> known.offer?.let { plan -> item { KnownTakesOffer(list, plan, onFill = vm::fillKnown, Modifier.padding(horizontal = 20.dp)) } } }
         if (notEntered.isNotEmpty()) {
             item { SectionLabel(stringResource(R.string.fluids_add_section), Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp)) }
             items(notEntered, key = { it.name }) { item ->
-                TakesCard(item, takes, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
+                TakesCard(item, takes, toCheck = false, onClick = { editing = item }, modifier = Modifier.padding(horizontal = 20.dp))
             }
         }
         item {
@@ -169,7 +200,7 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
 /** One row of what it takes as a card: its value, or "Tap to add" when nothing is entered. A long press copies its part numbers. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, modifier: Modifier) {
+private fun TakesCard(item: TakesItem, takes: WhatItTakes, toCheck: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
@@ -196,6 +227,7 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, onClick: () -> Unit, 
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(item.label, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                if (toCheck) DoubleCheckTag()
                 value?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono) }
             }
             if (value == null) {
@@ -255,7 +287,8 @@ private fun moreFields(item: TakesItem, w: WhatItTakes): List<MoreField> {
 
 /** The editor for any row past oil, tires and wipers: its fields, each checked, saved in their stored form. */
 @Composable
-private fun MoreDialog(item: TakesItem, takes: WhatItTakes, onSave: (List<Any?>) -> Unit, onDismiss: () -> Unit) {
+private fun MoreDialog(item: TakesItem, takes: WhatItTakes, toCheck: Boolean, onSave: (List<Any?>, Boolean) -> Unit, onDismiss: () -> Unit) {
+    val checked = rememberSaveable(item) { mutableStateOf(false) }
     val fields = remember(item) { moreFields(item, takes) }
     val texts = rememberSaveable(item, saver = listSaver(save = { it.toList() }, restore = { it.toMutableStateList() })) {
         fields.map { it.current?.toString().orEmpty() }.toMutableStateList()
@@ -264,8 +297,9 @@ private fun MoreDialog(item: TakesItem, takes: WhatItTakes, onSave: (List<Any?>)
     SpecEditor(
         title = item.label,
         valid = valid,
-        onSave = { onSave(fields.indices.map { i -> texts[i].orNullIfBlank()?.let { fields[i].check(it) } }) },
+        onSave = { onSave(fields.indices.map { i -> texts[i].orNullIfBlank()?.let { fields[i].check(it) } }, checked.value) },
         onDismiss = onDismiss,
+        checkedAgainstManual = checked.takeIf { toCheck },
     ) {
         fields.forEachIndexed { i, f ->
             CheckedField(texts[i], { texts[i] = it }, stringResource(f.label), stringResource(f.error), f.check, supporting = f.supporting?.let { stringResource(it) }, keyboard = f.keyboard)

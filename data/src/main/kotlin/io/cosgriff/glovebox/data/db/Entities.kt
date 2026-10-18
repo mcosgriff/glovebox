@@ -107,6 +107,16 @@ data class VehicleEntity(
      * converts those figures in the same transaction.
      */
     @ColumnInfo(defaultValue = "MILES") val distanceUnit: String = "MILES",
+    /**
+     * The id of the bundled list (KnownTakes) rows of "What it takes" were last filled from; null if
+     * none ever was. Kept after the rows are checked or changed: it names the source on the screen.
+     */
+    val takesKnownList: String? = null,
+    /**
+     * TakesItem names, comma-separated, of the rows filled from [takesKnownList] that the owner hasn't
+     * checked or changed yet: each is tagged DOUBLE-CHECK. Null when there are none.
+     */
+    val takesToCheck: String? = null,
 )
 
 @Entity(

@@ -5,7 +5,8 @@ import io.cosgriff.glovebox.domain.VehicleSpecEntry.Volume
 
 /**
  * Everything entered under "What it takes" for one vehicle, already checked (VehicleSpecEntry). It is
- * all the owner's own entry: nothing here is looked up or suggested from the model.
+ * the owner's own entry, or filled at their request from a maker's document that ships with the app
+ * ([KnownTakes]); nothing is looked up, and nothing is suggested from the model without a named source.
  *
  * One place says what each item's line is made of, so Vehicle details, Log service's hints and the export agree.
  */
@@ -101,6 +102,29 @@ data class WhatItTakes(
 
     /** Every row with something entered, with its line, in the card's order: what an export prints. */
     fun lines(): List<Pair<TakesItem, List<TakesPart>>> = TakesItem.entries.mapNotNull { item -> summary(item)?.let { item to it } }
+
+    /** These rows with [item]'s fields taken from [from], all of them, so a row is never half one and half the other. */
+    fun with(item: TakesItem, from: WhatItTakes): WhatItTakes = when (item) {
+        TakesItem.OIL -> copy(oilGrade = from.oilGrade, oilApproval = from.oilApproval, oilCapacity = from.oilCapacity, oilCapacityUnit = from.oilCapacityUnit, oilFilter = from.oilFilter)
+        TakesItem.TIRES -> copy(
+            tireSize = from.tireSize,
+            tireSizeRear = from.tireSizeRear,
+            tirePressureFront = from.tirePressureFront,
+            tirePressureRear = from.tirePressureRear,
+            tirePressureSpare = from.tirePressureSpare,
+            tirePressureUnit = from.tirePressureUnit,
+        )
+        TakesItem.WIPERS -> copy(wiperDriver = from.wiperDriver, wiperPassenger = from.wiperPassenger, wiperRear = from.wiperRear, wiperNote = from.wiperNote)
+        TakesItem.TRANSMISSION -> copy(transmissionFluid = from.transmissionFluid)
+        TakesItem.DIFFERENTIAL -> copy(differentialOil = from.differentialOil)
+        TakesItem.TRANSFER_CASE -> copy(transferCaseOil = from.transferCaseOil)
+        TakesItem.COOLANT -> copy(coolant = from.coolant)
+        TakesItem.BRAKE_FLUID -> copy(brakeFluid = from.brakeFluid)
+        TakesItem.AIR_FILTERS -> copy(engineAirFilter = from.engineAirFilter, cabinAirFilter = from.cabinAirFilter)
+        TakesItem.SPARK_PLUGS -> copy(sparkPlug = from.sparkPlug, sparkPlugGap = from.sparkPlugGap)
+        TakesItem.BATTERY -> copy(batteryGroup = from.batteryGroup, batteryCca = from.batteryCca)
+        TakesItem.BULBS -> copy(bulbLow = from.bulbLow, bulbHigh = from.bulbHigh, bulbFog = from.bulbFog)
+    }
 
     private fun entered(text: String?): List<TakesPart>? = text?.let { listOf(TakesPart.Entered(it)) }
 

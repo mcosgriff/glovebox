@@ -1,0 +1,58 @@
+{
+  "id": "toyota-4runner-2017-2020",
+  "title": "2017–2020 4Runner",
+  "make": "Toyota",
+  "model": "4Runner",
+  "years": {
+    "from": 2017,
+    "to": 2020
+  },
+  "source": {
+    "name": "Toyota 4Runner owner's manual",
+    "url": "https://assets.sia.toyota.com/publications/en/om-s/OM35B54U/pdf/OM35B54U.pdf",
+    "retrieved": "2026-10-18",
+    "note": "Read from the Specifications chapter of Toyota's owner's manual for these model years. Check each against the manual for your own vehicle.",
+    "basis": "Figures printed in Toyota's own owner's manuals, which Toyota publishes free: OM35B37U (2017), OM35B46U, OM35B48U, OM35B54U (2020). Copied from those documents; no third party's compilation was used."
+  },
+  "takes": {
+    "oil": {
+      "grade": "0W-20",
+      "approval": "ILSAC GF-5",
+      "capacity": 6.6,
+      "capacityUnit": "qt"
+    },
+    "tires": {
+      "sizes": [
+        "P265/70R17 113S",
+        "P245/60R20 107H"
+      ],
+      "pressure": {
+        "front": 32,
+        "rear": 32,
+        "spare": 32,
+        "unit": "psi"
+      }
+    },
+    "transmission": "Toyota Genuine ATF WS",
+    "differential": "75W-85 GL-5",
+    "coolant": "Toyota Super Long Life Coolant",
+    "brakeFluid": "DOT 3",
+    "sparkPlugs": {
+      "part": "DENSO SK16HR11",
+      "gap": "0.043 in"
+    },
+    "bulbs": {
+      "low": "H11",
+      "high": "9005",
+      "fog": "H16"
+    }
+  },
+  "variants": [
+    {
+      "drive": "4WD",
+      "takes": {
+        "transferCase": "Toyota Transfer gear oil LF 75W"
+      }
+    }
+  ]
+}

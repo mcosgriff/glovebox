@@ -21,6 +21,15 @@ object Transmissions {
         val t = transmission?.uppercase().orEmpty()
         return "MANUAL" in t && "AUTOMATED" !in t
     }
+
+    /**
+     * True only when the gearbox is known to shift itself: an automatic, a CVT, a dual-clutch or an
+     * automated manual. Nothing on record is "can't tell", never "automatic".
+     */
+    fun isAutomatic(transmission: String?): Boolean {
+        val t = transmission?.uppercase().orEmpty()
+        return !isManual(transmission) && listOf("AUTOMATIC", "AUTOMATED", "CVT", "CONTINUOUSLY", "DUAL-CLUTCH", "DCT", "DSG").any { it in t }
+    }
 }
 
 /** What a vehicle's engine text says: "4.0L 6-cyl" as a VIN decode writes it, or whatever the owner typed. */

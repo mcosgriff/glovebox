@@ -85,6 +85,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -195,8 +196,21 @@ class VehicleDetailsViewModel @Inject constructor(
     private val picker: VehiclePhotoPicker,
     private val archiver: VehicleArchiver,
     private val units: UnitDao,
+    private val knownTakes: KnownTakesRows,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
+
+    /** A maker's list for this vehicle's "What it takes", and the rows filled from one still to check. */
+    val known: StateFlow<TakesKnown> = knownTakes.observe(vehicles.observe(vehicleId))
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TakesKnown())
+
+    fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
+
+    /** The row as it was before [item]'s editor saved [after]; [checked] is the owner saying they checked it against their manual. */
+    private suspend fun recheck(item: TakesItem, after: (WhatItTakes) -> WhatItTakes, checked: Boolean) {
+        val v = details.value?.vehicle ?: return
+        knownTakes.saved(v, item, after(v.whatItTakes()), checked)
+    }
 
     /** Null while loading, and if the vehicle no longer exists. */
     val details: StateFlow<VehicleDetails?> = combine(
@@ -254,16 +268,28 @@ class VehicleDetailsViewModel @Inject constructor(
     fun savePlate(plate: String?, region: String?) = viewModelScope.launch { vehicles.setPlate(vehicleId, plate, region) }
 
     /** Each is already checked and in its standard form (VehicleSpecEntry); null clears it. */
-    fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?) = viewModelScope.launch {
+    fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?, checked: Boolean) = viewModelScope.launch {
+        recheck(TakesItem.OIL, { it.copy(oilGrade = grade, oilApproval = approval, oilCapacity = capacity, oilCapacityUnit = unit.takeIf { capacity != null }, oilFilter = filter) }, checked)
         vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
     }
 
-    fun saveTires(front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, unit: VehicleSpecEntry.Pressure) = viewModelScope.launch {
+    fun saveTires(front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, unit: VehicleSpecEntry.Pressure, checked: Boolean) = viewModelScope.launch {
         val any = pFront != null || pRear != null || pSpare != null
+        recheck(
+            TakesItem.TIRES,
+            {
+                it.copy(
+                    tireSize = front, tireSizeRear = rear.takeIf { front != null },
+                    tirePressureFront = pFront, tirePressureRear = pRear, tirePressureSpare = pSpare, tirePressureUnit = unit.takeIf { any },
+                )
+            },
+            checked,
+        )
         vehicles.setTires(vehicleId, front, rear.takeIf { front != null }, pFront, pRear, pSpare, unit.name.takeIf { any })
     }
 
-    fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?) = viewModelScope.launch {
+    fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?, checked: Boolean) = viewModelScope.launch {
+        recheck(TakesItem.WIPERS, { it.copy(wiperDriver = driver, wiperPassenger = passenger, wiperRear = rear, wiperNote = note) }, checked)
         vehicles.setWipers(vehicleId, driver, passenger, rear, note)
     }
 
@@ -320,6 +346,7 @@ fun VehicleDetailsScreen(
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
     val takes = v.whatItTakes()
+    val known by vm.known.collectAsStateWithLifecycle()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
@@ -410,9 +437,13 @@ fun VehicleDetailsScreen(
     var nickname by rememberSaveable { mutableStateOf(v.nickname.orEmpty()) }
 
     when (val item = editing) {
-        TakesItem.OIL -> OilDialog(v, onSave = { g, a, c, u, f -> vm.saveOil(g, a, c, u, f); editing = null }, onDismiss = { editing = null })
-        TakesItem.TIRES -> TiresDialog(v, onSave = { f, r, pf, pr, ps, u -> vm.saveTires(f, r, pf, pr, ps, u); editing = null }, onDismiss = { editing = null })
-        TakesItem.WIPERS -> WipersDialog(v, onSave = { d, p, r, n -> vm.saveWipers(d, p, r, n); editing = null }, onDismiss = { editing = null })
+        TakesItem.OIL -> OilDialog(v, TakesItem.OIL in known.toCheck, onSave = { g, a, c, u, f, ok -> vm.saveOil(g, a, c, u, f, ok); editing = null }, onDismiss = { editing = null })
+        TakesItem.TIRES -> TiresDialog(
+            v, TakesItem.TIRES in known.toCheck, known.list?.tireSizes.orEmpty(),
+            onSave = { f, r, pf, pr, ps, u, ok -> vm.saveTires(f, r, pf, pr, ps, u, ok); editing = null },
+            onDismiss = { editing = null },
+        )
+        TakesItem.WIPERS -> WipersDialog(v, TakesItem.WIPERS in known.toCheck, onSave = { d, p, r, n, ok -> vm.saveWipers(d, p, r, n, ok); editing = null }, onDismiss = { editing = null })
         null -> Unit
         else -> Unit // the rest are edited on their own page
     }
@@ -573,7 +604,10 @@ fun VehicleDetailsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (spec in known.toCheck) DoubleCheckTag()
+                            }
                             Text(
                                 value ?: stringResource(R.string.add),
                                 Modifier.weight(1f).padding(vertical = 8.dp),
@@ -622,6 +656,8 @@ fun VehicleDetailsScreen(
                         Chevron()
                     }
                 }
+                known.toCheckFrom?.let { KnownTakesNote(it) }
+                known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = vm::fillKnown, Modifier.padding(top = 4.dp)) } }
                 Text(
                     stringResource(R.string.details_takes_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -960,13 +996,22 @@ internal fun CheckedField(
 
 /** Save is offered only when every filled-in field is valid. */
 @Composable
-internal fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDismiss: () -> Unit, content: @Composable () -> Unit) {
+internal fun SpecEditor(
+    title: String,
+    valid: Boolean,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit,
+    /** Set for a row filled from a maker's list and not yet checked: the owner can say they have checked it. */
+    checkedAgainstManual: MutableState<Boolean>? = null,
+    content: @Composable () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 content()
+                checkedAgainstManual?.let { CheckedAgainstManual(it) }
                 Text(
                     stringResource(R.string.details_spec_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -982,7 +1027,8 @@ internal fun SpecEditor(title: String, valid: Boolean, onSave: () -> Unit, onDis
 internal fun String.orNullIfBlank() = trim().takeIf { it.isNotEmpty() }
 
 @Composable
-private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, VehicleSpecEntry.Volume?, String?) -> Unit, onDismiss: () -> Unit) {
+private fun OilDialog(v: VehicleEntity, toCheck: Boolean, onSave: (String?, String?, Double?, VehicleSpecEntry.Volume?, String?, Boolean) -> Unit, onDismiss: () -> Unit) {
+    val checked = rememberSaveable { mutableStateOf(false) }
     var grade by rememberSaveable { mutableStateOf(v.oilSpec.orEmpty()) }
     var approval by rememberSaveable { mutableStateOf(v.oilApproval.orEmpty()) }
     var capacity by rememberSaveable { mutableStateOf(v.oilCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() }.orEmpty()) }
@@ -1002,9 +1048,11 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
                 capacity.orNullIfBlank()?.let { VehicleSpecEntry.oilCapacity(it.typedDecimal(), unit) },
                 unit,
                 filter.orNullIfBlank()?.let(VehicleSpecEntry::partNumbers),
+                checked.value,
             )
         },
         onDismiss = onDismiss,
+        checkedAgainstManual = checked.takeIf { toCheck },
     ) {
         CheckedField(grade, { grade = it }, stringResource(R.string.oil_grade), stringResource(R.string.oil_grade_error), VehicleSpecEntry::oilGrade, supporting = stringResource(R.string.oil_grade_note))
         // The common grades a tap away.
@@ -1031,7 +1079,15 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
 }
 
 @Composable
-private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?, Int?, Int?, Int?, VehicleSpecEntry.Pressure) -> Unit, onDismiss: () -> Unit) {
+private fun TiresDialog(
+    v: VehicleEntity,
+    toCheck: Boolean,
+    /** The sizes a maker's list gives for the model, to pick from; it can't know which the vehicle has. */
+    listedSizes: List<String>,
+    onSave: (String?, String?, Int?, Int?, Int?, VehicleSpecEntry.Pressure, Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val checked = rememberSaveable { mutableStateOf(false) }
     var front by rememberSaveable { mutableStateOf(v.tireSize.orEmpty()) }
     var differ by rememberSaveable { mutableStateOf(v.tireSizeRear != null) }
     var rear by rememberSaveable { mutableStateOf(v.tireSizeRear.orEmpty()) }
@@ -1054,12 +1110,22 @@ private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?, Int?, Int?,
                 pRear.orNullIfBlank()?.let(pressure),
                 pSpare.orNullIfBlank()?.let(pressure),
                 unit,
+                checked.value,
             )
         },
         onDismiss = onDismiss,
+        checkedAgainstManual = checked.takeIf { toCheck },
     ) {
         val error = stringResource(R.string.tires_size_error)
         CheckedField(front, { front = it }, stringResource(if (differ) R.string.front else R.string.tires_size), error, VehicleSpecEntry::tireSize, supporting = stringResource(R.string.tires_size_note))
+        if (listedSizes.isNotEmpty()) {
+            Text(stringResource(R.string.known_takes_sizes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listedSizes.forEach { size ->
+                    FilterChip(selected = VehicleSpecEntry.tireSize(front) == size, onClick = { front = size }, label = { Text(size, fontFamily = PlexMono) })
+                }
+            }
+        }
         Row(
             Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = differ, role = Role.Switch, onValueChange = { differ = it }),
             verticalAlignment = Alignment.CenterVertically,
@@ -1082,7 +1148,8 @@ private fun TiresDialog(v: VehicleEntity, onSave: (String?, String?, Int?, Int?,
 }
 
 @Composable
-private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -> Unit, onDismiss: () -> Unit) {
+private fun WipersDialog(v: VehicleEntity, toCheck: Boolean, onSave: (Int?, Int?, Int?, String?, Boolean) -> Unit, onDismiss: () -> Unit) {
+    val checked = rememberSaveable { mutableStateOf(false) }
     var driver by rememberSaveable { mutableStateOf(v.wiperDriverIn?.toString().orEmpty()) }
     var passenger by rememberSaveable { mutableStateOf(v.wiperPassengerIn?.toString().orEmpty()) }
     var rear by rememberSaveable { mutableStateOf(v.wiperRearIn?.toString().orEmpty()) }
@@ -1097,9 +1164,11 @@ private fun WipersDialog(v: VehicleEntity, onSave: (Int?, Int?, Int?, String?) -
                 passenger.orNullIfBlank()?.let(VehicleSpecEntry::wiperLength),
                 rear.orNullIfBlank()?.let(VehicleSpecEntry::wiperLength),
                 VehicleText.clean(note, VehicleText.MAX_SPEC),
+                checked.value,
             )
         },
         onDismiss = onDismiss,
+        checkedAgainstManual = checked.takeIf { toCheck },
     ) {
         val error = stringResource(R.string.wipers_error)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

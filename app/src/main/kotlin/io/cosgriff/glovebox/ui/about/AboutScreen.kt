@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import javax.inject.Inject
 import io.cosgriff.glovebox.ui.torque.KnownSpecCatalog
 import io.cosgriff.glovebox.domain.KnownSpecList
+import io.cosgriff.glovebox.domain.KnownTakesList
+import io.cosgriff.glovebox.ui.vehicle.KnownTakesCatalog
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.ui.schedule.KnownScheduleCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -104,6 +106,7 @@ fun AboutScreen(
     // The torque lists that ship with the app, each credited to where it came from.
     val known by vm.lists.collectAsStateWithLifecycle()
     val schedules by vm.schedules.collectAsStateWithLifecycle()
+    val takes by vm.takes.collectAsStateWithLifecycle()
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val res = LocalResources.current
@@ -151,6 +154,10 @@ fun AboutScreen(
                     schedules.forEach { list ->
                         HorizontalDivider(color = scheme.outlineVariant)
                         Source(list.source.name, stringResource(R.string.about_known_schedule, list.title, list.source.note))
+                    }
+                    takes.forEach { list ->
+                        HorizontalDivider(color = scheme.outlineVariant)
+                        Source(list.source.name, stringResource(R.string.about_known_takes, list.title, list.source.note))
                     }
                 }
                 Text(
@@ -229,7 +236,8 @@ fun PrivacyScreen(onBack: () -> Unit) {
 
 /** The bundled torque lists and maintenance schedules, for crediting their sources on the About screen. */
 @HiltViewModel
-class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog, scheduleCatalog: KnownScheduleCatalog) : ViewModel() {
+class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog, scheduleCatalog: KnownScheduleCatalog, takesCatalog: KnownTakesCatalog) : ViewModel() {
+    val takes: StateFlow<List<KnownTakesList>> = flow { emit(takesCatalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val lists: StateFlow<List<KnownSpecList>> = flow { emit(catalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val schedules: StateFlow<List<KnownScheduleList>> = flow { emit(scheduleCatalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }

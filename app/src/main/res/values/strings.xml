@@ -610,7 +610,7 @@
     <string name="details_part_numbers">Part numbers</string>
     <string name="details_copy_parts">Copy the part numbers</string>
     <string name="details_takes_saved">%1$s of %2$s saved</string>
-    <string name="details_takes_note">You enter these. Glovebox doesn\'t look them up, so check your owner\'s or service manual.</string>
+    <string name="details_takes_note">You enter these, or fill them from a maker\'s manual where Glovebox has one for your vehicle. Nothing is looked up online, so check your owner\'s or service manual.</string>
     <string name="details_torque">Torque &amp; fastener specs</string>
     <string name="details_torque_none">Socket sizes and torque · none saved yet</string>
     <string name="details_torque_saved">Socket sizes and torque · %1$s saved</string>
@@ -685,7 +685,7 @@
     <!-- Fluids, filters &amp; parts (FluidsPartsScreen) -->
     <string name="fluids_empty_body">Keep the fluids, part numbers and sizes you look up, so they\'re here at the parts counter. Each one shows beside its job on Log service.</string>
     <string name="fluids_add_section">ADD</string>
-    <string name="fluids_note">You enter these. Glovebox doesn\'t look them up, so check your owner\'s or service manual. Hold a card to copy its part numbers.</string>
+    <string name="fluids_note">You enter these, or fill them from a maker\'s manual where Glovebox has one for your vehicle. Nothing is looked up online, so check your owner\'s or service manual. Hold a card to copy its part numbers.</string>
     <string name="fluids_tap_to_add">Tap to add</string>
     <string name="fluids_name_error">Up to 40 characters</string>
     <string name="fluids_fluid">Fluid</string>
@@ -1381,6 +1381,24 @@
         <item quantity="other">%1$s fasteners you have already filled in are left as they are.</item>
     </plurals>
 
+    <!-- What it takes from a maker's manual that ships with the app (KnownTakesUi) -->
+    <!-- %1$s is the vehicle as the list names it: "2017–2020 4Runner". -->
+    <string name="known_takes_fill">Fill in from the manual for the %1$s</string>
+    <plurals name="known_takes_rows">
+        <item quantity="one">Fills %1$s empty row</item>
+        <item quantity="other">Fills %1$s empty rows</item>
+    </plurals>
+    <!-- %1$s is how many rows, %2$s the source, %3$s its note in English as it ships. -->
+    <string name="known_takes_offer">%1$s. Source: %2$s. %3$s Each is tagged DOUBLE-CHECK until you have checked it against your own manual and said so, or changed it.</string>
+    <plurals name="known_takes_kept">
+        <item quantity="one">%1$s row you have already filled in is left as it is.</item>
+        <item quantity="other">%1$s rows you have already filled in are left as they are.</item>
+    </plurals>
+    <!-- %1$s is the source ("Toyota 4Runner owner's manual"), %2$s the vehicle as the list names it. -->
+    <string name="known_takes_note">Rows tagged DOUBLE-CHECK were filled from the %1$s for the %2$s. Check each against the manual for your own vehicle, then say so in its editor.</string>
+    <string name="known_takes_checked">I\'ve checked this against my manual</string>
+    <string name="known_takes_sizes">Sizes the manual lists</string>
+
     <!-- Torque specs (TorqueSpecsScreen, SpecEditorSheet) -->
     <string name="torque_a_reference_list">a reference list</string>
     <string name="torque_deleted">%1$s deleted</string>
@@ -1725,6 +1743,7 @@
     <string name="about_schedules_note">Typical intervals to start from, and your own entries</string>
     <!-- %2$s is the list's note, in English as it ships. -->
     <string name="about_known_specs">Reference torque values offered for the %1$s. %2$s</string>
+    <string name="about_known_takes">Fluids, parts and tire figures offered for the %1$s. %2$s</string>
     <string name="about_known_schedule">The maintenance table and reminders offered for the %1$s. %2$s</string>
     <string name="about_reference">Intervals and torque specs are for reference. Check your owner\'s or service manual before relying on them.</string>
     <string name="privacy">Privacy</string>
