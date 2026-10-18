@@ -54,11 +54,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -81,7 +81,7 @@ class ClearHistoryViewModel @Inject constructor(
     service: ServiceDao,
     private val wipe: DataWipe,
 ) : ViewModel() {
-    private val vehicleId = savedStateHandle.toRoute<ClearHistoryRoute>().vehicleId
+    private val vehicleId = savedStateHandle.route<ClearHistoryRoute>().vehicleId
 
     /** Null while loading, and if the vehicle no longer exists. */
     var data by mutableStateOf<ClearHistoryData?>(null)

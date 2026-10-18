@@ -63,12 +63,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
@@ -136,7 +136,7 @@ class VehicleHomeViewModel @Inject constructor(
     recalls: RecallDao,
     recallRepository: RecallRepository,
 ) : ViewModel() {
-    private val route = savedStateHandle.toRoute<VehicleHomeRoute>()
+    private val route = savedStateHandle.route<VehicleHomeRoute>()
     private val vehicleId = route.vehicleId
 
     /** Came from the mileage check-in notification: the sheet opens without a tap. */

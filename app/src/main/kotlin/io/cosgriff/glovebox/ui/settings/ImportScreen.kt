@@ -68,9 +68,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -368,7 +368,7 @@ class ImportViewModel @Inject constructor(
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
 
-    private val route = savedStateHandle.toRoute<ImportRoute>()
+    private val route = savedStateHandle.route<ImportRoute>()
     private val chosenVehicle = MutableStateFlow(route.vehicleId)
 
     /** Opened from a vehicle (Vehicle details), so there is nothing to choose. */

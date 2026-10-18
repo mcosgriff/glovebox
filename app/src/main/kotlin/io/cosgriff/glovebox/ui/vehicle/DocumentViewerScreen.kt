@@ -45,12 +45,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import androidx.pdf.ExperimentalPdfApi
 import androidx.pdf.PdfDocument
 import androidx.pdf.PdfPasswordException
@@ -84,7 +84,7 @@ class DocumentViewerViewModel @Inject constructor(
     documents: DocumentDao,
     private val store: DocumentStore,
 ) : ViewModel() {
-    private val id = savedStateHandle.toRoute<DocumentViewerRoute>().documentId
+    private val id = savedStateHandle.route<DocumentViewerRoute>().documentId
 
     /** Null while loading. */
     val document: StateFlow<ViewedDocument?> = documents.observeOne(id).map { ViewedDocument(it) }

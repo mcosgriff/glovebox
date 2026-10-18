@@ -32,11 +32,11 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.domain.LicenceGroup
 import io.cosgriff.glovebox.domain.Licences
@@ -115,7 +115,7 @@ class LicenceTextViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
     init {
         viewModelScope.launch {
-            document = catalog.document(savedStateHandle.toRoute<LicenceTextRoute>().id)
+            document = catalog.document(savedStateHandle.route<LicenceTextRoute>().id)
             loading = false
         }
     }

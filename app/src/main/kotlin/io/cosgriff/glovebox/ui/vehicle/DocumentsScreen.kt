@@ -76,12 +76,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.DocumentEntity
@@ -118,7 +118,7 @@ class DocumentsViewModel @Inject constructor(
     private val store: DocumentStore,
     private val picker: DocumentPicker,
 ) : ViewModel() {
-    val vehicleId = savedStateHandle.toRoute<DocumentsRoute>().vehicleId
+    val vehicleId = savedStateHandle.route<DocumentsRoute>().vehicleId
 
     /** Null while loading, and if the vehicle no longer exists. */
     val data: StateFlow<DocumentsData?> = combine(vehicles.observe(vehicleId), documents.observe(vehicleId)) { vehicle, rows ->

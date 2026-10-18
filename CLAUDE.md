@@ -121,8 +121,8 @@ Keep them green; lint errors fail the build.
 - **applicationId `io.cosgriff.glovebox` must never change.** Release signing key must never change.
 - **IDE is Android Studio.** Keep AGP current (use Studio's AGP Upgrade Assistant); no IntelliJ IDEA
   compatibility constraint.
-- minSdk 29, targetSdk 37, compileSdk 37 (Android 17's target changes checked in #232), JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation Compose
-  with `@Serializable` routes. Dynamic color is off; use the theme tokens.
+- minSdk 29, targetSdk 37, compileSdk 37 (Android 17's target changes checked in #232), JDK 17, Kotlin + Compose + Material 3, Hilt (KSP), Navigation 3
+  (#237) with `@Serializable` routes that are `NavKey`s. Dynamic color is off; use the theme tokens.
 
 ## Design tokens (from the canvas)
 
@@ -234,7 +234,7 @@ Notes on what's built:
   "Show what the scanner sees" (`Settings.scannerDetails`, off by default) adds a panel under the guide
   (`ScanReport`): the band read, any barcode found outlined (green read, amber found but not decoded, from
   zxing-cpp's `returnErrors`), frames a second and what the print came to. The VIN goes back to the add screen through the nav
-  entry's saved state and is decoded at once. The scanner keeps the canvas's dark colours in both themes.
+  host's results (`SCANNED_VIN`) and is decoded at once. The scanner keeps the canvas's dark colours in both themes.
 - Add without a VIN (`ManualAddScreen`) picks year, make and model. Makes come from vPIC's car, truck and
   MPV lists and models from make + year; `NhtsaClient.makes` sends nothing about the vehicle and `.models`
   only the make and year. Every picker also takes typed text, which is the only way in when the lists
@@ -555,7 +555,7 @@ Notes on what's built:
   of the last five frames agree (`DashReading.steady`), and **it only fills the sheet's field**: the
   screen says "check it against the dash", never "detected", the sheet says where the number came from
   until it is changed, and nothing is saved until the user taps Save. The reading comes back through the
-  vehicle home entry's saved state (`DASH_READING`), as a scanned VIN does. Frames are never stored.
+  nav host's results (`DASH_READING`), as a scanned VIN does. Frames are never stored.
   Tesseract's language file is copied from assets to `cache/tesseract/` on first use, which `DataWipe`
   already clears with the cache. `TextReaderTest` (on a device) draws readings and VINs and checks the engine
   reads them; how well a real cluster reads, seven-segment LCDs above all, is only known from real dashes.
@@ -586,18 +586,29 @@ Notes on what's built:
   `AppLock.unlock()` also forgets when the app was backgrounded; otherwise the return locks it again.
   Don't move Android 10 back to `BiometricPrompt` without testing the PIN fallback on an API 29 emulator
   (`Pixel_API_29`): fingerprint, "Use PIN", too many wrong fingers, cancel, and PIN with no fingerprint.
-- Navigation (checked against `design/screens/NavMap.png`): four tabs, each keeping its own screens
-  (`saveState` / `restoreState`); the fourth is labelled Settings, because it opens Settings and not a
-  menu. System Back from a tab goes to Garage, then leaves the app. A notification's destination is pushed
-  over whichever tab is showing, so Back returns there. Add a destination with `screen<Route>` in
-  `GloveboxNavHost`, never `composable<Route>`: screens draw no background of their own, and `screen` puts
-  the page colour behind them so nothing shows through during a held back swipe. Predictive back is
-  switched on in the manifest. Screen state that should survive Android restarting the app goes in
-  `rememberSaveable` or a `SavedStateHandle`, as History's vehicle and category choice do.
+- Navigation (checked against `design/screens/NavMap.png`) is Navigation 3 (#237): the app owns the back
+  stacks and `NavDisplay` shows them. Four tabs, each its own `NavBackStack` (`Navigator` in
+  `GloveboxNavHost`); a tab comes back as it was left. The fourth is labelled Settings, because it opens
+  Settings and not a menu. What is shown is the current tab's stack over the Garage list, so System Back
+  from a tab's first screen goes to Garage (whose own screens are dropped, as before), then leaves the
+  app. A notification's destination is pushed onto whichever tab is showing, so Back returns there. Add a
+  destination with `screen<Route>` in `GloveboxNavHost`, never `entry<Route>`: screens draw no background
+  of their own, and `screen` puts the page colour behind them so nothing shows through during a held back
+  swipe. It also hands the route to the screen's ViewModels (`ProvideRoute`), which read it with
+  `savedStateHandle.route<…Route>()` (`Navigation.kt`); Navigation 3 doesn't do that itself. Every route
+  is a `@Serializable` `NavKey`, and one without fields is a `data object`, whose name stays the same
+  across a restart (a plain object's would not, and its saved state would be lost). A screen hands a
+  value back to the one under it through the host's `results` (`SCANNED_VIN`, `DASH_READING`,
+  `CONFIRM_DELETE`), which are saved with the stacks. Predictive back is switched on in the manifest.
+  Screen state that should survive Android restarting the app goes in `rememberSaveable` or a
+  `SavedStateHandle`, as History's vehicle and category choice do.
 - While locked, the app's screens are out of composition (`MainActivity`), so no screen, sheet or dialog
   is drawn or readable behind the lock screen. Their saved state is held in a `SaveableStateHolder`, which
-  is what returns the user to the same screen after unlocking. Don't swap this for drawing the lock
-  screen over a live nav host: sheets and dialogs are separate windows and would sit on top of it.
+  is what returns the user to the same screen after unlocking. **The screens' ViewModel stores live there
+  too** (`screenModels`, one per tab): made inside the nav host, Navigation 3 would clear every screen's
+  ViewModels each time the lock took the host away, and a half-filled form would go with them. Don't swap
+  this for drawing the lock screen over a live nav host: sheets and dialogs are separate windows and would
+  sit on top of it.
 - Receipt and parts photos: files are encrypted in `PhotoCrypto.photoDir` by `RecordPhotoStore` and
   belong to a record through the `photos` table. `RecordPhotoPicker` (app, singleton) owns taking and
   picking; its launchers are registered in `MainActivity` for the same lock-screen reason as the vehicle

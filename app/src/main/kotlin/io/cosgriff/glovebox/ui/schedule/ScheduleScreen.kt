@@ -64,12 +64,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
@@ -159,7 +159,7 @@ class ScheduleViewModel @Inject constructor(
     private val saver: ExportSaver,
     catalog: KnownScheduleCatalog,
 ) : ViewModel() {
-    val vehicleId = savedStateHandle.toRoute<ScheduleRoute>().vehicleId
+    val vehicleId = savedStateHandle.route<ScheduleRoute>().vehicleId
 
     /** The user has imported a milestone table of their own, which the Milestones screen shows whatever the schedule holds. */
     val hasMilestoneTable: StateFlow<Boolean> = milestones.observe(vehicleId).map { it.isNotEmpty() }
