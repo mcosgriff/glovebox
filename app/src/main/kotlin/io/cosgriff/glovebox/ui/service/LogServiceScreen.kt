@@ -139,7 +139,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.Locale
 import io.cosgriff.glovebox.domain.ServiceLinks
 import javax.inject.Inject
 
@@ -235,8 +234,8 @@ class LogServiceViewModel @Inject constructor(
         private set
     private var saving = false
 
-    val odometer: Int? get() = OdometerInput.parse(odometerText)
-    val costValid: Boolean get() = costText.isBlank() || Money.parseCents(costText) != null
+    val odometer: Int? get() = OdometerInput.parse(odometerText.typedNumber())
+    val costValid: Boolean get() = costText.isBlank() || Money.parseCents(costText.typedNumber()) != null
     val itemCount: Int get() = selected.size + customItems.size
 
     /** True when the entered odometer is lower than a reading on or before [date]. Worth a warning, not a block. */
@@ -303,11 +302,10 @@ class LogServiceViewModel @Inject constructor(
             if (original != null) {
                 val r = original.record
                 date = r.date
-                // US grouping, as OdometerInput reads it, whatever the language.
-                odometerText = String.format(Locale.US, "%,d", r.odometer)
+                odometerText = r.odometer.asNumber()
                 diy = r.diy
                 shopName = r.shopName.orEmpty()
-                costText = r.costCents?.let { String.format(Locale.US, "%d.%02d", it / 100, it % 100) }.orEmpty()
+                costText = r.costCents?.let(::editableCost).orEmpty()
                 notes = r.notes.orEmpty()
                 keptPhotos = original.photos
                 val ticked = mutableSetOf<String>()
@@ -372,7 +370,7 @@ class LogServiceViewModel @Inject constructor(
                 odometer = odo,
                 diy = diy,
                 shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
-                costCents = costText.takeIf { it.isNotBlank() }?.let(Money::parseCents),
+                costCents = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) },
                 notes = notes.trim().takeIf { it.isNotEmpty() },
                 // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
                 enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
@@ -461,7 +459,7 @@ fun LogServiceScreen(
                         val current = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) }
                         if (current != null && !vm.editing && vm.odometerText.isBlank()) {
                             TextButton(
-                                onClick = { vm.odometerText = String.format(Locale.US, "%,d", current) },
+                                onClick = { vm.odometerText = current.asNumber() },
                                 modifier = Modifier.heightIn(min = 48.dp),
                                 contentPadding = PaddingValues(horizontal = 4.dp),
                             ) { Text(stringResource(R.string.log_use_current)) }

@@ -1417,4 +1417,559 @@
     <string name="torque_note_label">Note (optional)</string>
     <string name="torque_note_hint">Replace the gasket every change</string>
     <string name="torque_delete">Delete this spec</string>
+
+    <!-- Settings values, notifications and backup (SettingsWords.kt) -->
+    <string name="lock_immediately">Immediately</string>
+    <string name="lock_one_minute">After 1 min</string>
+    <string name="lock_five_minutes">After 5 min</string>
+    <string name="lock_on_restart">On restart</string>
+    <string name="cadence_every_week">Every week</string>
+    <string name="cadence_every_two_weeks">Every 2 weeks</string>
+    <string name="cadence_every_month">Every month</string>
+    <string name="recall_cadence_weekly">Weekly</string>
+    <string name="recall_cadence_monthly">Monthly</string>
+    <string name="recall_cadence_never">Never</string>
+    <string name="recall_cadence_weekly_sentence">weekly</string>
+    <string name="recall_cadence_monthly_sentence">monthly</string>
+    <string name="recall_cadence_never_sentence">never</string>
+    <string name="strength_weak">Weak</string>
+    <string name="strength_fair">Fair</string>
+    <string name="strength_strong">Strong</string>
+    <string name="strength_very_strong">Very strong</string>
+    <string name="theme_dark">dark</string>
+    <string name="theme_light">light</string>
+    <!-- %1$s is dark or light. -->
+    <string name="theme_follows">Follows your phone — currently %1$s</string>
+    <string name="theme_always">Always %1$s, whatever your phone is set to</string>
+    <string name="off">Off</string>
+    <string name="on">On</string>
+    <string name="notifications_some">%1$s of %2$s on</string>
+    <plurals name="backup_documents_size">
+        <item quantity="one">%1$s document (%2$s)</item>
+        <item quantity="other">%1$s documents (%2$s)</item>
+    </plurals>
+    <plurals name="documents">
+        <item quantity="one">%1$s document</item>
+        <item quantity="other">%1$s documents</item>
+    </plurals>
+    <plurals name="services">
+        <item quantity="one">%1$s service</item>
+        <item quantity="other">%1$s services</item>
+    </plurals>
+    <!-- A library's own licence that has no name. -->
+    <string name="licence_own_of">%1$s licence</string>
+    <string name="licence_not_recorded">Licence not recorded</string>
+    <!-- "169 libraries under 5 licences". -->
+    <string name="licences_summary">%1$s under %2$s</string>
+    <plurals name="libraries">
+        <item quantity="one">%1$s library</item>
+        <item quantity="other">%1$s libraries</item>
+    </plurals>
+    <plurals name="licences">
+        <item quantity="one">%1$s licence</item>
+        <item quantity="other">%1$s licences</item>
+    </plurals>
+
+    <!-- Notifications (Notifier) -->
+    <string name="notify_backup_never">Your Glovebox data isn\'t backed up</string>
+    <string name="notify_backup_fresh">Time for a fresh Glovebox backup</string>
+    <string name="notify_backup_body">A backup file is the only way to move to a new phone or recover after a reset.</string>
+    <!-- %1$s is the vehicle. -->
+    <string name="notify_due_title">%1$s: service coming due</string>
+    <plurals name="notify_due_body">
+        <item quantity="one">%1$s is coming due.</item>
+        <item quantity="other">%1$s are coming due.</item>
+    </plurals>
+    <string name="notify_overdue_title">%1$s: overdue service</string>
+    <plurals name="notify_overdue_body">
+        <item quantity="one">%1$s is overdue. Log it, or snooze it if it can wait.</item>
+        <item quantity="other">%1$s are overdue. Log it, or snooze it if it can wait.</item>
+    </plurals>
+    <string name="notify_mileage_title">%1$s: what\'s the odometer at?</string>
+    <string name="notify_mileage_body">A quick reading keeps the mileage reminders right.</string>
+    <plurals name="notify_recalls_title">
+        <item quantity="one">%1$s: new recall</item>
+        <item quantity="other">%1$s: %2$s new recalls</item>
+    </plurals>
+    <string name="notify_and_more">%1$s and more</string>
+    <string name="channel_due">Service coming due</string>
+    <string name="channel_due_about">When a service enters the lead time you set</string>
+    <string name="channel_due_hidden">A service is coming due</string>
+    <string name="channel_overdue">Overdue nudges</string>
+    <string name="channel_overdue_about">Once a week until it\'s logged or snoozed</string>
+    <string name="channel_overdue_hidden">A service is overdue</string>
+    <string name="channel_recalls">New recalls</string>
+    <string name="channel_recalls_about">When NHTSA lists a recall that wasn\'t on file</string>
+    <string name="channel_recalls_hidden">A new recall was found</string>
+    <string name="channel_mileage">Mileage check-in</string>
+    <string name="channel_mileage_about">A prompt to update the odometer</string>
+    <string name="channel_mileage_hidden">Time to update the odometer</string>
+    <string name="channel_backup">Backup reminder</string>
+    <string name="channel_backup_about">When your last backup is more than a month old</string>
+    <string name="channel_backup_hidden">Time to back up</string>
+
+    <!-- Navigation and snackbars (GloveboxNavHost) -->
+    <string name="settings_title">Settings</string>
+    <string name="view">View</string>
+    <string name="event_saved">Service saved · reminders updated</string>
+    <string name="event_edited">Changes saved · reminders updated</string>
+    <string name="event_deleted">Record deleted · reminders updated</string>
+    <string name="event_recall_done_logged">Recall marked done · added to Service history</string>
+    <string name="event_recall_done">Recall marked done</string>
+    <string name="event_recall_open_removed">Recall marked open · service record removed</string>
+    <string name="event_recall_open">Recall marked open</string>
+    <string name="event_restored">Record restored · reminders updated</string>
+    <string name="event_undone">Changes undone · reminders updated</string>
+    <string name="event_archived">%1$s moved to Archived vehicles</string>
+    <!-- %1$s is restore summary: 2 vehicles, 14 service records and 9 photos. -->
+    <string name="event_restored_backup">Restored %1$s</string>
+    <plurals name="event_records_deleted">
+        <item quantity="one">%1$s service record deleted</item>
+        <item quantity="other">%1$s service records deleted</item>
+    </plurals>
+    <string name="event_vehicle_deleted">%1$s and all its data deleted</string>
+
+    <!-- Settings (SettingsScreen) -->
+    <string name="settings_torque_units">Torque units</string>
+    <string name="settings_torque_note">Torque is stored once and converted for display, so switching loses nothing.</string>
+    <string name="settings_distance_note">For vehicles you add from now on. Each vehicle keeps its own unit, since that is what its odometer reads: to change one already in the garage, open its Vehicle details.</string>
+    <string name="settings_recall_checks">Check for new recalls</string>
+    <string name="settings_recall_note">Only the year, make and model are sent to NHTSA. With Never, recalls are checked only when you tap Refresh.</string>
+    <string name="settings_schedule_note">Each vehicle has its own schedule.</string>
+    <string name="settings_appearance">APPEARANCE</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light_title">Light</string>
+    <string name="theme_dark_title">Dark</string>
+    <string name="settings_security">SECURITY</string>
+    <string name="settings_biometrics">Unlock with biometrics</string>
+    <string name="settings_biometrics_note">Fingerprint or face · device PIN as fallback</string>
+    <string name="settings_no_screen_lock">This phone has no screen lock, so the app can\'t be locked. Set one in Android\'s settings first.</string>
+    <string name="settings_lock_the_app">Lock the app</string>
+    <string name="settings_hide_recents">Hide in recent apps</string>
+    <string name="settings_hide_recents_note">Blocks screenshots and blurs the app switcher</string>
+    <string name="settings_encrypted">Encrypted on this device</string>
+    <string name="settings_encrypted_note">All vehicles, service records and photos are stored with AES-256. The keys are held by Android Keystore and never leave the phone. Always on.</string>
+    <string name="settings_maintenance">MAINTENANCE</string>
+    <string name="settings_reminder_rule">Reminder rule</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="settings_camera">CAMERA</string>
+    <string name="settings_scanner_details">Show what the scanner sees</string>
+    <string name="settings_scanner_details_note">The VIN scanner shows the strip it reads, any barcode it finds and what the print came to. For a scan that won\'t take</string>
+    <string name="settings_your_data">YOUR DATA</string>
+    <string name="settings_backup">Encrypted backup</string>
+    <string name="settings_backup_last">Last backup %1$s · password-protected file you keep</string>
+    <string name="settings_backup_never">Never backed up · password-protected file you keep</string>
+    <string name="settings_export">Export history</string>
+    <string name="settings_export_note">Service records, schedule and recalls · exported files are not encrypted</string>
+    <string name="export_pdf">PDF</string>
+    <string name="export_pdf_note">For resale or a shop</string>
+    <string name="export_markdown">Markdown</string>
+    <string name="export_markdown_note">Plain text, .md</string>
+    <string name="settings_import">Import</string>
+    <string name="settings_import_note">History, schedules or torque specs from a JSON file · nothing of yours changes unless you say so</string>
+    <string name="settings_delete_all">Delete all data</string>
+    <string name="settings_privacy_line">Only a VIN, or a year, make and model, is sent to NHTSA, to decode it and look up recalls. Nothing else leaves your phone.</string>
+    <string name="about_title">About Glovebox</string>
+
+    <!-- Notifications settings (NotificationsScreen) -->
+    <string name="notifications_time">Time of day</string>
+    <string name="notifications_allowed">Allowed in Android settings</string>
+    <string name="notifications_blocked">Notifications are off for Glovebox</string>
+    <string name="notifications_blocked_note">Nothing below can reach you until Android allows it. Reminders still show inside the app.</string>
+    <string name="notifications_allow">Allow notifications</string>
+    <string name="notifications_open_settings">Open Android settings</string>
+    <string name="notifications_tell_me">TELL ME ABOUT</string>
+    <string name="notifications_due_note">Based on your reminder rules</string>
+    <!-- %1$s is weekly or monthly. -->
+    <string name="notifications_recalls_checked">Checked %1$s for each vehicle</string>
+    <string name="notifications_recalls_off">Automatic recall checks are off in Settings</string>
+    <string name="notifications_mileage_note">A quick prompt to update the odometer</string>
+    <string name="notifications_when">WHEN</string>
+    <string name="notifications_how_early">How early to remind</string>
+    <string name="notifications_note">Mileage reminders only work if the odometer is current, so we\'ll ask you for a quick reading on a schedule. The time of day is approximate: Android runs background checks when it suits the battery.</string>
+
+    <!-- Backup and restore (BackupScreen, RestoreSheet) -->
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_never">never</string>
+    <string name="backup_why">Your data\'s encryption key can\'t leave this phone. A backup is the only way to move to a new phone or recover after a reset.</string>
+    <string name="backup_password">Backup password</string>
+    <string name="backup_confirm_password">Confirm password</string>
+    <string name="backup_mismatch">The two passwords don\'t match.</string>
+    <string name="backup_cant_recover_store">We can\'t recover a forgotten password. Store it in your password manager.</string>
+    <string name="backup_includes">Includes</string>
+    <string name="backup_counting">Counting…</string>
+    <string name="backup_reminder">Monthly backup reminder</string>
+    <string name="backup_reminder_note">A notification when your last backup is over a month old.</string>
+    <string name="backup_encrypting">Encrypting your data…</string>
+    <string name="backup_failed">The backup couldn\'t be made: one of the photos couldn\'t be read. Nothing was saved.</string>
+    <string name="backup_creating">Creating backup…</string>
+    <string name="backup_create">Create backup file</string>
+    <string name="backup_nothing">There is nothing to back up yet. Add a vehicle first.</string>
+    <string name="backup_where">Android asks where to save it: a folder, USB drive or a cloud app you choose. Glovebox never uploads it.</string>
+    <string name="restore">Restore</string>
+    <string name="backup_restore_note">Bring back a backup file made on this or another phone. It replaces what is here.</string>
+    <string name="backup_restore_from">Restore from a backup file</string>
+    <string name="backup_hide_passwords">Hide passwords</string>
+    <string name="backup_show_passwords">Show passwords</string>
+    <string name="backup_strength_hint">Your choice. A long phrase is harder to guess than a short jumble.</string>
+    <string name="backup_strength_weak">Weak: easy to guess if someone gets hold of the file. It will still work.</string>
+    <string name="restore_backup_file">Backup file</string>
+    <string name="restore_unreadable">That file couldn\'t be read.</string>
+    <!-- %1$s is why the restore failed. -->
+    <string name="restore_nothing_changed">%1$s Nothing on this phone was changed.</string>
+    <string name="restore_cut_short">The backup couldn\'t be read to the end. Nothing on this phone was changed.</string>
+    <string name="restore_wrong_password">That password doesn\'t open this backup.</string>
+    <string name="restore_damaged">This backup is damaged and can\'t be restored.</string>
+    <string name="restore_incomplete">This backup is incomplete: the file was cut short, perhaps by an interrupted copy or download.</string>
+    <string name="restore_newer">This backup was made by a newer version of Glovebox. Update the app, then restore it.</string>
+    <string name="restore_not_a_backup">That isn\'t a Glovebox backup file.</string>
+    <string name="restore_title">Restore from backup</string>
+    <string name="restore_hide_password">Hide password</string>
+    <string name="restore_show_password">Show password</string>
+    <string name="restore_cant_recover">We can\'t recover a forgotten password.</string>
+    <!-- %1$s is what the backup holds, %2$s its date. -->
+    <string name="restore_summary_dated">%1$s, backed up %2$s.</string>
+    <string name="restore_replaces">This replaces everything on this phone</string>
+    <string name="restore_replaces_note">The vehicles, records and photos here now are removed and the backup\'s take their place. It can\'t be undone.</string>
+    <string name="restore_keep_open">Restoring. Keep the app open.</string>
+    <string name="restore_open">Open backup</string>
+    <string name="restore_restoring">Restoring…</string>
+    <string name="restore_replace">Replace and restore</string>
+
+    <!-- Licences (LicencesScreen) -->
+    <string name="licences_title">Open-source licenses</string>
+    <string name="licences_free_software">Glovebox is free software. You can read, change and share its source code under the %1$s. It comes with no warranty.</string>
+    <string name="licences_gpl">GPL-3.0</string>
+    <string name="licences_built_with">It is built with the libraries below. %1$s, as built into this version.</string>
+    <string name="licences_read">Read</string>
+    <string name="licences_licence">License</string>
+    <string name="licences_no_browser">No browser to open %1$s</string>
+    <string name="licences_no_text_url">This version doesn\'t carry the wording of this licence. It is published at the address above.</string>
+    <string name="licences_no_text">This version doesn\'t carry the wording of this licence.</string>
+
+    <!-- Privacy (AboutScreen): every line has to stay true of the code. -->
+    <string name="privacy_stays">Everything stays on this phone</string>
+    <string-array name="privacy_stays">
+        <item>There is no account and no Glovebox server. Your vehicles, service records, photos, documents and settings exist only on this phone.</item>
+        <item>The database, photos and documents are encrypted with keys held by Android Keystore.</item>
+        <item>Documents open inside Glovebox. A PDF is drawn by a part of the app that runs walled off from the rest, with no network and no files of its own, and it is read from memory, not from a copy on the phone.</item>
+        <item>Android\'s own cloud backup and device-to-device transfer are switched off for this app. The only copy that can leave is a backup file you make yourself.</item>
+    </string-array>
+    <string name="privacy_sent">What is sent, and to whom</string>
+    <string-array name="privacy_sent">
+        <item>The app talks to one organisation: NHTSA, the U.S. vehicle safety agency (vpic.nhtsa.dot.gov and api.nhtsa.gov).</item>
+        <item>Decoding a VIN sends that VIN.</item>
+        <item>Adding a vehicle without a VIN asks for NHTSA\'s list of makes, then for the models of the make and year you pick.</item>
+        <item>Checking for recalls sends the year, make and model. It does not send the VIN.</item>
+        <item>Like any website, NHTSA can see the internet address the request came from.</item>
+        <item>Nothing else is sent: no mileage, records, photos, documents, names, license plate or location.</item>
+    </string-array>
+    <string name="privacy_never">What the app never does</string>
+    <string-array name="privacy_never">
+        <item>No analytics, crash reporting, advertising or tracking, and no third-party code that reports back to anyone.</item>
+    </string-array>
+    <string name="privacy_saved">Files you save</string>
+    <string-array name="privacy_saved">
+        <item>A backup file is encrypted with the password you choose. Glovebox does not keep the password and cannot recover it.</item>
+        <item>A PDF or Markdown export is not encrypted. Anyone who has the file can read it.</item>
+        <item>A schedule, milestone table or set of torque specs saved as an import file is not encrypted either. It holds what is on that screen (items and intervals, mileages and jobs, or fasteners with your values and notes) and nothing else about your vehicle or its history.</item>
+        <item>Deleting all data in Settings does not touch files you have already saved elsewhere.</item>
+    </string-array>
+    <string name="privacy_imported">Files you import</string>
+    <string-array name="privacy_imported">
+        <item>Import reads the one file you pick, on this phone, and adds what it holds to the vehicle you choose. A Carfax report PDF is read the same way, for its service visits. The file is not copied or kept unless you tick \"Keep a copy in this vehicle\'s documents\", and nothing is sent anywhere.</item>
+    </string-array>
+    <string name="privacy_leaving">When you leave the app</string>
+    <string-array name="privacy_leaving">
+        <item>A manufacturer\'s recall page, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.</item>
+        <item>Opening a document in another app, sharing a document or photo, or saving a file hands a copy to the app you choose.</item>
+    </string-array>
+    <string name="privacy_permissions">Permissions</string>
+    <string-array name="privacy_permissions">
+        <item>Camera: to scan a VIN from its barcode or from print, to read the odometer off the dash, and to photograph receipts, parts and paperwork. Scanner and dash frames are read on this phone and thrown away, never stored or sent.</item>
+        <item>Notifications: for reminders, new recalls and the backup reminder.</item>
+        <item>Internet: for NHTSA only.</item>
+        <item>Fingerprint, face or screen lock: Android does the checking and tells the app only whether it passed.</item>
+    </string-array>
+    <string name="privacy_updates">Updates</string>
+    <string-array name="privacy_updates">
+        <item>Glovebox does not check for updates itself. If you installed it with Obtainium, Obtainium checks GitHub for new releases.</item>
+    </string-array>
+
+    <!-- About (AboutScreen) -->
+    <string name="about">About</string>
+    <string name="about_updates_via">updates via Obtainium</string>
+    <string name="about_sources">WHERE THE DATA COMES FROM</string>
+    <string name="about_vpic">NHTSA vPIC</string>
+    <string name="about_vpic_note">VIN decoding, make and model lists</string>
+    <string name="about_recalls">NHTSA recalls</string>
+    <string name="about_recalls_note">Recalls by year, make and model</string>
+    <string name="about_schedules">Maintenance schedules &amp; specs</string>
+    <string name="about_schedules_note">Typical intervals to start from, and your own entries</string>
+    <!-- %2$s is the list's note, in English as it ships. -->
+    <string name="about_known_specs">Reference torque values offered for the %1$s. %2$s</string>
+    <string name="about_known_schedule">The maintenance table and reminders offered for the %1$s. %2$s</string>
+    <string name="about_reference">Intervals and torque specs are for reference. Check your owner\'s or service manual before relying on them.</string>
+    <string name="privacy">Privacy</string>
+    <string name="about_privacy_note">No accounts, no tracking</string>
+    <string name="about_source">Source code</string>
+    <string name="about_github">GitHub</string>
+
+    <!-- Shared, lists -->
+    <string name="and_more">and %1$s more</string>
+
+    <!-- Import (ImportScreen) -->
+    <string name="import_pdf_too_big">That PDF is too big (the most is 20 MB).</string>
+    <string name="import_pdf_unreadable">That PDF couldn\'t be read. A password-protected PDF can\'t be imported.</string>
+    <string name="import_carfax_report">Carfax report</string>
+    <string name="import_too_big">That file is too big to be an import file (the most is 2 MB).</string>
+    <string name="import_file">Import file</string>
+    <string name="import_sold_only_history">A sold vehicle only takes service history. Choose a vehicle in your garage for this file.</string>
+    <string name="import_caution_torque">Check every value against your service manual, whoever wrote the file.</string>
+    <string name="import_caution_schedule">These are the file\'s intervals, not the manufacturer\'s. Check them against your owner\'s manual.</string>
+    <string name="import_caution_milestones">Milestones are for reference on the Milestones screen. They don\'t create or change reminders, and they are your figures, not the manufacturer\'s.</string>
+    <string name="import_caution_history">Imported records are marked as imported in History and in exports.</string>
+    <string name="import_doubt_jump">%1$s more than the reading of %2$s on %3$s</string>
+    <string name="import_doubt_out_of_line">Doesn\'t fit the readings before and after it</string>
+    <string name="import_name_only">Name only</string>
+    <string name="import_factory_manual">factory manual</string>
+    <string name="import_first_at">First at %1$s</string>
+    <string name="import_then_every">then every %1$s</string>
+    <string name="import_no_interval">No interval</string>
+    <string name="import_severe">severe %1$s</string>
+    <string name="import_reset_by">reset by \"%1$s\"</string>
+    <string name="import_severe_only">only for severe use</string>
+    <string name="import_intro">Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.</string>
+    <string name="import_how_to">How to write a file (opens in your browser)</string>
+    <string name="import_no_vehicle">Add a vehicle first: an import goes into one of your vehicles.</string>
+    <string name="import_last_done_note">New items start as \"Not logged yet\". If you know when any were last done, say so and their reminders start counting.</string>
+    <string name="import_see_schedule">See the schedule</string>
+    <string name="import_see_milestones">See milestones</string>
+    <string name="import_see_history">See history</string>
+    <string name="import_see_torque">See torque specs</string>
+    <string name="import_another">Import another file</string>
+    <string name="import_into">IMPORT INTO</string>
+    <string name="import_sold">Sold</string>
+    <string name="import_file_section">FILE</string>
+    <string name="import_choose">Choose a file</string>
+    <string name="import_needs_vehicle">The file is fine. Choose which vehicle it goes into.</string>
+    <string name="import_add_new">Add new only</string>
+    <string name="import_add_new_note">Yours stay exactly as they are</string>
+    <string name="import_replace">Replace matching</string>
+    <plurals name="import_replace_note">
+        <item quantity="one">%1$s of yours takes the file\'s values</item>
+        <item quantity="other">%1$s of yours take the file\'s values</item>
+    </plurals>
+    <string name="import_nothing">Nothing to import: everything in this file is already on the vehicle.</string>
+    <string name="import_button">Import %1$s</string>
+    <string name="import_no_undo">Nothing on the vehicle is deleted. There is no Undo, so check the list above.</string>
+    <string name="import_in_file">%1$s · %2$s IN THE FILE</string>
+    <plurals name="import_new">
+        <item quantity="one">%1$s new</item>
+        <item quantity="other">%1$s new</item>
+    </plurals>
+    <string name="import_new_note">Added to the vehicle</string>
+    <string name="import_fills_note">Yours has only a name so far</string>
+    <plurals name="import_differs">
+        <item quantity="one">%1$s different from yours</item>
+        <item quantity="other">%1$s different from yours</item>
+    </plurals>
+    <string name="import_differs_note">Left alone unless you choose to replace them</string>
+    <plurals name="import_same">
+        <item quantity="one">%1$s already the same · left alone</item>
+        <item quantity="other">%1$s already the same · left alone</item>
+    </plurals>
+    <plurals name="import_left_out">
+        <item quantity="one">%1$s left out: its reading looks wrong. See below.</item>
+        <item quantity="other">%1$s left out: their readings look wrong. See below.</item>
+    </plurals>
+    <string name="import_yours">Yours: %1$s</string>
+    <string name="import_file_value">File: %1$s</string>
+    <string name="import_doubles">ALREADY TRACKED AS A TYPICAL ITEM</string>
+    <plurals name="import_stop_typical">
+        <item quantity="one">Stop tracking the typical item</item>
+        <item quantity="other">Stop tracking the %1$s typical items</item>
+    </plurals>
+    <plurals name="import_doubles_note">
+        <item quantity="one">Glovebox\'s typical schedule already has this, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
+        <item quantity="other">Glovebox\'s typical schedule already has these, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
+    </plurals>
+    <string name="import_readings_to_check">READINGS TO CHECK</string>
+    <string name="import_readings_note">These readings don\'t look right, so they are left out. Your odometer is the highest reading on record: one wrong reading would become it, and every mileage reminder would count from it. Tick one to import it as it is, or leave it out and log that visit yourself with the right mileage.</string>
+    <string name="import_moves">REMINDERS THAT WILL MOVE</string>
+    <string name="import_cant">THIS FILE CAN\'T BE IMPORTED</string>
+    <string name="import_fix_file">Nothing was saved. Fix the file and choose it again.</string>
+    <string name="import_imported_into">IMPORTED INTO %1$s</string>
+    <string name="import_added">%1$s added</string>
+    <string name="import_filled">%1$s filled in</string>
+    <string name="import_replaced">%1$s replaced with the file\'s values</string>
+    <plurals name="import_stopped">
+        <item quantity="one">%1$s typical item no longer tracked</item>
+        <item quantity="other">%1$s typical items no longer tracked</item>
+    </plurals>
+    <plurals name="import_unchanged">
+        <item quantity="one">%1$s left as it was</item>
+        <item quantity="other">%1$s left as they were</item>
+    </plurals>
+    <string name="import_kept_copy">The report is kept in the vehicle\'s documents</string>
+    <string name="import_copy_failed">The report couldn\'t be kept in the vehicle\'s documents. Add it from there.</string>
+    <string name="import_keep_copy">Keep a copy in this vehicle\'s documents</string>
+    <string name="import_keep_copy_note">Encrypted on this phone with the vehicle\'s other paperwork. Unticked, the report is only read and not kept.</string>
+    <string name="import_replace_title">Replace %1$s of yours?</string>
+    <string name="import_becomes">Becomes: %1$s</string>
+    <string name="import_replace_and_import">Replace and import</string>
+    <string name="import_kind_history">Service history</string>
+    <string name="import_kind_torque">Torque specs</string>
+    <string name="import_converted">This file is in %1$s. The figures here are what will be saved, in %2$s.</string>
+    <plurals name="plan_rows">
+        <item quantity="one">%1$s row</item>
+        <item quantity="other">%1$s rows</item>
+    </plurals>
+    <plurals name="plan_items">
+        <item quantity="one">%1$s item</item>
+        <item quantity="other">%1$s items</item>
+    </plurals>
+    <string name="plan_rows_differ">ROWS THAT DIFFER FROM YOURS</string>
+    <string name="plan_items_differ">ITEMS THAT DIFFER FROM YOURS</string>
+    <string name="plan_milestones_differ">MILESTONES THAT DIFFER FROM YOURS</string>
+    <string name="plan_records_differ">RECORDS THAT DIFFER FROM YOURS</string>
+    <string name="plan_rows_replace_only">Nothing to import unless you replace the rows that differ.</string>
+    <string name="plan_items_replace_only">Nothing to import unless you replace the items that differ.</string>
+    <string name="plan_milestones_replace_only">Nothing to import unless you replace the milestones that differ.</string>
+    <string name="plan_records_replace_only">Nothing to import unless you replace the records that differ.</string>
+    <plurals name="plan_rows_fill">
+        <item quantity="one">%1$s fill in a row you left empty</item>
+        <item quantity="other">%1$s fill in a row you left empty</item>
+    </plurals>
+    <plurals name="plan_items_fill">
+        <item quantity="one">%1$s fill in an item you left empty</item>
+        <item quantity="other">%1$s fill in an item you left empty</item>
+    </plurals>
+    <plurals name="plan_milestones_fill">
+        <item quantity="one">%1$s fill in a milestone you left empty</item>
+        <item quantity="other">%1$s fill in a milestone you left empty</item>
+    </plurals>
+    <plurals name="plan_records_fill">
+        <item quantity="one">%1$s fill in a record you left empty</item>
+        <item quantity="other">%1$s fill in a record you left empty</item>
+    </plurals>
+
+    <!-- Save as an import file (SaveAsImportFile) -->
+    <string name="save_file_nothing">Nothing here can go in a file</string>
+    <plurals name="save_file_left_out">
+        <item quantity="one">%1$s can\'t go in the file</item>
+        <item quantity="other">%1$s can\'t go in the file</item>
+    </plurals>
+    <string name="save_file_stricter">An import file is stricter than this screen. Change these and try again.</string>
+    <plurals name="save_file_rest">
+        <item quantity="one">An import file is stricter than this screen. %1$s can be saved without it, or change these first.</item>
+        <item quantity="other">An import file is stricter than this screen. %1$s can be saved without them, or change these first.</item>
+    </plurals>
+    <plurals name="save_file_others">
+        <item quantity="one">The other one</item>
+        <item quantity="other">The other %1$s</item>
+    </plurals>
+    <string name="save_file_rest_button">Save the rest</string>
+    <string name="save_file_button">Save as an import file</string>
+
+    <!-- Exports (AppExportWords): the PDF and Markdown files -->
+    <string name="export_all_time">All time</string>
+    <string name="export_date_range">%1$s to %2$s</string>
+    <string name="export_cluster_shows_more">Replaced %1$s. Readings from that date are the replacement\'s, which shows %2$s more than the vehicle has covered; earlier readings are the original\'s.</string>
+    <string name="export_cluster_shows_less">Replaced %1$s. Readings from that date are the replacement\'s, which shows %2$s less than the vehicle has covered; earlier readings are the original\'s.</string>
+    <string name="export_total">%1$s total</string>
+    <string name="export_last_done_at">%1$s at %2$s</string>
+    <string name="export_not_logged">Not logged</string>
+    <string name="export_recall_marked_done">Marked done %1$s</string>
+    <string name="export_recall_archived">Archived as not applying %1$s</string>
+    <string name="export_recall_open">Open</string>
+    <string name="export_recall_note">Recalls are listed by NHTSA for the year, make and model. \"Marked done\" is the owner\'s own record; NHTSA can\'t confirm a repair for a specific vehicle.</string>
+    <string name="export_last_done_note">Entered by the owner as when this was last done; not logged at the time.</string>
+    <string name="export_imported_note">Imported by the owner from a file; not logged in Glovebox at the time.</string>
+    <string name="export_schedule_note">Intervals are the ones the owner set in Glovebox, not the manufacturer\'s schedule.</string>
+    <string name="export_takes_note">Entered by the owner from their manuals and the parts they use; Glovebox hasn\'t checked them against the vehicle.</string>
+    <string name="export_documents_note">Kept by the owner in Glovebox. Only this list is in the export; the documents themselves aren\'t.</string>
+    <string name="export_service_history">Service history</string>
+    <string name="export_service_history_of">Service history: %1$s</string>
+    <string name="export_labelled">%1$s: %2$s</string>
+    <string name="export_nickname">Nickname</string>
+    <string name="export_vin">VIN</string>
+    <string name="export_plate">License plate</string>
+    <string name="export_odometer">Odometer</string>
+    <string name="export_odometer_highest">%1$s (highest reading on record)</string>
+    <string name="export_actual_mileage">Actual mileage</string>
+    <string name="export_instrument_cluster">Instrument cluster</string>
+    <string name="export_sold">Sold</string>
+    <string name="export_period">Period</string>
+    <string name="export_records">Records</string>
+    <string name="export_exported_on">Exported from Glovebox on %1$s</string>
+    <string name="export_what_it_takes">What it takes</string>
+    <string name="export_documents_on_file">Documents on file</string>
+    <string name="export_type">Type</string>
+    <string name="export_name">Name</string>
+    <string name="export_date">Date</string>
+    <string name="export_service_records">Service records</string>
+    <string name="export_no_records">No service records in this period.</string>
+    <string name="export_done_by">Done by %1$s</string>
+    <string name="export_done_by_labelled">Done by: %1$s</string>
+    <string name="export_cost">Cost: %1$s</string>
+    <string name="export_maintenance_schedule">Maintenance schedule</string>
+    <string name="export_item">Item</string>
+    <string name="export_every">Every</string>
+    <string name="export_last_done">Last done</string>
+    <string name="export_recalls">Recalls</string>
+    <string name="export_campaign">Campaign</string>
+    <string name="export_component">Component</string>
+    <string name="export_status">Status</string>
+    <string name="export_photo_unreadable">[A photo attached to this record couldn\'t be read]</string>
+    <string name="export_page">Page %1$s</string>
+    <plurals name="export_record_count">
+        <item quantity="one">%1$s record</item>
+        <item quantity="other">%1$s records</item>
+    </plurals>
+
+    <!-- Export sheet (ExportSheet, ExportSaver) -->
+    <!-- Who did the work, when the shop has no name. -->
+    <string name="export_a_shop">a shop</string>
+    <string name="export_no_vehicle">Add a vehicle in the Garage first; there is nothing to export yet.</string>
+    <string name="export_dates">Dates</string>
+    <string name="export_this_year">This year</string>
+    <string name="export_custom">Custom range</string>
+    <string name="export_custom_pick">Custom range…</string>
+    <string name="export_from">From %1$s</string>
+    <string name="export_to">To %1$s</string>
+    <string name="export_costs">Costs and notes</string>
+    <string name="export_schedule">Maintenance schedule &amp; recalls</string>
+    <string name="export_takes">What it takes (oil, tires, fluids, parts)</string>
+    <string name="export_documents">List of documents on file</string>
+    <string name="export_photos">Receipt photos</string>
+    <string name="export_photos_pdf_only">Receipt photos (PDF only)</string>
+    <string name="export_photos_size">%1$s will be included, adding roughly %2$s to the file.</string>
+    <string name="export_photos_large">%1$s will be included, adding roughly %2$s to the file. That\'s large to email; untick Receipt photos for a small file.</string>
+    <string name="export_not_encrypted">Exported files aren\'t encrypted. Android will ask where to save it.</string>
+    <string name="export_preparing">Preparing…</string>
+    <!-- %1$s is how many records. -->
+    <string name="export_button">Export %1$s</string>
+    <string name="export_nothing">Nothing matches these choices.</string>
+    <string name="export_vehicle_sold">%1$s (sold)</string>
+    <string name="export_under_mb">under 1 MB</string>
+    <string name="export_saved">Exported %1$s</string>
+    <string name="export_saved_file">Saved %1$s</string>
+    <string name="export_couldnt_save">Couldn\'t save %1$s</string>
+
+    <!-- Carfax reports and unknown vehicles -->
+    <string name="carfax_not_a_report">This doesn\'t look like a Carfax vehicle history report.</string>
+    <string name="carfax_no_visits">No service visits with a mileage were found in this report.</string>
+    <plurals name="carfax_no_visits_without_mileage">
+        <item quantity="one">No service visits with a mileage were found in this report. %1$s had no mileage, so it can\'t be a record.</item>
+        <item quantity="other">No service visits with a mileage were found in this report. %1$s had no mileage, so they can\'t be records.</item>
+    </plurals>
+    <string name="unknown_vehicle">Unknown vehicle</string>
+
+    <!-- Licences, the bundled extras (LicenceCatalog) -->
+    <string name="licences_plex">IBM Plex Sans and IBM Plex Mono (fonts)</string>
+    <string name="licences_tesseract">Tesseract4Android (Tesseract OCR, Leptonica, libjpeg, libpng and English language data)</string>
+    <string name="licences_tesseract_bundled">Leptonica, libjpeg and libpng licences</string>
 </resources>

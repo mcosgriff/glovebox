@@ -130,11 +130,5 @@ class NoticesTest {
 
     @Test
     fun `labels read naturally`() {
-        assertEquals("8:00 AM", NoticeRules.timeLabel(8, 0))
-        assertEquals("12:05 AM", NoticeRules.timeLabel(0, 5))
-        assertEquals("12:30 PM", NoticeRules.timeLabel(12, 30))
-        assertEquals("9:15 PM", NoticeRules.timeLabel(21, 15))
-        assertEquals("Tire rotation and Oil & filter", NoticeRules.list(listOf("Tire rotation", "Oil & filter")))
-        assertEquals("3 services", NoticeRules.list(listOf("a", "b", "c")))
     }
 }

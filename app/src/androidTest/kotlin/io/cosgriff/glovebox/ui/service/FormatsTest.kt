@@ -7,6 +7,8 @@ import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.ExportPhrase
+import io.cosgriff.glovebox.ui.export.AppExportWords
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.NextDue
@@ -89,5 +91,15 @@ class FormatsTest {
         val res = russian.inAppLocale().resources
         assertEquals("21 days", res.getQuantityString(R.plurals.days, 21, "21"))
         assertEquals(Locale.forLanguageTag("en-US"), res.configuration.locales[0])
+    }
+
+    @Test
+    fun everyExportPhraseHasItsWords() {
+        // Each has a resource and takes the arguments the writers give it.
+        ExportPhrase.entries.forEach { AppExportWords.phrase(it, "a", "b", "c") }
+        assertEquals("Service history: 2019 4Runner", AppExportWords.phrase(ExportPhrase.SERVICE_HISTORY_OF, "2019 4Runner"))
+        assertEquals("Done by: DIY", AppExportWords.phrase(ExportPhrase.DONE_BY_LABELLED, "DIY"))
+        assertEquals("3 records", AppExportWords.records(3))
+        assertEquals("Oct 17, 2026", AppExportWords.date(LocalDate.of(2026, 10, 17)))
     }
 }

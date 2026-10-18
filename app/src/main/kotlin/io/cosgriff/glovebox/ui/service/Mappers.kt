@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import java.text.DecimalFormatSymbols
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
@@ -377,3 +378,19 @@ fun recallComponent(component: String): String = Recalls.componentLabel(componen
 /** The line a completed recall adds to the service log, saved as it reads then: "Recall 20V-682 · Fuel pump". */
 fun recallServiceLine(notice: RecallNotice): String =
     AppText.res.getString(R.string.recall_service_line, Recalls.campaignLabel(notice.campaign), recallComponent(notice.component))
+
+/**
+ * A whole number or amount as the user typed it, put the way the parsers in `:domain` read it: the
+ * app's grouping mark dropped and its decimal mark made a point. Nothing changes in English.
+ */
+fun String.typedNumber(): String {
+    val symbols = DecimalFormatSymbols.getInstance(AppText.locale)
+    return filterNot { it == symbols.groupingSeparator }.replace(symbols.decimalSeparator, '.')
+}
+
+/** A figure with decimals as typed, its decimal mark made a point; a comma is left for the parser, which takes it as one too. */
+fun String.typedDecimal(): String = replace(DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator, '.')
+
+/** A cost to edit, "45.99", with the app's decimal mark and no grouping, which [typedNumber] reads back. */
+fun editableCost(cents: Long): String =
+    "${cents / 100}${DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator}${(cents % 100).toString().padStart(2, '0')}"

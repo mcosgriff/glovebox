@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -502,7 +503,7 @@ fun VehicleDetailsScreen(
                     }
                     val rows = listOfNotNull(
                         v.vin?.let { Triple(stringResource(R.string.details_vin), it, true) },
-                        Triple(stringResource(R.string.details_vehicle), VehicleText.title(v.year, v.make, v.model, v.trim), false),
+                        Triple(stringResource(R.string.details_vehicle), VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle), false),
                         v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
                         v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
                         v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
@@ -990,7 +991,7 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
     val unit = if (litres) VehicleSpecEntry.Volume.LITRES else VehicleSpecEntry.Volume.QUARTS
     fun ok(text: String, check: (String) -> Any?) = text.isBlank() || check(text) != null
     val valid = ok(grade, VehicleSpecEntry::oilGrade) && ok(approval, VehicleSpecEntry::oilApproval) &&
-        ok(capacity) { VehicleSpecEntry.oilCapacity(it, unit) } && ok(filter, VehicleSpecEntry::partNumbers)
+        ok(capacity) { VehicleSpecEntry.oilCapacity(it.typedDecimal(), unit) } && ok(filter, VehicleSpecEntry::partNumbers)
     SpecEditor(
         title = stringResource(R.string.takes_oil),
         valid = valid,
@@ -998,7 +999,7 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
             onSave(
                 grade.orNullIfBlank()?.let(VehicleSpecEntry::oilGrade),
                 approval.orNullIfBlank()?.let(VehicleSpecEntry::oilApproval),
-                capacity.orNullIfBlank()?.let { VehicleSpecEntry.oilCapacity(it, unit) },
+                capacity.orNullIfBlank()?.let { VehicleSpecEntry.oilCapacity(it.typedDecimal(), unit) },
                 unit,
                 filter.orNullIfBlank()?.let(VehicleSpecEntry::partNumbers),
             )
@@ -1016,7 +1017,7 @@ private fun OilDialog(v: VehicleEntity, onSave: (String?, String?, Double?, Vehi
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CheckedField(
                 capacity, { capacity = it }, stringResource(R.string.oil_capacity), stringResource(R.string.oil_capacity_error, unit.max.toInt().asNumber(), stringResource(unit.word)),
-                { VehicleSpecEntry.oilCapacity(it, unit) }, modifier = Modifier.weight(1f), keyboard = KeyboardType.Decimal,
+                { VehicleSpecEntry.oilCapacity(it.typedDecimal(), unit) }, modifier = Modifier.weight(1f), keyboard = KeyboardType.Decimal,
             )
             listOf(false to stringResource(R.string.unit_qt), true to stringResource(R.string.unit_litre)).forEach { (l, symbol) ->
                 FilterChip(selected = litres == l, onClick = { litres = l }, label = { Text(symbol) })

@@ -7,12 +7,7 @@ import java.time.temporal.ChronoUnit
  * How well a backup password would stand up to guessing. A rough guide shown beside the field,
  * nothing more: the choice of password is the user's, and none is refused.
  */
-enum class PasswordStrength(val label: String, val bars: Int) {
-    WEAK("Weak", 1),
-    FAIR("Fair", 2),
-    STRONG("Strong", 3),
-    VERY_STRONG("Very strong", 4),
-}
+enum class PasswordStrength(val bars: Int) { WEAK(1), FAIR(2), STRONG(3), VERY_STRONG(4) }
 
 object BackupRules {
     /** A backup older than this is worth a reminder. */
@@ -49,27 +44,4 @@ object BackupRules {
 
     /** What the user types to confirm replacing the data already on the phone. */
     const val REPLACE_WORD = "REPLACE"
-
-    /** "2 vehicles, 14 service records and 9 photos" */
-    fun restoreSummary(vehicles: Int, records: Int, photos: Int, documents: Int = 0): String {
-        val parts = listOfNotNull(
-            if (vehicles == 1) "1 vehicle" else "$vehicles vehicles",
-            if (records == 1) "1 service record" else "$records service records",
-            if (photos == 1) "1 photo" else "$photos photos",
-            documents.takeIf { it > 0 }?.let { if (it == 1) "1 document" else "$it documents" },
-        )
-        return parts.dropLast(1).joinToString(", ") + " and " + parts.last()
-    }
-
-    /** "2 vehicles · 14 records · 9 photos". [documentBytes] is said beside the documents, which are what can make a backup big. */
-    fun contents(vehicles: Int, records: Int, photos: Int, documents: Int = 0, documentBytes: Long = 0): String = listOfNotNull(
-        if (vehicles == 1) "1 vehicle" else "$vehicles vehicles",
-        if (records == 1) "1 record" else "$records records",
-        if (photos == 1) "1 photo" else "$photos photos",
-        when (documents) {
-            0 -> null
-            1 -> "1 document (${VehicleDocuments.size(documentBytes)})"
-            else -> "$documents documents (${VehicleDocuments.size(documentBytes)})"
-        },
-    ).joinToString(" · ")
 }

@@ -17,28 +17,28 @@ class LicencesTest {
             listOf(lib("g:zeta", "Zeta", "Apache-2.0"), lib("g:alpha", "alpha", "Apache-2.0"), lib("g:solo", "Solo", "MIT")),
             known,
         )
-        assertEquals(listOf("Apache License 2.0", "MIT License"), groups.map { it.name })
+        assertEquals(listOf("Apache License 2.0", "MIT License").map(LicenceName::Given), groups.map { it.name })
         assertEquals(listOf("alpha", "Zeta"), groups[0].libraries.map { it.name })
     }
 
     @Test
     fun `a library under two licences is listed under both`() {
         val groups = Licences.grouped(listOf(lib("g:both", "Both", "Apache-2.0", "MIT")), known)
-        assertEquals(setOf("Apache License 2.0", "MIT License"), groups.map { it.name }.toSet())
-        assertEquals("1 library under 2 licences", Licences.summary(groups))
+        assertEquals(setOf("Apache License 2.0", "MIT License").map(LicenceName::Given).toSet(), groups.map { it.name }.toSet())
+        assertEquals(1, Licences.libraryCount(groups))
     }
 
     @Test
     fun `a nameless licence is named after its only library`() {
         val groups = Licences.grouped(listOf(lib("g:cipher", "Cipher", "abc123")), known)
-        assertEquals("Cipher licence", groups.single().name)
+        assertEquals(LicenceName.OwnOf("Cipher"), groups.single().name)
     }
 
     @Test
     fun `nothing bundled goes unlisted`() {
         val groups = Licences.grouped(listOf(lib("g:odd", "Odd", "Weird-1.0"), lib("g:none", "")), known)
-        assertEquals(setOf("Weird-1.0", "Licence not recorded"), groups.map { it.name }.toSet())
-        assertEquals("g:none", Licences.displayName(groups.first { it.name == "Licence not recorded" }.libraries.single()))
+        assertEquals(setOf(LicenceName.Given("Weird-1.0"), LicenceName.NotRecorded), groups.map { it.name }.toSet())
+        assertEquals("g:none", Licences.displayName(groups.first { it.name == LicenceName.NotRecorded }.libraries.single()))
     }
 
     @Test
@@ -56,6 +56,6 @@ class LicencesTest {
     @Test
     fun `summary counts each library once`() {
         val groups = Licences.grouped(listOf(lib("g:a", "A", "Apache-2.0"), lib("g:b", "B", "Apache-2.0"), lib("g:c", "C", "MIT")), known)
-        assertEquals("3 libraries under 2 licences", Licences.summary(groups))
+        assertEquals(3, Licences.libraryCount(groups))
     }
 }

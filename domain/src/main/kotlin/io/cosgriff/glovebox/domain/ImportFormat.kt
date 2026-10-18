@@ -15,11 +15,12 @@ import java.time.LocalDate
  * specified in `docs/import/README.md` and the JSON Schemas beside it: change those, this code
  * and the example files together, and never change how a version-1 file is read.
  */
-enum class ImportKind(val id: String, val label: String) {
-    SERVICE_HISTORY("service-history", "Service history"),
-    INTERVAL_SCHEDULE("interval-schedule", "Maintenance schedule"),
-    MILESTONE_SCHEDULE("milestone-schedule", "Milestones"),
-    TORQUE_SPECS("torque-specs", "Torque specs"),
+/** The kinds of import file; `app` names them. */
+enum class ImportKind(val id: String) {
+    SERVICE_HISTORY("service-history"),
+    INTERVAL_SCHEDULE("interval-schedule"),
+    MILESTONE_SCHEDULE("milestone-schedule"),
+    TORQUE_SPECS("torque-specs"),
 }
 
 /** One thing wrong with a file. [path] points at it the way the file is written: `items[3].torque.unit`. */
@@ -30,7 +31,8 @@ data class ImportError(val path: String, val message: String) {
 /** What reading a file came to. */
 sealed interface ImportFile {
     /** [errors] is capped at [ImportFormat.MAX_ERRORS]; [more] is how many were left off. */
-    data class Invalid(val errors: List<ImportError>, val more: Int = 0) : ImportFile
+    /** [carfax] is set, with no [errors], when a PDF was read and isn't a report that can be imported. */
+    data class Invalid(val errors: List<ImportError>, val more: Int = 0, val carfax: CarfaxRefusal? = null) : ImportFile
 
     data class TorqueSpecs(val items: List<ImportedTorqueSpec>) : ImportFile
 

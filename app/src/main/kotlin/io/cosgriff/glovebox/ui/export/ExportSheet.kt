@@ -1,5 +1,11 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.domain.ExportText
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.wordedLines
@@ -85,7 +91,6 @@ import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
-import io.cosgriff.glovebox.domain.label
 import io.cosgriff.glovebox.ui.service.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -158,7 +163,7 @@ class ExportViewModel @Inject constructor(
         val readings = odometer.readingsFor(v.id).toReadings(swap)
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         return ExportVehicle(
-            title = VehicleText.title(v.year, v.make, v.model, v.trim),
+            title = VehicleText.title(v.year, v.make, v.model, v.trim) ?: AppText.res.getString(R.string.unknown_vehicle),
             nickname = v.nickname,
             vin = v.vin,
             plate = LicensePlates.label(v.plate, v.plateRegion),
@@ -173,7 +178,7 @@ class ExportViewModel @Inject constructor(
                     date = r.record.date,
                     odometer = r.record.odometer,
                     items = r.items.map { it.label },
-                    doneBy = if (r.record.diy) "DIY" else r.record.shopName ?: "a shop",
+                    doneBy = if (r.record.diy) AppText.res.getString(R.string.who_diy) else r.record.shopName ?: AppText.res.getString(R.string.export_a_shop),
                     costCents = r.record.costCents,
                     notes = r.record.notes,
                     photoFiles = r.photos.map { it.fileName },
@@ -184,7 +189,7 @@ class ExportViewModel @Inject constructor(
             schedule = items.filter { it.tracked }.mapNotNull { item ->
                 val tracked = item.toTracked(rule, swap) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
-                ExportScheduleLine(item.name, tracked.interval.label(v.unit, item.firstMiles), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
+                ExportScheduleLine(item.name, tracked.interval.text(v.unit, item.firstMiles), ServiceLog.lastDone(item.id, entries)?.let { swap.asReadOn(it) })
             },
             recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
                 val row = stored.getValue(r.id)
@@ -212,7 +217,7 @@ class ExportViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 file.outputStream().use { out ->
                     when (doc.options.format) {
-                        ExportFormat.MARKDOWN -> out.write(Exports.markdown(doc).toByteArray())
+                        ExportFormat.MARKDOWN -> out.write(ExportText(AppExportWords).markdown(doc).toByteArray())
                         ExportFormat.PDF -> PdfExport { photos.loadWithin(it, RecordPhotos.PDF_EDGE) }.write(doc, out)
                     }
                 }
@@ -258,18 +263,18 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             Modifier.verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("Export history", Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.settings_export), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             if (all == null || doc == null) {
                 CircularProgressIndicator(Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally))
                 return@Column
             }
             if (all.isEmpty()) {
-                Text("Add a vehicle in the Garage first; there is nothing to export yet.", color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.export_no_vehicle), color = scheme.onSurfaceVariant)
                 return@Column
             }
 
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(ExportFormat.PDF to "PDF", ExportFormat.MARKDOWN to "Markdown").forEachIndexed { i, (f, label) ->
+                listOf(ExportFormat.PDF to stringResource(R.string.export_pdf), ExportFormat.MARKDOWN to stringResource(R.string.export_markdown)).forEachIndexed { i, (f, label) ->
                     SegmentedButton(
                         selected = o.format == f,
                         onClick = { vm.change(o.copy(format = f)) },
@@ -282,23 +287,23 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Dropdown(
-                    label = "Vehicle",
-                    value = all.firstOrNull { it.id == vm.vehicleId }?.label() ?: "All vehicles",
+                    label = stringResource(R.string.details_vehicle),
+                    value = all.firstOrNull { it.id == vm.vehicleId }?.label() ?: stringResource(R.string.home_all_vehicles),
                     options = all.map { it.label() to { vm.chooseVehicle(it.id) } } +
-                        listOfNotNull(("All vehicles" to { vm.chooseVehicle(null) }).takeIf { all.size > 1 }),
+                        listOfNotNull((stringResource(R.string.home_all_vehicles) to { vm.chooseVehicle(null) }).takeIf { all.size > 1 }),
                     modifier = Modifier.weight(1f),
                 )
                 Dropdown(
-                    label = "Dates",
+                    label = stringResource(R.string.export_dates),
                     value = when (o.dates) {
-                        ExportDates.AllTime -> "All time"
-                        ExportDates.ThisYear -> "This year"
-                        is ExportDates.Custom -> "Custom range"
+                        ExportDates.AllTime -> stringResource(R.string.export_all_time)
+                        ExportDates.ThisYear -> stringResource(R.string.export_this_year)
+                        is ExportDates.Custom -> stringResource(R.string.export_custom)
                     },
                     options = listOf(
-                        "All time" to { vm.change(o.copy(dates = ExportDates.AllTime)) },
-                        "This year" to { vm.change(o.copy(dates = ExportDates.ThisYear)) },
-                        "Custom range…" to { vm.change(o.copy(dates = o.dates as? ExportDates.Custom ?: ExportDates.Custom(today.withDayOfYear(1), today))) },
+                        stringResource(R.string.export_all_time) to { vm.change(o.copy(dates = ExportDates.AllTime)) },
+                        stringResource(R.string.export_this_year) to { vm.change(o.copy(dates = ExportDates.ThisYear)) },
+                        stringResource(R.string.export_custom_pick) to { vm.change(o.copy(dates = o.dates as? ExportDates.Custom ?: ExportDates.Custom(today.withDayOfYear(1), today))) },
                     ),
                     modifier = Modifier.weight(1f),
                 )
@@ -306,27 +311,27 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             (o.dates as? ExportDates.Custom)?.let { range ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = { picking = true }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
-                        Text("From ${range.from.format(longDate)}", color = scheme.onSurface)
+                        Text(stringResource(R.string.export_from, range.from.format(longDate)), color = scheme.onSurface)
                     }
                     OutlinedButton(onClick = { picking = false }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
-                        Text("To ${range.to.format(longDate)}", color = scheme.onSurface)
+                        Text(stringResource(R.string.export_to, range.to.format(longDate)), color = scheme.onSurface)
                     }
                 }
             }
 
             Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    Tick("Costs and notes", o.costsAndNotes) { vm.change(o.copy(costsAndNotes = it)) }
+                    Tick(stringResource(R.string.export_costs), o.costsAndNotes) { vm.change(o.copy(costsAndNotes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick("Maintenance schedule & recalls", o.scheduleAndRecalls) { vm.change(o.copy(scheduleAndRecalls = it)) }
+                    Tick(stringResource(R.string.export_schedule), o.scheduleAndRecalls) { vm.change(o.copy(scheduleAndRecalls = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick("What it takes (oil, tires, fluids, parts)", o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
+                    Tick(stringResource(R.string.export_takes), o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick("List of documents on file", o.documents) { vm.change(o.copy(documents = it)) }
+                    Tick(stringResource(R.string.export_documents), o.documents) { vm.change(o.copy(documents = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
                     val pdf = o.format == ExportFormat.PDF
                     // The choice is remembered while Markdown is selected, so switching back to PDF restores it.
-                    Tick(if (pdf) "Receipt photos" else "Receipt photos (PDF only)", o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
+                    Tick(stringResource(if (pdf) R.string.export_photos else R.string.export_photos_pdf_only), o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
                 }
             }
 
@@ -334,8 +339,11 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             if (photoCount > 0) {
                 val megabytes = RecordPhotos.pdfBytes(photoCount) / 1_000_000.0
                 Text(
-                    "${photoCount(photoCount)} will be included, adding roughly ${megabytes.megabytesText()} to the file." +
-                        if (megabytes >= RecordPhotos.LARGE_EXPORT_MB) " That's large to email; untick Receipt photos for a small file." else "",
+                    stringResource(
+                        if (megabytes >= RecordPhotos.LARGE_EXPORT_MB) R.string.export_photos_large else R.string.export_photos_size,
+                        photoCount(photoCount).orEmpty(),
+                        megabytes.megabytesText(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (megabytes >= RecordPhotos.LARGE_EXPORT_MB) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
                 )
@@ -346,7 +354,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
                 Text(vm.fileName, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
             }
             Text(
-                "Exported files aren't encrypted. Android will ask where to save it.",
+                stringResource(R.string.export_not_encrypted),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onPrimaryContainer,
             )
@@ -362,22 +370,22 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
             ) {
                 Text(
                     when {
-                        vm.working -> "Preparing…"
-                        n == 1 -> "Export 1 record"
-                        else -> "Export $n records"
+                        vm.working -> stringResource(R.string.export_preparing)
+                        else -> stringResource(R.string.export_button, AppExportWords.records(n))
                     },
                 )
             }
             if (!hasContent) {
-                Text("Nothing matches these choices.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.export_nothing), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
     }
 }
 
-private fun Exportable.label(): String = if (archived) "$name (sold)" else name
+private fun Exportable.label(): String = if (archived) AppText.res.getString(R.string.export_vehicle_sold, name) else name
 
-private fun Double.megabytesText(): String = if (this < 1) "under 1 MB" else "${toInt().coerceAtLeast(1)} MB"
+private fun Double.megabytesText(): String =
+    if (this < 1) AppText.res.getString(R.string.export_under_mb) else AppText.res.getString(R.string.size_mb, toInt().coerceAtLeast(1).asNumber())
 
 @Composable
 private fun Tick(label: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {

@@ -4,19 +4,15 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 /** How often the app asks for a fresh odometer reading. */
-enum class MileageCadence(val days: Long, val label: String) {
-    WEEKLY(7, "Every week"),
-    TWO_WEEKS(14, "Every 2 weeks"),
-    MONTHLY(30, "Every month"),
-}
+enum class MileageCadence(val days: Long) { WEEKLY(7), TWO_WEEKS(14), MONTHLY(30) }
 
 /** How often NHTSA is asked about recalls without the user asking. */
-enum class RecallCadence(val days: Long?, val label: String) {
-    WEEKLY(7, "Weekly"),
-    MONTHLY(30, "Monthly"),
+enum class RecallCadence(val days: Long?) {
+    WEEKLY(7),
+    MONTHLY(30),
 
     /** Only when the user taps Refresh. */
-    NEVER(null, "Never"),
+    NEVER(null),
 }
 
 /** What the user has asked to be told about, and when. */
@@ -140,18 +136,5 @@ object NoticeRules {
     fun minutesUntil(hour: Int, minute: Int, nowMinuteOfDay: Int): Int {
         val target = hour * 60 + minute
         return if (target > nowMinuteOfDay) target - nowMinuteOfDay else target + 24 * 60 - nowMinuteOfDay
-    }
-
-    /** "8:00 AM" */
-    fun timeLabel(hour: Int, minute: Int): String {
-        val h = if (hour % 12 == 0) 12 else hour % 12
-        return "$h:${minute.toString().padStart(2, '0')} ${if (hour < 12) "AM" else "PM"}"
-    }
-
-    /** "Tire rotation", "Tire rotation and Oil & filter", "3 services". */
-    fun list(names: List<String>): String = when (names.size) {
-        1 -> names.single()
-        2 -> "${names[0]} and ${names[1]}"
-        else -> "${names.size} services"
     }
 }

@@ -1,5 +1,15 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.CarfaxRefusal
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
+import io.cosgriff.glovebox.ui.service.pluralWord
+import io.cosgriff.glovebox.ui.service.ruleInSentence
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.torque.text
 import io.cosgriff.glovebox.ui.schedule.text
 import io.cosgriff.glovebox.ui.schedule.repeatNote
@@ -190,21 +200,21 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
             val bytes = withContext(Dispatchers.IO) { readBytes(uri, PDF_MAX_BYTES) }
             if (bytes != null && bytes.size >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "%PDF") {
                 if (bytes.size > PDF_MAX_BYTES) {
-                    _problem.value = "That PDF is too big (the most is 20 MB)."
+                    _problem.value = AppText.res.getString(R.string.import_pdf_too_big)
                     return@launch
                 }
                 val file = withContext(Dispatchers.Default) {
                     PdfWords.read(context, bytes)?.let { CarfaxReport.read(it, LocalDate.now()) }
                 }
-                if (file == null) _problem.value = "That PDF couldn't be read. A password-protected PDF can't be imported."
-                else _picked.value = PickedImport(displayName(uri) ?: "Carfax report", "", file, pdf = bytes)
+                if (file == null) _problem.value = AppText.res.getString(R.string.import_pdf_unreadable)
+                else _picked.value = PickedImport(displayName(uri) ?: AppText.res.getString(R.string.import_carfax_report), "", file, pdf = bytes)
                 return@launch
             }
             val text = withContext(Dispatchers.IO) { read(uri) }
             when (text) {
-                null -> _problem.value = "That file couldn't be opened."
-                TOO_BIG -> _problem.value = "That file is too big to be an import file (the most is 2 MB)."
-                else -> _picked.value = PickedImport(displayName(uri) ?: "Import file", text)
+                null -> _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
+                TOO_BIG -> _problem.value = AppText.res.getString(R.string.import_too_big)
+                else -> _picked.value = PickedImport(displayName(uri) ?: AppText.res.getString(R.string.import_file), text)
             }
         }
     }
@@ -282,8 +292,8 @@ data class DoubtLine(val key: Pair<LocalDate, Int>, val title: String, val why: 
  */
 data class PlanView(
     val kind: ImportKind,
-    /** "row" for torque specs, "item" for a schedule. */
-    val noun: String,
+    /** Rows for torque specs, items for a schedule. */
+    val noun: PlanNoun,
     val total: Int,
     val new: List<PlanLine>,
     val fills: List<PlanLine>,
@@ -301,7 +311,7 @@ data class PlanView(
     val note: String? = null,
 ) {
     fun changes(mode: ImportMode): Int = new.size + fills.size + if (mode == ImportMode.REPLACE_MATCHING) differs.size else 0
-    fun count(n: Int): String = if (n == 1) "1 $noun" else "$n ${noun}s"
+    fun count(n: Int): String = noun.count(n)
 }
 
 /** What the chosen file comes to for the chosen vehicle. */
@@ -319,7 +329,7 @@ sealed interface ImportPreview {
 
 data class ImportResult(
     val kind: ImportKind,
-    val noun: String,
+    val noun: PlanNoun,
     val vehicleId: Long,
     val vehicleName: String,
     /** The vehicle is sold; its history has its own screen. */
@@ -388,7 +398,7 @@ class ImportViewModel @Inject constructor(
                 vehicle == null -> ImportPreview.NeedsVehicle
                 file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, s, keep)
                 // A sold vehicle gets no reminders and isn't being worked on.
-                vehicle.archivedOn != null -> ImportPreview.Refused("A sold vehicle only takes service history. Choose a vehicle in your garage for this file.")
+                vehicle.archivedOn != null -> ImportPreview.Refused(AppText.res.getString(R.string.import_sold_only_history))
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
                 file is ImportFile.IntervalSchedule -> schedulePreview(vehicle, file)
                 file is ImportFile.MilestoneSchedule -> milestonePreview(vehicle, file)
@@ -459,13 +469,13 @@ class ImportViewModel @Inject constructor(
         val plan = TorqueImport.plan(items, rows.map { it.toSaved() })
         val view = PlanView(
             kind = ImportKind.TORQUE_SPECS,
-            noun = "row",
+            noun = PlanNoun.ROW,
             total = plan.total,
             new = plan.new.map { PlanLine(it.name, it.describe(unit)) },
             fills = plan.fills.map { PlanLine(it.first.name, it.first.describe(unit)) },
             differs = plan.differs.map { (item, saved) -> PlanLine(saved.name, item.describe(unit), saved.describe(unit)) },
             same = plan.same.size,
-            caution = "Check every value against your service manual, whoever wrote the file.",
+            caution = AppText.res.getString(R.string.import_caution_torque),
         )
         return ImportPreview.Ready(view) { mode, _ ->
             val added = plan.new.map {
@@ -500,14 +510,14 @@ class ImportViewModel @Inject constructor(
         val doubles = ScheduleImport.doubles(items, saved)
         val view = PlanView(
             kind = ImportKind.INTERVAL_SCHEDULE,
-            noun = "item",
+            noun = PlanNoun.ITEM,
             total = plan.total,
             new = plan.new.map { PlanLine(it.name, it.describe(unit)) },
             fills = emptyList(),
             differs = plan.differs.map { (item, mine) -> PlanLine(mine.name, item.describe(unit), mine.describe(unit)) },
             same = plan.same.size,
-            caution = "These are the file's intervals, not the manufacturer's. Check them against your owner's manual.",
-            note = FileDistances.convertedNote(file.unit, unit),
+            caution = AppText.res.getString(R.string.import_caution_schedule),
+            note = convertedNote(file.unit, unit),
             doubles = doubles.map { it.name },
         )
         return ImportPreview.Ready(view) { mode, stopDoubles ->
@@ -559,14 +569,14 @@ class ImportViewModel @Inject constructor(
         val plan = MilestoneImport.plan(items, saved)
         val view = PlanView(
             kind = ImportKind.MILESTONE_SCHEDULE,
-            noun = "milestone",
+            noun = PlanNoun.MILESTONE,
             total = plan.total,
             new = plan.new.map { PlanLine(it.atMiles.asDistance(unit), describe(it.work, it.orMonths)) },
             fills = emptyList(),
             differs = plan.differs.map { (item, mine) -> PlanLine(item.atMiles.asDistance(unit), describe(item.work, item.orMonths), describe(mine.work, mine.orMonths)) },
             same = plan.same.size,
-            caution = "Milestones are for reference on the Milestones screen. They don't create or change reminders, and they are your figures, not the manufacturer's.",
-            note = listOfNotNull(repeatNote(repeats, unit), FileDistances.convertedNote(file.unit, unit)).joinToString(" "),
+            caution = AppText.res.getString(R.string.import_caution_milestones),
+            note = listOfNotNull(repeatNote(repeats, unit), convertedNote(file.unit, unit)).joinToString(" "),
         )
         return ImportPreview.Ready(view) { mode, _ ->
             fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
@@ -617,14 +627,14 @@ class ImportViewModel @Inject constructor(
         fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
         val view = PlanView(
             kind = ImportKind.SERVICE_HISTORY,
-            noun = "record",
+            noun = PlanNoun.RECORD,
             total = plan.total,
             new = plan.new.map { PlanLine(it.title(unit), it.describe()) },
             fills = plan.fills.map { PlanLine(it.first.title(unit), it.first.describe()) },
             differs = plan.differs.map { (item, mine) -> PlanLine(item.title(unit), item.describe(), mine.describe()) },
             same = plan.same.size,
-            caution = "Imported records are marked as imported in History and in exports.",
-            note = FileDistances.convertedNote(file.unit, unit),
+            caution = AppText.res.getString(R.string.import_caution_history),
+            note = convertedNote(file.unit, unit),
             moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
             doubts = doubts.map { (r, d) ->
                 DoubtLine(
@@ -632,8 +642,13 @@ class ImportViewModel @Inject constructor(
                     // As it is written in the file, which is how the user will look for it.
                     title = r.title(unit),
                     why = d.before?.let { b ->
-                        "${(d.entry.odometer - b.odometer).asDistance(unit)} more than the reading of ${swap.asReadOn(b.odometer, b.date).asDistance(unit)} on ${b.date.format(longDate)}"
-                    } ?: "Doesn't fit the readings before and after it",
+                        AppText.res.getString(
+                            R.string.import_doubt_jump,
+                            (d.entry.odometer - b.odometer).asDistance(unit),
+                            swap.asReadOn(b.odometer, b.date).asDistance(unit),
+                            b.date.format(longDate),
+                        )
+                    } ?: AppText.res.getString(R.string.import_doubt_out_of_line),
                     included = (r.date to r.odometer) in keep,
                 )
             },
@@ -678,18 +693,19 @@ class ImportViewModel @Inject constructor(
 
 /** "100 ft-lb · 21 mm · Star pattern", or what to say for a row that is only a name. */
 private fun describe(torque: Torque?, socket: String?, note: String?, unit: TorqueUnit): String =
-    listOfNotNull(torque?.text(unit), socket, note).joinToString(" · ").ifEmpty { "Name only" }
+    listOfNotNull(torque?.text(unit), socket, note).joinToString(" · ").ifEmpty { AppText.res.getString(R.string.import_name_only) }
 
-private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY) " · factory manual" else ""
-private fun SavedTorqueSpec.describe(unit: TorqueUnit) = describe(torque, socket, note, unit) + if (source == TorqueSource.FACTORY && torque != null) " · factory manual" else ""
+private fun ImportedTorqueSpec.describe(unit: TorqueUnit) = listOfNotNull(describe(torque, socket, note, unit), factoryManual.takeIf { source == TorqueSource.FACTORY }).joinToString(" · ")
+private fun SavedTorqueSpec.describe(unit: TorqueUnit) = listOfNotNull(describe(torque, socket, note, unit), factoryManual.takeIf { source == TorqueSource.FACTORY && torque != null }).joinToString(" · ")
 
 /** "Every 7,500 mi or 12 mo · severe 5,000 mi or 6 mo · whichever comes first" */
 private fun describe(normal: Interval?, severe: Interval?, rule: DueRule?, service: String?, unit: DistanceUnit, firstAt: Int? = null): String = listOfNotNull(
-    firstAt?.let { "First at ${it.asDistance(unit)}" },
-    normal?.let { "${if (firstAt != null) "then every" else "Every"} ${it.orText(unit)}" } ?: "No interval",
-    severe?.let { "severe ${it.orText(unit)}" },
-    rule?.ruleLabel()?.lowercase(),
-    HistoryImport.services[service]?.let { "reset by \"${it.label}\"" },
+    firstAt?.let { AppText.res.getString(R.string.import_first_at, it.asDistance(unit)) },
+    normal?.let { AppText.res.getString(if (firstAt != null) R.string.import_then_every else R.string.interval_every, it.orText(unit)) }
+        ?: AppText.res.getString(R.string.import_no_interval),
+    severe?.let { AppText.res.getString(R.string.import_severe, it.orText(unit)) },
+    rule?.ruleInSentence(),
+    HistoryImport.services[service]?.let { AppText.res.getString(R.string.import_reset_by, it.label) },
 ).joinToString(" · ")
 
 /** "Oil & filter change, Tire rotation · Corner Garage · $62.50" */
@@ -701,10 +717,10 @@ private fun SavedRecord.describe() = describe(labels, LogEdits.who(diy, shopName
 
 /** "Change oil, Rotate tires · or 12 months" */
 private fun describe(work: List<TableJob>, orMonths: Int?): String =
-    listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { "or $it months" }).joinToString(" · ")
+    listOfNotNull(work.joinToString(", ") { it.name }, orMonths?.let { AppText.res.getQuantityString(R.plurals.milestones_or_months, it, it.asNumber()) }).joinToString(" · ")
 
-private fun ImportedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt) + if (severeOnly) " · only for severe use" else ""
-private fun SavedScheduleItem.describe(unit: DistanceUnit) = describe(normal, severe, rule, service, unit, firstAt) + if (severeOnly) " · only for severe use" else ""
+private fun ImportedScheduleItem.describe(unit: DistanceUnit) = listOfNotNull(describe(normal, severe, rule, service, unit, firstAt), severeOnlyWords.takeIf { severeOnly }).joinToString(" · ")
+private fun SavedScheduleItem.describe(unit: DistanceUnit) = listOfNotNull(describe(normal, severe, rule, service, unit, firstAt), severeOnlyWords.takeIf { severeOnly }).joinToString(" · ")
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 
@@ -749,8 +765,8 @@ fun ImportScreen(
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
-            Text("Import", Modifier.padding(start = 8.dp).semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
+            Text(stringResource(R.string.settings_import), Modifier.padding(start = 8.dp).semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         }
 
         Column(
@@ -759,16 +775,16 @@ fun ImportScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.",
+                    stringResource(R.string.import_intro),
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
-                    Text("How to write a file (opens in your browser)")
+                    Text(stringResource(R.string.import_how_to))
                 }
             }
 
             if (vehicles.isEmpty()) {
-                Text("Add a vehicle first: an import goes into one of your vehicles.", color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.import_no_vehicle), color = scheme.onSurfaceVariant)
                 return@Column
             }
 
@@ -777,29 +793,29 @@ fun ImportScreen(
                 when (r.kind) {
                     ImportKind.INTERVAL_SCHEDULE -> {
                         if (r.added > 0) {
-                            Button(onClick = { onEnterLastDone(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Enter when these were last done") }
+                            Button(onClick = { onEnterLastDone(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.home_enter_last_done)) }
                             Text(
-                                "New items start as \"Not logged yet\". If you know when any were last done, say so and their reminders start counting.",
+                                stringResource(R.string.import_last_done_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
                             )
                         }
                         OutlinedButton(onClick = { onOpenSchedule(r.vehicleId) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
-                            Text("See the schedule")
+                            Text(stringResource(R.string.import_see_schedule))
                         }
                     }
-                    ImportKind.MILESTONE_SCHEDULE -> Button(onClick = { onOpenMilestones(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See milestones") }
+                    ImportKind.MILESTONE_SCHEDULE -> Button(onClick = { onOpenMilestones(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_see_milestones)) }
                     ImportKind.SERVICE_HISTORY -> Button(
                         onClick = {
                             vm.showHistory(r.vehicleId)
                             onOpenHistory(r.vehicleId, r.archived)
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
-                    ) { Text("See history") }
-                    else -> Button(onClick = { onOpenTorqueSpecs(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("See torque specs") }
+                    ) { Text(stringResource(R.string.import_see_history)) }
+                    else -> Button(onClick = { onOpenTorqueSpecs(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_see_torque)) }
                 }
                 OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
-                    Text("Import another file")
+                    Text(stringResource(R.string.import_another))
                 }
                 return@Column
             }
@@ -807,19 +823,19 @@ fun ImportScreen(
             val fixed = vehicles.firstOrNull { it.id == vehicleId }?.takeIf { vm.vehicleFixed }
             if (fixed != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel("IMPORT INTO")
+                    SectionLabel(stringResource(R.string.import_into))
                     Text("${fixed.year} ${fixed.nickname ?: fixed.model}", style = MaterialTheme.typography.titleMedium)
                 }
             } else if (vehicles.size > 1) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel("IMPORT INTO")
+                    SectionLabel(stringResource(R.string.import_into))
                     Card {
                         Column(Modifier.selectableGroup()) {
                             vehicles.forEachIndexed { i, v ->
                                 if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
                                 Choice(
                                     title = "${v.year} ${v.nickname ?: v.model}",
-                                    detail = listOfNotNull("Sold".takeIf { v.archivedOn != null }, v.trim, v.engine).joinToString(" · ").ifEmpty { null },
+                                    detail = listOfNotNull(stringResource(R.string.import_sold).takeIf { v.archivedOn != null }, v.trim, v.engine).joinToString(" · ").ifEmpty { null },
                                     selected = v.id == vehicleId,
                                     onClick = { vm.chooseVehicle(v.id) },
                                 )
@@ -830,15 +846,15 @@ fun ImportScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel("FILE")
+                SectionLabel(stringResource(R.string.import_file_section))
                 val file = picked
                 if (file == null) {
-                    Button(onClick = vm::pick, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text("Choose a file") }
+                    Button(onClick = vm::pick, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_choose)) }
                 } else {
                     Card {
                         Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(file.name, Modifier.weight(1f).padding(vertical = 8.dp), style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
-                            TextButton(onClick = vm::pick, modifier = Modifier.heightIn(min = 48.dp)) { Text("Change") }
+                            TextButton(onClick = vm::pick, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.change)) }
                         }
                     }
                 }
@@ -848,7 +864,7 @@ fun ImportScreen(
             when (val p = preview) {
                 null -> Unit
                 is ImportPreview.Invalid -> ErrorsCard(p.file)
-                ImportPreview.NeedsVehicle -> Text("The file is fine. Choose which vehicle it goes into.", color = scheme.onSurface)
+                ImportPreview.NeedsVehicle -> Text(stringResource(R.string.import_needs_vehicle), color = scheme.onSurface)
                 is ImportPreview.Refused -> Text(p.why, color = scheme.onSurface)
                 is ImportPreview.Ready -> {
                     val view = p.view
@@ -856,14 +872,14 @@ fun ImportScreen(
                     if (view.doubts.isNotEmpty()) DoubtsCard(view.doubts, vm::include)
                     if (view.differs.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SectionLabel("${view.noun.uppercase()}S THAT DIFFER FROM YOURS")
+                            SectionLabel(stringResource(view.noun.differ))
                             Card {
                                 Column(Modifier.selectableGroup()) {
-                                    Choice("Add new only", "Yours stay exactly as they are", mode == ImportMode.ADD_NEW) { mode = ImportMode.ADD_NEW }
+                                    Choice(stringResource(R.string.import_add_new), stringResource(R.string.import_add_new_note), mode == ImportMode.ADD_NEW) { mode = ImportMode.ADD_NEW }
                                     HorizontalDivider(color = scheme.outlineVariant)
                                     Choice(
-                                        "Replace matching",
-                                        view.count(view.differs.size) + " of yours " + (if (view.differs.size == 1) "takes" else "take") + " the file's values",
+                                        stringResource(R.string.import_replace),
+                                        pluralStringResource(R.plurals.import_replace_note, view.differs.size, view.count(view.differs.size)),
                                         mode == ImportMode.REPLACE_MATCHING,
                                     ) { mode = ImportMode.REPLACE_MATCHING }
                                 }
@@ -876,9 +892,9 @@ fun ImportScreen(
                     if (changes == 0) {
                         Text(
                             if (view.differs.isEmpty()) {
-                                "Nothing to import: everything in this file is already on the vehicle."
+                                stringResource(R.string.import_nothing)
                             } else {
-                                "Nothing to import unless you replace the ${view.noun}s that differ."
+                                stringResource(view.noun.replaceOnly)
                             },
                             color = scheme.onSurface,
                         )
@@ -889,10 +905,10 @@ fun ImportScreen(
                                 onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles, keepCopy) },
                                 modifier = Modifier.fillMaxWidth().height(56.dp),
                             ) {
-                                Text("Import ${view.count(changes)}")
+                                Text(stringResource(R.string.import_button, view.count(changes)))
                             }
                             Text(
-                                "Nothing on the vehicle is deleted. There is no Undo, so check the list above.",
+                                stringResource(R.string.import_no_undo),
                                 Modifier.fillMaxWidth(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
@@ -909,18 +925,18 @@ fun ImportScreen(
 private fun PlanCard(view: PlanView) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("${view.kind.label.uppercase()} · ${view.total} IN THE FILE")
+        SectionLabel(stringResource(R.string.import_in_file, view.kind.label.uppercase(AppText.locale), view.total.asNumber()))
         Card {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Group("${view.new.size} new", "Added to the vehicle", view.new)
-                Group("${view.fills.size} fill in a ${view.noun} you left empty", "Yours has only a name so far", view.fills)
-                Group("${view.differs.size} different from yours", "Left alone unless you choose to replace them", view.differs, color = scheme.onPrimaryContainer)
+                Group(pluralStringResource(R.plurals.import_new, view.new.size, view.new.size.asNumber()), stringResource(R.string.import_new_note), view.new)
+                Group(pluralStringResource(view.noun.fills, view.fills.size, view.fills.size.asNumber()), stringResource(R.string.import_fills_note), view.fills)
+                Group(pluralStringResource(R.plurals.import_differs, view.differs.size, view.differs.size.asNumber()), stringResource(R.string.import_differs_note), view.differs, color = scheme.onPrimaryContainer)
                 if (view.same > 0) {
-                    Text("${view.same} already the same · left alone", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                    Text(pluralStringResource(R.plurals.import_same, view.same, view.same.asNumber()), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
                 view.doubts.count { !it.included }.takeIf { it > 0 }?.let { n ->
                     Text(
-                        "${view.count(n)} left out: " + (if (n == 1) "its reading looks" else "their readings look") + " wrong. See below.",
+                        pluralStringResource(R.plurals.import_left_out, n, view.count(n)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.error,
                     )
@@ -944,16 +960,16 @@ private fun Group(title: String, detail: String, lines: List<PlanLine>, color: C
         lines.take(SHOWN).forEach { line ->
             Column {
                 Text(line.name, style = MaterialTheme.typography.bodyMedium)
-                line.yours?.let { Text("Yours: $it", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant) }
+                line.yours?.let { Text(stringResource(R.string.import_yours, it), style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant) }
                 Text(
-                    if (line.yours == null) line.file else "File: ${line.file}",
+                    if (line.yours == null) line.file else stringResource(R.string.import_file_value, line.file),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
                     color = scheme.onSurfaceVariant,
                 )
             }
         }
-        if (lines.size > SHOWN) Text("and ${lines.size - SHOWN} more", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        if (lines.size > SHOWN) Text(stringResource(R.string.and_more, (lines.size - SHOWN).asNumber()), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
@@ -968,7 +984,7 @@ private const val SHOWN = 12
 private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("ALREADY TRACKED AS A TYPICAL ITEM")
+        SectionLabel(stringResource(R.string.import_doubles))
         Card {
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
@@ -977,15 +993,13 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
             ) {
                 Checkbox(checked = stop, onCheckedChange = null)
                 Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(if (names.size == 1) "Stop tracking the typical item" else "Stop tracking the ${names.size} typical items", style = MaterialTheme.typography.bodyLarge)
+                    Text(pluralStringResource(R.plurals.import_stop_typical, names.size, names.size.asNumber()), style = MaterialTheme.typography.bodyLarge)
                     Text(names.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
         }
         Text(
-            "Glovebox's typical schedule already has " + (if (names.size == 1) "this" else "these") + ", so you'd get two reminders for one job. " +
-                "Unticked here, both stay, and work logged for one that shares a service line counts for both. " +
-                "A stopped item keeps its history and can be ticked again on the schedule.",
+            pluralStringResource(R.plurals.import_doubles_note, names.size),
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
         )
@@ -1001,7 +1015,7 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
 private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>, Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("READINGS TO CHECK")
+        SectionLabel(stringResource(R.string.import_readings_to_check))
         Card {
             Column {
                 doubts.forEachIndexed { i, d ->
@@ -1022,9 +1036,7 @@ private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>
             }
         }
         Text(
-            "These readings don't look right, so they are left out. Your odometer is the highest reading on record: " +
-                "one wrong reading would become it, and every mileage reminder would count from it. " +
-                "Tick one to import it as it is, or leave it out and log that visit yourself with the right mileage.",
+            stringResource(R.string.import_readings_note),
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
         )
@@ -1035,11 +1047,11 @@ private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>
 @Composable
 private fun MovesCard(moves: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("REMINDERS THAT WILL MOVE")
+        SectionLabel(stringResource(R.string.import_moves))
         Card {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 moves.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                if (moves.size > SHOWN) Text("and ${moves.size - SHOWN} more", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (moves.size > SHOWN) Text(stringResource(R.string.and_more, (moves.size - SHOWN).asNumber()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -1049,47 +1061,61 @@ private fun MovesCard(moves: List<String>) {
 private fun ErrorsCard(file: ImportFile.Invalid) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("THIS FILE CAN'T BE IMPORTED")
+        SectionLabel(stringResource(R.string.import_cant))
         Card {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                file.carfax?.let { why ->
+                    Text(
+                        when (why) {
+                            CarfaxRefusal.NotAReport -> stringResource(R.string.carfax_not_a_report)
+                            is CarfaxRefusal.NoVisits ->
+                                if (why.withoutMileage == 0) {
+                                    stringResource(R.string.carfax_no_visits)
+                                } else {
+                                    pluralStringResource(R.plurals.carfax_no_visits_without_mileage, why.withoutMileage, why.withoutMileage.asNumber())
+                                }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 file.errors.forEach { e ->
                     Column {
                         if (e.path.isNotEmpty()) Text(e.path, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold, color = scheme.error)
                         Text(e.message.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
-                if (file.more > 0) Text("and ${file.more} more", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                if (file.more > 0) Text(stringResource(R.string.and_more, file.more.asNumber()), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
-        Text("Nothing was saved. Fix the file and choose it again.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        Text(stringResource(R.string.import_fix_file), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun ResultCard(r: ImportResult) {
     val scheme = MaterialTheme.colorScheme
-    fun count(n: Int) = if (n == 1) "1 ${r.noun}" else "$n ${r.noun}s"
+    fun count(n: Int) = r.noun.count(n)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel("IMPORTED INTO ${r.vehicleName.uppercase()}")
+        SectionLabel(stringResource(R.string.import_imported_into, r.vehicleName.uppercase(AppText.locale)))
         Card {
             Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf(r.added to "added", r.filled to "filled in", r.replaced to "replaced with the file's values").filter { it.first > 0 }.forEach { (n, what) ->
-                    Text("${count(n)} $what", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+                listOf(r.added to R.string.import_added, r.filled to R.string.import_filled, r.replaced to R.string.import_replaced).filter { it.first > 0 }.forEach { (n, what) ->
+                    Text(stringResource(what, count(n)), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
                 }
                 if (r.stopped > 0) {
                     Text(
-                        (if (r.stopped == 1) "1 typical item" else "${r.stopped} typical items") + " no longer tracked",
+                        pluralStringResource(R.plurals.import_stopped, r.stopped, r.stopped.asNumber()),
                         style = MaterialTheme.typography.bodyLarge,
                         color = statusColors().ok,
                     )
                 }
                 if (r.unchanged > 0) {
-                    Text(count(r.unchanged) + if (r.unchanged == 1) " left as it was" else " left as they were", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                    Text(pluralStringResource(R.plurals.import_unchanged, r.unchanged, count(r.unchanged)), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                 }
                 r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant) }
                 when (r.keptCopy) {
-                    true -> Text("The report is kept in the vehicle's documents", style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
-                    false -> Text("The report couldn't be kept in the vehicle's documents. Add it from there.", style = MaterialTheme.typography.bodyMedium, color = scheme.error)
+                    true -> Text(stringResource(R.string.import_kept_copy), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+                    false -> Text(stringResource(R.string.import_copy_failed), style = MaterialTheme.typography.bodyMedium, color = scheme.error)
                     null -> Unit
                 }
             }
@@ -1109,9 +1135,9 @@ private fun KeepCopyCard(keep: Boolean, onChange: (Boolean) -> Unit) {
         ) {
             Checkbox(checked = keep, onCheckedChange = null)
             Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Keep a copy in this vehicle's documents", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.import_keep_copy), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    "Encrypted on this phone with the vehicle's other paperwork. Unticked, the report is only read and not kept.",
+                    stringResource(R.string.import_keep_copy_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -1125,21 +1151,21 @@ private fun ReplaceDialog(view: PlanView, onConfirm: () -> Unit, onDismiss: () -
     val scheme = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Replace ${view.count(view.differs.size)} of yours?") },
+        title = { Text(stringResource(R.string.import_replace_title, view.count(view.differs.size))) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 view.differs.forEach { line ->
                     Column {
                         Text(line.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                        Text("Yours: ${line.yours}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
-                        Text("Becomes: ${line.file}", style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
+                        Text(stringResource(R.string.import_yours, line.yours.orEmpty()), style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
+                        Text(stringResource(R.string.import_becomes, line.file), style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono)
                     }
                 }
-                Text("This can't be undone.", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                Text(stringResource(R.string.delete_all_cant_undo), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) { Text("Replace and import") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) { Text(stringResource(R.string.import_replace_and_import)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 
@@ -1165,3 +1191,33 @@ private fun Card(content: @Composable ColumnScope.() -> Unit) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), content = content)
     }
 }
+
+/** What a plan counts: the words for it, by kind of file. */
+enum class PlanNoun(@PluralsRes private val counted: Int, @StringRes val differ: Int, @StringRes val replaceOnly: Int, @PluralsRes val fills: Int) {
+    ROW(R.plurals.plan_rows, R.string.plan_rows_differ, R.string.plan_rows_replace_only, R.plurals.plan_rows_fill),
+    ITEM(R.plurals.plan_items, R.string.plan_items_differ, R.string.plan_items_replace_only, R.plurals.plan_items_fill),
+    MILESTONE(R.plurals.milestones, R.string.plan_milestones_differ, R.string.plan_milestones_replace_only, R.plurals.plan_milestones_fill),
+    RECORD(R.plurals.records, R.string.plan_records_differ, R.string.plan_records_replace_only, R.plurals.plan_records_fill),
+    ;
+
+    /** "3 rows" */
+    fun count(n: Int): String = AppText.res.getQuantityString(counted, n, n.asNumber())
+}
+
+val ImportKind.label: String
+    get() = AppText.res.getString(
+        when (this) {
+            ImportKind.SERVICE_HISTORY -> R.string.import_kind_history
+            ImportKind.INTERVAL_SCHEDULE -> R.string.details_schedule
+            ImportKind.MILESTONE_SCHEDULE -> R.string.milestones_title
+            ImportKind.TORQUE_SPECS -> R.string.import_kind_torque
+        },
+    )
+
+/** Said under a preview when the file's unit isn't the vehicle's: what the page lists is what will be saved, not what the file says. */
+private fun convertedNote(from: DistanceUnit, to: DistanceUnit): String? =
+    AppText.res.getString(R.string.import_converted, from.pluralWord, to.pluralWord).takeIf { FileDistances.converts(from, to) }
+
+private val factoryManual: String get() = AppText.res.getString(R.string.import_factory_manual)
+
+private val severeOnlyWords: String get() = AppText.res.getString(R.string.import_severe_only)

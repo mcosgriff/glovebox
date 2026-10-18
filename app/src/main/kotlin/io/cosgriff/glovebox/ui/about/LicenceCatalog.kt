@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.settings.title
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.R
@@ -38,19 +40,19 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
 
     // The fonts in res/font are files in this repo, not Maven dependencies, so the generated list can't know them.
     // Their licence, with IBM's copyright line, is assets/licences/com.ibm_plex.txt.
-    private val fonts = listOf(BundledLibrary("com.ibm:plex", "IBM Plex Sans and IBM Plex Mono (fonts)", null, listOf(FONT_LICENCE)))
+    private val fonts get() = listOf(BundledLibrary("com.ibm:plex", AppText.res.getString(R.string.licences_plex), null, listOf(FONT_LICENCE)))
     private val fontLicence = FONT_LICENCE to Licence(FONT_LICENCE, "SIL Open Font License 1.1", "https://openfontlicense.org", null)
 
     // Tesseract4Android is published without licence details, so the generated list has it under none. It is
     // Apache 2.0, as are the Tesseract engine and the language file in assets/tessdata; the image libraries
     // built into it have their own terms, kept in assets/licences/cz.adaptech.tesseract4android_tesseract4android.txt.
-    private val tesseract = BundledLibrary(
+    private val tesseract get() = BundledLibrary(
         TESSERACT,
-        "Tesseract4Android (Tesseract OCR, Leptonica, libjpeg, libpng and English language data)",
+        AppText.res.getString(R.string.licences_tesseract),
         null,
         listOf(APACHE, TESSERACT_BUNDLED),
     )
-    private val tesseractLicence = TESSERACT_BUNDLED to Licence(TESSERACT_BUNDLED, "Leptonica, libjpeg and libpng licences", null, null)
+    private val tesseractLicence get() = TESSERACT_BUNDLED to Licence(TESSERACT_BUNDLED, AppText.res.getString(R.string.licences_tesseract_bundled), null, null)
 
     private val loaded: List<LicenceGroup> by lazy {
         val text = context.resources.openRawResource(R.raw.aboutlibraries).bufferedReader().use { it.readText() }
@@ -73,7 +75,7 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
         val group = loaded.firstOrNull { it.licence.id == id } ?: return@withContext null
         // A library's own licence comes without its wording; the app keeps a copy for each of those.
         val text = group.licence.text ?: group.libraries.singleOrNull()?.let { asset(Licences.assetName(it.id)) }
-        LicenceDocument(group.name, group.licence.url, text)
+        LicenceDocument(group.title, group.licence.url, text)
     }
 
     private companion object {

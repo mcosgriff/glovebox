@@ -1,7 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import java.util.Locale
-
 /**
  * One suggested maintenance item. [severe] is null when hard use (towing, off-road, dust,
  * short trips) doesn't change the interval.
@@ -82,16 +80,6 @@ object ScheduleTemplates {
         }
     }
 }
-
-/** "7,500 mi / 12 mo", "30,000 mi" or "36 mo". [unit] is the vehicle's, which is what the interval is in. */
-fun Interval.label(unit: DistanceUnit): String = listOfNotNull(
-    miles?.let(unit::format),
-    months?.let { "$it mo" },
-).joinToString(" / ")
-
-/** "First at 100,000 mi, then every 50,000 mi / 60 mo" for a job with a first time of its own; the plain label otherwise. */
-fun Interval.label(unit: DistanceUnit, firstAt: Int?): String =
-    if (firstAt == null) label(unit) else "First at ${unit.format(firstAt)}, then every ${label(unit)}"
 
 object IntervalInput {
     /**

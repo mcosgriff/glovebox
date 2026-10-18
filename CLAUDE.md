@@ -86,7 +86,7 @@ Keep them green; lint errors fail the build.
   setting. Almost all of `:domain` neither knows nor cares what unit its numbers are in. Column and field
   names that say "miles" are older than the choice. **Never write a number into a vehicle's tables in
   another unit, and never show one without the vehicle's unit:** there is deliberately no unit-less
-  formatter (`Int.asDistance(unit)`, `Interval.label(unit)`, `VehicleEntity.unit`).
+  formatter (`Int.asDistance(unit)`, `Interval.text(unit)`, `VehicleEntity.unit`).
 - **Network:** only NHTSA (`vpic.nhtsa.dot.gov`, `api.nhtsa.gov`). Only a VIN or year/make/model is
   sent. No analytics, crash reporting, ads, or other third-party SDKs that phone home.
   **CI and `release.yml` scan the release APK with Exodus Privacy's scanner** (`.github/scripts/exodus-scan.sh`,
@@ -406,7 +406,7 @@ Notes on what's built:
   dash terms. **Those are left out unless the user ticks them** (the user's GTI gained 60,000 miles from a
   shop's typo in a report: the odometer is the highest reading). The preview is planned without them. Sold vehicles can take history but no other kind. "Not in the future" is measured against the
   `today` passed to `ImportFormat.parse`. An imported record says "· imported" after who did it
-  (`LogEdits.who`) and carries `Exports.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.
+  (`LogEdits.who`) and carries `ExportPhrase.IMPORTED_NOTE` in exports; editing it in the form keeps the flag.
 - Milestones (`Milestones` in `:domain`, `MilestonesScreen`): the schedule laid out by mileage, as an
   owner's manual prints it. **They are a view, never a second source of what is due:** reminders and
   notifications come only from the interval schedule and the service log, and nothing on that screen
@@ -636,7 +636,7 @@ Notes on what's built:
   it" removes it. Deleting is a confirmation with no Undo. An export lists them (type, name, date; its
   own switch, `ExportOptions.documents`) and never carries their contents. Delete vehicle counts them. Taking a photo needs the camera permission because the app declares it for VIN scanning.
 - Export: `Exports.document` (domain) applies the options once (dates, costs and notes, schedule and
-  recalls, photos), so the Markdown writer (`Exports.markdown`) and the PDF writer (`PdfExport`, app,
+  recalls, photos), so the Markdown writer (`ExportText.markdown`) and the PDF writer (`PdfExport`, app,
   Android's `PdfDocument`, US Letter) only lay out what they are given. `ExportSheet` is one composable
   used from History, Settings, Vehicle details' sold sheet, the delete screen and the archive card.
   The file is written to `cache/export/` and copied to wherever the user picks through `ExportSaver`,
@@ -687,7 +687,7 @@ Notes on what's built:
   shows only while the lock is on and the phone has a screen lock. The privacy line says what is really
   sent: a VIN, or a year, make and model.
 - About (`ui/about`): the version comes from the installed package. `PrivacyScreen` states what is kept,
-  what is sent and what never happens; every line has to stay true of the code, so update it with any
+  what is sent and what never happens (its lines are the `privacy_*` string arrays in `strings.xml`); every line has to stay true of the code, so update it with any
   change to the network, permissions, backup or export. The copy names a maker's document as a source only for a
   bundled list, by that list's own `source.name`.
 - Open-source licences: the AboutLibraries Gradle plugin (build time only, no runtime library) writes the
@@ -816,7 +816,7 @@ Notes on what's built:
   from memory: leave it out or note the dispute. `KnownSpecsTest` holds every file in the folder to these
   rules and tests the logic on a made-up model with made-up values.
 - `KnownSpecs.match` offers a list only for its make, model and years; no near misses. "Add known specs for
-  …" is shown on Torque specs while the list has something the vehicle lacks, with `KnownSpecs.offer` saying
+  …" is shown on Torque specs while the list has something the vehicle lacks, with `offer` (`TorqueText.kt`) saying
   whose values they are every time. `KnownSpecs.plan` adds new rows and fills rows that are only a name; a
   row the user has put anything in is never written over, and there is no "replace". Every value arrives as
   `TorqueSource.REFERENCE` (tag DOUBLE-CHECK) with `torque_specs.knownList` set to the list's id.
@@ -849,15 +849,25 @@ Notes on what's built:
 ## Conventions
 
 - Business logic goes in `:domain` with a test; ViewModels stay thin.
-- Wording lives in `res/values/strings.xml` (#236; being moved there screen by screen, `Unlock` and the
-  lock screen first). Composables use `stringResource` / `pluralStringResource`, with figures passed as
-  arguments that already carry their unit (`Int.asDistance(unit)`). Names are `<screen>_<what>`
-  (`unlock_wait`). **`:domain` returns no English:** it returns a typed result (an enum, or a sealed type
-  carrying the figures, as `UnlockPrompt` and `UnlockMessage` do) and `app` words it beside the screen
-  that shows it; its tests check the result, not text. Text Android supplies (a biometric error) is
-  passed through as a case of its own. Wording held in saved state is worded once, when it happens.
-  English stays word for word while moving, since `EndToEndTest` finds things by their words; a
-  wording change is its own PR. Exports and import files keep their fixed formats.
+- **All wording lives in `res/values/strings.xml`** (#236). Composables use `stringResource` /
+  `pluralStringResource`; callbacks and code outside a composable use `LocalResources` or `AppText.res`
+  (never `LocalContext.current.getString` in a composable: lint flags it). Figures go in as arguments that
+  already carry their unit (`Int.asDistance(unit)`), counts through a plural. Names are `<screen>_<what>`
+  (`unlock_wait`). **`HardcodedTextTest`** (a JVM test in `app`) fails on words typed straight into the
+  UI (`Text("…")`, `contentDescription = "…"`), since Android lint only checks XML layouts for that.
+- **`:domain` returns no English:** it returns a typed result (an enum, or a sealed type carrying the
+  figures, as `UnlockPrompt`, `OdometerNote` or `TakesPart` do) and `app` words it beside the screen that
+  shows it, or in a shared `…Text.kt` (`TakesText`, `CatalogText`, `ScheduleText`, `SettingsWords`); its
+  tests check the result, not text. Things `:domain` names by id (catalog lines, typical schedule items,
+  starter fasteners) are named in `app`, and a name saved into a row keeps the language it was saved in,
+  like anything typed. A writer that lays out a whole document stays in `:domain` and is handed its words
+  (`ExportText(ExportWords)`; the tests give `EnglishExportWords`). Text from outside (Android's biometric
+  errors, NHTSA's components, vPIC's messages, a bundled list's source and note) is passed through as it
+  comes. Wording held in saved state is worded once, when it happens. A change to the English is its own
+  PR, since `EndToEndTest` finds things by their words. **One exception, on purpose:** an import file's
+  error messages (`ImportError.message`, the reasons in `WrittenFile.leftOut`) stay in English in
+  `:domain`, with the format they describe: they name its JSON fields and paths (`items[3].torque.unit`),
+  and `docs/import/` is the English specification they point to.
 - **The app runs in its translation's locale, not the phone's** (`inAppLocale`, `AppText` in app):
   `strings.xml` says which (`format_locale`, en-US), `MainActivity` wraps its context in it, and figures,
   dates and plural forms follow it. So the English app reads "12,345 mi" and "Oct 17, 2026" on every
@@ -867,8 +877,12 @@ Notes on what's built:
   `AppText.res`, since view models and workers call them too; so does any other wording outside a
   composable. **Never format a figure or date with `Locale.US` or `String.format` for display**, and never
   build a phrase by cutting up another (`removePrefix("In ")`, `.lowercase()`): give it its own resource.
-  `FormatsTest` (on a device) holds the English output of the shared formatters. Fields the user edits are
-  still filled with US grouping, because the parsers (`OdometerInput`, `Money.parseCents`) only read that.
+  `FormatsTest` (on a device) holds the English output of the shared formatters and the export's words.
+  Fields the user edits are filled in the app's format (`asNumber`, `editableCost`), and what is typed goes
+  through `typedNumber()` (whole numbers, costs) or `typedDecimal()` (torque, oil capacity) before a parser in
+  `:domain` reads it; both are no-ops in English. Costs are dollars whatever the language (`Money.format`).
+- **Adding a language** is a `res/values-xx/strings.xml` with its own `format_locale`: AGP generates the
+  per-app language list from the folders (`generateLocaleConfig`, `res/resources.properties`).
 - Never show placeholder data as if real; mark sample values clearly.
 - Torque/interval reference values are user-verified; UI says "check your service manual". A bundled torque
   value is the one exception to "user-entered", and it is tagged DOUBLE-CHECK until the user has checked it.

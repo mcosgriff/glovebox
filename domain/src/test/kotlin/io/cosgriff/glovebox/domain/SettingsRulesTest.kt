@@ -36,25 +36,4 @@ class SettingsRulesTest {
     fun `on restart never locks on return`() {
         assertFalse(LockDelay.relocks(lockAfterSeconds = -1, awaySeconds = 1_000_000))
     }
-
-    @Test
-    fun `theme note says what is showing`() {
-        assertEquals("Follows your phone \u2014 currently light", SettingsText.theme(followsPhone = true, dark = false))
-        assertEquals("Follows your phone \u2014 currently dark", SettingsText.theme(followsPhone = true, dark = true))
-        assertEquals("Always dark, whatever your phone is set to", SettingsText.theme(followsPhone = false, dark = true))
-    }
-
-    @Test
-    fun `notifications are only On when every kind is`() {
-        assertEquals("On", SettingsText.notifications(NoticePrefs()))
-        assertEquals("3 of 4 on", SettingsText.notifications(NoticePrefs(mileage = false)))
-        assertEquals("Off", SettingsText.notifications(NoticePrefs(serviceDue = false, overdue = false, recalls = false, mileage = false)))
-    }
-
-    @Test
-    fun `the schedule row names the vehicle, counts several, and is absent with none`() {
-        assertNull(SettingsText.schedules(emptyList()))
-        assertEquals("Tacoma", SettingsText.schedules(listOf("Tacoma")))
-        assertEquals("2 vehicles", SettingsText.schedules(listOf("Tacoma", "Civic")))
-    }
 }

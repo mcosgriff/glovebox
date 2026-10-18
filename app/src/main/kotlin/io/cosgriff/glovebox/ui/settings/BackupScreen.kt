@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -136,7 +139,7 @@ class BackupViewModel @Inject constructor(
             progress = null
             password = ""
             confirm = ""
-            saver.save(file, BackupRules.fileName(today, BackupFormat.FILE_EXTENSION), BackupFormat.MIME_TYPE, "Backup saved") {
+            saver.save(file, BackupRules.fileName(today, BackupFormat.FILE_EXTENSION), BackupFormat.MIME_TYPE, AppText.res.getString(R.string.backup_saved)) {
                 repo.setLastBackup(today)
             }
         }
@@ -156,9 +159,9 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Text(
-                "Encrypted backup",
+                stringResource(R.string.settings_backup),
                 Modifier.padding(start = 8.dp).semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
@@ -178,12 +181,12 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             ) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        "Last backup: ${last?.format(longDate) ?: "never"}",
+                        stringResource(R.string.backup_last, last?.format(longDate) ?: stringResource(R.string.backup_never)),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "Your data's encryption key can't leave this phone. A backup is the only way to move to a new phone or recover after a reset.",
+                        stringResource(R.string.backup_why),
                         style = MaterialTheme.typography.bodyMedium,
                         color = statusColors().soon,
                     )
@@ -191,12 +194,12 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PasswordField("Backup password", vm.password, { vm.password = it }, show, { show = !show }, ImeAction.Next)
+                PasswordField(stringResource(R.string.backup_password), vm.password, { vm.password = it }, show, { show = !show }, ImeAction.Next)
                 StrengthMeter(vm.strength, typed = vm.password.isNotEmpty())
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 PasswordField(
-                    "Confirm password",
+                    stringResource(R.string.backup_confirm_password),
                     vm.confirm,
                     { vm.confirm = it },
                     show,
@@ -206,9 +209,9 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                 )
                 Text(
                     if (vm.confirm.isNotEmpty() && !vm.matches) {
-                        "The two passwords don't match."
+                        stringResource(R.string.backup_mismatch)
                     } else {
-                        "We can't recover a forgotten password. Store it in your password manager."
+                        stringResource(R.string.backup_cant_recover_store)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (vm.confirm.isNotEmpty() && !vm.matches) scheme.error else scheme.onSurfaceVariant,
@@ -218,9 +221,9 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Includes", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.backup_includes), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            contents?.let { BackupRules.contents(it.vehicles, it.records, it.photos, it.documents, it.documentBytes) } ?: "Counting…",
+                            contents?.let { backupContents(it.vehicles, it.records, it.photos, it.documents, it.documentBytes) } ?: stringResource(R.string.backup_counting),
                             style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
                         )
@@ -231,9 +234,9 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-                            Text("Monthly backup reminder", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.backup_reminder), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "A notification when your last backup is over a month old.",
+                                stringResource(R.string.backup_reminder_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
                             )
@@ -247,12 +250,12 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             if (progress != null) {
                 Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-                    Text("Encrypting your data…", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text(stringResource(R.string.backup_encrypting), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
             if (vm.failed) {
                 Text(
-                    "The backup couldn't be made: one of the photos couldn't be read. Nothing was saved.",
+                    stringResource(R.string.backup_failed),
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.bodyMedium,
                     color = scheme.error,
@@ -268,12 +271,12 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(if (progress != null) "Creating backup…" else "Create backup file", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(if (progress != null) R.string.backup_creating else R.string.backup_create), style = MaterialTheme.typography.titleMedium)
             }
             Text(
                 when {
-                    contents != null && contents.vehicles == 0 -> "There is nothing to back up yet. Add a vehicle first."
-                    else -> "Android asks where to save it: a folder, USB drive or a cloud app you choose. Glovebox never uploads it."
+                    contents != null && contents.vehicles == 0 -> stringResource(R.string.backup_nothing)
+                    else -> stringResource(R.string.backup_where)
                 },
                 Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
@@ -283,9 +286,9 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
 
             HorizontalDivider(color = scheme.outlineVariant)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Restore", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.restore), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Text(
-                    "Bring back a backup file made on this or another phone. It replaces what is here.",
+                    stringResource(R.string.backup_restore_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -294,7 +297,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                     modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                     shape = RoundedCornerShape(14.dp),
                 ) {
-                    Text("Restore from a backup file", color = scheme.onSurface)
+                    Text(stringResource(R.string.backup_restore_from), color = scheme.onSurface)
                 }
             }
         }
@@ -322,7 +325,7 @@ private fun PasswordField(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false, imeAction = imeAction),
         trailingIcon = {
             IconButton(onClick = onToggleShow) {
-                Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = if (show) "Hide passwords" else "Show passwords")
+                Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.backup_hide_passwords else R.string.backup_show_passwords))
             }
         },
         shape = RoundedCornerShape(12.dp),
@@ -347,8 +350,8 @@ private fun StrengthMeter(strength: PasswordStrength, typed: Boolean) {
     }
     Text(
         when {
-            !typed -> "Your choice. A long phrase is harder to guess than a short jumble."
-            strength == PasswordStrength.WEAK -> "Weak: easy to guess if someone gets hold of the file. It will still work."
+            !typed -> stringResource(R.string.backup_strength_hint)
+            strength == PasswordStrength.WEAK -> stringResource(R.string.backup_strength_weak)
             else -> strength.label
         },
         Modifier.semantics { liveRegion = LiveRegionMode.Polite },

@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.settings
 
+import androidx.compose.ui.res.pluralStringResource
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.R
+import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.domain.DistanceUnit
 import android.Manifest
 import android.content.Context
@@ -69,7 +73,6 @@ import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.MileageCadence
 import io.cosgriff.glovebox.domain.NoticePrefs
-import io.cosgriff.glovebox.domain.NoticeRules
 import io.cosgriff.glovebox.notify.Notifier
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -118,7 +121,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
         val time = rememberTimePickerState(initialHour = prefs.hour, initialMinute = prefs.minute)
         AlertDialog(
             onDismissRequest = { pickingTime = false },
-            title = { Text("Time of day") },
+            title = { Text(stringResource(R.string.notifications_time)) },
             text = { TimePicker(state = time) },
             confirmButton = {
                 TextButton(
@@ -126,15 +129,15 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                         vm.change(prefs.copy(hour = time.hour, minute = time.minute))
                         pickingTime = false
                     },
-                ) { Text("OK") }
+                ) { Text(stringResource(R.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { pickingTime = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { pickingTime = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
     if (pickingCadence) {
         AlertDialog(
             onDismissRequest = { pickingCadence = false },
-            title = { Text("Mileage check-in") },
+            title = { Text(stringResource(R.string.channel_mileage)) },
             text = {
                 Column(Modifier.selectableGroup()) {
                     MileageCadence.entries.forEach { c ->
@@ -156,15 +159,15 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { pickingCadence = false }) { Text("Cancel") } },
+            confirmButton = { TextButton(onClick = { pickingCadence = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
             Text(
-                "Notifications",
+                stringResource(R.string.notifications_title),
                 Modifier.padding(start = 8.dp).semantics { heading() },
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
@@ -179,7 +182,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 Surface(color = scheme.tertiaryContainer, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(20.dp), tint = scheme.onTertiaryContainer)
-                        Text("Allowed in Android settings", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = scheme.onTertiaryContainer)
+                        Text(stringResource(R.string.notifications_allowed), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = scheme.onTertiaryContainer)
                     }
                 }
             } else {
@@ -191,9 +194,9 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Notifications are off for Glovebox", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.notifications_blocked), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         Text(
-                            "Nothing below can reach you until Android allows it. Reminders still show inside the app.",
+                            stringResource(R.string.notifications_blocked_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = statusColors().soon,
                         )
@@ -204,40 +207,39 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                             modifier = Modifier.heightIn(min = 48.dp),
                             shape = RoundedCornerShape(12.dp),
                         ) {
-                            Text(if (canAsk) "Allow notifications" else "Open Android settings")
+                            Text(stringResource(if (canAsk) R.string.notifications_allow else R.string.notifications_open_settings))
                         }
                     }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel("TELL ME ABOUT")
+                SectionLabel(stringResource(R.string.notifications_tell_me))
                 Card {
-                    SwitchRow("Service coming due", "Based on your reminder rules", prefs.serviceDue) { vm.change(prefs.copy(serviceDue = it)) }
+                    SwitchRow(stringResource(R.string.channel_due), stringResource(R.string.notifications_due_note), prefs.serviceDue) { vm.change(prefs.copy(serviceDue = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    SwitchRow("Overdue nudges", "Once a week until it's logged or snoozed", prefs.overdue) { vm.change(prefs.copy(overdue = it)) }
+                    SwitchRow(stringResource(R.string.channel_overdue), stringResource(R.string.channel_overdue_about), prefs.overdue) { vm.change(prefs.copy(overdue = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    SwitchRow("New recalls", "Checked ${settings.recallCadence.label.lowercase()} for each vehicle".takeIf { settings.recallCadence.days != null } ?: "Automatic recall checks are off in Settings", prefs.recalls) {
+                    SwitchRow(stringResource(R.string.channel_recalls), stringResource(R.string.notifications_recalls_checked, settings.recallCadence.inSentence).takeIf { settings.recallCadence.days != null } ?: stringResource(R.string.notifications_recalls_off), prefs.recalls) {
                         vm.change(prefs.copy(recalls = it))
                     }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    SwitchRow("Mileage check-in", "A quick prompt to update the odometer", prefs.mileage) { vm.change(prefs.copy(mileage = it)) }
+                    SwitchRow(stringResource(R.string.channel_mileage), stringResource(R.string.notifications_mileage_note), prefs.mileage) { vm.change(prefs.copy(mileage = it)) }
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel("WHEN")
+                SectionLabel(stringResource(R.string.notifications_when))
                 Card {
-                    ChoiceRow("Time of day", NoticeRules.timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
+                    ChoiceRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    ChoiceRow("Mileage check-in", prefs.mileageCadence.label) { pickingCadence = true }
+                    ChoiceRow(stringResource(R.string.channel_mileage), prefs.mileageCadence.label) { pickingCadence = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
-                    ChoiceRow("How early to remind", "${settings.lead.miles.asDistance(settings.distanceUnit)} / ${settings.lead.days} days", onClick = onOpenRules)
+                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.interval_slash, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
                 }
                 Text(
-                    "Mileage reminders only work if the odometer is current, so we'll ask you for a quick reading on a schedule. " +
-                        "The time of day is approximate: Android runs background checks when it suits the battery.",
+                    stringResource(R.string.notifications_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
