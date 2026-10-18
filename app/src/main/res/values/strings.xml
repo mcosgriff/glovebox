@@ -1277,6 +1277,10 @@
     <string name="reminders_group_not_logged">NOT LOGGED YET</string>
     <string name="reminders_end_snooze">End snooze</string>
     <string name="reminders_snooze">Snooze…</string>
+    <!-- What TalkBack says for a card's buttons, naming the job and the vehicle: "Log it: Brake fluid, 2019 Blue truck". -->
+    <string name="reminders_log_it_for">Log it: %1$s, %2$s</string>
+    <string name="reminders_snooze_for">Snooze: %1$s, %2$s</string>
+    <string name="reminders_end_snooze_for">End snooze: %1$s, %2$s</string>
     <string name="reminders_every">every %1$s</string>
     <!-- How far overdue: 3,312 mi over. -->
     <string name="reminders_over">%1$s over</string>

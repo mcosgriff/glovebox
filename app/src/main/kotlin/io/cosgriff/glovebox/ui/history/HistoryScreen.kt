@@ -180,18 +180,38 @@ fun HistoryScreen(
     vm: HistoryViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
-    val categories = state.categories
-    // A filter can outlive the last record that matched it (e.g. after a delete).
-    val filter = vm.filter?.takeIf { f -> categories.any { it.id == f } }
-    val shown = state.records.filter { r ->
-        filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }
-    }
-
     val fresh by vm.fresh.collectAsStateWithLifecycle()
     DisposableEffect(Unit) { onDispose { vm.focusSeen() } }
 
     var exporting by rememberSaveable { mutableStateOf(false) }
     if (exporting) ExportSheet(vehicleId = state.vehicle?.id, onDismiss = { exporting = false })
+
+    HistoryContent(
+        state, vm.filter, fresh, vm.archived, onOpenRecord, onBack,
+        onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
+    )
+}
+
+/** History as given, with no ViewModel: what [HistoryScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun HistoryContent(
+    state: HistoryState,
+    /** The category chosen, or null for all. */
+    chosenFilter: String?,
+    fresh: HistoryFocus?,
+    archived: Boolean,
+    onOpenRecord: (recordId: Long) -> Unit,
+    onBack: (() -> Unit)?,
+    onExport: () -> Unit,
+    onChooseVehicle: (Long) -> Unit,
+    onChooseFilter: (String?) -> Unit,
+) {
+    val categories = state.categories
+    // A filter can outlive the last record that matched it (e.g. after a delete).
+    val filter = chosenFilter?.takeIf { f -> categories.any { it.id == f } }
+    val shown = state.records.filter { r ->
+        filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }
+    }
 
     Column(Modifier.fillMaxSize()) {
         if (onBack != null) {
@@ -207,7 +227,7 @@ fun HistoryScreen(
                 Text(stringResource(R.string.history_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
                 if (state.vehicle != null) {
                     OutlinedButton(
-                        onClick = { exporting = true },
+                        onClick = onExport,
                         modifier = Modifier.heightIn(min = 48.dp),
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
@@ -217,7 +237,7 @@ fun HistoryScreen(
             }
             state.vehicle?.let { v ->
                 Text(
-                    stringResource(if (vm.archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
+                    stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -227,22 +247,22 @@ fun HistoryScreen(
         if (state.vehicles.size > 1) {
             ChipRow {
                 state.vehicles.forEach { v ->
-                    Chip(v.label(), selected = v.id == state.vehicle?.id) { vm.chooseVehicle(v.id) }
+                    Chip(v.label(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
                 }
             }
         }
         if (categories.isNotEmpty()) {
             ChipRow {
-                Chip(stringResource(R.string.history_all), selected = filter == null) { vm.chooseFilter(null) }
+                Chip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
                 categories.forEach { c ->
-                    Chip(c.label, selected = filter == c.id) { vm.chooseFilter(c.id) }
+                    Chip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
                 }
             }
         }
 
         when {
             state.vehicle == null -> EmptyNote(stringResource(R.string.history_no_vehicle))
-            state.records.isEmpty() && vm.archived -> EmptyNote(stringResource(R.string.history_none_archived))
+            state.records.isEmpty() && archived -> EmptyNote(stringResource(R.string.history_none_archived))
             state.records.isEmpty() -> EmptyNote(stringResource(R.string.history_none))
             else -> LazyColumn(
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),

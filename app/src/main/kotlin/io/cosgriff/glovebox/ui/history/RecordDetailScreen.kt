@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -204,6 +205,113 @@ fun RecordDetailScreen(
         }
     }
 
+    val problem by vm.photoProblem.collectAsStateWithLifecycle()
+    RecordDetailContent(
+        detail, problem, onBack, onEdit, onOpenPhoto,
+        onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onDelete = { confirmingDelete = true },
+    )
+
+    if (confirmingDelete) {
+
+        ModalBottomSheet(onDismissRequest = { confirmingDelete = false }, dragHandle = { SheetHandle() }) {
+            Column(
+                Modifier.navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.record_delete_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    val n = detail.lines.size
+                    Text(
+                        listOfNotNull(
+                            record.date.format(longDate),
+                            record.odometer.asDistance(detail.unit),
+                            pluralStringResource(R.plurals.log_items, n, n.asNumber()),
+                            photoCount(detail.record.photos.size),
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (detail.record.photos.isNotEmpty()) {
+                    Text(stringResource(R.string.record_photos_go_too), style = MaterialTheme.typography.bodyMedium)
+                }
+                if (detail.deleteImpact.isEmpty()) {
+                    Text(stringResource(R.string.record_no_change), style = MaterialTheme.typography.bodyMedium)
+                } else {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                stringResource(R.string.record_go_back_to),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                            detail.deleteImpact.forEach {
+                                Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+                Text(
+                    stringResource(R.string.record_undo_for, LogEdits.UNDO_SECONDS.asNumber()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(
+                        onClick = { confirmingDelete = false },
+                        modifier = Modifier.weight(1f).height(52.dp),
+                    ) { Text(stringResource(R.string.cancel)) }
+                    Button(
+                        onClick = {
+                            confirmingDelete = false
+                            vm.delete(onDeleted)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                        modifier = Modifier.weight(1f).height(52.dp),
+                    ) { Text(stringResource(R.string.delete)) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WhiteCard(content: @Composable () -> Unit) {
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) { content() }
+}
+
+@Composable
+private fun Stat(label: String, value: String, modifier: Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono)
+    }
+}
+
+/** A service record as given, with no ViewModel: what [RecordDetailScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun RecordDetailContent(
+    detail: RecordDetail,
+    photoProblem: String?,
+    onBack: () -> Unit,
+    onEdit: (vehicleId: Long, recordId: Long) -> Unit,
+    onOpenPhoto: (recordId: Long, index: Int) -> Unit,
+    onTakePhoto: () -> Unit,
+    onChoosePhotos: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val record = detail.record.record
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -288,7 +396,7 @@ fun RecordDetailScreen(
                                         onClick = { onOpenPhoto(record.id, i) },
                                     )
                                 } else {
-                                    AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos, modifier = Modifier.weight(1f).aspectRatio(1f)) { open ->
+                                    AttachMenu(onTake = onTakePhoto, onChoose = onChoosePhotos, modifier = Modifier.weight(1f).aspectRatio(1f)) { open ->
                                         OutlinedButton(
                                             onClick = open,
                                             modifier = Modifier.fillMaxSize(),
@@ -301,7 +409,7 @@ fun RecordDetailScreen(
                             repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                         }
                     }
-                    val problem by vm.photoProblem.collectAsStateWithLifecycle()
+                    val problem = photoProblem
                     Text(
                         problem ?: stringResource(R.string.record_photos_note),
                         style = MaterialTheme.typography.bodySmall,
@@ -318,98 +426,12 @@ fun RecordDetailScreen(
                 )
             } else {
                 OutlinedButton(
-                    onClick = { confirmingDelete = true },
+                    onClick = onDelete,
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                 ) { Text(stringResource(R.string.record_delete)) }
             }
         }
-    }
-
-    if (confirmingDelete) {
-        ModalBottomSheet(onDismissRequest = { confirmingDelete = false }) {
-            Column(
-                Modifier.navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.record_delete_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    val n = detail.lines.size
-                    Text(
-                        listOfNotNull(
-                            record.date.format(longDate),
-                            record.odometer.asDistance(detail.unit),
-                            pluralStringResource(R.plurals.log_items, n, n.asNumber()),
-                            photoCount(detail.record.photos.size),
-                        ).joinToString(" · "),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (detail.record.photos.isNotEmpty()) {
-                    Text(stringResource(R.string.record_photos_go_too), style = MaterialTheme.typography.bodyMedium)
-                }
-                if (detail.deleteImpact.isEmpty()) {
-                    Text(stringResource(R.string.record_no_change), style = MaterialTheme.typography.bodyMedium)
-                } else {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                stringResource(R.string.record_go_back_to),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                            detail.deleteImpact.forEach {
-                                Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                            }
-                        }
-                    }
-                }
-                Text(
-                    stringResource(R.string.record_undo_for, LogEdits.UNDO_SECONDS.asNumber()),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(
-                        onClick = { confirmingDelete = false },
-                        modifier = Modifier.weight(1f).height(52.dp),
-                    ) { Text(stringResource(R.string.cancel)) }
-                    Button(
-                        onClick = {
-                            confirmingDelete = false
-                            vm.delete(onDeleted)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        ),
-                        modifier = Modifier.weight(1f).height(52.dp),
-                    ) { Text(stringResource(R.string.delete)) }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WhiteCard(content: @Composable () -> Unit) {
-    Card(
-        Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) { content() }
-}
-
-@Composable
-private fun Stat(label: String, value: String, modifier: Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono)
     }
 }

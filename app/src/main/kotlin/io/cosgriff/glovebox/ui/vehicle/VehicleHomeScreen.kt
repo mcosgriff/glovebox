@@ -211,7 +211,6 @@ fun VehicleHomeScreen(
     ReportDrawn()
     val v = home.vehicle
     val unit = v.unit
-    val up = home.comingUp
     val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
     var updatingMileage by rememberSaveable { mutableStateOf(vm.startWithMileage) }
     val res = LocalResources.current
@@ -232,6 +231,29 @@ fun VehicleHomeScreen(
         )
     }
 
+    VehicleHomeContent(
+        home, openRecalls, onBack, onLogService, onLogItem, onOpenRules, onOpenRecalls, onOpenDetails, onEnterLastDone,
+        onUpdateMileage = { updatingMileage = true },
+    )
+}
+
+/** Vehicle home as given, with no ViewModel: what [VehicleHomeScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun VehicleHomeContent(
+    home: VehicleHome,
+    openRecalls: OpenRecalls,
+    onBack: () -> Unit,
+    onLogService: (vehicleId: Long) -> Unit,
+    onLogItem: (vehicleId: Long, scheduleItemId: Long) -> Unit,
+    onOpenRules: () -> Unit,
+    onOpenRecalls: (vehicleId: Long) -> Unit,
+    onOpenDetails: (vehicleId: Long) -> Unit,
+    onEnterLastDone: (vehicleId: Long) -> Unit,
+    onUpdateMileage: () -> Unit,
+) {
+    val v = home.vehicle
+    val unit = v.unit
+    val up = home.comingUp
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Row(Modifier.fillMaxWidth().padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -258,7 +280,7 @@ fun VehicleHomeScreen(
                 Modifier.padding(start = 20.dp, top = 4.dp, end = 20.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                HeaderCard(v, home.odometer, up, onUpdateMileage = { updatingMileage = true })
+                HeaderCard(v, home.odometer, up, onUpdateMileage = onUpdateMileage)
 
                 if (openRecalls.count > 0) RecallBanner(openRecalls, onClick = { onOpenRecalls(v.id) })
 

@@ -126,7 +126,20 @@ fun GarageScreen(
     if (skipList || leaving) return
 
     val archived by vm.archived.collectAsStateWithLifecycle()
+    GarageContent(garage, archived, onAddVehicle, onOpenVehicle, onSeeReminders, onOpenArchive, onRestore)
+}
 
+/** The garage as given, with no ViewModel: what [GarageScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun GarageContent(
+    garage: Garage,
+    archived: Int,
+    onAddVehicle: () -> Unit,
+    onOpenVehicle: (vehicleId: Long) -> Unit,
+    onSeeReminders: () -> Unit,
+    onOpenArchive: () -> Unit,
+    onRestore: () -> Unit,
+) {
     if (garage.vehicles.isEmpty()) {
         EmptyGarage(onAddVehicle, archived, onOpenArchive, onRestore)
         return

@@ -439,6 +439,33 @@ fun ScheduleScreen(
         return
     }
 
+    ScheduleContent(
+        state, hasMilestoneTable, onBack, onSetUp, onEnterLastDone, onOpenMilestones,
+        onSetTracked = vm::setTracked, onEdit = vm::edit, onAddOwn = vm::addOwn, onAddKnown = { vm.addKnown(it) },
+        onAddMissing = { vm.addMissing() }, onChooseSevereUse = { vm.chooseSevereUse(it) }, onSetAllTracked = vm::setAllTracked,
+        onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, "${state.vehicle.year} ${state.vehicle.make} ${state.vehicle.model}") },
+    )
+}
+
+/** The maintenance schedule as given, with no ViewModel: what [ScheduleScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun ScheduleContent(
+    state: ScheduleState,
+    hasMilestoneTable: Boolean,
+    onBack: () -> Unit,
+    onSetUp: (vehicleId: Long) -> Unit,
+    onEnterLastDone: (vehicleId: Long) -> Unit,
+    onOpenMilestones: (vehicleId: Long) -> Unit,
+    onSetTracked: (DraftItem, Boolean) -> Unit,
+    onEdit: (DraftItem) -> Unit,
+    onAddOwn: () -> Unit,
+    onAddKnown: (stop: Set<Long>) -> Unit,
+    onAddMissing: () -> Unit,
+    onChooseSevereUse: (Boolean) -> Unit,
+    onSetAllTracked: (Boolean) -> Unit,
+    onWriteFile: () -> WrittenFile,
+    onSaveFile: (text: String) -> Unit,
+) {
     val v = state.vehicle
     // A ticked job that is only for severe use isn't reminding anyone on normal use, so it isn't counted.
     val tracked = state.items.count { it.tracked && !it.dormant }
@@ -489,7 +516,7 @@ fun ScheduleScreen(
                                 DrivingUse.SEVERE -> true
                                 DrivingUse.MIXED -> null
                             },
-                            onPick = vm::chooseSevereUse,
+                            onPick = onChooseSevereUse,
                         )
                         if (state.use == DrivingUse.MIXED) {
                             Text(
@@ -518,7 +545,7 @@ fun ScheduleScreen(
                     SectionLabel(stringResource(R.string.schedule_tracked, tracked.asNumber(), state.items.size.asNumber()), Modifier.weight(1f))
                     // As on setup: everything on, or with everything on, everything off.
                     val all = tracked == state.items.size
-                    TextButton(onClick = { vm.setAllTracked(!all) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    TextButton(onClick = { onSetAllTracked(!all) }, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text(stringResource(if (all) R.string.clear_all else R.string.select_all))
                     }
                 }
@@ -547,10 +574,10 @@ fun ScheduleScreen(
             ) {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     state.items.forEach { item ->
-                        ItemRow(item, state.vehicle.unit, onToggle = { vm.setTracked(item, !item.tracked) }, onEdit = { vm.edit(item) })
+                        ItemRow(item, state.vehicle.unit, onToggle = { onSetTracked(item, !item.tracked) }, onEdit = { onEdit(item) })
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
-                    TextButton(onClick = vm::addOwn, modifier = Modifier.heightIn(min = 48.dp)) {
+                    TextButton(onClick = onAddOwn, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text(stringResource(R.string.schedule_add_own))
                     }
                 }
@@ -580,7 +607,7 @@ fun ScheduleScreen(
                         unit = state.vehicle.unit,
                         onAdd = { stop ->
                             asking = false
-                            vm.addKnown(stop)
+                            onAddKnown(stop)
                         },
                         onDismiss = { asking = false },
                     )
@@ -591,7 +618,7 @@ fun ScheduleScreen(
             if (state.items.isNotEmpty() && state.missing.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     OutlinedButton(
-                        onClick = vm::addMissing,
+                        onClick = onAddMissing,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                     ) {
@@ -615,8 +642,8 @@ fun ScheduleScreen(
             if (tracked > 0) {
                 SaveAsImportFile(
                     caption = stringResource(R.string.schedule_save_caption),
-                    write = vm::written,
-                    onSave = { vm.saveAsFile(it, "${v.year} ${v.make} ${v.model}") },
+                    write = onWriteFile,
+                    onSave = onSaveFile,
                 )
             }
         }

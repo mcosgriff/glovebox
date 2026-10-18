@@ -351,12 +351,8 @@ fun VehicleDetailsScreen(
     val v = details.vehicle
     val photo by vm.photo.collectAsStateWithLifecycle()
     val photoFailed by vm.photoFailed.collectAsStateWithLifecycle()
-    val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
-    val haptics = LocalHapticFeedback.current
     val lastOdometer by vm.lastOdometer.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
-    val takes = v.whatItTakes()
     val known by vm.known.collectAsStateWithLifecycle()
     val makerDocs by vm.makerDocs.collectAsStateWithLifecycle()
     var selling by rememberSaveable { mutableStateOf(false) }
@@ -459,6 +455,57 @@ fun VehicleDetailsScreen(
         null -> Unit
         else -> Unit // the rest are edited on their own page
     }
+    VehicleDetailsContent(
+        details, photo, photoFailed, known, makerDocs, nickname,
+        onNicknameChange = {
+            nickname = it
+            vm.rename(it)
+        },
+        onBack = onBack, onOpenRecalls = onOpenRecalls, onOpenSchedule = onOpenSchedule, onDelete = onDelete,
+        onOpenTorqueSpecs = onOpenTorqueSpecs, onOpenMoreTakes = onOpenMoreTakes, onOpenReadings = onOpenReadings,
+        onOpenImport = onOpenImport, onOpenDocuments = onOpenDocuments, onClearHistory = onClearHistory,
+        onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
+        onAddVin = { addingVin = true }, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
+        onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
+    )
+}
+
+/** Vehicle details as given, with no ViewModel: what [VehicleDetailsScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun VehicleDetailsContent(
+    details: VehicleDetails,
+    photo: ImageBitmap?,
+    photoFailed: Boolean,
+    known: TakesKnown,
+    makerDocs: MakerDocumentList?,
+    nickname: String,
+    onNicknameChange: (String) -> Unit,
+    onBack: () -> Unit,
+    onOpenRecalls: (vehicleId: Long) -> Unit,
+    onOpenSchedule: (vehicleId: Long) -> Unit,
+    onDelete: (vehicleId: Long) -> Unit,
+    onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
+    onOpenMoreTakes: (vehicleId: Long) -> Unit,
+    onOpenReadings: (vehicleId: Long) -> Unit,
+    onOpenImport: (vehicleId: Long) -> Unit,
+    onOpenDocuments: (vehicleId: Long) -> Unit,
+    onClearHistory: (vehicleId: Long) -> Unit,
+    onEditTakes: (TakesItem) -> Unit,
+    onFillKnown: () -> Unit,
+    onEditPlate: () -> Unit,
+    onAddVin: () -> Unit,
+    onSetOffset: () -> Unit,
+    onChangeUnit: () -> Unit,
+    onSell: () -> Unit,
+    onPickPhoto: () -> Unit,
+    onRemovePhoto: () -> Unit,
+) {
+    val v = details.vehicle
+    val swap = v.clusterSwap()
+    val takes = v.whatItTakes()
+    val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    val focusManager = LocalFocusManager.current
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -475,7 +522,7 @@ fun VehicleDetailsScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nickname ?: v.model, onPick = vm::pickPhoto, onRemove = vm::removePhoto)
+                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nickname ?: v.model, onPick = onPickPhoto, onRemove = onRemovePhoto)
                 if (photoFailed) {
                     Text(
                         stringResource(R.string.details_photo_unreadable),
@@ -487,10 +534,7 @@ fun VehicleDetailsScreen(
 
             OutlinedTextField(
                 value = nickname,
-                onValueChange = {
-                    nickname = it.take(VehicleText.MAX_NICKNAME)
-                    vm.rename(nickname)
-                },
+                onValueChange = { onNicknameChange(it.take(VehicleText.MAX_NICKNAME)) },
                 label = { Text(stringResource(R.string.details_nickname)) },
                 placeholder = { Text(v.model) },
                 supportingText = { Text(stringResource(R.string.details_nickname_note)) },
@@ -504,7 +548,7 @@ fun VehicleDetailsScreen(
             Card {
                 val plate = LicensePlates.label(v.plate, v.plateRegion)
                 Row(
-                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { editingPlate = true }),
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onEditPlate),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -527,7 +571,7 @@ fun VehicleDetailsScreen(
                 Card {
                     if (v.vin == null) {
                         Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { addingVin = true }),
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onAddVin),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -568,7 +612,10 @@ fun VehicleDetailsScreen(
                                             .semantics { onLongClick(label = copyVinLabel) { copy(); true } }
                                     },
                                 )
+                                // 48dp: the VIN row is a touch target (a long press copies it), and the rest match it.
+                                .heightIn(min = 48.dp)
                                 .padding(vertical = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -609,7 +656,7 @@ fun VehicleDetailsScreen(
                             Modifier.fillMaxWidth().heightIn(min = 48.dp)
                                 .combinedClickable(
                                     role = Role.Button,
-                                    onClick = { editing = spec },
+                                    onClick = { onEditTakes(spec) },
                                     onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
                                     onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
                                 ),
@@ -652,7 +699,7 @@ fun VehicleDetailsScreen(
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { settingOffset = true }),
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onSetOffset),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -669,7 +716,7 @@ fun VehicleDetailsScreen(
                     }
                 }
                 known.toCheckFrom?.let { KnownTakesNote(it) }
-                known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = vm::fillKnown, Modifier.padding(top = 4.dp)) } }
+                known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = onFillKnown, Modifier.padding(top = 4.dp)) } }
                 Text(
                     stringResource(R.string.details_takes_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -744,7 +791,7 @@ fun VehicleDetailsScreen(
                 LinkRow(
                     title = stringResource(R.string.details_units),
                     detail = stringResource(R.string.details_units_detail, v.unit.titleWord),
-                    onClick = { changingUnit = true },
+                    onClick = onChangeUnit,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(
@@ -774,7 +821,7 @@ fun VehicleDetailsScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    onClick = { selling = true },
+                    onClick = onSell,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface),

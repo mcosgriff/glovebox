@@ -105,7 +105,7 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
     fun setScannerDetails(on: Boolean) = viewModelScope.launch { repo.setScannerDetails(on) }
 }
 
-private enum class Picking { TORQUE, RECALLS, SCHEDULE, DISTANCE }
+internal enum class Picking { TORQUE, RECALLS, SCHEDULE, DISTANCE }
 
 /** Design: 9 · Settings. */
 @Composable
@@ -119,10 +119,8 @@ fun SettingsScreen(
     onOpenSchedule: (vehicleId: Long) -> Unit,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
-    val scheme = MaterialTheme.colorScheme
     val s by vm.settings.collectAsStateWithLifecycle()
     val vehicles by vm.vehicles.collectAsStateWithLifecycle()
-    val dark = scheme.background.luminance() < 0.5f
 
     // A screen lock can be set or removed in Android's settings while this screen is open.
     val context = LocalContext.current
@@ -176,6 +174,38 @@ fun SettingsScreen(
         null -> Unit
     }
 
+    SettingsContent(
+        s, vehicles, canLock, onOpenRules, onOpenNotifications, onOpenBackup, onOpenImport, onDeleteAll, onOpenAbout, onOpenSchedule,
+        onSetTheme = { vm.setTheme(it) }, onSetBiometric = { vm.setBiometric(it) }, onSetLockDelay = { vm.setLockDelay(it) },
+        onSetHideInRecents = { vm.setHideInRecents(it) }, onSetScannerDetails = { vm.setScannerDetails(it) },
+        onPick = { picking = it }, onExport = { exporting = it },
+    )
+}
+
+/** Settings as given, with no ViewModel: what [SettingsScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun SettingsContent(
+    s: Settings,
+    vehicles: List<ScheduleOwner>,
+    /** The phone has a screen lock for the app to lock with. */
+    canLock: Boolean,
+    onOpenRules: () -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenBackup: () -> Unit,
+    onOpenImport: () -> Unit,
+    onDeleteAll: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenSchedule: (vehicleId: Long) -> Unit,
+    onSetTheme: (ThemeMode) -> Unit,
+    onSetBiometric: (Boolean) -> Unit,
+    onSetLockDelay: (LockDelay) -> Unit,
+    onSetHideInRecents: (Boolean) -> Unit,
+    onSetScannerDetails: (Boolean) -> Unit,
+    onPick: (Picking) -> Unit,
+    onExport: (ExportFormat) -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val dark = scheme.background.luminance() < 0.5f
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -194,7 +224,7 @@ fun SettingsScreen(
                         Box(
                             Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(10.dp))
                                 .background(if (on) scheme.onSurface else Color.Transparent)
-                                .selectable(selected = on, role = Role.RadioButton, onClick = { vm.setTheme(mode) }),
+                                .selectable(selected = on, role = Role.RadioButton, onClick = { onSetTheme(mode) }),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
@@ -225,7 +255,7 @@ fun SettingsScreen(
                 },
                 checked = s.biometricLock && canLock,
                 enabled = canLock,
-                onChange = vm::setBiometric,
+                onChange = onSetBiometric,
             )
             Divider()
             if (s.biometricLock && canLock) {
@@ -237,7 +267,7 @@ fun SettingsScreen(
                             val on = delay == current
                             // 48dp tall to touch; the pill inside is the design's 36dp.
                             Box(
-                                Modifier.height(48.dp).selectable(selected = on, role = Role.RadioButton, onClick = { vm.setLockDelay(delay) }),
+                                Modifier.height(48.dp).selectable(selected = on, role = Role.RadioButton, onClick = { onSetLockDelay(delay) }),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Surface(
@@ -263,7 +293,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_hide_recents),
                 subtitle = stringResource(R.string.settings_hide_recents_note),
                 checked = s.hideInRecents,
-                onChange = vm::setHideInRecents,
+                onChange = onSetHideInRecents,
             )
             Divider()
             Row(Modifier.padding(vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -291,17 +321,17 @@ fun SettingsScreen(
             schedulesText(vehicles.map { it.name })?.let { value ->
                 Divider()
                 ValueRow(stringResource(R.string.details_schedule), value) {
-                    vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { picking = Picking.SCHEDULE }
+                    vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { onPick(Picking.SCHEDULE) }
                 }
             }
             Divider()
-            ValueRow(stringResource(R.string.details_units), s.distanceUnit.titleWord) { picking = Picking.DISTANCE }
+            ValueRow(stringResource(R.string.details_units), s.distanceUnit.titleWord) { onPick(Picking.DISTANCE) }
             Divider()
-            ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { picking = Picking.TORQUE }
+            ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { onPick(Picking.TORQUE) }
             Divider()
             ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onOpenNotifications)
             Divider()
-            ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { picking = Picking.RECALLS }
+            ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
         }
 
         Section(stringResource(R.string.settings_camera)) {
@@ -309,7 +339,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_scanner_details),
                 subtitle = stringResource(R.string.settings_scanner_details_note),
                 checked = s.scannerDetails,
-                onChange = vm::setScannerDetails,
+                onChange = onSetScannerDetails,
             )
         }
 
@@ -341,8 +371,8 @@ fun SettingsScreen(
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ExportButton(stringResource(R.string.export_pdf), stringResource(R.string.export_pdf_note), Modifier.weight(1f)) { exporting = ExportFormat.PDF }
-                        ExportButton(stringResource(R.string.export_markdown), stringResource(R.string.export_markdown_note), Modifier.weight(1f)) { exporting = ExportFormat.MARKDOWN }
+                        ExportButton(stringResource(R.string.export_pdf), stringResource(R.string.export_pdf_note), Modifier.weight(1f)) { onExport(ExportFormat.PDF) }
+                        ExportButton(stringResource(R.string.export_markdown), stringResource(R.string.export_markdown_note), Modifier.weight(1f)) { onExport(ExportFormat.MARKDOWN) }
                     }
                 }
                 // Needs a vehicle to import into; with none there is nowhere for it to lead.

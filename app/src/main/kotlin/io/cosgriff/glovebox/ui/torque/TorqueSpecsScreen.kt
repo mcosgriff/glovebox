@@ -222,6 +222,26 @@ fun TorqueSpecsScreen(
 ) {
     val res = LocalResources.current
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
+    TorqueSpecsContent(
+        state, onBack,
+        onSave = { vm.save(it) },
+        onDelete = { s -> vm.delete(s) { undo -> onMessage(res.getString(R.string.torque_deleted, s.name), res.getString(R.string.undo), undo) } },
+        onAddCommon = { vm.addCommon() }, onAddKnown = { vm.addKnown() }, onWriteFile = vm::written, onSaveFile = vm::saveAsFile,
+    )
+}
+
+/** Torque specs as given, with no ViewModel: what [TorqueSpecsScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun TorqueSpecsContent(
+    state: TorqueSpecsState,
+    onBack: () -> Unit,
+    onSave: (SpecDraft) -> Unit,
+    onDelete: (TorqueSpecEntity) -> Unit,
+    onAddCommon: () -> Unit,
+    onAddKnown: () -> Unit,
+    onWriteFile: () -> WrittenFile,
+    onSaveFile: (text: String) -> Unit,
+) {
     val v = state.vehicle
     val scheme = MaterialTheme.colorScheme
     // Starts in the Settings unit; changing it here is only for this visit.
@@ -245,11 +265,11 @@ fun TorqueSpecsScreen(
                 startCategory = category ?: TorqueCategory.ENGINE,
                 onSave = {
                     editing = null
-                    vm.save(it)
+                    onSave(it)
                 },
                 onDelete = {
                     editing = null
-                    spec?.let { s -> vm.delete(s) { undo -> onMessage(res.getString(R.string.torque_deleted, s.name), res.getString(R.string.undo), undo) } }
+                    spec?.let(onDelete)
                 },
                 onDismiss = { editing = null },
             )
@@ -294,7 +314,7 @@ fun TorqueSpecsScreen(
                         color = scheme.onSurfaceVariant,
                     )
                     OutlinedButton(
-                        onClick = vm::addCommon,
+                        onClick = onAddCommon,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                         shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(1.5.dp, scheme.onSurface),
@@ -307,7 +327,7 @@ fun TorqueSpecsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
-                    state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = vm::addKnown) }
+                    state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = onAddKnown) }
                 }
             }
         } else {
@@ -368,11 +388,11 @@ fun TorqueSpecsScreen(
                     Text(stringResource(R.string.torque_add))
                 }
                 if (state.specs.isNotEmpty() && TorqueSpecs.common.any { t -> state.specs.none { it.name.equals(t.label, ignoreCase = true) } }) {
-                    TextButton(onClick = vm::addCommon, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
+                    TextButton(onClick = onAddCommon, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
                         Text(stringResource(R.string.torque_add_missing))
                     }
                 }
-                if (state.specs.isNotEmpty()) state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = vm::addKnown) }
+                if (state.specs.isNotEmpty()) state.known?.let { (list, plan) -> KnownOffer(list, plan, onAdd = onAddKnown) }
                 Text(
                     stringResource(R.string.torque_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -381,8 +401,8 @@ fun TorqueSpecsScreen(
                 if (state.specs.isNotEmpty()) {
                     SaveAsImportFile(
                         caption = stringResource(R.string.torque_save_caption),
-                        write = vm::written,
-                        onSave = vm::saveAsFile,
+                        write = onWriteFile,
+                        onSave = onSaveFile,
                     )
                 }
             }

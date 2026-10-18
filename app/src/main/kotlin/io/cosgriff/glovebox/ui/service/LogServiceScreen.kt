@@ -171,6 +171,91 @@ data class LogServiceData(
     val original: ServiceRecordWithItems?,
 )
 
+/**
+ * What is on the Log service form, apart from the photos the picker holds: plain Compose state, so the
+ * screen can be drawn from one made by hand (the screenshot tests) as well as from [LogServiceViewModel].
+ */
+class LogServiceForm(val editing: Boolean, today: LocalDate = LocalDate.now()) {
+    var data by mutableStateOf<LogServiceData?>(null)
+        internal set
+
+    var date by mutableStateOf(today)
+    var odometerText by mutableStateOf("")
+    var categoryId by mutableStateOf("")
+    var selected by mutableStateOf(emptySet<String>())
+        internal set
+    var customItems by mutableStateOf(emptyList<String>())
+        internal set
+    var diy by mutableStateOf(true)
+    var shopName by mutableStateOf("")
+    var costText by mutableStateOf("")
+    var notes by mutableStateOf("")
+    var showErrors by mutableStateOf(false)
+        internal set
+
+    val odometer: Int? get() = OdometerInput.parse(odometerText.typedNumber())
+    val costValid: Boolean get() = costText.isBlank() || Money.parseCents(costText.typedNumber()) != null
+    val itemCount: Int get() = selected.size + customItems.size
+
+    /** True when the entered odometer is lower than a reading on or before [date]. Worth a warning, not a block. */
+    val belowEarlierReading: Boolean
+        get() {
+            val odo = odometer ?: return false
+            return ServiceLog.isBelowPreviousReading(data?.swap.toDash(odo, date), date, data?.readings.orEmpty())
+        }
+
+    internal val selectedOptions: List<WorkOption>
+        get() = data?.categories.orEmpty().flatMap { it.options }.filter { it.id in selected }
+
+    /** Edit only: how reminders move if the form is saved as it stands. */
+    val reminderChanges: List<ReminderChange>
+        get() {
+            val d = data ?: return emptyList()
+            val original = d.original ?: return emptyList()
+            val edited = ServiceEntry(
+                id = original.record.id,
+                date = date,
+                odometer = d.swap.toDash(odometer ?: original.record.odometer, date),
+                // As it would be saved: against one item, and counting for every item that answers to the line.
+                itemIds = ServiceLinks.itemIds(selectedOptions.map { it.scheduleItemId to it.id.takeIf { id -> id in d.answering } }, d.answering),
+            )
+            return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
+        }
+
+    /** Photos the record being edited already has, less any taken off on this form. */
+    var keptPhotos by mutableStateOf(emptyList<PhotoEntity>())
+        internal set
+    internal var removedPhotoIds = emptySet<Long>()
+
+    /** The row goes when the form is saved; until then Back leaves the record as it was. */
+    fun removeKeptPhoto(photo: PhotoEntity) {
+        keptPhotos = keptPhotos - photo
+        removedPhotoIds = removedPhotoIds + photo.id
+    }
+
+    fun toggle(optionId: String) {
+        selected = if (optionId in selected) selected - optionId else selected + optionId
+    }
+
+    fun addCustom(label: String) {
+        val trimmed = label.trim()
+        if (trimmed.isNotEmpty() && trimmed !in customItems) customItems = customItems + trimmed
+    }
+
+    fun removeCustom(label: String) {
+        customItems = customItems - label
+    }
+
+    /** Whether the form can be saved; if not, from now on it says what is wrong. */
+    fun check(): Boolean {
+        if (odometer == null || itemCount == 0 || !costValid || date.isAfter(LocalDate.now())) {
+            showErrors = true
+            return false
+        }
+        return true
+    }
+}
+
 @HiltViewModel
 class LogServiceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -190,22 +275,11 @@ class LogServiceViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val photoProblem: StateFlow<String?> = photoPicker.problem
 
-    /** Photos the record being edited already has, less any taken off on this form. */
-    var keptPhotos by mutableStateOf(emptyList<PhotoEntity>())
-        private set
-    private var removedPhotoIds = emptySet<Long>()
-
-    val photoRoom: Int get() = RecordPhotos.room(keptPhotos.size + newPhotos.value.size)
+    val photoRoom: Int get() = RecordPhotos.room(form.keptPhotos.size + newPhotos.value.size)
 
     fun takePhoto() = photoPicker.capture(PhotoTarget.Draft(photoKey), photoRoom)
     fun choosePhotos() = photoPicker.pick(PhotoTarget.Draft(photoKey), photoRoom)
     fun removeNewPhoto(fileName: String) = photoPicker.removeDraft(photoKey, fileName)
-
-    /** The row goes when the form is saved; until then Back leaves the record as it was. */
-    fun removeKeptPhoto(photo: PhotoEntity) {
-        keptPhotos = keptPhotos - photo
-        removedPhotoIds = removedPhotoIds + photo.id
-    }
 
     /** Leaving without saving: the photos attached here were never the record's. */
     override fun onCleared() {
@@ -216,52 +290,8 @@ class LogServiceViewModel @Inject constructor(
     private val vehicleId = route.vehicleId
     val editing: Boolean = route.recordId != 0L
 
-    var data by mutableStateOf<LogServiceData?>(null)
-        private set
-
-    var date by mutableStateOf<LocalDate>(LocalDate.now())
-    var odometerText by mutableStateOf("")
-    var categoryId by mutableStateOf("")
-    var selected by mutableStateOf(emptySet<String>())
-        private set
-    var customItems by mutableStateOf(emptyList<String>())
-        private set
-    var diy by mutableStateOf(true)
-    var shopName by mutableStateOf("")
-    var costText by mutableStateOf("")
-    var notes by mutableStateOf("")
-    var showErrors by mutableStateOf(false)
-        private set
-    private var saving = false
-
-    val odometer: Int? get() = OdometerInput.parse(odometerText.typedNumber())
-    val costValid: Boolean get() = costText.isBlank() || Money.parseCents(costText.typedNumber()) != null
-    val itemCount: Int get() = selected.size + customItems.size
-
-    /** True when the entered odometer is lower than a reading on or before [date]. Worth a warning, not a block. */
-    val belowEarlierReading: Boolean
-        get() {
-            val odo = odometer ?: return false
-            return ServiceLog.isBelowPreviousReading(data?.swap.toDash(odo, date), date, data?.readings.orEmpty())
-        }
-
-    private val selectedOptions: List<WorkOption>
-        get() = data?.categories.orEmpty().flatMap { it.options }.filter { it.id in selected }
-
-    /** Edit only: how reminders move if the form is saved as it stands. */
-    val reminderChanges: List<ReminderChange>
-        get() {
-            val d = data ?: return emptyList()
-            val original = d.original ?: return emptyList()
-            val edited = ServiceEntry(
-                id = original.record.id,
-                date = date,
-                odometer = d.swap.toDash(odometer ?: original.record.odometer, date),
-                // As it would be saved: against one item, and counting for every item that answers to the line.
-                itemIds = ServiceLinks.itemIds(selectedOptions.map { it.scheduleItemId to it.id.takeIf { id -> id in d.answering } }, d.answering),
-            )
-            return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
-        }
+    /** What is on the form; [save] writes it. */
+    val form = LogServiceForm(editing)
 
     init {
         viewModelScope.launch {
@@ -301,13 +331,13 @@ class LogServiceViewModel @Inject constructor(
 
             if (original != null) {
                 val r = original.record
-                date = r.date
-                odometerText = r.odometer.asNumber()
-                diy = r.diy
-                shopName = r.shopName.orEmpty()
-                costText = r.costCents?.let(::editableCost).orEmpty()
-                notes = r.notes.orEmpty()
-                keptPhotos = original.photos
+                form.date = r.date
+                form.odometerText = r.odometer.asNumber()
+                form.diy = r.diy
+                form.shopName = r.shopName.orEmpty()
+                form.costText = r.costCents?.let(::editableCost).orEmpty()
+                form.notes = r.notes.orEmpty()
+                form.keptPhotos = original.photos
                 val ticked = mutableSetOf<String>()
                 val custom = mutableListOf<String>()
                 original.items.forEach { item ->
@@ -315,14 +345,14 @@ class LogServiceViewModel @Inject constructor(
                         ?: item.scheduleItemId?.let(optionFor::get)
                     if (option != null) ticked += option.id else custom += item.label
                 }
-                selected = ticked
-                customItems = custom
+                form.selected = ticked
+                form.customItems = custom
             }
 
-            if (!editing) optionFor[route.scheduleItemId]?.let { selected = setOf(it.id) }
+            if (!editing) optionFor[route.scheduleItemId]?.let { form.selected = setOf(it.id) }
 
-            categoryId = categories.firstOrNull { c -> c.options.any { it.id in selected } }?.id ?: categories.first().id
-            data = LogServiceData(
+            form.categoryId = categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: categories.first().id
+            form.data = LogServiceData(
                 vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
                 categories = categories,
                 due = due,
@@ -339,60 +369,46 @@ class LogServiceViewModel @Inject constructor(
         }
     }
 
-    fun toggle(optionId: String) {
-        selected = if (optionId in selected) selected - optionId else selected + optionId
-    }
-
-    fun addCustom(label: String) {
-        val trimmed = label.trim()
-        if (trimmed.isNotEmpty() && trimmed !in customItems) customItems = customItems + trimmed
-    }
-
-    fun removeCustom(label: String) {
-        customItems = customItems - label
-    }
+    private var saving = false
 
     fun save(onDone: () -> Unit) {
-        val d = data ?: return
-        val odo = odometer
-        if (odo == null || itemCount == 0 || !costValid || date.isAfter(LocalDate.now())) {
-            showErrors = true
-            return
-        }
-        if (saving) return
+        val d = form.data ?: return
+        if (!form.check() || saving) return
+        val odo = form.odometer ?: return
         saving = true
         viewModelScope.launch {
-            val catalogIds = d.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
-            val record = ServiceRecordEntity(
-                id = d.original?.record?.id ?: 0,
-                vehicleId = vehicleId,
-                date = date,
-                odometer = odo,
-                diy = diy,
-                shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
-                costCents = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) },
-                notes = notes.trim().takeIf { it.isNotEmpty() },
-                // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
-                enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
-                // Nor does correcting an imported record make it one that was logged here.
-                imported = d.original?.record?.imported ?: false,
-            )
-            val items = selectedOptions.map {
-                ServiceRecordItemEntity(
-                    recordId = 0,
-                    scheduleItemId = it.scheduleItemId,
-                    label = it.label,
-                    catalogId = it.id.takeIf { id -> id in catalogIds },
+            with(form) {
+                val catalogIds = d.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
+                val record = ServiceRecordEntity(
+                    id = d.original?.record?.id ?: 0,
+                    vehicleId = vehicleId,
+                    date = date,
+                    odometer = odo,
+                    diy = diy,
+                    shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
+                    costCents = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) },
+                    notes = notes.trim().takeIf { it.isNotEmpty() },
+                    // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
+                    enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
+                    // Nor does correcting an imported record make it one that was logged here.
+                    imported = d.original?.record?.imported ?: false,
                 )
-            } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
-            val added = photoPicker.takeDraft(photoKey)
-            if (d.original != null) actions.replace(d.original, record, items, added, removedPhotoIds) else actions.add(record, items, added)
-            onDone()
+                val items = selectedOptions.map {
+                    ServiceRecordItemEntity(
+                        recordId = 0,
+                        scheduleItemId = it.scheduleItemId,
+                        label = it.label,
+                        catalogId = it.id.takeIf { id -> id in catalogIds },
+                    )
+                } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
+                val added = photoPicker.takeDraft(photoKey)
+                if (d.original != null) actions.replace(d.original, record, items, added, removedPhotoIds) else actions.add(record, items, added)
+                onDone()
+            }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LogServiceScreen(
     /** Closed, or an edit saved: back to where it was opened from. */
@@ -403,7 +419,32 @@ fun LogServiceScreen(
     onDeleteInstead: () -> Unit,
     vm: LogServiceViewModel = hiltViewModel(),
 ) {
-    val data = vm.data ?: return // first frame while the vehicle loads
+    val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
+    val problem by vm.photoProblem.collectAsStateWithLifecycle()
+    LogServiceContent(
+        vm.form, newPhotos, problem, onDone,
+        onSave = { vm.save(if (vm.editing) onDone else onAdded) },
+        onDeleteInstead = onDeleteInstead,
+        onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onRemoveNewPhoto = vm::removeNewPhoto,
+    )
+}
+
+/** The Log service form as given, with no ViewModel: what [LogServiceScreen] shows, and what the screenshot tests draw. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun LogServiceContent(
+    form: LogServiceForm,
+    /** Photos attached on this form and not yet saved, as file names. */
+    newPhotos: List<String>,
+    photoProblem: String?,
+    onDone: () -> Unit,
+    onSave: () -> Unit,
+    onDeleteInstead: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onChoosePhotos: () -> Unit,
+    onRemoveNewPhoto: (fileName: String) -> Unit,
+) {
+    val data = form.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
     var addingCustom by remember { mutableStateOf(false) }
     val notesLabel = stringResource(R.string.log_notes)
@@ -411,7 +452,7 @@ fun LogServiceScreen(
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDone) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close)) }
-            Text(stringResource(if (vm.editing) R.string.log_edit_title else R.string.log_service), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(if (form.editing) R.string.log_edit_title else R.string.log_service), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
             Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape) {
                 Text(
                     data.vehicleName,
@@ -438,17 +479,17 @@ fun LogServiceScreen(
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         ) {
                             Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
-                                Text(vm.date.format(longDate), style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                                Text(form.date.format(longDate), style = MaterialTheme.typography.titleMedium, maxLines = 1)
                             }
                         }
                     }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         FieldLabel(stringResource(R.string.odometer_in, data.unit.symbolWord))
                         OutlinedTextField(
-                            value = vm.odometerText,
-                            onValueChange = { vm.odometerText = it },
+                            value = form.odometerText,
+                            onValueChange = { form.odometerText = it },
                             singleLine = true,
-                            isError = vm.showErrors && vm.odometer == null,
+                            isError = form.showErrors && form.odometer == null,
                             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = RoundedCornerShape(12.dp),
@@ -456,10 +497,10 @@ fun LogServiceScreen(
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                         )
                         // Only on the user's tap: a reading filled in by itself gets saved untouched.
-                        val current = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) }
-                        if (current != null && !vm.editing && vm.odometerText.isBlank()) {
+                        val current = data.lastOdometer?.let { data.swap.asReadOn(it, form.date) }
+                        if (current != null && !form.editing && form.odometerText.isBlank()) {
                             TextButton(
-                                onClick = { vm.odometerText = current.asNumber() },
+                                onClick = { form.odometerText = current.asNumber() },
                                 modifier = Modifier.heightIn(min = 48.dp),
                                 contentPadding = PaddingValues(horizontal = 4.dp),
                             ) { Text(stringResource(R.string.log_use_current)) }
@@ -467,13 +508,13 @@ fun LogServiceScreen(
                     }
                 }
                 LogEdits.odometerNote(
-                    entered = vm.odometer,
+                    entered = form.odometer,
                     original = data.original?.record?.odometer,
-                    date = vm.date,
+                    date = form.date,
                     // Set beside what is typed, so in terms of the cluster that was in on the form's date.
-                    readings = data.readings.map { it.copy(odometer = data.swap.asReadOn(it.odometer, vm.date)) },
-                    lastOdometer = data.lastOdometer?.let { data.swap.asReadOn(it, vm.date) },
-                    showErrors = vm.showErrors,
+                    readings = data.readings.map { it.copy(odometer = data.swap.asReadOn(it.odometer, form.date)) },
+                    lastOdometer = data.lastOdometer?.let { data.swap.asReadOn(it, form.date) },
+                    showErrors = form.showErrors,
                 )?.let { note ->
                     Text(
                         note.text(data.unit),
@@ -492,13 +533,13 @@ fun LogServiceScreen(
                     SectionLabel(stringResource(R.string.log_due_section))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         data.due.forEach { s ->
-                            val on = s.optionId in vm.selected
+                            val on = s.optionId in form.selected
                             FilterChip(
                                 selected = on,
                                 onClick = {
-                                    vm.toggle(s.optionId)
+                                    form.toggle(s.optionId)
                                     // Open the category it was ticked in, so the tick is in sight and not only a count on a button.
-                                    if (!on) data.categories.firstOrNull { c -> c.options.any { it.id == s.optionId } }?.let { vm.categoryId = it.id }
+                                    if (!on) data.categories.firstOrNull { c -> c.options.any { it.id == s.optionId } }?.let { form.categoryId = it.id }
                                 },
                                 // Canvas: "+" offers it, a tick and the soft tint show it is on the list.
                                 label = {
@@ -534,9 +575,9 @@ fun LogServiceScreen(
                         pair.forEach { category ->
                             CategoryButton(
                                 label = category.label,
-                                count = category.options.count { it.id in vm.selected },
-                                active = category.id == vm.categoryId,
-                                onClick = { vm.categoryId = category.id },
+                                count = category.options.count { it.id in form.selected },
+                                active = category.id == form.categoryId,
+                                onClick = { form.categoryId = category.id },
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -552,17 +593,17 @@ fun LogServiceScreen(
                 ) {
                     Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                         val intervals = remember(data) { data.tracked.associate { it.id to it.interval } }
-                        data.categories.first { it.id == vm.categoryId }.options.forEach { option ->
+                        data.categories.first { it.id == form.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
                                 hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs)?.text(data.unit),
-                                checked = option.id in vm.selected,
-                                onToggle = { vm.toggle(option.id) },
+                                checked = option.id in form.selected,
+                                onToggle = { form.toggle(option.id) },
                             )
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
-                        vm.customItems.forEach { label ->
-                            CheckRow(label = label, hint = stringResource(R.string.log_custom), checked = true, onToggle = { vm.removeCustom(label) })
+                        form.customItems.forEach { label ->
+                            CheckRow(label = label, hint = stringResource(R.string.log_custom), checked = true, onToggle = { form.removeCustom(label) })
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         TextButton(onClick = { addingCustom = true }, modifier = Modifier.heightIn(min = 48.dp)) {
@@ -573,11 +614,11 @@ fun LogServiceScreen(
             }
 
             Surface(
-                color = if (vm.showErrors && vm.itemCount == 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
+                color = if (form.showErrors && form.itemCount == 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                val labels = data.categories.flatMap { it.options }.filter { it.id in vm.selected }.map { it.label } + vm.customItems
+                val labels = data.categories.flatMap { it.options }.filter { it.id in form.selected }.map { it.label } + form.customItems
                 val count = pluralStringResource(R.plurals.log_items, labels.size, labels.size.asNumber())
                 val listed = if (labels.isEmpty()) stringResource(R.string.log_pick_above) else labels.joinToString(", ")
                 Text(
@@ -587,8 +628,8 @@ fun LogServiceScreen(
                 )
             }
 
-            if (vm.editing) {
-                val changes = vm.reminderChanges
+            if (form.editing) {
+                val changes = form.reminderChanges
                 Surface(
                     color = if (changes.isEmpty()) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(16.dp),
@@ -621,24 +662,24 @@ fun LogServiceScreen(
                 )
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     SegmentedButton(
-                        selected = vm.diy,
-                        onClick = { vm.diy = true },
+                        selected = form.diy,
+                        onClick = { form.diy = true },
                         shape = SegmentedButtonDefaults.itemShape(0, 2),
                         colors = colors,
                         icon = {}, // canvas: the solid fill is the mark
                     ) { Text(stringResource(R.string.log_diy)) }
                     SegmentedButton(
-                        selected = !vm.diy,
-                        onClick = { vm.diy = false },
+                        selected = !form.diy,
+                        onClick = { form.diy = false },
                         shape = SegmentedButtonDefaults.itemShape(1, 2),
                         colors = colors,
                         icon = {},
                     ) { Text(stringResource(R.string.log_a_shop)) }
                 }
-                if (!vm.diy) {
+                if (!form.diy) {
                     OutlinedTextField(
-                        value = vm.shopName,
-                        onValueChange = { vm.shopName = it },
+                        value = form.shopName,
+                        onValueChange = { form.shopName = it },
                         label = { Text(stringResource(R.string.log_shop_name)) },
                         placeholder = { Text(stringResource(R.string.log_shop_hint)) },
                         singleLine = true,
@@ -649,13 +690,13 @@ fun LogServiceScreen(
                 }
             }
 
-            CostAndPhotos(vm)
+            CostAndPhotos(form, newPhotos, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_notes_label))
                 OutlinedTextField(
-                    value = vm.notes,
-                    onValueChange = { vm.notes = it },
+                    value = form.notes,
+                    onValueChange = { form.notes = it },
                     placeholder = { Text(stringResource(R.string.log_optional)) },
                     minLines = 3,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
@@ -668,12 +709,12 @@ fun LogServiceScreen(
             // The fields with problems may be scrolled out of view, so repeat what's missing here.
             val missing = listOfNotNull(
                 // The picker refuses future days, so this is only ever a form left open across a clock change.
-                stringResource(R.string.log_missing_date).takeIf { vm.date.isAfter(LocalDate.now()) },
-                stringResource(R.string.log_missing_odometer).takeIf { vm.odometer == null },
-                stringResource(R.string.log_missing_item).takeIf { vm.itemCount == 0 },
-                stringResource(R.string.log_missing_cost).takeIf { !vm.costValid },
+                stringResource(R.string.log_missing_date).takeIf { form.date.isAfter(LocalDate.now()) },
+                stringResource(R.string.log_missing_odometer).takeIf { form.odometer == null },
+                stringResource(R.string.log_missing_item).takeIf { form.itemCount == 0 },
+                stringResource(R.string.log_missing_cost).takeIf { !form.costValid },
             )
-            if (vm.showErrors && missing.isNotEmpty()) {
+            if (form.showErrors && missing.isNotEmpty()) {
                 Text(
                     stringResource(R.string.log_to_save, andList(missing)),
                     style = MaterialTheme.typography.bodyMedium,
@@ -681,13 +722,13 @@ fun LogServiceScreen(
                 )
             }
             Button(
-                onClick = { vm.save(if (vm.editing) onDone else onAdded) },
+                onClick = onSave,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Text(stringResource(if (vm.editing) R.string.log_save_changes else R.string.log_save))
+                Text(stringResource(if (form.editing) R.string.log_save_changes else R.string.log_save))
             }
-            if (vm.editing) {
+            if (form.editing) {
                 TextButton(
                     onClick = onDeleteInstead,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
@@ -699,9 +740,9 @@ fun LogServiceScreen(
 
     if (pickingDate) {
         DatePickerSheet(
-            initial = vm.date,
+            initial = form.date,
             onPick = {
-                vm.date = it
+                form.date = it
                 pickingDate = false
             },
             onDismiss = { pickingDate = false },
@@ -710,7 +751,7 @@ fun LogServiceScreen(
     if (addingCustom) {
         CustomItemDialog(
             onAdd = {
-                vm.addCustom(it)
+                form.addCustom(it)
                 addingCustom = false
             },
             onDismiss = { addingCustom = false },
@@ -734,23 +775,29 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
 
 /** Design: "Total cost" beside "Receipt / photo" on 5 · Log service, with the attached photos under them. */
 @Composable
-private fun CostAndPhotos(vm: LogServiceViewModel) {
+private fun CostAndPhotos(
+    form: LogServiceForm,
+    newPhotos: List<String>,
+    problem: String?,
+    onTakePhoto: () -> Unit,
+    onChoosePhotos: () -> Unit,
+    onRemoveNewPhoto: (fileName: String) -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
-    val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
-    val problem by vm.photoProblem.collectAsStateWithLifecycle()
-    val count = vm.keptPhotos.size + newPhotos.size
+    val count = form.keptPhotos.size + newPhotos.size
+    val photoRoom = RecordPhotos.room(count)
     val costLabel = stringResource(R.string.log_cost_optional)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_total_cost))
                 OutlinedTextField(
-                    value = vm.costText,
-                    onValueChange = { vm.costText = it },
+                    value = form.costText,
+                    onValueChange = { form.costText = it },
                     placeholder = { Text(stringResource(R.string.log_cost_placeholder), fontFamily = PlexMono) },
                     prefix = { Text(stringResource(R.string.log_cost_prefix), fontFamily = PlexMono) },
                     singleLine = true,
-                    isError = !vm.costValid,
+                    isError = !form.costValid,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     shape = RoundedCornerShape(12.dp),
@@ -760,8 +807,8 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_receipt))
-                AttachMenu(onTake = vm::takePhoto, onChoose = vm::choosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
-                    val enabled = vm.photoRoom > 0
+                AttachMenu(onTake = onTakePhoto, onChoose = onChoosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
+                    val enabled = photoRoom > 0
                     val ink = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
                     val dash = if (enabled) scheme.outline else scheme.outlineVariant
                     Row(
@@ -790,21 +837,21 @@ private fun CostAndPhotos(vm: LogServiceViewModel) {
                 }
             }
         }
-        if (!vm.costValid) {
+        if (!form.costValid) {
             Text(stringResource(R.string.log_cost_error), style = MaterialTheme.typography.bodySmall, color = scheme.error)
         }
         if (count > 0) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                vm.keptPhotos.forEachIndexed { i, photo ->
-                    PhotoThumb(photo.fileName, stringResource(R.string.photo_number, (i + 1).asNumber()), Modifier.size(96.dp), onRemove = { vm.removeKeptPhoto(photo) })
+                form.keptPhotos.forEachIndexed { i, photo ->
+                    PhotoThumb(photo.fileName, stringResource(R.string.photo_number, (i + 1).asNumber()), Modifier.size(96.dp), onRemove = { form.removeKeptPhoto(photo) })
                 }
                 newPhotos.forEachIndexed { i, name ->
-                    PhotoThumb(name, stringResource(R.string.photo_number, (vm.keptPhotos.size + i + 1).asNumber()), Modifier.size(96.dp), onRemove = { vm.removeNewPhoto(name) })
+                    PhotoThumb(name, stringResource(R.string.photo_number, (form.keptPhotos.size + i + 1).asNumber()), Modifier.size(96.dp), onRemove = { onRemoveNewPhoto(name) })
                 }
             }
         }
         Text(
-            problem ?: if (vm.photoRoom == 0) {
+            problem ?: if (photoRoom == 0) {
                 stringResource(R.string.log_photos_full, RecordPhotos.MAX_PER_RECORD.asNumber())
             } else {
                 stringResource(R.string.log_photos_note)
