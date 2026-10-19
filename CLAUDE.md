@@ -743,7 +743,10 @@ Notes on what's built:
   asked for when the newest reading is older than the cadence: the vehicle's own (`vehicles.mileageCheckInDays`,
   `VehicleCheckIn`, set on Vehicle details: null follows the default, 0 never asks) or the default on
   Notifications (`NoticePrefs.mileageEveryDays`, any whole number of days from 1 to 365; the old three-way
-  `mileage_cadence` setting, and a backup that has it, reads as its days). `NoticeLogStore` (its own DataStore file,
+  `mileage_cadence` setting, and a backup that has it, reads as its days). The check-in can have a time of
+  its own ("Check-in time", `NoticePrefs.mileageHour`/`mileageMinute`, for when the user is in the car): then
+  `DailyCheckWorker` is a second job that runs only `NoticeRun.MILEAGE`, the first runs `SERVICES` (and the
+  backup reminder and widget), and each writes only its own part of the log. `NoticeLogStore` (its own DataStore file,
   ids and dates only) remembers what was said; it is updated even when a switch is off or Android blocks
   notifications, so turning them on later doesn't release a backlog. `RecallCheckWorker` needs a network,
   retries silently, and only announces campaigns added after a vehicle's first check. Both skip archived

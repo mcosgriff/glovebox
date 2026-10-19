@@ -1643,6 +1643,10 @@
     <string name="notifications_recalls_checked">Checked %1$s for each vehicle</string>
     <string name="notifications_recalls_off">Automatic recall checks are off in Settings</string>
     <string name="notifications_mileage_note">A quick prompt to update the odometer</string>
+    <string name="notifications_mileage_time">Check-in time</string>
+    <string name="notifications_mileage_time_with">With the others · %1$s</string>
+    <string name="notifications_mileage_time_same">Same as the others</string>
+    <string name="notifications_mileage_time_note">When to ask for a reading, if not with the other notifications. A time you\'re usually in the car makes it quick to answer.</string>
     <string name="notifications_when">WHEN</string>
     <string name="notifications_how_early">How early to remind</string>
     <string name="notifications_note">Mileage reminders only work if the odometer is current, so we\'ll ask you for a quick reading on a schedule. The time of day is approximate: Android runs background checks when it suits the battery.</string>

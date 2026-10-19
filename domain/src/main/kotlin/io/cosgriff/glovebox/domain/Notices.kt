@@ -80,10 +80,22 @@ data class NoticePrefs(
     val minute: Int = 0,
     /** The mileage check-in for every vehicle that hasn't one of its own ([VehicleCheckIn]). */
     val mileageEveryDays: Int = MileageCheckIns.DEFAULT_DAYS,
+    /**
+     * A time of day of its own for the mileage check-in (a moment the user is in the car), 24-hour;
+     * null asks at [hour]:[minute] with everything else.
+     */
+    val mileageHour: Int? = null,
+    val mileageMinute: Int = 0,
 ) {
     /** True when the daily check has anything to do. */
     val wantsDailyCheck: Boolean get() = serviceDue || overdue || mileage
+
+    /** True when the mileage check-in runs on its own, at a time that isn't the daily check's. */
+    val mileageApart: Boolean get() = mileageHour != null && (mileageHour != hour || mileageMinute != minute)
 }
+
+/** The parts of the daily check, which run together unless the mileage check-in has a time of its own. */
+enum class NoticeRun { SERVICES, MILEAGE }
 
 /**
  * What has already been said, so nothing is repeated every day.
@@ -149,44 +161,73 @@ object NoticeRules {
      *   keep honest. A vehicle with it off is never asked.
      *
      * The log is updated for everything that is due, even when its switch is off, so turning a
-     * switch on later doesn't release a backlog.
+     * switch on later doesn't release a backlog. Only the parts in `runs` are looked at.
      */
-    fun daily(vehicles: List<NoticeVehicle>, log: NoticeLog, prefs: NoticePrefs, today: LocalDate): NoticeDecision {
+    fun daily(
+        vehicles: List<NoticeVehicle>,
+        log: NoticeLog,
+        prefs: NoticePrefs,
+        today: LocalDate,
+        /** What this run covers; the log of a part it doesn't cover is handed back as it came. */
+        runs: Set<NoticeRun> = NoticeRun.entries.toSet(),
+    ): NoticeDecision {
         val notices = mutableListOf<Notice>()
         val dueAnnounced = mutableMapOf<Long, String>()
         val overdueNudged = mutableMapOf<Long, LocalDate>()
         val mileageAsked = mutableMapOf<Long, LocalDate>()
 
         for (v in vehicles) {
-            val logged = v.statuses.filter { it.counting }
-
-            val dueSoon = logged.filter { it.status.state == DueState.DUE_SOON }
-            val newlyDue = dueSoon.filter { log.dueAnnounced[it.item.id] != cycle(it) }
-            dueSoon.forEach { dueAnnounced[it.item.id] = cycle(it) }
-            if (prefs.serviceDue && newlyDue.isNotEmpty()) notices += Notice.ServiceDue(v.id, v.name, newlyDue.map { it.item.name })
-
-            val overdue = logged.filter { it.status.state == DueState.OVERDUE }
-            val toNudge = overdue.filter { s -> log.overdueNudged[s.item.id]?.let { ChronoUnit.DAYS.between(it, today) >= OVERDUE_NUDGE_DAYS } ?: true }
-            overdue.forEach { s -> overdueNudged[s.item.id] = if (s in toNudge) today else log.overdueNudged.getValue(s.item.id) }
-            // Still inside its lead-time announcement for this cycle, so it isn't announced again if the state flips back.
-            overdue.forEach { s -> log.dueAnnounced[s.item.id]?.let { dueAnnounced[s.item.id] = it } }
-            if (prefs.overdue && toNudge.isNotEmpty()) notices += Notice.Overdue(v.id, v.name, toNudge.map { it.item.name })
-
-            val cadence = v.checkIn.days(prefs.mileageEveryDays)?.toLong()
-            if (v.statuses.isNotEmpty() && cadence != null) {
-                val stale = v.lastReadingOn?.let { ChronoUnit.DAYS.between(it, today) >= cadence } ?: true
-                val asked = log.mileageAsked[v.id]
-                val askedRecently = asked != null && ChronoUnit.DAYS.between(asked, today) < cadence
-                if (stale && !askedRecently) {
-                    mileageAsked[v.id] = today
-                    if (prefs.mileage) notices += Notice.MileageCheckIn(v.id, v.name)
-                } else if (asked != null) {
-                    mileageAsked[v.id] = asked
-                }
-            }
+            if (NoticeRun.SERVICES in runs) services(v, log, prefs, today, notices, dueAnnounced, overdueNudged)
+            if (NoticeRun.MILEAGE in runs) mileage(v, log, prefs, today, notices, mileageAsked)
         }
         // Entries for reminders and vehicles that are no longer due, or gone, are dropped.
-        return NoticeDecision(notices, NoticeLog(dueAnnounced, overdueNudged, mileageAsked))
+        return NoticeDecision(
+            notices,
+            NoticeLog(
+                dueAnnounced = if (NoticeRun.SERVICES in runs) dueAnnounced else log.dueAnnounced,
+                overdueNudged = if (NoticeRun.SERVICES in runs) overdueNudged else log.overdueNudged,
+                mileageAsked = if (NoticeRun.MILEAGE in runs) mileageAsked else log.mileageAsked,
+            ),
+        )
+    }
+
+    private fun services(
+        v: NoticeVehicle,
+        log: NoticeLog,
+        prefs: NoticePrefs,
+        today: LocalDate,
+        notices: MutableList<Notice>,
+        dueAnnounced: MutableMap<Long, String>,
+        overdueNudged: MutableMap<Long, LocalDate>,
+    ) {
+        val logged = v.statuses.filter { it.counting }
+
+        val dueSoon = logged.filter { it.status.state == DueState.DUE_SOON }
+        val newlyDue = dueSoon.filter { log.dueAnnounced[it.item.id] != cycle(it) }
+        dueSoon.forEach { dueAnnounced[it.item.id] = cycle(it) }
+        if (prefs.serviceDue && newlyDue.isNotEmpty()) notices += Notice.ServiceDue(v.id, v.name, newlyDue.map { it.item.name })
+
+        val overdue = logged.filter { it.status.state == DueState.OVERDUE }
+        val toNudge = overdue.filter { s -> log.overdueNudged[s.item.id]?.let { ChronoUnit.DAYS.between(it, today) >= OVERDUE_NUDGE_DAYS } ?: true }
+        overdue.forEach { s -> overdueNudged[s.item.id] = if (s in toNudge) today else log.overdueNudged.getValue(s.item.id) }
+        // Still inside its lead-time announcement for this cycle, so it isn't announced again if the state flips back.
+        overdue.forEach { s -> log.dueAnnounced[s.item.id]?.let { dueAnnounced[s.item.id] = it } }
+        if (prefs.overdue && toNudge.isNotEmpty()) notices += Notice.Overdue(v.id, v.name, toNudge.map { it.item.name })
+    }
+
+    private fun mileage(v: NoticeVehicle, log: NoticeLog, prefs: NoticePrefs, today: LocalDate, notices: MutableList<Notice>, mileageAsked: MutableMap<Long, LocalDate>) {
+        val cadence = v.checkIn.days(prefs.mileageEveryDays)?.toLong()
+        if (v.statuses.isNotEmpty() && cadence != null) {
+            val stale = v.lastReadingOn?.let { ChronoUnit.DAYS.between(it, today) >= cadence } ?: true
+            val asked = log.mileageAsked[v.id]
+            val askedRecently = asked != null && ChronoUnit.DAYS.between(asked, today) < cadence
+            if (stale && !askedRecently) {
+                mileageAsked[v.id] = today
+                if (prefs.mileage) notices += Notice.MileageCheckIn(v.id, v.name)
+            } else if (asked != null) {
+                mileageAsked[v.id] = asked
+            }
+        }
     }
 
     /** Milliseconds from [nowMinuteOfDay] until the next [hour]:[minute], today or tomorrow. */

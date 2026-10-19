@@ -152,6 +152,29 @@ class NoticesTest {
     }
 
     @Test
+    fun `a run covers only its part and hands the rest of the log back`() {
+        val overdueAndStale = vehicle(66_000, readingOn = today.minusDays(40))
+        val earlier = NoticeLog(dueAnnounced = mapOf(91L to "x"), overdueNudged = mapOf(92L to today.minusDays(1)), mileageAsked = mapOf(97L to today))
+
+        val services = NoticeRules.daily(listOf(overdueAndStale), earlier, NoticePrefs(), today, setOf(NoticeRun.SERVICES))
+        assertTrue(services.notices.none { it is Notice.MileageCheckIn })
+        assertTrue(services.notices.any { it is Notice.Overdue })
+        assertEquals(earlier.mileageAsked, services.log.mileageAsked)
+
+        val mileage = NoticeRules.daily(listOf(overdueAndStale), earlier, NoticePrefs(), today, setOf(NoticeRun.MILEAGE))
+        assertEquals(listOf(Notice.MileageCheckIn(7, "2019 4Runner")), mileage.notices)
+        assertEquals(earlier.dueAnnounced, mileage.log.dueAnnounced)
+        assertEquals(earlier.overdueNudged, mileage.log.overdueNudged)
+    }
+
+    @Test
+    fun `the check-in runs apart only at a time of its own`() {
+        assertTrue(!NoticePrefs().mileageApart)
+        assertTrue(!NoticePrefs(hour = 8, minute = 0, mileageHour = 8, mileageMinute = 0).mileageApart)
+        assertTrue(NoticePrefs(hour = 8, minute = 0, mileageHour = 17, mileageMinute = 30).mileageApart)
+    }
+
+    @Test
     fun `the old three-way setting reads as its days`() {
         assertEquals(7, MileageCheckIns.legacy("WEEKLY"))
         assertEquals(14, MileageCheckIns.legacy("TWO_WEEKS"))

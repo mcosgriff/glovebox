@@ -12,6 +12,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -29,6 +30,7 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.Notice
 import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.NoticeRules
+import io.cosgriff.glovebox.domain.NoticeRun
 import io.cosgriff.glovebox.domain.NoticeVehicle
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
@@ -68,10 +70,13 @@ private fun Context.notify(): NotifyEntryPoint = EntryPointAccessors.fromApplica
 /**
  * The daily check: services coming due, overdue nudges and the mileage check-in. It opens the
  * encrypted database on its own, which works with the phone locked because the database key isn't
- * tied to the user unlocking (see CLAUDE.md). Nothing here uses the network.
+ * tied to the user unlocking (see CLAUDE.md). Nothing here uses the network. When the mileage
+ * check-in has a time of its own it is a second job of this worker, with [RUNS] saying which part.
  */
 class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
+        val runs = inputData.getStringArray(RUNS)?.mapNotNull { name -> NoticeRun.entries.firstOrNull { it.name == name } }?.toSet()
+            ?: NoticeRun.entries.toSet()
         val deps = applicationContext.notify()
         val settings = deps.settings().settings.first()
         val today = LocalDate.now()
@@ -94,10 +99,12 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
                 checkIn = VehicleCheckIn.of(v.mileageCheckInDays),
             )
         }
-        val decision = NoticeRules.daily(vehicles, deps.noticeLog().read(), settings.notices, today)
+        val decision = NoticeRules.daily(vehicles, deps.noticeLog().read(), settings.notices, today, runs)
         // The log is kept even if Android won't show anything, so allowing notifications later doesn't release a backlog.
-        deps.noticeLog().write(decision.log)
+        deps.noticeLog().write(decision.log, runs)
         decision.notices.forEach(deps.notifier()::post)
+        // The rest goes with the services part, which runs whenever the daily check does.
+        if (NoticeRun.SERVICES !in runs) return Result.success()
 
         // Sold vehicles count here: their history is still worth keeping.
         val hasData = deps.vehicles().all().isNotEmpty()
@@ -109,6 +116,11 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         // A reminder can fall due with the date alone, which no change in the database announces.
         if (settings.homeWidget) deps.widgets().refresh()
         return Result.success()
+    }
+
+    companion object {
+        /** NoticeRun names: the parts of the check this job runs. Absent runs them all. */
+        const val RUNS = "runs"
     }
 }
 
@@ -147,18 +159,17 @@ class NoticeScheduler @Inject constructor(@ApplicationContext private val contex
     fun sync(prefs: NoticePrefs, recallCadence: RecallCadence) {
         val work = WorkManager.getInstance(context)
         if (prefs.wantsDailyCheck) {
-            val now = LocalTime.now()
-            val delay = NoticeRules.minutesUntil(prefs.hour, prefs.minute, now.hour * 60 + now.minute)
-            work.enqueueUniquePeriodicWork(
-                DAILY,
-                // UPDATE keeps the job's place in its cycle unless the time of day moved.
-                ExistingPeriodicWorkPolicy.UPDATE,
-                PeriodicWorkRequestBuilder<DailyCheckWorker>(1, TimeUnit.DAYS)
-                    .setInitialDelay(delay.toLong(), TimeUnit.MINUTES)
-                    .build(),
-            )
+            // With a time of its own the mileage check-in is a job of its own; otherwise one job runs everything.
+            val runs = if (prefs.mileageApart) listOf(NoticeRun.SERVICES) else NoticeRun.entries
+            work.daily(DAILY, prefs.hour, prefs.minute, runs)
         } else {
             work.cancelUniqueWork(DAILY)
+        }
+        // Even with its switch off, as the one job would: its log is kept so turning it on later releases no backlog.
+        if (prefs.wantsDailyCheck && prefs.mileageApart) {
+            work.daily(MILEAGE, prefs.mileageHour ?: prefs.hour, prefs.mileageMinute, listOf(NoticeRun.MILEAGE))
+        } else {
+            work.cancelUniqueWork(MILEAGE)
         }
 
         if (recallCadence.days != null) {
@@ -176,8 +187,24 @@ class NoticeScheduler @Inject constructor(@ApplicationContext private val contex
         }
     }
 
+    /** Once a day at about [hour]:[minute], running [runs] of the daily check. */
+    private fun WorkManager.daily(name: String, hour: Int, minute: Int, runs: List<NoticeRun>) {
+        val now = LocalTime.now()
+        val delay = NoticeRules.minutesUntil(hour, minute, now.hour * 60 + now.minute)
+        enqueueUniquePeriodicWork(
+            name,
+            // UPDATE keeps the job's place in its cycle unless the time of day moved.
+            ExistingPeriodicWorkPolicy.UPDATE,
+            PeriodicWorkRequestBuilder<DailyCheckWorker>(1, TimeUnit.DAYS)
+                .setInitialDelay(delay.toLong(), TimeUnit.MINUTES)
+                .setInputData(workDataOf(DailyCheckWorker.RUNS to runs.map { it.name }.toTypedArray()))
+                .build(),
+        )
+    }
+
     private companion object {
         const val DAILY = "daily-check"
+        const val MILEAGE = "mileage-check-in"
         const val RECALLS = "recall-check"
     }
 }

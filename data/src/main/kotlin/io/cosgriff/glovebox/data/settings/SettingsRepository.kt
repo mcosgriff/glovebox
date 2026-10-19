@@ -82,6 +82,9 @@ class SettingsRepository(private val context: Context) {
         val notifyHour = intPreferencesKey("notify_hour")
         val notifyMinute = intPreferencesKey("notify_minute")
         val mileageEveryDays = intPreferencesKey("mileage_every_days")
+        /** The mileage check-in's own time of day; absent asks with everything else. */
+        val mileageHour = intPreferencesKey("notify_mileage_hour")
+        val mileageMinute = intPreferencesKey("notify_mileage_minute")
 
         /** The three-way choice before #287 (a MileageCheckIns.legacy name); read until the setting is next written. */
         val mileageCadence = stringPreferencesKey("mileage_cadence")
@@ -147,6 +150,8 @@ class SettingsRepository(private val context: Context) {
                 minute = (p[Keys.notifyMinute] ?: d.notices.minute).coerceIn(0, 59),
                 mileageEveryDays = (p[Keys.mileageEveryDays] ?: p[Keys.mileageCadence]?.let(MileageCheckIns::legacy))
                     ?.takeIf(MileageCheckIns::valid) ?: d.notices.mileageEveryDays,
+                mileageHour = p[Keys.mileageHour]?.coerceIn(0, 23),
+                mileageMinute = (p[Keys.mileageMinute] ?: 0).coerceIn(0, 59),
             ),
             recallCadence = p[Keys.recallCadence]?.let { runCatching { RecallCadence.valueOf(it) }.getOrNull() } ?: d.recallCadence,
             welcomeSeen = p[Keys.welcomeSeen] ?: d.welcomeSeen,
@@ -187,6 +192,14 @@ class SettingsRepository(private val context: Context) {
         it[Keys.notifyHour] = prefs.hour
         it[Keys.notifyMinute] = prefs.minute
         it[Keys.mileageEveryDays] = prefs.mileageEveryDays
+        val ownHour = prefs.mileageHour
+        if (ownHour != null) {
+            it[Keys.mileageHour] = ownHour
+            it[Keys.mileageMinute] = prefs.mileageMinute
+        } else {
+            it.remove(Keys.mileageHour)
+            it.remove(Keys.mileageMinute)
+        }
         it.remove(Keys.mileageCadence)
     }
     suspend fun setRecallCadence(cadence: RecallCadence) = context.dataStore.edit { it[Keys.recallCadence] = cadence.name }
