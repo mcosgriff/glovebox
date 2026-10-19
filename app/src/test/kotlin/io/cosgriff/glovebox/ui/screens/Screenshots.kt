@@ -8,6 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onRoot
+import com.dropbox.differ.Image
+import com.dropbox.differ.ImageComparator
+import com.dropbox.differ.Mask
 import com.dropbox.differ.SimpleImageComparator
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.RoborazziATFAccessibilityCheckOptions
@@ -27,6 +30,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import io.cosgriff.glovebox.data.settings.ThemeMode
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
+import kotlin.math.abs
 
 /**
  * Exact: any pixel that differs fails. Roborazzi's default allows each pixel a small colour distance,
@@ -35,6 +39,35 @@ import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 private val exact = RoborazziOptions(
     compareOptions = RoborazziOptions.CompareOptions(imageComparator = SimpleImageComparator(maxDistance = 0f), changeThreshold = 0f),
 )
+
+/**
+ * For a sheet or dialog: a pixel may be one step out of 255 in a channel, and no more. Those shots blend
+ * translucent windows (a scrim, a dim, rounded corners) over the page, and that blend rounds differently
+ * on a Mac than on CI's Linux, so the same code drew references one step apart on the two. Anything
+ * a change could make, such as a token moved by one tone, is many steps.
+ */
+private val exactBut1 = RoborazziOptions(
+    compareOptions = RoborazziOptions.CompareOptions(imageComparator = WithinOneStep, changeThreshold = 0f),
+)
+
+private object WithinOneStep : ImageComparator {
+    private const val STEP = 1.5f / 255f // one step, with room for the float conversion
+
+    override fun compare(left: Image, right: Image, diff: Mask?): ImageComparator.ComparisonResult {
+        var differences = 0
+        for (y in 0 until left.height) {
+            for (x in 0 until left.width) {
+                val a = left.getPixel(x, y)
+                val b = right.getPixel(x, y)
+                if (abs(a.r - b.r) > STEP || abs(a.g - b.g) > STEP || abs(a.b - b.b) > STEP || abs(a.a - b.a) > STEP) {
+                    differences++
+                    diff?.setValue(x, y, 1f)
+                }
+            }
+        }
+        return ImageComparator.ComparisonResult(differences, left.width * left.height, left.width, left.height)
+    }
+}
 
 /**
  * A finding that is deliberate, left out for the one kind of element it is about: [check] on an element
@@ -105,5 +138,5 @@ fun ComposeContentTestRule.shootScreen(name: String, shade: Shade, content: @Com
     // Each window: the page under the sheet and the sheet itself.
     val roots = onAllNodes(isRoot())
     repeat(roots.fetchSemanticsNodes().size) { roots[it].checkRoboAccessibility(accessibility) }
-    captureScreenRoboImage("src/test/screenshots/${name}_${shade.name.lowercase()}.png", roborazziOptions = exact)
+    captureScreenRoboImage("src/test/screenshots/${name}_${shade.name.lowercase()}.png", roborazziOptions = exactBut1)
 }
