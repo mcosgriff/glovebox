@@ -13,7 +13,7 @@ import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.forUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.LeadTime
-import io.cosgriff.glovebox.domain.MileageCadence
+import io.cosgriff.glovebox.domain.MileageCheckIns
 import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.TorqueUnit
@@ -81,6 +81,9 @@ class SettingsRepository(private val context: Context) {
         val notifyMileage = booleanPreferencesKey("notify_mileage")
         val notifyHour = intPreferencesKey("notify_hour")
         val notifyMinute = intPreferencesKey("notify_minute")
+        val mileageEveryDays = intPreferencesKey("mileage_every_days")
+
+        /** The three-way choice before #287 (a MileageCheckIns.legacy name); read until the setting is next written. */
         val mileageCadence = stringPreferencesKey("mileage_cadence")
         val recallCadence = stringPreferencesKey("recall_cadence")
         val welcomeSeen = booleanPreferencesKey("welcome_seen")
@@ -106,6 +109,11 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { p ->
             for ((name, value) in values) {
                 if (name in keptOnRestore || name in deviceOnly) continue
+                // A backup made before #287 has the old three-way choice: it comes back as its days.
+                if (name == Keys.mileageCadence.name) {
+                    (value as? String)?.let(MileageCheckIns::legacy)?.let { p[Keys.mileageEveryDays] = it }
+                    continue
+                }
                 when (value) {
                     is Boolean -> p[booleanPreferencesKey(name)] = value
                     is Int -> p[intPreferencesKey(name)] = value
@@ -137,7 +145,8 @@ class SettingsRepository(private val context: Context) {
                 mileage = p[Keys.notifyMileage] ?: d.notices.mileage,
                 hour = (p[Keys.notifyHour] ?: d.notices.hour).coerceIn(0, 23),
                 minute = (p[Keys.notifyMinute] ?: d.notices.minute).coerceIn(0, 59),
-                mileageCadence = p[Keys.mileageCadence]?.let { runCatching { MileageCadence.valueOf(it) }.getOrNull() } ?: d.notices.mileageCadence,
+                mileageEveryDays = (p[Keys.mileageEveryDays] ?: p[Keys.mileageCadence]?.let(MileageCheckIns::legacy))
+                    ?.takeIf(MileageCheckIns::valid) ?: d.notices.mileageEveryDays,
             ),
             recallCadence = p[Keys.recallCadence]?.let { runCatching { RecallCadence.valueOf(it) }.getOrNull() } ?: d.recallCadence,
             welcomeSeen = p[Keys.welcomeSeen] ?: d.welcomeSeen,
@@ -177,7 +186,8 @@ class SettingsRepository(private val context: Context) {
         it[Keys.notifyMileage] = prefs.mileage
         it[Keys.notifyHour] = prefs.hour
         it[Keys.notifyMinute] = prefs.minute
-        it[Keys.mileageCadence] = prefs.mileageCadence.name
+        it[Keys.mileageEveryDays] = prefs.mileageEveryDays
+        it.remove(Keys.mileageCadence)
     }
     suspend fun setRecallCadence(cadence: RecallCadence) = context.dataStore.edit { it[Keys.recallCadence] = cadence.name }
     suspend fun setWelcomeSeen() = context.dataStore.edit { it[Keys.welcomeSeen] = true }

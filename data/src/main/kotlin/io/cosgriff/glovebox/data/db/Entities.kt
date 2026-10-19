@@ -117,6 +117,11 @@ data class VehicleEntity(
      * checked or changed yet: each is tagged DOUBLE-CHECK. Null when there are none.
      */
     val takesToCheck: String? = null,
+    /**
+     * This vehicle's own mileage check-in, in days (VehicleCheckIn in :domain): null asks as often as
+     * the Notifications setting, 0 never asks.
+     */
+    val mileageCheckInDays: Int? = null,
 )
 
 @Entity(

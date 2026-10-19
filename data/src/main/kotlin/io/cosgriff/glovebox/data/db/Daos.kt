@@ -58,6 +58,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET plate = :plate, plateRegion = :region WHERE id = :id")
     suspend fun setPlate(id: Long, plate: String?, region: String?)
 
+    /** A VehicleCheckIn as stored: null follows the default, 0 is off. */
+    @Query("UPDATE vehicles SET mileageCheckInDays = :days WHERE id = :id")
+    suspend fun setMileageCheckIn(id: Long, days: Int?)
+
     /** Fills in the engine for a vehicle that has none on record; one that has is left exactly as it is. */
     @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
     suspend fun setEngineIfBlank(id: Long, engine: String)

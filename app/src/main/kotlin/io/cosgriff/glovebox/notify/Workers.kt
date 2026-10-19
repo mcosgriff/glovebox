@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.domain.NoticeVehicle
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ServiceLog
+import io.cosgriff.glovebox.domain.VehicleCheckIn
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -90,6 +91,7 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
                 statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.leadFor(v.unit))
                     .map { s -> s.copy(lastDone = s.lastDone?.let { swap.asReadOn(it) }) },
                 lastReadingOn = ServiceLog.readings(entries, updates).maxOfOrNull { it.date },
+                checkIn = VehicleCheckIn.of(v.mileageCheckInDays),
             )
         }
         val decision = NoticeRules.daily(vehicles, deps.noticeLog().read(), settings.notices, today)

@@ -1472,6 +1472,18 @@
     <string name="cadence_every_week">Every week</string>
     <string name="cadence_every_two_weeks">Every 2 weeks</string>
     <string name="cadence_every_month">Every month</string>
+    <plurals name="cadence_every_days">
+        <item quantity="one">Every %1$s day</item>
+        <item quantity="other">Every %1$s days</item>
+    </plurals>
+    <string name="checkin_custom">Another number of days</string>
+    <string name="checkin_days_field">Days between check-ins</string>
+    <string name="checkin_days_range">From %1$s to %2$s</string>
+    <string name="checkin_as_default">As in Notifications · %1$s</string>
+    <string name="checkin_off">Don\'t ask for this vehicle</string>
+    <string name="checkin_vehicle_note">How often to ask for this vehicle\'s odometer. A car that\'s driven every day can be asked more often than one that mostly sits.</string>
+    <string name="details_checkin_off">Not asked for this vehicle</string>
+    <string name="details_checkin_all_off">Off for every vehicle in Notifications</string>
     <string name="recall_cadence_weekly">Weekly</string>
     <string name="recall_cadence_monthly">Monthly</string>
     <string name="recall_cadence_never">Never</string>

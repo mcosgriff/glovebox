@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +42,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -76,8 +73,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.MileageCadence
 import io.cosgriff.glovebox.domain.NoticePrefs
+import io.cosgriff.glovebox.domain.VehicleCheckIn
 import io.cosgriff.glovebox.notify.Notifier
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -143,31 +140,14 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
         )
     }
     if (pickingCadence) {
-        AlertDialog(
-            onDismissRequest = { pickingCadence = false },
-            title = { Text(stringResource(R.string.channel_mileage)) },
-            text = {
-                Column(Modifier.selectableGroup()) {
-                    MileageCadence.entries.forEach { c ->
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                                selected = c == prefs.mileageCadence,
-                                role = Role.RadioButton,
-                                onClick = {
-                                    vm.change(prefs.copy(mileageCadence = c))
-                                    pickingCadence = false
-                                },
-                            ),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            RadioButton(selected = c == prefs.mileageCadence, onClick = null)
-                            Text(c.label)
-                        }
-                    }
-                }
+        CheckInDialog(
+            current = VehicleCheckIn.Every(prefs.mileageEveryDays),
+            default = null,
+            onSave = { choice ->
+                (choice as? VehicleCheckIn.Every)?.let { vm.change(prefs.copy(mileageEveryDays = it.days)) }
+                pickingCadence = false
             },
-            confirmButton = { TextButton(onClick = { pickingCadence = false }) { Text(stringResource(R.string.cancel)) } },
+            onDismiss = { pickingCadence = false },
         )
     }
 
@@ -244,7 +224,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 Card {
                     ChoiceRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    ChoiceRow(stringResource(R.string.channel_mileage), prefs.mileageCadence.label) { pickingCadence = true }
+                    ChoiceRow(stringResource(R.string.channel_mileage), checkInLabel(prefs.mileageEveryDays)) { pickingCadence = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
                     ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.interval_slash, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)

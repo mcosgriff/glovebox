@@ -67,7 +67,9 @@ Keep them green; lint errors fail the build.
   on any change (`roborazzi.test.verify=true` in `gradle.properties`); a failure leaves each screen as drawn
   now and its difference in `app/build/outputs/roborazzi/`, which CI uploads. After a change meant to alter
   how a screen looks, run `./gradlew :app:recordRoborazziDebug`, look at every image it changed, and commit
-  them. **A screen is tested through its `…Content` composable**, which takes plain state and callbacks; the
+  them. Comparison is exact for a screen (`shoot`); a sheet or dialog (`shootScreen`) may be one step in 255
+  out per channel (`WithinOneStep`), because blending its translucent window over the page rounds differently
+  on a Mac and on CI's Linux. **A screen is tested through its `…Content` composable**, which takes plain state and callbacks; the
   `…Screen` around it only reads the ViewModel and holds the sheets and dialogs. Keep new screens that way
   and add them to `ScreensScreenshotTest`. Fixtures are made up (a public repo): VINs that pass the check
   digit and belong to no one, invented records, no photos, and no real torque figures. Dates are drawn on
@@ -738,7 +740,10 @@ Notes on what's built:
   `NoticeScheduler`. `DailyCheckWorker` runs at about the chosen time and uses no network; what it says
   is decided by `NoticeRules.daily` (domain): a service is announced once when it enters its lead time,
   an overdue one is nudged weekly, a snoozed or never-logged one stays quiet, and a mileage check-in is
-  asked for when the newest reading is older than the cadence. `NoticeLogStore` (its own DataStore file,
+  asked for when the newest reading is older than the cadence: the vehicle's own (`vehicles.mileageCheckInDays`,
+  `VehicleCheckIn`, set on Vehicle details: null follows the default, 0 never asks) or the default on
+  Notifications (`NoticePrefs.mileageEveryDays`, any whole number of days from 1 to 365; the old three-way
+  `mileage_cadence` setting, and a backup that has it, reads as its days). `NoticeLogStore` (its own DataStore file,
   ids and dates only) remembers what was said; it is updated even when a switch is off or Android blocks
   notifications, so turning them on later doesn't release a backlog. `RecallCheckWorker` needs a network,
   retries silently, and only announces campaigns added after a vehicle's first check. Both skip archived

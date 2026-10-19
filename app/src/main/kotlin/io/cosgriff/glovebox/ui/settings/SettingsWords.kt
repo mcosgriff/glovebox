@@ -5,7 +5,6 @@ import io.cosgriff.glovebox.domain.LicenceGroup
 import io.cosgriff.glovebox.domain.LicenceName
 import io.cosgriff.glovebox.domain.Licences
 import io.cosgriff.glovebox.domain.LockDelay
-import io.cosgriff.glovebox.domain.MileageCadence
 import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.PasswordStrength
 import io.cosgriff.glovebox.domain.RecallCadence
@@ -29,14 +28,13 @@ val LockDelay.label: String
         },
     )
 
-val MileageCadence.label: String
-    get() = AppText.res.getString(
-        when (this) {
-            MileageCadence.WEEKLY -> R.string.cadence_every_week
-            MileageCadence.TWO_WEEKS -> R.string.cadence_every_two_weeks
-            MileageCadence.MONTHLY -> R.string.cadence_every_month
-        },
-    )
+/** "Every 2 weeks", "Every 10 days": how often the mileage check-in asks. */
+fun checkInLabel(days: Int): String = when (days) {
+    7 -> AppText.res.getString(R.string.cadence_every_week)
+    14 -> AppText.res.getString(R.string.cadence_every_two_weeks)
+    30 -> AppText.res.getString(R.string.cadence_every_month)
+    else -> AppText.res.getQuantityString(R.plurals.cadence_every_days, days, days.asNumber())
+}
 
 val RecallCadence.label: String
     get() = AppText.res.getString(

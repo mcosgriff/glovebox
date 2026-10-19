@@ -110,8 +110,68 @@ class NoticesTest {
 
     @Test
     fun `a weekly cadence asks sooner`() {
-        val d = daily(vehicle(61_000, readingOn = today.minusDays(7)), prefs = NoticePrefs(mileageCadence = MileageCadence.WEEKLY))
+        val d = daily(vehicle(61_000, readingOn = today.minusDays(7)), prefs = NoticePrefs(mileageEveryDays = 7))
         assertEquals(listOf(Notice.MileageCheckIn(7, "2019 4Runner")), d.notices)
+    }
+
+    @Test
+    fun `any number of days can be the default`() {
+        val prefs = NoticePrefs(mileageEveryDays = 10)
+        assertTrue(daily(vehicle(61_000, readingOn = today.minusDays(9)), prefs = prefs).notices.isEmpty())
+        assertEquals(1, daily(vehicle(61_000, readingOn = today.minusDays(10)), prefs = prefs).notices.size)
+    }
+
+    @Test
+    fun `a vehicle's own cadence wins over the default`() {
+        val often = vehicle(61_000, readingOn = today.minusDays(3)).copy(checkIn = VehicleCheckIn.Every(3))
+        assertEquals(listOf(Notice.MileageCheckIn(7, "2019 4Runner")), daily(often).notices)
+        // The default would have asked by now; this vehicle waits for its own 60 days.
+        val seldom = vehicle(61_000, readingOn = today.minusDays(30)).copy(checkIn = VehicleCheckIn.Every(60))
+        assertTrue(daily(seldom).notices.isEmpty())
+    }
+
+    @Test
+    fun `a vehicle with the check-in off is never asked`() {
+        val off = vehicle(61_000, readingOn = null).copy(checkIn = VehicleCheckIn.Off)
+        val d = daily(off, log = NoticeLog(mileageAsked = mapOf(7L to today.minusDays(40))))
+        assertTrue(d.notices.isEmpty())
+        assertTrue(d.log.mileageAsked.isEmpty())
+    }
+
+    @Test
+    fun `shortening the cadence doesn't ask twice in a day`() {
+        val stale = today.minusDays(40)
+        val asked = daily(vehicle(61_000, readingOn = stale))
+        assertEquals(1, asked.notices.size)
+        val shorter = vehicle(61_000, readingOn = stale).copy(checkIn = VehicleCheckIn.Every(1))
+        assertTrue(daily(shorter, log = asked.log).notices.isEmpty())
+        // From tomorrow it is asked as often as it now says.
+        val tomorrow = today.plusDays(1)
+        val next = vehicle(61_000, tomorrow, readingOn = stale).copy(checkIn = VehicleCheckIn.Every(1))
+        assertEquals(1, daily(next, log = asked.log, on = tomorrow).notices.size)
+    }
+
+    @Test
+    fun `the old three-way setting reads as its days`() {
+        assertEquals(7, MileageCheckIns.legacy("WEEKLY"))
+        assertEquals(14, MileageCheckIns.legacy("TWO_WEEKS"))
+        assertEquals(30, MileageCheckIns.legacy("MONTHLY"))
+        assertEquals(null, MileageCheckIns.legacy("HOURLY"))
+    }
+
+    @Test
+    fun `typed days are whole numbers from 1 to 365`() {
+        assertEquals(10, MileageCheckIns.parse(" 10 "))
+        assertEquals(365, MileageCheckIns.parse("365"))
+        listOf("0", "366", "-3", "1.5", "", "ten").forEach { assertEquals(it, null, MileageCheckIns.parse(it)) }
+    }
+
+    @Test
+    fun `a vehicle's check-in is stored as null, 0 or its days`() {
+        listOf(VehicleCheckIn.Default, VehicleCheckIn.Off, VehicleCheckIn.Every(21)).forEach {
+            assertEquals(it, VehicleCheckIn.of(it.stored))
+        }
+        assertEquals(VehicleCheckIn.Every(365), VehicleCheckIn.of(9_999))
     }
 
     @Test
