@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.screens
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.WrittenFile
@@ -103,8 +104,8 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun history() = compose.shoot("history", shade) {
         HistoryContent(
-            Fixtures.history, chosenFilter = null, fresh = null, archived = false,
-            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {},
+            Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
         )
     }
 

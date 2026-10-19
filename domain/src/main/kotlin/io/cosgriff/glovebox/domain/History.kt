@@ -17,6 +17,27 @@ enum class NoteTone { PLAIN, CHANGED, WARNING }
 /** Why a record is picked out in the History list. */
 enum class RecordMark { ADDED, RESTORED }
 
+/** What the History list is sorted by; `app` words it. */
+enum class HistorySort { DATE, MILEAGE }
+
+/** How the History list is ordered: [descending] puts the newest record, or the highest reading, first. */
+data class HistoryOrder(val by: HistorySort = HistorySort.DATE, val descending: Boolean = true)
+
+object HistoryOrdering {
+    /**
+     * [records] in [order]. [dash] is a record's reading in dash terms (`swap.toDash`), so readings from
+     * before a cluster replacement sort by distance covered. A tie goes to the other key and then to [id],
+     * so two records on one day and reading keep their place every time the list is drawn.
+     */
+    fun <T> sorted(records: List<T>, order: HistoryOrder, date: (T) -> LocalDate, dash: (T) -> Int, id: (T) -> Long): List<T> {
+        val key = when (order.by) {
+            HistorySort.DATE -> compareBy(date).thenBy(dash)
+            HistorySort.MILEAGE -> compareBy(dash).thenBy(date)
+        }.thenBy(id)
+        return records.sortedWith(if (order.descending) key.reversed() else key)
+    }
+}
+
 /** The line under an odometer field; `app` words it. Readings are as the dash reads them. */
 sealed interface OdometerNote {
     val tone: NoteTone

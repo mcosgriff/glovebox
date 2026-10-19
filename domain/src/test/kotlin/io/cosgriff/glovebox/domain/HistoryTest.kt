@@ -88,4 +88,51 @@ class HistoryTest {
         assertEquals(emptyList<String>(), ServiceCatalog.resetters(null))
         assertEquals(emptyList<String>(), ServiceCatalog.resetters("not-a-key"))
     }
+
+    private data class Rec(val id: Long, val date: LocalDate, val odometer: Int)
+
+    private val swap = ClusterSwap(LocalDate.of(2025, 1, 1), offset = 80_000, startReading = 10)
+    private val spring = Rec(1, LocalDate.of(2026, 4, 2), 61_000)
+    private val summer = Rec(2, LocalDate.of(2026, 7, 9), 64_500)
+    private val pastAddedLater = Rec(3, LocalDate.of(2025, 11, 20), 55_200)
+
+    private fun sorted(records: List<Rec>, order: HistoryOrder, swap: ClusterSwap? = null) =
+        HistoryOrdering.sorted(records, order, { it.date }, { swap.toDash(it.odometer, it.date) }, { it.id }).map { it.id }
+
+    @Test
+    fun `a past record added last still sorts by its date`() {
+        assertEquals(listOf(2L, 1L, 3L), sorted(listOf(spring, summer, pastAddedLater), HistoryOrder()))
+        assertEquals(listOf(3L, 1L, 2L), sorted(listOf(spring, summer, pastAddedLater), HistoryOrder(descending = false)))
+    }
+
+    @Test
+    fun `by mileage, highest or lowest first`() {
+        // Logged out of order: the higher reading has the earlier date.
+        val typo = Rec(4, LocalDate.of(2026, 3, 1), 70_000)
+        val records = listOf(spring, summer, typo)
+        assertEquals(listOf(4L, 2L, 1L), sorted(records, HistoryOrder(HistorySort.MILEAGE)))
+        assertEquals(listOf(1L, 2L, 4L), sorted(records, HistoryOrder(HistorySort.MILEAGE, descending = false)))
+        assertEquals(listOf(2L, 1L, 4L), sorted(records, HistoryOrder(HistorySort.DATE)))
+    }
+
+    @Test
+    fun `mileage is compared in dash terms across a cluster replacement`() {
+        // Typed off the old cluster at 85,000 (5,000 on the new dash), then 9,000 on the new one.
+        val old = Rec(5, LocalDate.of(2024, 12, 1), 85_000)
+        val new = Rec(6, LocalDate.of(2025, 6, 1), 9_000)
+        assertEquals(listOf(6L, 5L), sorted(listOf(old, new), HistoryOrder(HistorySort.MILEAGE), swap))
+        assertEquals(listOf(5L, 6L), sorted(listOf(old, new), HistoryOrder(HistorySort.MILEAGE)))
+    }
+
+    @Test
+    fun `ties fall to the other key and then the id`() {
+        val day = LocalDate.of(2026, 5, 5)
+        val a = Rec(7, day, 62_000)
+        val b = Rec(8, day, 62_400)
+        val c = Rec(9, day, 62_400)
+        assertEquals(listOf(9L, 8L, 7L), sorted(listOf(a, b, c), HistoryOrder()))
+        assertEquals(listOf(7L, 8L, 9L), sorted(listOf(c, a, b), HistoryOrder(descending = false)))
+        val sameReading = Rec(10, LocalDate.of(2026, 6, 6), 62_000)
+        assertEquals(listOf(10L, 7L), sorted(listOf(a, sameReading), HistoryOrder(HistorySort.MILEAGE)))
+    }
 }

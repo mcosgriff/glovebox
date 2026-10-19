@@ -805,6 +805,10 @@ Notes on what's built:
   `RecordActions.focus` tells History which vehicle to show and which record to outline ("just added" /
   "restored"); History clears it when it is left. An edit returns to the record. The edit form's "Delete
   this record" goes back to the record's screen, which owns the confirmation sheet.
+- History sorts by date or mileage, either way round (`HistoryOrdering.sorted`, `HistoryOrder` in the saved
+  state, kept across vehicles): Material's sort icon opens the choice and the arrow beside it reverses it (down
+  is newest or highest first). Both show only with two records or more. Mileage is compared in dash terms, ties
+  go to the other key and then the id, and a new order scrolls the list back to the top.
 - An Undo bar stays for `LogEdits.UNDO_SECONDS` (30), and the delete sheet says so. Events are collected
   with `collectLatest`: a newer change replaces the bar for an older one, and whatever ends a bar without
   Undo (timeout, replacement, the app locking) discards the photo files it was holding.

@@ -877,6 +877,14 @@
     <string name="history_subtitle">%1$s · %2$s</string>
     <string name="history_subtitle_archived">%1$s · %2$s · archived, read-only</string>
     <string name="history_all">All</string>
+    <string name="history_sort_by">Sort by</string>
+    <string name="history_sort_date">Date</string>
+    <string name="history_sort_mileage">Mileage</string>
+    <string name="history_reverse">Reverse the order</string>
+    <string name="history_order_newest">Newest first</string>
+    <string name="history_order_oldest">Oldest first</string>
+    <string name="history_order_highest">Highest mileage first</string>
+    <string name="history_order_lowest">Lowest mileage first</string>
     <string name="history_no_vehicle">Add a vehicle in the Garage to start its service history.</string>
     <string name="history_none_archived">No service records were logged for this vehicle.</string>
     <string name="history_none">No service records yet. Use Log service in the Garage to add the first one.</string>

@@ -3,6 +3,26 @@ package io.cosgriff.glovebox.ui.history
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import io.cosgriff.glovebox.domain.HistoryOrder
+import io.cosgriff.glovebox.domain.HistoryOrdering
+import io.cosgriff.glovebox.domain.HistorySort
+import io.cosgriff.glovebox.domain.toDash
+import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.ArchivedHistoryRoute
 import io.cosgriff.glovebox.ui.routeOrNull
 import androidx.compose.ui.res.pluralStringResource
@@ -123,6 +143,21 @@ class HistoryViewModel @Inject constructor(
         savedStateHandle[FILTER] = categoryId
     }
 
+    /** Kept across vehicles: it is how the owner likes to read a history, not a choice about one vehicle. */
+    var order by mutableStateOf(
+        HistoryOrder(
+            savedStateHandle.get<String>(SORT_BY)?.let { s -> HistorySort.entries.firstOrNull { it.name == s } } ?: HistorySort.DATE,
+            savedStateHandle.get<Boolean>(DESCENDING) ?: true,
+        ),
+    )
+        private set
+
+    fun chooseOrder(chosen: HistoryOrder) {
+        order = chosen
+        savedStateHandle[SORT_BY] = chosen.by.name
+        savedStateHandle[DESCENDING] = chosen.descending
+    }
+
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
             combine(vehicles.observe(archivedId), service.observeRecords(archivedId)) { vehicle, records ->
@@ -166,6 +201,8 @@ class HistoryViewModel @Inject constructor(
     private companion object {
         const val CHOSEN_VEHICLE = "chosenVehicle"
         const val FILTER = "filter"
+        const val SORT_BY = "sortBy"
+        const val DESCENDING = "descending"
     }
 
     /** History is being left: the mark has been seen, and the next visit starts wherever the user left it. */
@@ -187,8 +224,9 @@ fun HistoryScreen(
     if (exporting) ExportSheet(vehicleId = state.vehicle?.id, onDismiss = { exporting = false })
 
     HistoryContent(
-        state, vm.filter, fresh, vm.archived, onOpenRecord, onBack,
+        state, vm.filter, vm.order, fresh, vm.archived, onOpenRecord, onBack,
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
+        onChooseOrder = vm::chooseOrder,
     )
 }
 
@@ -198,6 +236,7 @@ internal fun HistoryContent(
     state: HistoryState,
     /** The category chosen, or null for all. */
     chosenFilter: String?,
+    order: HistoryOrder,
     fresh: HistoryFocus?,
     archived: Boolean,
     onOpenRecord: (recordId: Long) -> Unit,
@@ -205,12 +244,29 @@ internal fun HistoryContent(
     onExport: () -> Unit,
     onChooseVehicle: (Long) -> Unit,
     onChooseFilter: (String?) -> Unit,
+    onChooseOrder: (HistoryOrder) -> Unit,
 ) {
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
     val filter = chosenFilter?.takeIf { f -> categories.any { it.id == f } }
-    val shown = state.records.filter { r ->
-        filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }
+    val swap = state.vehicle?.clusterSwap()
+    val shown = HistoryOrdering.sorted(
+        state.records.filter { r -> filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter } },
+        order,
+        date = { it.record.date },
+        dash = { swap.toDash(it.record.odometer, it.record.date) },
+        id = { it.record.id },
+    )
+
+    val listState = rememberLazyListState()
+    // A new order starts at the top. Without this the list would hold on to the record that was first and
+    // follow it to wherever it now sorts; coming back from a record keeps the place, since that is a new composition.
+    var lastOrder by remember { mutableStateOf(order) }
+    LaunchedEffect(order) {
+        if (order != lastOrder) {
+            lastOrder = order
+            listState.scrollToItem(0)
+        }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -236,11 +292,15 @@ internal fun HistoryContent(
                 }
             }
             state.vehicle?.let { v ->
-                Text(
-                    stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
+                        Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (state.records.size > 1) SortControls(order, onChooseOrder)
+                }
             }
         }
 
@@ -265,6 +325,7 @@ internal fun HistoryContent(
             state.records.isEmpty() && archived -> EmptyNote(stringResource(R.string.history_none_archived))
             state.records.isEmpty() -> EmptyNote(stringResource(R.string.history_none))
             else -> LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -307,6 +368,69 @@ private fun RecordCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: Reco
         }
     }
 }
+
+/** Material's sort icon opens what to sort by; the arrow beside it turns the order round (down is newest or highest first). */
+@Composable
+private fun SortControls(order: HistoryOrder, onChoose: (HistoryOrder) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) {
+            Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = stringResource(R.string.history_sort_by), tint = scheme.onSurfaceVariant)
+        }
+        DropdownMenu(
+            expanded = open,
+            onDismissRequest = { open = false },
+            shape = RoundedCornerShape(12.dp),
+            containerColor = scheme.surface,
+            border = BorderStroke(1.dp, scheme.outlineVariant),
+        ) {
+            Text(
+                stringResource(R.string.history_sort_by),
+                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = scheme.onSurfaceVariant,
+            )
+            HistorySort.entries.forEach { by ->
+                val chosen = by == order.by
+                DropdownMenuItem(
+                    text = { Text(stringResource(by.label), fontWeight = if (chosen) FontWeight.SemiBold else FontWeight.Normal) },
+                    onClick = {
+                        open = false
+                        if (!chosen) onChoose(order.copy(by = by))
+                    },
+                    // The space stays when it isn't chosen, so the two names line up.
+                    leadingIcon = { Icon(Icons.Outlined.Check, contentDescription = null, tint = if (chosen) scheme.primary else Color.Transparent) },
+                    modifier = Modifier.semantics { selected = chosen },
+                )
+            }
+        }
+    }
+    val now = stringResource(order.label)
+    IconButton(
+        onClick = { onChoose(order.copy(descending = !order.descending)) },
+        modifier = Modifier.semantics { stateDescription = now },
+    ) {
+        Icon(
+            if (order.descending) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
+            contentDescription = stringResource(R.string.history_reverse),
+            tint = scheme.onSurfaceVariant,
+        )
+    }
+}
+
+private val HistorySort.label: Int
+    @StringRes get() = when (this) {
+        HistorySort.DATE -> R.string.history_sort_date
+        HistorySort.MILEAGE -> R.string.history_sort_mileage
+    }
+
+/** The order as a reader would say it, which depends on what is sorted. */
+private val HistoryOrder.label: Int
+    @StringRes get() = when (by) {
+        HistorySort.DATE -> if (descending) R.string.history_order_newest else R.string.history_order_oldest
+        HistorySort.MILEAGE -> if (descending) R.string.history_order_highest else R.string.history_order_lowest
+    }
 
 @Composable
 private fun ChipRow(content: @Composable () -> Unit) {
