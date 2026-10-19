@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/mcosgriff/glovebox/compare/v0.14.0...v0.15.0) (2026-10-19)
+
+
+### Features
+
+* **history:** sort by date or mileage, either way round ([ccdd0b8](https://github.com/mcosgriff/glovebox/commit/ccdd0b8a5c892553a6b05eb5c240ca569ea41d2c))
+
 ## [0.14.0](https://github.com/mcosgriff/glovebox/compare/v0.13.0...v0.14.0) (2026-10-18)
 
 
