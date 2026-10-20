@@ -84,9 +84,6 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
 
     lint {
-        // Existing warnings live in the baseline; CI fails only on new issues.
-        // Regenerate after fixing old ones: ./gradlew :app:updateLintBaseline
-        baseline = file("lint-baseline.xml")
         abortOnError = true
         warningsAsErrors = false
         // Dependabot proposes new versions, after its 5-day cooldown; lint would flag them on day one.
