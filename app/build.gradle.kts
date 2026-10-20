@@ -87,7 +87,9 @@ android {
         abortOnError = true
         warningsAsErrors = false
         // Dependabot proposes new versions, after its 5-day cooldown; lint would flag them on day one.
+        // AndroidGradlePluginVersion is the same check for Gradle and AGP themselves.
         disable += "NewerVersionAvailable"
+        disable += "AndroidGradlePluginVersion"
         // The release is 64-bit ARM only on purpose (abiFilters above); no ChromeOS x86_64 build.
         disable += "ChromeOsAbiSupport"
     }
