@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.16.0](https://github.com/mcosgriff/glovebox/compare/v0.15.0...v0.16.0) (2026-10-20)
+
+
+### Features
+
+* **history:** search records, and offer shops already used on Log service ([#293](https://github.com/mcosgriff/glovebox/issues/293)) ([ddf89d3](https://github.com/mcosgriff/glovebox/commit/ddf89d31456fbf8b9c831240b2451ab880cab7fa)), closes [#284](https://github.com/mcosgriff/glovebox/issues/284)
+* **history:** what a vehicle has cost, in one line ([#292](https://github.com/mcosgriff/glovebox/issues/292)) ([145d8da](https://github.com/mcosgriff/glovebox/commit/145d8dac24d82ee3d1748711811595290085de05)), closes [#285](https://github.com/mcosgriff/glovebox/issues/285)
+* **notifications:** mileage check-in by any number of days, per vehicle, at its own time ([#289](https://github.com/mcosgriff/glovebox/issues/289)) ([8d4eb6a](https://github.com/mcosgriff/glovebox/commit/8d4eb6acd5e135e305b38b49f56e3ebd6f6bf43a))
+* **readings:** chart the odometer over time, with miles a year ([#291](https://github.com/mcosgriff/glovebox/issues/291)) ([002d8e6](https://github.com/mcosgriff/glovebox/commit/002d8e6625a23497dec9ad3d5381ab6e45f43fd7)), closes [#288](https://github.com/mcosgriff/glovebox/issues/288)
+
 ## [0.15.0](https://github.com/mcosgriff/glovebox/compare/v0.14.0...v0.15.0) (2026-10-19)
 
 
