@@ -21,6 +21,10 @@ import androidx.compose.ui.semantics.stateDescription
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistoryOrdering
 import io.cosgriff.glovebox.domain.HistorySort
+import io.cosgriff.glovebox.domain.Spending
+import io.cosgriff.glovebox.domain.SpendingSummary
+import io.cosgriff.glovebox.ui.service.monthYear
+import java.time.LocalDate
 import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.ArchivedHistoryRoute
@@ -224,7 +228,7 @@ fun HistoryScreen(
     if (exporting) ExportSheet(vehicleId = state.vehicle?.id, onDismiss = { exporting = false })
 
     HistoryContent(
-        state, vm.filter, vm.order, fresh, vm.archived, onOpenRecord, onBack,
+        state, vm.filter, vm.order, fresh, vm.archived, remember { LocalDate.now() }, onOpenRecord, onBack,
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
         onChooseOrder = vm::chooseOrder,
     )
@@ -239,6 +243,7 @@ internal fun HistoryContent(
     order: HistoryOrder,
     fresh: HistoryFocus?,
     archived: Boolean,
+    today: LocalDate,
     onOpenRecord: (recordId: Long) -> Unit,
     onBack: (() -> Unit)?,
     onExport: () -> Unit,
@@ -257,6 +262,8 @@ internal fun HistoryContent(
         dash = { swap.toDash(it.record.odometer, it.record.date) },
         id = { it.record.id },
     )
+    // A record's cost covers all of its lines, so it can't be split by category: no line while a filter is on.
+    val spending = if (filter == null) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
 
     val listState = rememberLazyListState()
     // A new order starts at the top. Without this the list would hold on to the record that was first and
@@ -302,6 +309,7 @@ internal fun HistoryContent(
                     if (state.records.size > 1) SortControls(order, onChooseOrder)
                 }
             }
+            spending?.let { SpendingLine(it) }
         }
 
         if (state.vehicles.size > 1) {
@@ -335,6 +343,20 @@ internal fun HistoryContent(
             }
         }
     }
+}
+
+/** "$1,240.00 this year · $6,830.00 since Mar 2021", and how many records it counted when some have no cost. */
+@Composable
+private fun SpendingLine(s: SpendingSummary) {
+    val since = s.since.format(monthYear)
+    val line = s.thisYearCents?.let { stringResource(R.string.history_spending_year, Money.format(it), Money.format(s.totalCents), since) }
+        ?: stringResource(R.string.history_spending_since, Money.format(s.totalCents), since)
+    Text(
+        if (s.counted == s.records) line
+        else stringResource(R.string.history_spending_partial, line, pluralStringResource(R.plurals.history_spending_counted, s.records, s.counted.asNumber(), s.records.asNumber())),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable

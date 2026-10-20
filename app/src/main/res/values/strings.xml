@@ -908,6 +908,17 @@
     <string name="history_no_vehicle">Add a vehicle in the Garage to start its service history.</string>
     <string name="history_none_archived">No service records were logged for this vehicle.</string>
     <string name="history_none">No service records yet. Use Log service in the Garage to add the first one.</string>
+    <!-- What the vehicle has cost, from the records with a cost. %1$s and %2$s are amounts, %3$s a month and year ("Mar 2021"). -->
+    <string name="history_spending_year">%1$s this year · %2$s since %3$s</string>
+    <!-- When every cost is from this year, or none is: %1$s an amount, %2$s a month and year. -->
+    <string name="history_spending_since">%1$s since %2$s</string>
+    <!-- Some records have no cost. %1$s how many were counted, %2$s how many there are. -->
+    <plurals name="history_spending_counted">
+        <item quantity="one">from %1$s of %2$s record</item>
+        <item quantity="other">from %1$s of %2$s records</item>
+    </plurals>
+    <!-- The spending line, then how many records it counted. -->
+    <string name="history_spending_partial">%1$s · %2$s</string>
 
     <!-- Service record (RecordDetailScreen) -->
     <string name="record_next_due">Next due %1$s</string>
