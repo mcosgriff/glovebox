@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -46,8 +47,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -566,10 +565,7 @@ internal fun ScheduleContent(
                 }
             }
 
-            Card(
-                Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            ) {
+            FilledCard {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     state.items.forEach { item ->
                         ItemRow(item, state.vehicle.unit, onToggle = { onSetTracked(item, !item.tracked) }, onEdit = { onEdit(item) })
@@ -651,7 +647,7 @@ internal fun ScheduleContent(
 /** The way to the Milestones screen, as a link row like those on Vehicle details. */
 @Composable
 private fun MilestonesRow(onClick: () -> Unit) {
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    FilledCard {
         Row(
             Modifier.fillMaxWidth()
                 .heightIn(min = 60.dp)
