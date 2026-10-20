@@ -22,6 +22,18 @@ import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistoryOrdering
 import io.cosgriff.glovebox.domain.HistorySort
 import io.cosgriff.glovebox.domain.Spending
+import io.cosgriff.glovebox.domain.HistorySearch
+import io.cosgriff.glovebox.domain.SearchableRecord
+import io.cosgriff.glovebox.ui.service.catalogLabel
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import io.cosgriff.glovebox.domain.SpendingSummary
 import io.cosgriff.glovebox.ui.service.monthYear
 import java.time.LocalDate
@@ -147,6 +159,15 @@ class HistoryViewModel @Inject constructor(
         savedStateHandle[FILTER] = categoryId
     }
 
+    /** What is typed in the search field, as typed. Kept with the vehicle and category through a restart. */
+    var search by mutableStateOf(savedStateHandle.get<String>(SEARCH).orEmpty())
+        private set
+
+    fun search(text: String) {
+        search = text
+        savedStateHandle[SEARCH] = text
+    }
+
     /** Kept across vehicles: it is how the owner likes to read a history, not a choice about one vehicle. */
     var order by mutableStateOf(
         HistoryOrder(
@@ -191,6 +212,7 @@ class HistoryViewModel @Inject constructor(
                 actions.focus.collect { focus ->
                     if (focus != null) {
                         chooseVehicle(focus.vehicleId)
+                        search("")
                     }
                 }
             }
@@ -205,6 +227,7 @@ class HistoryViewModel @Inject constructor(
     private companion object {
         const val CHOSEN_VEHICLE = "chosenVehicle"
         const val FILTER = "filter"
+        const val SEARCH = "search"
         const val SORT_BY = "sortBy"
         const val DESCENDING = "descending"
     }
@@ -230,7 +253,7 @@ fun HistoryScreen(
     HistoryContent(
         state, vm.filter, vm.order, fresh, vm.archived, remember { LocalDate.now() }, onOpenRecord, onBack,
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
-        onChooseOrder = vm::chooseOrder,
+        onChooseOrder = vm::chooseOrder, search = vm.search, onSearch = vm::search,
     )
 }
 
@@ -250,20 +273,27 @@ internal fun HistoryContent(
     onChooseVehicle: (Long) -> Unit,
     onChooseFilter: (String?) -> Unit,
     onChooseOrder: (HistoryOrder) -> Unit,
+    /** What is typed in the search field. */
+    search: String = "",
+    onSearch: (String) -> Unit = {},
 ) {
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
     val filter = chosenFilter?.takeIf { f -> categories.any { it.id == f } }
     val swap = state.vehicle?.clusterSwap()
     val shown = HistoryOrdering.sorted(
-        state.records.filter { r -> filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter } },
+        state.records.filter { r ->
+            (filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }) &&
+                HistorySearch.matches(r.searchable(), search)
+        },
         order,
         date = { it.record.date },
         dash = { swap.toDash(it.record.odometer, it.record.date) },
         id = { it.record.id },
     )
     // A record's cost covers all of its lines, so it can't be split by category: no line while a filter is on.
-    val spending = if (filter == null) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
+    val searching = HistorySearch.query(search) != null
+    val spending = if (filter == null && !searching) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
 
     val listState = rememberLazyListState()
     // A new order starts at the top. Without this the list would hold on to the record that was first and
@@ -328,10 +358,18 @@ internal fun HistoryContent(
             }
         }
 
+        if (state.records.isNotEmpty()) SearchField(search, onSearch)
+
         when {
             state.vehicle == null -> EmptyNote(stringResource(R.string.history_no_vehicle))
             state.records.isEmpty() && archived -> EmptyNote(stringResource(R.string.history_none_archived))
             state.records.isEmpty() -> EmptyNote(stringResource(R.string.history_none))
+            shown.isEmpty() && searching -> Column {
+                EmptyNote(stringResource(R.string.history_no_match, search.trim()))
+                TextButton(onClick = { onSearch("") }, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.history_search_show_all))
+                }
+            }
             else -> LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
@@ -344,6 +382,42 @@ internal fun HistoryContent(
         }
     }
 }
+
+@Composable
+private fun SearchField(search: String, onSearch: (String) -> Unit) {
+    val focus = LocalFocusManager.current
+    OutlinedTextField(
+        value = search,
+        onValueChange = onSearch,
+        placeholder = { Text(stringResource(R.string.history_search)) },
+        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+        trailingIcon = {
+            if (search.isNotEmpty()) {
+                IconButton(onClick = { onSearch("") }) {
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.history_search_clear))
+                }
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            // Filled and borderless like the record cards; the outline only while typing.
+            unfocusedBorderColor = Color.Transparent,
+        ),
+        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, top = 8.dp, end = 20.dp),
+    )
+}
+
+/** What the search reads of a record: each line as typed and, for a catalog line, its name as shown now. */
+private fun ServiceRecordWithItems.searchable() = SearchableRecord(
+    labels = items.flatMap { listOfNotNull(it.label, it.catalogId?.let(::catalogLabel)) },
+    notes = record.notes,
+    shop = record.shopName,
+)
 
 /** "$1,240.00 this year · $6,830.00 since Mar 2021", and how many records it counted when some have no cost. */
 @Composable

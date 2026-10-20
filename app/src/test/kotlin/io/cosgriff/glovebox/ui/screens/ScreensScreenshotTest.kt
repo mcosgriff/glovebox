@@ -114,6 +114,25 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** A search by a line's name: the spending line goes, since it would count only what matched. */
+    @Test
+    fun historySearch() = compose.shoot("history_search", shade) {
+        HistoryContent(
+            Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            search = "rotation",
+        )
+    }
+
+    @Test
+    fun historyNoMatch() = compose.shoot("history_no_match", shade) {
+        HistoryContent(
+            Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            search = "serpentine",
+        )
+    }
+
     @Test
     fun record() = compose.shoot("record", shade) {
         RecordDetailContent(

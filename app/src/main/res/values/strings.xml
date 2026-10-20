@@ -908,6 +908,11 @@
     <string name="history_no_vehicle">Add a vehicle in the Garage to start its service history.</string>
     <string name="history_none_archived">No service records were logged for this vehicle.</string>
     <string name="history_none">No service records yet. Use Log service in the Garage to add the first one.</string>
+    <string name="history_search">Search records</string>
+    <string name="history_search_clear">Clear search</string>
+    <string name="history_search_show_all">Show all records</string>
+    <!-- %1$s is what was searched for. -->
+    <string name="history_no_match">No records match “%1$s”.</string>
     <!-- What the vehicle has cost, from the records with a cost. %1$s and %2$s are amounts, %3$s a month and year ("Mar 2021"). -->
     <string name="history_spending_year">%1$s this year · %2$s since %3$s</string>
     <!-- When every cost is from this year, or none is: %1$s an amount, %2$s a month and year. -->

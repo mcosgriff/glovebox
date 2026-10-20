@@ -140,6 +140,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import io.cosgriff.glovebox.domain.ServiceLinks
+import io.cosgriff.glovebox.domain.ShopUse
 import javax.inject.Inject
 
 /** A tracked reminder that's due, offered as a one-tap chip. [optionId] is the tick box it sets. */
@@ -188,6 +189,9 @@ class LogServiceForm(val editing: Boolean, today: LocalDate = LocalDate.now()) {
         internal set
     var diy by mutableStateOf(true)
     var shopName by mutableStateOf("")
+    /** Shops named on earlier records of every vehicle, which the shop field offers. */
+    var shops by mutableStateOf(emptyList<ShopUse>())
+        internal set
     var costText by mutableStateOf("")
     var notes by mutableStateOf("")
     var showErrors by mutableStateOf(false)
@@ -300,6 +304,7 @@ class LogServiceViewModel @Inject constructor(
             val prefs = settings.settings.first()
             val defaultRule = prefs.defaultRule
             val records = service.recordsFor(vehicleId)
+            form.shops = service.observeShops().first().map { ShopUse(it.name, it.date, it.id) }
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
             val swap = vehicle?.clusterSwap()
             val entries = records.map { it.toEntry(swap, items.answering()) }
@@ -677,14 +682,12 @@ internal fun LogServiceContent(
                     ) { Text(stringResource(R.string.log_a_shop)) }
                 }
                 if (!form.diy) {
-                    OutlinedTextField(
+                    ShopField(
                         value = form.shopName,
                         onValueChange = { form.shopName = it },
+                        shops = form.shops,
                         label = { Text(stringResource(R.string.log_shop_name)) },
                         placeholder = { Text(stringResource(R.string.log_shop_hint)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
