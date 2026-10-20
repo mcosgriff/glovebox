@@ -824,6 +824,10 @@ Notes on what's built:
   state, kept across vehicles): Material's sort icon opens the choice and the arrow beside it reverses it (down
   is newest or highest first). Both show only with two records or more. Mileage is compared in dash terms, ties
   go to the other key and then the id, and a new order scrolls the list back to the top.
+- History's spending line (#285, `Spending` in `:domain`): under the subtitle, "$48.50 this year · $138.45 since
+  May 2025", from records with a cost only, saying "from 2 of 3 records" when some have none; no line with no costs.
+  "This year" is today's calendar year and is left out when every cost is from it. **Hidden while a category filter
+  is on**, since a record's cost covers all its lines. The export's total is the same sum (`Spending.total`).
 - An Undo bar stays for `LogEdits.UNDO_SECONDS` (30), and the delete sheet says so. Events are collected
   with `collectLatest`: a newer change replaces the bar for an older one, and whatever ends a bar without
   Undo (timeout, replacement, the app locking) discards the photo files it was holding.

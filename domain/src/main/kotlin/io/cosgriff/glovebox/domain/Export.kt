@@ -80,7 +80,7 @@ data class ExportVehicle(
     val documents: List<ExportPaper> = emptyList(),
 ) {
     /** Null when no record in the export has a cost. */
-    val totalCents: Long? get() = records.mapNotNull { it.costCents }.takeIf { it.isNotEmpty() }?.sum()
+    val totalCents: Long? get() = Spending.total(records.map { it.costCents })
 }
 
 /** Everything one export says, already filtered and ordered: both writers just lay it out. */
