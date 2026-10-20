@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.orNullIfBlank
+import io.cosgriff.glovebox.ui.components.copyText
+import io.cosgriff.glovebox.ui.components.CheckedField
+import io.cosgriff.glovebox.ui.components.Chevron
 import androidx.annotation.StringRes
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -59,7 +63,7 @@ import io.cosgriff.glovebox.domain.TakesItem
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.ui.FluidsPartsRoute
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.flow.SharingStarted

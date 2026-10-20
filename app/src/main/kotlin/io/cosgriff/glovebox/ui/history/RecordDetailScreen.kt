@@ -77,7 +77,7 @@ import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.ui.RecordDetailRoute
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate

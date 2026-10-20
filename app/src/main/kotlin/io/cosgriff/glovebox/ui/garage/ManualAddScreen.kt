@@ -4,7 +4,7 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import kotlinx.coroutines.flow.first
-import io.cosgriff.glovebox.ui.schedule.DistanceUnitSwitch
+import io.cosgriff.glovebox.ui.components.DistanceUnitSwitch
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.theme.PlexMono
