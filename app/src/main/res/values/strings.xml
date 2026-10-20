@@ -386,6 +386,26 @@
     <string name="readings_correct_title">Correct a reading</string>
     <string name="readings_was">Was %1$s on %2$s. Reminders are worked out again from whatever you save.</string>
     <string name="readings_delete">Delete this reading</string>
+    <string name="chart_needs_two">A chart of the odometer over time appears once there are two readings.</string>
+    <string name="chart_range_year">1 year</string>
+    <string name="chart_range_two_years">2 years</string>
+    <string name="chart_range_all">All</string>
+    <string name="chart_too_few_in_range">Fewer than two readings in this time. Choose a longer one to see the chart.</string>
+    <string name="chart_per_year">About %1$s a year</string>
+    <string name="chart_per_year_note">Estimated from your readings, %1$s to %2$s: the same pace reminders use to say when a service is due.</string>
+    <string name="chart_no_pace">Readings need to be at least a week apart to estimate how far it\'s driven in a year.</string>
+    <plurals name="chart_description">
+        <item quantity="one">Odometer chart: %1$s reading, %2$s to %3$s</item>
+        <item quantity="other">Odometer chart: %1$s readings, %2$s to %3$s</item>
+    </plurals>
+    <plurals name="chart_to_check">
+        <item quantity="one">%1$s reading to check</item>
+        <item quantity="other">%1$s readings to check</item>
+    </plurals>
+    <string name="chart_key_service">Service</string>
+    <string name="chart_key_update">Mileage update</string>
+    <string name="chart_key_check">To check</string>
+    <string name="chart_key_swap">Cluster replaced</string>
 
     <!-- Shared sentences and buttons -->
     <!-- Closes a sentence built from parts. A language that ends sentences differently changes it here. -->

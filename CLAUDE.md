@@ -600,6 +600,13 @@ Notes on what's built:
   with Undo (`MileageReadingUndo`, `OdometerDao.put`); one from a record opens the record, which is
   where it is edited. Readings are shown as typed and compared in dash terms, like everything else with
   a replaced cluster. The final odometer logged when a vehicle is sold is an ordinary reading here.
+  A chart sits above the list (#288, `MileageChart` in `:domain`, `MileageChartCard`): the same readings
+  and flags as the list (`MileageReadings.rows`), dates across from the first reading in the range (1 year,
+  2 years or All), the distance really covered up (`swap.actual`, so a cluster swap doesn't drop the line),
+  a service filled and an update hollow, a reading to check ringed in the error colour. "About 12,400 mi a
+  year" is `ReminderEngine.milesPerDay` over the range's readings in dash terms, the reminders' own pace,
+  × 365.25 and rounded (`MileageChart.perYear`); none with readings under a week apart. Tapping a point
+  shows it and opens what its row opens. TalkBack gets a summary of the chart; the list reads each reading.
 - "Read dash" on that sheet (`ReadDashScreen`, `TextReader.digits`, `DashReading` in `:domain`) points the camera
   at the cluster. It shares the VIN scanner's camera set-up, guide band and colours (`CameraScreen`,
   `CameraFeed`, `CameraTopBar`, `guideBand()`). Each frame's band goes to Tesseract (digits, point and comma only; sparse text; a dark

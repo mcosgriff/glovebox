@@ -13,6 +13,8 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.JobDone
 import io.cosgriff.glovebox.domain.LastDone
+import io.cosgriff.glovebox.domain.LoggedReading
+import io.cosgriff.glovebox.domain.MileageReadings
 import io.cosgriff.glovebox.domain.Milestones
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OpenRecalls
@@ -51,6 +53,7 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.settings.ScheduleOwner
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsState
+import io.cosgriff.glovebox.ui.vehicle.MileageReadingsState
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetails
 import io.cosgriff.glovebox.ui.vehicle.VehicleHome
 import java.time.LocalDate
@@ -124,6 +127,28 @@ object Fixtures {
         record(103, 3, 62_100, listOf("cabin-air"), shop = "Main Street Auto", cents = 4_850),
         record(102, 4, 61_400, listOf("rotation", "brake-inspect"), notes = "Pads at about half. Rear left rotor has a light lip."),
         record(101, 13, 55_100, listOf("oil", "rotation"), shop = "Main Street Auto", cents = 8_995),
+    )
+
+    /**
+     * The truck's odometer readings: three years of mileage updates and its service records, with one
+     * slipped digit (65,800 where it read about 60,500) for the chart and the list to point at.
+     */
+    val mileageReadings: MileageReadingsState = MileageReadingsState(
+        vehicleName = "2019 Blue truck",
+        rows = MileageReadings.rows(
+            listOf(
+                LoggedReading(1, TODAY.minusMonths(34), 31_200),
+                LoggedReading(2, TODAY.minusMonths(26), 38_950),
+                LoggedReading(3, TODAY.minusMonths(18), 49_800),
+                LoggedReading(4, TODAY.minusMonths(9), 59_800),
+                LoggedReading(5, TODAY.minusMonths(7), 65_800),
+                LoggedReading(6, TODAY.minusDays(3), 63_480),
+            ) + truckRecords.map { LoggedReading(it.record.id, it.record.date, it.record.odometer, fromRecord = true) },
+            null,
+            unit,
+        ),
+        swap = null,
+        unit = unit,
     )
 
     private val truckEntries = truckRecords.map { r -> ServiceEntry(r.record.id, r.record.date, r.record.odometer, r.items.mapNotNull { it.scheduleItemId }.toSet()) }
