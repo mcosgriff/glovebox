@@ -254,7 +254,7 @@ class ScheduleViewModel @Inject constructor(
     }
 
     fun addOwn() {
-        editing = DraftItem(key = NEW, name = "", normal = Interval(5_000, 6), severe = null)
+        editing = DraftItem.blank(NEW, state.value?.vehicle?.unit ?: DistanceUnit.MILES)
     }
 
     fun isNew(item: DraftItem): Boolean = item.key == NEW
