@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.annotation.StringRes
 import io.cosgriff.glovebox.R
@@ -412,7 +413,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 }
             }
 
-            Card {
+            RowsCard {
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(stringResource(R.string.add_vehicle_where_heading), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     listOf(
@@ -537,7 +538,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 }
             }
 
-            Card {
+            RowsCard {
                 DecodedField.entries.forEach { field ->
                     val value = vm.fields[field]
                     // The engine's model code and power are vPIC's own and aren't kept, so they aren't editable.
@@ -676,18 +677,6 @@ private fun Notice(title: String, body: String, detail: String?) {
             Text(body, style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
             detail?.let { Text(stringResource(R.string.add_vehicle_nhtsa_said, it), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
         }
-    }
-}
-
-@Composable
-private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { content() }
     }
 }
 

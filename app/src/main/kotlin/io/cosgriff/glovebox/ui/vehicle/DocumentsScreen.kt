@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.fileSize
 import io.cosgriff.glovebox.ui.service.text
@@ -52,7 +53,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -290,7 +290,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
 private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenElsewhere: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
-    Surface(modifier = modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
+    BorderedCard(modifier) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 64.dp)
                 .clickable(role = Role.Button, onClickLabel = stringResource(R.string.open), onClick = onView)

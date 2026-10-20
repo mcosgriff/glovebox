@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.LabelledCard
+import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.domain.CarfaxRefusal
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
@@ -23,10 +25,8 @@ import io.cosgriff.glovebox.domain.DistanceUnit
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +51,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -829,7 +828,7 @@ fun ImportScreen(
             } else if (vehicles.size > 1) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(R.string.import_into))
-                    Card {
+                    RowsCard {
                         Column(Modifier.selectableGroup()) {
                             vehicles.forEachIndexed { i, v ->
                                 if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
@@ -851,7 +850,7 @@ fun ImportScreen(
                 if (file == null) {
                     Button(onClick = vm::pick, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_choose)) }
                 } else {
-                    Card {
+                    RowsCard {
                         Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(file.name, Modifier.weight(1f).padding(vertical = 8.dp), style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
                             TextButton(onClick = vm::pick, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.change)) }
@@ -873,7 +872,7 @@ fun ImportScreen(
                     if (view.differs.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             SectionLabel(stringResource(view.noun.differ))
-                            Card {
+                            RowsCard {
                                 Column(Modifier.selectableGroup()) {
                                     Choice(stringResource(R.string.import_add_new), stringResource(R.string.import_add_new_note), mode == ImportMode.ADD_NEW) { mode = ImportMode.ADD_NEW }
                                     HorizontalDivider(color = scheme.outlineVariant)
@@ -924,26 +923,23 @@ fun ImportScreen(
 @Composable
 private fun PlanCard(view: PlanView) {
     val scheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_in_file, view.kind.label.uppercase(AppText.locale), view.total.asNumber()))
-        Card {
-            Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Group(pluralStringResource(R.plurals.import_new, view.new.size, view.new.size.asNumber()), stringResource(R.string.import_new_note), view.new)
-                Group(pluralStringResource(view.noun.fills, view.fills.size, view.fills.size.asNumber()), stringResource(R.string.import_fills_note), view.fills)
-                Group(pluralStringResource(R.plurals.import_differs, view.differs.size, view.differs.size.asNumber()), stringResource(R.string.import_differs_note), view.differs, color = scheme.onPrimaryContainer)
-                if (view.same > 0) {
-                    Text(pluralStringResource(R.plurals.import_same, view.same, view.same.asNumber()), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-                }
-                view.doubts.count { !it.included }.takeIf { it > 0 }?.let { n ->
-                    Text(
-                        pluralStringResource(R.plurals.import_left_out, n, view.count(n)),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = scheme.error,
-                    )
-                }
-                view.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+    LabelledCard(stringResource(R.string.import_in_file, view.kind.label.uppercase(AppText.locale), view.total.asNumber())) {
+        Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Group(pluralStringResource(R.plurals.import_new, view.new.size, view.new.size.asNumber()), stringResource(R.string.import_new_note), view.new)
+            Group(pluralStringResource(view.noun.fills, view.fills.size, view.fills.size.asNumber()), stringResource(R.string.import_fills_note), view.fills)
+            Group(pluralStringResource(R.plurals.import_differs, view.differs.size, view.differs.size.asNumber()), stringResource(R.string.import_differs_note), view.differs, color = scheme.onPrimaryContainer)
+            if (view.same > 0) {
+                Text(pluralStringResource(R.plurals.import_same, view.same, view.same.asNumber()), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
             }
+            view.doubts.count { !it.included }.takeIf { it > 0 }?.let { n ->
+                Text(
+                    pluralStringResource(R.plurals.import_left_out, n, view.count(n)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = scheme.error,
+                )
+            }
+            view.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            Text(view.caution, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         }
     }
 }
@@ -983,26 +979,18 @@ private const val SHOWN = 12
 @Composable
 private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_doubles))
-        Card {
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Checkbox(checked = stop, onCheckedChange = null)
-                Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(pluralStringResource(R.plurals.import_stop_typical, names.size, names.size.asNumber()), style = MaterialTheme.typography.bodyLarge)
-                    Text(names.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                }
+    LabelledCard(stringResource(R.string.import_doubles), note = pluralStringResource(R.plurals.import_doubles_note, names.size)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Checkbox(checked = stop, onCheckedChange = null)
+            Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(pluralStringResource(R.plurals.import_stop_typical, names.size, names.size.asNumber()), style = MaterialTheme.typography.bodyLarge)
+                Text(names.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
-        Text(
-            pluralStringResource(R.plurals.import_doubles_note, names.size),
-            style = MaterialTheme.typography.bodySmall,
-            color = scheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -1014,45 +1002,34 @@ private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) 
 @Composable
 private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>, Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_readings_to_check))
-        Card {
-            Column {
-                doubts.forEachIndexed { i, d ->
-                    if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                            .toggleable(value = d.included, role = Role.Checkbox, onValueChange = { onInclude(d.key, it) }),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Checkbox(checked = d.included, onCheckedChange = null)
-                        Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(d.title, style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
-                            Text(d.why, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                        }
+    LabelledCard(stringResource(R.string.import_readings_to_check), note = stringResource(R.string.import_readings_note)) {
+        Column {
+            doubts.forEachIndexed { i, d ->
+                if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                        .toggleable(value = d.included, role = Role.Checkbox, onValueChange = { onInclude(d.key, it) }),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Checkbox(checked = d.included, onCheckedChange = null)
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(d.title, style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
+                        Text(d.why, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                     }
                 }
             }
         }
-        Text(
-            stringResource(R.string.import_readings_note),
-            style = MaterialTheme.typography.bodySmall,
-            color = scheme.onSurfaceVariant,
-        )
     }
 }
 
 /** Which reminders count from a different service once the import is in, as the delete sheet lists them. */
 @Composable
 private fun MovesCard(moves: List<String>) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_moves))
-        Card {
-            Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                moves.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                if (moves.size > SHOWN) Text(stringResource(R.string.and_more, (moves.size - SHOWN).asNumber()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+    LabelledCard(stringResource(R.string.import_moves)) {
+        Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            moves.take(SHOWN).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            if (moves.size > SHOWN) Text(stringResource(R.string.and_more, (moves.size - SHOWN).asNumber()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -1060,34 +1037,30 @@ private fun MovesCard(moves: List<String>) {
 @Composable
 private fun ErrorsCard(file: ImportFile.Invalid) {
     val scheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_cant))
-        Card {
-            Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                file.carfax?.let { why ->
-                    Text(
-                        when (why) {
-                            CarfaxRefusal.NotAReport -> stringResource(R.string.carfax_not_a_report)
-                            is CarfaxRefusal.NoVisits ->
-                                if (why.withoutMileage == 0) {
-                                    stringResource(R.string.carfax_no_visits)
-                                } else {
-                                    pluralStringResource(R.plurals.carfax_no_visits_without_mileage, why.withoutMileage, why.withoutMileage.asNumber())
-                                }
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                file.errors.forEach { e ->
-                    Column {
-                        if (e.path.isNotEmpty()) Text(e.path, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold, color = scheme.error)
-                        Text(e.message.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-                if (file.more > 0) Text(stringResource(R.string.and_more, file.more.asNumber()), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+    LabelledCard(stringResource(R.string.import_cant), note = stringResource(R.string.import_fix_file)) {
+        Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            file.carfax?.let { why ->
+                Text(
+                    when (why) {
+                        CarfaxRefusal.NotAReport -> stringResource(R.string.carfax_not_a_report)
+                        is CarfaxRefusal.NoVisits ->
+                            if (why.withoutMileage == 0) {
+                                stringResource(R.string.carfax_no_visits)
+                            } else {
+                                pluralStringResource(R.plurals.carfax_no_visits_without_mileage, why.withoutMileage, why.withoutMileage.asNumber())
+                            }
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
+            file.errors.forEach { e ->
+                Column {
+                    if (e.path.isNotEmpty()) Text(e.path, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold, color = scheme.error)
+                    Text(e.message.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            if (file.more > 0) Text(stringResource(R.string.and_more, file.more.asNumber()), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         }
-        Text(stringResource(R.string.import_fix_file), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
     }
 }
 
@@ -1095,29 +1068,26 @@ private fun ErrorsCard(file: ImportFile.Invalid) {
 private fun ResultCard(r: ImportResult) {
     val scheme = MaterialTheme.colorScheme
     fun count(n: Int) = r.noun.count(n)
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(stringResource(R.string.import_imported_into, r.vehicleName.uppercase(AppText.locale)))
-        Card {
-            Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf(r.added to R.string.import_added, r.filled to R.string.import_filled, r.replaced to R.string.import_replaced).filter { it.first > 0 }.forEach { (n, what) ->
-                    Text(stringResource(what, count(n)), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
-                }
-                if (r.stopped > 0) {
-                    Text(
-                        pluralStringResource(R.plurals.import_stopped, r.stopped, r.stopped.asNumber()),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = statusColors().ok,
-                    )
-                }
-                if (r.unchanged > 0) {
-                    Text(pluralStringResource(R.plurals.import_unchanged, r.unchanged, count(r.unchanged)), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-                }
-                r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant) }
-                when (r.keptCopy) {
-                    true -> Text(stringResource(R.string.import_kept_copy), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
-                    false -> Text(stringResource(R.string.import_copy_failed), style = MaterialTheme.typography.bodyMedium, color = scheme.error)
-                    null -> Unit
-                }
+    LabelledCard(stringResource(R.string.import_imported_into, r.vehicleName.uppercase(AppText.locale))) {
+        Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            listOf(r.added to R.string.import_added, r.filled to R.string.import_filled, r.replaced to R.string.import_replaced).filter { it.first > 0 }.forEach { (n, what) ->
+                Text(stringResource(what, count(n)), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+            }
+            if (r.stopped > 0) {
+                Text(
+                    pluralStringResource(R.plurals.import_stopped, r.stopped, r.stopped.asNumber()),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = statusColors().ok,
+                )
+            }
+            if (r.unchanged > 0) {
+                Text(pluralStringResource(R.plurals.import_unchanged, r.unchanged, count(r.unchanged)), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+            }
+            r.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant) }
+            when (r.keptCopy) {
+                true -> Text(stringResource(R.string.import_kept_copy), style = MaterialTheme.typography.bodyLarge, color = statusColors().ok)
+                false -> Text(stringResource(R.string.import_copy_failed), style = MaterialTheme.typography.bodyMedium, color = scheme.error)
+                null -> Unit
             }
         }
     }
@@ -1127,7 +1097,7 @@ private fun ResultCard(r: ImportResult) {
 @Composable
 private fun KeepCopyCard(keep: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    Card {
+    RowsCard {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = keep, role = Role.Checkbox, onValueChange = onChange),
             verticalAlignment = Alignment.CenterVertically,
@@ -1181,14 +1151,6 @@ private fun Choice(title: String, detail: String?, selected: Boolean, onClick: (
             Text(title, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
-    }
-}
-
-@Composable
-private fun Card(content: @Composable ColumnScope.() -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), content = content)
     }
 }
 

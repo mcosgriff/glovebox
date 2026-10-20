@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.styledStringResource
 import androidx.compose.ui.res.stringResource
@@ -139,12 +140,7 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 )
             }
 
-            Surface(
-                Modifier.fillMaxWidth(),
-                color = scheme.surface,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, scheme.outlineVariant),
-            ) {
+            BorderedCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(stringResource(R.string.delete_all_how_heading), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(

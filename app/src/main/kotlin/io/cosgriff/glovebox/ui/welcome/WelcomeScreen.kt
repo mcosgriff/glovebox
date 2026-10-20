@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.welcome
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -153,7 +154,7 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.welcome_set_up))
-                Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
+                BorderedCard {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         SwitchRow(
                             title = stringResource(R.string.welcome_lock_title),

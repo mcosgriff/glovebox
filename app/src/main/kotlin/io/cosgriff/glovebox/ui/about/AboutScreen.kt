@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringArrayResource
@@ -25,12 +26,10 @@ import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -86,14 +85,6 @@ internal fun AboutHeader(title: String, onBack: () -> Unit) {
     }
 }
 
-@Composable
-internal fun AboutCard(content: @Composable ColumnScope.() -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), content = content)
-    }
-}
-
 /** Design: 9c · About. */
 @Composable
 fun AboutScreen(
@@ -138,7 +129,7 @@ fun AboutScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.about_sources), Modifier.semantics { heading() })
-                AboutCard {
+                RowsCard {
                     Source(stringResource(R.string.about_vpic), stringResource(R.string.about_vpic_note))
                     HorizontalDivider(color = scheme.outlineVariant)
                     Source(stringResource(R.string.about_recalls), stringResource(R.string.about_recalls_note))
@@ -167,7 +158,7 @@ fun AboutScreen(
                 )
             }
 
-            AboutCard {
+            RowsCard {
                 LinkRow(stringResource(R.string.privacy), stringResource(R.string.about_privacy_note), onOpenPrivacy)
                 HorizontalDivider(color = scheme.outlineVariant)
                 LinkRow(stringResource(R.string.about_source), stringResource(R.string.about_github)) {
@@ -223,7 +214,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             ).forEach { (title, lines) ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(title, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    AboutCard {
+                    RowsCard {
                         Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface) }
                         }

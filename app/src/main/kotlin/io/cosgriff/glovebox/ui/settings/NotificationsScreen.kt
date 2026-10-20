@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.PaddingValues
 import io.cosgriff.glovebox.widget.GarageWidgetReceiver
@@ -238,7 +239,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.notifications_tell_me))
-                Card {
+                RowsCard {
                     SwitchRow(stringResource(R.string.channel_due), stringResource(R.string.notifications_due_note), prefs.serviceDue) { vm.change(prefs.copy(serviceDue = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
                     SwitchRow(stringResource(R.string.channel_overdue), stringResource(R.string.channel_overdue_about), prefs.overdue) { vm.change(prefs.copy(overdue = it)) }
@@ -256,7 +257,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.notifications_when))
-                Card {
+                RowsCard {
                     ChoiceRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     ChoiceRow(stringResource(R.string.channel_mileage), checkInLabel(prefs.mileageEveryDays)) { pickingCadence = true }
@@ -276,18 +277,6 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { content() }
     }
 }
 

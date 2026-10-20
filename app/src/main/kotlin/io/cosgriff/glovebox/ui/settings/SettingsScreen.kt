@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.LabelledCard
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -12,7 +14,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -74,7 +75,6 @@ import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.lock.canLockApp
 import io.cosgriff.glovebox.ui.export.ExportSheet
-import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import kotlinx.coroutines.flow.SharingStarted
@@ -212,7 +212,7 @@ internal fun SettingsContent(
     ) {
         Text(stringResource(R.string.settings_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
 
-        Section(stringResource(R.string.settings_appearance)) {
+        LabelledCard(stringResource(R.string.settings_appearance)) {
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Row(
@@ -244,7 +244,7 @@ internal fun SettingsContent(
             }
         }
 
-        Section(stringResource(R.string.settings_security)) {
+        LabelledCard(stringResource(R.string.settings_security)) {
             ToggleRow(
                 title = stringResource(R.string.settings_biometrics),
                 subtitle = if (canLock) {
@@ -316,7 +316,7 @@ internal fun SettingsContent(
             }
         }
 
-        Section(stringResource(R.string.settings_maintenance)) {
+        LabelledCard(stringResource(R.string.settings_maintenance)) {
             ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onOpenRules)
             schedulesText(vehicles.map { it.name })?.let { value ->
                 Divider()
@@ -334,7 +334,7 @@ internal fun SettingsContent(
             ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
         }
 
-        Section(stringResource(R.string.settings_camera)) {
+        LabelledCard(stringResource(R.string.settings_camera)) {
             ToggleRow(
                 title = stringResource(R.string.settings_scanner_details),
                 subtitle = stringResource(R.string.settings_scanner_details_note),
@@ -344,7 +344,7 @@ internal fun SettingsContent(
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Section(stringResource(R.string.settings_your_data)) {
+            LabelledCard(stringResource(R.string.settings_your_data)) {
                 Column(
                     Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenBackup).padding(vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -408,12 +408,7 @@ internal fun SettingsContent(
             )
         }
 
-        Surface(
-            Modifier.fillMaxWidth(),
-            color = scheme.surface,
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, scheme.outlineVariant),
-        ) {
+        BorderedCard {
             Row(
                 Modifier.heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onOpenAbout).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -421,23 +416,6 @@ internal fun SettingsContent(
                 Text(stringResource(R.string.about_title), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                 Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
             }
-        }
-    }
-}
-
-/** A labelled card; its rows draw their own dividers. */
-@Composable
-private fun Section(title: String, content: @Composable ColumnScope.() -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(title, Modifier.semantics { heading() })
-        Surface(
-            Modifier.fillMaxWidth(),
-            color = scheme.surface,
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, scheme.outlineVariant),
-        ) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), content = content)
         }
     }
 }

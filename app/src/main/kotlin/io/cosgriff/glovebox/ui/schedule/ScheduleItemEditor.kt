@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.ruleInSentence
@@ -388,12 +389,7 @@ private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel(stringResource(R.string.item_last_done))
-        Surface(
-            Modifier.fillMaxWidth(),
-            color = scheme.surface,
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, scheme.outlineVariant),
-        ) {
+        BorderedCard {
             Column(Modifier.padding(horizontal = 16.dp)) {
                 val last = history.lastRead
                 Row(

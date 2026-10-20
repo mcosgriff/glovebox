@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.components.orNullIfBlank
 import io.cosgriff.glovebox.ui.components.copyText
 import io.cosgriff.glovebox.ui.components.CheckedField
@@ -87,7 +88,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
@@ -565,7 +565,7 @@ internal fun VehicleDetailsContent(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Card {
+            RowsCard {
                 val plate = LicensePlates.label(v.plate, v.plateRegion)
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onEditPlate),
@@ -588,7 +588,7 @@ internal fun VehicleDetailsContent(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(if (v.enteredByHand) R.string.details_section_vehicle else R.string.details_section_from_vin))
-                Card {
+                RowsCard {
                     if (v.vin == null) {
                         Row(
                             Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onAddVin),
@@ -665,7 +665,7 @@ internal fun VehicleDetailsContent(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.details_section_takes))
-                Card {
+                RowsCard {
                     takes.basics().forEachIndexed { i, spec ->
                         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         val value = takes.line(spec)
@@ -747,7 +747,7 @@ internal fun VehicleDetailsContent(
             makerDocs?.let { maker ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(R.string.details_section_maker))
-                    Card {
+                    RowsCard {
                         maker.documents.forEachIndexed { i, doc ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             val res = LocalResources.current
@@ -777,7 +777,7 @@ internal fun VehicleDetailsContent(
                 }
             }
 
-            Card {
+            RowsCard {
                 LinkRow(
                     title = stringResource(R.string.details_torque),
                     detail = if (details.torqueSpecs == 0) stringResource(R.string.details_torque_none) else stringResource(R.string.details_torque_saved, details.torqueSpecs.asNumber()),
@@ -973,18 +973,6 @@ private fun DrawScope.drawDashedBorder(color: Color, radius: Float, width: Float
         cornerRadius = CornerRadius(radius),
         style = Stroke(width = width * 2, pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))), // half is clipped away
     )
-}
-
-@Composable
-private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { content() }
-    }
 }
 
 /** [onClick] null shows the row as information only, without a chevron. */

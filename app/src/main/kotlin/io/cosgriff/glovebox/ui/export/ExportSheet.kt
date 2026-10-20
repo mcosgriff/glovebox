@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ExportText
@@ -14,7 +15,6 @@ import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,7 +47,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -321,7 +320,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
                 }
             }
 
-            Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
+            BorderedCard {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     Tick(stringResource(R.string.export_costs), o.costsAndNotes) { vm.change(o.copy(costsAndNotes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)

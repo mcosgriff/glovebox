@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -218,7 +219,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                 )
             }
 
-            Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant), modifier = Modifier.fillMaxWidth()) {
+            BorderedCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.backup_includes), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

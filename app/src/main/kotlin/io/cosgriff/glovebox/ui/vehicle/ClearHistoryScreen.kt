@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
@@ -157,12 +158,7 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
                 )
             }
 
-            Surface(
-                Modifier.fillMaxWidth().selectableGroup(),
-                color = scheme.surface,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, scheme.outlineVariant),
-            ) {
+            BorderedCard(Modifier.selectableGroup()) {
                 Column {
                     Option(
                         title = stringResource(R.string.clear_history_imported),

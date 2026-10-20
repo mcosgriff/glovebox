@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -449,13 +450,7 @@ internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
 private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: String?, onClick: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val torque = spec.newtonMeters?.let(::Torque)
-    Surface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-    ) {
+    BorderedCard(modifier, onClick = onClick) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {

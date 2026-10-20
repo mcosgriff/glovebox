@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.components.orNullIfBlank
 import io.cosgriff.glovebox.ui.components.copyText
 import io.cosgriff.glovebox.ui.components.CheckedField
@@ -9,7 +10,6 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.line
 import io.cosgriff.glovebox.ui.service.label
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,13 +23,11 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -211,12 +209,7 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, toCheck: Boolean, onC
     val value = takes.line(item)
     val parts = takes.partNumbers(item)
     val partsLabel = stringResource(R.string.details_part_numbers)
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-    ) {
+    BorderedCard(modifier) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 56.dp)
                 .combinedClickable(
