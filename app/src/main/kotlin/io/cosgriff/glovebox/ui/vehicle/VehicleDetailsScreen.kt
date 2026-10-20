@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.NoticePrefs
+import io.cosgriff.glovebox.domain.VehicleCheckIn
+import io.cosgriff.glovebox.ui.settings.CheckInDialog
+import io.cosgriff.glovebox.ui.settings.checkInLabel
 import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -203,6 +208,7 @@ class VehicleDetailsViewModel @Inject constructor(
     private val units: UnitDao,
     private val knownTakes: KnownTakesRows,
     makerDocuments: MakerDocumentCatalog,
+    settings: SettingsRepository,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
 
@@ -274,6 +280,12 @@ class VehicleDetailsViewModel @Inject constructor(
     fun rename(text: String) {
         nicknameEdits.value = text
     }
+
+    /** The mileage check-in every vehicle without one of its own gets, and whether check-ins are on at all. */
+    val noticePrefs: StateFlow<NoticePrefs?> = settings.settings.map { it.notices }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun setCheckIn(checkIn: VehicleCheckIn) = viewModelScope.launch { vehicles.setMileageCheckIn(vehicleId, checkIn.stored) }
 
     /** [plate] is already cleaned (LicensePlates.clean); null clears it. */
     fun savePlate(plate: String?, region: String?) = viewModelScope.launch { vehicles.setPlate(vehicleId, plate, region) }
@@ -359,6 +371,8 @@ fun VehicleDetailsScreen(
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
     var editingPlate by rememberSaveable { mutableStateOf(false) }
+    var editingCheckIn by rememberSaveable { mutableStateOf(false) }
+    val noticePrefs by vm.noticePrefs.collectAsStateWithLifecycle()
     var settingOffset by rememberSaveable { mutableStateOf(false) }
     var changingUnit by rememberSaveable { mutableStateOf(false) }
     val swap = v.clusterSwap()
@@ -415,6 +429,20 @@ fun VehicleDetailsScreen(
         )
     }
 
+    if (editingCheckIn) {
+        noticePrefs?.let { prefs ->
+            CheckInDialog(
+                current = VehicleCheckIn.of(v.mileageCheckInDays),
+                default = prefs.mileageEveryDays,
+                onSave = {
+                    vm.setCheckIn(it)
+                    editingCheckIn = false
+                },
+                onDismiss = { editingCheckIn = false },
+            )
+        }
+    }
+
     if (addingVin) {
         VinDialog(
             onSave = {
@@ -456,7 +484,7 @@ fun VehicleDetailsScreen(
         else -> Unit // the rest are edited on their own page
     }
     VehicleDetailsContent(
-        details, photo, photoFailed, known, makerDocs, nickname,
+        details, photo, photoFailed, known, makerDocs, nickname, noticePrefs ?: NoticePrefs(),
         onNicknameChange = {
             nickname = it
             vm.rename(it)
@@ -465,7 +493,7 @@ fun VehicleDetailsScreen(
         onOpenTorqueSpecs = onOpenTorqueSpecs, onOpenMoreTakes = onOpenMoreTakes, onOpenReadings = onOpenReadings,
         onOpenImport = onOpenImport, onOpenDocuments = onOpenDocuments, onClearHistory = onClearHistory,
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
-        onAddVin = { addingVin = true }, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
+        onEditCheckIn = { editingCheckIn = true }, onAddVin = { addingVin = true }, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
     )
 }
@@ -479,6 +507,8 @@ internal fun VehicleDetailsContent(
     known: TakesKnown,
     makerDocs: MakerDocumentList?,
     nickname: String,
+    /** For the mileage check-in row: the default it may follow, and whether check-ins are on at all. */
+    noticePrefs: NoticePrefs,
     onNicknameChange: (String) -> Unit,
     onBack: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
@@ -493,6 +523,7 @@ internal fun VehicleDetailsContent(
     onEditTakes: (TakesItem) -> Unit,
     onFillKnown: () -> Unit,
     onEditPlate: () -> Unit,
+    onEditCheckIn: () -> Unit,
     onAddVin: () -> Unit,
     onSetOffset: () -> Unit,
     onChangeUnit: () -> Unit,
@@ -798,6 +829,19 @@ internal fun VehicleDetailsContent(
                     title = stringResource(R.string.readings_title),
                     detail = stringResource(R.string.details_readings_detail),
                     onClick = { onOpenReadings(v.id) },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LinkRow(
+                    title = stringResource(R.string.channel_mileage),
+                    detail = when {
+                        !noticePrefs.mileage -> stringResource(R.string.details_checkin_all_off)
+                        else -> when (val own = VehicleCheckIn.of(v.mileageCheckInDays)) {
+                            VehicleCheckIn.Default -> stringResource(R.string.checkin_as_default, checkInLabel(noticePrefs.mileageEveryDays))
+                            VehicleCheckIn.Off -> stringResource(R.string.details_checkin_off)
+                            is VehicleCheckIn.Every -> checkInLabel(own.days)
+                        }
+                    },
+                    onClick = onEditCheckIn,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 LinkRow(

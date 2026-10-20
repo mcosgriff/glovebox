@@ -4,7 +4,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.MileageUpdate
+import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.OpenRecalls
+import io.cosgriff.glovebox.domain.VehicleCheckIn
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.notify.ShortcutTask
 import io.cosgriff.glovebox.ui.ChooseVehicleDialog
@@ -21,6 +23,7 @@ import io.cosgriff.glovebox.ui.settings.SettingsContent
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsContent
 import io.cosgriff.glovebox.ui.vehicle.TakesKnown
 import io.cosgriff.glovebox.ui.vehicle.UpdateMileageSheet
+import io.cosgriff.glovebox.ui.settings.CheckInDialog
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsContent
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeContent
 import org.junit.Rule
@@ -118,13 +121,18 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     @Test
+    fun checkIn() = compose.shootScreen("check_in", shade) {
+        CheckInDialog(VehicleCheckIn.Default, default = 14, onSave = {}, onDismiss = {})
+    }
+
+    @Test
     fun vehicleDetails() = compose.shoot("vehicle_details", shade) {
         VehicleDetailsContent(
             Fixtures.vehicleDetails, photo = null, photoFailed = false, known = TakesKnown(), makerDocs = null,
-            nickname = Fixtures.truck.nickname.orEmpty(), onNicknameChange = {},
+            nickname = Fixtures.truck.nickname.orEmpty(), noticePrefs = NoticePrefs(), onNicknameChange = {},
             onBack = {}, onOpenRecalls = {}, onOpenSchedule = {}, onDelete = {}, onOpenTorqueSpecs = {}, onOpenMoreTakes = {},
             onOpenReadings = {}, onOpenImport = {}, onOpenDocuments = {}, onClearHistory = {},
-            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onAddVin = {}, onSetOffset = {}, onChangeUnit = {},
+            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onAddVin = {}, onSetOffset = {}, onChangeUnit = {},
             onSell = {}, onPickPhoto = {}, onRemovePhoto = {},
         )
     }

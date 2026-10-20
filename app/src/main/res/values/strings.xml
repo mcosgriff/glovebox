@@ -1472,6 +1472,18 @@
     <string name="cadence_every_week">Every week</string>
     <string name="cadence_every_two_weeks">Every 2 weeks</string>
     <string name="cadence_every_month">Every month</string>
+    <plurals name="cadence_every_days">
+        <item quantity="one">Every %1$s day</item>
+        <item quantity="other">Every %1$s days</item>
+    </plurals>
+    <string name="checkin_custom">Another number of days</string>
+    <string name="checkin_days_field">Days between check-ins</string>
+    <string name="checkin_days_range">From %1$s to %2$s</string>
+    <string name="checkin_as_default">As in Notifications · %1$s</string>
+    <string name="checkin_off">Don\'t ask for this vehicle</string>
+    <string name="checkin_vehicle_note">How often to ask for this vehicle\'s odometer. A car that\'s driven every day can be asked more often than one that mostly sits.</string>
+    <string name="details_checkin_off">Not asked for this vehicle</string>
+    <string name="details_checkin_all_off">Off for every vehicle in Notifications</string>
     <string name="recall_cadence_weekly">Weekly</string>
     <string name="recall_cadence_monthly">Monthly</string>
     <string name="recall_cadence_never">Never</string>
@@ -1619,7 +1631,7 @@
     <string name="about_title">About Glovebox</string>
 
     <!-- Notifications settings (NotificationsScreen) -->
-    <string name="notifications_time">Time of day</string>
+    <string name="notifications_time">Reminder time</string>
     <string name="notifications_allowed">Allowed in Android settings</string>
     <string name="notifications_blocked">Notifications are off for Glovebox</string>
     <string name="notifications_blocked_note">Nothing below can reach you until Android allows it. Reminders still show inside the app.</string>
@@ -1631,9 +1643,14 @@
     <string name="notifications_recalls_checked">Checked %1$s for each vehicle</string>
     <string name="notifications_recalls_off">Automatic recall checks are off in Settings</string>
     <string name="notifications_mileage_note">A quick prompt to update the odometer</string>
+    <string name="notifications_mileage_time">Check-in time</string>
+    <string name="notifications_mileage_time_with">Same as reminders · %1$s</string>
+    <string name="notifications_mileage_time_same">Same as reminders</string>
+    <string name="notifications_mileage_time_note">When to ask for a reading, if not at the reminder time. A time you\'re usually in the car makes it quick to answer.</string>
     <string name="notifications_when">WHEN</string>
-    <string name="notifications_how_early">How early to remind</string>
-    <string name="notifications_note">Mileage reminders only work if the odometer is current, so we\'ll ask you for a quick reading on a schedule. The time of day is approximate: Android runs background checks when it suits the battery.</string>
+    <string name="notifications_how_early">Warn before a service is due</string>
+    <string name="notifications_how_early_value">%1$s or %2$s before</string>
+    <string name="notifications_note">Mileage reminders only work if the odometer is current, so we\'ll ask you for a quick reading on a schedule. The times are approximate: Android runs background checks when it suits the battery.</string>
 
     <!-- The home-screen widget (#238): its switch on Notifications, and the widget itself. -->
     <string name="notifications_widget">Home-screen widget</string>

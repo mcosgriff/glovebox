@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +42,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -76,8 +73,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.MileageCadence
 import io.cosgriff.glovebox.domain.NoticePrefs
+import io.cosgriff.glovebox.domain.VehicleCheckIn
 import io.cosgriff.glovebox.notify.Notifier
 import io.cosgriff.glovebox.ui.schedule.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -124,6 +121,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
     }
     var pickingTime by rememberSaveable { mutableStateOf(false) }
     var pickingCadence by rememberSaveable { mutableStateOf(false) }
+    var pickingMileageTime by rememberSaveable { mutableStateOf(false) }
 
     if (pickingTime) {
         val time = rememberTimePickerState(initialHour = prefs.hour, initialMinute = prefs.minute)
@@ -142,32 +140,49 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
             dismissButton = { TextButton(onClick = { pickingTime = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
-    if (pickingCadence) {
+    if (pickingMileageTime) {
+        val time = rememberTimePickerState(initialHour = prefs.mileageHour ?: prefs.hour, initialMinute = if (prefs.mileageHour != null) prefs.mileageMinute else prefs.minute)
         AlertDialog(
-            onDismissRequest = { pickingCadence = false },
-            title = { Text(stringResource(R.string.channel_mileage)) },
+            onDismissRequest = { pickingMileageTime = false },
+            title = { Text(stringResource(R.string.notifications_mileage_time)) },
             text = {
-                Column(Modifier.selectableGroup()) {
-                    MileageCadence.entries.forEach { c ->
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                                selected = c == prefs.mileageCadence,
-                                role = Role.RadioButton,
-                                onClick = {
-                                    vm.change(prefs.copy(mileageCadence = c))
-                                    pickingCadence = false
-                                },
-                            ),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            RadioButton(selected = c == prefs.mileageCadence, onClick = null)
-                            Text(c.label)
-                        }
-                    }
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.notifications_mileage_time_note), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                    TimePicker(state = time)
                 }
             },
-            confirmButton = { TextButton(onClick = { pickingCadence = false }) { Text(stringResource(R.string.cancel)) } },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.change(prefs.copy(mileageHour = time.hour, mileageMinute = time.minute))
+                        pickingMileageTime = false
+                    },
+                ) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                Row {
+                    if (prefs.mileageHour != null) {
+                        TextButton(
+                            onClick = {
+                                vm.change(prefs.copy(mileageHour = null, mileageMinute = 0))
+                                pickingMileageTime = false
+                            },
+                        ) { Text(stringResource(R.string.notifications_mileage_time_same)) }
+                    }
+                    TextButton(onClick = { pickingMileageTime = false }) { Text(stringResource(R.string.cancel)) }
+                }
+            },
+        )
+    }
+    if (pickingCadence) {
+        CheckInDialog(
+            current = VehicleCheckIn.Every(prefs.mileageEveryDays),
+            default = null,
+            onSave = { choice ->
+                (choice as? VehicleCheckIn.Every)?.let { vm.change(prefs.copy(mileageEveryDays = it.days)) }
+                pickingCadence = false
+            },
+            onDismiss = { pickingCadence = false },
         )
     }
 
@@ -244,10 +259,15 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 Card {
                     ChoiceRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    ChoiceRow(stringResource(R.string.channel_mileage), prefs.mileageCadence.label) { pickingCadence = true }
+                    ChoiceRow(stringResource(R.string.channel_mileage), checkInLabel(prefs.mileageEveryDays)) { pickingCadence = true }
+                    HorizontalDivider(color = scheme.outlineVariant)
+                    ChoiceRow(
+                        stringResource(R.string.notifications_mileage_time),
+                        prefs.mileageHour?.let { timeLabel(it, prefs.mileageMinute) } ?: stringResource(R.string.notifications_mileage_time_with, timeLabel(prefs.hour, prefs.minute)),
+                    ) { pickingMileageTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
-                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.interval_slash, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
+                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.notifications_how_early_value, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
                 }
                 Text(
                     stringResource(R.string.notifications_note),
