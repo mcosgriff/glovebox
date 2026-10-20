@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Slider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,11 +31,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.ChartPoint
-import io.cosgriff.glovebox.domain.ChartRange
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.MileageSeries
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -53,16 +54,20 @@ fun ChartPoint.key(): String = "${if (row.reading.fromRecord) "record" else "rea
 /**
  * The odometer over time (#288), above the list of readings: the same readings, flagged the same
  * way. [series] is null when the range has fewer than two readings; [readings] is how many there
- * are in all, which says whether another range would draw.
+ * are in all, which says whether another range would draw. [years] is how far back it reaches, null
+ * for every reading; the slider runs from one year to [most], the years the readings cover, which
+ * is every reading, since [first].
  */
 @Composable
 fun MileageChartCard(
     series: MileageSeries?,
     readings: Int,
-    range: ChartRange,
+    years: Int?,
+    most: Int,
+    first: LocalDate,
     unit: DistanceUnit,
     selected: String?,
-    onRange: (ChartRange) -> Unit,
+    onYears: (Int?) -> Unit,
     onSelect: (String?) -> Unit,
     onOpen: (ChartPoint) -> Unit,
 ) {
@@ -73,11 +78,8 @@ fun MileageChartCard(
     }
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = scheme.surface)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChartRange.entries.forEach { r ->
-                    FilterChip(selected = r == range, onClick = { onRange(r) }, label = { Text(r.label()) })
-                }
-            }
+            // Readings that all fall within a year leave nothing to choose.
+            if (most > 1) YearsSlider(years, most, first, onYears)
             if (series == null) {
                 Text(stringResource(R.string.chart_too_few_in_range), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 return@Column
@@ -90,11 +92,30 @@ fun MileageChartCard(
     }
 }
 
+/** One year at a time, up to every reading: a 15-year-old vehicle has 15 ranges, not three. */
 @Composable
-private fun ChartRange.label(): String = when (this) {
-    ChartRange.ONE_YEAR -> stringResource(R.string.chart_range_year)
-    ChartRange.TWO_YEARS -> stringResource(R.string.chart_range_two_years)
-    ChartRange.ALL -> stringResource(R.string.chart_range_all)
+private fun YearsSlider(years: Int?, most: Int, first: LocalDate, onYears: (Int?) -> Unit) {
+    val shown = years?.coerceAtMost(most) ?: most
+    val label = if (shown == most) {
+        stringResource(R.string.chart_range_all, first.format(monthYear))
+    } else {
+        pluralStringResource(R.plurals.chart_range_last, shown, shown.asNumber())
+    }
+    val name = stringResource(R.string.chart_range)
+    Column {
+        Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+        Slider(
+            value = shown.toFloat(),
+            onValueChange = { v -> v.roundToInt().let { onYears(if (it >= most) null else it) } },
+            valueRange = 1f..most.toFloat(),
+            // Stops at each whole year between the two ends.
+            steps = most - 2,
+            modifier = Modifier.semantics {
+                contentDescription = name
+                stateDescription = label
+            },
+        )
+    }
 }
 
 /** The estimate the user asked for: the reminders' pace, over a year. */

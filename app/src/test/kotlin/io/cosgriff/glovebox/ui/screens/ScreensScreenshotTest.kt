@@ -1,7 +1,6 @@
 package io.cosgriff.glovebox.ui.screens
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import io.cosgriff.glovebox.domain.ChartRange
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.MileageUpdate
@@ -161,8 +160,17 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun mileageReadings() = compose.shoot("mileage_readings", shade) {
         MileageReadingsContent(
-            Fixtures.mileageReadings, Fixtures.TODAY, ChartRange.ALL, selected = "record:102",
-            onBack = {}, onRange = {}, onSelect = {}, onOpen = {},
+            Fixtures.mileageReadings, Fixtures.TODAY, years = null, selected = "record:102",
+            onBack = {}, onYears = {}, onSelect = {}, onOpen = {},
+        )
+    }
+
+    /** The slider part way: the past two years of three. */
+    @Test
+    fun mileageReadingsTwoYears() = compose.shoot("mileage_readings_two_years", shade) {
+        MileageReadingsContent(
+            Fixtures.mileageReadings, Fixtures.TODAY, years = 2, selected = null,
+            onBack = {}, onYears = {}, onSelect = {}, onOpen = {},
         )
     }
 
