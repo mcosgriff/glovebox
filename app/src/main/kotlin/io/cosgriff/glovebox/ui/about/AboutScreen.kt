@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.R
@@ -40,12 +41,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -76,15 +75,6 @@ fun Context.openWebPage(url: String): Boolean = try {
 private fun Context.versionName(): String =
     runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull().orEmpty()
 
-/** A pushed screen's header: back arrow and title. */
-@Composable
-internal fun AboutHeader(title: String, onBack: () -> Unit) {
-    Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-        Text(title, Modifier.padding(start = 8.dp).semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-    }
-}
-
 /** Design: 9c · About. */
 @Composable
 fun AboutScreen(
@@ -104,7 +94,7 @@ fun AboutScreen(
     val version = remember { context.versionName() }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AboutHeader(stringResource(R.string.about), onBack)
+        ScreenHeader(stringResource(R.string.about), onBack)
 
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
@@ -197,7 +187,7 @@ internal fun LinkRow(title: String, value: String, onClick: () -> Unit) {
 fun PrivacyScreen(onBack: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AboutHeader(stringResource(R.string.privacy), onBack)
+        ScreenHeader(stringResource(R.string.privacy), onBack)
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

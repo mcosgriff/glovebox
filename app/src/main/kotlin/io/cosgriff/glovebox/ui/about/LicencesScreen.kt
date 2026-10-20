@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.settings.licencesSummary
@@ -63,7 +64,7 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
     val groups = vm.groups
 
     Column(Modifier.fillMaxSize()) {
-        AboutHeader(stringResource(R.string.licences_title), onBack)
+        ScreenHeader(stringResource(R.string.licences_title), onBack)
         if (groups == null) return@Column // first frame while the list is read
 
         LazyColumn(
@@ -131,7 +132,7 @@ fun LicenceTextScreen(onBack: () -> Unit, onMessage: (String) -> Unit, vm: Licen
     val document = vm.document
 
     Column(Modifier.fillMaxSize()) {
-        AboutHeader(document?.name ?: stringResource(R.string.licences_licence), onBack)
+        ScreenHeader(document?.name ?: stringResource(R.string.licences_licence), onBack)
         if (vm.loading) return@Column
 
         // A long licence is drawn a paragraph at a time.
