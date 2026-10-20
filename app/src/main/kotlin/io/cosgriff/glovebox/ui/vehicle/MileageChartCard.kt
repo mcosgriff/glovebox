@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.ChartPoint
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.MileageChart
 import io.cosgriff.glovebox.domain.MileageSeries
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -206,7 +207,10 @@ private fun DrawScope.drawSeries(series: MileageSeries, selected: String?, line:
     series.points.forEachIndexed { i, p -> at(p).let { if (i == 0) path.moveTo(it.x, it.y) else path.lineTo(it.x, it.y) } }
     drawPath(path, line, style = Stroke(width = 2.dp.toPx()))
 
-    series.points.forEach { p ->
+    // Readings closer together than a mark is wide share the line; the tapped one is always marked.
+    val marked = MileageChart.marked(series.points, room = ((size.width - 2 * inset) / MARK_GAP.toPx()).toInt())
+    val shown = marked + series.points.filter { it.key() == selected && it !in marked }
+    shown.forEach { p ->
         val c = at(p)
         val colour = if (p.doubtful) check else line
         val r = 4.dp.toPx()
@@ -283,6 +287,9 @@ private fun Selected(point: ChartPoint, unit: DistanceUnit, onOpen: () -> Unit) 
 }
 
 private val PLOT_HEIGHT = 180.dp
+
+/** The least space between two readings' marks: a mark is 8dp across, with its ring 16. */
+private val MARK_GAP = 14.dp
 
 /** Room round the plot, so a point on its edge is drawn whole. */
 private val INSET = 8.dp

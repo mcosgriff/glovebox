@@ -103,4 +103,45 @@ class MileageChartTest {
         assertEquals(1, s.toCheck)
         assertEquals(readings.filter { it.current }.map { it.reading }, s.points.filter { it.row.current }.map { it.row.reading })
     }
+
+    /** A reading a week for [years], with a service every six months among them. */
+    private fun weekly(years: Int): List<ReadingRow> {
+        val weeks = years * 52
+        val readings = (0 until weeks).map { w ->
+            val date = today.minusWeeks((weeks - 1 - w).toLong())
+            LoggedReading(w + 1L, date, 10_000 + w * 230, fromRecord = w % 26 == 0)
+        }
+        return MileageReadings.rows(readings, null, unit)
+    }
+
+    @Test
+    fun `a reading a week gets a mark only where there is room`() {
+        val s = MileageChart.series(weekly(15), null, null, today)!!
+        assertEquals(780, s.points.size)
+        val marked = MileageChart.marked(s.points, room = 25)
+        // A service every six months is closer than the room allows, so every other one is marked, and no update.
+        assertEquals(16, marked.size)
+        assertTrue(marked.dropLast(1).all { it.row.reading.fromRecord })
+        val gap = (s.end.toEpochDay() - s.start.toEpochDay()) / 25.0
+        marked.zipWithNext().forEach { (a, b) -> assertTrue(b.date.toEpochDay() - a.date.toEpochDay() >= gap || b.row.current) }
+        assertTrue(marked.last().row.current)
+    }
+
+    @Test
+    fun `services before updates, and every reading when there is room`() {
+        val s = MileageChart.series(weekly(1), null, null, today)!!
+        val marked = MileageChart.marked(s.points, room = 10)
+        assertTrue(s.points.filter { it.row.reading.fromRecord }.all { it in marked })
+        assertEquals(s.points, MileageChart.marked(s.points, room = 1_000))
+    }
+
+    @Test
+    fun `a reading to check is always marked`() {
+        val readings = (0 until 104).map { w -> LoggedReading(w + 1L, today.minusWeeks(103L - w), 10_000 + w * 200) } +
+            LoggedReading(500, today.minusWeeks(50).plusDays(1), 99_999)
+        val s = MileageChart.series(MileageReadings.rows(readings, null, unit), null, null, today)!!
+        val odd = s.points.single { it.row.reading.id == 500L }
+        assertTrue(odd.doubtful)
+        assertTrue(odd in MileageChart.marked(s.points, room = 5))
+    }
 }

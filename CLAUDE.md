@@ -603,7 +603,9 @@ Notes on what's built:
   A chart sits above the list (#288, `MileageChart` in `:domain`, `MileageChartCard`): the same readings
   and flags as the list (`MileageReadings.rows`), dates across from the first reading in the range (a slider
   from the past year to every reading, one year a step: `MileageChart.yearsOnRecord`, a part year counting whole), the distance really covered up (`swap.actual`, so a cluster swap doesn't drop the line),
-  a service filled and an update hollow, a reading to check ringed in the error colour. "About 12,400 mi a
+  a service filled and an update hollow, a reading to check ringed in the error colour. **The line runs through
+  every reading, but only readings with room get a mark** (`MileageChart.marked`, one per 14dp): a reading to check and the
+  odometer's always, then services, then updates, so a reading a week stays a line and not a smear of dots. "About 12,400 mi a
   year" is `ReminderEngine.milesPerDay` over the range's readings in dash terms, the reminders' own pace,
   × 365.25 and rounded (`MileageChart.perYear`); none with readings under a week apart. Tapping a point
   shows it and opens what its row opens. TalkBack gets a summary of the chart; the list reads each reading.

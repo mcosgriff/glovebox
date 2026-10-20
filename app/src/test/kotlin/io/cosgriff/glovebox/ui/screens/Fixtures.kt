@@ -151,6 +151,21 @@ object Fixtures {
         unit = unit,
     )
 
+    /** Six years of a reading a week, a service every six months among them: the chart has to stay readable. */
+    val weeklyReadings: MileageReadingsState = MileageReadingsState(
+        vehicleName = "2019 Blue truck",
+        rows = MileageReadings.rows(
+            // About 230 a week, unevenly: more in summer.
+            (0 until 6 * 52).runningFold(9_000) { miles, w -> miles + if (w % 52 in 20..32) 320 else 200 }.drop(1).mapIndexed { w, miles ->
+                LoggedReading(1_000L + w, TODAY.minusWeeks(6L * 52 - 1 - w), miles, fromRecord = w % 26 == 0)
+            },
+            null,
+            unit,
+        ),
+        swap = null,
+        unit = unit,
+    )
+
     private val truckEntries = truckRecords.map { r -> ServiceEntry(r.record.id, r.record.date, r.record.odometer, r.items.mapNotNull { it.scheduleItemId }.toSet()) }
     private val truckReadings = listOf(OdometerReading(TODAY.minusDays(3), 63_480))
     private val truckOdometer = 63_480

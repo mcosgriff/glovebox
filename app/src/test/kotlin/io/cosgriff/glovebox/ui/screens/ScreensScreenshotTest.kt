@@ -174,6 +174,15 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** A reading a week for six years: services and the odometer marked, the updates only a line. */
+    @Test
+    fun mileageReadingsWeekly() = compose.shoot("mileage_readings_weekly", shade) {
+        MileageReadingsContent(
+            Fixtures.weeklyReadings, Fixtures.TODAY, years = null, selected = null,
+            onBack = {}, onYears = {}, onSelect = {}, onOpen = {},
+        )
+    }
+
     @Test
     fun schedule() = compose.shoot("schedule", shade) {
         ScheduleContent(
