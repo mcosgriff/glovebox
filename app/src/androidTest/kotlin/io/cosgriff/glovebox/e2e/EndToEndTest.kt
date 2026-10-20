@@ -279,14 +279,27 @@ class EndToEndTest {
         }
     }
 
-    /** One of the pickers on the add-vehicle form: open it, type the value, take the row that offers it. */
+    /**
+     * One of the pickers on the add-vehicle form: open it, type the value, take the row that offers it,
+     * and check the form took it. A tap that lands outside the dialog closes it with nothing chosen, and
+     * the next picker then fails for a reason that isn't its own, so a miss is tried again here.
+     */
     private fun pick(label: String, field: String, value: String) {
-        // Each picker's button sits under its label; with nothing chosen yet it reads "Choose".
-        see("Choose")
-        stale { tap(device.findObjects(By.text("Choose")).minBy { distance(it, see(label)) }) }
-        type(into = field, text = value)
-        // The field now says the value too; the row that offers it is the one further down.
-        stale { tap(device.wait(Until.findObjects(By.textContains(value)), WAIT).maxBy { it.visibleBounds.top }) }
+        repeat(PICK_TRIES) {
+            // Each picker's button sits under its label; with nothing chosen yet it reads "Choose".
+            see("Choose")
+            stale { tap(device.findObjects(By.text("Choose")).minBy { distance(it, see(label)) }) }
+            type(into = field, text = value)
+            // Closing the keyboard slides the dialog back down; a tap while it moves can miss it.
+            device.waitForIdle()
+            Thread.sleep(SETTLE)
+            // The field now says the value too; the row that offers it is the one further down.
+            stale { tap(device.wait(Until.findObjects(By.textContains(value)), WAIT).maxBy { it.visibleBounds.top }) }
+            if (device.wait(Until.gone(By.text(field)), WAIT) && device.wait(Until.hasObject(By.text(value)), WAIT)) return
+            // Still open (the tap missed the row): close it and start again.
+            if (device.hasObject(By.text(field))) tap("Cancel")
+        }
+        assertTrue("While trying to $step: the $label picker didn't take \"$value\". It showed: ${onScreen()}", false)
     }
 
     /** Back closes the keyboard when it is up, and leaves the screen when it isn't: only press it for the keyboard. */
@@ -306,6 +319,7 @@ class EndToEndTest {
     private companion object {
         const val WAIT = 8_000L
         const val SETTLE = 400L
+        const val PICK_TRIES = 3
         const val LONG = 30_000L
         const val PASSWORD = "a made-up phrase for the test"
     }
