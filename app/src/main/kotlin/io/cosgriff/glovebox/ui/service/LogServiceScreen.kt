@@ -176,11 +176,17 @@ data class LogServiceData(
  * What is on the Log service form, apart from the photos the picker holds: plain Compose state, so the
  * screen can be drawn from one made by hand (the screenshot tests) as well as from [LogServiceViewModel].
  */
-class LogServiceForm(val editing: Boolean, today: LocalDate = LocalDate.now()) {
+class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = LocalDate::now) {
     var data by mutableStateOf<LogServiceData?>(null)
         internal set
 
-    var date by mutableStateOf(today)
+    var date by mutableStateOf(today())
+
+    /**
+     * The picker refuses future days, so this is only ever a form left open across a clock change; that
+     * is why it asks the clock each time rather than keeping the day the form was opened.
+     */
+    val dateInFuture: Boolean get() = date.isAfter(today())
     var odometerText by mutableStateOf("")
     var categoryId by mutableStateOf("")
     var selected by mutableStateOf(emptySet<String>())
@@ -252,7 +258,7 @@ class LogServiceForm(val editing: Boolean, today: LocalDate = LocalDate.now()) {
 
     /** Whether the form can be saved; if not, from now on it says what is wrong. */
     fun check(): Boolean {
-        if (odometer == null || itemCount == 0 || !costValid || date.isAfter(LocalDate.now())) {
+        if (odometer == null || itemCount == 0 || !costValid || dateInFuture) {
             showErrors = true
             return false
         }
@@ -711,8 +717,7 @@ internal fun LogServiceContent(
 
             // The fields with problems may be scrolled out of view, so repeat what's missing here.
             val missing = listOfNotNull(
-                // The picker refuses future days, so this is only ever a form left open across a clock change.
-                stringResource(R.string.log_missing_date).takeIf { form.date.isAfter(LocalDate.now()) },
+                stringResource(R.string.log_missing_date).takeIf { form.dateInFuture },
                 stringResource(R.string.log_missing_odometer).takeIf { form.odometer == null },
                 stringResource(R.string.log_missing_item).takeIf { form.itemCount == 0 },
                 stringResource(R.string.log_missing_cost).takeIf { !form.costValid },
