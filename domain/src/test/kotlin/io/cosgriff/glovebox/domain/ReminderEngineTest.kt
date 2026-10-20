@@ -92,6 +92,20 @@ class ReminderEngineTest {
         assertFalse(ServiceLog.isBelowPreviousReading(68_450, today, readings))
     }
 
+    @Test
+    fun `an estimate is given only when the pace decides it and it isn't past`() {
+        // 1,688 miles left at ~70 a day: the pace decides, well before the 12 months.
+        val oil = ReminderEngine.status(Interval(10_000, 12), DueRule.WHICHEVER_FIRST, lastOil, odo, today, pace)
+        assertEquals(DecidedBy.MILEAGE, oil.decidedBy)
+        assertEquals(oil.estimatedDueDate, oil.paceEstimate)
+        // Overdue: no date in the past.
+        assertNull(ReminderEngine.status(Interval(5_000, 6), DueRule.WHICHEVER_FIRST, lastOil, odo, today, pace).paceEstimate)
+        // Time alone: the due date is exact, not an estimate.
+        val fluid = ReminderEngine.status(Interval(null, 24), DueRule.WHICHEVER_FIRST, lastOil, odo, today, pace)
+        assertTrue(fluid.estimatedDueDate != null)
+        assertNull(fluid.paceEstimate)
+    }
+
     private companion object {
         const val OIL = 1L
         const val ROTATION = 2L

@@ -2,8 +2,11 @@ package io.cosgriff.glovebox.ui.export
 
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ImportFiles
@@ -119,4 +122,17 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
 @dagger.hilt.android.lifecycle.HiltViewModel
 class ExportResultsViewModel @Inject constructor(saver: ExportSaver) : androidx.lifecycle.ViewModel() {
     val results = saver.results
+}
+
+/**
+ * Android's "save as" with the file's type given on each call. `CreateDocument` fixes the type when its
+ * launcher is made, so one launcher per type was registered and any other type took the backup's.
+ */
+class SaveAs : ActivityResultContract<SaveAs.Request, Uri?>() {
+    data class Request(val mimeType: String, val fileName: String)
+
+    override fun createIntent(context: Context, input: Request): Intent =
+        Intent(Intent.ACTION_CREATE_DOCUMENT).setType(input.mimeType).putExtra(Intent.EXTRA_TITLE, input.fileName)
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Uri? = intent.takeIf { resultCode == Activity.RESULT_OK }?.data
 }

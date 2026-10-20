@@ -117,6 +117,11 @@ data class DraftItem(
     val dormant: Boolean get() = severeOnly && !useSevere
     val active: Interval get() = if (useSevere) severe ?: normal else normal
     val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
+
+    companion object {
+        /** A new item of the user's own, starting at 5,000 mi or 6 months: Glovebox's figure, so a schedule figure in [unit]. */
+        fun blank(key: String, unit: DistanceUnit) = DraftItem(key = key, name = "", normal = Interval(unit.scheduled(5_000), 6), severe = null)
+    }
 }
 
 @HiltViewModel
@@ -230,7 +235,7 @@ class ScheduleSetupViewModel @Inject constructor(
     }
 
     fun addOwn() {
-        editing = DraftItem(key = "custom-${customCount++}", name = "", normal = Interval(5_000, 6), severe = null)
+        editing = DraftItem.blank("custom-${customCount++}", vehicle?.unit ?: DistanceUnit.MILES)
     }
 
     fun isNew(item: DraftItem): Boolean = items?.none { it.key == item.key } == true

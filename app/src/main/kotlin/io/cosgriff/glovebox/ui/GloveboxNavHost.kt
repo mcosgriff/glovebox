@@ -395,7 +395,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
     RestoreSheet(
         onRestored = { summary ->
             nav.toGarageList()
-            showNote(res.getString(R.string.event_restored_backup, restoreSummary(summary.vehicles, summary.records, summary.photos)))
+            showNote(res.getString(R.string.event_restored_backup, restoreSummary(summary.vehicles, summary.records, summary.photos, summary.documents)))
         },
     )
 

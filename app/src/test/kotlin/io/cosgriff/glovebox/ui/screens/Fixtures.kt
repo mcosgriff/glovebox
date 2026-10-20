@@ -274,7 +274,7 @@ object Fixtures {
         val refs = templates.map { ScheduleRef(id(it.key), it.label, it.key, tracked = it.key !in untracked) }
         val categories = ServiceCatalog.forVehicle(refs)
         val oil = categories.flatMap { it.options }.first { it.id == "oil" }
-        return LogServiceForm(editing = false, today = TODAY).apply {
+        return LogServiceForm(editing = false, today = { TODAY }).apply {
             data = LogServiceData(
                 vehicleName = "2019 Blue truck",
                 categories = categories,

@@ -100,7 +100,7 @@ fun backupContents(vehicles: Int, records: Int, photos: Int, documents: Int = 0,
 }
 
 /** "2 vehicles, 14 service records and 9 photos" */
-fun restoreSummary(vehicles: Int, records: Int, photos: Int, documents: Int = 0): String {
+fun restoreSummary(vehicles: Int, records: Int, photos: Int, documents: Int): String {
     val res = AppText.res
     val parts = listOfNotNull(
         res.getQuantityString(R.plurals.garage_vehicles, vehicles, vehicles.asNumber()),

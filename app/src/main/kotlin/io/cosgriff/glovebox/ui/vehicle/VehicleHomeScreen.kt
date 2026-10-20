@@ -81,7 +81,6 @@ import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
-import io.cosgriff.glovebox.domain.DecidedBy
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
@@ -468,21 +467,26 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
     }
 }
 
-/** Counts only reminders that have been logged; a new vehicle shows no pill rather than "9 overdue". */
+/**
+ * Counts only reminders that have been logged; a new vehicle shows no pill rather than "9 overdue". Which
+ * state it shows is the garage chip's ([ComingUp.attention]), so the two can't disagree; the words are its own.
+ */
 @Composable
 private fun StatusPill(up: ComingUp) {
     val scheme = MaterialTheme.colorScheme
+    val attention = up.attention ?: return
     val (text, container, content) = when {
         // Canvas: a soft tint with dark orange text in light; in dark the tint would vanish into the card, so it is solid.
-        up.overdue > 0 && scheme.background.luminance() < 0.5f ->
-            Triple(pluralStringResource(R.plurals.home_pill_overdue, up.overdue, up.overdue.asNumber()), scheme.onPrimaryContainer, scheme.onPrimary)
-        up.overdue > 0 -> Triple(pluralStringResource(R.plurals.home_pill_overdue, up.overdue, up.overdue.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
-        up.dueSoon > 0 -> Triple(pluralStringResource(R.plurals.home_pill_due_soon, up.dueSoon, up.dueSoon.asNumber()), scheme.surfaceVariant, scheme.onSurface)
+        attention.state == DueState.OVERDUE && scheme.background.luminance() < 0.5f ->
+            Triple(pluralStringResource(R.plurals.home_pill_overdue, attention.count, attention.count.asNumber()), scheme.onPrimaryContainer, scheme.onPrimary)
+        attention.state == DueState.OVERDUE ->
+            Triple(pluralStringResource(R.plurals.home_pill_overdue, attention.count, attention.count.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
+        attention.state == DueState.DUE_SOON ->
+            Triple(pluralStringResource(R.plurals.home_pill_due_soon, attention.count, attention.count.asNumber()), scheme.surfaceVariant, scheme.onSurface)
         // Nothing to be up to date on while there is work the log doesn't have.
-        up.notLogged.isNotEmpty() ->
-            Triple(pluralStringResource(R.plurals.home_pill_to_log, up.notLogged.size, up.notLogged.size.asNumber()), scheme.surfaceVariant, statusColors().soon)
-        up.counting.isNotEmpty() -> Triple(stringResource(R.string.home_pill_up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
-        else -> return
+        attention.toLog > 0 ->
+            Triple(pluralStringResource(R.plurals.home_pill_to_log, attention.toLog, attention.toLog.asNumber()), scheme.surfaceVariant, statusColors().soon)
+        else -> Triple(stringResource(R.string.home_pill_up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
     }
     Surface(color = container, shape = CircleShape) {
         Text(
@@ -586,9 +590,9 @@ private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, un
         progress.headline is DueHeadline.Days -> stringResource(R.string.home_last_on, last.date.format(longDate))
         else -> stringResource(R.string.home_last_at, last.odometer.asDistance(unit))
     }
-    // Only worth an estimate when mileage decides it and the date comes from the driving pace.
-    val estimate = status.estimatedDueDate
-        ?.takeIf { progress.headline is DueHeadline.Miles && status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE }
+    // Beside a headline in miles only: one in days would read against a date worked out from the pace.
+    val estimate = status.paceEstimate
+        ?.takeIf { progress.headline is DueHeadline.Miles }
         ?.let { stringResource(R.string.home_estimate, it.format(longDate)) }
     return listOfNotNull(every, lastText, estimate).joinToString(" · ")
 }
