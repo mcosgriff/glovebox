@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -30,12 +30,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,12 +75,7 @@ fun SnoozeSheet(
     // The choices can change under the sheet (a mileage update, say); fall back to the first.
     val chosen = options.firstOrNull { it.kind == kind } ?: options.first()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = onDismiss) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

@@ -1,7 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
 import io.cosgriff.glovebox.ui.components.FilledCard
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.asNumber

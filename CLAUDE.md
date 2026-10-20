@@ -83,8 +83,9 @@ Keep them green; lint errors fail the build.
   that one kind of element, with a comment saying why; the only one is text contrast on a disabled control
   (WCAG leaves inactive controls out). Only what is on screen is checked, so a long screen's lower part
   isn't. `EndToEndTest` drives the app with UI Automator and has no accessibility pass: the screen tests
-  are where these checks live. Bottom sheets take `dragHandle = { SheetHandle() }` (`Sheets.kt`), Material's
-  handle in a 48dp slot; Material's alone is a 32dp target.
+  are where these checks live. A bottom sheet is a `GloveboxSheet` (`ui/components/Sheets.kt`), which passes
+  `SheetHandle`: Material's handle in a 48dp slot, since Material's alone is a 32dp target. A sheet built another
+  way passes `dragHandle = { SheetHandle() }` itself.
 - Release: merge the release PR that `release-please` keeps open (version and changelog come from the
   Conventional Commits on `main`); it tags `vX.Y.Z` and starts `release.yml`, which builds the signed
   APK after approval. See README.
@@ -1004,8 +1005,9 @@ Notes on what's built:
 ## Conventions
 
 - Business logic goes in `:domain` with a test; ViewModels stay thin.
-- **A composable or helper used by more than one screen lives in `ui/components/`** (`SectionLabel`, `Chevron`,
-  `DatePickerSheet`, `CheckedField`, `DistanceUnitSwitch`, `copyText`), not in the screen that first needed it, where
+- **A composable or helper used by more than one screen lives in `ui/components/`** (`ScreenHeader`,
+  `BorderedCard` / `RowsCard` / `LabelledCard`, `FilledCard`, `GloveboxSheet`, `SectionLabel`, `Chevron`, `DatePickerSheet`,
+  `CheckedField`, `DistanceUnitSwitch`, `copyText`), not in the screen that first needed it, where
   the next screen won't find it and writes its own (#297). One used by a single feature stays in that feature's package.
 - **All wording lives in `res/values/strings.xml`** (#236). Composables use `stringResource` /
   `pluralStringResource`; callbacks and code outside a composable use `LocalResources` or `AppText.res`

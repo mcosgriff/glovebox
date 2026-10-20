@@ -1,7 +1,7 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.BorderedCard
-import io.cosgriff.glovebox.ui.SheetHandle
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.ui.AppText
@@ -41,14 +41,12 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -252,12 +250,7 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = onDismiss) {
         val all = vm.all
         val doc = vm.document
         Column(

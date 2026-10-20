@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -26,12 +26,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -89,12 +87,7 @@ fun MarkDoneSheet(
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = onDismiss) {
         Column(
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

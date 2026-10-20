@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -24,12 +24,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,12 +94,7 @@ fun SpecEditorSheet(
     val torqueBad = torqueText.isNotBlank() && torque == null
     val cleanName = VehicleText.clean(name, VehicleText.MAX_SPEC)
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = onDismiss) {
         Column(
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

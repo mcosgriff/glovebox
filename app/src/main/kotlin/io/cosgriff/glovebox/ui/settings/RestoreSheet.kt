@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -30,12 +30,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -236,12 +234,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
     val summary = vm.summary
     val busy = vm.checking || vm.progress != null
 
-    ModalBottomSheet(
-        onDismissRequest = { if (vm.progress == null) vm.close() },
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = { if (vm.progress == null) vm.close() }) {
         Column(
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
