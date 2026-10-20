@@ -51,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,6 +76,9 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.LoggedReading
+import io.cosgriff.glovebox.domain.ChartPoint
+import io.cosgriff.glovebox.domain.ChartRange
+import io.cosgriff.glovebox.domain.MileageChart
 import io.cosgriff.glovebox.domain.MileageReadings
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OdometerInput
@@ -185,7 +189,6 @@ fun MileageReadingsScreen(
     vm: MileageReadingsViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
-    val scheme = MaterialTheme.colorScheme
     val unit = state.unit
     val res = LocalResources.current
     // The reading's id, so the sheet survives the list changing under it.
@@ -207,6 +210,38 @@ fun MileageReadingsScreen(
         )
     }
 
+    // How far back the chart reaches, and the reading tapped on it: both survive Android restarting the app.
+    var range by rememberSaveable { mutableStateOf(ChartRange.ALL) }
+    var selected by rememberSaveable { mutableStateOf<String?>(null) }
+    MileageReadingsContent(
+        state, LocalDate.now(), range, selected,
+        onBack = onBack,
+        onRange = {
+            range = it
+            selected = null
+        },
+        onSelect = { selected = it },
+        onOpen = { row -> if (row.reading.fromRecord) onOpenRecord(row.reading.id) else editing = row.reading.id },
+    )
+}
+
+/** Mileage readings as given, with no ViewModel: what [MileageReadingsScreen] shows, and what the screenshot tests draw. */
+@Composable
+internal fun MileageReadingsContent(
+    state: MileageReadingsState,
+    today: LocalDate,
+    range: ChartRange,
+    /** The chart's tapped reading, by [ChartPoint.key]. */
+    selected: String?,
+    onBack: () -> Unit,
+    onRange: (ChartRange) -> Unit,
+    onSelect: (String?) -> Unit,
+    /** What a reading opens: its record, or the sheet that corrects or deletes it. */
+    onOpen: (ReadingRow) -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val unit = state.unit
+    val series = remember(state, range, today) { MileageChart.series(state.rows, state.swap, range, today) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -232,6 +267,10 @@ fun MileageReadingsScreen(
                 )
             }
 
+            if (state.rows.isNotEmpty()) {
+                MileageChartCard(series, state.rows.size, range, unit, selected, onRange, onSelect, onOpen = { onOpen(it.row) })
+            }
+
             if (state.rows.isEmpty()) {
                 Text(stringResource(R.string.readings_none), color = scheme.onSurface)
             } else {
@@ -245,7 +284,7 @@ fun MileageReadingsScreen(
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         state.rows.forEachIndexed { i, row ->
                             if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                            ReadingLine(row, unit, onClick = { if (row.reading.fromRecord) onOpenRecord(row.reading.id) else editing = row.reading.id })
+                            ReadingLine(row, unit, onClick = { onOpen(row) })
                         }
                     }
                 }
@@ -253,6 +292,7 @@ fun MileageReadingsScreen(
         }
     }
 }
+
 
 @Composable
 private fun ReadingLine(row: ReadingRow, unit: DistanceUnit, onClick: () -> Unit) {

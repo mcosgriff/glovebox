@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.screens
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import io.cosgriff.glovebox.domain.ChartRange
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.MileageUpdate
@@ -21,6 +22,7 @@ import io.cosgriff.glovebox.ui.schedule.ScheduleContent
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsContent
+import io.cosgriff.glovebox.ui.vehicle.MileageReadingsContent
 import io.cosgriff.glovebox.ui.vehicle.TakesKnown
 import io.cosgriff.glovebox.ui.vehicle.UpdateMileageSheet
 import io.cosgriff.glovebox.ui.settings.CheckInDialog
@@ -134,6 +136,14 @@ class ScreensScreenshotTest(private val shade: Shade) {
             onOpenReadings = {}, onOpenImport = {}, onOpenDocuments = {}, onClearHistory = {},
             onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onAddVin = {}, onSetOffset = {}, onChangeUnit = {},
             onSell = {}, onPickPhoto = {}, onRemovePhoto = {},
+        )
+    }
+
+    @Test
+    fun mileageReadings() = compose.shoot("mileage_readings", shade) {
+        MileageReadingsContent(
+            Fixtures.mileageReadings, Fixtures.TODAY, ChartRange.ALL, selected = "record:102",
+            onBack = {}, onRange = {}, onSelect = {}, onOpen = {},
         )
     }
 
