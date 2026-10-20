@@ -2,6 +2,8 @@ package io.cosgriff.glovebox.domain
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.TreeSet
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -75,6 +77,33 @@ object MileageChart {
         val first = rows.minOfOrNull { it.reading.date } ?: return 1
         val whole = ChronoUnit.YEARS.between(first, today).toInt()
         return (if (first.plusYears(whole.toLong()).isBefore(today)) whole + 1 else whole).coerceAtLeast(1)
+    }
+
+    /**
+     * The readings among [points] that get a mark of their own, when [room] marks fit across the
+     * chart: none closer than one [room]th of the range to another. A reading to check and the
+     * odometer's are always marked; then services, then mileage updates, each placed where there is
+     * room, earliest first. The line still runs through every reading, so a reading a week makes a
+     * line and not a smear of dots.
+     */
+    fun marked(points: List<ChartPoint>, room: Int): List<ChartPoint> {
+        if (points.isEmpty()) return points
+        val gap = ChronoUnit.DAYS.between(points.first().date, points.last().date).toDouble() / room.coerceAtLeast(1)
+        val placed = TreeSet<Long>()
+        val chosen = HashSet<Int>()
+        fun place(must: Boolean, which: (ChartPoint) -> Boolean) = points.forEachIndexed { i, p ->
+            if (i in chosen || !which(p)) return@forEachIndexed
+            val day = p.date.toEpochDay()
+            val near = listOfNotNull(placed.floor(day), placed.ceiling(day)).any { abs(it - day) < gap }
+            if (must || !near) {
+                placed += day
+                chosen += i
+            }
+        }
+        place(must = true) { it.doubtful || it.row.current }
+        place(must = false) { it.row.reading.fromRecord }
+        place(must = false) { !it.row.reading.fromRecord }
+        return points.filterIndexed { i, _ -> i in chosen }
     }
 
     /** A pace over a year: to the nearest 10 under 1,000, otherwise to the nearest 100. Never 0 for a vehicle that moved. */
