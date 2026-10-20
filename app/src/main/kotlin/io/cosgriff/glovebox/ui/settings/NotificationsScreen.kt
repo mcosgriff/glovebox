@@ -267,7 +267,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     ) { pickingMileageTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
-                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.interval_slash, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
+                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.notifications_how_early_value, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
                 }
                 Text(
                     stringResource(R.string.notifications_note),
