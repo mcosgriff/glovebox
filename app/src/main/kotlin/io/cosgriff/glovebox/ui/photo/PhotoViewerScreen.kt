@@ -181,7 +181,7 @@ private fun ZoomablePhoto(fileName: String, description: String, loader: PhotoLo
 fun ZoomableImage(image: ImageBitmap?, description: String, key: Any, onZoomChange: (Boolean) -> Unit = {}) {
     var scale by remember(key) { mutableFloatStateOf(1f) }
     var offset by remember(key) { mutableStateOf(Offset.Zero) }
-    val transform = rememberTransformableState { zoomChange, panChange, _ ->
+    val transform = rememberTransformableState { _, zoomChange, panChange, _ ->
         scale = (scale * zoomChange).coerceIn(1f, 5f)
         offset = if (scale == 1f) Offset.Zero else offset + panChange
         onZoomChange(scale > 1f)
