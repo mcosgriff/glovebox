@@ -827,7 +827,15 @@ Notes on what's built:
 - History's spending line (#285, `Spending` in `:domain`): under the subtitle, "$48.50 this year · $138.45 since
   May 2025", from records with a cost only, saying "from 2 of 3 records" when some have none; no line with no costs.
   "This year" is today's calendar year and is left out when every cost is from it. **Hidden while a category filter
-  is on**, since a record's cost covers all its lines. The export's total is the same sum (`Spending.total`).
+  or a search is on**, since a record's cost covers all its lines. The export's total is the same sum (`Spending.total`).
+- History's search (#284, `HistorySearch` in `:domain`): a record matches when a line's label as typed, a catalog
+  line's name as shown now (`catalogLabel`), the notes or the shop contains what is typed, ignoring case and the spaces
+  round it; it works with the vehicle and category choice. The text is in the saved state like them, so it survives a
+  restart, and goes with the History entry (a save, delete or restore landing on History clears it). Nothing is stored.
+- Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
+  records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
+  name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion
+  is tapped. The recall "mark done" sheet doesn't offer them.
 - An Undo bar stays for `LogEdits.UNDO_SECONDS` (30), and the delete sheet says so. Events are collected
   with `collectLatest`: a newer change replaces the bar for an older one, and whatever ends a bar without
   Undo (timeout, replacement, the app locking) discards the photo files it was holding.

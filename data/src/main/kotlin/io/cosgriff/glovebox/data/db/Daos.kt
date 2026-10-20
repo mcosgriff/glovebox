@@ -193,6 +193,10 @@ interface ServiceDao {
     @Query("SELECT * FROM service_records")
     fun observeAllRecords(): Flow<List<ServiceRecordWithItems>>
 
+    /** Every shop named on a record of any vehicle, for Log service's suggestions. */
+    @Query("SELECT shopName AS name, date, id FROM service_records WHERE shopName IS NOT NULL")
+    fun observeShops(): Flow<List<ShopRow>>
+
     @Transaction
     @Query("SELECT * FROM service_records WHERE id = :id")
     fun observeRecord(id: Long): Flow<ServiceRecordWithItems?>
@@ -506,6 +510,9 @@ interface MilestoneDao {
 
 /** A row's id and one whole-number column of it. */
 data class IdValue(val id: Long, val value: Int?)
+
+/** A shop as one record names it. */
+data class ShopRow(val name: String, val date: LocalDate, val id: Long)
 
 data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?, val firstMiles: Int?)
 
