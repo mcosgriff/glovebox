@@ -8,12 +8,11 @@ import io.cosgriff.glovebox.ui.welcome.FirstRun
 import io.cosgriff.glovebox.ui.settings.ImportPicker
 import io.cosgriff.glovebox.ui.settings.RestorePicker
 import io.cosgriff.glovebox.data.backup.BackupRestorer
-import io.cosgriff.glovebox.data.backup.BackupFormat
 import io.cosgriff.glovebox.notify.PendingDestination
 import io.cosgriff.glovebox.notify.Destination
 import android.content.Intent
 import io.cosgriff.glovebox.ui.export.ExportSaver
-import io.cosgriff.glovebox.domain.ExportFormat
+import io.cosgriff.glovebox.ui.export.SaveAs
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -68,18 +67,8 @@ class MainActivity : FragmentActivity() {
     @Inject lateinit var firstRun: FirstRun
     @Inject lateinit var pendingDestination: PendingDestination
 
-    // One launcher per file type: the type is fixed when the launcher is made.
-    private val savePdf = registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.PDF.mimeType)) { exportSaver.onDestination(it) }
-    private val saveMarkdown =
-        registerForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.MARKDOWN.mimeType)) { exportSaver.onDestination(it) }
-    private val saveBackup = registerForActivityResult(ActivityResultContracts.CreateDocument(BackupFormat.MIME_TYPE)) { exportSaver.onDestination(it) }
-    private val launchExportSave: (String, String) -> Unit = { mimeType, fileName ->
-        when (mimeType) {
-            ExportFormat.PDF.mimeType -> savePdf
-            ExportFormat.MARKDOWN.mimeType -> saveMarkdown
-            else -> saveBackup
-        }.launch(fileName)
-    }
+    private val saveAs = registerForActivityResult(SaveAs()) { exportSaver.onDestination(it) }
+    private val launchExportSave: (String, String) -> Unit = { mimeType, fileName -> saveAs.launch(SaveAs.Request(mimeType, fileName)) }
 
     @Inject lateinit var restorePicker: RestorePicker
     @Inject lateinit var restorer: BackupRestorer
