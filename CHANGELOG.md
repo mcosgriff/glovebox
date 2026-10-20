@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/mcosgriff/glovebox/compare/v0.16.0...v0.17.0) (2026-10-20)
+
+
+### Features
+
+* **readings:** choose the chart's range a year at a time ([#294](https://github.com/mcosgriff/glovebox/issues/294)) ([e0e9597](https://github.com/mcosgriff/glovebox/commit/e0e9597576944dfe327cdceff6e9c70f5efce02f))
+
 ## [0.16.0](https://github.com/mcosgriff/glovebox/compare/v0.15.0...v0.16.0) (2026-10-20)
 
 
