@@ -43,7 +43,13 @@ data class DueStatus(
     /** Best single estimate of the due date, using the driving pace for mileage. */
     val estimatedDueDate: LocalDate?,
     val decidedBy: DecidedBy,
-)
+) {
+    /**
+     * The date to give as an estimate beside a due point: only when the driving pace decides it, since a
+     * date from time alone is already exact, and not once it is overdue, when it would be a day in the past.
+     */
+    val paceEstimate: LocalDate? get() = estimatedDueDate?.takeIf { decidedBy == DecidedBy.MILEAGE && state != DueState.OVERDUE }
+}
 
 object ReminderEngine {
 

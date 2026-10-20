@@ -78,10 +78,8 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.DecidedBy
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.DueRule
-import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.asReadOn
@@ -227,8 +225,7 @@ class ScheduleViewModel @Inject constructor(
                     lastRead = last?.let { swap.asReadOn(LastDone(it.date, it.odometer)) },
                     recordId = last?.id,
                     entered = last != null && last.id in entered,
-                    // Only an estimate when it comes from the driving pace and isn't already past.
-                    estimate = status?.estimatedDueDate?.takeIf { status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE },
+                    estimate = status?.paceEstimate,
                 )
             },
             defaultRule = s.defaultRule,

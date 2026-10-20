@@ -81,7 +81,6 @@ import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
-import io.cosgriff.glovebox.domain.DecidedBy
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.DueState
@@ -586,9 +585,9 @@ private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, un
         progress.headline is DueHeadline.Days -> stringResource(R.string.home_last_on, last.date.format(longDate))
         else -> stringResource(R.string.home_last_at, last.odometer.asDistance(unit))
     }
-    // Only worth an estimate when mileage decides it and the date comes from the driving pace.
-    val estimate = status.estimatedDueDate
-        ?.takeIf { progress.headline is DueHeadline.Miles && status.decidedBy == DecidedBy.MILEAGE && status.state != DueState.OVERDUE }
+    // Beside a headline in miles only: one in days would read against a date worked out from the pace.
+    val estimate = status.paceEstimate
+        ?.takeIf { progress.headline is DueHeadline.Miles }
         ?.let { stringResource(R.string.home_estimate, it.format(longDate)) }
     return listOfNotNull(every, lastText, estimate).joinToString(" · ")
 }
