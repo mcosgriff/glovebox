@@ -75,7 +75,7 @@ private fun Context.notify(): NotifyEntryPoint = EntryPointAccessors.fromApplica
  */
 class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val runs = inputData.getStringArray(RUNS)?.mapNotNull { name -> NoticeRun.entries.firstOrNull { it.name == name } }?.toSet()
+        val runs = inputData.getNullableStringArray(RUNS)?.mapNotNull { name -> NoticeRun.entries.firstOrNull { it.name == name } }?.toSet()
             ?: NoticeRun.entries.toSet()
         val deps = applicationContext.notify()
         val settings = deps.settings().settings.first()
