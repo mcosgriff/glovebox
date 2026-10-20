@@ -74,7 +74,7 @@ import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.lock.canLockApp
 import io.cosgriff.glovebox.ui.export.ExportSheet
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import kotlinx.coroutines.flow.SharingStarted

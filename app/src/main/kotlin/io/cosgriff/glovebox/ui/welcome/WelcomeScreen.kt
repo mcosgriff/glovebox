@@ -53,7 +53,7 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.Welcome
 import io.cosgriff.glovebox.lock.canLockApp
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

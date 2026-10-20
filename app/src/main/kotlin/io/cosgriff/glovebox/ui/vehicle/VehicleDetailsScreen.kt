@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.orNullIfBlank
+import io.cosgriff.glovebox.ui.components.copyText
+import io.cosgriff.glovebox.ui.components.CheckedField
+import io.cosgriff.glovebox.ui.components.Chevron
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.NoticePrefs
 import io.cosgriff.glovebox.domain.VehicleCheckIn
@@ -17,8 +21,6 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.ui.service.pluralWord
-import androidx.compose.runtime.toMutableStateList
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.foundation.combinedClickable
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.domain.WhatItTakes
@@ -41,11 +43,6 @@ import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import android.widget.Toast
-import android.os.PersistableBundle
-import android.os.Build
-import android.content.Context
-import android.content.ClipboardManager
-import android.content.ClipData
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.data.db.UnitDao
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -73,7 +70,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -94,20 +90,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -120,12 +113,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -147,7 +138,6 @@ import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.ClusterSwap
-import io.cosgriff.glovebox.domain.ClusterSwaps
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.Sale
@@ -156,9 +146,8 @@ import io.cosgriff.glovebox.domain.ScheduleSummary
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
-import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
@@ -1016,16 +1005,6 @@ private fun LinkRow(title: String, detail: String, detailColor: Color = Material
 }
 
 @Composable
-internal fun Chevron() {
-    Icon(
-        Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-        contentDescription = null,
-        modifier = Modifier.size(18.dp),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
-
-@Composable
 private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
     val plausible = Vin.isPlausible(text)
@@ -1102,34 +1081,6 @@ private fun PlateDialog(plate: String?, region: String?, onSave: (String?, Strin
     )
 }
 
-/**
- * A field that checks what is typed: [check] gives the standard form, or null when it isn't valid.
- * Empty is always allowed and clears it. The error shows once the user has typed something wrong.
- */
-@Composable
-internal fun CheckedField(
-    value: String,
-    onValue: (String) -> Unit,
-    label: String,
-    error: String,
-    check: (String) -> Any?,
-    modifier: Modifier = Modifier,
-    supporting: String? = null,
-    keyboard: KeyboardType = KeyboardType.Text,
-) {
-    val bad = value.isNotBlank() && check(value) == null
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValue,
-        modifier = modifier.fillMaxWidth(),
-        label = { Text(label) },
-        isError = bad,
-        supportingText = (if (bad) error else supporting)?.let { { Text(it) } },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = keyboard, imeAction = ImeAction.Next),
-    )
-}
-
 /** Save is offered only when every filled-in field is valid. */
 @Composable
 internal fun SpecEditor(
@@ -1159,8 +1110,6 @@ internal fun SpecEditor(
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
-
-internal fun String.orNullIfBlank() = trim().takeIf { it.isNotEmpty() }
 
 @Composable
 private fun OilDialog(v: VehicleEntity, toCheck: Boolean, onSave: (String?, String?, Double?, VehicleSpecEntry.Volume?, String?, Boolean) -> Unit, onDismiss: () -> Unit) {
@@ -1320,22 +1269,6 @@ private fun WipersDialog(v: VehicleEntity, toCheck: Boolean, onSave: (Int?, Int?
             singleLine = true,
         )
     }
-}
-
-/**
- * Puts [text] on the clipboard. A [sensitive] one (the VIN) is marked so Android hides it in its clipboard
- * preview. Android 13 and later say "Copied" themselves; earlier versions get a short message here.
- */
-private const val IS_SENSITIVE = "android.content.extra.IS_SENSITIVE"
-
-internal fun copyText(context: Context, label: String, text: String, sensitive: Boolean) {
-    val clip = ClipData.newPlainText(label, text).apply {
-        // ClipDescription.EXTRA_IS_SENSITIVE is API 33; before that the same key, spelled out, is what keyboards
-        // and clipboard tools read.
-        if (sensitive) description.extras = PersistableBundle().apply { putBoolean(IS_SENSITIVE, true) }
-    }
-    context.getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) Toast.makeText(context, context.getString(R.string.copied, label), Toast.LENGTH_SHORT).show()
 }
 
 /** The capacity unit, as the error says it. */

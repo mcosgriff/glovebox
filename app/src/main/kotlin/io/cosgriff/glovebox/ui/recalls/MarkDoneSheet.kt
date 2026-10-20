@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Recalls
-import io.cosgriff.glovebox.ui.service.DatePickerSheet
+import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
 import java.time.LocalDate
 

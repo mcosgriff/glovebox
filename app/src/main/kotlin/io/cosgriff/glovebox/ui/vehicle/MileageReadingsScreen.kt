@@ -83,8 +83,8 @@ import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
-import io.cosgriff.glovebox.ui.schedule.SectionLabel
-import io.cosgriff.glovebox.ui.service.DatePickerSheet
+import io.cosgriff.glovebox.ui.components.SectionLabel
+import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate

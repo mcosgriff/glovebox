@@ -1004,6 +1004,9 @@ Notes on what's built:
 ## Conventions
 
 - Business logic goes in `:domain` with a test; ViewModels stay thin.
+- **A composable or helper used by more than one screen lives in `ui/components/`** (`SectionLabel`, `Chevron`,
+  `DatePickerSheet`, `CheckedField`, `DistanceUnitSwitch`, `copyText`), not in the screen that first needed it, where
+  the next screen won't find it and writes its own (#297). One used by a single feature stays in that feature's package.
 - **All wording lives in `res/values/strings.xml`** (#236). Composables use `stringResource` /
   `pluralStringResource`; callbacks and code outside a composable use `LocalResources` or `AppText.res`
   (never `LocalContext.current.getString` in a composable: lint flags it). Figures go in as arguments that
