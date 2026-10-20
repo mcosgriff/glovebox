@@ -1,14 +1,8 @@
 package io.cosgriff.glovebox.domain
 
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
-
-/** How far back the mileage chart reaches. [ALL] starts at the first reading on record. */
-enum class ChartRange(val years: Long?) {
-    ONE_YEAR(1),
-    TWO_YEARS(2),
-    ALL(null),
-}
 
 /**
  * One reading on the chart. [plotted] is the distance really covered (dash terms plus a replaced
@@ -44,15 +38,16 @@ object MileageChart {
     const val DAYS_A_YEAR = 365.25
 
     /**
-     * The chart for [rows] (as `MileageReadings.rows` gives them, any order) over [range], counted
-     * back from [today]. Null with fewer than two readings in the range: one point is no line.
+     * The chart for [rows] (as `MileageReadings.rows` gives them, any order) over the last [years],
+     * counted back from [today], or over every reading when it is null. Null with fewer than two
+     * readings in the range: one point is no line.
      *
      * The pace is `ReminderEngine.milesPerDay` over the range's readings in dash terms, with a
-     * replaced cluster's first reading among them as the reminders have it, so over [ChartRange.ALL]
+     * replaced cluster's first reading among them as the reminders have it, so over every reading
      * the chart and the reminders can't disagree.
      */
-    fun series(rows: List<ReadingRow>, swap: ClusterSwap?, range: ChartRange, today: LocalDate): MileageSeries? {
-        val from = range.years?.let { today.minusYears(it) }
+    fun series(rows: List<ReadingRow>, swap: ClusterSwap?, years: Int?, today: LocalDate): MileageSeries? {
+        val from = years?.let { today.minusYears(it.toLong()) }
         val inRange = rows.filter { from == null || !it.reading.date.isBefore(from) }
             .sortedWith(compareBy<ReadingRow> { it.reading.date }.thenBy { swap.toDash(it.reading.odometer, it.reading.date) })
         if (inRange.size < 2) return null
@@ -70,6 +65,16 @@ object MileageChart {
             milesPerDay = pace,
             perYear = pace?.let(::perYear),
         )
+    }
+
+    /**
+     * How many years back the readings go from [today], counting a part year as a whole one: the
+     * longest range the chart can be asked for. At least 1.
+     */
+    fun yearsOnRecord(rows: List<ReadingRow>, today: LocalDate): Int {
+        val first = rows.minOfOrNull { it.reading.date } ?: return 1
+        val whole = ChronoUnit.YEARS.between(first, today).toInt()
+        return (if (first.plusYears(whole.toLong()).isBefore(today)) whole + 1 else whole).coerceAtLeast(1)
     }
 
     /** A pace over a year: to the nearest 10 under 1,000, otherwise to the nearest 100. Never 0 for a vehicle that moved. */

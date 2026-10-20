@@ -77,7 +77,6 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.LoggedReading
 import io.cosgriff.glovebox.domain.ChartPoint
-import io.cosgriff.glovebox.domain.ChartRange
 import io.cosgriff.glovebox.domain.MileageChart
 import io.cosgriff.glovebox.domain.MileageReadings
 import io.cosgriff.glovebox.domain.MileageUpdate
@@ -211,13 +210,13 @@ fun MileageReadingsScreen(
     }
 
     // How far back the chart reaches, and the reading tapped on it: both survive Android restarting the app.
-    var range by rememberSaveable { mutableStateOf(ChartRange.ALL) }
+    var years by rememberSaveable { mutableStateOf<Int?>(null) }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
     MileageReadingsContent(
-        state, LocalDate.now(), range, selected,
+        state, LocalDate.now(), years, selected,
         onBack = onBack,
-        onRange = {
-            range = it
+        onYears = {
+            years = it
             selected = null
         },
         onSelect = { selected = it },
@@ -230,18 +229,22 @@ fun MileageReadingsScreen(
 internal fun MileageReadingsContent(
     state: MileageReadingsState,
     today: LocalDate,
-    range: ChartRange,
+    /** How far back the chart reaches; null for every reading. */
+    years: Int?,
     /** The chart's tapped reading, by [ChartPoint.key]. */
     selected: String?,
     onBack: () -> Unit,
-    onRange: (ChartRange) -> Unit,
+    onYears: (Int?) -> Unit,
     onSelect: (String?) -> Unit,
     /** What a reading opens: its record, or the sheet that corrects or deletes it. */
     onOpen: (ReadingRow) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val unit = state.unit
-    val series = remember(state, range, today) { MileageChart.series(state.rows, state.swap, range, today) }
+    val most = remember(state, today) { MileageChart.yearsOnRecord(state.rows, today) }
+    // A range as long as the readings, or longer (they were corrected since), is all of them.
+    val reach = years?.takeIf { it < most }
+    val series = remember(state, reach, today) { MileageChart.series(state.rows, state.swap, reach, today) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -268,7 +271,10 @@ internal fun MileageReadingsContent(
             }
 
             if (state.rows.isNotEmpty()) {
-                MileageChartCard(series, state.rows.size, range, unit, selected, onRange, onSelect, onOpen = { onOpen(it.row) })
+                MileageChartCard(
+                    series, state.rows.size, reach, most, state.rows.minOf { it.reading.date }, unit, selected, onYears, onSelect,
+                    onOpen = { onOpen(it.row) },
+                )
             }
 
             if (state.rows.isEmpty()) {

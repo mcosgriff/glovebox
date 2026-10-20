@@ -387,9 +387,14 @@
     <string name="readings_was">Was %1$s on %2$s. Reminders are worked out again from whatever you save.</string>
     <string name="readings_delete">Delete this reading</string>
     <string name="chart_needs_two">A chart of the odometer over time appears once there are two readings.</string>
-    <string name="chart_range_year">1 year</string>
-    <string name="chart_range_two_years">2 years</string>
-    <string name="chart_range_all">All</string>
+    <!-- The chart's slider, read out by TalkBack. -->
+    <string name="chart_range">How far back</string>
+    <!-- The slider at its end: every reading. %1$s is the month and year of the first. -->
+    <string name="chart_range_all">All, since %1$s</string>
+    <plurals name="chart_range_last">
+        <item quantity="one">Past year</item>
+        <item quantity="other">Past %1$s years</item>
+    </plurals>
     <string name="chart_too_few_in_range">Fewer than two readings in this time. Choose a longer one to see the chart.</string>
     <string name="chart_per_year">About %1$s a year</string>
     <string name="chart_per_year_note">Estimated from your readings, %1$s to %2$s: the same pace reminders use to say when a service is due.</string>

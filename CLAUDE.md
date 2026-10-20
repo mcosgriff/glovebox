@@ -601,8 +601,8 @@ Notes on what's built:
   where it is edited. Readings are shown as typed and compared in dash terms, like everything else with
   a replaced cluster. The final odometer logged when a vehicle is sold is an ordinary reading here.
   A chart sits above the list (#288, `MileageChart` in `:domain`, `MileageChartCard`): the same readings
-  and flags as the list (`MileageReadings.rows`), dates across from the first reading in the range (1 year,
-  2 years or All), the distance really covered up (`swap.actual`, so a cluster swap doesn't drop the line),
+  and flags as the list (`MileageReadings.rows`), dates across from the first reading in the range (a slider
+  from the past year to every reading, one year a step: `MileageChart.yearsOnRecord`, a part year counting whole), the distance really covered up (`swap.actual`, so a cluster swap doesn't drop the line),
   a service filled and an update hollow, a reading to check ringed in the error colour. "About 12,400 mi a
   year" is `ReminderEngine.milesPerDay` over the range's readings in dash terms, the reminders' own pace,
   × 365.25 and rounded (`MileageChart.perYear`); none with readings under a week apart. Tapping a point
