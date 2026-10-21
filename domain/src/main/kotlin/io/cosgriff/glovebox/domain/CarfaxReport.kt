@@ -179,22 +179,38 @@ object CarfaxReport {
 
     /**
      * The Log service line a comment is, where the wording leaves no doubt; null keeps it as written.
-     * "Brake pads replaced" (which axle?) stays as it is.
+     * "Brake pads replaced" (which axle?) is the line for pads on an axle not given, never front or rear.
      */
     private val services: List<Pair<Regex, String>> = listOf(
         """oil and filter changed|oil changed""" to "oil",
         """cabin air filters?""" to "cabin-air",
         """(engine )?air filters? (replaced|changed)""" to "engine-air",
         """tires? rotated|tire rotation""" to "rotation",
+        // The sensors before the pressure, which "tire pressure monitoring system checked" would otherwise be.
+        """(tpms|tire pressure (monitoring |monitor )?(system )?sensors?|tire pressure monitoring system)( sensors?)? """ +
+            """(replaced|installed|serviced|repaired|reset|programmed|checked|inspected)""" to "tpms",
+        """tires?( condition)?( and| &)?( pressure)? (checked|inspected)|tire pressure (checked|adjusted|set)""" to "tire-check",
         """(wheels?|tires?) balanced""" to "balance",
         """(wheels?|front end) aligned|alignment performed""" to "alignment",
         """tires? replaced|new tires? installed""" to "new-tires",
-        """front brake pads replaced""" to "front-pads",
-        """rear brake pads replaced""" to "rear-pads",
+        """(?<!rear and )front brake pads replaced""" to "front-pads",
+        """(?<!front and )rear brake pads replaced""" to "rear-pads",
+        // Which axle? The record doesn't say, so it is neither front nor rear. Both axles named is two jobs, and stays as written.
+        """(?<!(front|rear) )brake pads? replaced""" to "brake-pads",
         """(front |rear )?brake rotors? (replaced|resurfaced)""" to "rotors",
         """brake fluid (flushed|changed|replaced)""" to "brake-fluid",
         """brake fluid (checked|inspected|tested)""" to "brake-fluid-check",
         """brakes? (system )?(checked|inspected)|brake inspection""" to "brake-inspect",
+        """brakes? (system )?serviced""" to "brake-service",
+        """(brake )?calipers? (replaced|rebuilt|installed)""" to "calipers",
+        """brake (lines?|hoses?) (replaced|repaired|installed)""" to "brake-lines",
+        // A gasket, seal or housing is part of the job it belongs to.
+        """water pump( gasket| seal)? (replaced|installed|repaired)""" to "water-pump",
+        """thermostat( gasket| housing)? (replaced|installed)""" to "thermostat",
+        // Hoses before the radiator, which "radiator hose replaced" would otherwise be.
+        """(coolant|radiator|heater) hoses? (replaced|installed)""" to "coolant-hoses",
+        """radiator (replaced|installed|repaired)""" to "radiator",
+        """(coolant|cooling system|antifreeze)( level)? (checked|inspected|tested)""" to "cooling-check",
         """(coolant|cooling system|radiator) (flushed|changed|serviced)|antifreeze (flushed|changed)|antifreeze/coolant flushed""" to "coolant",
         """transmission (fluid|oil) (flushed|changed|replaced)|transmission serviced""" to "trans-fluid",
         // Front and rear have their own lines, so they come before the differential in general.
@@ -219,7 +235,27 @@ object CarfaxReport {
         """(tie rods?( ends?)?|ball joints?) (replaced|installed)""" to "steering-parts",
         """(light )?bulbs? replaced""" to "bulbs",
         """power steering (fluid )?(flushed|changed|serviced)""" to "power-steering",
+        """washer fluid (topped off|filled|added|replaced)""" to "washer",
+        // Only fluids in general: "Brake fluid checked" has its own line above.
+        """^(all )?fluids?( levels?)? (checked|inspected|topped off)|^fluid levels? (checked|inspected|topped off)""" to "fluid-check",
+        """((ignition )?coil packs?|ignition coils?) replaced""" to "ignition-coils",
+        """(oxygen|o2) sensors? replaced""" to "oxygen-sensor",
+        """valve cover gaskets? replaced""" to "valve-cover-gasket",
+        """(engine|motor) mounts? replaced""" to "engine-mounts",
+        """(exhaust( system| pipes?)?|mufflers?|catalytic converters?) (replaced|repaired|installed)""" to "exhaust",
+        """starter( motor)? (replaced|installed)""" to "starter",
+        """alternator (replaced|installed)""" to "alternator",
+        """(air conditioning|a/c)( system)? (recharged|serviced|evacuated|repaired|checked|inspected)""" to "air-conditioning",
+        """clutch( kit| assembly)? (replaced|installed)""" to "clutch",
+        """(u-joints?|universal joints?) (replaced|installed|lubricated|greased)""" to "u-joints",
+        """(suspension|steering)( and (suspension|steering))?( system)? (checked|inspected)""" to "suspension-check",
+        // "Check engine light checked" is a diagnosis, not the lights.
+        """(?<!engine )((head|exterior |interior )?lights|lighting)( system)? (checked|inspected)""" to "lights-check",
+        """windows? (checked|inspected)""" to "windows-check",
+        """(windshield|windows?|glass) (replaced|repaired)""" to "body",
         """maintenance inspection completed|multi-point inspection""" to "multi-point",
+        // Which jobs isn't said, so it stays a line of its own and resets nothing.
+        """\d{1,3}(,\d{3}|k|000) (mile |mi |km )?(service|maintenance)|(recommended|scheduled|factory scheduled) maintenance (performed|completed)""" to "scheduled-service",
         """emissions? (inspection|test)""" to "emissions",
         // "Emissions or safety inspection performed" says neither for sure, and stays as written.
         """(?<!or )safety inspection""" to "safety-inspection",

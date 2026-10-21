@@ -218,14 +218,15 @@ count for a reminder. The values, by the category History files them under:
 
 | Category | `service` values |
 |---|---|
-| Oil & engine | `oil`, `engine-air`, `spark-plugs`, `belt`, `belt-check`, `timing-belt`, `fuel-filter`, `fuel-system`, `pcv` |
-| Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat` |
-| Brakes | `front-pads`, `rear-pads`, `rotors`, `brake-fluid`, `brake-fluid-check`, `brake-inspect` |
-| Fluids | `coolant`, `trans-fluid`, `power-steering`, `washer` |
-| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle` |
-| Suspension & steering | `shocks`, `wheel-bearing`, `steering-parts` |
-| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `bulbs` |
-| Inspection | `multi-point`, `emissions`, `safety-inspection`, `recall` |
+| Oil & engine | `oil`, `engine-air`, `spark-plugs`, `belt`, `belt-check`, `timing-belt`, `fuel-filter`, `fuel-system`, `pcv`, `ignition-coils`, `oxygen-sensor`, `valve-cover-gasket`, `engine-mounts`, `exhaust` |
+| Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat`, `tire-check`, `tpms` |
+| Brakes | `front-pads`, `rear-pads`, `brake-pads`, `rotors`, `brake-fluid`, `brake-fluid-check`, `brake-inspect`, `brake-service`, `calipers`, `brake-lines` |
+| Fluids | `trans-fluid`, `power-steering`, `washer`, `fluid-check` |
+| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `coolant-hoses` |
+| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `clutch`, `u-joints` |
+| Suspension & steering | `shocks`, `wheel-bearing`, `steering-parts`, `suspension-check` |
+| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `bulbs`, `lights-check`, `windows-check`, `air-conditioning`, `starter`, `alternator` |
+| Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
 | Other | `accessory`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
@@ -233,7 +234,10 @@ count for a reminder. The values, by the category History files them under:
   `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A change
   also counts as the check of the same thing: `front-diff`, `rear-diff` and `transfer-case` reset a
   reminder set to `front-diff-check`, `rear-diff-check` or `transfer-case-check`, and `diff-fluid`
-  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check` and `battery` for `battery-check`. A check never counts as a change. A line
+  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check`, `battery` for `battery-check` and
+  `coolant` for `cooling-check`. A check never counts as a change. `brake-pads` is pads on an axle the
+  record doesn't name, and `scheduled-service` ("the 30,000 mile service") resets nothing, since it
+  doesn't say which jobs were done. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
   (ignoring capitals). Any other line is history only. The preview lists every reminder that would
   move before you import.

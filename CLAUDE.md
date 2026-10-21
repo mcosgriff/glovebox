@@ -411,8 +411,11 @@ Notes on what's built:
   separates the source from the comments). **Only service visits are taken**: an entry counts when a
   comment is work (`isWork`: replaced, changed, serviced, inspected…, and not a title, registration, owner
   or damage line). A comment becomes a catalog line only where the wording is plain (`CarfaxReport.service`:
-  "Oil and filter changed" is oil, "Front differential serviced" is `front-diff`, "Brake pads replaced" stays
-  text: which axle?). A visit that names one job twice ("Alignment performed", "Four wheel alignment
+  "Oil and filter changed" is oil, "Front differential serviced" is `front-diff`, "Brake pads replaced"
+  is `brake-pads`, pads on an axle not given, never front or rear; both axles named stays text). A gasket,
+  seal or housing is its job's ("Water pump gasket replaced" is `water-pump`), and wording that names no job
+  ("90,000 mile service performed", `scheduled-service`; "Fluids checked", `fluid-check`) gets a line that
+  resets nothing. The aim (#309) is that Custom is rare. A visit that names one job twice ("Alignment performed", "Four wheel alignment
   performed") gets one line, worded as the longer (`oneLinePerService`). The source's first line
   is the shop. A visit with no mileage is counted and refused, never guessed. The ligatures (fi, fl, ff,
   ffi, ffl) drawn as one glyph come back as the ligature character, a replacement character, or an ordinary

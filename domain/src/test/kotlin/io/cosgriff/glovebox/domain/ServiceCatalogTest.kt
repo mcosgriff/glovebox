@@ -18,6 +18,19 @@ class ServiceCatalogTest {
     }
 
     @Test
+    fun `a line covers only lines that exist, and a vague line resets nothing`() {
+        val ids = catalogItems.map { it.id }.toSet()
+        catalogItems.forEach { assertEquals(it.id, emptySet<String>(), it.covers - ids) }
+        // Neither says which job, so neither may move a reminder.
+        listOf("brake-pads", "scheduled-service", "brake-service", "fluid-check").forEach { id ->
+            val item = catalogItems.single { it.id == id }
+            assertNull(id, item.resets)
+            assertEquals(id, emptySet<String>(), item.covers)
+        }
+        assertEquals(setOf("cooling-check"), catalogItems.single { it.id == "coolant" }.covers)
+    }
+
+    @Test
     fun `every suggested schedule item can be logged from the catalog`() {
         val resets = catalogItems.mapNotNull { it.resets }.toSet()
         val templateKeys = (ScheduleTemplates.generic("4WD", null, DistanceUnit.MILES) + ScheduleTemplates.generic("RWD", null, DistanceUnit.MILES)).map { it.key }.toSet()
