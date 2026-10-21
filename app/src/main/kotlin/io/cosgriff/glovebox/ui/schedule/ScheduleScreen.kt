@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -39,18 +41,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -480,7 +479,7 @@ internal fun ScheduleContent(
                     },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Button(onClick = { onSetUp(v.id) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                PrimaryButton(onClick = { onSetUp(v.id) }) {
                     Text(stringResource(if (state.known != null) R.string.schedule_start_known else R.string.schedule_start_typical))
                 }
                 // An imported table doesn't need a schedule to be worth looking at.
@@ -532,11 +531,7 @@ internal fun ScheduleContent(
 
             if (state.notLogged > 0) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    OutlinedButton(
-                        onClick = { onEnterLastDone(v.id) },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = { onEnterLastDone(v.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                         Text(stringResource(R.string.schedule_enter_last_done))
                     }
                     Text(
@@ -563,11 +558,7 @@ internal fun ScheduleContent(
             state.known?.takeIf { state.items.isNotEmpty() }?.let { (list, plan) ->
                 var asking by rememberSaveable { mutableStateOf(false) }
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    OutlinedButton(
-                        onClick = { asking = true },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = { asking = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                         Text(stringResource(R.string.schedule_use_known))
                     }
                     Text(
@@ -593,11 +584,7 @@ internal fun ScheduleContent(
             // A schedule that began with the user's own items can still pick up the typical ones.
             if (state.items.isNotEmpty() && state.missing.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    OutlinedButton(
-                        onClick = onAddMissing,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = onAddMissing, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                         val n = state.missing.size
                         Text(pluralStringResource(R.plurals.schedule_add_typical, n, n.asNumber()))
                     }

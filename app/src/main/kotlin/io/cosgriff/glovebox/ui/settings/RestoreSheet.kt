@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.AppText
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -24,14 +24,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -297,36 +295,24 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = vm::close,
-                    enabled = vm.progress == null,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Text(stringResource(R.string.cancel), color = scheme.onSurface)
-                }
-                if (summary == null) {
-                    Button(
-                        onClick = vm::open,
-                        enabled = vm.password.isNotEmpty() && !busy,
-                        modifier = Modifier.weight(2f).height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                    ) {
-                        Text(stringResource(if (vm.checking) R.string.add_vehicle_recalls_checking else R.string.restore_open))
-                    }
-                } else {
-                    val confirmed = !vm.replaces || TypedConfirmation.matches(typed, BackupRules.REPLACE_WORD)
-                    Button(
-                        onClick = { vm.restore(onRestored) },
-                        enabled = confirmed && !busy,
-                        modifier = Modifier.weight(2f).height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = if (vm.replaces) ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError) else ButtonDefaults.buttonColors(),
-                    ) {
-                        Text(stringResource(if (vm.progress != null) R.string.restore_restoring else if (vm.replaces) R.string.restore_replace else R.string.restore))
-                    }
-                }
+            val confirmed = summary == null || !vm.replaces || TypedConfirmation.matches(typed, BackupRules.REPLACE_WORD)
+            SheetActions(
+                onCancel = vm::close,
+                onConfirm = { if (summary == null) vm.open() else vm.restore(onRestored) },
+                enabled = if (summary == null) vm.password.isNotEmpty() && !busy else confirmed && !busy,
+                cancelEnabled = vm.progress == null,
+                colors = if (summary != null && vm.replaces) ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError) else ButtonDefaults.buttonColors(),
+            ) {
+                Text(
+                    stringResource(
+                        when {
+                            summary == null -> if (vm.checking) R.string.add_vehicle_recalls_checking else R.string.restore_open
+                            vm.progress != null -> R.string.restore_restoring
+                            vm.replaces -> R.string.restore_replace
+                            else -> R.string.restore
+                        },
+                    ),
+                )
             }
         }
     }

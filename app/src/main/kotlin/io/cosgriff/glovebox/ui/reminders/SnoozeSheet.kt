@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -23,14 +23,12 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -118,19 +116,12 @@ fun SnoozeSheet(
                 style = MaterialTheme.typography.bodySmall,
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(
-                    onClick = onAlreadyDone,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.5.dp, scheme.onSurface),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                ) {
-                    Text(stringResource(R.string.snooze_already_done), maxLines = 1)
-                }
-                Button(onClick = { onSnooze(chosen.snooze) }, modifier = Modifier.weight(1.4f).height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                    Text(stringResource(R.string.snooze))
-                }
+            SheetActions(
+                onSecondary = onAlreadyDone,
+                secondary = { Text(stringResource(R.string.snooze_already_done), maxLines = 1) },
+                onConfirm = { onSnooze(chosen.snooze) },
+            ) {
+                Text(stringResource(R.string.snooze))
             }
 
             if (skip != null) {

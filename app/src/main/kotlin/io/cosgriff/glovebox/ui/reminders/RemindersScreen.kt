@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.domain.Interval
@@ -178,13 +180,7 @@ internal fun RemindersContent(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
-                OutlinedButton(
-                    onClick = onOpenRules,
-                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = rulesLabel },
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                ) {
+                InkOutlinedButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = rulesLabel }, quiet = true) {
                     Text(stringResource(R.string.reminders_rules))
                 }
             }
@@ -420,7 +416,7 @@ private fun Empty(noVehicles: Boolean, onAddVehicle: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (noVehicles) {
-            Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.garage_empty_add)) }
+            PrimaryButton(onClick = onAddVehicle) { Text(stringResource(R.string.garage_empty_add)) }
         }
     }
 }

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import androidx.compose.ui.platform.LocalResources
@@ -28,7 +29,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -199,13 +199,7 @@ private fun ArchivedCard(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(stringResource(R.string.archived_view_history) to onViewHistory, stringResource(R.string.export) to onExport).forEach { (label, action) ->
-                    OutlinedButton(
-                        onClick = action,
-                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.5.dp, scheme.onSurface),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = action, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                         Text(label)
                     }
                 }

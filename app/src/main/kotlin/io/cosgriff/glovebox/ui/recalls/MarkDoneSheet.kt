@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.domain.OdometerInput
@@ -13,23 +14,17 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -108,26 +103,12 @@ fun MarkDoneSheet(
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.5.dp, scheme.onSurface),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-                Button(
-                    onClick = {
-                        onConfirm(RecallCompletion(date, miles.takeIf { addRecord }, shop.trim().takeIf { addRecord && it.isNotEmpty() }))
-                    },
-                    enabled = !addRecord || miles != null,
-                    modifier = Modifier.weight(1.4f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Text(stringResource(R.string.recalls_mark_done), maxLines = 1)
-                }
+            SheetActions(
+                onCancel = onDismiss,
+                onConfirm = { onConfirm(RecallCompletion(date, miles.takeIf { addRecord }, shop.trim().takeIf { addRecord && it.isNotEmpty() })) },
+                enabled = !addRecord || miles != null,
+            ) {
+                Text(stringResource(R.string.recalls_mark_done), maxLines = 1)
             }
         }
     }

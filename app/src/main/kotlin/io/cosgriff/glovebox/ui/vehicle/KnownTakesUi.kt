@@ -1,18 +1,15 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -119,13 +116,7 @@ class KnownTakesRows @Inject constructor(private val catalog: KnownTakesCatalog,
 fun KnownTakesOffer(list: KnownTakesList, plan: KnownTakesPlan, onFill: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        OutlinedButton(
-            onClick = onFill,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-            shape = RoundedCornerShape(14.dp),
-            border = BorderStroke(1.5.dp, scheme.onSurface),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-        ) {
+        InkOutlinedButton(onClick = onFill, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
             Text(stringResource(R.string.known_takes_fill, list.title))
         }
         val offer = stringResource(

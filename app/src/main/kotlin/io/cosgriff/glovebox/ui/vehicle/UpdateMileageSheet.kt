@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -12,7 +13,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +29,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -177,39 +176,28 @@ fun UpdateMileageSheet(
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(
-                    onClick = onReadDash,
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.5.dp, scheme.onSurface),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                ) {
+            SheetActions(
+                onSecondary = onReadDash,
+                secondary = {
                     Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp))
                     Text(stringResource(R.string.read_dash_title), maxLines = 1)
-                }
-                Button(
-                    onClick = { miles?.let(onSave) },
-                    enabled = miles != null,
-                    modifier = Modifier.weight(2f).height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    colors = if (low || far) {
-                        ButtonDefaults.buttonColors(containerColor = scheme.onSurfaceVariant, contentColor = scheme.surface)
-                    } else {
-                        ButtonDefaults.buttonColors()
+                },
+                onConfirm = { miles?.let(onSave) },
+                enabled = miles != null,
+                colors = if (low || far) {
+                    ButtonDefaults.buttonColors(containerColor = scheme.onSurfaceVariant, contentColor = scheme.surface)
+                } else {
+                    ButtonDefaults.buttonColors()
+                },
+            ) {
+                Text(
+                    when {
+                        miles == null -> stringResource(R.string.update_mileage_enter)
+                        low || far -> stringResource(R.string.save_anyway)
+                        else -> stringResource(R.string.update_mileage_save, miles.asDistance(unit))
                     },
-                ) {
-                    Text(
-                        when {
-                            miles == null -> stringResource(R.string.update_mileage_enter)
-                            low || far -> stringResource(R.string.save_anyway)
-                            else -> stringResource(R.string.update_mileage_save, miles.asDistance(unit))
-                        },
-                        maxLines = 1,
-                    )
-                }
+                    maxLines = 1,
+                )
             }
         }
     }

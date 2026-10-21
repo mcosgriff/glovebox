@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -53,14 +54,12 @@ import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.domain.LogEdits
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -317,13 +316,7 @@ internal fun HistoryContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.history_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
                 if (state.vehicle != null) {
-                    OutlinedButton(
-                        onClick = onExport,
-                        modifier = Modifier.heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) { Text(stringResource(R.string.history_export)) }
+                    InkOutlinedButton(onClick = onExport, modifier = Modifier.heightIn(min = 48.dp), quiet = true) { Text(stringResource(R.string.history_export)) }
                 }
             }
             state.vehicle?.let { v ->

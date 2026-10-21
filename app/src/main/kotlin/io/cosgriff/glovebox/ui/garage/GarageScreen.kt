@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.until
@@ -351,7 +352,7 @@ private fun EmptyGarage(onAddVehicle: () -> Unit, archived: Int, onOpenArchive: 
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onAddVehicle, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.garage_empty_add)) }
+        PrimaryButton(onClick = onAddVehicle) { Text(stringResource(R.string.garage_empty_add)) }
         // A new phone starts here: this is how the data from the old one comes back.
         TextButton(onClick = onRestore, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.welcome_restore)) }
         // With every vehicle sold, this is the only way back to them.

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -322,14 +322,12 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 )
             }
 
-            Button(
+            PrimaryButton(
                 onClick = {
                     focusManager.clearFocus()
                     vm.save(onSaved)
                 },
                 enabled = vm.canSave,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.add_vehicle_next), style = MaterialTheme.typography.titleMedium)
             }

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.DangerTextButton
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.typedNumber
@@ -30,7 +32,6 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -39,7 +40,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -124,12 +124,11 @@ fun MilestoneEditor(
             title = { Text(stringResource(if (isNew) R.string.milestone_discard_new else R.string.discard_changes)) },
             text = { Text(stringResource(if (isNew) R.string.milestone_discard_new_body else R.string.milestone_discard_body)) },
             confirmButton = {
-                TextButton(
+                DangerTextButton(
                     onClick = {
                         discarding = false
                         onClose()
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) { Text(stringResource(R.string.discard)) }
             },
             dismissButton = { TextButton(onClick = { discarding = false }) { Text(stringResource(R.string.keep_editing)) } },
@@ -153,12 +152,11 @@ fun MilestoneEditor(
                 )
             },
             confirmButton = {
-                TextButton(
+                DangerTextButton(
                     onClick = {
                         deleting = false
                         onDelete()
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = { TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.cancel)) } },
@@ -220,12 +218,7 @@ fun MilestoneEditor(
                 }
                 problems.work?.let { Text(stringResource(R.string.sentence, it.text), style = MaterialTheme.typography.bodySmall, color = scheme.error) }
                 if (MilestoneEdits.canAddJob(jobs.size)) {
-                    OutlinedButton(
-                        onClick = { jobs.add(JobRow(nextKey++, "", null)) },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    ) { Text(stringResource(R.string.milestone_add_job)) }
+                    InkOutlinedButton(onClick = { jobs.add(JobRow(nextKey++, "", null)) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) { Text(stringResource(R.string.milestone_add_job)) }
                 } else {
                     Text(stringResource(R.string.sentence, WorkProblem.TOO_MANY.text), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }

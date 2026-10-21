@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.DangerTextButton
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.AppText
@@ -34,12 +36,10 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -330,12 +330,11 @@ fun MilestonesScreen(onBack: () -> Unit, onOpenRecord: (recordId: Long) -> Unit,
                 )
             },
             confirmButton = {
-                TextButton(
+                DangerTextButton(
                     onClick = {
                         removing = false
                         vm.removeTable()
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) { Text(stringResource(R.string.remove)) }
             },
             dismissButton = { TextButton(onClick = { removing = false }) { Text(stringResource(R.string.cancel)) } },
@@ -460,13 +459,7 @@ internal fun MilestonesContent(
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(stringResource(R.string.expand_all) to true, stringResource(R.string.collapse_all) to false).forEach { (label, open) ->
-                        OutlinedButton(
-                            onClick = { setAll(open) },
-                            enabled = state.milestones.isNotEmpty(),
-                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                        ) {
+                        InkOutlinedButton(onClick = { setAll(open) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), enabled = state.milestones.isNotEmpty(), quiet = true) {
                             Text(label)
                         }
                     }
@@ -508,12 +501,7 @@ internal fun MilestonesContent(
             // A table ends where the file ends unless it repeats; then it can go further, like the view built from the schedule.
             if (state.milestones.isNotEmpty() && (!state.fromTable || state.repeatsEveryMiles != null)) {
                 item {
-                    OutlinedButton(
-                        onClick = onShowMore,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = onShowMore, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                         Text(stringResource(R.string.milestones_further))
                     }
                 }
@@ -522,12 +510,7 @@ internal fun MilestonesContent(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         if (MilestoneEdits.canAdd(state.table.size)) {
-                            OutlinedButton(
-                                onClick = onAddMilestone,
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                            ) {
+                            InkOutlinedButton(onClick = onAddMilestone, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                                 Text(stringResource(R.string.milestones_add))
                             }
                         }
@@ -560,11 +543,7 @@ internal fun MilestonesContent(
                     )
                 }
                 item {
-                    TextButton(
-                        onClick = onRemove,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                        colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
-                    ) {
+                    DangerTextButton(onClick = onRemove, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text(stringResource(R.string.milestones_remove), fontWeight = FontWeight.SemiBold)
                     }
                 }
@@ -573,13 +552,7 @@ internal fun MilestonesContent(
                 state.known?.let { known ->
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            OutlinedButton(
-                                onClick = onAddKnown,
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                                shape = RoundedCornerShape(14.dp),
-                                border = BorderStroke(1.5.dp, scheme.onSurface),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                            ) {
+                            InkOutlinedButton(onClick = onAddKnown, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
                                 Text(stringResource(R.string.milestones_use_known, known.title))
                             }
                             Text(

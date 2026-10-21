@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.ui.components.DangerTextButton
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.styledStringResource
@@ -25,7 +27,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Box
 import io.cosgriff.glovebox.domain.WhatItTakes
-import androidx.compose.material3.ButtonDefaults
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.util.UUID
@@ -718,19 +719,11 @@ internal fun LogServiceContent(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            Button(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
+            PrimaryButton(onClick = onSave) {
                 Text(stringResource(if (form.editing) R.string.log_save_changes else R.string.log_save))
             }
             if (form.editing) {
-                TextButton(
-                    onClick = onDeleteInstead,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text(stringResource(R.string.log_delete)) }
+                DangerTextButton(onClick = onDeleteInstead, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(stringResource(R.string.log_delete)) }
             }
         }
     }

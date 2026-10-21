@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DangerTextButton
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -17,7 +19,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,14 +34,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,7 +50,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -215,12 +213,11 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
             title = { Text(stringResource(R.string.documents_delete_title, doc.name)) },
             text = { Text(stringResource(R.string.documents_delete_body)) },
             confirmButton = {
-                TextButton(
+                DangerTextButton(
                     onClick = {
                         vm.delete(row)
                         deleting = null
                     },
-                    colors = ButtonDefaults.textButtonColors(contentColor = scheme.error),
                 ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) } },
@@ -336,14 +333,7 @@ private fun AddButton(working: Boolean, onChoose: () -> Unit, onTake: () -> Unit
         if (granted) onTake() else refused = true
     }
     Box {
-        OutlinedButton(
-            onClick = { open = true },
-            enabled = !working,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.5.dp, scheme.onSurface),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-        ) {
+        InkOutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), enabled = !working) {
             if (working) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(8.dp))
@@ -450,7 +440,7 @@ private fun DetailsDialog(
         confirmButton = { TextButton(onClick = { clean?.let { onSave(type, it, date) } }, enabled = clean != null) { Text(stringResource(R.string.save)) } },
         dismissButton = {
             if (isNew) {
-                TextButton(onClick = onDiscard, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text(stringResource(R.string.documents_dont_keep)) }
+                DangerTextButton(onClick = onDiscard) { Text(stringResource(R.string.documents_dont_keep)) }
             } else {
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
             }

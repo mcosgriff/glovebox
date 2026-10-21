@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -9,8 +11,6 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.text
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.MilestoneEntity
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
@@ -36,7 +36,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -364,11 +363,7 @@ fun ScheduleSetupScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         vm.engineChoices.forEach { list ->
-                            OutlinedButton(
-                                onClick = { vm.chooseEngine(list) },
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                            ) { Text(list.engine?.label ?: list.title) }
+                            InkOutlinedButton(onClick = { vm.chooseEngine(list) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), quiet = true) { Text(list.engine?.label ?: list.title) }
                         }
                         TextButton(onClick = vm::declineEngines, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.setup_engine_neither)) }
                     }
@@ -404,11 +399,7 @@ fun ScheduleSetupScreen(
 
             LastDoneChoice(enterNow = vm.enterLastDone, onPick = { vm.enterLastDone = it })
 
-            Button(
-                onClick = { vm.save { vehicleId -> if (vm.enterLastDone) onEnterLastDone(vehicleId) else onDone() } },
-                enabled = count > 0,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) {
+            PrimaryButton(onClick = { vm.save { vehicleId -> if (vm.enterLastDone) onEnterLastDone(vehicleId) else onDone() } }, enabled = count > 0) {
                 Text(pluralStringResource(R.plurals.setup_track, count, count.asNumber()))
             }
             TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {

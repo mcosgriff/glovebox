@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.domain.OdometerInput
@@ -429,14 +430,12 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 }
             }
 
-            Button(
+            PrimaryButton(
                 onClick = {
                     focusManager.clearFocus()
                     vm.decode()
                 },
                 enabled = vm.vinValid && !vm.decoding,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
             ) {
                 if (vm.decoding) CircularProgressIndicator(Modifier.size(24.dp)) else Text(stringResource(R.string.add_vehicle_decode), style = MaterialTheme.typography.titleMedium)
             }
@@ -612,14 +611,12 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 }
             }
 
-            Button(
+            PrimaryButton(
                 onClick = {
                     focusManager.clearFocus()
                     vm.save(onSaved)
                 },
                 enabled = vm.canSave,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.add_vehicle_next), style = MaterialTheme.typography.titleMedium)
             }
