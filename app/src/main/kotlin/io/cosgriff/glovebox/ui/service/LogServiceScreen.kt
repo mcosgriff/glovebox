@@ -184,6 +184,12 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         internal set
     var customItems by mutableStateOf(emptyList<String>())
         internal set
+    /**
+     * Ticked line id -> the wording it is saved with in place of the line's name: a custom line filed under
+     * a line, or a record's line as it was written (an import's "Oil and filter changed"), which an edit keeps.
+     */
+    var keptLabels by mutableStateOf(emptyMap<String, String>())
+        internal set
     var diy by mutableStateOf(true)
     var shopName by mutableStateOf("")
     /** Shops named on earlier records of every vehicle, which the shop field offers. */
@@ -236,6 +242,21 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
 
     fun toggle(optionId: String) {
         selected = if (optionId in selected) selected - optionId else selected + optionId
+        if (optionId !in selected) keptLabels = keptLabels - optionId
+    }
+
+    /** What a ticked line is saved as: its wording as written where it has one, otherwise its name. */
+    fun labelOf(option: WorkOption): String = keptLabels[option.id] ?: option.label
+
+    /**
+     * The custom line [label] goes under [option], keeping its wording: the line decides which reminders it
+     * counts for, and nothing else about it changes. A line already ticked keeps its own wording.
+     */
+    fun fileCustom(label: String, option: WorkOption) {
+        if (option.id in selected) return
+        customItems = customItems - label
+        selected = selected + option.id
+        if (label != option.label) keptLabels = keptLabels + (option.id to label)
     }
 
     fun addCustom(label: String) {
@@ -342,13 +363,20 @@ class LogServiceViewModel @Inject constructor(
                 form.keptPhotos = original.photos
                 val ticked = mutableSetOf<String>()
                 val custom = mutableListOf<String>()
+                val kept = mutableMapOf<String, String>()
                 original.items.forEach { item ->
                     val option = options.firstOrNull { it.id == item.catalogId }
                         ?: item.scheduleItemId?.let(optionFor::get)
-                    if (option != null) ticked += option.id else custom += item.label
+                    if (option == null) {
+                        custom += item.label
+                    } else if (ticked.add(option.id) && item.label != option.label) {
+                        // Saved as written; an edit doesn't put the line's name in its place.
+                        kept[option.id] = item.label
+                    }
                 }
                 form.selected = ticked
                 form.customItems = custom
+                form.keptLabels = kept
             }
 
             if (!editing) optionFor[route.scheduleItemId]?.let { form.selected = setOf(it.id) }
@@ -399,7 +427,7 @@ class LogServiceViewModel @Inject constructor(
                     ServiceRecordItemEntity(
                         recordId = 0,
                         scheduleItemId = it.scheduleItemId,
-                        label = it.label,
+                        label = labelOf(it),
                         catalogId = it.id.takeIf { id -> id in catalogIds },
                     )
                 } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
@@ -449,6 +477,8 @@ internal fun LogServiceContent(
     val data = form.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
     var addingCustom by remember { mutableStateOf(false) }
+    // The custom line being filed under a line, while its picker is open.
+    var filing by remember { mutableStateOf<String?>(null) }
     val notesLabel = stringResource(R.string.log_notes)
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -597,7 +627,9 @@ internal fun LogServiceContent(
                         data.categories.first { it.id == form.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
-                                hint = ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs)?.text(data.unit),
+                                // Kept wording says what was written; otherwise what the vehicle takes, or how often.
+                                hint = form.keptLabels[option.id]?.let { stringResource(R.string.log_kept_wording, it) }
+                                    ?: ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs)?.text(data.unit),
                                 checked = option.id in form.selected,
                                 onToggle = { form.toggle(option.id) },
                             )
@@ -605,6 +637,9 @@ internal fun LogServiceContent(
                         }
                         form.customItems.forEach { label ->
                             CheckRow(label = label, hint = stringResource(R.string.log_custom), checked = true, onToggle = { form.removeCustom(label) })
+                            TextButton(onClick = { filing = label }, modifier = Modifier.heightIn(min = 48.dp).padding(start = 40.dp)) {
+                                Text(stringResource(R.string.log_file_under_button))
+                            }
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         TextButton(onClick = { addingCustom = true }, modifier = Modifier.heightIn(min = 48.dp)) {
@@ -619,7 +654,7 @@ internal fun LogServiceContent(
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                val labels = data.categories.flatMap { it.options }.filter { it.id in form.selected }.map { it.label } + form.customItems
+                val labels = data.categories.flatMap { it.options }.filter { it.id in form.selected }.map(form::labelOf) + form.customItems
                 val count = pluralStringResource(R.plurals.log_items, labels.size, labels.size.asNumber())
                 val listed = if (labels.isEmpty()) stringResource(R.string.log_pick_above) else labels.joinToString(", ")
                 Text(
@@ -737,10 +772,23 @@ internal fun LogServiceContent(
             onDismiss = { pickingDate = false },
         )
     }
+    // Lines not ticked yet, any of which a custom item may turn out to be.
+    val openLines = data.categories.flatMap { c -> c.options.filter { it.id !in form.selected }.map { LineChoice(it, c) } }
+    filing?.let { label ->
+        FileUnderDialog(
+            label = label,
+            lines = openLines,
+            onPick = { choice ->
+                form.fileCustom(label, choice.option)
+                form.categoryId = choice.category.id
+                filing = null
+            },
+            onDismiss = { filing = null },
+        )
+    }
     if (addingCustom) {
         CustomItemDialog(
-            // Lines not ticked yet, any of which the typed item may turn out to be.
-            lines = data.categories.flatMap { c -> c.options.filter { it.id !in form.selected }.map { LineChoice(it, c) } },
+            lines = openLines,
             onAdd = {
                 form.addCustom(it)
                 addingCustom = false
@@ -961,19 +1009,51 @@ internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineCh
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
-        matches.forEach { choice ->
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable(onClickLabel = stringResource(R.string.log_custom_tick_line)) { onPick(choice) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(choice.option.label, style = MaterialTheme.typography.bodyLarge)
-                Text(choice.category.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        matches.forEach { LineRow(it, withCategory = true, onPick) }
+    }
+}
+
+/** One line to pick, [withCategory] under its name where the list isn't already by category. */
+@Composable
+private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoice) -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clip(MaterialTheme.shapes.small)
+            .clickable(onClickLabel = stringResource(R.string.log_custom_tick_line)) { onPick(choice) }
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(choice.option.label, style = MaterialTheme.typography.bodyLarge)
+        if (withCategory) Text(choice.category.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** Files the custom line [label] under one of [lines] ([LinePicker]); it keeps its wording. */
+@Composable
+private fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.log_file_under_title)) },
+        text = { LinePicker(label, lines, onPick, Modifier.verticalScroll(rememberScrollState())) },
+        // Picking is the answer; the one button only backs out.
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
+/**
+ * What filing [label] means, the lines it looks like ([LineMatches]) and then every line by category, since
+ * the one it belongs under may share no word with it ("R&R H2O pump").
+ */
+@Composable
+internal fun LinePicker(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.log_file_under_body, label), style = MaterialTheme.typography.bodyMedium)
+        LineMatches(label, lines, onPick)
+        lines.groupBy { it.category.id }.values.forEach { inCategory ->
+            SectionLabel(inCategory.first().category.label, Modifier.padding(top = 12.dp, bottom = 2.dp))
+            inCategory.forEach { LineRow(it, withCategory = false, onPick) }
         }
     }
 }
