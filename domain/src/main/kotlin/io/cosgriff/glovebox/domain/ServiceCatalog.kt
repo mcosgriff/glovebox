@@ -114,6 +114,11 @@ object ServiceCatalog {
                 CatalogItem("fuel-filter"),
                 CatalogItem("fuel-system"),
                 CatalogItem("pcv"),
+                CatalogItem("ignition-coils"),
+                CatalogItem("oxygen-sensor"),
+                CatalogItem("valve-cover-gasket"),
+                CatalogItem("engine-mounts"),
+                CatalogItem("exhaust"),
             ),
         ),
         CatalogCategory(
@@ -124,6 +129,8 @@ object ServiceCatalog {
                 CatalogItem("alignment"),
                 CatalogItem("new-tires"),
                 CatalogItem("flat"),
+                CatalogItem("tire-check"),
+                CatalogItem("tpms"),
             ),
         ),
         CatalogCategory(
@@ -131,19 +138,35 @@ object ServiceCatalog {
             listOf(
                 CatalogItem("front-pads"),
                 CatalogItem("rear-pads"),
+                // A report that doesn't say which axle; never taken for front or rear.
+                CatalogItem("brake-pads"),
                 CatalogItem("rotors"),
                 CatalogItem("brake-fluid", resets = "brake-fluid", covers = setOf("brake-fluid-check")),
                 CatalogItem("brake-fluid-check"),
                 CatalogItem("brake-inspect", resets = "brake-inspect"),
+                CatalogItem("brake-service"),
+                CatalogItem("calipers"),
+                CatalogItem("brake-lines"),
             ),
         ),
         CatalogCategory(
             "fluids",
             listOf(
-                CatalogItem("coolant", resets = "coolant"),
                 CatalogItem("trans-fluid", resets = "trans-fluid"),
                 CatalogItem("power-steering"),
                 CatalogItem("washer"),
+                CatalogItem("fluid-check"),
+            ),
+        ),
+        CatalogCategory(
+            "cooling",
+            listOf(
+                CatalogItem("coolant", resets = "coolant", covers = setOf("cooling-check")),
+                CatalogItem("cooling-check"),
+                CatalogItem("water-pump"),
+                CatalogItem("thermostat"),
+                CatalogItem("radiator"),
+                CatalogItem("coolant-hoses"),
             ),
         ),
         CatalogCategory(
@@ -161,6 +184,8 @@ object ServiceCatalog {
                 CatalogItem("transfer-case", covers = setOf("transfer-case-check")),
                 CatalogItem("driveshaft"),
                 CatalogItem("cv-axle"),
+                CatalogItem("clutch"),
+                CatalogItem("u-joints"),
             ),
         ),
         CatalogCategory(
@@ -169,6 +194,7 @@ object ServiceCatalog {
                 CatalogItem("shocks"),
                 CatalogItem("wheel-bearing"),
                 CatalogItem("steering-parts"),
+                CatalogItem("suspension-check"),
             ),
         ),
         CatalogCategory(
@@ -179,12 +205,19 @@ object ServiceCatalog {
                 CatalogItem("battery", covers = setOf("battery-check")),
                 CatalogItem("battery-check"),
                 CatalogItem("bulbs"),
+                CatalogItem("lights-check"),
+                CatalogItem("windows-check"),
+                CatalogItem("air-conditioning"),
+                CatalogItem("starter"),
+                CatalogItem("alternator"),
             ),
         ),
         CatalogCategory(
             "inspection",
             listOf(
                 CatalogItem("multi-point"),
+                // "The 30,000 mile service": it doesn't say which jobs, so it resets nothing.
+                CatalogItem("scheduled-service"),
                 CatalogItem("emissions"),
                 CatalogItem("safety-inspection"),
                 CatalogItem("recall"),
