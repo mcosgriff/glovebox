@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.ui.platform.LocalResources
@@ -27,21 +28,18 @@ import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,7 +51,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -149,13 +146,13 @@ fun AboutScreen(
             }
 
             RowsCard {
-                LinkRow(stringResource(R.string.privacy), stringResource(R.string.about_privacy_note), onOpenPrivacy)
+                ValueRow(stringResource(R.string.privacy), stringResource(R.string.about_privacy_note), strong = false, onClick = onOpenPrivacy)
                 HorizontalDivider(color = scheme.outlineVariant)
-                LinkRow(stringResource(R.string.about_source), stringResource(R.string.about_github)) {
+                ValueRow(stringResource(R.string.about_source), stringResource(R.string.about_github), strong = false) {
                     if (!context.openWebPage(SOURCE_URL)) onMessage(res.getString(R.string.licences_no_browser, SOURCE_URL))
                 }
                 HorizontalDivider(color = scheme.outlineVariant)
-                LinkRow(stringResource(R.string.licences_title), "", onOpenLicences)
+                ValueRow(stringResource(R.string.licences_title), "", strong = false, onClick = onOpenLicences)
             }
         }
     }
@@ -166,19 +163,6 @@ private fun Source(title: String, about: String) {
     Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Text(about, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-internal fun LinkRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onClick).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        if (value.isNotEmpty()) Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
     }
 }
 

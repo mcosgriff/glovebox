@@ -1,7 +1,8 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.components.RowsCard
+import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
-import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.ui.AppText
@@ -24,14 +25,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +54,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -313,19 +311,19 @@ fun ExportSheet(vehicleId: Long?, onDismiss: () -> Unit, format: ExportFormat = 
                 }
             }
 
-            BorderedCard {
-                Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    Tick(stringResource(R.string.export_costs), o.costsAndNotes) { vm.change(o.copy(costsAndNotes = it)) }
+            RowsCard {
+                Column {
+                    CheckRow(stringResource(R.string.export_costs), o.costsAndNotes) { vm.change(o.copy(costsAndNotes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick(stringResource(R.string.export_schedule), o.scheduleAndRecalls) { vm.change(o.copy(scheduleAndRecalls = it)) }
+                    CheckRow(stringResource(R.string.export_schedule), o.scheduleAndRecalls) { vm.change(o.copy(scheduleAndRecalls = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick(stringResource(R.string.export_takes), o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
+                    CheckRow(stringResource(R.string.export_takes), o.whatItTakes) { vm.change(o.copy(whatItTakes = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    Tick(stringResource(R.string.export_documents), o.documents) { vm.change(o.copy(documents = it)) }
+                    CheckRow(stringResource(R.string.export_documents), o.documents) { vm.change(o.copy(documents = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
                     val pdf = o.format == ExportFormat.PDF
                     // The choice is remembered while Markdown is selected, so switching back to PDF restores it.
-                    Tick(stringResource(if (pdf) R.string.export_photos else R.string.export_photos_pdf_only), o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
+                    CheckRow(stringResource(if (pdf) R.string.export_photos else R.string.export_photos_pdf_only), o.photos && pdf, enabled = pdf) { vm.change(o.copy(photos = it)) }
                 }
             }
 
@@ -380,21 +378,6 @@ private fun Exportable.label(): String = if (archived) AppText.res.getString(R.s
 
 private fun Double.megabytesText(): String =
     if (this < 1) AppText.res.getString(R.string.export_under_mb) else AppText.res.getString(R.string.size_mb, toInt().coerceAtLeast(1).asNumber())
-
-@Composable
-private fun Tick(label: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onChange),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Checkbox(checked = checked, onCheckedChange = null, enabled = enabled, modifier = Modifier.padding(horizontal = 8.dp))
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.ValueRow
+import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.LabelledCard
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -25,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -245,9 +245,9 @@ internal fun SettingsContent(
         }
 
         LabelledCard(stringResource(R.string.settings_security)) {
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_biometrics),
-                subtitle = if (canLock) {
+                about = if (canLock) {
                     stringResource(R.string.settings_biometrics_note)
                 } else {
                     // Said plainly: with no screen lock there is nothing for the app to lock with.
@@ -289,9 +289,9 @@ internal fun SettingsContent(
                 }
                 Divider()
             }
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_hide_recents),
-                subtitle = stringResource(R.string.settings_hide_recents_note),
+                about = stringResource(R.string.settings_hide_recents_note),
                 checked = s.hideInRecents,
                 onChange = onSetHideInRecents,
             )
@@ -317,7 +317,7 @@ internal fun SettingsContent(
         }
 
         LabelledCard(stringResource(R.string.settings_maintenance)) {
-            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onOpenRules)
+            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onClick = onOpenRules)
             schedulesText(vehicles.map { it.name })?.let { value ->
                 Divider()
                 ValueRow(stringResource(R.string.details_schedule), value) {
@@ -329,15 +329,15 @@ internal fun SettingsContent(
             Divider()
             ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { onPick(Picking.TORQUE) }
             Divider()
-            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onOpenNotifications)
+            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onClick = onOpenNotifications)
             Divider()
             ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
         }
 
         LabelledCard(stringResource(R.string.settings_camera)) {
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_scanner_details),
-                subtitle = stringResource(R.string.settings_scanner_details_note),
+                about = stringResource(R.string.settings_scanner_details_note),
                 checked = s.scannerDetails,
                 onChange = onSetScannerDetails,
             )
@@ -422,37 +422,6 @@ internal fun SettingsContent(
 
 @Composable
 private fun Divider() = HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-/** A row that leads somewhere, with its current value on the right. */
-@Composable
-private fun ValueRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onClick).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
-    }
-}
-
-@Composable
-private fun ToggleRow(title: String, subtitle: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 64.dp)
-            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
-    }
-}
 
 @Composable
 private fun ExportButton(title: String, subtitle: String, modifier: Modifier, onClick: () -> Unit) {
