@@ -118,6 +118,10 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.NamedLine
+import io.cosgriff.glovebox.domain.CatalogRules
+import io.cosgriff.glovebox.domain.CatalogRule
+import io.cosgriff.glovebox.data.db.toRule
+import io.cosgriff.glovebox.data.db.CatalogRuleDao
 import io.cosgriff.glovebox.domain.WorkCategory
 import io.cosgriff.glovebox.domain.WorkOption
 import io.cosgriff.glovebox.domain.WorkSuggestions
@@ -161,6 +165,8 @@ data class LogServiceData(
     val specs: WhatItTakes,
     /** The record being edited; null when logging a new one. */
     val original: ServiceRecordWithItems?,
+    /** The user's category rules (#310): a custom item worded as one is offered that rule's line first. */
+    val rules: List<CatalogRule> = emptyList(),
 )
 
 /**
@@ -286,6 +292,7 @@ class LogServiceViewModel @Inject constructor(
     service: ServiceDao,
     odometer: OdometerDao,
     settings: SettingsRepository,
+    catalogRules: CatalogRuleDao,
     private val actions: RecordActions,
     private val photoPicker: RecordPhotoPicker,
 ) : ViewModel() {
@@ -395,6 +402,7 @@ class LogServiceViewModel @Inject constructor(
                 answering = items.answering(),
                 specs = vehicle?.whatItTakes() ?: WhatItTakes(),
                 original = original,
+                rules = catalogRules.all().map { it.toRule() },
             )
         }
     }
@@ -778,6 +786,7 @@ internal fun LogServiceContent(
         FileUnderDialog(
             label = label,
             lines = openLines,
+            rules = data.rules,
             onPick = { choice ->
                 form.fileCustom(label, choice.option)
                 form.categoryId = choice.category.id
@@ -789,6 +798,7 @@ internal fun LogServiceContent(
     if (addingCustom) {
         CustomItemDialog(
             lines = openLines,
+            rules = data.rules,
             onAdd = {
                 form.addCustom(it)
                 addingCustom = false
@@ -972,7 +982,7 @@ internal class LineChoice(val option: WorkOption, val category: WorkCategory)
  * under its line rather than Custom. Add keeps the text as typed.
  */
 @Composable
-private fun CustomItemDialog(lines: List<LineChoice>, onAdd: (String) -> Unit, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
+private fun CustomItemDialog(lines: List<LineChoice>, rules: List<CatalogRule>, onAdd: (String) -> Unit, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -986,7 +996,7 @@ private fun CustomItemDialog(lines: List<LineChoice>, onAdd: (String) -> Unit, o
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
-                LineMatches(text, lines, onPick)
+                LineMatches(text, lines, onPick, rules)
             }
         },
         confirmButton = { TextButton(onClick = { onAdd(text) }, enabled = text.isNotBlank()) { Text(stringResource(R.string.add)) } },
@@ -994,12 +1004,18 @@ private fun CustomItemDialog(lines: List<LineChoice>, onAdd: (String) -> Unit, o
     )
 }
 
-/** The lines [typed] looks like (`WorkSuggestions`), each with its category; a tap ticks one instead. Nothing when none. */
+/**
+ * The lines [typed] looks like (`WorkSuggestions`), each with its category; a tap ticks one instead. Nothing when
+ * none. Where one of the user's [rules] has the whole wording, its line comes first, said to be theirs; it is
+ * still only offered.
+ */
 @Composable
-internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit) {
-    val matches = remember(lines, typed) {
+internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, rules: List<CatalogRule> = emptyList()) {
+    val byRule = remember(rules, typed) { CatalogRules.match(typed, rules) }
+    val matches = remember(lines, typed, byRule) {
         val byId = lines.associateBy { it.option.id }
-        WorkSuggestions.suggest(typed, lines.map { NamedLine(it.option.id, it.option.label) }).mapNotNull(byId::get)
+        val words = WorkSuggestions.suggest(typed, lines.map { NamedLine(it.option.id, it.option.label) }).filter { it != byRule }
+        (listOfNotNull(byRule) + words).take(WorkSuggestions.MAX).mapNotNull(byId::get)
     }
     if (matches.isEmpty()) return
     Column {
@@ -1009,13 +1025,13 @@ internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineCh
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
-        matches.forEach { LineRow(it, withCategory = true, onPick) }
+        matches.forEach { LineRow(it, withCategory = true, onPick, byRule = it.option.id == byRule) }
     }
 }
 
 /** One line to pick, [withCategory] under its name where the list isn't already by category. */
 @Composable
-private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoice) -> Unit) {
+private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoice) -> Unit, byRule: Boolean = false) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -1026,17 +1042,23 @@ private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoi
         verticalArrangement = Arrangement.Center,
     ) {
         Text(choice.option.label, style = MaterialTheme.typography.bodyLarge)
-        if (withCategory) Text(choice.category.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (withCategory) {
+            Text(
+                if (byRule) stringResource(R.string.log_line_by_rule, choice.category.label) else choice.category.label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
 /** Files the custom line [label] under one of [lines] ([LinePicker]); it keeps its wording. Sorting Custom lines uses it too. */
 @Composable
-internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
+internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit, rules: List<CatalogRule> = emptyList()) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.log_file_under_title)) },
-        text = { LinePicker(label, lines, onPick, Modifier.verticalScroll(rememberScrollState())) },
+        text = { LinePicker(label, lines, onPick, Modifier.verticalScroll(rememberScrollState()), rules) },
         // Picking is the answer; the one button only backs out.
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
@@ -1047,10 +1069,10 @@ internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (Li
  * the one it belongs under may share no word with it ("R&R H2O pump").
  */
 @Composable
-internal fun LinePicker(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, modifier: Modifier = Modifier) {
+internal fun LinePicker(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, modifier: Modifier = Modifier, rules: List<CatalogRule> = emptyList()) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(R.string.log_file_under_body, label), style = MaterialTheme.typography.bodyMedium)
-        LineMatches(label, lines, onPick)
+        LineMatches(label, lines, onPick, rules)
         lines.groupBy { it.category.id }.values.forEach { inCategory ->
             SectionLabel(inCategory.first().category.label, Modifier.padding(top = 12.dp, bottom = 2.dp))
             inCategory.forEach { LineRow(it, withCategory = false, onPick) }

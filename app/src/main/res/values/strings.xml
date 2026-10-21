@@ -961,6 +961,7 @@
     <string name="sort_custom_remember_for">Remember “%1$s” for future imports</string>
     <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
     <string name="log_custom_tick_line">Tick this line</string>
+    <string name="log_line_by_rule">%1$s · your rule</string>
     <string name="log_file_under_button">File under a line</string>
     <string name="log_file_under_title">File under a line</string>
     <string name="log_file_under_body">“%1$s” stays as written. The line you pick decides which reminders it counts for.</string>
