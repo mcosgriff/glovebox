@@ -3,11 +3,14 @@ package io.cosgriff.glovebox.data.db
 import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Update
 import androidx.room3.Upsert
 import kotlinx.coroutines.flow.Flow
+import io.cosgriff.glovebox.domain.CatalogRule
+import io.cosgriff.glovebox.domain.CatalogRules
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -611,3 +614,29 @@ interface UnitDao {
         setVehicle(vehicleId, to.name, measured(vehicle.odometerOffset), vehicle.clusterStartReading?.let(::measured), repeat)
     }
 }
+
+@Dao
+interface CatalogRuleDao {
+    @Query("SELECT * FROM catalog_rules ORDER BY text COLLATE NOCASE")
+    fun observeAll(): Flow<List<CatalogRuleEntity>>
+
+    @Query("SELECT * FROM catalog_rules ORDER BY id")
+    suspend fun all(): List<CatalogRuleEntity>
+
+    /** A rule for wording that already has one takes its place: one rule per wording. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun putEntity(rule: CatalogRuleEntity): Long
+
+    suspend fun put(text: String, catalogId: String, today: LocalDate): Long =
+        putEntity(CatalogRuleEntity(text = text.trim(), textKey = CatalogRules.key(text), catalogId = catalogId, createdOn = today))
+
+    /** Editing a rule only changes the line it files its wording under. */
+    @Query("UPDATE catalog_rules SET catalogId = :catalogId WHERE id = :id")
+    suspend fun setLine(id: Long, catalogId: String)
+
+    /** Changes no record: a rule only ever filed lines as they came in. */
+    @Query("DELETE FROM catalog_rules WHERE id = :id")
+    suspend fun delete(id: Long)
+}
+
+fun CatalogRuleEntity.toRule(): CatalogRule = CatalogRule(text, catalogId)

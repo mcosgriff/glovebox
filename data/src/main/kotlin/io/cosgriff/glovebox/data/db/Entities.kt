@@ -355,6 +355,20 @@ data class MilestoneWithJobs(
     val ordered: List<MilestoneJobEntity> get() = jobs.sortedWith(compareBy({ it.position }, { it.id }))
 }
 
+/**
+ * The user's rule that a line written [text] is the catalog line [catalogId] (#310, `CatalogRules` in
+ * `:domain`). [textKey] is `CatalogRules.key(text)`: one rule per wording, whatever its case or spacing.
+ * Not a vehicle's: rules are the user's, and stay when a vehicle is deleted.
+ */
+@Entity(tableName = "catalog_rules", indices = [Index(value = ["textKey"], unique = true)])
+data class CatalogRuleEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val text: String,
+    val textKey: String,
+    val catalogId: String,
+    val createdOn: LocalDate,
+)
+
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val items: List<ServiceRecordItemEntity>,
