@@ -85,7 +85,8 @@ android {
 
     lint {
         abortOnError = true
-        warningsAsErrors = false
+        // No warnings are kept: a new one fails the build, as an error does.
+        warningsAsErrors = true
         // Dependabot proposes new versions, after its 5-day cooldown; lint would flag them on day one.
         // AndroidGradlePluginVersion is the same check for Gradle and AGP themselves.
         disable += "NewerVersionAvailable"
