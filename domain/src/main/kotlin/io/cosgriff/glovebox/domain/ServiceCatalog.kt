@@ -314,8 +314,8 @@ object VehicleReminders {
                 val point = if (first != null && step != null && readings.isNotEmpty()) (first + (odometer - first) / step * step).let { PastPoint(it, odometer - it) } else null
                 return@map ItemStatus(item, null, status, lastScheduled = point)
             }
-            // A snooze has nothing to hold back until the reminder is due, or before it was ever logged.
-            val snooze = item.snooze?.takeIf { last != null && status.state != DueState.OK && it.isActive(odometer, today) }
+            // A snooze has nothing to hold back until the reminder is due (one never logged has returned above).
+            val snooze = item.snooze?.takeIf { status.state != DueState.OK && it.isActive(odometer, today) }
             ItemStatus(item, last, if (snooze != null) status.copy(state = DueState.OK) else status, snooze)
         }
     }
