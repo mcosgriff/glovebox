@@ -926,6 +926,10 @@
         <item quantity="one">%1$s line filed</item>
         <item quantity="other">%1$s lines filed</item>
     </plurals>
+    <plurals name="import_rules_filed">
+        <item quantity="one">%1$s line filed by your rules: %2$s.</item>
+        <item quantity="other">%1$s lines filed by your rules: %2$s.</item>
+    </plurals>
     <string name="sort_custom_title">Sort Custom lines</string>
     <string name="sort_custom_about">Work written the same way is sorted together. Its wording stays as written; the line decides which reminders it counts for.</string>
     <string name="sort_custom_none_title">Nothing under Custom</string>
@@ -957,6 +961,7 @@
     <string name="sort_custom_remember_for">Remember “%1$s” for future imports</string>
     <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
     <string name="log_custom_tick_line">Tick this line</string>
+    <string name="log_line_by_rule">%1$s · your rule</string>
     <string name="log_file_under_button">File under a line</string>
     <string name="log_file_under_title">File under a line</string>
     <string name="log_file_under_body">“%1$s” stays as written. The line you pick decides which reminders it counts for.</string>

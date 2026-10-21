@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.screens
 
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.MileageUpdate
@@ -119,7 +120,8 @@ class ScreensScreenshotTest(private val shade: Shade) {
         val categories = Fixtures.logService().data!!.categories
         val lines = categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
         compose.shoot("custom_item_matches", shade) {
-            Column(Modifier.padding(16.dp)) { LineMatches("Coolant hoses replaced", lines, onPick = {}) }
+            // A made-up rule files this wording under the radiator, so that line comes first, said to be the user's.
+            Column(Modifier.padding(16.dp)) { LineMatches("Coolant hoses replaced", lines, onPick = {}, rules = listOf(CatalogRule("Coolant hoses replaced", "radiator"))) }
         }
     }
 

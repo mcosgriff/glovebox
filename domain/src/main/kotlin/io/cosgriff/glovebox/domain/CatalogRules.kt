@@ -6,6 +6,12 @@ import java.util.Locale
 data class CatalogRule(val text: String, val catalogId: String)
 
 /**
+ * A service-history import with the user's rules applied: [items] as they will be planned and written,
+ * [lines] filed differently because of a rule, and [wordings] those lines' text, as written, once each.
+ */
+data class RuleFiling(val items: List<ImportedRecord>, val lines: Int, val wordings: List<String>)
+
+/**
  * The user's own rules for filing a line of work under a catalog line, kept from sorting Custom lines so the
  * next import files that wording itself. **A rule matches the whole text only**, ignoring case, the spaces
  * round and between the words, and Carfax's "(s)": "Water pump gasket replaced" never catches "Water pump
@@ -22,6 +28,30 @@ object CatalogRules {
      * but never applied: it isn't deleted for the user, and a line it no longer names can't be filed.
      */
     fun known(rule: CatalogRule): Boolean = rule.catalogId in catalogIds
+
+    /**
+     * [items] with each line filed by [rules] where a rule has its wording. **A file's own `service` always
+     * wins**: a rule only fills the gap. A Carfax report has no service of its own, only the wording Glovebox
+     * recognises; there [overWording], and the user's rule wins over that, since they chose it.
+     */
+    fun file(items: List<ImportedRecord>, rules: List<CatalogRule>, overWording: Boolean): RuleFiling {
+        if (rules.isEmpty()) return RuleFiling(items, 0, emptyList())
+        val filed = mutableListOf<String>()
+        val out = items.map { record ->
+            record.copy(
+                work = record.work.map { line ->
+                    val rule = if (line.service != null && !overWording) null else match(line.label, rules)
+                    if (rule == null || rule == line.service) {
+                        line
+                    } else {
+                        filed += line.label
+                        line.copy(service = rule)
+                    }
+                },
+            )
+        }
+        return RuleFiling(out, filed.size, filed.distinctBy(::key))
+    }
 
     /** The catalog line [text] is filed under by one of [rules], or null. */
     fun match(text: String, rules: List<CatalogRule>): String? {
