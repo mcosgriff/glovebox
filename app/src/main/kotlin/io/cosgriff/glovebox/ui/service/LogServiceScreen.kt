@@ -117,8 +117,10 @@ import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.domain.NamedLine
 import io.cosgriff.glovebox.domain.WorkCategory
 import io.cosgriff.glovebox.domain.WorkOption
+import io.cosgriff.glovebox.domain.WorkSuggestions
 import io.cosgriff.glovebox.ui.LogServiceRoute
 import io.cosgriff.glovebox.ui.photo.AttachMenu
 import io.cosgriff.glovebox.ui.photo.PhotoTarget
@@ -737,8 +739,15 @@ internal fun LogServiceContent(
     }
     if (addingCustom) {
         CustomItemDialog(
+            // Lines not ticked yet, any of which the typed item may turn out to be.
+            lines = data.categories.flatMap { c -> c.options.filter { it.id !in form.selected }.map { LineChoice(it, c) } },
             onAdd = {
                 form.addCustom(it)
+                addingCustom = false
+            },
+            onPick = { choice ->
+                form.toggle(choice.option.id)
+                form.categoryId = choice.category.id
                 addingCustom = false
             },
             onDismiss = { addingCustom = false },
@@ -907,22 +916,64 @@ private fun CheckRow(label: String, hint: String?, checked: Boolean, onToggle: (
     }
 }
 
+/** A line on the form, with the category it is under. */
+internal class LineChoice(val option: WorkOption, val category: WorkCategory)
+
+/**
+ * The custom item being typed, and under it what it looks like among [lines] ([LineMatches]), so work goes
+ * under its line rather than Custom. Add keeps the text as typed.
+ */
 @Composable
-private fun CustomItemDialog(onAdd: (String) -> Unit, onDismiss: () -> Unit) {
+private fun CustomItemDialog(lines: List<LineChoice>, onAdd: (String) -> Unit, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.log_add_custom)) },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text(stringResource(R.string.log_what_was_done)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(stringResource(R.string.log_what_was_done)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                LineMatches(text, lines, onPick)
+            }
         },
         confirmButton = { TextButton(onClick = { onAdd(text) }, enabled = text.isNotBlank()) { Text(stringResource(R.string.add)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
+}
+
+/** The lines [typed] looks like (`WorkSuggestions`), each with its category; a tap ticks one instead. Nothing when none. */
+@Composable
+internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit) {
+    val matches = remember(lines, typed) {
+        val byId = lines.associateBy { it.option.id }
+        WorkSuggestions.suggest(typed, lines.map { NamedLine(it.option.id, it.option.label) }).mapNotNull(byId::get)
+    }
+    if (matches.isEmpty()) return
+    Column {
+        Text(
+            stringResource(R.string.log_custom_matches),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+        matches.forEach { choice ->
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(onClickLabel = stringResource(R.string.log_custom_tick_line)) { onPick(choice) }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(choice.option.label, style = MaterialTheme.typography.bodyLarge)
+                Text(choice.category.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
 }

@@ -918,6 +918,8 @@
     <string name="log_tab_count">✓ %1$s</string>
     <string name="log_add_custom">Add custom item</string>
     <string name="log_what_was_done">What was done?</string>
+    <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
+    <string name="log_custom_tick_line">Tick this line</string>
 
     <!-- Shared, edit and photos -->
     <string name="edit">Edit</string>

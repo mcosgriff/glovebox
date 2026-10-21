@@ -841,6 +841,11 @@ Notes on what's built:
   line's name as shown now (`catalogLabel`), the notes or the shop contains what is typed, ignoring case and the spaces
   round it; it works with the vehicle and category choice. The text is in the saved state like them, so it survives a
   restart, and goes with the History entry (a save, delete or restore landing on History clears it). Nothing is stored.
+- Log service's "Add custom item" (#309, `WorkSuggestions` in `:domain`, `LineMatches`) lists, under the field, up to four
+  lines of the form not yet ticked that what is typed looks like: a name all of whose words are typed ("Water pump" in
+  "Replaced water pump"; "Brake lines / hoses" is brake lines or brake hoses), or, while typing, one whose words the typed
+  ones start. Case, punctuation and a plural "s" are ignored and nothing else is guessed (fuzzy matching is #312). A tap
+  ticks that line and opens its category in place of the custom item; Add saves the text as typed. So Custom stays rare.
 - Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion
