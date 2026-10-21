@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.service.typedNumber
+import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.recallComponent
@@ -44,10 +47,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Recalls
 import java.time.LocalDate
 
@@ -72,7 +73,7 @@ fun MarkDoneSheet(
     val date = LocalDate.ofEpochDay(dateDay)
     var odometerText by rememberSaveable { mutableStateOf(odometer?.toString().orEmpty()) }
     var shop by rememberSaveable { mutableStateOf("") }
-    val miles = odometerText.toIntOrNull()
+    val miles = OdometerInput.parse(odometerText.typedNumber())
 
 
     GloveboxSheet(onDismiss = onDismiss) {
@@ -115,14 +116,7 @@ fun MarkDoneSheet(
             }
 
             if (addRecord) {
-                OutlinedTextField(
-                    value = odometerText,
-                    onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                    label = { Text(stringResource(R.string.recalls_repair_odometer, unit.symbolWord)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                OdometerField(odometerText, { odometerText = it }, stringResource(R.string.recalls_repair_odometer, unit.symbolWord))
                 OutlinedTextField(
                     value = shop,
                     onValueChange = { shop = it },

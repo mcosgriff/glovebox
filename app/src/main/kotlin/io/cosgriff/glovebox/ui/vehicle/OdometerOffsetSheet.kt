@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.typedNumber
@@ -20,14 +21,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,16 +38,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.ClusterSwaps
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.SwapProblem
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.time.LocalDate
 
 /**
@@ -146,18 +141,8 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
     }
 }
 
+/** A new cluster can start at 0, so a zero is kept here. */
 @Composable
 private fun ReadingField(value: String, onChange: (String) -> Unit, label: String, note: String, isError: Boolean) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { onChange(it.filter(Char::isDigit).take(MileageUpdate.MAX_DIGITS)) },
-        label = { Text(label) },
-        supportingText = { Text(note) },
-        isError = isError,
-        singleLine = true,
-        textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-        shape = RoundedCornerShape(12.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth(),
-    )
+    OdometerField(value, onChange, label, supporting = note, isError = isError, keepZero = true)
 }

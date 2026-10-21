@@ -122,4 +122,12 @@ class ServiceCatalogTest {
         val ids = HistoryImport.services.keys
         assertTrue(HistoryImport.services.values.all { ids.containsAll(it.covers) })
     }
+
+    @Test
+    fun `an odometer field keeps digits only, without leading zeros unless asked`() {
+        assertEquals("84210", OdometerInput.typed("084,210 mi"))
+        assertEquals("", OdometerInput.typed("000"))
+        assertEquals("0", OdometerInput.typed("0", keepZero = true))
+        assertEquals("1234567", OdometerInput.typed("123456789"))
+    }
 }

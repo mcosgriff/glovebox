@@ -333,6 +333,15 @@ object Money {
 }
 
 object OdometerInput {
+    /**
+     * What an odometer field keeps of what is typed: digits only, at most [MileageUpdate.MAX_DIGITS], without
+     * leading zeros unless [keepZero] (a replaced cluster can start at 0; a reading anywhere else can't).
+     */
+    fun typed(text: String, keepZero: Boolean = false): String {
+        val digits = text.filter(Char::isDigit)
+        return (if (keepZero) digits else digits.trimStart('0')).take(MileageUpdate.MAX_DIGITS)
+    }
+
     /** Whole miles above zero; thousands separators are fine. */
     fun parse(text: String): Int? {
         val cleaned = text.filterNot { it == ',' || it.isWhitespace() }

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -29,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -40,7 +40,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,9 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -76,7 +73,6 @@ import io.cosgriff.glovebox.domain.LoggedReading
 import io.cosgriff.glovebox.domain.ChartPoint
 import io.cosgriff.glovebox.domain.MileageChart
 import io.cosgriff.glovebox.domain.MileageReadings
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
@@ -365,17 +361,12 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
                 color = scheme.onSurfaceVariant,
             )
 
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text(stringResource(R.string.odometer_in, unit.symbolWord)) },
-                supportingText = problem?.takeIf { showErrors }?.let { { Text(it) } },
+            OdometerField(
+                text,
+                { text = it },
+                stringResource(R.string.odometer_in, unit.symbolWord),
+                supporting = problem?.takeIf { showErrors },
                 isError = showErrors && problem != null,
-                singleLine = true,
-                textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
             )
 
             DateButton(R.string.date_button, date) { day = it.toEpochDay() }

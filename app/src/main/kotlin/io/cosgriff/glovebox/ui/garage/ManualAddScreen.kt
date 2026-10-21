@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -8,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import io.cosgriff.glovebox.ui.components.DistanceUnitSwitch
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DistanceUnit
-import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,7 +63,6 @@ import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.VehiclePick
 import io.cosgriff.glovebox.domain.VehicleText
@@ -149,7 +149,7 @@ class ManualAddViewModel @Inject constructor(
     }
 
     fun onOdometerChange(value: String) {
-        odometerText = value.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS)
+        odometerText = OdometerInput.typed(value)
     }
 
     /** Only the make and the model year are sent. */
@@ -311,16 +311,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 Text(stringResource(R.string.add_vehicle_unit_note), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
 
-            OutlinedTextField(
-                value = vm.odometerText,
-                onValueChange = vm::onOdometerChange,
-                label = { Text(stringResource(R.string.odometer_in, vm.unit.symbolWord)) },
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            OdometerField(vm.odometerText, vm::onOdometerChange, stringResource(R.string.odometer_in, vm.unit.symbolWord))
 
             Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                 Text(

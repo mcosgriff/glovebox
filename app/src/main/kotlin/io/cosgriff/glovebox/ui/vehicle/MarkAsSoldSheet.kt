@@ -1,12 +1,14 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.typedNumber
+import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
 import io.cosgriff.glovebox.domain.DistanceUnit
-import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,14 +20,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,12 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.domain.Archive
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.SaleProblem
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -64,7 +61,7 @@ fun MarkAsSoldSheet(
     val scheme = MaterialTheme.colorScheme
     var soldDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var odometerText by rememberSaveable { mutableStateOf(lastOdometer?.toString().orEmpty()) }
-    val sale = Sale(LocalDate.ofEpochDay(soldDay), odometerText.toIntOrNull())
+    val sale = Sale(LocalDate.ofEpochDay(soldDay), OdometerInput.parse(odometerText.typedNumber()))
     val problems = Archive.problems(sale, lastOdometer, LocalDate.now())
     val tooLow = SaleProblem.ODOMETER_BELOW_LAST in problems
 
@@ -83,25 +80,16 @@ fun MarkAsSoldSheet(
 
             DateButton(R.string.sold_date, sale.soldOn) { soldDay = it.toEpochDay() }
 
-            OutlinedTextField(
-                value = odometerText,
-                onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text(stringResource(R.string.sold_final_odometer, unit.symbolWord)) },
-                supportingText = {
-                    Text(
-                        when {
-                            tooLow -> stringResource(R.string.sold_too_low, lastOdometer?.asDistance(unit).orEmpty())
-                            lastOdometer == null -> stringResource(R.string.optional)
-                            else -> stringResource(R.string.sold_last_reading, lastOdometer.asDistance(unit))
-                        },
-                    )
+            OdometerField(
+                odometerText,
+                { odometerText = it },
+                stringResource(R.string.sold_final_odometer, unit.symbolWord),
+                supporting = when {
+                    tooLow -> stringResource(R.string.sold_too_low, lastOdometer?.asDistance(unit).orEmpty())
+                    lastOdometer == null -> stringResource(R.string.optional)
+                    else -> stringResource(R.string.sold_last_reading, lastOdometer.asDistance(unit))
                 },
                 isError = tooLow,
-                singleLine = true,
-                textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
             )
 
             OutlinedButton(
