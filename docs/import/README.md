@@ -225,7 +225,7 @@ count for a reminder. The values, by the category History files them under:
 | Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |
 | Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `suspension-check` |
-| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `bulbs`, `lights-check`, `windows-check`, `air-conditioning`, `starter`, `alternator` |
+| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
 | Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
 | Other | `accessory`, `body`, `detail` |
 

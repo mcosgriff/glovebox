@@ -238,6 +238,8 @@ object CarfaxReport {
         """spark plugs? replaced""" to "spark-plugs",
         """(spark plug|ignition) wires?( set)? replaced|plug wires? replaced""" to "plug-wires",
         """glow plugs? replaced""" to "glow-plugs",
+        // A key fob's battery before the vehicle's.
+        """(key fob|remote|keyless entry remote|key) batter(y|ies) replaced""" to "key-fob-battery",
         """battery replaced|new battery installed""" to "battery",
         """wiper blades? replaced|wipers? replaced""" to "wipers",
         """(serpentine|drive|accessory) belts? replaced""" to "belt",
@@ -265,6 +267,14 @@ object CarfaxReport {
         """power steering pump (replaced|installed)""" to "power-steering-pump",
         """(idler arm|pitman arm|drag link|center link|steering (column|linkage|knuckle)) (replaced|installed)""" to "steering-parts",
         """(light )?bulbs? replaced""" to "bulbs",
+        """headlights? (assembly|assemblies|housings?|lens|lenses) (replaced|installed)""" to "headlight-assembly",
+        """(power )?window (regulators?|motors?)( and (regulators?|motors?))? replaced""" to "window-regulator",
+        """door lock actuators? replaced""" to "door-lock-actuator",
+        """(a/c|ac|air conditioning) compressor (replaced|installed)""" to "ac-compressor",
+        """(a/c|ac|air conditioning) condenser (replaced|installed)""" to "ac-condenser",
+        """(heater |hvac )?blower motor replaced""" to "blower-motor",
+        """(fuses?|relays?)( and (fuses?|relays?))? replaced""" to "fuses",
+        """horns? replaced""" to "horn",
         """power steering (fluid )?(flushed|changed|serviced)""" to "power-steering",
         """washer fluid (topped off|filled|added|replaced)""" to "washer",
         // Only fluids in general: "Brake fluid checked" has its own line above.

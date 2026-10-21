@@ -859,7 +859,16 @@
     <string name="catalog_bulbs">Bulbs</string>
     <string name="catalog_lights_check">Lights check</string>
     <string name="catalog_windows_check">Windows check</string>
-    <string name="catalog_air_conditioning">Air conditioning</string>
+    <string name="catalog_air_conditioning">Air conditioning service</string>
+    <string name="catalog_key_fob_battery">Key fob battery</string>
+    <string name="catalog_headlight_assembly">Headlight assembly</string>
+    <string name="catalog_window_regulator">Window regulator / motor</string>
+    <string name="catalog_door_lock_actuator">Door lock actuator</string>
+    <string name="catalog_ac_compressor">A/C compressor</string>
+    <string name="catalog_ac_condenser">A/C condenser</string>
+    <string name="catalog_blower_motor">Blower motor</string>
+    <string name="catalog_fuses">Fuses / relays</string>
+    <string name="catalog_horn">Horn</string>
     <string name="catalog_starter">Starter</string>
     <string name="catalog_alternator">Alternator</string>
     <string name="catalog_multi_point">Multi-point inspection</string>
