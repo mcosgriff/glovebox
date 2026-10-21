@@ -18,6 +18,8 @@ import io.cosgriff.glovebox.ui.history.RecordDetailContent
 import io.cosgriff.glovebox.ui.reminders.RemindersContent
 import io.cosgriff.glovebox.ui.schedule.MilestonesContent
 import io.cosgriff.glovebox.ui.schedule.ScheduleContent
+import io.cosgriff.glovebox.ui.service.LineMatches
+import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsContent
@@ -27,6 +29,10 @@ import io.cosgriff.glovebox.ui.vehicle.UpdateMileageSheet
 import io.cosgriff.glovebox.ui.settings.CheckInDialog
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsContent
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,6 +109,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.logService(), newPhotos = emptyList(), photoProblem = null,
             onDone = {}, onSave = {}, onDeleteInstead = {}, onTakePhoto = {}, onChoosePhotos = {}, onRemoveNewPhoto = {},
         )
+    }
+
+    @Test
+    fun customItemMatches() {
+        // Made once: building the form writes its state, which inside a composition would compose again for ever.
+        val categories = Fixtures.logService().data!!.categories
+        val lines = categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
+        compose.shoot("custom_item_matches", shade) {
+            Column(Modifier.padding(16.dp)) { LineMatches("Coolant hoses replaced", lines, onPick = {}) }
+        }
     }
 
     @Test
