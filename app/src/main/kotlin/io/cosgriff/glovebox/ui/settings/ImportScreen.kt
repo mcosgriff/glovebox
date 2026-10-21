@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.DangerTextButton
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.LabelledCard
@@ -32,7 +34,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -41,7 +42,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -783,7 +783,7 @@ fun ImportScreen(
                 when (r.kind) {
                     ImportKind.INTERVAL_SCHEDULE -> {
                         if (r.added > 0) {
-                            Button(onClick = { onEnterLastDone(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.home_enter_last_done)) }
+                            PrimaryButton(onClick = { onEnterLastDone(r.vehicleId) }) { Text(stringResource(R.string.home_enter_last_done)) }
                             Text(
                                 stringResource(R.string.import_last_done_note),
                                 style = MaterialTheme.typography.bodySmall,
@@ -794,15 +794,14 @@ fun ImportScreen(
                             Text(stringResource(R.string.import_see_schedule))
                         }
                     }
-                    ImportKind.MILESTONE_SCHEDULE -> Button(onClick = { onOpenMilestones(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_see_milestones)) }
-                    ImportKind.SERVICE_HISTORY -> Button(
+                    ImportKind.MILESTONE_SCHEDULE -> PrimaryButton(onClick = { onOpenMilestones(r.vehicleId) }) { Text(stringResource(R.string.import_see_milestones)) }
+                    ImportKind.SERVICE_HISTORY -> PrimaryButton(
                         onClick = {
                             vm.showHistory(r.vehicleId)
                             onOpenHistory(r.vehicleId, r.archived)
                         },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
                     ) { Text(stringResource(R.string.import_see_history)) }
-                    else -> Button(onClick = { onOpenTorqueSpecs(r.vehicleId) }, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_see_torque)) }
+                    else -> PrimaryButton(onClick = { onOpenTorqueSpecs(r.vehicleId) }) { Text(stringResource(R.string.import_see_torque)) }
                 }
                 OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
                     Text(stringResource(R.string.import_another))
@@ -839,7 +838,7 @@ fun ImportScreen(
                 SectionLabel(stringResource(R.string.import_file_section))
                 val file = picked
                 if (file == null) {
-                    Button(onClick = vm::pick, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(stringResource(R.string.import_choose)) }
+                    PrimaryButton(onClick = vm::pick) { Text(stringResource(R.string.import_choose)) }
                 } else {
                     RowsCard {
                         Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -891,10 +890,7 @@ fun ImportScreen(
                     } else {
                         if (picked?.pdf != null) KeepCopyCard(keepCopy) { keepCopy = it }
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Button(
-                                onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles, keepCopy) },
-                                modifier = Modifier.fillMaxWidth().height(56.dp),
-                            ) {
+                            PrimaryButton(onClick = { if (mode == ImportMode.REPLACE_MATCHING && view.differs.isNotEmpty()) confirming = true else vm.import(p, mode, stopDoubles, keepCopy) }) {
                                 Text(stringResource(R.string.import_button, view.count(changes)))
                             }
                             Text(
@@ -1090,7 +1086,7 @@ private fun ReplaceDialog(view: PlanView, onConfirm: () -> Unit, onDismiss: () -
                 Text(stringResource(R.string.delete_all_cant_undo), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         },
-        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) { Text(stringResource(R.string.import_replace_and_import)) } },
+        confirmButton = { DangerTextButton(onClick = onConfirm) { Text(stringResource(R.string.import_replace_and_import)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

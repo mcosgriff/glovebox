@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
 import androidx.compose.ui.platform.LocalResources
@@ -40,12 +41,10 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -329,12 +328,7 @@ internal fun VehicleHomeContent(
                             }
                         }
                     }
-                    OutlinedButton(
-                        onClick = { onEnterLastDone(v.id) },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = { onEnterLastDone(v.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                         Text(stringResource(R.string.home_enter_last_done))
                     }
                 }
@@ -422,12 +416,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                         )
                     }
                 }
-                OutlinedButton(
-                    onClick = onUpdateMileage,
-                    modifier = Modifier.heightIn(min = 48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                ) {
+                InkOutlinedButton(onClick = onUpdateMileage, modifier = Modifier.heightIn(min = 48.dp), quiet = true) {
                     Text(stringResource(R.string.update_mileage_title))
                 }
             }

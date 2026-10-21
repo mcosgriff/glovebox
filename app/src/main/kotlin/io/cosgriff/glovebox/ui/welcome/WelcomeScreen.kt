@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.welcome
 
+import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import android.Manifest
@@ -23,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build as WrenchIcon
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -183,11 +183,7 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = { go(WelcomeAction.ADD_VEHICLE) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
+                PrimaryButton(onClick = { go(WelcomeAction.ADD_VEHICLE) }) {
                     Text(stringResource(R.string.welcome_add_vehicle), style = MaterialTheme.typography.titleMedium)
                 }
                 OutlinedButton(

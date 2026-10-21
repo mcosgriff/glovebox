@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
 import io.cosgriff.glovebox.ui.components.Tag
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -19,7 +20,6 @@ import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.export.SaveAsImportFile
 import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -36,10 +36,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -295,13 +293,7 @@ internal fun TorqueSpecsContent(
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
                     )
-                    OutlinedButton(
-                        onClick = onAddCommon,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.5.dp, scheme.onSurface),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                    ) {
+                    InkOutlinedButton(onClick = onAddCommon, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
                         Text(stringResource(R.string.torque_start_common))
                     }
                     Text(
@@ -360,13 +352,7 @@ internal fun TorqueSpecsContent(
 
         item {
             Column(Modifier.padding(start = 20.dp, top = 4.dp, end = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                OutlinedButton(
-                    onClick = { editing = 0L },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.5.dp, scheme.outline),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-                ) {
+                InkOutlinedButton(onClick = { editing = 0L }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), quiet = true) {
                     Text(stringResource(R.string.torque_add))
                 }
                 if (state.specs.isNotEmpty() && TorqueSpecs.common.any { t -> state.specs.none { it.name.equals(t.label, ignoreCase = true) } }) {
@@ -469,13 +455,7 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: Strin
 private fun KnownOffer(list: KnownSpecList, plan: KnownSpecPlan, onAdd: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        OutlinedButton(
-            onClick = onAdd,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-            shape = RoundedCornerShape(14.dp),
-            border = BorderStroke(1.5.dp, scheme.onSurface),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-        ) {
+        InkOutlinedButton(onClick = onAdd, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
             Text(stringResource(R.string.torque_add_known, list.title))
         }
         Text(offer(list, plan), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)

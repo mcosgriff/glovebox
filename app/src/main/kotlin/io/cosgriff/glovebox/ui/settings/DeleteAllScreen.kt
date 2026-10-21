@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DangerButton
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.BorderedCard
@@ -8,7 +9,6 @@ import io.cosgriff.glovebox.R
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -146,14 +144,7 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 }
             }
 
-            OutlinedButton(
-                onClick = onBackupFirst,
-                enabled = !vm.deleting,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.5.dp, scheme.onSurface),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
+            InkOutlinedButton(onClick = onBackupFirst, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), enabled = !vm.deleting) {
                 Text(stringResource(R.string.delete_all_backup_first))
             }
 
