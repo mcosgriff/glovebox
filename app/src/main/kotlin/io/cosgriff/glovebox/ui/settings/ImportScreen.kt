@@ -146,6 +146,10 @@ import io.cosgriff.glovebox.ui.service.toRef
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleDocuments
+import io.cosgriff.glovebox.data.db.CatalogRuleDao
+import io.cosgriff.glovebox.data.db.toRule
+import io.cosgriff.glovebox.domain.CatalogRules
+import io.cosgriff.glovebox.domain.RuleFiling
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -348,6 +352,7 @@ class ImportViewModel @Inject constructor(
     private val service: ServiceDao,
     private val odometer: OdometerDao,
     private val milestones: MilestoneDao,
+    private val catalogRules: CatalogRuleDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
     private val documents: DocumentStore,
@@ -579,10 +584,18 @@ class ImportViewModel @Inject constructor(
         }
     }
 
+    /** "2 lines filed by your rules: Water pump gasket replaced." Null when no rule filed anything. */
+    private fun rulesNote(filing: RuleFiling): String? = filing.lines.takeIf { it > 0 }?.let { n ->
+        AppText.res.getQuantityString(R.plurals.import_rules_filed, n, n.asNumber(), filing.wordings.joinToString(", "))
+    }
+
     private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, s: Settings, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
         val unit = vehicle.unit
+        // The user's rules file the lines the file leaves unsaid, and on a Carfax report (a PDF) win over the
+        // wording Glovebox recognised, before anything is compared, so the plan and the write see the same lines.
+        val byRules = CatalogRules.file(file.items, catalogRules.all().map { it.toRule() }, overWording = picker.picked.value?.pdf != null)
         // The file says which unit its readings are in; they are saved as this vehicle's dash would have shown them.
-        val all = FileDistances.history(file.items, file.unit, unit)
+        val all = FileDistances.history(byRules.items, file.unit, unit)
         val swap = vehicle.clusterSwap()
         val records = service.recordsFor(vehicle.id)
         val byId = records.associateBy { it.record.id }
@@ -626,7 +639,7 @@ class ImportViewModel @Inject constructor(
             differs = plan.differs.map { (item, mine) -> PlanLine(item.title(unit), item.describe(), mine.describe()) },
             same = plan.same.size,
             caution = AppText.res.getString(R.string.import_caution_history),
-            note = convertedNote(file.unit, unit),
+            note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules)).joinToString(" ").ifEmpty { null },
             moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
             doubts = doubts.map { (r, d) ->
                 DoubtLine(

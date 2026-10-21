@@ -926,6 +926,10 @@
         <item quantity="one">%1$s line filed</item>
         <item quantity="other">%1$s lines filed</item>
     </plurals>
+    <plurals name="import_rules_filed">
+        <item quantity="one">%1$s line filed by your rules: %2$s.</item>
+        <item quantity="other">%1$s lines filed by your rules: %2$s.</item>
+    </plurals>
     <string name="sort_custom_title">Sort Custom lines</string>
     <string name="sort_custom_about">Work written the same way is sorted together. Its wording stays as written; the line decides which reminders it counts for.</string>
     <string name="sort_custom_none_title">Nothing under Custom</string>

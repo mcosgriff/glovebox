@@ -239,7 +239,9 @@ count for a reminder. The values, by the category History files them under:
   record doesn't name, and `scheduled-service` ("the 30,000 mile service") resets nothing, since it
   doesn't say which jobs were done. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
-  (ignoring capitals). Any other line is history only. The preview lists every reminder that would
+  (ignoring capitals), or, failing that, is filed under the line one of your category rules gives its whole
+  wording (rules are kept when you sort Custom lines on History; a `service` in the file always wins). Any other
+  line is history only. The preview lists every reminder that would
   move before you import.
 - An older record never moves a reminder that a newer service has already set: the last time a job
   was done is always the most recent one in the log.
