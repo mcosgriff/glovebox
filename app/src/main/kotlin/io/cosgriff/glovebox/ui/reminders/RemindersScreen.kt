@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.domain.Interval
 import androidx.compose.ui.platform.LocalResources
@@ -32,14 +33,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -195,9 +193,9 @@ internal fun RemindersContent(
         if (garage.vehicles.size > 1) {
             item {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    VehicleChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
+                    InkChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
                     garage.vehicles.forEach { g ->
-                        VehicleChip(g.vehicle.shortName(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
+                        InkChip(g.vehicle.shortName(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
                     }
                 }
             }
@@ -403,24 +401,6 @@ internal fun UrgentItem<VehicleEntity>.due(): String? = when (val h = progress.h
 // Days however many, unlike a headline's, which turns long ones into months.
 @Composable
 private fun days(n: Long): String = pluralStringResource(R.plurals.days, n.toInt(), n.toInt().asNumber())
-
-@Composable
-private fun VehicleChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label, fontWeight = FontWeight.SemiBold) },
-        shape = CircleShape,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = scheme.surface,
-            labelColor = scheme.onSurface,
-            selectedContainerColor = scheme.onSurface,
-            selectedLabelColor = scheme.surface,
-        ),
-        modifier = Modifier.heightIn(min = 48.dp),
-    )
-}
 
 @Composable
 private fun Empty(noVehicles: Boolean, onAddVehicle: () -> Unit) {

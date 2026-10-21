@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -54,7 +55,6 @@ import io.cosgriff.glovebox.domain.LogEdits
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.BorderStroke
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
@@ -77,8 +77,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -345,15 +343,15 @@ internal fun HistoryContent(
         if (state.vehicles.size > 1) {
             ChipRow {
                 state.vehicles.forEach { v ->
-                    Chip(v.label(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
+                    InkChip(v.label(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
                 }
             }
         }
         if (categories.isNotEmpty()) {
             ChipRow {
-                Chip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
+                InkChip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
                 categories.forEach { c ->
-                    Chip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
+                    InkChip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
                 }
             }
         }
@@ -534,28 +532,6 @@ private fun ChipRow(content: @Composable () -> Unit) {
         Modifier.fillMaxWidth().padding(top = 4.dp).horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) { content() }
-}
-
-@Composable
-private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label, fontWeight = FontWeight.SemiBold) },
-        shape = CircleShape,
-        border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
-            selected = selected,
-            borderColor = MaterialTheme.colorScheme.outlineVariant,
-            borderWidth = 1.5.dp,
-        ),
-        // Canvas: the chosen filter is solid ink.
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            selectedContainerColor = MaterialTheme.colorScheme.secondary,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-        ),
-    )
 }
 
 @Composable

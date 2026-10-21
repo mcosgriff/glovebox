@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -42,8 +43,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -608,15 +607,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     )
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         vm.trimChoices.forEach { choice ->
-                            FilterChip(
-                                selected = vm.trim == choice,
-                                onClick = { vm.onTrimChange(choice) },
-                                label = { Text(choice) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = scheme.secondary,
-                                    selectedLabelColor = scheme.onSecondary,
-                                ),
-                            )
+                            InkChip(choice, selected = vm.trim == choice) { vm.onTrimChange(choice) }
                         }
                     }
                 }

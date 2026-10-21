@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.R
@@ -117,7 +118,7 @@ fun SpecEditorSheet(
             )
 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TorqueCategory.entries.forEach { c -> Chip(c.label, selected = c.name == categoryName) { categoryName = c.name } }
+                TorqueCategory.entries.forEach { c -> InkChip(c.label, selected = c.name == categoryName) { categoryName = c.name } }
             }
 
             OutlinedTextField(
