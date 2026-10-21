@@ -225,7 +225,7 @@ internal fun SettingsContent(
             Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(scheme.background).padding(4.dp).selectableGroup(),
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.background).padding(4.dp).selectableGroup(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     ThemeMode.entries.forEach { mode ->
@@ -438,7 +438,7 @@ private fun ExportButton(title: String, subtitle: String, modifier: Modifier, on
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = 52.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.5.dp, scheme.onSurface),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
         contentPadding = ButtonDefaults.TextButtonContentPadding,

@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.theme
 
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
@@ -130,6 +133,17 @@ val LocalStatusColors = staticCompositionLocalOf {
     StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
 }
 
+/**
+ * The canvas's corners (#297): 12dp for fields, buttons, menus and snackbars, 16 for cards, 20 for the garage's
+ * vehicle cards. Use `MaterialTheme.shapes`, never a corner typed out, so Material's own components match.
+ */
+val GloveboxShapes = Shapes(
+    extraSmall = RoundedCornerShape(12.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(20.dp),
+)
+
 @Composable
 fun GloveboxTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> Unit) {
     val dark = when (mode) {
@@ -137,7 +151,7 @@ fun GloveboxTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () ->
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    MaterialTheme(colorScheme = if (dark) DarkScheme else LightScheme, typography = GloveboxTypography) {
+    MaterialTheme(colorScheme = if (dark) DarkScheme else LightScheme, typography = GloveboxTypography, shapes = GloveboxShapes) {
         CompositionLocalProvider(LocalStatusColors provides statusColors(), content = content)
     }
 }

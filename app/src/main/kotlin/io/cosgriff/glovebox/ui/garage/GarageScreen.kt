@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
@@ -209,7 +208,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = scheme.surface),
         border = if (urgent) BorderStroke(1.5.dp, scheme.primary) else BorderStroke(1.dp, scheme.outlineVariant),
     ) {
@@ -281,7 +280,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
         SectionLabel(stringResource(if (vehicleCount == 2) R.string.garage_across_both else R.string.garage_across_all), bold = true)
         Card(
             Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = MaterialTheme.shapes.medium,
             colors = CardDefaults.cardColors(containerColor = scheme.surface),
             border = BorderStroke(1.dp, scheme.outlineVariant),
         ) {

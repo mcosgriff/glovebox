@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.components
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,7 +44,6 @@ internal fun TypedConfirmField(
         singleLine = true,
         enabled = enabled,
         textStyle = TextStyle(fontFamily = PlexMono),
-        shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = if (confirmed) scheme.error else scheme.primary,
             unfocusedBorderColor = if (confirmed) scheme.error else scheme.outline,
@@ -62,7 +60,7 @@ internal fun DangerButton(onClick: () -> Unit, enabled: Boolean, content: @Compo
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
         content = content,
     )

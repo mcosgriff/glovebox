@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.DropdownMenu
@@ -77,7 +76,7 @@ fun PhotoThumb(
         Surface(
             Modifier.fillMaxSize().then(if (onClick != null) Modifier.clickable(role = Role.Button, onClickLabel = stringResource(R.string.photo_open), onClick = onClick) else Modifier),
             color = scheme.surfaceVariant,
-            shape = RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.small,
             border = BorderStroke(1.dp, scheme.outlineVariant),
         ) {
             // Plain tile for the moment it takes to decrypt.

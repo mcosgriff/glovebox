@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
@@ -332,7 +331,7 @@ private fun SummaryCard(
         modifier = modifier.fillMaxWidth(),
         color = container,
         contentColor = scheme.onSurface, // canvas: ink on the tint, not the tint's own text colour
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         border = BorderStroke(1.dp, if (checked == null) accent else accent.copy(alpha = 0.3f)),
     ) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -372,7 +371,7 @@ private fun SummaryCard(
                         onClick = onRefresh,
                         enabled = !refreshing,
                         modifier = Modifier.weight(1f).heightIn(min = 48.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.5.dp, scheme.outline),
                         colors = ButtonDefaults.outlinedButtonColors(containerColor = scheme.surface, contentColor = scheme.onSurface),
                         contentPadding = PaddingValues(horizontal = 8.dp),
@@ -383,7 +382,7 @@ private fun SummaryCard(
                 Button(
                     onClick = onLookup,
                     modifier = Modifier.weight(2f).heightIn(min = 48.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.small,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                 ) {
                     Text(lookupLabel, textAlign = TextAlign.Center)
@@ -436,7 +435,7 @@ private fun RecallCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.5.dp, if (done || archived) scheme.outlineVariant else scheme.primary),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -497,8 +496,8 @@ private fun RecallCard(
             // One outlined shape split by a line, so the two read as a group: what the owner says about the recall.
             Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(
-                    Modifier.weight(if (done) 1f else 2f).height(48.dp).clip(RoundedCornerShape(12.dp))
-                        .border(1.5.dp, scheme.onSurface, RoundedCornerShape(12.dp)),
+                    Modifier.weight(if (done) 1f else 2f).height(48.dp).clip(MaterialTheme.shapes.small)
+                        .border(1.5.dp, scheme.onSurface, MaterialTheme.shapes.small),
                 ) {
                     StatusButton(stringResource(if (done) R.string.recalls_mark_open else R.string.recalls_mark_done), onClick = onToggle, modifier = Modifier.weight(1f))
                     if (!done) {
@@ -509,7 +508,7 @@ private fun RecallCard(
                 Button(
                     onClick = onFindDealer,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.surfaceVariant, contentColor = scheme.onSurface),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                 ) {

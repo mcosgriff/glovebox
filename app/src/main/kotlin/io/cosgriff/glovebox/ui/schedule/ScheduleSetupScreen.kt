@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -353,7 +352,7 @@ fun ScheduleSetupScreen(
             }
 
             if (vm.engineChoices.isNotEmpty()) {
-                Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
+                Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small) {
                     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         val source = vm.engineChoices.first().source.name
                         Text(stringResource(R.string.setup_engine_title), style = MaterialTheme.typography.titleSmall)
@@ -428,7 +427,6 @@ private fun LastDoneChoice(enterNow: Boolean, onPick: (enterNow: Boolean) -> Uni
             readOnly = true,
             label = { Text(stringResource(R.string.setup_last_done_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
-            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -500,7 +498,7 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
             SegmentedButton(
                 selected = severe == value,
                 onClick = { onPick(value) },
-                shape = SegmentedButtonDefaults.itemShape(i, 2, baseShape = RoundedCornerShape(14.dp)),
+                shape = SegmentedButtonDefaults.itemShape(i, 2, baseShape = MaterialTheme.shapes.small),
                 colors = colors,
                 icon = {},
                 modifier = Modifier.fillMaxHeight(),

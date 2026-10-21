@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.components
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -28,7 +27,7 @@ internal fun DistanceUnitSwitch(unit: DistanceUnit, onPick: (DistanceUnit) -> Un
             SegmentedButton(
                 selected = unit == u,
                 onClick = { onPick(u) },
-                shape = SegmentedButtonDefaults.itemShape(i, DistanceUnit.entries.size, baseShape = RoundedCornerShape(14.dp)),
+                shape = SegmentedButtonDefaults.itemShape(i, DistanceUnit.entries.size, baseShape = MaterialTheme.shapes.small),
                 colors = colors,
                 icon = {},
                 modifier = Modifier.fillMaxHeight(),

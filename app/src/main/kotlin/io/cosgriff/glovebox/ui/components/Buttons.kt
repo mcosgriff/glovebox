@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +29,7 @@ internal fun PrimaryButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
-    Button(onClick, modifier.fillMaxWidth().height(56.dp), enabled = enabled, shape = RoundedCornerShape(16.dp), colors = colors, content = content)
+    Button(onClick, modifier.fillMaxWidth().height(56.dp), enabled = enabled, shape = MaterialTheme.shapes.medium, colors = colors, content = content)
 }
 
 /**
@@ -51,7 +50,7 @@ internal fun InkOutlinedButton(
         onClick,
         modifier,
         enabled = enabled,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
         border = BorderStroke(1.5.dp, if (!enabled) scheme.outlineVariant else if (quiet) scheme.outline else scheme.onSurface),
         contentPadding = contentPadding,
@@ -97,6 +96,6 @@ internal fun SheetActions(
     val padding = PaddingValues(horizontal = 8.dp)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         InkOutlinedButton(onSecondary, Modifier.weight(1f).height(52.dp), enabled = secondaryEnabled, quiet = quiet, contentPadding = padding, content = secondary)
-        Button(onConfirm, Modifier.weight(2f).height(52.dp), enabled = enabled, shape = RoundedCornerShape(12.dp), colors = colors, contentPadding = padding, content = confirm)
+        Button(onConfirm, Modifier.weight(2f).height(52.dp), enabled = enabled, shape = MaterialTheme.shapes.small, colors = colors, contentPadding = padding, content = confirm)
     }
 }

@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -166,7 +165,7 @@ private fun ArchivedCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = scheme.surface,
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         border = BorderStroke(1.dp, scheme.outlineVariant),
     ) {
         Column(Modifier.padding(start = 18.dp, top = 18.dp, end = 18.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {

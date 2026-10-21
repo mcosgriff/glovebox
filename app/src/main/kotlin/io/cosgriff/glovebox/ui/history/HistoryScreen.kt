@@ -54,7 +54,6 @@ import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.domain.LogEdits
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
@@ -392,7 +391,6 @@ private fun SearchField(search: String, onSearch: (String) -> Unit) {
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
-        shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -431,7 +429,7 @@ private fun RecordCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: Reco
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = scheme.surface),
         // Canvas: the record just added, or just restored, is outlined in the accent.
         border = BorderStroke(if (fresh) 1.5.dp else 1.dp, if (fresh) scheme.primary else scheme.outlineVariant),
@@ -468,7 +466,7 @@ private fun SortControls(order: HistoryOrder, onChoose: (HistoryOrder) -> Unit) 
         DropdownMenu(
             expanded = open,
             onDismissRequest = { open = false },
-            shape = RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.small,
             containerColor = scheme.surface,
             border = BorderStroke(1.dp, scheme.outlineVariant),
         ) {
