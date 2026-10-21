@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -43,14 +45,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -61,8 +59,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -469,22 +465,7 @@ internal fun ScheduleContent(
     val tracked = state.items.count { it.tracked && !it.dormant }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-            Column(Modifier.padding(start = 8.dp)) {
-                Text(
-                    stringResource(R.string.details_schedule),
-                    Modifier.semantics { heading() },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        ScreenHeader(stringResource(R.string.details_schedule), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
 
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
@@ -566,10 +547,7 @@ internal fun ScheduleContent(
                 }
             }
 
-            Card(
-                Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            ) {
+            FilledCard {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                     state.items.forEach { item ->
                         ItemRow(item, state.vehicle.unit, onToggle = { onSetTracked(item, !item.tracked) }, onEdit = { onEdit(item) })
@@ -651,7 +629,7 @@ internal fun ScheduleContent(
 /** The way to the Milestones screen, as a link row like those on Vehicle details. */
 @Composable
 private fun MilestonesRow(onClick: () -> Unit) {
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    FilledCard {
         Row(
             Modifier.fillMaxWidth()
                 .heightIn(min = 60.dp)

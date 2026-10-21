@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.FilledCard
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -77,7 +76,7 @@ fun MileageChartCard(
         Text(stringResource(R.string.chart_needs_two), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         return
     }
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = scheme.surface)) {
+    FilledCard {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             // Readings that all fall within a year leave nothing to choose.
             if (most > 1) YearsSlider(years, most, first, onYears)

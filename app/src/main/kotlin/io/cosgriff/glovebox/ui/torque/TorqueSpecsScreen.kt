@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -30,13 +32,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -54,8 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -286,22 +284,7 @@ internal fun TorqueSpecsContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-                Column(Modifier.padding(start = 8.dp)) {
-                    Text(
-                        stringResource(R.string.details_torque),
-                        Modifier.semantics { heading() },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-            }
+            ScreenHeader(stringResource(R.string.details_torque), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
         }
 
         if (state.specs.isEmpty()) {
@@ -449,13 +432,7 @@ internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
 private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: String?, onClick: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     val torque = spec.newtonMeters?.let(::Torque)
-    Surface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-    ) {
+    BorderedCard(modifier, onClick = onClick) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {

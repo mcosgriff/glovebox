@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
@@ -212,12 +213,7 @@ fun DeleteVehicleScreen(
                 Text(stringResource(R.string.delete_vehicle_removes), color = scheme.onSurfaceVariant)
             }
 
-            Surface(
-                Modifier.fillMaxWidth(),
-                color = scheme.surface,
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, scheme.outlineVariant),
-            ) {
+            BorderedCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     listOf(
                         stringResource(R.string.delete_vehicle_records) to d.records.asNumber(),

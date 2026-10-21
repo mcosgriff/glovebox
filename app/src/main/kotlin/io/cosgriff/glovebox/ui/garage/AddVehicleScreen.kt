@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.annotation.StringRes
 import io.cosgriff.glovebox.R
@@ -32,7 +34,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.AlertDialog
@@ -43,7 +44,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import io.cosgriff.glovebox.domain.VehiclePick
@@ -64,8 +64,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -337,7 +335,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        TopBar(stringResource(R.string.add_vehicle_title), onBack)
+        ScreenHeader(stringResource(R.string.add_vehicle_title), onBack)
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -412,7 +410,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                 }
             }
 
-            Card {
+            RowsCard {
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(stringResource(R.string.add_vehicle_where_heading), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     listOf(
@@ -495,7 +493,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     }
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        TopBar(stringResource(R.string.add_vehicle_confirm_title), onBack = vm::backToVin)
+        ScreenHeader(stringResource(R.string.add_vehicle_confirm_title), onBack = vm::backToVin)
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -537,7 +535,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 }
             }
 
-            Card {
+            RowsCard {
                 DecodedField.entries.forEach { field ->
                     val value = vm.fields[field]
                     // The engine's model code and power are vPIC's own and aren't kept, so they aren't editable.
@@ -647,19 +645,6 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     }
 }
 
-@Composable
-private fun TopBar(title: String, onBack: () -> Unit) {
-    Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-        Text(
-            title,
-            Modifier.padding(start = 8.dp).semantics { heading() },
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-        )
-    }
-}
-
 /** [detail] is vPIC's own wording, shown small for anyone who wants it. */
 @Composable
 private fun Notice(title: String, body: String, detail: String?) {
@@ -676,18 +661,6 @@ private fun Notice(title: String, body: String, detail: String?) {
             Text(body, style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
             detail?.let { Text(stringResource(R.string.add_vehicle_nhtsa_said, it), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
         }
-    }
-}
-
-@Composable
-private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { content() }
     }
 }
 

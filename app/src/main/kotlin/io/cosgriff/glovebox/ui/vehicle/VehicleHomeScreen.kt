@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.FilledCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
@@ -39,8 +40,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -295,7 +294,7 @@ internal fun VehicleHomeContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    WhiteCard {
+                    FilledCard(padding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
                         up.notLogged.forEachIndexed { i, status ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Row(
@@ -356,7 +355,7 @@ internal fun VehicleHomeContent(
                             Text(tapHint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    WhiteCard {
+                    FilledCard(padding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)) {
                         rows.forEachIndexed { i, (status, progress) ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             ReminderRow(status, progress, v.clusterSwap(), unit, onClick = { onLogItem(v.id, status.item.id) })
@@ -390,7 +389,7 @@ internal fun VehicleHomeContent(
 
 @Composable
 private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateMileage: () -> Unit) {
-    WhiteCard(padding = PaddingValues(18.dp)) {
+    FilledCard(padding = PaddingValues(18.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -563,16 +562,6 @@ private fun ProgressBar(fraction: Double, color: Color) {
             .clearAndSetSemantics { },
     ) {
         Box(Modifier.fillMaxWidth(fraction.toFloat()).fillMaxHeight().clip(CircleShape).background(color))
-    }
-}
-
-@Composable
-private fun WhiteCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 4.dp), content: @Composable () -> Unit) {
-    Card(
-        Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Column(Modifier.padding(padding)) { content() }
     }
 }
 

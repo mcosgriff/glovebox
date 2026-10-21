@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.components.orNullIfBlank
 import io.cosgriff.glovebox.ui.components.copyText
 import io.cosgriff.glovebox.ui.components.CheckedField
@@ -9,7 +11,6 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.line
 import io.cosgriff.glovebox.ui.service.label
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,13 +24,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,8 +40,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -150,22 +143,7 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-                Column(Modifier.padding(start = 8.dp)) {
-                    Text(
-                        stringResource(R.string.fluids_title),
-                        Modifier.semantics { heading() },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-            }
+            ScreenHeader(stringResource(R.string.fluids_title), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
         }
         if (entered.isEmpty()) {
             item {
@@ -211,12 +189,7 @@ private fun TakesCard(item: TakesItem, takes: WhatItTakes, toCheck: Boolean, onC
     val value = takes.line(item)
     val parts = takes.partNumbers(item)
     val partsLabel = stringResource(R.string.details_part_numbers)
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = scheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-    ) {
+    BorderedCard(modifier) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 56.dp)
                 .combinedClickable(

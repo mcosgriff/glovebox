@@ -1,6 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.domain.ReadingProblem
@@ -29,24 +31,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -246,13 +242,7 @@ internal fun MileageReadingsContent(
     val reach = years?.takeIf { it < most }
     val series = remember(state, reach, today) { MileageChart.series(state.rows, state.swap, reach, today) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-            Column(Modifier.padding(start = 8.dp)) {
-                Text(stringResource(R.string.readings_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Text(state.vehicleName, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-            }
-        }
+        ScreenHeader(stringResource(R.string.readings_title), onBack, subtitle = state.vehicleName)
 
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
@@ -286,7 +276,7 @@ internal fun MileageReadingsContent(
                         if (doubtful > 0) stringResource(R.string.readings_count_to_check, it, doubtful.asNumber()) else it
                     },
                 )
-                Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = scheme.surface)) {
+                FilledCard {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         state.rows.forEachIndexed { i, row ->
                             if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
@@ -374,12 +364,7 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = { SheetHandle() },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = scheme.background,
-    ) {
+    GloveboxSheet(onDismiss = onDismiss) {
         Column(
             Modifier.imePadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

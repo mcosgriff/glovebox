@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -23,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
@@ -48,7 +49,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -158,15 +158,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
     val stale = last == null || BackupRules.shouldRemind(true, last, null, LocalDate.now())
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-            Text(
-                stringResource(R.string.settings_backup),
-                Modifier.padding(start = 8.dp).semantics { heading() },
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        ScreenHeader(stringResource(R.string.settings_backup), onBack)
 
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
@@ -218,7 +210,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                 )
             }
 
-            Surface(color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant), modifier = Modifier.fillMaxWidth()) {
+            BorderedCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.backup_includes), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

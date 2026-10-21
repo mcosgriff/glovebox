@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
-import io.cosgriff.glovebox.ui.SheetHandle
+import io.cosgriff.glovebox.ui.components.FilledCard
+import io.cosgriff.glovebox.ui.components.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -37,8 +38,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -284,14 +283,6 @@ fun RecordDetailScreen(
 }
 
 @Composable
-private fun WhiteCard(content: @Composable () -> Unit) {
-    Card(
-        Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) { content() }
-}
-
-@Composable
 private fun Stat(label: String, value: String, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -327,7 +318,7 @@ internal fun RecordDetailContent(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            WhiteCard {
+            FilledCard {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         "${detail.vehicleName} · ${LogEdits.who(record.diy, record.shopName, null, record.enteredAsLastDone, record.imported).text}",
@@ -345,7 +336,7 @@ internal fun RecordDetailContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val n = detail.lines.size
                 SectionLabel(pluralStringResource(R.plurals.record_work_done, n, n.asNumber()))
-                WhiteCard {
+                FilledCard {
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         detail.lines.forEachIndexed { i, line ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -374,7 +365,7 @@ internal fun RecordDetailContent(
             record.notes?.let { notes ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(R.string.record_notes))
-                    WhiteCard { Text(notes, Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) }
+                    FilledCard { Text(notes, Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) }
                 }
             }
 

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.ScreenHeader
+import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.fileSize
 import io.cosgriff.glovebox.ui.service.text
@@ -33,7 +35,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Image
@@ -52,7 +53,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -67,8 +67,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
@@ -235,13 +233,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back)) }
-                Column(Modifier.padding(start = 8.dp)) {
-                    Text(stringResource(R.string.documents_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                    Text("${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                }
-            }
+            ScreenHeader(stringResource(R.string.documents_title), onBack, subtitle = "${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}")
         }
         if (d.documents.isEmpty()) {
             item {
@@ -290,7 +282,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
 private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenElsewhere: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
-    Surface(modifier = modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, scheme.outlineVariant)) {
+    BorderedCard(modifier) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 64.dp)
                 .clickable(role = Role.Button, onClickLabel = stringResource(R.string.open), onClick = onView)
