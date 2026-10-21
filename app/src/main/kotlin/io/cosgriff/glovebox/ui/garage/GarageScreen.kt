@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.service.ahead
@@ -29,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -41,7 +41,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -261,15 +260,7 @@ private fun AttentionChip(a: Attention) {
         a.state == DueState.DUE_SOON -> scheme.surfaceVariant to statusColors().soon
         else -> scheme.tertiaryContainer to scheme.onTertiaryContainer
     }
-    Surface(color = container, shape = CircleShape) {
-        Text(
-            text,
-            Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (a.state == DueState.OVERDUE) FontWeight.Bold else FontWeight.SemiBold,
-            color = content,
-        )
-    }
+    Pill(text, container, content, bold = a.state == DueState.OVERDUE)
 }
 
 @Composable
@@ -279,15 +270,7 @@ private fun RecallChip(open: OpenRecalls) {
         0 -> Triple(stringResource(R.string.no_open_recalls), scheme.tertiaryContainer, scheme.onTertiaryContainer)
         else -> Triple(pluralStringResource(R.plurals.open_recalls, open.count, open.count.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
     }
-    Surface(color = container, shape = CircleShape) {
-        Text(
-            text,
-            Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = content,
-        )
-    }
+    Pill(text, container, content, bold = false)
 }
 
 @Composable

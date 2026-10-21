@@ -1009,7 +1009,7 @@ Notes on what's built:
 - **A composable or helper used by more than one screen lives in `ui/components/`** (`ScreenHeader`,
   `BorderedCard` / `RowsCard` / `LabelledCard`, `FilledCard`, `GloveboxSheet`, `SectionLabel` (a heading), `Chevron`,
   `DatePickerSheet` / `DateButton`, `OdometerField`, `TypedConfirmField` / `DangerButton`, `SwitchRow` / `ValueRow` / `CheckRow`,
-  `ChoiceDialog`, `ChooseVehicleDialog`, `InkChip`, `CheckedField`, `DistanceUnitSwitch`, `copyText`), not in the screen that first needed it, where
+  `ChoiceDialog`, `ChooseVehicleDialog`, `InkChip`, `Pill` / `Tag` / `DoubleCheckTag`, `CheckedField`, `DistanceUnitSwitch`, `copyText`), not in the screen that first needed it, where
   the next screen won't find it and writes its own (#297). One used by a single feature stays in that feature's package.
 - **All wording lives in `res/values/strings.xml`** (#236). Composables use `stringResource` /
   `pluralStringResource`; callbacks and code outside a composable use `LocalResources` or `AppText.res`
