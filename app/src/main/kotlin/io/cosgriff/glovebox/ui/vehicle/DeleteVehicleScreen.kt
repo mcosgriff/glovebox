@@ -1,13 +1,13 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DangerButton
+import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.BorderedCard
-import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
-import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -16,27 +16,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,10 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -265,30 +257,9 @@ fun DeleteVehicleScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = typed,
-                onValueChange = { typed = it },
-                label = {
-                    Text(styledStringResource(R.string.type_word_to_confirm, d.name, SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)))
-                },
-                singleLine = true,
-                textStyle = TextStyle(fontFamily = PlexMono),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (confirmed) scheme.error else scheme.primary,
-                    unfocusedBorderColor = if (confirmed) scheme.error else scheme.outline,
-                ),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            TypedConfirmField(d.name, typed, { typed = it }, capitalization = KeyboardCapitalization.None)
 
-            Button(
-                onClick = { vm.delete(onDeleted) },
-                enabled = confirmed && !vm.deleting,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError),
-            ) {
+            DangerButton(onClick = { vm.delete(onDeleted) }, enabled = confirmed && !vm.deleting) {
                 Text(stringResource(R.string.delete_vehicle_button), style = MaterialTheme.typography.titleMedium)
             }
         }

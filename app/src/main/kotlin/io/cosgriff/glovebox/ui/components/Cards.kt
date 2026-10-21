@@ -44,7 +44,7 @@ internal fun RowsCard(modifier: Modifier = Modifier, content: @Composable Column
 @Composable
 internal fun LabelledCard(label: String, modifier: Modifier = Modifier, note: String? = null, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionLabel(label, Modifier.semantics { heading() })
+        SectionLabel(label)
         RowsCard(content = content)
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }

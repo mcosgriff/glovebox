@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.domain.Interval
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -268,17 +269,16 @@ private fun groupColor(group: ReminderGroup): Color = when (group) {
 
 @Composable
 private fun GroupHeader(group: ReminderGroup) {
-    Text(
+    SectionLabel(
         when (group) {
             ReminderGroup.OVERDUE -> stringResource(R.string.reminders_group_overdue)
             ReminderGroup.NEXT_30_DAYS -> stringResource(R.string.reminders_group_next_30)
             ReminderGroup.LATER -> stringResource(R.string.reminders_group_later)
             ReminderGroup.NOT_LOGGED -> stringResource(R.string.reminders_group_not_logged)
         },
-        Modifier.padding(top = 6.dp).semantics { heading() },
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Bold,
+        Modifier.padding(top = 6.dp),
         color = groupColor(group),
+        bold = true,
     )
 }
 

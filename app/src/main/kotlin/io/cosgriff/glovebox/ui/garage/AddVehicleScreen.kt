@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.domain.OdometerInput
+import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -81,7 +83,6 @@ import io.cosgriff.glovebox.data.nhtsa.DecodedVehicle
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.DecodeQuality
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.VehicleText
@@ -232,7 +233,7 @@ class AddVehicleViewModel @Inject constructor(
     }
 
     fun onOdometerChange(value: String) {
-        odometerText = value.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS)
+        odometerText = OdometerInput.typed(value)
     }
 
     /** Only the year, make and model are sent. A failure here never blocks adding the vehicle. */
@@ -588,16 +589,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.weight(1.6f),
                 )
-                OutlinedTextField(
-                    value = vm.odometerText,
-                    onValueChange = vm::onOdometerChange,
-                    label = { Text(stringResource(R.string.odometer_in, vm.unit.symbolWord)) },
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f),
-                )
+                OdometerField(vm.odometerText, vm::onOdometerChange, stringResource(R.string.odometer_in, vm.unit.symbolWord), Modifier.weight(1f))
             }
             // vPIC often has no trim (a Golf GTI, for one), so an empty field shouldn't look like a failed decode.
             if (vm.trimChoices.isEmpty() && vm.trim.isBlank()) {

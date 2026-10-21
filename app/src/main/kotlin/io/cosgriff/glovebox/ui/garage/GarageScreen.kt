@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.service.ahead
 import io.cosgriff.glovebox.ui.service.amount
@@ -293,13 +294,7 @@ private fun RecallChip(open: OpenRecalls) {
 private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>, onSeeReminders: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            stringResource(if (vehicleCount == 2) R.string.garage_across_both else R.string.garage_across_all),
-            Modifier.semantics { heading() },
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = scheme.onSurfaceVariant,
-        )
+        SectionLabel(stringResource(if (vehicleCount == 2) R.string.garage_across_both else R.string.garage_across_all), bold = true)
         Card(
             Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),

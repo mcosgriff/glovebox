@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.OdometerField
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -27,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -40,7 +41,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,9 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -73,13 +71,11 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.LastDoneEntries
 import io.cosgriff.glovebox.domain.LastDoneRow
-import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.LastDoneRoute
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -289,22 +285,11 @@ fun LastDoneSheet(
     val scheme = MaterialTheme.colorScheme
     var day by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var odometerText by rememberSaveable { mutableStateOf("") }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
     val odometer = OdometerInput.parse(odometerText.typedNumber())
     val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors)
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = date,
-            onPick = {
-                day = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -318,26 +303,14 @@ fun LastDoneSheet(
                 color = scheme.onSurfaceVariant,
             )
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.date_button, date.format(longDate)))
-            }
+            DateButton(R.string.date_button, date) { day = it.toEpochDay() }
 
-            OutlinedTextField(
-                value = odometerText,
-                onValueChange = { odometerText = it.filter(Char::isDigit).trimStart('0').take(MileageUpdate.MAX_DIGITS) },
-                label = { Text(stringResource(R.string.last_done_odometer, unit.symbolWord)) },
-                supportingText = note?.let { { Text(it.text(unit)) } },
+            OdometerField(
+                odometerText,
+                { odometerText = it },
+                stringResource(R.string.last_done_odometer, unit.symbolWord),
+                supporting = note?.text(unit),
                 isError = note?.tone == NoteTone.WARNING,
-                singleLine = true,
-                textStyle = TextStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.ruleInSentence
 import io.cosgriff.glovebox.ui.AppText
@@ -240,7 +241,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
             LeadTimeFields(rules.lead, rules.unit, onChange = vm::setLead)
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SectionTitle(stringResource(R.string.rules_overrides))
+                SectionLabel(stringResource(R.string.rules_overrides), bold = true)
                 val overridden = rules.items.filter { it.rule != null }
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -317,17 +318,6 @@ private fun DueRule.description(): String = stringResource(
         DueRule.TIME_ONLY -> R.string.rules_time_about
     },
 )
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text,
-        Modifier.semantics { heading() },
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
 
 @Composable
 private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
@@ -478,7 +468,7 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
     }
     val valid = LeadTimeInput.parse(miles.typedNumber(), days.typedNumber()) != null
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionTitle(stringResource(R.string.rules_remind_early))
+        SectionLabel(stringResource(R.string.rules_remind_early), bold = true)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedTextField(
                 value = miles,
