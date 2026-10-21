@@ -76,6 +76,7 @@ import io.cosgriff.glovebox.ui.export.ExportResultsViewModel
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
+import io.cosgriff.glovebox.ui.history.SortCustomScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
@@ -151,6 +152,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long) : NavKey
 /** Deletes a vehicle's service records (imported, or all) and nothing else. */
 @Serializable data class ClearHistoryRoute(val vehicleId: Long) : NavKey
+/** Sorts a vehicle's Custom lines under catalog lines, in bulk (#310). */
+@Serializable data class SortCustomRoute(val vehicleId: Long) : NavKey
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long) : NavKey
 @Serializable data class FluidsPartsRoute(val vehicleId: Long) : NavKey
 @Serializable data class DocumentsRoute(val vehicleId: Long) : NavKey
@@ -593,8 +596,12 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 )
             }
             screen<HistoryRoute> {
-                HistoryScreen(onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) })
+                HistoryScreen(
+                    onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
+                    onSortCustom = { vehicleId -> nav.push(SortCustomRoute(vehicleId)) },
+                )
             }
+            screen<SortCustomRoute> { SortCustomScreen(onBack = { nav.pop() }) }
             screen<RecordDetailRoute> {
                 val confirmDelete = results[CONFIRM_DELETE] == true
                 RecordDetailScreen(

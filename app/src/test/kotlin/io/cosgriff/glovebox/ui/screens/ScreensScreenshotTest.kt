@@ -18,6 +18,7 @@ import io.cosgriff.glovebox.ui.history.RecordDetailContent
 import io.cosgriff.glovebox.ui.reminders.RemindersContent
 import io.cosgriff.glovebox.ui.schedule.MilestonesContent
 import io.cosgriff.glovebox.ui.schedule.ScheduleContent
+import io.cosgriff.glovebox.ui.history.SortCustomContent
 import io.cosgriff.glovebox.ui.service.LineMatches
 import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
@@ -137,7 +138,13 @@ class ScreensScreenshotTest(private val shade: Shade) {
         HistoryContent(
             Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            onSortCustom = {},
         )
+    }
+
+    @Test
+    fun sortCustom() = compose.shoot("sort_custom", shade) {
+        SortCustomContent(Fixtures.customGroups, onBack = {})
     }
 
     /** A search by a line's name: the spending line goes, since it would count only what matched. */

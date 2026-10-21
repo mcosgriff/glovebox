@@ -918,6 +918,23 @@
     <string name="log_tab_count">✓ %1$s</string>
     <string name="log_add_custom">Add custom item</string>
     <string name="log_what_was_done">What was done?</string>
+    <plurals name="history_custom_lines">
+        <item quantity="one">%1$s line under Custom · Sort it</item>
+        <item quantity="other">%1$s lines under Custom · Sort them</item>
+    </plurals>
+    <string name="sort_custom_title">Sort Custom lines</string>
+    <string name="sort_custom_about">Work written the same way is sorted together. Its wording stays as written; the line decides which reminders it counts for.</string>
+    <string name="sort_custom_none_title">Nothing under Custom</string>
+    <string name="sort_custom_none">Every line of work on this vehicle is under a line.</string>
+    <plurals name="sort_custom_lines">
+        <item quantity="one">%1$s line</item>
+        <item quantity="other">%1$s lines</item>
+    </plurals>
+    <string name="sort_custom_detail">%1$s · %2$s to %3$s</string>
+    <string name="sort_custom_detail_one">%1$s · %2$s</string>
+    <string name="sort_custom_line">%1$s · %2$s</string>
+    <string name="sort_custom_from_rule">Your rule</string>
+    <string name="sort_custom_from_wording">Glovebox recognises this wording</string>
     <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
     <string name="log_custom_tick_line">Tick this line</string>
     <string name="log_file_under_button">File under a line</string>

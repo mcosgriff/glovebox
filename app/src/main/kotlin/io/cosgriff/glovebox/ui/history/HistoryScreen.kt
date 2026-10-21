@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.domain.CustomLines
+import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.service.text
@@ -121,6 +123,8 @@ data class HistoryState(
     val vehicle: VehicleEntity?,
     /** Newest first. */
     val records: List<ServiceRecordWithItems>,
+    /** Lines under Custom that sorting could file (`CustomLines`); none for an archived vehicle, which is read only. */
+    val customLines: Int = 0,
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -136,6 +140,7 @@ class HistoryViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
     service: ServiceDao,
+    recalls: RecallDao,
     private val actions: RecordActions,
 ) : ViewModel() {
     /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
@@ -191,7 +196,9 @@ class HistoryViewModel @Inject constructor(
                 if (vehicle == null) {
                     flowOf(HistoryState(list, null, emptyList()))
                 } else {
-                    service.observeRecords(vehicle.id).map { HistoryState(list, vehicle, it) }
+                    combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id)) { records, recallRows ->
+                        HistoryState(list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())))
+                    }
                 }
             }
         }
@@ -235,6 +242,8 @@ class HistoryViewModel @Inject constructor(
 @Composable
 fun HistoryScreen(
     onOpenRecord: (recordId: Long) -> Unit,
+    /** Opens the sort screen for a vehicle's Custom lines; absent where History is read only. */
+    onSortCustom: ((vehicleId: Long) -> Unit)? = null,
     /** Shown as a back arrow; the History tab itself has none. */
     onBack: (() -> Unit)? = null,
     vm: HistoryViewModel = hiltViewModel(),
@@ -250,6 +259,7 @@ fun HistoryScreen(
         state, vm.filter, vm.order, fresh, vm.archived, remember { LocalDate.now() }, onOpenRecord, onBack,
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
         onChooseOrder = vm::chooseOrder, search = vm.search, onSearch = vm::search,
+        onSortCustom = onSortCustom?.let { open -> state.vehicle?.let { v -> { open(v.id) } } },
     )
 }
 
@@ -272,6 +282,7 @@ internal fun HistoryContent(
     /** What is typed in the search field. */
     search: String = "",
     onSearch: (String) -> Unit = {},
+    onSortCustom: (() -> Unit)? = null,
 ) {
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
@@ -330,6 +341,11 @@ internal fun HistoryContent(
                 }
             }
             spending?.let { SpendingLine(it) }
+            if (!archived && state.customLines > 0 && onSortCustom != null) {
+                TextButton(onClick = onSortCustom, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
+                    Text(pluralStringResource(R.plurals.history_custom_lines, state.customLines, state.customLines.asNumber()))
+                }
+            }
         }
 
         if (state.vehicles.size > 1) {
