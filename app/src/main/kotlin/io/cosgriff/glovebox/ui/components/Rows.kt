@@ -72,10 +72,10 @@ internal fun ValueRow(title: String, value: String, strong: Boolean = true, onCl
 internal fun CheckRow(
     title: String,
     checked: Boolean,
+    modifier: Modifier = Modifier,
     detail: String? = null,
     enabled: Boolean = true,
     mono: Boolean = false,
-    modifier: Modifier = Modifier,
     onChange: (Boolean) -> Unit,
 ) {
     Row(
