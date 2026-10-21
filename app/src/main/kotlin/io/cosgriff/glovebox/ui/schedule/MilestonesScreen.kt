@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -514,7 +513,7 @@ internal fun MilestonesContent(
                                 Text(stringResource(R.string.milestones_add))
                             }
                         }
-                        Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = RoundedCornerShape(12.dp)) {
+                        Surface(Modifier.fillMaxWidth(), color = scheme.surface, shape = MaterialTheme.shapes.small) {
                             Row(
                                 Modifier.heightIn(min = 56.dp)
                                     .clickable(role = Role.Button, onClickLabel = stringResource(R.string.milestones_change_repeat), onClick = onChangeRepeat)
@@ -605,7 +604,7 @@ private fun MilestoneCard(
     Surface(
         Modifier.fillMaxWidth(),
         color = scheme.surface,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.small,
         border = if (next) BorderStroke(1.5.dp, scheme.primary) else null,
     ) {
         Column {

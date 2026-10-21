@@ -432,7 +432,7 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         color = scheme.primaryContainer,
-        shape = RoundedCornerShape(14.dp),
+        shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.5.dp, scheme.primary),
     ) {
         Row(

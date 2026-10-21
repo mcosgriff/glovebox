@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.components
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -74,7 +73,7 @@ internal fun DateButton(@StringRes label: Int, date: LocalDate, onPick: (LocalDa
     OutlinedButton(
         onClick = { picking = true },
         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
     ) {
         Text(stringResource(label, date.format(longDate)))

@@ -193,7 +193,9 @@ Accent text on the soft-orange tint is `onPrimaryContainer`, not `primary` (4.4:
 4.5:1 text needs); `primary` there is fine for icons and large figures. Colours that Material doesn't name
 come from `statusColors()`. Every `surfaceContainer…` role is set in `Theme.kt` (dialogs and date pickers
 use High, sheets Low): one left out falls back to Material's lavender. In dark the urgent pill is solid (`onPrimaryContainer` behind dark text).
-Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehicle name / DELETE).
+Corners come from `MaterialTheme.shapes` (`GloveboxShapes` in `Theme.kt`, #297): 12dp `small` / `extraSmall` for fields,
+buttons, menus and snackbars, 16 `medium` for cards, 20 `large` for the garage's vehicle cards; a corner is typed out only
+for something of its own (a 6dp tag, the camera screens). Touch targets ≥ 48dp. Destructive actions are red and confirm by typing (vehicle name / DELETE).
 
 ## Screens (canvas board → status)
 

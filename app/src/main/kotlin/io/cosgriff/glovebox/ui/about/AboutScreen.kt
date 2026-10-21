@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
@@ -98,7 +97,7 @@ fun AboutScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Surface(color = scheme.primary, shape = RoundedCornerShape(16.dp), modifier = Modifier.size(56.dp)) {
+                Surface(color = scheme.primary, shape = MaterialTheme.shapes.medium, modifier = Modifier.size(56.dp)) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(Icons.Outlined.Build, contentDescription = null, modifier = Modifier.size(30.dp), tint = scheme.onPrimary)
                     }

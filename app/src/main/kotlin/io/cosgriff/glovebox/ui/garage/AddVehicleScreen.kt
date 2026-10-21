@@ -351,7 +351,7 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
             Button(
                 onClick = onScan,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = MaterialTheme.shapes.medium,
                 // Canvas: solid ink, so the orange stays for Decode VIN.
                 colors = ButtonDefaults.buttonColors(containerColor = scheme.secondary, contentColor = scheme.onSecondary),
             ) {
@@ -373,7 +373,6 @@ private fun VinEntry(vm: AddVehicleViewModel, onBack: () -> Unit, onNoVin: () ->
                     label = { Text(stringResource(R.string.add_vehicle_vin_label)) },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                    shape = RoundedCornerShape(14.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
                     isError = complete && !vm.vinValid,
                     modifier = Modifier.fillMaxWidth(),
@@ -514,7 +513,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 onClick = { editingVehicle = true },
                 modifier = Modifier.fillMaxWidth(),
                 color = scheme.surface,
-                shape = RoundedCornerShape(20.dp),
+                shape = MaterialTheme.shapes.large,
                 border = BorderStroke(1.dp, scheme.outlineVariant),
             ) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -582,7 +581,6 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     onValueChange = vm::onTrimChange,
                     label = { Text(stringResource(if (ambiguous && !vm.trimConfirmed) R.string.add_vehicle_trim_confirm else R.string.add_vehicle_trim)) },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.weight(1.6f),
                 )
@@ -632,7 +630,7 @@ private fun Notice(title: String, body: String, detail: String?) {
         Modifier.fillMaxWidth(),
         color = scheme.primaryContainer,
         contentColor = scheme.onSurface,
-        shape = RoundedCornerShape(14.dp),
+        shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.5.dp, scheme.primary),
     ) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

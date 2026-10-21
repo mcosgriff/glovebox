@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -167,7 +166,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             Surface(
                 color = if (stale) scheme.primaryContainer else scheme.tertiaryContainer,
                 contentColor = scheme.onSurface,
-                shape = RoundedCornerShape(20.dp),
+                shape = MaterialTheme.shapes.large,
                 border = BorderStroke(1.dp, (if (stale) scheme.primary else scheme.tertiary).copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -285,7 +284,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                 OutlinedButton(
                     onClick = onRestore,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = MaterialTheme.shapes.small,
                 ) {
                     Text(stringResource(R.string.backup_restore_from), color = scheme.onSurface)
                 }
@@ -318,7 +317,6 @@ private fun PasswordField(
                 Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.backup_hide_passwords else R.string.backup_show_passwords))
             }
         },
-        shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth(),
     )
 }

@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -189,7 +188,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (allowed) {
-                Surface(color = scheme.tertiaryContainer, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+                Surface(color = scheme.tertiaryContainer, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth()) {
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(20.dp), tint = scheme.onTertiaryContainer)
                         Text(stringResource(R.string.notifications_allowed), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = scheme.onTertiaryContainer)
@@ -199,7 +198,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 Surface(
                     color = scheme.primaryContainer,
                     contentColor = scheme.onSurface,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = MaterialTheme.shapes.small,
                     border = BorderStroke(1.5.dp, scheme.primary),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -215,7 +214,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                         Button(
                             onClick = { if (canAsk) ask.launch(Manifest.permission.POST_NOTIFICATIONS) else context.openNotificationSettings() },
                             modifier = Modifier.heightIn(min = 48.dp),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.small,
                         ) {
                             Text(stringResource(if (canAsk) R.string.notifications_allow else R.string.notifications_open_settings))
                         }

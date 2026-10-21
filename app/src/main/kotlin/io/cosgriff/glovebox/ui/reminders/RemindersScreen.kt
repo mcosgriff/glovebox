@@ -203,7 +203,7 @@ internal fun RemindersContent(
                 Surface(
                     onClick = onOpenNotifications,
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = MaterialTheme.shapes.small,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -287,7 +287,7 @@ private fun ReminderCard(
     val scheme = MaterialTheme.colorScheme
     Card(
         Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = scheme.surface),
         border = BorderStroke(1.dp, if (group == ReminderGroup.OVERDUE) scheme.primary else scheme.outlineVariant),
     ) {

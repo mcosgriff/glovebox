@@ -53,7 +53,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -475,7 +474,7 @@ internal fun LogServiceContent(
                         Surface(
                             onClick = { pickingDate = true },
                             modifier = Modifier.fillMaxWidth().height(56.dp).semantics { role = Role.Button },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.small,
                             color = MaterialTheme.colorScheme.surface,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         ) {
@@ -493,7 +492,6 @@ internal fun LogServiceContent(
                             isError = form.showErrors && form.odometer == null,
                             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            shape = RoundedCornerShape(12.dp),
                             colors = fieldColors(),
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                         )
@@ -588,7 +586,7 @@ internal fun LogServiceContent(
 
                 Card(
                     Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MaterialTheme.shapes.medium,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
@@ -616,7 +614,7 @@ internal fun LogServiceContent(
 
             Surface(
                 color = if (form.showErrors && form.itemCount == 0) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(14.dp),
+                shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val labels = data.categories.flatMap { it.options }.filter { it.id in form.selected }.map { it.label } + form.customItems
@@ -633,7 +631,7 @@ internal fun LogServiceContent(
                 val changes = form.reminderChanges
                 Surface(
                     color = if (changes.isEmpty()) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -699,7 +697,6 @@ internal fun LogServiceContent(
                     placeholder = { Text(stringResource(R.string.log_optional)) },
                     minLines = 3,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    shape = RoundedCornerShape(12.dp),
                     colors = fieldColors(),
                     modifier = Modifier.fillMaxWidth().semantics { contentDescription = notesLabel },
                 )
@@ -790,7 +787,6 @@ private fun CostAndPhotos(
                     isError = !form.costValid,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    shape = RoundedCornerShape(12.dp),
                     colors = fieldColors(),
                     modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = costLabel },
                 )
@@ -803,7 +799,7 @@ private fun CostAndPhotos(
                     val dash = if (enabled) scheme.outline else scheme.outlineVariant
                     Row(
                         Modifier.fillMaxWidth().height(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(MaterialTheme.shapes.small)
                             .drawBehind {
                                 // Twice the width, because the outer half is clipped away.
                                 drawRoundRect(
@@ -867,7 +863,7 @@ private fun CategoryButton(label: String, count: Int, active: Boolean, onClick: 
     Surface(
         onClick = onClick,
         modifier = modifier.heightIn(min = 52.dp).semantics { stateDescription = state },
-        shape = RoundedCornerShape(14.dp),
+        shape = MaterialTheme.shapes.small,
         color = scheme.surface,
         contentColor = scheme.onSurface,
         border = BorderStroke(if (active) 2.dp else 1.5.dp, if (active) scheme.onSurface else scheme.outlineVariant),

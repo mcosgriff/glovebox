@@ -39,7 +39,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -790,7 +789,7 @@ fun ImportScreen(
                                 color = scheme.onSurfaceVariant,
                             )
                         }
-                        OutlinedButton(onClick = { onOpenSchedule(r.vehicleId) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
+                        OutlinedButton(onClick = { onOpenSchedule(r.vehicleId) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = MaterialTheme.shapes.small) {
                             Text(stringResource(R.string.import_see_schedule))
                         }
                     }
@@ -803,7 +802,7 @@ fun ImportScreen(
                     ) { Text(stringResource(R.string.import_see_history)) }
                     else -> PrimaryButton(onClick = { onOpenTorqueSpecs(r.vehicleId) }) { Text(stringResource(R.string.import_see_torque)) }
                 }
-                OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
+                OutlinedButton(onClick = vm::pick, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = MaterialTheme.shapes.small) {
                     Text(stringResource(R.string.import_another))
                 }
                 return@Column

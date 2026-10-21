@@ -219,10 +219,10 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
                     val selected = rule == rules.defaultRule
                     Surface(
                         color = scheme.surface,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = MaterialTheme.shapes.medium,
                         border = BorderStroke(2.dp, if (selected) scheme.primary else scheme.outlineVariant),
                         modifier = Modifier.fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(MaterialTheme.shapes.medium)
                             .selectable(selected = selected, role = Role.RadioButton, onClick = { vm.setDefaultRule(rule) }),
                     ) {
                         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -244,7 +244,7 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
                 SectionLabel(stringResource(R.string.rules_overrides), bold = true)
                 val overridden = rules.items.filter { it.rule != null }
                 Card(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MaterialTheme.shapes.medium,
                     colors = CardDefaults.cardColors(containerColor = scheme.surface),
                     border = BorderStroke(1.dp, scheme.outlineVariant),
                 ) {
@@ -326,7 +326,7 @@ private fun DueRule.description(): String = stringResource(
 private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
     val scheme = MaterialTheme.colorScheme
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = scheme.surface),
         border = BorderStroke(1.dp, scheme.outlineVariant),
     ) {

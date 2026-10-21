@@ -68,7 +68,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -549,7 +548,6 @@ internal fun VehicleDetailsContent(
                 placeholder = { Text(v.model) },
                 supportingText = { Text(stringResource(R.string.details_nickname_note)) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth(),
@@ -892,7 +890,7 @@ private fun unitExplanation(from: DistanceUnit, to: DistanceUnit): String {
 @Composable
 private fun PhotoBox(photo: ImageBitmap?, hasPhoto: Boolean, name: String, onPick: () -> Unit, onRemove: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(20.dp)
+    val shape = MaterialTheme.shapes.large
     var menu by remember { mutableStateOf(false) }
     Box {
         if (hasPhoto) {

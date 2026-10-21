@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
@@ -106,7 +105,7 @@ fun UpdateMileageSheet(
 
             Surface(
                 color = scheme.surface,
-                shape = RoundedCornerShape(16.dp),
+                shape = MaterialTheme.shapes.medium,
                 border = BorderStroke(2.dp, if (low || far) scheme.error else scheme.onSurface),
             ) {
                 Column(
@@ -151,7 +150,7 @@ fun UpdateMileageSheet(
             }
 
             shown.impactLine(typed = miles != null, unit)?.let {
-                Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp)) {
+                Surface(color = scheme.surfaceVariant, shape = MaterialTheme.shapes.small) {
                     Text(
                         it,
                         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
@@ -258,7 +257,7 @@ private fun Key(label: String?, modifier: Modifier, muted: Boolean, onClick: () 
             role = Role.Button
             if (label != null) contentDescription = label
         },
-        shape = RoundedCornerShape(14.dp),
+        shape = MaterialTheme.shapes.small,
         color = if (muted) scheme.surfaceVariant else scheme.surface,
         contentColor = scheme.onSurface,
     ) {

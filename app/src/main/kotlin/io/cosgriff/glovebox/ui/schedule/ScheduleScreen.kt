@@ -15,7 +15,6 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.MilestoneEntity
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material.icons.outlined.Info
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -506,7 +505,7 @@ internal fun ScheduleContent(
                     }
                 }
                 state.startedFrom?.let { text ->
-                    Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
+                    Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small) {
                         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(

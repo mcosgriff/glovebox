@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -269,7 +268,6 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                     onValueChange = { vm.trim = it.take(VehicleText.MAX_NICKNAME) },
                     label = { Text(stringResource(R.string.manual_add_trim)) },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.weight(1f),
                 )
@@ -283,7 +281,6 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
                 onValueChange = { vm.engine = it.take(VehicleText.MAX_SPEC) },
                 label = { Text(stringResource(R.string.manual_add_engine)) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -313,7 +310,7 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
 
             OdometerField(vm.odometerText, vm::onOdometerChange, stringResource(R.string.odometer_in, vm.unit.symbolWord))
 
-            Surface(color = scheme.surfaceVariant, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+            Surface(color = scheme.surfaceVariant, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.manual_add_recalls_note),
                     Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -344,7 +341,7 @@ private fun PickField(label: String, value: String?, modifier: Modifier, enabled
         enabled = enabled,
         modifier = modifier.heightIn(min = 56.dp),
         color = scheme.surface,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.dp, if (enabled) scheme.outline else scheme.outlineVariant),
     ) {
         Row(Modifier.padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {

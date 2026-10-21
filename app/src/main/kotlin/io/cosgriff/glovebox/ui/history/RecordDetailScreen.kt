@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -239,7 +238,7 @@ fun RecordDetailScreen(
                 } else {
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -391,7 +390,7 @@ internal fun RecordDetailContent(
                                         OutlinedButton(
                                             onClick = open,
                                             modifier = Modifier.fillMaxSize(),
-                                            shape = RoundedCornerShape(12.dp),
+                                            shape = MaterialTheme.shapes.small,
                                             contentPadding = PaddingValues(4.dp),
                                         ) { Text(stringResource(R.string.record_add_photo)) }
                                     }

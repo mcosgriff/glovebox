@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -254,7 +253,6 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                         Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password))
                     }
                 },
-                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -274,7 +272,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                     fontWeight = FontWeight.SemiBold,
                 )
                 if (vm.replaces) {
-                    Surface(color = scheme.errorContainer, contentColor = scheme.onSurface, shape = RoundedCornerShape(14.dp), border = BorderStroke(1.5.dp, scheme.error)) {
+                    Surface(color = scheme.errorContainer, contentColor = scheme.onSurface, shape = MaterialTheme.shapes.small, border = BorderStroke(1.5.dp, scheme.error)) {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(stringResource(R.string.restore_replaces), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(

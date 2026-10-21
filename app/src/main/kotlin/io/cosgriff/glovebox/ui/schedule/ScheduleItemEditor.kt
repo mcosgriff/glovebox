@@ -17,7 +17,6 @@ import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -452,7 +451,7 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
         Modifier.fillMaxWidth(),
         color = scheme.primaryContainer,
         contentColor = scheme.onSurface,
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, scheme.primary.copy(alpha = 0.3f)),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {

@@ -189,7 +189,7 @@ fun WelcomeScreen(onDone: (WelcomeChoice, WelcomeAction) -> Unit) {
                 OutlinedButton(
                     onClick = { go(WelcomeAction.RESTORE) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MaterialTheme.shapes.medium,
                     border = BorderStroke(1.5.dp, scheme.onSurface),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
                 ) {
