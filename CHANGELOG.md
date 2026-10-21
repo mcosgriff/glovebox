@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.18.0](https://github.com/mcosgriff/glovebox/compare/v0.17.0...v0.18.0) (2026-10-21)
+
+
+### Features
+
+* **data:** category rules and Custom line grouping (no screens yet) ([#317](https://github.com/mcosgriff/glovebox/issues/317)) ([d4b175b](https://github.com/mcosgriff/glovebox/commit/d4b175bfccf710bcb45dc120c0a9d1daf7229618))
+* **history:** sort Custom lines in bulk, with remembered rules ([#318](https://github.com/mcosgriff/glovebox/issues/318)) ([82d211e](https://github.com/mcosgriff/glovebox/commit/82d211e08cbbefe339c09e2b8e9dbdeccc35e7c9))
+* **import:** apply category rules to imports and Log service ([#319](https://github.com/mcosgriff/glovebox/issues/319)) ([ef5e652](https://github.com/mcosgriff/glovebox/commit/ef5e6525d04731adcc5c60f8f51160b1a463f943))
+* **readings:** mark only the readings the chart has room for ([#296](https://github.com/mcosgriff/glovebox/issues/296)) ([6bc8cc0](https://github.com/mcosgriff/glovebox/commit/6bc8cc07d8013dd41ecc7cb860bceaaf6caaa8d8))
+* **service:** file a custom line under a line, keeping its wording ([#316](https://github.com/mcosgriff/glovebox/issues/316)) ([f76d779](https://github.com/mcosgriff/glovebox/commit/f76d779bd7b926a1a8eb71c1166e3648b6ba99ed)), closes [#309](https://github.com/mcosgriff/glovebox/issues/309)
+* **service:** more catalog lines and Carfax wording, so less work is Custom ([#314](https://github.com/mcosgriff/glovebox/issues/314)) ([353e331](https://github.com/mcosgriff/glovebox/commit/353e331b10deea3e20f2191d687efbe6b1c043b4))
+* **service:** offer matching lines when a custom item is typed ([#315](https://github.com/mcosgriff/glovebox/issues/315)) ([e8d4bf4](https://github.com/mcosgriff/glovebox/commit/e8d4bf494bc923fe0f81d681fedd355418c0a7be))
+* **settings:** a page for your category rules ([#320](https://github.com/mcosgriff/glovebox/issues/320)) ([65707d4](https://github.com/mcosgriff/glovebox/commit/65707d4ed0f61d511100d6d7e719c7b19bbed265))
+
+
+### Bug Fixes
+
+* six small bugs found by the refactoring scan ([#297](https://github.com/mcosgriff/glovebox/issues/297)) ([#299](https://github.com/mcosgriff/glovebox/issues/299)) ([43c7321](https://github.com/mcosgriff/glovebox/commit/43c73211c94b7cef2dc6a4e88e514d1e7b58474f))
+
+
+### Code Refactoring
+
+* **theme:** corners from the theme's shapes ([#313](https://github.com/mcosgriff/glovebox/issues/313)) ([820d074](https://github.com/mcosgriff/glovebox/commit/820d0748c1c44a10a62970d3f2610b9f123f9bda))
+* **ui:** move shared composables into ui/components ([#300](https://github.com/mcosgriff/glovebox/issues/300)) ([0c04b41](https://github.com/mcosgriff/glovebox/commit/0c04b41a8f40b3c90d256310dd70811ab3e1eb87))
+* **ui:** one button per role ([#308](https://github.com/mcosgriff/glovebox/issues/308)) ([30bb78d](https://github.com/mcosgriff/glovebox/commit/30bb78d6ef87dd8a70071b0ef0f9c2fd90e15403))
+* **ui:** one empty state for a vehicle's lists ([#311](https://github.com/mcosgriff/glovebox/issues/311)) ([4f98b81](https://github.com/mcosgriff/glovebox/commit/4f98b815bb60319cc62dbfb5072c4fa08e1e338d))
+* **ui:** one filter chip, the canvas's white pill ([#305](https://github.com/mcosgriff/glovebox/issues/305)) ([8c4cc07](https://github.com/mcosgriff/glovebox/commit/8c4cc07f7255639caa00138aa58dee3af0d2f4fd))
+* **ui:** one pill and one tag ([#306](https://github.com/mcosgriff/glovebox/issues/306)) ([8a9b21a](https://github.com/mcosgriff/glovebox/commit/8a9b21a6ca0c8fd242e9e433b135bca88f164491))
+* **ui:** shared cards, screen header and bottom sheet ([#301](https://github.com/mcosgriff/glovebox/issues/301)) ([75e6f36](https://github.com/mcosgriff/glovebox/commit/75e6f36f88983adafd32029ac40867545e559d8b))
+* **ui:** shared rows and choice dialogs ([#304](https://github.com/mcosgriff/glovebox/issues/304)) ([f35a3d8](https://github.com/mcosgriff/glovebox/commit/f35a3d8f56eb06f36957d3f1d1799aa7b8ad6f6e))
+
 ## [0.17.0](https://github.com/mcosgriff/glovebox/compare/v0.16.0...v0.17.0) (2026-10-20)
 
 
