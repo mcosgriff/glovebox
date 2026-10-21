@@ -846,6 +846,11 @@ Notes on what's built:
   "Replaced water pump"; "Brake lines / hoses" is brake lines or brake hoses), or, while typing, one whose words the typed
   ones start. Case, punctuation and a plural "s" are ignored and nothing else is guessed (fuzzy matching is #312). A tap
   ticks that line and opens its category in place of the custom item; Add saves the text as typed. So Custom stays rare.
+  A custom line already on the form (a record being edited, an import's) has "File under a line" (`LinePicker`: those
+  matches, then every line by category), which ticks the line and **keeps the wording** (`LogServiceForm.keptLabels`,
+  shown as the line's note): the line decides which reminders it counts for, the edit form's preview says which move,
+  and nothing else changes. An edit also keeps a ticked line's wording as saved ("Oil and filter changed" from a
+  report) rather than putting the line's name in its place. Sorting many saved lines at once is #310.
 - Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion

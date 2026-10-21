@@ -19,6 +19,7 @@ import io.cosgriff.glovebox.ui.reminders.RemindersContent
 import io.cosgriff.glovebox.ui.schedule.MilestonesContent
 import io.cosgriff.glovebox.ui.schedule.ScheduleContent
 import io.cosgriff.glovebox.ui.service.LineMatches
+import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
@@ -118,6 +119,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
         val lines = categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
         compose.shoot("custom_item_matches", shade) {
             Column(Modifier.padding(16.dp)) { LineMatches("Coolant hoses replaced", lines, onPick = {}) }
+        }
+    }
+
+    @Test
+    fun fileUnderLine() {
+        // Made once, as above. Two categories, so no row is cut off at the foot of the window (the check would flag it).
+        val categories = Fixtures.logService().data!!.categories.filter { it.id in setOf("fluids", "cooling") }
+        val lines = categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
+        compose.shoot("file_under_line", shade) {
+            LinePicker("Water pump gasket replaced", lines, onPick = {}, Modifier.padding(16.dp))
         }
     }
 
