@@ -930,6 +930,19 @@
         <item quantity="one">%1$s line filed by your rules: %2$s.</item>
         <item quantity="other">%1$s lines filed by your rules: %2$s.</item>
     </plurals>
+    <string name="settings_rules">Your category rules</string>
+    <plurals name="settings_rules_note">
+        <item quantity="one">%1$s rule files a line\'s wording under a line when history is imported</item>
+        <item quantity="other">%1$s rules file a line\'s wording under a line when history is imported</item>
+    </plurals>
+    <string name="rules_title">Your category rules</string>
+    <string name="rules_about">Kept when you sort Custom lines on History. On an import, a line worded exactly so is filed under its line; a line\'s own service in a file always wins. Changing or deleting a rule changes no record.</string>
+    <string name="rules_empty">Rules are kept when you sort Custom lines on History with “Remember this for future imports” ticked.</string>
+    <string name="rules_unknown_line">No longer in the catalog · not applied</string>
+    <string name="rules_change">Change the line</string>
+    <string name="rules_delete_for">Delete the rule for “%1$s”</string>
+    <string name="rules_delete_title">Delete this rule?</string>
+    <string name="rules_delete_body">“%1$s” will no longer be filed on import. Lines already filed stay as they are.</string>
     <string name="sort_custom_title">Sort Custom lines</string>
     <string name="sort_custom_about">Work written the same way is sorted together. Its wording stays as written; the line decides which reminders it counts for.</string>
     <string name="sort_custom_none_title">Nothing under Custom</string>

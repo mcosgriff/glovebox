@@ -77,6 +77,7 @@ import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
 import io.cosgriff.glovebox.ui.history.SortCustomScreen
+import io.cosgriff.glovebox.ui.settings.CategoryRulesScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
@@ -152,6 +153,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long) : NavKey
 /** Deletes a vehicle's service records (imported, or all) and nothing else. */
 @Serializable data class ClearHistoryRoute(val vehicleId: Long) : NavKey
+/** The user's category rules, from Settings (#310). */
+@Serializable data object CategoryRulesRoute : NavKey
 /** Sorts a vehicle's Custom lines under catalog lines, in bulk (#310). */
 @Serializable data class SortCustomRoute(val vehicleId: Long) : NavKey
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long) : NavKey
@@ -640,8 +643,10 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                     onDeleteAll = { nav.push(DeleteAllRoute) },
                     onOpenAbout = { nav.push(AboutRoute) },
                     onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
+                    onOpenCategoryRules = { nav.push(CategoryRulesRoute) },
                 )
             }
+            screen<CategoryRulesRoute> { CategoryRulesScreen(onBack = { nav.pop() }) }
             screen<AboutRoute> {
                 AboutScreen(
                     onBack = { nav.pop() },

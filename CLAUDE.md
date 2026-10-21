@@ -227,6 +227,7 @@ screen; the user's own table is built and edited there, and saved from there as 
 maintenance schedules (a maker's schedule and table, used at setup for the 2017–2024 4Runner and offered to one set up earlier).
 Documents (a vehicle's paperwork, from Vehicle details). Fill "What it takes" from a maker's manual
 (a bundled list, rows tagged DOUBLE-CHECK until checked). Launcher shortcuts (Log service, Update mileage).
+Sorting Custom lines in bulk from History, and the user's category rules (Settings).
 To build: VIN scan follow-up (#83).
 
 Notes on what's built:
@@ -850,7 +851,22 @@ Notes on what's built:
   matches, then every line by category), which ticks the line and **keeps the wording** (`LogServiceForm.keptLabels`,
   shown as the line's note): the line decides which reminders it counts for, the edit form's preview says which move,
   and nothing else changes. An edit also keeps a ticked line's wording as saved ("Oil and filter changed" from a
-  report) rather than putting the line's name in its place. Sorting many saved lines at once is #310.
+  report) rather than putting the line's name in its place. A custom item whose whole wording has one of the user's
+  rules (next note) is offered that rule's line first, "your rule"; still only offered.
+- Custom lines and category rules (#310, `CustomLines` and `CatalogRules` in `:domain`, `SortCustomScreen`,
+  `CategoryRulesScreen`, table `catalog_rules`, schema v28). **A line is Custom only when it has no home:** no
+  `catalogId`, no `scheduleItemId`, and not the line on a recall's record. History says "N lines under Custom · Sort
+  them" (not on a sold vehicle's); the sort screen groups them by wording (`CatalogRules.key`: case, spacing and
+  Carfax's "(s)" ignored), each with a suggestion that starts picked: the user's rule first, then the wording Glovebox
+  recognises (`CarfaxReport.service`). Filing goes through `RecordActions.fileCustom`, every line and rule in one
+  transaction (`ServiceDao.fileLines`), **labels as written**, one Undo (`RecordEvent.Filed`); the preview lists the
+  reminders that move and the jobs of the user's own milestone table the lines would count for. "Remember this for
+  future imports" (ticked by default, not asked when the pick is already the rule) keeps a rule: **the whole wording,
+  never part of it**, one per wording, the user's and not a vehicle's. Rules apply only where lines come in, never to
+  saved records by themselves: a history import files a line by its rule (`CatalogRules.file`) before anything is
+  planned, **a file's own `service` always wins**, and on a Carfax report the rule wins over Glovebox's wording; the
+  preview's note names what rules filed. A rule whose line a later version drops is kept, shown in red on Settings →
+  "Your category rules" and never applied (`CatalogRules.known`). Changing or deleting a rule changes no record.
 - Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion

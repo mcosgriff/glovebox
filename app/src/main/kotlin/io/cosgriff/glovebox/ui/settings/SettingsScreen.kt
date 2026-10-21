@@ -82,14 +82,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import io.cosgriff.glovebox.data.db.CatalogRuleDao
 import javax.inject.Inject
 
 /** A vehicle whose schedule can be opened from Settings. */
 data class ScheduleOwner(val id: Long, val name: String)
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val repo: SettingsRepository, vehicles: VehicleDao) : ViewModel() {
+class SettingsViewModel @Inject constructor(private val repo: SettingsRepository, vehicles: VehicleDao, rules: CatalogRuleDao) : ViewModel() {
     val settings = repo.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
+
+    /** How many category rules the user has kept; their row shows only while there are some. */
+    val ruleCount = rules.observeAll().map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     /** Vehicles in the garage; archived ones have no schedule to keep. */
     val vehicles = vehicles.observeActive()
@@ -123,9 +127,11 @@ fun SettingsScreen(
     onDeleteAll: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
+    onOpenCategoryRules: () -> Unit,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
     val s by vm.settings.collectAsStateWithLifecycle()
+    val ruleCount by vm.ruleCount.collectAsStateWithLifecycle()
     val vehicles by vm.vehicles.collectAsStateWithLifecycle()
     val choices by vm.choices.collectAsStateWithLifecycle()
 
@@ -188,6 +194,7 @@ fun SettingsScreen(
         onSetTheme = { vm.setTheme(it) }, onSetBiometric = { vm.setBiometric(it) }, onSetLockDelay = { vm.setLockDelay(it) },
         onSetHideInRecents = { vm.setHideInRecents(it) }, onSetScannerDetails = { vm.setScannerDetails(it) },
         onPick = { picking = it }, onExport = { exporting = it },
+        rules = ruleCount, onOpenCategoryRules = onOpenCategoryRules,
     )
 }
 
@@ -212,6 +219,9 @@ internal fun SettingsContent(
     onSetScannerDetails: (Boolean) -> Unit,
     onPick: (Picking) -> Unit,
     onExport: (ExportFormat) -> Unit,
+    /** How many category rules the user has kept (#310); none hides their row. */
+    rules: Int = 0,
+    onOpenCategoryRules: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     val dark = scheme.background.luminance() < 0.5f
@@ -401,6 +411,10 @@ internal fun SettingsContent(
                             color = scheme.onSurfaceVariant,
                         )
                     }
+                }
+                if (rules > 0) {
+                    Divider()
+                    CategoryRulesRow(rules, onOpenCategoryRules)
                 }
                 Divider()
                 Row(

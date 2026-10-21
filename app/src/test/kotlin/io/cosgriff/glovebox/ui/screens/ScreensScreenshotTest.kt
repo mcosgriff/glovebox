@@ -24,6 +24,7 @@ import io.cosgriff.glovebox.ui.service.LineMatches
 import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
+import io.cosgriff.glovebox.ui.settings.CategoryRulesContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsContent
 import io.cosgriff.glovebox.ui.vehicle.MileageReadingsContent
@@ -133,6 +134,11 @@ class ScreensScreenshotTest(private val shade: Shade) {
         compose.shoot("file_under_line", shade) {
             LinePicker("Water pump gasket replaced", lines, onPick = {}, Modifier.padding(16.dp))
         }
+    }
+
+    @Test
+    fun categoryRules() = compose.shoot("category_rules", shade) {
+        CategoryRulesContent(Fixtures.categoryRules, onSetLine = { _, _ -> }, onDelete = {}, onBack = {})
     }
 
     @Test

@@ -1,7 +1,9 @@
 package io.cosgriff.glovebox.ui.screens
 
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.data.db.CatalogRuleEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
@@ -213,6 +215,14 @@ object Fixtures {
         ),
         rules = listOf(CatalogRule("Brakes done", "brake-service")),
     )
+
+    /** Made-up rules, by wording; the last names a line no version has, as one a later version dropped would. */
+    val categoryRules: List<CatalogRuleEntity> = listOf(
+        CatalogRule("Brakes done", "brake-service"),
+        CatalogRule("Tire(s) mounted", "new-tires"),
+        CatalogRule("Water pump gasket replaced", "water-pump"),
+        CatalogRule("Flux capacitor serviced", "flux-capacitor"),
+    ).mapIndexed { i, r -> r.toEntity(TODAY).copy(id = i + 1L) }
 
     /** Filing those: a made-up water pump reminder starts counting from the later line, and a job on the user's table. */
     val sortPreview = SortPreview(
