@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -40,7 +40,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -301,15 +300,7 @@ private fun ReadingLine(row: ReadingRow, unit: DistanceUnit, onClick: () -> Unit
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(reading.odometer.asDistance(unit), style = MaterialTheme.typography.titleMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
                 if (row.current) {
-                    Surface(color = scheme.primaryContainer, shape = CircleShape) {
-                        Text(
-                            stringResource(R.string.readings_odometer_tag),
-                            Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onPrimaryContainer,
-                        )
-                    }
+                    Pill(stringResource(R.string.readings_odometer_tag), scheme.primaryContainer, scheme.onPrimaryContainer, small = true)
                 }
             }
             Text(

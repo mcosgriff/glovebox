@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.DoubleCheckTag
+import io.cosgriff.glovebox.ui.components.Tag
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.BorderedCard
@@ -42,7 +44,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,7 +53,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -428,7 +428,7 @@ private fun SpecCard(spec: TorqueSpecEntity, unit: TorqueUnit, listSource: Strin
                         when {
                             torque == null -> Tag(stringResource(R.string.torque_tag_needs_value), scheme.primaryContainer, scheme.onPrimaryContainer)
                             // Somebody else's figure, not yet checked: the loudest tag on the screen.
-                            TorqueSource.of(spec.source) == TorqueSource.REFERENCE -> Tag(stringResource(R.string.torque_tag_double_check), scheme.primary, scheme.onPrimary)
+                            TorqueSource.of(spec.source) == TorqueSource.REFERENCE -> DoubleCheckTag()
                             TorqueSource.of(spec.source) == TorqueSource.FACTORY -> Tag(stringResource(R.string.torque_tag_factory), scheme.tertiaryContainer, scheme.onTertiaryContainer)
                             else -> Tag(stringResource(R.string.torque_tag_yours), scheme.surfaceVariant, statusColors().soon)
                         }
@@ -482,16 +482,3 @@ private fun KnownOffer(list: KnownSpecList, plan: KnownSpecPlan, onAdd: () -> Un
     }
 }
 
-@Composable
-private fun Tag(text: String, container: Color, content: Color, mono: Boolean = false) {
-    Surface(color = container, shape = RoundedCornerShape(6.dp)) {
-        Text(
-            text,
-            Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontFamily = if (mono) PlexMono else null,
-            fontWeight = if (mono) FontWeight.SemiBold else FontWeight.Bold,
-            color = content,
-        )
-    }
-}

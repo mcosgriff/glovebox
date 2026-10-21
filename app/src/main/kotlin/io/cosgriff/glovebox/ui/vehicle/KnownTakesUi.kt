@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -23,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.R
@@ -154,21 +151,6 @@ fun KnownTakesNote(from: KnownTakesList, modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-}
-
-/** The tag on a row filled from a list and not yet checked, as torque specs have it. */
-@Composable
-fun DoubleCheckTag() {
-    val scheme = MaterialTheme.colorScheme
-    Surface(color = scheme.primary, shape = RoundedCornerShape(6.dp)) {
-        Text(
-            stringResource(R.string.torque_tag_double_check),
-            Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = scheme.onPrimary,
-        )
-    }
 }
 
 /** In an editor of a row still tagged: the owner saying they have checked it against their manual. */

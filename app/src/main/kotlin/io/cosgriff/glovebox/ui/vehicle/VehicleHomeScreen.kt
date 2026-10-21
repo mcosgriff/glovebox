@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -487,15 +488,7 @@ private fun StatusPill(up: ComingUp) {
             Triple(pluralStringResource(R.plurals.home_pill_to_log, attention.toLog, attention.toLog.asNumber()), scheme.surfaceVariant, statusColors().soon)
         else -> Triple(stringResource(R.string.home_pill_up_to_date), scheme.tertiaryContainer, scheme.onTertiaryContainer)
     }
-    Surface(color = container, shape = CircleShape) {
-        Text(
-            text,
-            Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = content,
-        )
-    }
+    Pill(text, container, content)
 }
 
 @Composable

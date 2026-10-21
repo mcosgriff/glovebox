@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.R
@@ -885,14 +886,7 @@ private fun CategoryButton(label: String, count: Int, active: Boolean, onClick: 
         ) {
             Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, fontWeight = if (active) FontWeight.Bold else null)
             if (count > 0) {
-                Surface(color = scheme.primaryContainer, contentColor = scheme.onPrimaryContainer, shape = CircleShape) {
-                    Text(
-                        stringResource(R.string.log_tab_count, count.asNumber()),
-                        Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                Pill(stringResource(R.string.log_tab_count, count.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer, small = true)
             }
             if (active) Icon(Icons.Outlined.ExpandMore, contentDescription = null, modifier = Modifier.size(20.dp))
         }

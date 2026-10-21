@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.OdometerField
@@ -32,7 +33,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -62,7 +62,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -528,9 +527,9 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                         color = if (identified) scheme.onSurface else scheme.primary,
                     )
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        VinDecode.shortDrive(vm.fields[DecodedField.DRIVE])?.let { Pill(it, scheme.primaryContainer, scheme.onPrimaryContainer) }
-                        vm.fields[DecodedField.ENGINE]?.let { Pill(it, scheme.surfaceVariant, statusColors().soon) }
-                        vm.fields[DecodedField.BODY]?.let { Pill(it, scheme.surfaceVariant, statusColors().soon) }
+                        VinDecode.shortDrive(vm.fields[DecodedField.DRIVE])?.let { Pill(it, scheme.primaryContainer, scheme.onPrimaryContainer, bold = false) }
+                        vm.fields[DecodedField.ENGINE]?.let { Pill(it, scheme.surfaceVariant, statusColors().soon, bold = false) }
+                        vm.fields[DecodedField.BODY]?.let { Pill(it, scheme.surfaceVariant, statusColors().soon, bold = false) }
                     }
                 }
             }
@@ -667,19 +666,6 @@ private fun FieldRow(label: String, value: String, muted: Boolean = false, onCli
             fontWeight = FontWeight.SemiBold,
             color = if (muted) scheme.primary else scheme.onSurface,
             textAlign = TextAlign.End,
-        )
-    }
-}
-
-@Composable
-private fun Pill(text: String, container: Color, content: Color) {
-    Surface(color = container, shape = CircleShape) {
-        Text(
-            text,
-            Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = content,
         )
     }
 }

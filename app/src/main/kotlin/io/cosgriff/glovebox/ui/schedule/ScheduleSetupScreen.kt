@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.AppText
@@ -31,7 +32,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -482,15 +482,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
                 }
             }
             if (item.showsSevere) {
-                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
-                    Text(
-                        stringResource(R.string.setup_severe_tag),
-                        Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
+                Pill(stringResource(R.string.setup_severe_tag), MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer, small = true)
             }
         }
         IconButton(onClick = onEdit) {

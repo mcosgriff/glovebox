@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -24,7 +25,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -187,15 +187,7 @@ private fun ArchivedCard(
                         color = scheme.onSurfaceVariant,
                     )
                 }
-                Surface(color = scheme.surfaceVariant, shape = CircleShape) {
-                    Text(
-                        stringResource(R.string.archived_sold_tag),
-                        Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = statusColors().soon,
-                    )
-                }
+                Pill(stringResource(R.string.archived_sold_tag), scheme.surfaceVariant, statusColors().soon)
             }
             Text(
                 listOfNotNull(

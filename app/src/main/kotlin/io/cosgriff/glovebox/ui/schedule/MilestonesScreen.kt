@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -668,15 +668,12 @@ private fun MilestoneCard(
                     )
                 }
                 if (next) {
-                    Surface(color = scheme.primaryContainer, shape = CircleShape) {
-                        Text(
-                            current?.let { stringResource(R.string.milestones_next_in, (m.milestone.atMiles - it).asDistance(unit).uppercase(AppText.locale)) } ?: stringResource(R.string.milestones_next),
-                            Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onPrimaryContainer,
-                        )
-                    }
+                    Pill(
+                        current?.let { stringResource(R.string.milestones_next_in, (m.milestone.atMiles - it).asDistance(unit).uppercase(AppText.locale)) } ?: stringResource(R.string.milestones_next),
+                        scheme.primaryContainer,
+                        scheme.onPrimaryContainer,
+                        small = true,
+                    )
                 }
                 // Every job here has a record: the whole milestone is done.
                 if (m.jobs.isNotEmpty() && completed == m.jobs.size) {
