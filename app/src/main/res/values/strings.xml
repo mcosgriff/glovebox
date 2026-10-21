@@ -802,6 +802,13 @@
     <string name="catalog_brake_service">Brake service</string>
     <string name="catalog_calipers">Brake calipers</string>
     <string name="catalog_brake_lines">Brake lines / hoses</string>
+    <string name="catalog_brake_shoes">Brake shoes</string>
+    <string name="catalog_brake_drums">Brake drums</string>
+    <string name="catalog_wheel_cylinders">Wheel cylinders</string>
+    <string name="catalog_master_cylinder">Brake master cylinder</string>
+    <string name="catalog_brake_booster">Brake booster</string>
+    <string name="catalog_parking_brake">Parking brake</string>
+    <string name="catalog_abs_sensor">ABS sensor</string>
     <string name="catalog_trans_fluid">Transmission fluid</string>
     <string name="catalog_power_steering">Power steering fluid</string>
     <string name="catalog_washer">Washer fluid</string>

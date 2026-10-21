@@ -204,6 +204,15 @@ object CarfaxReport {
         """brakes? (system )?serviced""" to "brake-service",
         """(brake )?calipers? (replaced|rebuilt|installed)""" to "calipers",
         """brake (lines?|hoses?) (replaced|repaired|installed)""" to "brake-lines",
+        // The parking brake's own shoes before brake shoes in general.
+        """(parking|emergency) brake( cables?| shoes?)? (replaced|adjusted|repaired)""" to "parking-brake",
+        """(rear )?brake shoes? (replaced|installed)""" to "brake-shoes",
+        """(rear )?brake drums? (replaced|resurfaced|machined)""" to "brake-drums",
+        """wheel cylinders? (replaced|rebuilt)""" to "wheel-cylinders",
+        // A clutch has a master cylinder too.
+        """(?<!clutch )(brake )?master cylinder (replaced|rebuilt|installed)""" to "master-cylinder",
+        """(power )?brake boosters? (replaced|installed)""" to "brake-booster",
+        """(abs|wheel speed) sensors? replaced""" to "abs-sensor",
         // A gasket, seal or housing is part of the job it belongs to.
         """water pump( gasket| seal)? (replaced|installed|repaired)""" to "water-pump",
         """thermostat( gasket| housing)? (replaced|installed)""" to "thermostat",
