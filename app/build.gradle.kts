@@ -84,13 +84,13 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
 
     lint {
-        // Existing warnings live in the baseline; CI fails only on new issues.
-        // Regenerate after fixing old ones: ./gradlew :app:updateLintBaseline
-        baseline = file("lint-baseline.xml")
         abortOnError = true
-        warningsAsErrors = false
+        // No warnings are kept: a new one fails the build, as an error does.
+        warningsAsErrors = true
         // Dependabot proposes new versions, after its 5-day cooldown; lint would flag them on day one.
+        // AndroidGradlePluginVersion is the same check for Gradle and AGP themselves.
         disable += "NewerVersionAvailable"
+        disable += "AndroidGradlePluginVersion"
         // The release is 64-bit ARM only on purpose (abiFilters above); no ChromeOS x86_64 build.
         disable += "ChromeOsAbiSupport"
     }

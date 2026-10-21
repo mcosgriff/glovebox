@@ -14,7 +14,8 @@ https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 ## Status
 
 `./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.8.1, AGP 9.4.1, lint included).
-Keep them green; lint errors fail the build.
+Keep them green; lint fails the build on a warning as on an error (`warningsAsErrors`, in `:app` and `:data`),
+and there is no baseline: fix a warning, or suppress that one case with a comment saying why (`app/lint.xml`).
 
 ## Commands
 

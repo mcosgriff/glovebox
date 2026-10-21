@@ -23,6 +23,14 @@ android {
     // MigrationTest reads every exported schema, and runs on the JVM (Robolectric), so it is part of `build`.
     sourceSets { named("test") { assets.directories.add("$projectDir/schemas") } }
     testOptions.unitTests.isIncludeAndroidResources = true
+
+    // As in :app: no warnings are kept, and version news is left to Dependabot.
+    lint {
+        abortOnError = true
+        warningsAsErrors = true
+        disable += "NewerVersionAvailable"
+        disable += "AndroidGradlePluginVersion"
+    }
 }
 
 kotlin {

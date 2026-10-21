@@ -178,7 +178,7 @@ class ScheduleSetupViewModel @Inject constructor(
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
             if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel)
-            items = if (list != null && v != null) {
+            items = if (list != null) {
                 knownItems(list, v)
             } else {
                 ScheduleTemplates.generic(v?.drivetrain, v?.fuel, unit).map {

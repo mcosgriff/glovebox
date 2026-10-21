@@ -4,8 +4,12 @@
     changes, and the daily check once a day for reminders that fall due with the date. It starts one
     cell tall, which holds one vehicle; with more, it is stretched, and until then the list scrolls. Any
     width and height; a launcher like Kvaesitso gives it a wide, short slot.
+
+    targetCellWidth and targetCellHeight are Android 12's way of saying the starting size in cells; older
+    launchers ignore them and go by minWidth and minHeight, which say the same thing in dp.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:description="@string/widget_description"
     android:initialLayout="@layout/glance_default_loading_layout"
     android:minWidth="180dp"
@@ -16,4 +20,5 @@
     android:targetCellHeight="1"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    tools:ignore="UnusedAttribute" />

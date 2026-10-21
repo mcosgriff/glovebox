@@ -60,7 +60,7 @@ class ImportFilesTest {
                 ImportedScheduleItem("Grease driveshaft", Interval(15_000, null), rule = DueRule.MILEAGE_ONLY, service = "driveshaft"),
                 ImportedScheduleItem("Wash \"the\" underside \\ rinse", Interval(null, 3)),
             ),
-            (ImportFormat.parse(written.text!!) as ImportFile.IntervalSchedule).items,
+            (ImportFormat.parse(written.text) as ImportFile.IntervalSchedule).items,
         )
     }
 
@@ -131,7 +131,7 @@ class ImportFilesTest {
             val written = TorqueExport.file(specs, unit)
             assertEquals(emptyList<LeftOut>(), written.leftOut)
             assertTrue(schemaAccepts(ImportKind.TORQUE_SPECS, written.text!!))
-            val items = (ImportFormat.parse(written.text!!) as ImportFile.TorqueSpecs).items
+            val items = (ImportFormat.parse(written.text) as ImportFile.TorqueSpecs).items
             assertEquals(specs.map { it.name }, items.map { it.name })
             assertEquals(TorqueSource.FACTORY, items[0].source)
             assertEquals("Star pattern, re-check after 50 mi", items[0].note)
@@ -191,9 +191,9 @@ class ImportFilesTest {
         val saved = listOf(item(1, "Oil change", Interval(7_500, 6), Interval(5_001, 3)), item(2, "Brake fluid", Interval(null, 24)))
         val written = ScheduleExport.file(saved, km)
         assertTrue("\"everyKm\": 7500" in written.text!!)
-        assertFalse("everyMiles" in written.text!!)
-        assertTrue(schemaAccepts(ImportKind.INTERVAL_SCHEDULE, written.text!!))
-        val file = ImportFormat.parse(written.text!!) as ImportFile.IntervalSchedule
+        assertFalse("everyMiles" in written.text)
+        assertTrue(schemaAccepts(ImportKind.INTERVAL_SCHEDULE, written.text))
+        val file = ImportFormat.parse(written.text) as ImportFile.IntervalSchedule
         assertEquals(km, file.unit)
         assertEquals(listOf(Interval(7_500, 6), Interval(null, 24)), file.items.map { it.normal })
         // Into the vehicle it came from: nothing converted, nothing differs.

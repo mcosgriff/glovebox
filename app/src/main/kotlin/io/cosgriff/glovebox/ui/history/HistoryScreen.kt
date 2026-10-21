@@ -376,7 +376,7 @@ internal fun HistoryContent(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(shown, key = { it.record.id }) { r ->
-                    RecordCard(r, state.vehicle?.unit ?: DistanceUnit.MILES, mark = fresh?.mark?.takeIf { r.record.id == fresh?.recordId }, onClick = { onOpenRecord(r.record.id) })
+                    RecordCard(r, state.vehicle.unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
                 }
             }
         }

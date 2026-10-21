@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalRoborazziApi::class)
+
 package io.cosgriff.glovebox.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -127,7 +129,6 @@ fun ComposeContentTestRule.shoot(name: String, shade: Shade, content: @Composabl
  * As [shoot], for a bottom sheet or dialog: those are windows of their own, so the whole screen is
  * captured, with the sheet over an empty page.
  */
-@OptIn(ExperimentalRoborazziApi::class)
 fun ComposeContentTestRule.shootScreen(name: String, shade: Shade, content: @Composable () -> Unit) {
     setContent {
         GloveboxTheme(shade.mode) {
