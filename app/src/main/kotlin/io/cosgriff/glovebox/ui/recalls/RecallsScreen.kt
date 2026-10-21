@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.styledStringResource
 import androidx.annotation.StringRes
@@ -44,8 +45,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -259,16 +258,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 ) {
                     // Archived only appears once something is.
                     RecallTab.entries.filter { it != RecallTab.ARCHIVED || state.recalls.any { r -> r.archivedOn != null } || tab == it }.forEach { t ->
-                        FilterChip(
-                            selected = t == tab,
-                            onClick = { tab = t },
-                            label = { Text(stringResource(t.label)) },
-                            // Canvas: the chosen filter is solid ink.
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.secondary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-                            ),
-                        )
+                        InkChip(stringResource(t.label), selected = t == tab) { tab = t }
                     }
                 }
             }

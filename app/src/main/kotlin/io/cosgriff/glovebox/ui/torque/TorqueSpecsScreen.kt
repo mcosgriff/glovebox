@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import androidx.compose.ui.platform.LocalResources
@@ -34,8 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -337,8 +336,8 @@ internal fun TorqueSpecsContent(
                     }
                     if (categories.size > 1) {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Chip(stringResource(R.string.history_all), selected = category == null) { categoryName = null }
-                            categories.forEach { c -> Chip(c.label, selected = category == c) { categoryName = c.name } }
+                            InkChip(stringResource(R.string.history_all), selected = category == null) { categoryName = null }
+                            categories.forEach { c -> InkChip(c.label, selected = category == c) { categoryName = c.name } }
                         }
                     }
                 }
@@ -411,19 +410,6 @@ internal fun UnitSwitch(unit: TorqueUnit, onPick: (TorqueUnit) -> Unit, modifier
             ) { Text(u.symbolWord, maxLines = 1) }
         }
     }
-}
-
-@Composable
-internal fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.secondary,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
-        ),
-    )
 }
 
 /** [listSource] names where the bundled list this row started from came from; null for a row that never came from one. */

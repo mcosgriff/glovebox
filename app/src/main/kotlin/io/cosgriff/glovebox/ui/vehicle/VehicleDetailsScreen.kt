@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.components.orNullIfBlank
@@ -35,7 +36,6 @@ import io.cosgriff.glovebox.domain.MakerDocumentList
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.material3.FilterChip
 import androidx.compose.ui.text.input.KeyboardType
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -1121,7 +1121,7 @@ private fun OilDialog(v: VehicleEntity, toCheck: Boolean, onSave: (String?, Stri
         // The common grades a tap away.
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             VehicleSpecEntry.commonGrades.forEach { g ->
-                FilterChip(selected = VehicleSpecEntry.oilGrade(grade) == g, onClick = { grade = g }, label = { Text(g, fontFamily = PlexMono) })
+                InkChip(g, selected = VehicleSpecEntry.oilGrade(grade) == g, mono = true) { grade = g }
             }
         }
         CheckedField(approval, { approval = it }, stringResource(R.string.oil_approval), stringResource(R.string.oil_approval_error), VehicleSpecEntry::oilApproval, supporting = stringResource(R.string.oil_approval_note))
@@ -1131,7 +1131,7 @@ private fun OilDialog(v: VehicleEntity, toCheck: Boolean, onSave: (String?, Stri
                 { VehicleSpecEntry.oilCapacity(it.typedDecimal(), unit) }, modifier = Modifier.weight(1f), keyboard = KeyboardType.Decimal,
             )
             listOf(false to stringResource(R.string.unit_qt), true to stringResource(R.string.unit_litre)).forEach { (l, symbol) ->
-                FilterChip(selected = litres == l, onClick = { litres = l }, label = { Text(symbol) })
+                InkChip(symbol, selected = litres == l) { litres = l }
             }
         }
         CheckedField(
@@ -1185,7 +1185,7 @@ private fun TiresDialog(
             Text(stringResource(R.string.known_takes_sizes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listedSizes.forEach { size ->
-                    FilterChip(selected = VehicleSpecEntry.tireSize(front) == size, onClick = { front = size }, label = { Text(size, fontFamily = PlexMono) })
+                    InkChip(size, selected = VehicleSpecEntry.tireSize(front) == size, mono = true) { front = size }
                 }
             }
         }
@@ -1199,7 +1199,7 @@ private fun TiresDialog(
         if (differ) CheckedField(rear, { rear = it }, stringResource(R.string.rear), error, VehicleSpecEntry::tireSize)
         SectionLabel(stringResource(R.string.tires_pressure_section))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(false to stringResource(R.string.unit_psi), true to stringResource(R.string.unit_kpa)).forEach { (k, symbol) -> FilterChip(selected = kpa == k, onClick = { kpa = k }, label = { Text(symbol) }) }
+            listOf(false to stringResource(R.string.unit_psi), true to stringResource(R.string.unit_kpa)).forEach { (k, symbol) -> InkChip(symbol, selected = kpa == k) { kpa = k } }
         }
         val pError = stringResource(R.string.tires_pressure_error, stringResource(unit.word), unit.range.first.asNumber(), unit.range.last.asNumber())
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
