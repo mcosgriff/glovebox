@@ -7,7 +7,10 @@ import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.Settings
+import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.ComingUp
+import io.cosgriff.glovebox.domain.CustomGroup
+import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
@@ -18,7 +21,9 @@ import io.cosgriff.glovebox.domain.MileageReadings
 import io.cosgriff.glovebox.domain.Milestones
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OpenRecalls
+import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ReminderInputs
+import io.cosgriff.glovebox.domain.SavedLine
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ScheduleSummary
@@ -38,6 +43,7 @@ import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageVehicle
 import io.cosgriff.glovebox.ui.history.HistoryState
+import io.cosgriff.glovebox.ui.history.SortPreview
 import io.cosgriff.glovebox.ui.history.RecordDetail
 import io.cosgriff.glovebox.ui.history.WorkLine
 import io.cosgriff.glovebox.ui.schedule.DraftItem
@@ -195,7 +201,28 @@ object Fixtures {
 
     val vehicleHome = VehicleHome(truck, truckOdometer, DueRule.WHICHEVER_FIRST, truckComingUp, ReminderInputs(tracked, truckEntries, truckReadings))
 
-    val history = HistoryState(listOf(truck, hatch), truck, truckRecords)
+    val history = HistoryState(listOf(truck, hatch), truck, truckRecords, customLines = 4)
+
+    /** Custom lines as a report might word them: one Glovebox recognises, one the user has a rule for, one neither. */
+    val customGroups: List<CustomGroup> = CustomLines.groups(
+        listOf(
+            SavedLine(1, 101, LocalDate.of(2023, 3, 14), "Water pump gasket replaced", null, null),
+            SavedLine(2, 102, LocalDate.of(2025, 6, 2), "Water pump gasket replaced", null, null),
+            SavedLine(3, 103, LocalDate.of(2024, 9, 20), "Brakes done", null, null),
+            SavedLine(4, 104, LocalDate.of(2024, 9, 20), "Hitch pin replaced", null, null),
+        ),
+        rules = listOf(CatalogRule("Brakes done", "brake-service")),
+    )
+
+    /** Filing those: a made-up water pump reminder starts counting from the later line, and a job on the user's table. */
+    val sortPreview = SortPreview(
+        lines = 3,
+        reminders = listOf(
+            ReminderChange(TrackedItem(9, "Water pump", Interval(100_000, null), DueRule.MILEAGE_ONLY), before = null, after = LastDone(LocalDate.of(2025, 6, 2), 58_200)),
+        ),
+        tableJobs = listOf("Water pump"),
+        unit = DistanceUnit.MILES,
+    )
 
     /** The rotation and brake check: the brake check's reminder now counts from it, the rotation has been done again since. */
     val recordDetail: RecordDetail = run {

@@ -72,13 +72,14 @@ internal fun ValueRow(title: String, value: String, strong: Boolean = true, onCl
 internal fun CheckRow(
     title: String,
     checked: Boolean,
+    modifier: Modifier = Modifier,
     detail: String? = null,
     enabled: Boolean = true,
     mono: Boolean = false,
     onChange: (Boolean) -> Unit,
 ) {
     Row(
-        Modifier.fillMaxWidth()
+        modifier.fillMaxWidth()
             .heightIn(min = if (detail == null) 48.dp else 56.dp)
             .toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onChange),
         verticalAlignment = Alignment.CenterVertically,

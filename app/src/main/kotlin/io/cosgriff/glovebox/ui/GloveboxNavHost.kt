@@ -76,6 +76,7 @@ import io.cosgriff.glovebox.ui.export.ExportResultsViewModel
 import io.cosgriff.glovebox.ui.garage.GarageScreen
 import io.cosgriff.glovebox.ui.garage.ManualAddScreen
 import io.cosgriff.glovebox.ui.history.HistoryScreen
+import io.cosgriff.glovebox.ui.history.SortCustomScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
@@ -151,6 +152,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long) : NavKey
 /** Deletes a vehicle's service records (imported, or all) and nothing else. */
 @Serializable data class ClearHistoryRoute(val vehicleId: Long) : NavKey
+/** Sorts a vehicle's Custom lines under catalog lines, in bulk (#310). */
+@Serializable data class SortCustomRoute(val vehicleId: Long) : NavKey
 @Serializable data class TorqueSpecsRoute(val vehicleId: Long) : NavKey
 @Serializable data class FluidsPartsRoute(val vehicleId: Long) : NavKey
 @Serializable data class DocumentsRoute(val vehicleId: Long) : NavKey
@@ -282,6 +285,8 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 }
                 is RecordEvent.RecallReopened ->
                     res.getString(if (event.record != null) R.string.event_recall_open_removed else R.string.event_recall_open) to res.getString(R.string.undo)
+                is RecordEvent.Filed ->
+                    res.getQuantityString(R.plurals.event_lines_filed, event.lineIds.size, event.lineIds.size.asNumber()) to res.getString(R.string.undo)
             }
             val recordId = when (event) {
                 is RecordEvent.Saved -> event.recordId
@@ -306,7 +311,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                         recordEvents.undo(event) {
                             when (event) {
                                 is RecordEvent.Deleted -> showNote(res.getString(R.string.event_restored))
-                                is RecordEvent.Edited -> showNote(res.getString(R.string.event_undone))
+                                is RecordEvent.Edited, is RecordEvent.Filed -> showNote(res.getString(R.string.event_undone))
                                 else -> Unit
                             }
                         }
@@ -593,8 +598,12 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 )
             }
             screen<HistoryRoute> {
-                HistoryScreen(onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) })
+                HistoryScreen(
+                    onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
+                    onSortCustom = { vehicleId -> nav.push(SortCustomRoute(vehicleId)) },
+                )
             }
+            screen<SortCustomRoute> { SortCustomScreen(onBack = { nav.pop() }) }
             screen<RecordDetailRoute> {
                 val confirmDelete = results[CONFIRM_DELETE] == true
                 RecordDetailScreen(

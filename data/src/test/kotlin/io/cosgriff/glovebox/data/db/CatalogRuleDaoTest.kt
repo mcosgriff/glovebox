@@ -37,6 +37,36 @@ class CatalogRuleDaoTest {
     }
 
     @Test
+    fun `filing lines and keeping rules is one step, and undoing it puts both back`() = runBlocking {
+        val vehicleId = db.vehicles().insert(VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = today))
+        val recordId = db.service().insertWithItems(
+            ServiceRecordEntity(vehicleId = vehicleId, date = today, odometer = 60_000, diy = false),
+            listOf(
+                ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Water pump gasket replaced"),
+                ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Hitch pin replaced"),
+            ),
+        )
+        val (pump, hitch) = db.service().record(recordId)!!.items.sortedBy { it.id }
+        // A rule for the hitch's wording already, which keeping a new one replaces.
+        rules.put("Hitch pin replaced", "body", today)
+        val before = rules.all()
+
+        db.service().fileLines(
+            mapOf("water-pump" to listOf(pump.id), "accessory" to listOf(hitch.id)),
+            listOf(CatalogRule("Water pump gasket replaced", "water-pump").toEntity(today), CatalogRule("Hitch pin replaced", "accessory").toEntity(today)),
+        )
+        val filed = db.service().record(recordId)!!.items.sortedBy { it.id }
+        assertEquals(listOf("water-pump", "accessory"), filed.map { it.catalogId })
+        // The wording stays as written.
+        assertEquals(listOf("Water pump gasket replaced", "Hitch pin replaced"), filed.map { it.label })
+        assertEquals(setOf(CatalogRule("Water pump gasket replaced", "water-pump"), CatalogRule("Hitch pin replaced", "accessory")), rules.all().map { it.toRule() }.toSet())
+
+        db.service().unfileLines(listOf(pump.id, hitch.id), addedKeys = listOf("water pump gasket replaced", "hitch pin replaced"), replaced = before)
+        assertEquals(listOf(null, null), db.service().record(recordId)!!.items.map { it.catalogId })
+        assertEquals(before, rules.all())
+    }
+
+    @Test
     fun `a rule's line can be changed, and a rule deleted`() = runBlocking {
         val id = rules.put("Hitch pin replaced", "accessory", today)
         rules.setLine(id, "body")

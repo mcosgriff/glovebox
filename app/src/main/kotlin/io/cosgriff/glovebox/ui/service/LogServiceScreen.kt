@@ -1030,9 +1030,9 @@ private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoi
     }
 }
 
-/** Files the custom line [label] under one of [lines] ([LinePicker]); it keeps its wording. */
+/** Files the custom line [label] under one of [lines] ([LinePicker]); it keeps its wording. Sorting Custom lines uses it too. */
 @Composable
-private fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
+internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.log_file_under_title)) },
