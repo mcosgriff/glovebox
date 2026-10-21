@@ -47,7 +47,7 @@ class KnownSpecsTest {
         for (list in bundled) {
             assertTrue(list.source.basis.isNotBlank())
             assertTrue(list.items.isNotEmpty())
-            assertTrue(list.items.all { it.torque != null && it.torque!!.newtonMeters <= TorqueSpecs.MAX_NEWTON_METERS })
+            assertTrue(list.items.all { it.torque != null && it.torque.newtonMeters <= TorqueSpecs.MAX_NEWTON_METERS })
             // One row per fastener, so adding a list twice can't double anything.
             assertEquals(list.items.size, list.items.map { TorqueImport.key(it.name, it.category) }.toSet().size)
         }
