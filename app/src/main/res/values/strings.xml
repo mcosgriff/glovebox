@@ -819,6 +819,11 @@
     <string name="catalog_thermostat">Thermostat</string>
     <string name="catalog_radiator">Radiator</string>
     <string name="catalog_coolant_hoses">Coolant hoses</string>
+    <string name="catalog_radiator_cap">Radiator cap</string>
+    <string name="catalog_coolant_reservoir">Coolant reservoir</string>
+    <string name="catalog_cooling_fan">Cooling fan</string>
+    <string name="catalog_fan_clutch">Fan clutch</string>
+    <string name="catalog_heater_core">Heater core</string>
     <string name="catalog_diff_fluid">Differential / transfer case fluid</string>
     <string name="catalog_front_diff_check">Front differential oil check</string>
     <string name="catalog_front_diff">Front differential oil change</string>

@@ -216,6 +216,11 @@ object CarfaxReport {
         // A gasket, seal or housing is part of the job it belongs to.
         """water pump( gasket| seal)? (replaced|installed|repaired)""" to "water-pump",
         """thermostat( gasket| housing)? (replaced|installed)""" to "thermostat",
+        """heater core (replaced|flushed|installed)""" to "heater-core",
+        """radiator (pressure )?cap replaced""" to "radiator-cap",
+        """(coolant|overflow|expansion) (reservoir|tank|bottle) replaced""" to "coolant-reservoir",
+        """fan clutch replaced""" to "fan-clutch",
+        """((radiator|engine|electric) )?cooling fans?( motor| assembly)? (replaced|installed)|radiator fan( motor)? replaced""" to "cooling-fan",
         // Hoses before the radiator, which "radiator hose replaced" would otherwise be.
         """(coolant|radiator|heater) hoses? (replaced|installed)""" to "coolant-hoses",
         """radiator (replaced|installed|repaired)""" to "radiator",

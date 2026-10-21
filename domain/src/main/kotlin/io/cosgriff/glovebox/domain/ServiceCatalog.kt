@@ -190,7 +190,12 @@ object ServiceCatalog {
                 CatalogItem("water-pump"),
                 CatalogItem("thermostat"),
                 CatalogItem("radiator"),
+                CatalogItem("radiator-cap"),
+                CatalogItem("coolant-reservoir"),
                 CatalogItem("coolant-hoses"),
+                CatalogItem("cooling-fan"),
+                CatalogItem("fan-clutch"),
+                CatalogItem("heater-core"),
             ),
         ),
         CatalogCategory(

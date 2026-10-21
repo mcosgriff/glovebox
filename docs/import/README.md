@@ -222,7 +222,7 @@ count for a reminder. The values, by the category History files them under:
 | Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat`, `tire-check`, `tpms` |
 | Brakes | `front-pads`, `rear-pads`, `brake-pads`, `rotors`, `brake-shoes`, `brake-drums`, `brake-fluid`, `brake-fluid-check`, `brake-inspect`, `brake-service`, `calipers`, `wheel-cylinders`, `master-cylinder`, `brake-booster`, `brake-lines`, `parking-brake`, `abs-sensor` |
 | Fluids | `trans-fluid`, `power-steering`, `washer`, `fluid-check` |
-| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `coolant-hoses` |
+| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `clutch`, `u-joints` |
 | Suspension & steering | `shocks`, `wheel-bearing`, `steering-parts`, `suspension-check` |
 | Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `bulbs`, `lights-check`, `windows-check`, `air-conditioning`, `starter`, `alternator` |
