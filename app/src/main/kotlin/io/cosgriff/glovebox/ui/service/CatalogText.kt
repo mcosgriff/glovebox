@@ -137,6 +137,9 @@ internal val catalogLines: Map<String, Int> = mapOf(
     "safety-inspection" to R.string.catalog_safety_inspection,
     "recall" to R.string.catalog_recall,
     "accessory" to R.string.catalog_accessory,
+    "windshield" to R.string.catalog_windshield,
+    "mirror" to R.string.catalog_mirror,
+    "door-handle" to R.string.catalog_door_handle,
     "body" to R.string.catalog_body,
     "detail" to R.string.catalog_detail,
 )

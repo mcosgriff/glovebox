@@ -877,7 +877,10 @@
     <string name="catalog_safety_inspection">Safety inspection</string>
     <string name="catalog_recall">Recall work</string>
     <string name="catalog_accessory">Accessory install</string>
-    <string name="catalog_body">Body / glass</string>
+    <string name="catalog_body">Other body / glass</string>
+    <string name="catalog_windshield">Windshield</string>
+    <string name="catalog_mirror">Mirror</string>
+    <string name="catalog_door_handle">Door handle</string>
     <string name="catalog_detail">Detail / wash</string>
 
     <!-- Shared notes on records and readings -->

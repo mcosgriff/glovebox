@@ -246,6 +246,9 @@
             "safety-inspection",
             "recall",
             "accessory",
+            "windshield",
+            "mirror",
+            "door-handle",
             "body",
             "detail"
           ]

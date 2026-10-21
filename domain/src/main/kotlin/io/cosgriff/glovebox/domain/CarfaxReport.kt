@@ -306,7 +306,10 @@ object CarfaxReport {
         // "Check engine light checked" is a diagnosis, not the lights.
         """(?<!engine )((head|exterior |interior )?lights|lighting)( system)? (checked|inspected)""" to "lights-check",
         """windows? (checked|inspected)""" to "windows-check",
-        """(windshield|windows?|glass) (replaced|repaired)""" to "body",
+        """windshield( glass)? (replaced|repaired|installed)|windshield (chips?|cracks?) repaired""" to "windshield",
+        """((side|outside|door|rear ?view) )?mirrors?( glass| assembly)? (replaced|installed|repaired)""" to "mirror",
+        """((exterior|interior|outside|inside) )?door handles? (replaced|repaired)""" to "door-handle",
+        """(windows?|glass) (replaced|repaired)""" to "body",
         """maintenance inspection completed|multi-point inspection""" to "multi-point",
         // Which jobs isn't said, so it stays a line of its own and resets nothing.
         """\d{1,3}(,\d{3}|k|000) (mile |mi |km )?(service|maintenance)|(recommended|scheduled|factory scheduled) maintenance (performed|completed)""" to "scheduled-service",

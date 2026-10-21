@@ -279,6 +279,10 @@ object ServiceCatalog {
             "other",
             listOf(
                 CatalogItem("accessory"),
+                CatalogItem("windshield"),
+                CatalogItem("mirror"),
+                CatalogItem("door-handle"),
+                // Body work and any other glass.
                 CatalogItem("body"),
                 CatalogItem("detail"),
             ),

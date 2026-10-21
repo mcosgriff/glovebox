@@ -227,7 +227,7 @@ count for a reminder. The values, by the category History files them under:
 | Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `suspension-check` |
 | Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
 | Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
-| Other | `accessory`, `body`, `detail` |
+| Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
   it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
