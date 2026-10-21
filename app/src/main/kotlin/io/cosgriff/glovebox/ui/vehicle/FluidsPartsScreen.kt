@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.BorderedCard
@@ -148,14 +149,7 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
         }
         if (entered.isEmpty()) {
             item {
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.documents_empty_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Text(
-                        stringResource(R.string.fluids_empty_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
+                EmptyState(stringResource(R.string.fluids_empty_body))
             }
         }
         known.toCheckFrom?.let { from -> item { KnownTakesNote(from, Modifier.padding(horizontal = 20.dp)) } }
