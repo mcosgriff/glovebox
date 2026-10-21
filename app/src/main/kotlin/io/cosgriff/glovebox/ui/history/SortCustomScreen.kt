@@ -62,6 +62,29 @@ import io.cosgriff.glovebox.ui.service.FileUnderDialog
 import io.cosgriff.glovebox.ui.service.LineChoice
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.font.FontWeight
+import io.cosgriff.glovebox.data.db.MilestoneDao
+import io.cosgriff.glovebox.data.db.ScheduleDao
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.LogEdits
+import io.cosgriff.glovebox.domain.ReminderChange
+import io.cosgriff.glovebox.domain.TableJob
+import io.cosgriff.glovebox.domain.TrackedItem
+import io.cosgriff.glovebox.ui.components.PrimaryButton
+import io.cosgriff.glovebox.ui.service.RecordActions
+import io.cosgriff.glovebox.ui.service.answering
+import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.toEntry
+import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.ui.service.unit
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 /** A vehicle's lines as sorting Custom lines sees them. [recallRecords] are the records recalls marked done added. */
@@ -73,7 +96,22 @@ internal fun List<ServiceRecordWithItems>.savedLines(recallRecords: Set<Long>): 
 /** The records these recalls' "mark done" added. */
 internal fun List<RecallEntity>.recordIds(): Set<Long> = mapNotNull { it.serviceRecordId }.toSet()
 
-data class SortCustomState(val vehicle: VehicleEntity, val groups: List<CustomGroup>)
+data class SortCustomState(val vehicle: VehicleEntity, val records: List<ServiceRecordWithItems>, val groups: List<CustomGroup>)
+
+/**
+ * What saving would do: [lines] filed, the [reminders] that move as a result, and the jobs of the user's own
+ * milestone table ([tableJobs]) those lines would now count for.
+ */
+data class SortPreview(val lines: Int, val reminders: List<ReminderChange>, val tableJobs: List<String>, val unit: DistanceUnit)
+
+/** What the preview needs that isn't on screen, read once. */
+private class PreviewInputs(
+    val tracked: List<TrackedItem>,
+    val answering: Map<String, Set<Long>>,
+    val swap: ClusterSwap?,
+    val jobs: List<TableJob>,
+    val unit: DistanceUnit,
+)
 
 /** Every catalog line, by category, to pick from. Only the catalog's: a Custom line is filed under one of those. */
 internal val catalogChoices: List<LineChoice> by lazy {
@@ -87,6 +125,10 @@ class SortCustomViewModel @Inject constructor(
     service: ServiceDao,
     recalls: RecallDao,
     rules: CatalogRuleDao,
+    schedule: ScheduleDao,
+    milestones: MilestoneDao,
+    settings: SettingsRepository,
+    private val actions: RecordActions,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<SortCustomRoute>().vehicleId
 
@@ -107,8 +149,56 @@ class SortCustomViewModel @Inject constructor(
     /** Null while loading, and if the vehicle is gone. Groups go as their lines are filed. */
     val state: StateFlow<SortCustomState?> =
         combine(vehicles.observe(vehicleId), service.observeRecords(vehicleId), recalls.observe(vehicleId), rules.observeAll()) { v, records, recallRows, ruleRows ->
-            v?.let { SortCustomState(it, CustomLines.groups(records.savedLines(recallRows.recordIds()), ruleRows.map { r -> r.toRule() })) }
+            v?.let { SortCustomState(it, records, CustomLines.groups(records.savedLines(recallRows.recordIds()), ruleRows.map { r -> r.toRule() })) }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private var inputs by mutableStateOf<PreviewInputs?>(null)
+
+    init {
+        viewModelScope.launch {
+            val vehicle = vehicles.byId(vehicleId) ?: return@launch
+            val items = schedule.allFor(vehicleId)
+            val rule = settings.settings.first().defaultRule
+            val swap = vehicle.clusterSwap()
+            inputs = PreviewInputs(
+                tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(rule, swap) },
+                answering = items.answering(),
+                swap = swap,
+                jobs = milestones.tableFor(vehicleId).flatMap { m -> m.jobs.map { TableJob(it.name, it.service) } },
+                unit = vehicle.unit,
+            )
+        }
+    }
+
+    /** What saving would do as the picks stand; null until the schedule has been read. Reminders come only from the log. */
+    fun preview(state: SortCustomState): SortPreview? {
+        val i = inputs ?: return null
+        val lines = CustomLines.assignments(state.groups, chosen).toMap()
+        val before = state.records.map { it.toEntry(i.swap, i.answering) }
+        val after = state.records.map { r ->
+            r.copy(items = r.items.map { item -> lines[item.id]?.let { item.copy(catalogId = it) } ?: item }).toEntry(i.swap, i.answering)
+        }
+        return SortPreview(
+            lines = lines.size,
+            reminders = LogEdits.reminderChanges(i.tracked, before, after),
+            tableJobs = CustomLines.tableJobs(state.groups, chosen, i.jobs).map { it.name },
+            unit = i.unit,
+        )
+    }
+
+    private var saving = false
+
+    /** Files every picked group's lines, keeps the rules asked for, and leaves; the nav host offers Undo. */
+    fun save(state: SortCustomState, onDone: () -> Unit) {
+        if (saving) return
+        val lines = CustomLines.assignments(state.groups, chosen)
+        if (lines.isEmpty()) return
+        saving = true
+        viewModelScope.launch {
+            actions.fileCustom(lines, CustomLines.rulesToKeep(state.groups, chosen, remember), LocalDate.now())
+            onDone()
+        }
+    }
 }
 
 /** Sorts a vehicle's Custom lines in bulk (#310): each wording once, with the line it looks like. */
@@ -116,7 +206,10 @@ class SortCustomViewModel @Inject constructor(
 fun SortCustomScreen(onBack: () -> Unit, vm: SortCustomViewModel = hiltViewModel()) {
     val state by vm.state.collectAsStateWithLifecycle()
     val s = state ?: return // first frame while loading
-    SortCustomContent(s.groups, vm.chosen, vm.remember, onChoose = vm::choose, onRemember = vm::remember, onBack = onBack)
+    SortCustomContent(
+        s.groups, vm.chosen, vm.remember, preview = vm.preview(s),
+        onChoose = vm::choose, onRemember = vm::remember, onSave = { vm.save(s, onBack) }, onBack = onBack,
+    )
 }
 
 /** The sort screen as given, with no ViewModel: what [SortCustomScreen] shows, and what the screenshot tests draw. */
@@ -127,25 +220,37 @@ internal fun SortCustomContent(
     chosen: Map<String, String?>,
     /** By group key: false where "Remember this" was unticked. */
     remember: Map<String, Boolean>,
+    /** What saving would do; null while it is being worked out. */
+    preview: SortPreview?,
     onChoose: (key: String, catalogId: String?) -> Unit,
     onRemember: (key: String, on: Boolean) -> Unit,
+    onSave: () -> Unit,
     onBack: () -> Unit,
 ) {
     // The group whose line is being picked, by key.
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        item { ScreenHeader(stringResource(R.string.sort_custom_title), onBack, subtitle = stringResource(R.string.sort_custom_about)) }
-        if (groups.isEmpty()) item { EmptyState(stringResource(R.string.sort_custom_none), title = stringResource(R.string.sort_custom_none_title)) }
-        items(groups, key = { it.key }) { group ->
-            GroupCard(
-                group,
-                picked = CustomLines.picked(group, chosen),
-                remember = remember[group.key] != false,
-                onPick = { picking = group.key },
-                onLeave = { onChoose(group.key, null) },
-                onRemember = { onRemember(group.key, it) },
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
+    Column(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            item { ScreenHeader(stringResource(R.string.sort_custom_title), onBack, subtitle = stringResource(R.string.sort_custom_about)) }
+            if (groups.isEmpty()) item { EmptyState(stringResource(R.string.sort_custom_none), title = stringResource(R.string.sort_custom_none_title)) }
+            items(groups, key = { it.key }) { group ->
+                GroupCard(
+                    group,
+                    picked = CustomLines.picked(group, chosen),
+                    remember = remember[group.key] != false,
+                    onPick = { picking = group.key },
+                    onLeave = { onChoose(group.key, null) },
+                    onRemember = { onRemember(group.key, it) },
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+            }
+            if (preview != null && preview.lines > 0) item { PreviewCard(preview, Modifier.padding(horizontal = 20.dp)) }
+        }
+        if (groups.isNotEmpty()) {
+            val lines = preview?.lines ?: 0
+            PrimaryButton(onClick = onSave, enabled = lines > 0, modifier = Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp)) {
+                Text(if (lines > 0) pluralStringResource(R.plurals.sort_custom_save, lines, lines.asNumber()) else stringResource(R.string.sort_custom_save_none))
+            }
         }
     }
     groups.firstOrNull { it.key == picking }?.let { group ->
@@ -247,6 +352,28 @@ private fun Picked(catalogId: String, source: SuggestionSource?) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** The reminders that move and the milestone table's jobs the lines would count for, as the edit form says it. */
+@Composable
+private fun PreviewCard(preview: SortPreview, modifier: Modifier = Modifier) {
+    val changes = preview.reminders.isNotEmpty() || preview.tableJobs.isNotEmpty()
+    val scheme = MaterialTheme.colorScheme
+    Surface(color = if (changes) scheme.primaryContainer else scheme.surface, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.log_changes_section),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (changes) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
+            )
+            if (preview.reminders.isEmpty()) Text(stringResource(R.string.log_no_changes), style = MaterialTheme.typography.bodyMedium)
+            preview.reminders.forEach { Text(it.text(preview.unit), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface) }
+            if (preview.tableJobs.isNotEmpty()) {
+                Text(stringResource(R.string.sort_custom_table_jobs, preview.tableJobs.joinToString(", ")), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface)
+            }
+        }
     }
 }
 

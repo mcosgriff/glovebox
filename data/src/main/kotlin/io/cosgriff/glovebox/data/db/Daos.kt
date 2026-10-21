@@ -259,6 +259,41 @@ interface ServiceDao {
     /** Every receipt and parts photo file any record points at. */
     @Query("SELECT fileName FROM photos")
     suspend fun allPhotoFiles(): List<String>
+
+    @Query("UPDATE service_record_items SET catalogId = :catalogId WHERE id IN (:ids)")
+    suspend fun setCatalogId(ids: List<Long>, catalogId: String?)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun putRules(rules: List<CatalogRuleEntity>)
+
+    @Query("SELECT * FROM catalog_rules WHERE textKey IN (:keys)")
+    suspend fun rulesFor(keys: List<String>): List<CatalogRuleEntity>
+
+    @Query("DELETE FROM catalog_rules WHERE textKey IN (:keys)")
+    suspend fun deleteRules(keys: List<String>)
+
+    /**
+     * Custom lines filed under catalog lines in bulk (#310), with the rules to remember, in one transaction:
+     * [lines] is catalog line -> the lines to file under it. Only the line changes; labels stay as written.
+     */
+    @Transaction
+    suspend fun fileLines(lines: Map<String, List<Long>>, rules: List<CatalogRuleEntity>) {
+        lines.forEach { (catalogId, ids) -> ids.chunked(IN_LIMIT).forEach { setCatalogId(it, catalogId) } }
+        putRules(rules)
+    }
+
+    /** [fileLines] undone: the lines back under Custom, the rules it added gone and those it replaced back. */
+    @Transaction
+    suspend fun unfileLines(lineIds: List<Long>, addedKeys: List<String>, replaced: List<CatalogRuleEntity>) {
+        lineIds.chunked(IN_LIMIT).forEach { setCatalogId(it, null) }
+        addedKeys.chunked(IN_LIMIT).forEach { deleteRules(it) }
+        putRules(replaced)
+    }
+
+    private companion object {
+        /** Ids per `IN (…)`, well under SQLite's limit on bound values. */
+        const val IN_LIMIT = 500
+    }
 }
 
 @Dao
@@ -627,8 +662,7 @@ interface CatalogRuleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun putEntity(rule: CatalogRuleEntity): Long
 
-    suspend fun put(text: String, catalogId: String, today: LocalDate): Long =
-        putEntity(CatalogRuleEntity(text = text.trim(), textKey = CatalogRules.key(text), catalogId = catalogId, createdOn = today))
+    suspend fun put(text: String, catalogId: String, today: LocalDate): Long = putEntity(CatalogRule(text, catalogId).toEntity(today))
 
     /** Editing a rule only changes the line it files its wording under. */
     @Query("UPDATE catalog_rules SET catalogId = :catalogId WHERE id = :id")
@@ -640,3 +674,7 @@ interface CatalogRuleDao {
 }
 
 fun CatalogRuleEntity.toRule(): CatalogRule = CatalogRule(text, catalogId)
+
+/** A rule as a new row, keyed on its wording ([CatalogRules.key]). */
+fun CatalogRule.toEntity(today: LocalDate): CatalogRuleEntity =
+    CatalogRuleEntity(text = text.trim(), textKey = CatalogRules.key(text), catalogId = catalogId, createdOn = today)

@@ -95,6 +95,18 @@ object CustomLines {
         groups.flatMap { group -> picked(group, chosen)?.let { id -> group.lineIds.map { it to id } }.orEmpty() }
 
     /**
+     * The jobs of the user's own milestone table ([jobs]) the picks would make these lines count for, where
+     * their wording alone ([MilestoneImport.doneKeys] with no catalog line) didn't already. Generated milestones
+     * follow the tracked items, so the reminders that move say that for them.
+     */
+    fun tableJobs(groups: List<CustomGroup>, chosen: Map<String, String?>, jobs: List<TableJob>): List<TableJob> {
+        val newKeys = groups.flatMap { g ->
+            picked(g, chosen)?.let { MilestoneImport.doneKeys(g.label, it) - MilestoneImport.doneKeys(g.label, null).toSet() }.orEmpty()
+        }.toSet()
+        return jobs.filter { MilestoneImport.jobKey(it) in newKeys }.distinctBy { MilestoneImport.jobKey(it) }
+    }
+
+    /**
      * The rules to keep: a group's wording as last written and its pick, where "Remember this" is asked and
      * not unticked in [remember] (it starts ticked: this is ongoing work, and the next import should know).
      */

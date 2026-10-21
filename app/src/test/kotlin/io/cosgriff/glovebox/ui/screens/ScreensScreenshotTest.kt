@@ -144,7 +144,10 @@ class ScreensScreenshotTest(private val shade: Shade) {
 
     @Test
     fun sortCustom() = compose.shoot("sort_custom", shade) {
-        SortCustomContent(Fixtures.customGroups, chosen = emptyMap(), remember = emptyMap(), onChoose = { _, _ -> }, onRemember = { _, _ -> }, onBack = {})
+        SortCustomContent(
+            Fixtures.customGroups, chosen = emptyMap(), remember = emptyMap(), preview = Fixtures.sortPreview,
+            onChoose = { _, _ -> }, onRemember = { _, _ -> }, onSave = {}, onBack = {},
+        )
     }
 
     /** A search by a line's name: the spending line goes, since it would count only what matched. */

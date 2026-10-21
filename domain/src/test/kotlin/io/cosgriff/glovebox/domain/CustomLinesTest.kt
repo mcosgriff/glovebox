@@ -75,6 +75,23 @@ class CustomLinesTest {
     }
 
     @Test
+    fun `a pick counts for the table's jobs of that service, once each, and not for one the wording already did`() {
+        val jobs = listOf(
+            TableJob("Water pump", service = "water-pump"),
+            TableJob("Replace water pump", service = "water-pump"),
+            TableJob("Roof rack fitted"),
+            TableJob("Brake service", service = "brake-service"),
+        )
+        val rack = group("Roof rack fitted")
+        assertEquals(
+            listOf(TableJob("Water pump", service = "water-pump"), TableJob("Brake service", service = "brake-service")),
+            // The rack's own name already completes its job; filing it under a line changes nothing there.
+            CustomLines.tableJobs(sample, mapOf(rack.key to "accessory"), jobs),
+        )
+        assertEquals(emptyList<TableJob>(), CustomLines.tableJobs(sample, sample.associate { it.key to null }, jobs))
+    }
+
+    @Test
     fun `remember is asked for a pick that isn't already the user's rule, and kept unless unticked`() {
         val pump = group("Water pump replaced")
         val brakes = group("Brakes done")

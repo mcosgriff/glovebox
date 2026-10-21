@@ -25,6 +25,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import io.cosgriff.glovebox.data.db.CatalogRuleEntity
+import io.cosgriff.glovebox.data.db.toEntity
+import io.cosgriff.glovebox.domain.CatalogRule
+import io.cosgriff.glovebox.domain.CatalogRules
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,6 +51,12 @@ sealed interface RecordEvent {
 
     /** A recall put back to open. [recall] is how it stood; [record] went with it and returns on Undo. */
     data class RecallReopened(val recall: RecallEntity, val record: ServiceRecordWithItems?) : RecordEvent
+
+    /**
+     * Custom lines filed under catalog lines (#310). Undo puts [lineIds] back under Custom, takes away the rules
+     * kept for [ruleKeys] and brings back the ones they [replaced].
+     */
+    data class Filed(val lineIds: List<Long>, val ruleKeys: List<String>, val replaced: List<CatalogRuleEntity>) : RecordEvent
 }
 
 /**
@@ -158,6 +168,18 @@ class RecordActions @Inject constructor(
         _events.send(RecordEvent.RecallReopened(recall, record))
     }
 
+    /**
+     * Custom lines filed in bulk: each of [lines] (line id, catalog line) under its line, with [rules] kept for
+     * future imports, in one transaction. Labels stay as written. One Undo puts it all back.
+     */
+    suspend fun fileCustom(lines: List<Pair<Long, String>>, rules: List<CatalogRule>, today: LocalDate) {
+        if (lines.isEmpty()) return
+        val keys = rules.map { CatalogRules.key(it.text) }
+        val replaced = if (keys.isEmpty()) emptyList() else service.rulesFor(keys)
+        service.fileLines(lines.groupBy({ it.second }, { it.first }), rules.map { it.toEntity(today) })
+        _events.send(RecordEvent.Filed(lines.map { it.first }, keys, replaced))
+    }
+
     /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */
     suspend fun undo(event: RecordEvent): Boolean = when (event) {
         is RecordEvent.Edited ->
@@ -186,6 +208,11 @@ class RecordActions @Inject constructor(
             recalls.setDone(event.recall.id, event.recall.completedOn, event.record?.let { restore(it) })
             true
         }
+        is RecordEvent.Filed -> {
+            // Lines whose record went meanwhile are simply not there to move back.
+            service.unfileLines(event.lineIds, event.ruleKeys, event.replaced)
+            true
+        }
         is RecordEvent.Saved -> true
     }
 
@@ -209,7 +236,7 @@ class RecordActions @Inject constructor(
                 is RecordEvent.Deleted -> event.record.photos.map { it.fileName }
                 is RecordEvent.Edited -> event.removedPhotos
                 is RecordEvent.RecallReopened -> event.record?.photos.orEmpty().map { it.fileName }
-                is RecordEvent.Saved, is RecordEvent.RecallDone -> emptyList()
+                is RecordEvent.Saved, is RecordEvent.RecallDone, is RecordEvent.Filed -> emptyList()
             },
         )
     }

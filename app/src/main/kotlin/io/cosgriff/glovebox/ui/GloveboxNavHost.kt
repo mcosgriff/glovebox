@@ -285,6 +285,8 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 }
                 is RecordEvent.RecallReopened ->
                     res.getString(if (event.record != null) R.string.event_recall_open_removed else R.string.event_recall_open) to res.getString(R.string.undo)
+                is RecordEvent.Filed ->
+                    res.getQuantityString(R.plurals.event_lines_filed, event.lineIds.size, event.lineIds.size.asNumber()) to res.getString(R.string.undo)
             }
             val recordId = when (event) {
                 is RecordEvent.Saved -> event.recordId
@@ -309,7 +311,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                         recordEvents.undo(event) {
                             when (event) {
                                 is RecordEvent.Deleted -> showNote(res.getString(R.string.event_restored))
-                                is RecordEvent.Edited -> showNote(res.getString(R.string.event_undone))
+                                is RecordEvent.Edited, is RecordEvent.Filed -> showNote(res.getString(R.string.event_undone))
                                 else -> Unit
                             }
                         }
