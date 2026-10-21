@@ -118,7 +118,7 @@ fun AboutScreen(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel(stringResource(R.string.about_sources), Modifier.semantics { heading() })
+                SectionLabel(stringResource(R.string.about_sources))
                 RowsCard {
                     Source(stringResource(R.string.about_vpic), stringResource(R.string.about_vpic_note))
                     HorizontalDivider(color = scheme.outlineVariant)
