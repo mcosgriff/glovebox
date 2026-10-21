@@ -213,6 +213,8 @@
     <string name="garage_see_all_reminders">See all reminders</string>
     <!-- %1$s is how many. -->
     <string name="garage_archived">Archived vehicles · %1$s</string>
+    <!-- An empty list on a vehicle's Documents, Fluids, filters & parts or Torque specs. -->
+    <string name="empty_title">Nothing saved yet</string>
     <string name="garage_empty_title">No vehicles yet</string>
     <string name="garage_empty_body">Add one with its VIN and we\'ll fill in the details, suggest a typical maintenance schedule and look up its recalls.</string>
     <string name="garage_empty_add">Add a vehicle</string>
@@ -325,7 +327,6 @@
     <string name="documents_delete_title">Delete %1$s?</string>
     <string name="documents_delete_body">The file is removed from this phone for good. Backup files you\'ve already saved aren\'t changed.</string>
     <string name="documents_title">Documents</string>
-    <string name="documents_empty_title">Nothing saved yet</string>
     <string name="documents_empty_body">Keep the vehicle\'s paperwork with its records: a history report, the title, the registration, the purchase agreement, warranty papers, an insurance card. Add a PDF or a picture, or take a photo of the paper.</string>
     <string name="documents_note">Kept encrypted on this phone and carried in your backups, and opened here in Glovebox. A document leaves the phone only when you open it in another app or share it, as a copy for the app you choose. PDFs and pictures up to %1$s MB.</string>
     <string name="documents_pdf_size">PDF %1$s</string>
