@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -43,9 +44,7 @@ import io.cosgriff.glovebox.domain.Archive
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.SaleProblem
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.ui.service.longDate
 import java.time.LocalDate
 
 /** Design: the "Mark as sold" sheet on 4d · Vehicle details. */
@@ -65,21 +64,10 @@ fun MarkAsSoldSheet(
     val scheme = MaterialTheme.colorScheme
     var soldDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var odometerText by rememberSaveable { mutableStateOf(lastOdometer?.toString().orEmpty()) }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     val sale = Sale(LocalDate.ofEpochDay(soldDay), odometerText.toIntOrNull())
     val problems = Archive.problems(sale, lastOdometer, LocalDate.now())
     val tooLow = SaleProblem.ODOMETER_BELOW_LAST in problems
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = sale.soldOn,
-            onPick = {
-                soldDay = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -93,14 +81,7 @@ fun MarkAsSoldSheet(
                 fontWeight = FontWeight.Bold,
             )
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.sold_date, sale.soldOn.format(longDate)))
-            }
+            DateButton(R.string.sold_date, sale.soldOn) { soldDay = it.toEpochDay() }
 
             OutlinedTextField(
                 value = odometerText,

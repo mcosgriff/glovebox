@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.R
@@ -46,7 +47,6 @@ import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.ClusterSwaps
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.SwapProblem
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import java.time.LocalDate
@@ -62,7 +62,6 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
     var day by rememberSaveable { mutableLongStateOf((current?.on ?: LocalDate.now()).toEpochDay()) }
     var oldText by rememberSaveable { mutableStateOf(current?.let { ClusterSwaps.oldReading(it).toString() }.orEmpty()) }
     var newText by rememberSaveable { mutableStateOf(current?.startReading?.toString().orEmpty()) }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
 
     val on = LocalDate.ofEpochDay(day)
@@ -72,16 +71,6 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
     val problems = ClusterSwaps.problems(on, oldReading, newReading, LocalDate.now())
     val same = SwapProblem.SAME_READING in problems
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = on,
-            onPick = {
-                day = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -95,14 +84,7 @@ fun OdometerOffsetSheet(current: ClusterSwap?, unit: DistanceUnit, onSave: (Clus
                 color = scheme.onSurfaceVariant,
             )
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.offset_replaced_on, on.format(longDate)))
-            }
+            DateButton(R.string.offset_replaced_on, on) { day = it.toEpochDay() }
 
             ReadingField(
                 value = oldText,

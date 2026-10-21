@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.FilledCard
@@ -80,7 +81,6 @@ import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
@@ -340,7 +340,6 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
     val scheme = MaterialTheme.colorScheme
     var day by rememberSaveable { mutableLongStateOf(reading.date.toEpochDay()) }
     var text by rememberSaveable { mutableStateOf(reading.odometer.toString()) }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
     val miles = OdometerInput.parse(text.typedNumber())
@@ -353,16 +352,6 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
         )
     }
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = date,
-            onPick = {
-                day = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -389,14 +378,7 @@ private fun ReadingSheet(reading: LoggedReading, unit: DistanceUnit, onSave: (da
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.date_button, date.format(longDate)))
-            }
+            DateButton(R.string.date_button, date) { day = it.toEpochDay() }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -79,7 +80,6 @@ import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.LastDoneRoute
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
@@ -289,22 +289,11 @@ fun LastDoneSheet(
     val scheme = MaterialTheme.colorScheme
     var day by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var odometerText by rememberSaveable { mutableStateOf("") }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     var showErrors by rememberSaveable { mutableStateOf(false) }
     val date = LocalDate.ofEpochDay(day)
     val odometer = OdometerInput.parse(odometerText.typedNumber())
     val note = LastDoneEntries.odometerNote(odometer?.let { swap.toDash(it, date) }, currentOdometer, showErrors)
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = date,
-            onPick = {
-                day = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -318,14 +307,7 @@ fun LastDoneSheet(
                 color = scheme.onSurfaceVariant,
             )
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.date_button, date.format(longDate)))
-            }
+            DateButton(R.string.date_button, date) { day = it.toEpochDay() }
 
             OutlinedTextField(
                 value = odometerText,

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.components.DateButton
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -48,8 +49,6 @@ import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.domain.MileageUpdate
 import io.cosgriff.glovebox.domain.Recalls
-import io.cosgriff.glovebox.ui.components.DatePickerSheet
-import io.cosgriff.glovebox.ui.service.longDate
 import java.time.LocalDate
 
 /**
@@ -73,19 +72,8 @@ fun MarkDoneSheet(
     val date = LocalDate.ofEpochDay(dateDay)
     var odometerText by rememberSaveable { mutableStateOf(odometer?.toString().orEmpty()) }
     var shop by rememberSaveable { mutableStateOf("") }
-    var pickingDate by rememberSaveable { mutableStateOf(false) }
     val miles = odometerText.toIntOrNull()
 
-    if (pickingDate) {
-        DatePickerSheet(
-            initial = date,
-            onPick = {
-                dateDay = it.toEpochDay()
-                pickingDate = false
-            },
-            onDismiss = { pickingDate = false },
-        )
-    }
 
     GloveboxSheet(onDismiss = onDismiss) {
         Column(
@@ -106,14 +94,7 @@ fun MarkDoneSheet(
                 )
             }
 
-            OutlinedButton(
-                onClick = { pickingDate = true },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
-            ) {
-                Text(stringResource(R.string.recalls_repaired_on, date.format(longDate)))
-            }
+            DateButton(R.string.recalls_repaired_on, date) { dateDay = it.toEpochDay() }
 
             Row(
                 Modifier.fillMaxWidth()
