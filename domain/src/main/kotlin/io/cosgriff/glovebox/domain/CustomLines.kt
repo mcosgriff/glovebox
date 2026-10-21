@@ -78,7 +78,28 @@ object CustomLines {
         CatalogRules.match(label, rules)?.let { LineSuggestion(it, SuggestionSource.YOUR_RULE) }
             ?: CarfaxReport.service(label)?.let { LineSuggestion(it, SuggestionSource.GLOVEBOX) }
 
-    /** Each line of [groups] to be filed, with the catalog line picked for its group by key in [picks]. */
-    fun assignments(groups: List<CustomGroup>, picks: Map<String, String>): List<Pair<Long, String>> =
-        groups.flatMap { group -> picks[group.key]?.let { id -> group.lineIds.map { it to id } }.orEmpty() }
+    /**
+     * The line [group] goes under: what the user chose for it in [chosen] (by key; a null there is "leave it
+     * under Custom"), or, if they haven't, its suggestion, which starts ticked since it comes from plain wording
+     * or their own rule.
+     */
+    fun picked(group: CustomGroup, chosen: Map<String, String?>): String? =
+        if (group.key in chosen) chosen[group.key] else group.suggestion?.catalogId
+
+    /** Whether to offer "Remember this": not with nothing picked, nor when the pick is already the user's rule. */
+    fun asksToRemember(group: CustomGroup, picked: String?): Boolean =
+        picked != null && !(group.suggestion?.source == SuggestionSource.YOUR_RULE && group.suggestion.catalogId == picked)
+
+    /** Each line of [groups] to be filed, with the line picked for its group ([picked]). */
+    fun assignments(groups: List<CustomGroup>, chosen: Map<String, String?>): List<Pair<Long, String>> =
+        groups.flatMap { group -> picked(group, chosen)?.let { id -> group.lineIds.map { it to id } }.orEmpty() }
+
+    /**
+     * The rules to keep: a group's wording as last written and its pick, where "Remember this" is asked and
+     * not unticked in [remember] (it starts ticked: this is ongoing work, and the next import should know).
+     */
+    fun rulesToKeep(groups: List<CustomGroup>, chosen: Map<String, String?>, remember: Map<String, Boolean>): List<CatalogRule> =
+        groups.mapNotNull { g ->
+            picked(g, chosen)?.takeIf { asksToRemember(g, it) && remember[g.key] != false }?.let { CatalogRule(g.label, it) }
+        }
 }

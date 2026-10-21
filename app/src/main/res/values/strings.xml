@@ -935,6 +935,16 @@
     <string name="sort_custom_line">%1$s · %2$s</string>
     <string name="sort_custom_from_rule">Your rule</string>
     <string name="sort_custom_from_wording">Glovebox recognises this wording</string>
+    <string name="sort_custom_from_you">Your pick</string>
+    <string name="sort_custom_stays">Stays under Custom</string>
+    <string name="sort_custom_pick">Pick a line</string>
+    <string name="sort_custom_change">Change</string>
+    <string name="sort_custom_leave">Leave under Custom</string>
+    <string name="sort_custom_remember">Remember this for future imports</string>
+    <string name="sort_custom_pick_for">Pick a line for “%1$s”</string>
+    <string name="sort_custom_change_for">Change the line for “%1$s”</string>
+    <string name="sort_custom_leave_for">Leave “%1$s” under Custom</string>
+    <string name="sort_custom_remember_for">Remember “%1$s” for future imports</string>
     <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
     <string name="log_custom_tick_line">Tick this line</string>
     <string name="log_file_under_button">File under a line</string>

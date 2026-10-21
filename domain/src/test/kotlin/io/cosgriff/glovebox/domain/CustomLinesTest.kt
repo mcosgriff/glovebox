@@ -48,13 +48,46 @@ class CustomLinesTest {
         assertNull(CustomLines.suggest("Roof rack fitted", rules))
     }
 
+    private val rules = listOf(CatalogRule("Brakes done", "brake-service"))
+    private val sample = CustomLines.groups(
+        listOf(line(1, "Water pump replaced"), line(2, "water pump replaced"), line(3, "Roof rack fitted"), line(4, "Brakes done")),
+        rules,
+    )
+    private fun group(label: String) = sample.single { it.label.equals(label, ignoreCase = true) }
+
+    @Test
+    fun `a suggestion stands until the user chooses, and leaving a group under Custom is a choice`() {
+        val pump = group("Water pump replaced")
+        assertEquals("water-pump", CustomLines.picked(pump, emptyMap()))
+        assertEquals("cooling-check", CustomLines.picked(pump, mapOf(pump.key to "cooling-check")))
+        assertNull(CustomLines.picked(pump, mapOf(pump.key to null)))
+        assertNull(CustomLines.picked(group("Roof rack fitted"), emptyMap()))
+    }
+
     @Test
     fun `assignments file every line of a picked group, and nothing else`() {
-        val groups = CustomLines.groups(
-            listOf(line(1, "Water pump replaced"), line(2, "water pump replaced"), line(3, "Roof rack fitted")),
-            emptyList(),
+        val rack = group("Roof rack fitted")
+        val brakes = group("Brakes done")
+        assertEquals(
+            listOf(1L to "water-pump", 2L to "water-pump", 3L to "accessory"),
+            CustomLines.assignments(sample, mapOf(rack.key to "accessory", brakes.key to null)).sortedBy { it.first },
         )
-        val picks = mapOf(CatalogRules.key("Water pump replaced") to "water-pump")
-        assertEquals(listOf(1L to "water-pump", 2L to "water-pump"), CustomLines.assignments(groups, picks))
+    }
+
+    @Test
+    fun `remember is asked for a pick that isn't already the user's rule, and kept unless unticked`() {
+        val pump = group("Water pump replaced")
+        val brakes = group("Brakes done")
+        assertEquals(true, CustomLines.asksToRemember(pump, "water-pump"))
+        assertEquals(false, CustomLines.asksToRemember(brakes, "brake-service"))
+        assertEquals(true, CustomLines.asksToRemember(brakes, "brake-inspect"))
+        assertEquals(false, CustomLines.asksToRemember(pump, null))
+
+        assertEquals(listOf(CatalogRule("water pump replaced", "water-pump")), CustomLines.rulesToKeep(sample, emptyMap(), emptyMap()))
+        assertEquals(emptyList<CatalogRule>(), CustomLines.rulesToKeep(sample, emptyMap(), mapOf(pump.key to false)))
+        assertEquals(
+            listOf(CatalogRule("water pump replaced", "water-pump"), CatalogRule("Brakes done", "brake-inspect")),
+            CustomLines.rulesToKeep(sample, mapOf(brakes.key to "brake-inspect"), emptyMap()),
+        )
     }
 }
