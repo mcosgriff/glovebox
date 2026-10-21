@@ -842,7 +842,15 @@
     <string name="catalog_shift_cable">Shift cable / linkage</string>
     <string name="catalog_shocks">Shocks / struts</string>
     <string name="catalog_wheel_bearing">Wheel bearing</string>
-    <string name="catalog_steering_parts">Tie rods / ball joints</string>
+    <string name="catalog_steering_parts">Other steering parts</string>
+    <string name="catalog_springs">Springs</string>
+    <string name="catalog_control_arms">Control arms</string>
+    <string name="catalog_ball_joints">Ball joints</string>
+    <string name="catalog_bushings">Suspension bushings</string>
+    <string name="catalog_sway_bar_links">Sway bar links</string>
+    <string name="catalog_tie_rods">Tie rod ends</string>
+    <string name="catalog_steering_rack">Steering rack / gearbox</string>
+    <string name="catalog_power_steering_pump">Power steering pump</string>
     <string name="catalog_suspension_check">Suspension &amp; steering check</string>
     <string name="catalog_cabin_air">Cabin air filter</string>
     <string name="catalog_wipers">Wiper blades</string>

@@ -187,6 +187,15 @@ class CarfaxReportTest {
             "Transmission pan gasket replaced" to "trans-pan-gasket",
             "Shift cable replaced" to "shift-cable",
             "U-joint(s) replaced" to "u-joints",
+            "Coil spring(s) replaced" to "springs",
+            "Lower control arm(s) replaced" to "control-arms",
+            "Control arm bushing(s) replaced" to "bushings",
+            "Ball joint(s) replaced" to "ball-joints",
+            "Sway bar link(s) replaced" to "sway-bar-links",
+            "Stabilizer bar end link(s) replaced" to "sway-bar-links",
+            "Rack and pinion replaced" to "steering-rack",
+            "Power steering pump replaced" to "power-steering-pump",
+            "Idler arm replaced" to "steering-parts",
             "Suspension checked" to "suspension-check",
             "Steering and suspension inspected" to "suspension-check",
             "Lights checked" to "lights-check",
@@ -203,6 +212,8 @@ class CarfaxReportTest {
             "Transmission fluid checked",
             "Check engine light checked",
             "Belts and hoses checked",
+            // Whose bushings?
+            "Bushings replaced",
             "Vehicle serviced",
             "Emissions or safety inspection performed",
         ).forEach { assertNull(it, CarfaxReport.service(it)) }
@@ -254,7 +265,7 @@ class CarfaxReportTest {
         assertEquals("battery", CarfaxReport.service("Battery replaced"))
         assertEquals("shocks", CarfaxReport.service("Shock absorber(s)/strut(s) replaced"))
         assertEquals("wheel-bearing", CarfaxReport.service("Wheel bearing(s) replaced"))
-        assertEquals("steering-parts", CarfaxReport.service("Tie rod end(s) replaced"))
+        assertEquals("tie-rods", CarfaxReport.service("Tie rod end(s) replaced"))
         assertEquals("safety-inspection", CarfaxReport.service("Safety inspection performed"))
         assertNull(CarfaxReport.service("Emissions or safety inspection performed"))
         // Which axle? Its own line, never taken for front or rear.

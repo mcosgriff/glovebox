@@ -226,7 +226,16 @@ object ServiceCatalog {
             "suspension",
             listOf(
                 CatalogItem("shocks"),
+                CatalogItem("springs"),
+                CatalogItem("control-arms"),
+                CatalogItem("ball-joints"),
+                CatalogItem("bushings"),
+                CatalogItem("sway-bar-links"),
                 CatalogItem("wheel-bearing"),
+                CatalogItem("tie-rods"),
+                CatalogItem("steering-rack"),
+                CatalogItem("power-steering-pump"),
+                // Idler and pitman arms, the column, linkage: what the lines above don't name.
                 CatalogItem("steering-parts"),
                 CatalogItem("suspension-check"),
             ),
