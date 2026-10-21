@@ -835,6 +835,11 @@
     <string name="catalog_cv_axle">CV axle / boot</string>
     <string name="catalog_clutch">Clutch</string>
     <string name="catalog_u_joints">U-joints</string>
+    <string name="catalog_axle_seals">Axle / differential seals</string>
+    <string name="catalog_clutch_hydraulics">Clutch master / slave cylinder</string>
+    <string name="catalog_flywheel">Flywheel</string>
+    <string name="catalog_trans_pan_gasket">Transmission pan gasket</string>
+    <string name="catalog_shift_cable">Shift cable / linkage</string>
     <string name="catalog_shocks">Shocks / struts</string>
     <string name="catalog_wheel_bearing">Wheel bearing</string>
     <string name="catalog_steering_parts">Tie rods / ball joints</string>

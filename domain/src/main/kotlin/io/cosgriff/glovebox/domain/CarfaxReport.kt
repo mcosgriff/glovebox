@@ -277,6 +277,11 @@ object CarfaxReport {
         """alternator (replaced|installed)""" to "alternator",
         """(air conditioning|a/c)( system)? (recharged|serviced|evacuated|repaired|checked|inspected)""" to "air-conditioning",
         """clutch( kit| assembly)? (replaced|installed)""" to "clutch",
+        """clutch (master|slave)( and (master|slave))? cylinders? (replaced|installed)|slave cylinder (replaced|installed)""" to "clutch-hydraulics",
+        """flywheel (replaced|resurfaced|machined)""" to "flywheel",
+        """(axle|differential|pinion)( shaft)? seals? (replaced|installed)""" to "axle-seals",
+        """transmission( oil)? pan gaskets? replaced""" to "trans-pan-gasket",
+        """shift(er)? (cables?|linkage) (replaced|adjusted|repaired)""" to "shift-cable",
         """(u-joints?|universal joints?) (replaced|installed|lubricated|greased)""" to "u-joints",
         """(suspension|steering)( and (suspension|steering))?( system)? (checked|inspected)""" to "suspension-check",
         // "Check engine light checked" is a diagnosis, not the lights.
