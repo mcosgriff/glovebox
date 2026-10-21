@@ -1,7 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DangerButton
+import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.BorderedCard
-import io.cosgriff.glovebox.ui.styledStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.R
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -22,20 +22,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,11 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -65,10 +57,10 @@ import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.DeleteAll
 import io.cosgriff.glovebox.domain.TypedConfirmation
 import io.cosgriff.glovebox.ui.ClearHistoryRoute
 import io.cosgriff.glovebox.ui.export.ExportSheet
-import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -111,7 +103,6 @@ class ClearHistoryViewModel @Inject constructor(
     }
 }
 
-private const val CONFIRM = "DELETE"
 
 /**
  * Deletes a vehicle's service records and nothing else, so a Carfax report can be imported again
@@ -127,7 +118,7 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
     var exporting by rememberSaveable { mutableStateOf(false) }
     val count = if (all) d.all else d.imported
     val photos = if (all) d.allPhotos else d.importedPhotos
-    val confirmed = TypedConfirmation.matches(typed, CONFIRM)
+    val confirmed = TypedConfirmation.matches(typed, DeleteAll.WORD)
     val name = "${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}"
 
     if (exporting) ExportSheet(vehicleId = d.vehicle.id, onDismiss = { exporting = false })
@@ -198,30 +189,9 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
                 Text(stringResource(R.string.export_first))
             }
 
-            OutlinedTextField(
-                value = typed,
-                onValueChange = { typed = it },
-                label = {
-                    Text(styledStringResource(R.string.type_word_to_confirm, CONFIRM, SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)))
-                },
-                singleLine = true,
-                textStyle = TextStyle(fontFamily = PlexMono),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (confirmed) scheme.error else scheme.primary,
-                    unfocusedBorderColor = if (confirmed) scheme.error else scheme.outline,
-                ),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            TypedConfirmField(DeleteAll.WORD, typed, { typed = it })
 
-            Button(
-                onClick = { vm.clear(all, onCleared) },
-                enabled = confirmed && count > 0 && !vm.clearing,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError),
-            ) {
+            DangerButton(onClick = { vm.clear(all, onCleared) }, enabled = confirmed && count > 0 && !vm.clearing) {
                 Text(if (count == 0) stringResource(R.string.clear_history_nothing) else stringResource(R.string.clear_history_delete, records(count)), style = MaterialTheme.typography.titleMedium)
             }
         }

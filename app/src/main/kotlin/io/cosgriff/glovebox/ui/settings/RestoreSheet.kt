@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
@@ -45,7 +46,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -284,16 +284,7 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
                                 style = MaterialTheme.typography.bodySmall,
                                 color = statusColors().soon,
                             )
-                            OutlinedTextField(
-                                value = typed,
-                                onValueChange = { typed = it },
-                                label = { Text(stringResource(R.string.type_word_to_confirm, BackupRules.REPLACE_WORD)) },
-                                singleLine = true,
-                                enabled = !busy,
-                                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth(),
-                            )
+                            TypedConfirmField(BackupRules.REPLACE_WORD, typed, { typed = it }, enabled = !busy)
                         }
                     }
                 }

@@ -1,8 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.DangerButton
+import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.BorderedCard
-import io.cosgriff.glovebox.ui.theme.PlexMono
-import io.cosgriff.glovebox.ui.styledStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.R
 import android.app.Activity
@@ -14,27 +14,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,11 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
@@ -166,31 +157,9 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                 Text(stringResource(R.string.delete_all_backup_first))
             }
 
-            OutlinedTextField(
-                value = typed,
-                onValueChange = { typed = it },
-                label = {
-                    Text(
-                        styledStringResource(
-                            R.string.type_word_to_confirm,
-                            DeleteAll.WORD,
-                            SpanStyle(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
-                        ),
-                    )
-                },
-                singleLine = true,
-                enabled = !vm.deleting,
-                textStyle = TextStyle(fontFamily = PlexMono),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (confirmed) scheme.error else scheme.primary,
-                    unfocusedBorderColor = if (confirmed) scheme.error else scheme.outline,
-                ),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            TypedConfirmField(DeleteAll.WORD, typed, { typed = it }, enabled = !vm.deleting)
 
-            Button(
+            DangerButton(
                 onClick = {
                     if (DeleteAll.asksForScreenLock(lock)) {
                         confirm(false)
@@ -199,9 +168,6 @@ fun DeleteAllScreen(onCancel: () -> Unit, onBackupFirst: () -> Unit, vm: DeleteA
                     }
                 },
                 enabled = confirmed && !vm.deleting,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = scheme.error, contentColor = scheme.onError),
             ) {
                 if (lock == ScreenLock.BIOMETRIC) {
                     Icon(Icons.Outlined.Fingerprint, contentDescription = null, modifier = Modifier.padding(end = 8.dp).size(20.dp))
