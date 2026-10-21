@@ -43,7 +43,7 @@ class CarfaxReportTest {
         val words = report {
             entry("04/02/2019", null, listOf("Ohio", "Motor Vehicle Dept."), listOf("Title issued or updated", "New owner reported"))
             entry("06/14/2019", "12,480", listOf("Acme Motors", "Springfield, OH", "555-010-0000"), listOf("Oil and �lter changed", "Tires rotated", "Brakes checked"))
-            entry("01/09/2020", "18,002", listOf("Corner Garage", "Springfield, OH"), listOf("Oxygen sensor replaced"))
+            entry("01/09/2020", "18,002", listOf("Corner Garage", "Springfield, OH"), listOf("Belts and hoses checked"))
             entry("03/03/2020", "19,250", listOf("Ohio", "Motor Vehicle Dept."), listOf("Registration issued or renewed"))
         }
         val r = records(words)
@@ -58,7 +58,7 @@ class CarfaxReportTest {
             first.work,
         )
         // Work the wording doesn't name exactly is kept as written.
-        assertEquals(listOf(ImportedWork("Oxygen sensor replaced", null)), r[1].work)
+        assertEquals(listOf(ImportedWork("Belts and hoses checked", null)), r[1].work)
     }
 
     @Test
@@ -98,6 +98,81 @@ class CarfaxReportTest {
     }
 
     @Test
+    fun `wording that used to be custom is a service line`() {
+        mapOf(
+            "Water pump replaced" to "water-pump",
+            "Water pump gasket replaced" to "water-pump",
+            "Thermostat replaced" to "thermostat",
+            "Radiator hose(s) replaced" to "coolant-hoses",
+            "Radiator replaced" to "radiator",
+            "Cooling system checked" to "cooling-check",
+            "Coolant level checked" to "cooling-check",
+            "Brakes serviced" to "brake-service",
+            "Brake caliper(s) replaced" to "calipers",
+            "Brake line(s) replaced" to "brake-lines",
+            "Tire condition and pressure checked" to "tire-check",
+            "Tire pressure checked" to "tire-check",
+            "Tire(s) inspected" to "tire-check",
+            "Tire pressure monitoring system checked" to "tpms",
+            "TPMS sensor(s) replaced" to "tpms",
+            "90,000 mile service performed" to "scheduled-service",
+            "30K service performed" to "scheduled-service",
+            "Recommended maintenance performed" to "scheduled-service",
+            "Window(s) checked" to "windows-check",
+            "Windshield replaced" to "body",
+            "Fluids checked" to "fluid-check",
+            "Fluid levels checked" to "fluid-check",
+            "All fluids topped off" to "fluid-check",
+            "Washer fluid topped off" to "washer",
+            "Ignition coil(s) replaced" to "ignition-coils",
+            "Oxygen sensor(s) replaced" to "oxygen-sensor",
+            "Valve cover gasket replaced" to "valve-cover-gasket",
+            "Engine mount(s) replaced" to "engine-mounts",
+            "Muffler replaced" to "exhaust",
+            "Exhaust system repaired" to "exhaust",
+            "Starter replaced" to "starter",
+            "Alternator replaced" to "alternator",
+            "Air conditioning system recharged" to "air-conditioning",
+            "A/C system checked" to "air-conditioning",
+            "Clutch replaced" to "clutch",
+            "U-joint(s) replaced" to "u-joints",
+            "Suspension checked" to "suspension-check",
+            "Steering and suspension inspected" to "suspension-check",
+            "Lights checked" to "lights-check",
+            "Exterior lights inspected" to "lights-check",
+        ).forEach { (wording, id) -> assertEquals(wording, id, CarfaxReport.service(wording)) }
+    }
+
+    @Test
+    fun `wording that doesn't say plainly what was done stays as written`() {
+        listOf(
+            // Both axles: two jobs.
+            "Front and rear brake pads replaced",
+            // A specific fluid with no line of its own is not "fluids".
+            "Transmission fluid checked",
+            "Check engine light checked",
+            "Belts and hoses checked",
+            "Vehicle serviced",
+            "Emissions or safety inspection performed",
+        ).forEach { assertNull(it, CarfaxReport.service(it)) }
+        assertEquals("front-pads", CarfaxReport.service("Front brake pads replaced"))
+        assertEquals("rear-pads", CarfaxReport.service("Rear brake pads replaced"))
+        // Already its own line, before the general one.
+        assertEquals("brake-fluid-check", CarfaxReport.service("Brake fluid checked"))
+        assertEquals("wipers", CarfaxReport.service("Windshield wiper(s) replaced"))
+    }
+
+    @Test
+    fun `a job and its gasket on one visit are one line`() {
+        val work = listOf("Water pump replaced", "Water pump gasket replaced", "Thermostat replaced")
+            .map { ImportedWork(it, CarfaxReport.service(it)) }
+        assertEquals(
+            listOf("Water pump gasket replaced" to "water-pump", "Thermostat replaced" to "thermostat"),
+            CarfaxReport.oneLinePerService(work).map { it.label to it.service },
+        )
+    }
+
+    @Test
     fun `a comment is work when something was done, and a service line only when the wording is plain`() {
         listOf("Oil and filter changed", "Brakes checked", "Maintenance inspection completed", "Emissions inspection performed", "Starter replaced")
             .forEach { assertTrue(it, CarfaxReport.isWork(it)) }
@@ -131,8 +206,8 @@ class CarfaxReportTest {
         assertEquals("steering-parts", CarfaxReport.service("Tie rod end(s) replaced"))
         assertEquals("safety-inspection", CarfaxReport.service("Safety inspection performed"))
         assertNull(CarfaxReport.service("Emissions or safety inspection performed"))
-        // Which axle? Left as written.
-        assertNull(CarfaxReport.service("Brake pads replaced"))
+        // Which axle? Its own line, never taken for front or rear.
+        assertEquals("brake-pads", CarfaxReport.service("Brake pads replaced"))
         assertNull(CarfaxReport.service("Battery cable(s) replaced"))
         assertNull(CarfaxReport.service("Vehicle serviced"))
     }
