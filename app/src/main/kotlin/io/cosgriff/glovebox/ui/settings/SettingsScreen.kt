@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.ChoiceDialog
+import io.cosgriff.glovebox.ui.components.asChoice
+import io.cosgriff.glovebox.ui.components.ChooseVehicleDialog
 import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.LabelledCard
@@ -32,7 +35,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,7 +43,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +96,11 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
         .map { list -> list.map { ScheduleOwner(it.id, "${it.year} ${it.nickname ?: it.model}") } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** The same vehicles as the chooser names them. */
+    val choices = vehicles.observeActive()
+        .map { list -> list.map { it.asChoice() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun setTheme(m: ThemeMode) = viewModelScope.launch { repo.setTheme(m) }
     fun setBiometric(on: Boolean) = viewModelScope.launch { repo.setBiometricLock(on) }
     fun setLockDelay(d: LockDelay) = viewModelScope.launch { repo.setLockAfterSeconds(d.seconds) }
@@ -121,6 +127,7 @@ fun SettingsScreen(
 ) {
     val s by vm.settings.collectAsStateWithLifecycle()
     val vehicles by vm.vehicles.collectAsStateWithLifecycle()
+    val choices by vm.choices.collectAsStateWithLifecycle()
 
     // A screen lock can be set or removed in Android's settings while this screen is open.
     val context = LocalContext.current
@@ -162,14 +169,16 @@ fun SettingsScreen(
             onPick = vm::setRecallCadence,
             onDismiss = { picking = null },
         )
-        Picking.SCHEDULE -> ChoiceDialog(
+        // Named in full, as the shortcut's chooser names them, so two of the same model can be told apart.
+        Picking.SCHEDULE -> ChooseVehicleDialog(
             title = stringResource(R.string.details_schedule),
-            options = vehicles,
-            selected = null,
-            label = { it.name },
-            note = stringResource(R.string.settings_schedule_note),
-            onPick = { onOpenSchedule(it.id) },
+            vehicles = choices,
+            onChoose = {
+                picking = null
+                onOpenSchedule(it)
+            },
             onDismiss = { picking = null },
+            note = stringResource(R.string.settings_schedule_note),
         )
         null -> Unit
     }
@@ -439,47 +448,6 @@ private fun ExportButton(title: String, subtitle: String, modifier: Modifier, on
             Text(subtitle, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
         }
     }
-}
-
-/** One choice from a short list. Picking closes the dialog. */
-@Composable
-private fun <T> ChoiceDialog(
-    title: String,
-    options: List<T>,
-    selected: T?,
-    label: (T) -> String,
-    note: String,
-    onPick: (T) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
-                options.forEach { option ->
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                            selected = option == selected,
-                            role = if (selected == null) Role.Button else Role.RadioButton,
-                            onClick = {
-                                onDismiss()
-                                onPick(option)
-                            },
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        // A list to go somewhere from has nothing selected, so it gets no radio buttons.
-                        if (selected != null) RadioButton(selected = option == selected, onClick = null)
-                        Text(label(option))
-                    }
-                }
-                Text(note, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
 }
 
 private val ThemeMode.label: Int

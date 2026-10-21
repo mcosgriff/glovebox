@@ -9,8 +9,8 @@ import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.VehicleCheckIn
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.notify.ShortcutTask
-import io.cosgriff.glovebox.ui.ChooseVehicleDialog
-import io.cosgriff.glovebox.ui.asChoice
+import io.cosgriff.glovebox.ui.components.ChooseVehicleDialog
+import io.cosgriff.glovebox.ui.components.asChoice
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageContent
 import io.cosgriff.glovebox.ui.history.HistoryContent
