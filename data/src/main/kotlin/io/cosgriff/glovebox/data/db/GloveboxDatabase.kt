@@ -29,8 +29,9 @@ class Converters {
         MilestoneEntity::class,
         MilestoneJobEntity::class,
         DocumentEntity::class,
+        CatalogRuleEntity::class,
     ],
-    version = 27,
+    version = 28,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -59,6 +60,7 @@ class Converters {
         AutoMigration(from = 24, to = 25), // documents
         AutoMigration(from = 25, to = 26), // vehicles.takesKnownList, takesToCheck
         AutoMigration(from = 26, to = 27), // vehicles.mileageCheckInDays
+        AutoMigration(from = 27, to = 28), // catalog_rules
     ],
 )
 @ColumnTypeConverters(Converters::class)
@@ -72,6 +74,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun milestones(): MilestoneDao
     abstract fun units(): UnitDao
     abstract fun documents(): DocumentDao
+    abstract fun catalogRules(): CatalogRuleDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"

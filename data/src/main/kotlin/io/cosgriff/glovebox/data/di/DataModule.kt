@@ -52,6 +52,7 @@ object DataModule {
     @Provides fun unitDao(db: GloveboxDatabase) = db.units()
     @Provides fun recallDao(db: GloveboxDatabase) = db.recalls()
     @Provides fun documentDao(db: GloveboxDatabase) = db.documents()
+    @Provides fun catalogRuleDao(db: GloveboxDatabase) = db.catalogRules()
 
     @Provides @Singleton
     fun vehiclePhotos(@ApplicationContext c: Context, photos: PhotoCrypto, vehicles: VehicleDao) =
