@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.ui.platform.LocalResources
@@ -77,7 +78,7 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
                         stringResource(R.string.licences_free_software, Licences.APP_LICENCE_NAME),
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    RowsCard { LinkRow(stringResource(R.string.app_name), stringResource(R.string.licences_gpl)) { onOpenLicence(Licences.APP_LICENCE_ID) } }
+                    RowsCard { ValueRow(stringResource(R.string.app_name), stringResource(R.string.licences_gpl), strong = false) { onOpenLicence(Licences.APP_LICENCE_ID) } }
                     Text(
                         stringResource(R.string.licences_built_with, licencesSummary(groups)),
                         Modifier.padding(top = 8.dp),
@@ -89,7 +90,7 @@ fun LicencesScreen(onBack: () -> Unit, onOpenLicence: (id: String) -> Unit, vm: 
             groups.forEach { group ->
                 item(key = "licence:${group.licence.id}") {
                     Column(Modifier.padding(top = 14.dp)) {
-                        RowsCard { LinkRow(group.title, stringResource(R.string.licences_read), onClick = { onOpenLicence(group.licence.id) }) }
+                        RowsCard { ValueRow(group.title, stringResource(R.string.licences_read), strong = false, onClick = { onOpenLicence(group.licence.id) }) }
                     }
                 }
                 items(group.libraries, key = { "${group.licence.id}:${it.id}" }) { library ->

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.ruleInSentence
@@ -36,7 +37,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -285,24 +285,27 @@ fun ReminderRulesScreen(onBack: () -> Unit, vm: ReminderRulesViewModel = hiltVie
     }
 
     when {
-        editing == -1L -> PickDialog(
-            title = stringResource(R.string.rules_override_which),
-            options = rules.items.filter { it.rule == null }.map { it.id to it.label },
-            selected = null,
-            onPick = { editing = it },
-            onDismiss = { editing = 0 },
-        )
+        editing == -1L -> {
+            val labels = rules.items.filter { it.rule == null }.associate { it.id to it.label }
+            ChoiceDialog(
+                title = stringResource(R.string.rules_override_which),
+                options = labels.keys.toList(),
+                selected = null,
+                label = { labels.getValue(it) },
+                onPick = { editing = it },
+                onDismiss = { editing = 0 },
+            )
+        }
         editing > 0L -> rules.items.firstOrNull { it.id == editing }?.let { item ->
-            PickDialog(
+            // Key 0 stands for "use the default".
+            val labels = mapOf(0L to stringResource(R.string.rules_use_default, rules.defaultRule.ruleInSentence())) +
+                DueRule.entries.associate { (it.ordinal + 1).toLong() to it.ruleLabel() }
+            ChoiceDialog(
                 title = item.label,
-                // Key 0 stands for "use the default".
-                options = listOf(0L to stringResource(R.string.rules_use_default, rules.defaultRule.ruleInSentence())) +
-                    DueRule.entries.map { (it.ordinal + 1).toLong() to it.ruleLabel() },
+                options = labels.keys.toList(),
                 selected = item.rule?.let { (it.ordinal + 1).toLong() } ?: 0L,
-                onPick = { key ->
-                    vm.setOverride(item.id, DueRule.entries.getOrNull(key.toInt() - 1))
-                    editing = 0
-                },
+                label = { labels.getValue(it) },
+                onPick = { key -> vm.setOverride(item.id, DueRule.entries.getOrNull(key.toInt() - 1)) },
                 onDismiss = { editing = 0 },
             )
         }
@@ -501,38 +504,3 @@ private fun LeadTimeFields(lead: LeadTime, unit: DistanceUnit, onChange: (LeadTi
     }
 }
 
-@Composable
-private fun PickDialog(
-    title: String,
-    options: List<Pair<Long, String>>,
-    selected: Long?,
-    onPick: (Long) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
-                options.forEach { (key, label) ->
-                    Row(
-                        Modifier.fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                            .selectable(
-                                selected = key == selected,
-                                // Without a current choice it is a plain list of things to pick from.
-                                role = if (selected != null) Role.RadioButton else Role.Button,
-                                onClick = { onPick(key) },
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        if (selected != null) RadioButton(selected = key == selected, onClick = null)
-                        Text(label)
-                    }
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
-}

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.ChoiceDialog
+import io.cosgriff.glovebox.ui.components.asChoice
+import io.cosgriff.glovebox.ui.components.ChooseVehicleDialog
+import io.cosgriff.glovebox.ui.components.ValueRow
+import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.LabelledCard
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -25,13 +30,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,9 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +96,11 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
         .map { list -> list.map { ScheduleOwner(it.id, "${it.year} ${it.nickname ?: it.model}") } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** The same vehicles as the chooser names them. */
+    val choices = vehicles.observeActive()
+        .map { list -> list.map { it.asChoice() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun setTheme(m: ThemeMode) = viewModelScope.launch { repo.setTheme(m) }
     fun setBiometric(on: Boolean) = viewModelScope.launch { repo.setBiometricLock(on) }
     fun setLockDelay(d: LockDelay) = viewModelScope.launch { repo.setLockAfterSeconds(d.seconds) }
@@ -121,6 +127,7 @@ fun SettingsScreen(
 ) {
     val s by vm.settings.collectAsStateWithLifecycle()
     val vehicles by vm.vehicles.collectAsStateWithLifecycle()
+    val choices by vm.choices.collectAsStateWithLifecycle()
 
     // A screen lock can be set or removed in Android's settings while this screen is open.
     val context = LocalContext.current
@@ -162,14 +169,16 @@ fun SettingsScreen(
             onPick = vm::setRecallCadence,
             onDismiss = { picking = null },
         )
-        Picking.SCHEDULE -> ChoiceDialog(
+        // Named in full, as the shortcut's chooser names them, so two of the same model can be told apart.
+        Picking.SCHEDULE -> ChooseVehicleDialog(
             title = stringResource(R.string.details_schedule),
-            options = vehicles,
-            selected = null,
-            label = { it.name },
-            note = stringResource(R.string.settings_schedule_note),
-            onPick = { onOpenSchedule(it.id) },
+            vehicles = choices,
+            onChoose = {
+                picking = null
+                onOpenSchedule(it)
+            },
             onDismiss = { picking = null },
+            note = stringResource(R.string.settings_schedule_note),
         )
         null -> Unit
     }
@@ -245,9 +254,9 @@ internal fun SettingsContent(
         }
 
         LabelledCard(stringResource(R.string.settings_security)) {
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_biometrics),
-                subtitle = if (canLock) {
+                about = if (canLock) {
                     stringResource(R.string.settings_biometrics_note)
                 } else {
                     // Said plainly: with no screen lock there is nothing for the app to lock with.
@@ -289,9 +298,9 @@ internal fun SettingsContent(
                 }
                 Divider()
             }
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_hide_recents),
-                subtitle = stringResource(R.string.settings_hide_recents_note),
+                about = stringResource(R.string.settings_hide_recents_note),
                 checked = s.hideInRecents,
                 onChange = onSetHideInRecents,
             )
@@ -317,7 +326,7 @@ internal fun SettingsContent(
         }
 
         LabelledCard(stringResource(R.string.settings_maintenance)) {
-            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onOpenRules)
+            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onClick = onOpenRules)
             schedulesText(vehicles.map { it.name })?.let { value ->
                 Divider()
                 ValueRow(stringResource(R.string.details_schedule), value) {
@@ -329,15 +338,15 @@ internal fun SettingsContent(
             Divider()
             ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { onPick(Picking.TORQUE) }
             Divider()
-            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onOpenNotifications)
+            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onClick = onOpenNotifications)
             Divider()
             ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
         }
 
         LabelledCard(stringResource(R.string.settings_camera)) {
-            ToggleRow(
+            SwitchRow(
                 title = stringResource(R.string.settings_scanner_details),
-                subtitle = stringResource(R.string.settings_scanner_details_note),
+                about = stringResource(R.string.settings_scanner_details_note),
                 checked = s.scannerDetails,
                 onChange = onSetScannerDetails,
             )
@@ -423,37 +432,6 @@ internal fun SettingsContent(
 @Composable
 private fun Divider() = HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-/** A row that leads somewhere, with its current value on the right. */
-@Composable
-private fun ValueRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onClick).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
-    }
-}
-
-@Composable
-private fun ToggleRow(title: String, subtitle: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 64.dp)
-            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
-    }
-}
-
 @Composable
 private fun ExportButton(title: String, subtitle: String, modifier: Modifier, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
@@ -470,47 +448,6 @@ private fun ExportButton(title: String, subtitle: String, modifier: Modifier, on
             Text(subtitle, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
         }
     }
-}
-
-/** One choice from a short list. Picking closes the dialog. */
-@Composable
-private fun <T> ChoiceDialog(
-    title: String,
-    options: List<T>,
-    selected: T?,
-    label: (T) -> String,
-    note: String,
-    onPick: (T) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
-                options.forEach { option ->
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                            selected = option == selected,
-                            role = if (selected == null) Role.Button else Role.RadioButton,
-                            onClick = {
-                                onDismiss()
-                                onPick(option)
-                            },
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        // A list to go somewhere from has nothing selected, so it gets no radio buttons.
-                        if (selected != null) RadioButton(selected = option == selected, onClick = null)
-                        Text(label(option))
-                    }
-                }
-                Text(note, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
 }
 
 private val ThemeMode.label: Int

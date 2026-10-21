@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.ValueRow
+import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import androidx.compose.runtime.rememberCoroutineScope
@@ -20,7 +22,6 @@ import android.provider.Settings as AndroidSettings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,11 +31,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -43,7 +42,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -58,7 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -239,7 +236,7 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     HorizontalDivider(color = scheme.outlineVariant)
                     SwitchRow(stringResource(R.string.channel_mileage), stringResource(R.string.notifications_mileage_note), prefs.mileage) { vm.change(prefs.copy(mileage = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    SwitchRow(stringResource(R.string.notifications_widget), stringResource(R.string.notifications_widget_note), settings.homeWidget, vm::setHomeWidget)
+                    SwitchRow(stringResource(R.string.notifications_widget), stringResource(R.string.notifications_widget_note), settings.homeWidget, onChange = vm::setHomeWidget)
                     if (settings.homeWidget) AddWidget()
                 }
             }
@@ -247,17 +244,17 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionLabel(stringResource(R.string.notifications_when))
                 RowsCard {
-                    ChoiceRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
+                    ValueRow(stringResource(R.string.notifications_time), timeLabel(prefs.hour, prefs.minute)) { pickingTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    ChoiceRow(stringResource(R.string.channel_mileage), checkInLabel(prefs.mileageEveryDays)) { pickingCadence = true }
+                    ValueRow(stringResource(R.string.channel_mileage), checkInLabel(prefs.mileageEveryDays)) { pickingCadence = true }
                     HorizontalDivider(color = scheme.outlineVariant)
-                    ChoiceRow(
+                    ValueRow(
                         stringResource(R.string.notifications_mileage_time),
                         prefs.mileageHour?.let { timeLabel(it, prefs.mileageMinute) } ?: stringResource(R.string.notifications_mileage_time_with, timeLabel(prefs.hour, prefs.minute)),
                     ) { pickingMileageTime = true }
                     HorizontalDivider(color = scheme.outlineVariant)
                     // The same lead time as on Reminder rules; it is kept in one place.
-                    ChoiceRow(stringResource(R.string.notifications_how_early), stringResource(R.string.notifications_how_early_value, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
+                    ValueRow(stringResource(R.string.notifications_how_early), stringResource(R.string.notifications_how_early_value, settings.lead.miles.asDistance(settings.distanceUnit), pluralStringResource(R.plurals.days, settings.lead.days, settings.lead.days.asNumber())), onClick = onOpenRules)
                 }
                 Text(
                     stringResource(R.string.notifications_note),
@@ -266,21 +263,6 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SwitchRow(title: String, about: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 64.dp).toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(Modifier.weight(1f).padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text(about, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Switch(checked = checked, onCheckedChange = null)
     }
 }
 
@@ -307,24 +289,6 @@ private fun AddWidget() {
             Modifier.padding(bottom = 12.dp),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun ChoiceRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button, onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-        Icon(
-            Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

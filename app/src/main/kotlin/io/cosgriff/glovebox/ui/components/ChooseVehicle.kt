@@ -1,4 +1,4 @@
-package io.cosgriff.glovebox.ui
+package io.cosgriff.glovebox.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,14 +33,25 @@ fun VehicleEntity.asChoice() = VehicleChoice(id, VehicleText.title(year, make, m
  */
 @Composable
 internal fun ChooseVehicleDialog(task: ShortcutTask, vehicles: List<VehicleChoice>, onChoose: (Long) -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(stringResource(when (task) {
+    ChooseVehicleDialog(
+        stringResource(
+            when (task) {
                 ShortcutTask.LOG_SERVICE -> R.string.choose_vehicle_log
                 ShortcutTask.UPDATE_MILEAGE -> R.string.choose_vehicle_mileage
-            }))
-        },
+            },
+        ),
+        vehicles,
+        onChoose,
+        onDismiss,
+    )
+}
+
+/** Which vehicle, named in full with the nickname under it, as the shortcut asks; [note] under the list. */
+@Composable
+internal fun ChooseVehicleDialog(title: String, vehicles: List<VehicleChoice>, onChoose: (Long) -> Unit, onDismiss: () -> Unit, note: String? = null) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 vehicles.forEach { v ->
@@ -56,6 +67,7 @@ internal fun ChooseVehicleDialog(task: ShortcutTask, vehicles: List<VehicleChoic
                         }
                     }
                 }
+                note?.let { Text(it, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

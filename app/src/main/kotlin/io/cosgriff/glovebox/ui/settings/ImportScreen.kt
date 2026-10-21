@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.LabelledCard
 import io.cosgriff.glovebox.ui.components.RowsCard
@@ -37,13 +38,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -972,17 +971,7 @@ private const val SHOWN = 12
 private fun DoublesCard(names: List<String>, stop: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     LabelledCard(stringResource(R.string.import_doubles), note = pluralStringResource(R.plurals.import_doubles_note, names.size)) {
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = stop, role = Role.Checkbox, onValueChange = onChange),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Checkbox(checked = stop, onCheckedChange = null)
-            Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(pluralStringResource(R.plurals.import_stop_typical, names.size, names.size.asNumber()), style = MaterialTheme.typography.bodyLarge)
-                Text(names.joinToString(", "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-            }
-        }
+        CheckRow(pluralStringResource(R.plurals.import_stop_typical, names.size, names.size.asNumber()), stop, detail = names.joinToString(", "), onChange = onChange)
     }
 }
 
@@ -998,18 +987,7 @@ private fun DoubtsCard(doubts: List<DoubtLine>, onInclude: (Pair<LocalDate, Int>
         Column {
             doubts.forEachIndexed { i, d ->
                 if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                        .toggleable(value = d.included, role = Role.Checkbox, onValueChange = { onInclude(d.key, it) }),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Checkbox(checked = d.included, onCheckedChange = null)
-                    Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(d.title, style = MaterialTheme.typography.bodyLarge, fontFamily = PlexMono)
-                        Text(d.why, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                    }
-                }
+                CheckRow(d.title, d.included, detail = d.why, mono = true) { onInclude(d.key, it) }
             }
         }
     }
@@ -1090,21 +1068,7 @@ private fun ResultCard(r: ImportResult) {
 private fun KeepCopyCard(keep: Boolean, onChange: (Boolean) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     RowsCard {
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(value = keep, role = Role.Checkbox, onValueChange = onChange),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Checkbox(checked = keep, onCheckedChange = null)
-            Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.import_keep_copy), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    stringResource(R.string.import_keep_copy_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-            }
-        }
+        CheckRow(stringResource(R.string.import_keep_copy), keep, detail = stringResource(R.string.import_keep_copy_note), onChange = onChange)
     }
 }
 
