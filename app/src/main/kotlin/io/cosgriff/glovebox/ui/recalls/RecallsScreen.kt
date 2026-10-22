@@ -106,6 +106,13 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
+import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.domain.LogEdits
+import io.cosgriff.glovebox.domain.Visits
+import io.cosgriff.glovebox.ui.history.VisitRow
+import io.cosgriff.glovebox.ui.service.asDistance
+import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.toVisit
 
 data class RecallsState(
     val vehicle: VehicleEntity,
@@ -113,7 +120,26 @@ data class RecallsState(
     val recalls: List<RecallEntity>,
     /** Starting point for the odometer when a recall is marked done. */
     val odometer: Int?,
+    /** The vehicle's service records, for "Add to the visit on …" when a recall is marked done. */
+    val records: List<ServiceRecordWithItems> = emptyList(),
 ) {
+    /** The visits, or records on their own, a recall done on [date] can join (#307); none is chosen for the user. */
+    fun visitsOn(date: LocalDate): List<VisitRow> {
+        val byId = records.associateBy { it.record.id }
+        return Visits.onDay(records.map { it.record.toVisit() }, date).map { group ->
+            val parts = group.mapNotNull { byId[it.id] }
+            val first = parts.first().record
+            VisitRow(
+                id = first.id,
+                work = parts.flatMap { it.items }.joinToString(", ") { it.label },
+                about = listOf(
+                    first.odometer.asDistance(vehicle.unit),
+                    LogEdits.who(first.diy, first.shopName, null, first.enteredAsLastDone, first.imported).text,
+                ).joinToString(" · "),
+            )
+        }
+    }
+
     val open: Int get() = recalls.count { it.isOpen }
     val canCheck: Boolean get() = Recalls.canCheck(vehicle.year, vehicle.make, vehicle.model)
     val makeName: String get() = Recalls.makeName(vehicle.make)
@@ -122,8 +148,11 @@ data class RecallsState(
 /** Neither marked done nor archived as not applying. */
 private val RecallEntity.isOpen: Boolean get() = completedOn == null && archivedOn == null
 
-/** How a recall is being marked done: on its own, or with a record of the work. */
-data class RecallCompletion(val date: LocalDate, val odometer: Int?, val shopName: String?)
+/**
+ * How a recall is being marked done: on its own, or with a record of the work. [visitWith] is a record
+ * that record joins as one visit, when the user chose "Add to the visit on …".
+ */
+data class RecallCompletion(val date: LocalDate, val odometer: Int?, val shopName: String?, val visitWith: Long? = null)
 
 @HiltViewModel
 class RecallsViewModel @Inject constructor(
@@ -150,6 +179,7 @@ class RecallsViewModel @Inject constructor(
             vehicle = vehicle,
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
             odometer = vehicle.clusterSwap().let { swap -> VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap)) },
+            records = records,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -186,7 +216,7 @@ class RecallsViewModel @Inject constructor(
                 shopName = completion.shopName,
             )
         }
-        actions.completeRecall(recall.id, completion.date, record)
+        actions.completeRecall(recall.id, completion.date, record, completion.visitWith)
     }
 
     fun markOpen(recall: RecallEntity) = viewModelScope.launch { actions.reopenRecall(recall.id) }
@@ -215,6 +245,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
             odometer = state.odometer,
             unit = v.unit,
             makeName = state.makeName,
+            visitsOn = state::visitsOn,
             onConfirm = {
                 marking = null
                 vm.markDone(recall, it)

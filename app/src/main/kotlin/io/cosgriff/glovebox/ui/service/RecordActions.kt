@@ -148,14 +148,17 @@ class RecordActions @Inject constructor(
     /**
      * Marks a recall done. With [record] the work also goes in the service log, as a line linked to
      * no schedule item, so it never resets a reminder. Does nothing if the recall is already done,
-     * which is what stops a second record being added for it.
+     * which is what stops a second record being added for it. [visitWith] is a record the user chose to
+     * link the new one with, as one visit.
      */
-    suspend fun completeRecall(recallId: Long, completedOn: LocalDate, record: ServiceRecordEntity?) {
+    suspend fun completeRecall(recallId: Long, completedOn: LocalDate, record: ServiceRecordEntity?, visitWith: Long? = null) {
         val recall = recalls.byId(recallId)?.takeIf { it.completedOn == null } ?: return
         val recordId = record?.let {
             val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = recallServiceLine(recall.toNotice()))
             service.insertWithItems(it, listOf(line))
         }
+        // "Add to the visit on …" (#307): the recall's record joins the visit it was done on from the start.
+        if (recordId != null && visitWith != null) link(recordId, visitWith)
         recalls.setDone(recall.id, completedOn, recordId)
         _events.send(RecordEvent.RecallDone(recall.id, recordId))
     }
