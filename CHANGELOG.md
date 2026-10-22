@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.0](https://github.com/mcosgriff/glovebox/compare/v0.18.0...v0.19.0) (2026-10-22)
+
+
+### Features
+
+* **catalog:** more service lines, from Wikipedia's list of auto parts ([#323](https://github.com/mcosgriff/glovebox/issues/323)) ([0662d51](https://github.com/mcosgriff/glovebox/commit/0662d514fa3b1e1fb2369c6420cc5528d2034a2a))
+
+
+### Bug Fixes
+
+* **ui:** Undo bars last 10 seconds and can be dismissed ([#321](https://github.com/mcosgriff/glovebox/issues/321)) ([ab7e235](https://github.com/mcosgriff/glovebox/commit/ab7e235997ae0836a733f9061569d52c6bcbd2a0))
+
 ## [0.18.0](https://github.com/mcosgriff/glovebox/compare/v0.17.0...v0.18.0) (2026-10-21)
 
 
