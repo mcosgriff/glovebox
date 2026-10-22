@@ -856,6 +856,9 @@
     <string name="catalog_suspension_check">Suspension &amp; steering check</string>
     <string name="catalog_cabin_air">Cabin air filter</string>
     <string name="catalog_wipers">Wiper blades</string>
+    <string name="catalog_wipers_check">Wiper blades check</string>
+    <string name="catalog_ac_flush">A/C system flush</string>
+    <string name="catalog_secondary_air_pump">Secondary air injection pump</string>
     <string name="catalog_battery">Battery</string>
     <string name="catalog_battery_check">Battery test</string>
     <string name="catalog_bulbs">Bulbs</string>

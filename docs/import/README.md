@@ -224,10 +224,10 @@ count for a reminder. The values, by the category History files them under:
 | Fluids | `trans-fluid`, `power-steering`, `washer`, `fluid-check` |
 | Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core` |
 | Fuel | `fuel-filter`, `fuel-system`, `throttle-body`, `fuel-injectors`, `fuel-pump`, `evap-system` |
-| Exhaust | `oxygen-sensor`, `egr-valve`, `catalytic-converter`, `muffler`, `exhaust` |
+| Exhaust | `oxygen-sensor`, `egr-valve`, `secondary-air-pump`, `catalytic-converter`, `muffler`, `exhaust` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |
 | Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `suspension-check` |
-| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
+| Cabin & electrical | `cabin-air`, `wipers`, `wipers-check`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-flush`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
 | Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
 | Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body`, `detail` |
 
@@ -236,8 +236,9 @@ count for a reminder. The values, by the category History files them under:
   `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A change
   also counts as the check of the same thing: `front-diff`, `rear-diff` and `transfer-case` reset a
   reminder set to `front-diff-check`, `rear-diff-check` or `transfer-case-check`, and `diff-fluid`
-  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check`, `battery` for `battery-check` and
-  `coolant` for `cooling-check`. A check never counts as a change. `brake-pads` is pads on an axle the
+  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check`, `battery` for `battery-check`,
+  `wipers` for `wipers-check` and `coolant` for `cooling-check`. `ac-flush` also counts as `air-conditioning`, since a
+  flush ends with the system refilled. A check never counts as a change. `brake-pads` is pads on an axle the
   record doesn't name, and `scheduled-service` ("the 30,000 mile service") resets nothing, since it
   doesn't say which jobs were done. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
