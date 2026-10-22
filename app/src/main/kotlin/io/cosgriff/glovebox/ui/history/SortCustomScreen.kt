@@ -233,8 +233,9 @@ internal fun SortCustomContent(
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item { ScreenHeader(stringResource(R.string.sort_custom_title), onBack, subtitle = stringResource(R.string.sort_custom_about)) }
             if (groups.isEmpty()) item { EmptyState(stringResource(R.string.sort_custom_none), title = stringResource(R.string.sort_custom_none_title)) }
-            if (groups.isNotEmpty()) {
-                val lines = groups.sumOf { it.lineIds.size }
+            val lines = groups.sumOf { it.lineIds.size }
+            // Said only when a row holds more than one line, which is when the count and the rows seem to disagree.
+            if (lines > groups.size) {
                 item {
                     Text(
                         pluralStringResource(R.plurals.sort_custom_count, groups.size, lines.asNumber(), groups.size.asNumber()),
