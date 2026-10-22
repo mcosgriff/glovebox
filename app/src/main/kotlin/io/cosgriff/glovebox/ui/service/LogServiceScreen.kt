@@ -122,6 +122,8 @@ import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.NamedLine
 import io.cosgriff.glovebox.domain.CatalogRules
+import io.cosgriff.glovebox.domain.LineGuess
+import io.cosgriff.glovebox.domain.CarfaxReport
 import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.data.db.toRule
 import io.cosgriff.glovebox.data.db.CatalogRuleDao
@@ -1017,10 +1019,14 @@ private fun CustomItemDialog(lines: List<LineChoice>, rules: List<CatalogRule>, 
 @Composable
 internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, rules: List<CatalogRule> = emptyList()) {
     val byRule = remember(rules, typed) { CatalogRules.match(typed, rules) }
-    val matches = remember(lines, typed, byRule) {
+    // In the order #312 sets: the user's rule, then wording Glovebox recognises, then a guess, which is said to be one.
+    // Every line here is only offered.
+    val known = remember(typed, byRule) { if (byRule == null) CarfaxReport.service(typed) else null }
+    val guess = remember(typed, byRule, known) { if (byRule == null && known == null) LineGuess.guess(typed) else null }
+    val matches = remember(lines, typed, byRule, known, guess) {
         val byId = lines.associateBy { it.option.id }
-        val words = WorkSuggestions.suggest(typed, lines.map { NamedLine(it.option.id, it.option.label) }).filter { it != byRule }
-        (listOfNotNull(byRule) + words).take(WorkSuggestions.MAX).mapNotNull(byId::get)
+        val words = WorkSuggestions.suggest(typed, lines.map { NamedLine(it.option.id, it.option.label) })
+        (listOfNotNull(byRule, known, guess) + words).distinct().take(WorkSuggestions.MAX).mapNotNull(byId::get)
     }
     if (matches.isEmpty()) return
     Column {
@@ -1030,13 +1036,13 @@ internal fun LineMatches(typed: String, lines: List<LineChoice>, onPick: (LineCh
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
-        matches.forEach { LineRow(it, withCategory = true, onPick, byRule = it.option.id == byRule) }
+        matches.forEach { LineRow(it, withCategory = true, onPick, byRule = it.option.id == byRule, guessed = it.option.id == guess) }
     }
 }
 
 /** One line to pick, [withCategory] under its name where the list isn't already by category. */
 @Composable
-private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoice) -> Unit, byRule: Boolean = false) {
+private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoice) -> Unit, byRule: Boolean = false, guessed: Boolean = false) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -1049,7 +1055,11 @@ private fun LineRow(choice: LineChoice, withCategory: Boolean, onPick: (LineChoi
         Text(choice.option.label, style = MaterialTheme.typography.bodyLarge)
         if (withCategory) {
             Text(
-                if (byRule) stringResource(R.string.log_line_by_rule, choice.category.label) else choice.category.label,
+                when {
+                    byRule -> stringResource(R.string.log_line_by_rule, choice.category.label)
+                    guessed -> stringResource(R.string.log_line_guess, choice.category.label)
+                    else -> choice.category.label
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

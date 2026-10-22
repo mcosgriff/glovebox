@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.domain.CustomLines
+import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.CheckRow
@@ -589,6 +591,18 @@ class ImportViewModel @Inject constructor(
         AppText.res.getQuantityString(R.plurals.import_rules_filed, n, n.asNumber(), filing.wordings.joinToString(", "))
     }
 
+    /**
+     * "2 wordings will go under Custom with a guess at their line: “Watr pump replaced” looks like Water pump; …" (#312).
+     * Said, never filed: the sort page offers each guess after the import. Null when there is none.
+     */
+    private fun guessesNote(guesses: List<Pair<String, String>>): String? {
+        if (guesses.isEmpty()) return null
+        val said = guesses.take(GUESSES_SAID).joinToString("; ") { (wording, id) -> AppText.res.getString(R.string.import_guess, wording, catalogLabel(id)) }
+        val more = guesses.size - GUESSES_SAID
+        val list = if (more > 0) AppText.res.getQuantityString(R.plurals.import_guesses_more, more, said, more.asNumber()) else said
+        return AppText.res.getQuantityString(R.plurals.import_guesses, guesses.size, guesses.size.asNumber(), list)
+    }
+
     private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, s: Settings, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
         val unit = vehicle.unit
         // The user's rules file the lines the file leaves unsaid, and on a Carfax report (a PDF) win over the
@@ -639,7 +653,8 @@ class ImportViewModel @Inject constructor(
             differs = plan.differs.map { (item, mine) -> PlanLine(item.title(unit), item.describe(), mine.describe()) },
             same = plan.same.size,
             caution = AppText.res.getString(R.string.import_caution_history),
-            note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules)).joinToString(" ").ifEmpty { null },
+            note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules), guessesNote(CustomLines.guessesFor(items, refs)))
+                .joinToString(" ").ifEmpty { null },
             moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
             doubts = doubts.map { (r, d) ->
                 DoubtLine(
@@ -728,6 +743,9 @@ private fun ImportedScheduleItem.describe(unit: DistanceUnit) = listOfNotNull(de
 private fun SavedScheduleItem.describe(unit: DistanceUnit) = listOfNotNull(describe(normal, severe, rule, service, unit, firstAt), severeOnlyWords.takeIf { severeOnly }).joinToString(" · ")
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
+
+/** How many guesses the preview names before "and n more". */
+private const val GUESSES_SAID = 5
 
 /** Settings → Import. The format, and what an import may and may not change, are in `docs/import/README.md`. */
 @Composable

@@ -23,6 +23,9 @@ enum class SuggestionSource {
 
     /** Wording Glovebox recognises (`CarfaxReport.service`). */
     GLOVEBOX,
+
+    /** Only a guess ([LineGuess]): offered, never picked for the user. */
+    GUESS,
 }
 
 data class LineSuggestion(val catalogId: String, val source: SuggestionSource)
@@ -87,14 +90,26 @@ object CustomLines {
     fun suggest(label: String, rules: List<CatalogRule>): LineSuggestion? =
         CatalogRules.match(label, rules)?.let { LineSuggestion(it, SuggestionSource.YOUR_RULE) }
             ?: CarfaxReport.service(label)?.let { LineSuggestion(it, SuggestionSource.GLOVEBOX) }
+            ?: LineGuess.guess(label)?.let { LineSuggestion(it, SuggestionSource.GUESS) }
 
     /**
      * The line [group] goes under: what the user chose for it in [chosen] (by key; a null there is "leave it
      * under Custom"), or, if they haven't, its suggestion, which starts ticked since it comes from plain wording
-     * or their own rule.
+     * or their own rule. A guess never starts ticked: it is offered, and only the user's tap picks it.
      */
     fun picked(group: CustomGroup, chosen: Map<String, String?>): String? =
-        if (group.key in chosen) chosen[group.key] else group.suggestion?.catalogId
+        if (group.key in chosen) chosen[group.key] else group.suggestion?.takeIf { it.source != SuggestionSource.GUESS }?.catalogId
+
+    /**
+     * The lines an import will leave under Custom (no `service`, and no item of the user's own by that name) that
+     * [LineGuess] has a guess for, once each by wording: (the wording, the line it looks like). Only said in the
+     * preview; nothing is filed, and the sort page offers each guess after the import.
+     */
+    fun guessesFor(items: List<ImportedRecord>, schedule: List<ScheduleRef>): List<Pair<String, String>> =
+        items.flatMap { it.work }
+            .filter { it.service == null && HistoryImport.resolve(it, schedule).scheduleItemId == null }
+            .distinctBy { CatalogRules.key(it.label) }
+            .mapNotNull { line -> LineGuess.guess(line.label)?.let { line.label.trim() to it } }
 
     /** Whether to offer "Remember this": not with nothing picked, nor when the pick is already the user's rule. */
     fun asksToRemember(group: CustomGroup, picked: String?): Boolean =

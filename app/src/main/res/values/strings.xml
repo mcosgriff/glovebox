@@ -988,6 +988,15 @@
         <item quantity="one">%1$s line filed</item>
         <item quantity="other">%1$s lines filed</item>
     </plurals>
+    <plurals name="import_guesses">
+        <item quantity="one">%1$s wording will go under Custom with a guess at its line: %2$s. Nothing is filed by a guess; History\'s Sort page offers it after the import.</item>
+        <item quantity="other">%1$s wordings will go under Custom with a guess at their line: %2$s. Nothing is filed by a guess; History\'s Sort page offers each after the import.</item>
+    </plurals>
+    <string name="import_guess">“%1$s” looks like %2$s</string>
+    <plurals name="import_guesses_more">
+        <item quantity="one">%1$s, and %2$s more</item>
+        <item quantity="other">%1$s, and %2$s more</item>
+    </plurals>
     <plurals name="import_rules_filed">
         <item quantity="one">%1$s line filed by your rules: %2$s.</item>
         <item quantity="other">%1$s lines filed by your rules: %2$s.</item>
@@ -1035,12 +1044,16 @@
     <string name="sort_custom_save_none">Nothing picked to file</string>
     <string name="sort_custom_table_jobs">Your milestone table: counts for %1$s.</string>
     <string name="sort_custom_pick_for">Pick a line for “%1$s”</string>
+    <string name="sort_custom_looks_like">Looks like: %1$s</string>
+    <string name="sort_custom_use">Use this line</string>
+    <string name="sort_custom_use_for">File “%1$s” under %2$s</string>
     <string name="sort_custom_change_for">Change the line for “%1$s”</string>
     <string name="sort_custom_leave_for">Leave “%1$s” under Custom</string>
     <string name="sort_custom_remember_for">Remember “%1$s” for future imports</string>
     <string name="log_custom_matches">Already a line here. Tap one to tick it instead:</string>
     <string name="log_custom_tick_line">Tick this line</string>
     <string name="log_line_by_rule">%1$s · your rule</string>
+    <string name="log_line_guess">%1$s · a guess</string>
     <string name="log_file_under_button">File under a line</string>
     <string name="log_file_under_title">File under a line</string>
     <string name="log_file_under_body">“%1$s” stays as written. The line you pick decides which reminders it counts for.</string>
