@@ -871,7 +871,7 @@ Notes on what's built:
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion
   is tapped. The recall "mark done" sheet doesn't offer them.
-- An Undo bar stays for `LogEdits.UNDO_SECONDS` (30), and the delete sheet says so. Events are collected
+- An Undo bar stays for `LogEdits.UNDO_SECONDS` (10), and the delete sheet says so; its ✕ (`withDismissAction`) ends it sooner. Events are collected
   with `collectLatest`: a newer change replaces the bar for an older one, and whatever ends a bar without
   Undo (timeout, replacement, the app locking) discards the photo files it was holding.
 - Recalls live in the `recalls` table, one row per vehicle and campaign. `RecallRepository` re-checks a

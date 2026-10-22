@@ -298,12 +298,12 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
             }
             var undone = false
             try {
-                // An Undo stays up longer than a snackbar normally does; the delete sheet says for how long.
+                // An Undo stays up for a set time, which the delete sheet states; the ✕ dismisses it sooner.
                 val result = if (recordId != null) {
-                    snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long)
+                    snackbar.showSnackbar(message, actionLabel = action, withDismissAction = true, duration = SnackbarDuration.Long)
                 } else {
                     withTimeoutOrNull((LogEdits.UNDO_SECONDS * 1000L).milliseconds) {
-                        snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Indefinite)
+                        snackbar.showSnackbar(message, actionLabel = action, withDismissAction = true, duration = SnackbarDuration.Indefinite)
                     }
                 }
                 if (result == SnackbarResult.ActionPerformed) {
@@ -385,7 +385,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
     // For one-off confirmations with a single action, usually Undo.
     val showMessage: (String, String, () -> Unit) -> Unit = { message, actionLabel, onAction ->
         scope.launch {
-            val result = snackbar.showSnackbar(message, actionLabel = actionLabel, duration = SnackbarDuration.Long)
+            val result = snackbar.showSnackbar(message, actionLabel = actionLabel, withDismissAction = true, duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) onAction()
         }
     }

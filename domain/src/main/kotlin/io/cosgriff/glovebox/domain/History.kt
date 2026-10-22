@@ -106,7 +106,7 @@ object LogEdits {
     }
 
     /** How long a delete or an edit can be undone from the bar at the bottom of the screen. */
-    const val UNDO_SECONDS = 30
+    const val UNDO_SECONDS = 10
 
     /**
      * The line under the odometer field on the Log service and Edit service forms.
