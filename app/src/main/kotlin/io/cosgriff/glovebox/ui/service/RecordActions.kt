@@ -21,6 +21,7 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.lineFor
+import io.cosgriff.glovebox.domain.Visits
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -178,6 +179,26 @@ class RecordActions @Inject constructor(
         val replaced = if (keys.isEmpty()) emptyList() else service.rulesFor(keys)
         service.fileLines(lines.groupBy({ it.second }, { it.first }), rules.map { it.toEntity(today) })
         _events.send(RecordEvent.Filed(lines.map { it.first }, keys, replaced))
+    }
+
+    /**
+     * [recordId] and [otherId] are one visit (#307), with whatever visit each was in already. Only which
+     * visit they are in changes; nothing in either record does, so there is nothing to undo but Unlink.
+     */
+    suspend fun link(recordId: Long, otherId: Long) {
+        val record = service.record(recordId)?.record ?: return
+        val all = service.recordsFor(record.vehicleId).map { it.record.toVisit() }
+        val a = all.find { it.id == recordId } ?: return
+        val b = all.find { it.id == otherId } ?: return
+        service.link(Visits.joined(a, b, all))
+    }
+
+    /** [recordId] out of its visit; the rest stay linked, unless one is left. */
+    suspend fun unlink(recordId: Long) {
+        val record = service.record(recordId)?.record ?: return
+        val all = service.recordsFor(record.vehicleId).map { it.record.toVisit() }
+        val r = all.find { it.id == recordId } ?: return
+        service.unlink(Visits.unlinked(r, all))
     }
 
     /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */

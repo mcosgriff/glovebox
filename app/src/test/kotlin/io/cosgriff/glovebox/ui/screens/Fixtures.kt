@@ -42,6 +42,8 @@ import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.history.visitRow
+import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageVehicle
 import io.cosgriff.glovebox.ui.history.HistoryState
@@ -250,6 +252,36 @@ object Fixtures {
             deleteImpact = emptyList(),
         )
     }
+
+    /** A recall fixed at the shop the day the cabin filter was changed: a made-up campaign. */
+    private val recallRecord = ServiceRecordWithItems(
+        ServiceRecordEntity(104, truck.id, truckRecords[0].record.date, 62_100, diy = false, shopName = "Main Street Auto"),
+        listOf(ServiceRecordItemEntity(1040, 104, null, AppText.res.getString(R.string.recall_service_line, Recalls.campaignLabel("26V100000"), "Fuel pump"))),
+        emptyList(),
+    )
+
+    /** The cabin filter as imported from a report, with that recall's record linked as one visit (#307). */
+    val recordInVisit: RecordDetail = run {
+        val r = truckRecords[0].let { it.copy(record = it.record.copy(imported = true, visitId = 1)) }
+        RecordDetail(
+            record = r,
+            vehicleName = "2019 Blue truck",
+            unit = unit,
+            readOnly = false,
+            lines = listOf(WorkLine(r.items[0].label, ServiceCatalog.categoryOf(r.items[0].catalogId)?.label, null, current = false)),
+            deleteImpact = emptyList(),
+            visit = listOf(recallRecord.visitRow(unit)),
+            choices = listOf(truckRecords[1].visitRow(unit)),
+        )
+    }
+
+    /** The same two not linked yet: the record screen offers it. */
+    val recordOffer: RecordDetail = recordInVisit.copy(
+        record = recordInVisit.record.let { it.copy(record = it.record.copy(visitId = null)) },
+        visit = emptyList(),
+        offers = listOf(recallRecord.visitRow(unit)),
+        choices = listOf(recallRecord.visitRow(unit), truckRecords[1].visitRow(unit)),
+    )
 
     val vehicleDetails = VehicleDetails(
         vehicle = truck,

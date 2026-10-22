@@ -619,6 +619,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                     onConfirmDeleteShown = { results.remove(CONFIRM_DELETE) },
                     onEdit = { vehicleId, recordId -> nav.push(LogServiceRoute(vehicleId, recordId)) },
                     onOpenPhoto = { recordId, index -> nav.push(PhotoViewerRoute(recordId, index)) },
+                    onOpenRecord = { nav.push(RecordDetailRoute(it)) },
                 )
             }
             screen<PhotoViewerRoute> { PhotoViewerScreen(onClose = { nav.pop() }) }

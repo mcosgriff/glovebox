@@ -1094,6 +1094,18 @@
     <string name="record_no_change">No reminders change.</string>
     <string name="record_go_back_to">REMINDERS WILL GO BACK TO</string>
     <string name="record_undo_for">You can undo this for %1$s seconds afterwards.</string>
+    <string name="record_visit_title">SAME VISIT</string>
+    <string name="record_visit_note">Linked as one visit. Each record keeps its own work, photos and cost.</string>
+    <string name="record_visit_add">Add a record</string>
+    <string name="record_visit_unlink">Unlink this record</string>
+    <string name="record_visit_offer_title">SAME VISIT?</string>
+    <plurals name="record_visit_offer">
+        <item quantity="one">Another record from the same day looks like the same visit. Link it to see them together.</item>
+        <item quantity="other">%1$s other records from the same day look like the same visit. Link one to see them together.</item>
+    </plurals>
+    <string name="record_visit_link">Link</string>
+    <string name="record_visit_choose">Same visit as…</string>
+    <string name="record_visit_choose_note">Linking only shows the records together. Nothing in either one changes.</string>
 
     <!-- Photos (PhotoViewerScreen, PhotoBits, RecordPhotoPicker) -->
     <string name="photos_full">A record holds up to %1$s photos.</string>
