@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.20.0](https://github.com/mcosgriff/glovebox/compare/v0.19.0...v0.20.0) (2026-10-22)
+
+
+### Features
+
+* **catalog:** A/C flush, wiper check and secondary air pump lines ([#334](https://github.com/mcosgriff/glovebox/issues/334)) ([cfb7057](https://github.com/mcosgriff/glovebox/commit/cfb70577e8493652dd6aa85b7d4cce67eb914c8a))
+* **data:** link service records into visits (data and domain) ([#326](https://github.com/mcosgriff/glovebox/issues/326)) ([34618ab](https://github.com/mcosgriff/glovebox/commit/34618abee1ba5b0261925277c17b3ab409d6b2a9))
+* **export:** a visit as one entry in the PDF and Markdown ([#331](https://github.com/mcosgriff/glovebox/issues/331)) ([005c89d](https://github.com/mcosgriff/glovebox/commit/005c89db4264b86d85d2d0eb77c29dabe356fcd0)), closes [#307](https://github.com/mcosgriff/glovebox/issues/307)
+* **history:** a visit as one card ([#329](https://github.com/mcosgriff/glovebox/issues/329)) ([8fcfa9e](https://github.com/mcosgriff/glovebox/commit/8fcfa9eeeb726860516a552a9b88696d6dd4c718)), closes [#307](https://github.com/mcosgriff/glovebox/issues/307)
+* **history:** link records into a visit from the record screen ([#328](https://github.com/mcosgriff/glovebox/issues/328)) ([854cad5](https://github.com/mcosgriff/glovebox/commit/854cad574d3ec8ebce458fa7b0ee3735ed12bbea)), closes [#307](https://github.com/mcosgriff/glovebox/issues/307)
+* **recalls:** add a recall's record to the visit it was done on ([#330](https://github.com/mcosgriff/glovebox/issues/330)) ([ace149f](https://github.com/mcosgriff/glovebox/commit/ace149fec9a7a455161081fd8010faa3b83d9ae1)), closes [#307](https://github.com/mcosgriff/glovebox/issues/307)
+* **service:** collapsible categories in File under a line ([#332](https://github.com/mcosgriff/glovebox/issues/332)) ([0c45ad0](https://github.com/mcosgriff/glovebox/commit/0c45ad08f15c7c9ca265041020d264c32d717351))
+
+
+### Bug Fixes
+
+* **history:** say how many ways Custom lines are written ([#333](https://github.com/mcosgriff/glovebox/issues/333)) ([f93ed0b](https://github.com/mcosgriff/glovebox/commit/f93ed0ba94f753b935c36cc693f000ae3f17997f))
+
 ## [0.19.0](https://github.com/mcosgriff/glovebox/compare/v0.18.0...v0.19.0) (2026-10-22)
 
 
