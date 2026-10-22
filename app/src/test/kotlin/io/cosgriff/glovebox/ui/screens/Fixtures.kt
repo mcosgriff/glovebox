@@ -283,6 +283,14 @@ object Fixtures {
         choices = listOf(recallRecord.visitRow(unit), truckRecords[1].visitRow(unit)),
     )
 
+    /** History with the imported cabin filter and the recall's record linked as one visit. */
+    val historyWithVisit: HistoryState = history.copy(
+        records = listOf(
+            truckRecords[0].let { it.copy(record = it.record.copy(imported = true, visitId = 1)) },
+            recallRecord.copy(record = recallRecord.record.copy(visitId = 1)),
+        ) + truckRecords.drop(1),
+    )
+
     val vehicleDetails = VehicleDetails(
         vehicle = truck,
         schedule = ScheduleSummary(tracked = tracked.size, severe = 0),

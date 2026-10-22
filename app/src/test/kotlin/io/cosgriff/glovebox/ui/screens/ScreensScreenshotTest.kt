@@ -178,6 +178,15 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     @Test
+    fun historyVisit() = compose.shoot("history_visit", shade) {
+        HistoryContent(
+            Fixtures.historyWithVisit, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            onSortCustom = {},
+        )
+    }
+
+    @Test
     fun record() = compose.shoot("record", shade) {
         RecordDetailContent(
             Fixtures.recordDetail, photoProblem = null,

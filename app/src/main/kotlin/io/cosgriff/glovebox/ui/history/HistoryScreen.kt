@@ -116,6 +116,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.semantics.Role
+import io.cosgriff.glovebox.domain.Visits
+import io.cosgriff.glovebox.ui.components.Chevron
 
 data class HistoryState(
     val vehicles: List<VehicleEntity>,
@@ -288,16 +293,18 @@ internal fun HistoryContent(
     // A filter can outlive the last record that matched it (e.g. after a delete).
     val filter = chosenFilter?.takeIf { f -> categories.any { it.id == f } }
     val swap = state.vehicle?.clusterSwap()
-    val shown = HistoryOrdering.sorted(
-        state.records.filter { r ->
-            (filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }) &&
-                HistorySearch.matches(r.searchable(), search)
-        },
+    val sorted = HistoryOrdering.sorted(
+        state.records,
         order,
         date = { it.record.date },
         dash = { swap.toDash(it.record.odometer, it.record.date) },
         id = { it.record.id },
     )
+    fun matches(r: ServiceRecordWithItems) =
+        (filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }) && HistorySearch.matches(r.searchable(), search)
+    // A visit (#307) is one card where its first record sorts, and shows whole when any of its records matches.
+    val groups = Visits.grouped(sorted) { it.record.visitId }.filter { g -> g.any(::matches) }
+    val shown = groups.flatten()
     // A record's cost covers all of its lines, so it can't be split by category: no line while a filter is on.
     val searching = HistorySearch.query(search) != null
     val spending = if (filter == null && !searching) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
@@ -381,8 +388,13 @@ internal fun HistoryContent(
                 contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(shown, key = { it.record.id }) { r ->
-                    RecordCard(r, state.vehicle.unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
+                items(groups, key = { it.first().record.id }) { g ->
+                    if (g.size == 1) {
+                        val r = g.single()
+                        RecordCard(r, state.vehicle.unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
+                    } else {
+                        VisitCard(g, state.vehicle.unit, fresh, onOpenRecord)
+                    }
                 }
             }
         }
@@ -464,6 +476,68 @@ private fun RecordCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: Reco
                 )
                 r.record.costCents?.let {
                     Text(Money.format(it), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Records linked as one visit (#307), as one card: the date and, when its records agree, the reading; then
+ * each record with its own work, tag and cost, opening that record; then the visit's total. A record whose
+ * date or reading differs from the first's says its own, as entered: a disagreement is shown, never settled.
+ */
+@Composable
+private fun VisitCard(records: List<ServiceRecordWithItems>, unit: DistanceUnit, fresh: HistoryFocus?, onOpenRecord: (Long) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val first = records.first().record
+    val readings = Visits.readings(records.map { it.record.odometer })
+    val oneDay = records.all { it.record.date == first.date }
+    val marked = records.any { it.record.id == fresh?.recordId }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = scheme.surface),
+        border = BorderStroke(if (marked) 1.5.dp else 1.dp, if (marked) scheme.primary else scheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 8.dp, bottom = 6.dp)) {
+            Row(Modifier.fillMaxWidth().padding(end = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(first.date.format(longDate), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                if (readings.size == 1) {
+                    Text(readings.single().asDistance(unit), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Text(
+                pluralStringResource(R.plurals.history_visit, records.size, records.size.asNumber()),
+                style = MaterialTheme.typography.labelMedium,
+                color = scheme.onSurfaceVariant,
+            )
+            records.forEach { r ->
+                HorizontalDivider(Modifier.padding(top = 8.dp, end = 8.dp), color = scheme.outlineVariant)
+                val own = listOfNotNull(
+                    r.record.date.takeIf { !oneDay }?.format(longDate),
+                    r.record.odometer.takeIf { readings.size > 1 }?.asDistance(unit),
+                    LogEdits.who(r.record.diy, r.record.shopName, fresh?.mark?.takeIf { r.record.id == fresh.recordId }, r.record.enteredAsLastDone, r.record.imported).text,
+                ).joinToString(" · ")
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button) { onOpenRecord(r.record.id) }.padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(r.items.joinToString(", ") { it.label })
+                        Text(own, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    }
+                    r.record.costCents?.let { Text(Money.format(it), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold) }
+                    Chevron()
+                }
+            }
+            // Only a sum says anything: with one cost, the total would repeat it.
+            Visits.total(records.map { it.record.costCents })?.takeIf { records.count { it.record.costCents != null } > 1 }?.let { total ->
+                HorizontalDivider(Modifier.padding(end = 8.dp), color = scheme.outlineVariant)
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp, end = 34.dp, bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.history_visit_total), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text(Money.format(total), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
