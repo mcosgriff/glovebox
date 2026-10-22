@@ -236,8 +236,9 @@ count for a reminder. The values, by the category History files them under:
   `brake-inspect`, `coolant`, `trans-fluid`, `diff-fluid` and `cabin-air` each have one. A change
   also counts as the check of the same thing: `front-diff`, `rear-diff` and `transfer-case` reset a
   reminder set to `front-diff-check`, `rear-diff-check` or `transfer-case-check`, and `diff-fluid`
-  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check`, `battery` for `battery-check` and
-  `coolant` for `cooling-check`. A check never counts as a change. `brake-pads` is pads on an axle the
+  resets all three; likewise `brake-fluid` for `brake-fluid-check`, `belt` for `belt-check`, `battery` for `battery-check`,
+  `wipers` for `wipers-check` and `coolant` for `cooling-check`. `ac-flush` also counts as `air-conditioning`, since a
+  flush ends with the system refilled. A check never counts as a change. `brake-pads` is pads on an axle the
   record doesn't name, and `scheduled-service` ("the 30,000 mile service") resets nothing, since it
   doesn't say which jobs were done. A line
   *without* a `service` resets one of your own schedule items if its `label` is that item's name
