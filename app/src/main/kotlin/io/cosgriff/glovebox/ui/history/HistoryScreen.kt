@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.history
 
 import io.cosgriff.glovebox.domain.CustomLines
+import io.cosgriff.glovebox.domain.CustomCount
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -129,7 +130,7 @@ data class HistoryState(
     /** Newest first. */
     val records: List<ServiceRecordWithItems>,
     /** Lines under Custom that sorting could file (`CustomLines`); none for an archived vehicle, which is read only. */
-    val customLines: Int = 0,
+    val customLines: CustomCount = CustomCount(0, 0),
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -348,9 +349,14 @@ internal fun HistoryContent(
                 }
             }
             spending?.let { SpendingLine(it) }
-            if (!archived && state.customLines > 0 && onSortCustom != null) {
+            val custom = state.customLines
+            if (!archived && custom.lines > 0 && onSortCustom != null) {
                 TextButton(onClick = onSortCustom, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
-                    Text(pluralStringResource(R.plurals.history_custom_lines, state.customLines, state.customLines.asNumber()))
+                    // The sort page has a row per wording, so a count of lines alone reads as if the two disagree.
+                    Text(
+                        if (custom.wordings == custom.lines) pluralStringResource(R.plurals.history_custom_lines, custom.lines, custom.lines.asNumber())
+                        else pluralStringResource(R.plurals.history_custom_ways, custom.wordings, custom.lines.asNumber(), custom.wordings.asNumber()),
+                    )
                 }
             }
         }

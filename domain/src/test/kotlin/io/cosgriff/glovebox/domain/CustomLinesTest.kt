@@ -19,8 +19,22 @@ class CustomLinesTest {
             line(3, "Grease hitch", scheduleItemId = 7),
             line(4, "Recall 21V-000: fuel pump", recall = true),
         )
-        assertEquals(1, CustomLines.count(lines))
+        assertEquals(CustomCount(1, 1), CustomLines.count(lines))
         assertEquals(listOf("Hitch pin replaced"), CustomLines.groups(lines, emptyList()).map { it.label })
+    }
+
+    @Test
+    fun `the count says the lines and the wordings they come in, as the sort page groups them`() {
+        val lines = listOf(
+            line(1, "Hitch pin replaced"),
+            line(2, "hitch pin  replaced "),
+            line(3, "Hitch pin replaced"),
+            line(4, "Door seal glued"),
+            // Nothing to sort: the sort page leaves it out, so the count does too.
+            line(5, "  "),
+        )
+        assertEquals(CustomCount(lines = 4, wordings = 2), CustomLines.count(lines))
+        assertEquals(2, CustomLines.groups(lines, emptyList()).size)
     }
 
     @Test

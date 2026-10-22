@@ -973,6 +973,10 @@
     <string name="log_tab_count">✓ %1$s</string>
     <string name="log_add_custom">Add custom item</string>
     <string name="log_what_was_done">What was done?</string>
+    <plurals name="history_custom_ways">
+        <item quantity="one">%1$s lines under Custom, all written the same way · Sort them</item>
+        <item quantity="other">%1$s lines under Custom, written %2$s ways · Sort them</item>
+    </plurals>
     <plurals name="history_custom_lines">
         <item quantity="one">%1$s line under Custom · Sort it</item>
         <item quantity="other">%1$s lines under Custom · Sort them</item>
@@ -1002,6 +1006,10 @@
     <string name="sort_custom_about">Work written the same way is sorted together. Its wording stays as written; the line decides which reminders it counts for.</string>
     <string name="sort_custom_none_title">Nothing under Custom</string>
     <string name="sort_custom_none">Every line of work on this vehicle is under a line.</string>
+    <plurals name="sort_custom_count">
+        <item quantity="one">%1$s lines, all written the same way. Picking a line files them all.</item>
+        <item quantity="other">%1$s lines, written %2$s ways. Each row is one way, with every line written like it.</item>
+    </plurals>
     <plurals name="sort_custom_lines">
         <item quantity="one">%1$s line</item>
         <item quantity="other">%1$s lines</item>

@@ -47,10 +47,20 @@ data class CustomGroup(
  * one of the user's own schedule items, not a recall's. Nothing here changes a line; a group's catalog line
  * is only ever the user's pick, and its label stays as written.
  */
+/** Custom lines to sort, and the wordings they come in: what History says above the sort page's rows. */
+data class CustomCount(val lines: Int, val wordings: Int)
+
 object CustomLines {
     fun isCustom(line: SavedLine): Boolean = line.catalogId == null && line.scheduleItemId == null && !line.recall
 
-    fun count(lines: List<SavedLine>): Int = lines.count(::isCustom)
+    /**
+     * How many Custom lines [groups] would sort, and in how many wordings: "21 lines, written 5 ways". The sort page
+     * shows one row per wording, so History says both or the two read as if they disagree.
+     */
+    fun count(lines: List<SavedLine>): CustomCount {
+        val sortable = lines.filter(::isCustom).filter { it.label.isNotBlank() }
+        return CustomCount(sortable.size, sortable.map { CatalogRules.key(it.label) }.distinct().size)
+    }
 
     /** [lines]' Custom ones by text, most lines first, then by text; each with what it looks like. */
     fun groups(lines: List<SavedLine>, rules: List<CatalogRule>): List<CustomGroup> =
