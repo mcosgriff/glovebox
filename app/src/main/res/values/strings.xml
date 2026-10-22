@@ -747,6 +747,8 @@
     <string name="catalog_category_brakes">Brakes</string>
     <string name="catalog_category_fluids">Fluids</string>
     <string name="catalog_category_cooling">Cooling</string>
+    <string name="catalog_category_fuel">Fuel</string>
+    <string name="catalog_category_exhaust">Exhaust</string>
     <string name="catalog_category_driveline">Driveline</string>
     <string name="catalog_category_suspension">Suspension &amp; steering</string>
     <string name="catalog_category_cabin">Cabin &amp; electrical</string>

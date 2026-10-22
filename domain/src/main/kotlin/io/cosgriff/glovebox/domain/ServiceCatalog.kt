@@ -115,15 +115,7 @@ object ServiceCatalog {
                 CatalogItem("belt-check"),
                 CatalogItem("timing-belt"),
                 CatalogItem("timing-chain"),
-                CatalogItem("fuel-filter"),
-                CatalogItem("fuel-system"),
-                CatalogItem("throttle-body"),
-                CatalogItem("fuel-injectors"),
-                CatalogItem("fuel-pump"),
                 CatalogItem("pcv"),
-                CatalogItem("egr-valve"),
-                CatalogItem("evap-system"),
-                CatalogItem("oxygen-sensor"),
                 CatalogItem("engine-sensors"),
                 CatalogItem("turbo"),
                 CatalogItem("valve-cover-gasket"),
@@ -132,10 +124,6 @@ object ServiceCatalog {
                 CatalogItem("oil-pan-gasket"),
                 CatalogItem("rear-main-seal"),
                 CatalogItem("engine-mounts"),
-                CatalogItem("catalytic-converter"),
-                CatalogItem("muffler"),
-                // Pipes, hangers and anything else in the exhaust; the converter and muffler have their own lines.
-                CatalogItem("exhaust"),
             ),
         ),
         CatalogCategory(
@@ -196,6 +184,28 @@ object ServiceCatalog {
                 CatalogItem("cooling-fan"),
                 CatalogItem("fan-clutch"),
                 CatalogItem("heater-core"),
+            ),
+        ),
+        CatalogCategory(
+            "fuel",
+            listOf(
+                CatalogItem("fuel-filter"),
+                CatalogItem("fuel-system"),
+                CatalogItem("throttle-body"),
+                CatalogItem("fuel-injectors"),
+                CatalogItem("fuel-pump"),
+                CatalogItem("evap-system"),
+            ),
+        ),
+        CatalogCategory(
+            "exhaust",
+            listOf(
+                CatalogItem("oxygen-sensor"),
+                CatalogItem("egr-valve"),
+                CatalogItem("catalytic-converter"),
+                CatalogItem("muffler"),
+                // Pipes, hangers and anything else in the exhaust; the converter and muffler have their own lines.
+                CatalogItem("exhaust"),
             ),
         ),
         CatalogCategory(

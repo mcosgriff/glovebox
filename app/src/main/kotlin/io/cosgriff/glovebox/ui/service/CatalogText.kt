@@ -150,6 +150,8 @@ internal val catalogCategories: Map<String, Int> = mapOf(
     "brakes" to R.string.catalog_category_brakes,
     "fluids" to R.string.catalog_category_fluids,
     "cooling" to R.string.catalog_category_cooling,
+    "fuel" to R.string.catalog_category_fuel,
+    "exhaust" to R.string.catalog_category_exhaust,
     "driveline" to R.string.catalog_category_driveline,
     "suspension" to R.string.catalog_category_suspension,
     "cabin" to R.string.catalog_category_cabin,
