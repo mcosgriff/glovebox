@@ -218,16 +218,18 @@ count for a reminder. The values, by the category History files them under:
 
 | Category | `service` values |
 |---|---|
-| Oil & engine | `oil`, `engine-air`, `spark-plugs`, `belt`, `belt-check`, `timing-belt`, `fuel-filter`, `fuel-system`, `pcv`, `ignition-coils`, `oxygen-sensor`, `valve-cover-gasket`, `engine-mounts`, `exhaust` |
+| Oil & engine | `oil`, `engine-air`, `spark-plugs`, `plug-wires`, `ignition-coils`, `glow-plugs`, `belt`, `belt-check`, `timing-belt`, `timing-chain`, `pcv`, `engine-sensors`, `turbo`, `valve-cover-gasket`, `head-gasket`, `intake-gasket`, `oil-pan-gasket`, `rear-main-seal`, `engine-mounts` |
 | Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat`, `tire-check`, `tpms` |
-| Brakes | `front-pads`, `rear-pads`, `brake-pads`, `rotors`, `brake-fluid`, `brake-fluid-check`, `brake-inspect`, `brake-service`, `calipers`, `brake-lines` |
+| Brakes | `front-pads`, `rear-pads`, `brake-pads`, `rotors`, `brake-shoes`, `brake-drums`, `brake-fluid`, `brake-fluid-check`, `brake-inspect`, `brake-service`, `calipers`, `wheel-cylinders`, `master-cylinder`, `brake-booster`, `brake-lines`, `parking-brake`, `abs-sensor` |
 | Fluids | `trans-fluid`, `power-steering`, `washer`, `fluid-check` |
-| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `coolant-hoses` |
-| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `clutch`, `u-joints` |
-| Suspension & steering | `shocks`, `wheel-bearing`, `steering-parts`, `suspension-check` |
-| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `bulbs`, `lights-check`, `windows-check`, `air-conditioning`, `starter`, `alternator` |
+| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core` |
+| Fuel | `fuel-filter`, `fuel-system`, `throttle-body`, `fuel-injectors`, `fuel-pump`, `evap-system` |
+| Exhaust | `oxygen-sensor`, `egr-valve`, `catalytic-converter`, `muffler`, `exhaust` |
+| Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |
+| Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `suspension-check` |
+| Cabin & electrical | `cabin-air`, `wipers`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
 | Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
-| Other | `accessory`, `body`, `detail` |
+| Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
   it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
