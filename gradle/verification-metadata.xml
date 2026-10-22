@@ -9,54 +9,32 @@
       </trusted-artifacts>
       <ignored-keys>
          <ignored-key id="0374CF2E8DD1BDFD" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="0AA3E5C3D232E79B" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="0DA8A5EC02D11EAD" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="0F9FE62F88E938D8" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="23738DFD7C40DE43" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="36AB7ACFFF2027B1" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="3967D4EDA591B991" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="3A387D43964143E3" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="40A3C4432BD7308C" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="4B1E11D5A4B91E89" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="571A5291E827E1C7" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="5A68A2249128E2C6" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="5E1F79A7C298661E" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="5ED22F661BBF0ACC" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="5F69AD087600B22C" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="5F7786DF73E61F56" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="6751E1A6E2001B8D" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="6A0975F8B1127B83" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="74C748A90802F104" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="77EC03D7A65FF411" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="7A8860944FAD5F62" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="7C25280EAE63EBE5" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="7ECBD740FF06AEB5" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="7FAC222BF1FC0C12" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="80C08B1C29100955" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="8118B3BCDB1A5000" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="84E913A8E3A748C0" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="8671A8DF71296252" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="873A8E86B4372146" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="9EB80E92EB2135B1" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="A40E24B5B408DBD5" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="A41F13C999945293" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="A8BBFE8A95073AD2" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="AB2DA4527F6FFC0B" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="ABE9F3126BB741C1" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="AE1B9D6007DDFA7C" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="BCF4173966770193" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="DA70BCBA6D76AD03" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="E0130A3ED5A2079E" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="E2F38302C8075E3D" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="E57A697A70CFE5F9" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="EB095DA7D2F6AC0E" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="EB380DC13C39F675" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="EE92349AD86DE446" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="F42E87F9665015C9" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="F5C81DE10A0B8ECC" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="F6CE9695C9318406" reason="Key couldn't be downloaded from any key server"/>
       </ignored-keys>
       <trusted-keys>
+         <trusted-key id="04543577D6A9CC626239C50C7ECBD740FF06AEB5">
+            <trusting group="org.glassfish.jaxb"/>
+            <trusting group="org.jvnet.staxex"/>
+            <trusting group="^com[.]sun($|([.].*))" regex="true"/>
+         </trusted-key>
+         <trusted-key id="0785B3EFF60B1B1BEA94E0BB7C25280EAE63EBE5" group="org.apache.httpcomponents"/>
+         <trusted-key id="0CC641C3A62453AB390066C4A41F13C999945293" group="commons-logging" name="commons-logging" version="1.2"/>
          <trusted-key id="0E225917414670F4442C250DFD533C07C264648F">
             <trusting group="androidx.activity"/>
             <trusting group="androidx.benchmark"/>
@@ -98,11 +76,13 @@
          </trusted-key>
          <trusted-key id="19BEAB2D799C020F17C69126B16698A4ADF4D638" group="org.checkerframework"/>
          <trusted-key id="1A55F091AD28C07F831FA44D7905DE25C78AD456" group="com.google.protobuf"/>
+         <trusted-key id="1BD97A6A154E7810EE0BC832E2F38302C8075E3D" group="org.gradle.toolchains" name="foojay-resolver" version="1.0.0"/>
          <trusted-key id="1D0A8B5E77C678A7C724445ABF984B4145EA13F7" group="com.squareup" name="javapoet" version="1.13.0"/>
          <trusted-key id="1D217F8475EEE9F19AB8DD6B793FD5751A0F0780">
             <trusting group="app.cash.turbine"/>
             <trusting group="^com[.]squareup($|([.].*))" regex="true"/>
          </trusted-key>
+         <trusted-key id="217BFC8CA98788CB33198A8E7FAC222BF1FC0C12" group="net.thauvin.erik.urlencoder"/>
          <trusted-key id="28118C070CB22A0175A2E8D43D12CA2AC19F3181">
             <trusting group="^com[.]fasterxml($|([.].*))" regex="true"/>
             <trusting group="^tools[.]jackson($|([.].*))" regex="true"/>
@@ -112,10 +92,18 @@
             <trusting group="commons-io"/>
             <trusting group="org.apache.commons"/>
          </trusted-key>
+         <trusted-key id="2E3A1AFFE42B5F53AF19F780BCF4173966770193" group="org.jetbrains" name="annotations" version="13.0"/>
+         <trusted-key id="2FC53E6B1F681184F4CCD637F5C81DE10A0B8ECC">
+            <trusting group="org.snakeyaml"/>
+            <trusting group="org.yaml"/>
+         </trusted-key>
          <trusted-key id="3051D45031E13516A6E8FAFF280D66A55F5316C5" group="org.bitbucket.b_c" name="jose4j" version="0.9.5"/>
+         <trusted-key id="31BAE2E51D95E0F8AD9B7BCC40A3C4432BD7308C" group="com.googlecode.juniversalchardet" name="juniversalchardet" version="1.0.3"/>
          <trusted-key id="32118CF76C9EC5D918E54967CA80D1F0EB6CA4BA" group="org.codehaus.plexus"/>
          <trusted-key id="33FD4BFD33554634053D73C0C2148900BCD3C2AF" group="org.jetbrains" name="annotations" version="23.0.0"/>
+         <trusted-key id="341C2AE47D5FF3A7EDFB5989E57A697A70CFE5F9" group="org.webjars" name="materializecss" version="1.0.0"/>
          <trusted-key id="34441E504A937F43EB0DAEF96A65176A0FB1CD0B" group="org.apache.groovy"/>
+         <trusted-key id="4021EEEAFF5DE8404DCD0A270AA3E5C3D232E79B" group="jakarta.inject" name="jakarta.inject-api" version="2.0.1"/>
          <trusted-key id="41207814A1D90D8724416744902E15693BB8846B" group="com.dropbox.differ"/>
          <trusted-key id="41CD49B4EF5876F9E9F691DABAC30622339994C4">
             <trusting group="org.jspecify" name="jspecify" version="0.3.0"/>
@@ -128,10 +116,17 @@
          <trusted-key id="4DB1A49729B053CAF015CEE9A6ADFC93EF34893E" group="org.hamcrest"/>
          <trusted-key id="4F7E32D440EF90A83011A8FC6425559C47CC79C4" group="javax.annotation" name="javax.annotation-api" version="1.3.2"/>
          <trusted-key id="4F8FEC6785F611D9A712EA2734918B7D3969D2F5" group="com.google.dagger" name="dagger" version="2.28.3"/>
+         <trusted-key id="517B94F8D0A46317A28D8AB30DA8A5EC02D11EAD" group="net.sf.jopt-simple" name="jopt-simple" version="4.9"/>
+         <trusted-key id="5767F9CDE920750621875079A40E24B5B408DBD5" group="org.robolectric"/>
+         <trusted-key id="57DF5E469A649A108A95D75C77EC03D7A65FF411" group="io.github.zxing-cpp" name="android" version="3.1.1"/>
          <trusted-key id="5897253BEA3046AEEA95A067E93671C7272B7B3F" group="org.jdom" name="jdom2" version="2.0.6"/>
          <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985" group="org.slf4j"/>
          <trusted-key id="61DEBD732F3F07771269972E2F87304808D40CEC" group="net.zetetic" name="sqlcipher-android" version="4.19.1"/>
+         <trusted-key id="694621A7227D8D5289699830ABE9F3126BB741C1" group="^com[.]google($|([.].*))" regex="true"/>
+         <trusted-key id="6A93161EB1990E8346E7BA2B23738DFD7C40DE43" group="org.apache.ivy" name="ivy" version="2.6.0"/>
          <trusted-key id="6DD3B8C64EF75253BEB2C53AD908A43FB7EC07AC" group="jakarta.activation"/>
+         <trusted-key id="73976C9C39C1479B84E2641A5A68A2249128E2C6" group="com.google.crypto.tink" name="tink-android" version="1.23.0"/>
+         <trusted-key id="7440F1F7D27BAC115F953D55EB095DA7D2F6AC0E" group="org.tensorflow" name="tensorflow-lite-metadata" version="0.2.0"/>
          <trusted-key id="7616EB882DAF57A11477AAF559A252FB1199D873" group="com.google.code.findbugs" name="jsr305" version="3.0.2"/>
          <trusted-key id="7F36E793AE3252E5D9E9B98FEE9E7DC9D92FC896" group="com.google.errorprone"/>
          <trusted-key id="8461EFA0E74ABAE010DE66994EB27DB2A3B88B8B">
@@ -140,6 +135,15 @@
             <trusting group="androidx.emoji2"/>
             <trusting group="androidx.tracing"/>
          </trusted-key>
+         <trusted-key id="84789D24DF77A32433CE1F079EB80E92EB2135B1" group="^org[.]apache($|([.].*))" regex="true"/>
+         <trusted-key id="88BE34F94BDB2B5357044E2E3A387D43964143E3">
+            <trusting group="org.apache.maven"/>
+            <trusting group="org.eclipse.sisu"/>
+         </trusted-key>
+         <trusted-key id="8E3A02905A1AE67E7B0F9ACD3967D4EDA591B991" group="io.ktor"/>
+         <trusted-key id="90EE19787A7BCF6FD37A1E9180C08B1C29100955" group="com.squareup" name="javawriter"/>
+         <trusted-key id="95115197C5227C0887299D000F9FE62F88E938D8" group="^com[.]google[.]dagger($|([.].*))" regex="true"/>
+         <trusted-key id="9A34CAE3273983DDCFBB54AE74C748A90802F104" group="io.github.takahirom.roborazzi"/>
          <trusted-key id="A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2">
             <trusting group="androidx.annotation"/>
             <trusting group="androidx.appcompat"/>
@@ -154,6 +158,7 @@
             <trusting group="androidx.test.ext"/>
             <trusting group="androidx.transition"/>
          </trusted-key>
+         <trusted-key id="A6D6C97108B8585F91B158748671A8DF71296252" group="^com[.]squareup($|([.].*))" regex="true"/>
          <trusted-key id="AA70C7C433D501636392EC02153E7A3C2B4E5118" group="org.eclipse.ee4j" name="project"/>
          <trusted-key id="AEB1E1AEC035C66FA39589D13EFC46EE83C40224" group="com.networknt" name="json-schema-validator" version="3.0.8"/>
          <trusted-key id="B18679A17A21DE79FF9DE8B0636D10E7975B6E6F" group="com.ethlo.time" name="itu" version="1.14.0"/>
@@ -161,14 +166,19 @@
          <trusted-key id="BDB5FA4FE719D787FB3D3197F6D4A1D411E9D1AE" group="^com[.]google($|([.].*))" regex="true"/>
          <trusted-key id="C1CBA75EC9BD0BAF8061935459E05CE618187ED4" group="org.xerial" name="sqlite-jdbc" version="3.50.3.0"/>
          <trusted-key id="C3259D20DAEC4ACE6D57CC83340B090F727518D8" group="com.google.j2objc" name="j2objc-annotations" version="3.1"/>
+         <trusted-key id="C5AA57F4A38EBA7B7F9156DDAB2DA4527F6FFC0B" group="com.squareup" name="kotlinpoet" version="1.11.0"/>
          <trusted-key id="C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7">
             <trusting group="com.google.code.gson"/>
             <trusting group="^com[.]google[.]auto($|([.].*))" regex="true"/>
          </trusted-key>
+         <trusted-key id="CE3285F320685193D11FEA01F6CE9695C9318406" group="com.google.zxing"/>
          <trusted-key id="DBD744ACE7ADE6AA50DD591F66B50994442D2D40" group="^com[.]squareup($|([.].*))" regex="true"/>
          <trusted-key id="E52F07877A5805F9AF4AB0ACD46C5610D06E7001" group="com.ibm.icu" name="icu4j" version="78.3"/>
          <trusted-key id="E7DC75FC24FB3C8DFE8086AD3D5839A2262CBBFB" group="org.jetbrains.kotlinx"/>
          <trusted-key id="EE0CA873074092F806F59B65D364ABAA39A47320" group="^com[.]google($|([.].*))" regex="true"/>
+         <trusted-key id="F1A51E051F527E0C8E24D54D4B1E11D5A4B91E89" group="com.google.protobuf"/>
+         <trusted-key id="F3184BCD55F4D016E30D4C9BF42E87F9665015C9" group="org.jsoup" name="jsoup" version="1.15.1"/>
+         <trusted-key id="FA1703B1D287CAEA3A60F931E0130A3ED5A2079E" group="org.webjars"/>
          <trusted-key id="FA7929F83AD44C4590F6CC6815C71C0A4E0B8EDD" group="net.java.dev.jna"/>
          <trusted-key id="FF6E2C001948C5F2F38B0CC385911F425EC61B51">
             <trusting group="junit"/>
@@ -2656,6 +2666,7 @@
       </component>
       <component group="com.google.auto" name="auto-parent" version="6">
          <artifact name="auto-parent-6.pom">
+            <pgp value="6F7E5ACBCD02DB60DFD232E45E1F79A7C298661E"/>
             <sha256 value="05f740c6648165db00cf618dd56c200c4725e358e6d54f5853e0bec15734ea0a" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -2816,6 +2827,7 @@
       </component>
       <component group="com.google.j2objc" name="j2objc-annotations" version="2.8">
          <artifact name="j2objc-annotations-2.8.pom">
+            <pgp value="EB1B3DE71713C9EC2E87CC26EE92349AD86DE446"/>
             <sha256 value="37f87798b18385113c918bfa9e1276fe50735ef8fa849b5800c519d54dbf11f8" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -3518,6 +3530,7 @@
       </component>
       <component group="net.java" name="jvnet-parent" version="3">
          <artifact name="jvnet-parent-3.pom">
+            <pgp value="E82D2EAF2E83830CE1F7F6BE571A5291E827E1C7"/>
             <sha256 value="30f5789efa39ddbf96095aada3fc1260c4561faf2f714686717cb2dc5049475a" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -3558,6 +3571,7 @@
       </component>
       <component group="org.apache" name="apache" version="13">
          <artifact name="apache-13.pom">
+            <pgp value="F254B35617DC255D9344BCFA873A8E86B4372146"/>
             <sha256 value="ff513db0361fd41237bef4784968bc15aae478d4ec0a9496f811072ccaf3841d" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -3598,6 +3612,7 @@
       </component>
       <component group="org.apache.commons" name="commons-parent" version="34">
          <artifact name="commons-parent-34.pom">
+            <pgp value="D6F1BC78607808EC8E9F69437A8860944FAD5F62"/>
             <sha256 value="3a2e69d06d641d1f3b293126dc9e2e4ea6563bf8c36c87e0ab6fa4292d04b79c" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -4523,6 +4538,7 @@
       </component>
       <component group="org.sonatype.oss" name="oss-parent" version="4">
          <artifact name="oss-parent-4.pom">
+            <pgp value="2BCBDD0F23EA1CAFCC11D4860374CF2E8DD1BDFD"/>
             <sha256 value="c513995cf019d9213d4fda666589937b2bf1bea5c4cdd337e6170e80b18406ee" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
