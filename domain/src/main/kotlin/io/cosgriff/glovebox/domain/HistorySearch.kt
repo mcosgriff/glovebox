@@ -39,5 +39,6 @@ object Shops {
             .take(MAX)
     }
 
-    private fun key(name: String) = name.trim().lowercase()
+    /** A shop name as compared: case and the spaces round it ignored. */
+    fun key(name: String) = name.trim().lowercase()
 }
