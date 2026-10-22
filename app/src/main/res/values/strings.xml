@@ -1218,6 +1218,7 @@
 
     <!-- Shared, lists -->
     <string name="expand_all">Expand all</string>
+    <string name="log_file_under_every">Every line, by category</string>
     <string name="collapse_all">Collapse all</string>
     <string name="expand">Expand</string>
     <string name="collapse">Collapse</string>

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.FilterChipDefaults
@@ -57,6 +58,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -1068,16 +1071,50 @@ internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (Li
 
 /**
  * What filing [label] means, the lines it looks like ([LineMatches]) and then every line by category, since
- * the one it belongs under may share no word with it ("R&R H2O pump").
+ * the one it belongs under may share no word with it ("R&R H2O pump"). The categories start closed, so the
+ * list is a screen of headings rather than a hundred lines; each opens on a tap, and one button opens or
+ * closes them all.
  */
 @Composable
 internal fun LinePicker(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, modifier: Modifier = Modifier, rules: List<CatalogRule> = emptyList()) {
+    val categories = lines.groupBy { it.category.id }
+    var open by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    val allOpen = open.containsAll(categories.keys)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(R.string.log_file_under_body, label), style = MaterialTheme.typography.bodyMedium)
         LineMatches(label, lines, onPick, rules)
-        lines.groupBy { it.category.id }.values.forEach { inCategory ->
-            SectionLabel(inCategory.first().category.label, Modifier.padding(top = 12.dp, bottom = 2.dp))
-            inCategory.forEach { LineRow(it, withCategory = false, onPick) }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.log_file_under_every),
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(onClick = { open = if (allOpen) emptySet() else categories.keys }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(if (allOpen) R.string.collapse_all else R.string.expand_all))
+            }
+        }
+        categories.forEach { (id, inCategory) ->
+            val isOpen = id in open
+            Row(
+                Modifier.fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(role = Role.Button, onClickLabel = stringResource(if (isOpen) R.string.collapse else R.string.expand)) {
+                        open = if (isOpen) open - id else open + id
+                    }
+                    .padding(start = 8.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SectionLabel(inCategory.first().category.label, Modifier.weight(1f))
+                Text(inCategory.size.asNumber(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    if (isOpen) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (isOpen) inCategory.forEach { LineRow(it, withCategory = false, onPick) }
         }
     }
 }
