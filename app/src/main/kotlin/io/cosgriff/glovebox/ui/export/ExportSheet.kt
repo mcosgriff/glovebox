@@ -179,6 +179,7 @@ class ExportViewModel @Inject constructor(
                     photoFiles = r.photos.map { it.fileName },
                     enteredAsLastDone = r.record.enteredAsLastDone,
                     imported = r.record.imported,
+                    visitId = r.record.visitId,
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->

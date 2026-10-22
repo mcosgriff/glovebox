@@ -132,6 +132,42 @@ class ExportTest {
     }
 
     @Test
+    fun `a visit is one entry, each record with its own source, lines and cost`() {
+        val imported = oil.copy(doneBy = "Corner Garage", notes = null, photoFiles = emptyList(), imported = true, visitId = 4)
+        val recall = ExportRecord(oil.date, 66_000, listOf("Recall 20V-682 · Fuel pump"), "Corner Garage", null, null, visitId = 4)
+        val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, recall, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))
+        assertEquals(
+            "### Aug 1, 2026 · 66,000 mi\n\nOne visit · 2 records\n\n" +
+                "**Done by: Corner Garage** · Cost: $62.50\n\n- Oil & filter change\n- Tire rotation\n\n${text.phrase(ExportPhrase.IMPORTED_NOTE)}\n\n" +
+                "**Done by: Corner Garage**\n\n- Recall 20V-682 · Fuel pump\n\n" +
+                "### Jan 9, 2026",
+            md.substringAfter("## Service records\n\n").substringBefore(" · 60,100 mi"),
+        )
+        // The records still count one by one, and with one cost there is no visit total to repeat it.
+        assertTrue(md.contains("- 3 records · $62.50 total"))
+        assertFalse(md.contains("Visit total"))
+    }
+
+    @Test
+    fun `a visit whose records disagree says each one's own reading, and adds up its costs`() {
+        val a = wipers.copy(costCents = 2_000, visitId = 1)
+        val b = wipers.copy(odometer = 60_112, items = listOf("Cabin air filter"), costCents = 3_500, visitId = 1)
+        val doc = Exports.document(listOf(truck.copy(records = listOf(a, b))), ExportOptions(format = ExportFormat.MARKDOWN), today)
+        val visit = doc.vehicles.single().entries.single()
+        assertEquals("Jan 9, 2026", text.visitHeading(visit, DistanceUnit.MILES))
+        assertEquals("60,112 mi", text.visitOwn(b, visit, DistanceUnit.MILES))
+        assertEquals(5_500L, text.visitTotal(visit))
+        assertTrue(text.markdown(doc).contains("Visit total: $55.00"))
+    }
+
+    @Test
+    fun `a visit cut down to one record by the dates is no visit`() {
+        val old = brakes.copy(visitId = 2)
+        val doc = Exports.document(listOf(truck.copy(records = listOf(old, wipers.copy(visitId = 2)))), ExportOptions(dates = ExportDates.ThisYear), today)
+        assertEquals(listOf(1), doc.vehicles.single().entries.map { it.size })
+    }
+
+    @Test
     fun `an imported record says so`() {
         val imported = oil.copy(imported = true)
         val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))

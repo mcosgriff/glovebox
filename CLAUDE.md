@@ -969,6 +969,11 @@ Notes on what's built:
   records on the chosen date (`Visits.onDay`, worded by `RecallsState.visitsOn`), never ticked for the user and at
   most one at a time; `RecordActions.completeRecall(…, visitWith)` links the recall's new record in the same step.
   Mark as open still deletes only the recall's own record, so the rest of the visit stays.
+  Exports carry `ExportRecord.visitId`; `ExportVehicle.entries` groups the records `Exports.document` kept (a visit the
+  dates cut to one record is no visit), and both writers lay a visit out as one entry: `ExportText.visitHeading`, "One
+  visit · N records", each record's source (with `visitOwn`, its own date or reading where they differ), cost, lines,
+  imported note, notes and photos, then `visitTotal` when more than one record has a cost. A record on its own is
+  written exactly as before, and the summary still counts records.
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;
