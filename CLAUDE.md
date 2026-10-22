@@ -945,6 +945,16 @@ Notes on what's built:
   `LicensePlates.MAX`) and a dropdown of U.S. states, D.C., territories and Canadian provinces, stored as the
   two-letter code. Kept on the phone and never sent (the privacy screen says so); exports give it under the
   VIN (`ExportVehicle.plate`).
+- Visits (#307, `Visits` in `:domain`, `service_records.visitId`, schema v29): records the user linked as one visit to a
+  shop, such as an imported Carfax entry and the recall fixed that day. **A visit only groups records:** each keeps its
+  own lines, `imported` / `enteredAsLastDone` flag, photos, recall link, cost and Undo, and reminders and spending are
+  worked out per record as before. **Nothing is linked for the user**; `Visits.offers` (same day, and the same reading
+  or shop) is only ever an offer. Linking gives the records of both sides (`Visits.joined`) a new id
+  (`ServiceDao.link`, one more than any in use, so an old id still held is never joined); unlinking clears it, and the
+  last other record's too (`Visits.unlinked`). An id held by one record alone means nothing (`Visits.grouped`,
+  `.others`), which is why deleting a record needs no tidying and an Undo of the delete, which inserts the record as it
+  was, puts it back in its visit. An edit keeps `visitId` (the Log service form copies it). Two records in a visit may
+  give different readings; both are shown (`Visits.readings`), never settled.
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;

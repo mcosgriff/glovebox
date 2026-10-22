@@ -430,6 +430,8 @@ class LogServiceViewModel @Inject constructor(
                     enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
                     // Nor does correcting an imported record make it one that was logged here.
                     imported = d.original?.record?.imported ?: false,
+                    // An edit leaves the record in whatever visit it was linked into.
+                    visitId = d.original?.record?.visitId,
                 )
                 val items = selectedOptions.map {
                     ServiceRecordItemEntity(
