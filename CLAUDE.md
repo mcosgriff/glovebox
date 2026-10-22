@@ -868,6 +868,18 @@ Notes on what's built:
   planned, **a file's own `service` always wins**, and on a Carfax report the rule wins over Glovebox's wording; the
   preview's note names what rules filed. A rule whose line a later version drops is kept, shown in red on Settings →
   "Your category rules" and never applied (`CatalogRules.known`). Changing or deleting a rule changes no record.
+- A guess for wording nothing else knows (#312, `LineGuess` and `LineWords` in `:domain`): typos, shop shorthand ("R&R
+  H2O pump"), another word order. **The last thing asked, and only ever a suggestion labelled a guess, never picked for
+  the user:** a file's own `service`, then the user's rules, then `CarfaxReport.service`, then this. Each catalog line
+  has its own matching words in `LineWords` (English, like the Carfax patterns, never shown; `LineGuessTest` holds them
+  to the catalog, so **a new catalog line needs its words there too**) and is a check or not. A check line needs the
+  text to say checked or inspected, any other line is refused when that is all it says ("Water pump checked" must never
+  reset the pump), and a line with a check twin needs the text to say what was done. A word of five letters or more may
+  be one edit out, unless it is itself a known word ("lower" is never "blower"). A guess is made only when one line is
+  clearly ahead: two lines on words of their own, or set apart by "and", are two jobs, and two that match about as well
+  are a close call. `LineGuessTest` measures it on two made-up sets: the one it was tuned on, and one written after
+  and never tuned to, which is the honest figure (55 of 61 right, 2 wrong at the time of writing). Everything runs on
+  the phone; nothing is looked up.
 - Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion
