@@ -202,6 +202,12 @@ data class ServiceRecordEntity(
     @ColumnInfo(defaultValue = "0") val enteredAsLastDone: Boolean = false,
     /** Came from an import file (or was replaced by one), not logged in the app. Shown as such wherever the record appears. */
     @ColumnInfo(defaultValue = "0") val imported: Boolean = false,
+    /**
+     * Shared by the records the user linked as one visit to a shop (#307); null for a record in none. A visit
+     * only groups records: each keeps its own lines, flags, photos and cost. An id held by one record alone
+     * means nothing (see `Visits` in `:domain`), so deleting or unlinking the others needs no tidying.
+     */
+    val visitId: Long? = null,
 )
 
 /** One line of work on a record. [scheduleItemId] links it to the reminder it resets, if any. */

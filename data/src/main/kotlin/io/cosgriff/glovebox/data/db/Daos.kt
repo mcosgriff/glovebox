@@ -235,6 +235,26 @@ interface ServiceDao {
 
     @Delete suspend fun deleteRecord(record: ServiceRecordEntity)
 
+    /** One more than any visit id in use, on any vehicle, so a new visit never joins an old one. */
+    @Query("SELECT COALESCE(MAX(visitId), 0) + 1 FROM service_records")
+    suspend fun nextVisitId(): Long
+
+    @Query("UPDATE service_records SET visitId = :visitId WHERE id IN (:ids)")
+    suspend fun setVisit(ids: List<Long>, visitId: Long?)
+
+    /** [ids] become one visit, under a new id; `Visits.joined` says which. Nothing else about them changes. */
+    @Transaction
+    suspend fun link(ids: Collection<Long>) {
+        val visit = nextVisitId()
+        ids.chunked(IN_LIMIT).forEach { setVisit(it, visit) }
+    }
+
+    /** [ids] are in no visit any more; `Visits.unlinked` says which. */
+    @Transaction
+    suspend fun unlink(ids: Collection<Long>) {
+        ids.chunked(IN_LIMIT).forEach { setVisit(it, null) }
+    }
+
     /**
      * One import, applied whole or not at all. [replaced] records keep their id, and so their photos
      * and any recall they were the work for; nothing is deleted.
