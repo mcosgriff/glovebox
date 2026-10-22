@@ -202,6 +202,7 @@ object ServiceCatalog {
             listOf(
                 CatalogItem("oxygen-sensor"),
                 CatalogItem("egr-valve"),
+                CatalogItem("secondary-air-pump"),
                 CatalogItem("catalytic-converter"),
                 CatalogItem("muffler"),
                 // Pipes, hangers and anything else in the exhaust; the converter and muffler have their own lines.
@@ -254,7 +255,9 @@ object ServiceCatalog {
             "cabin",
             listOf(
                 CatalogItem("cabin-air", resets = "cabin-air"),
-                CatalogItem("wipers"),
+                // New blades include looking at the old ones.
+                CatalogItem("wipers", covers = setOf("wipers-check")),
+                CatalogItem("wipers-check"),
                 CatalogItem("battery", covers = setOf("battery-check")),
                 CatalogItem("battery-check"),
                 CatalogItem("key-fob-battery"),
@@ -265,6 +268,8 @@ object ServiceCatalog {
                 CatalogItem("window-regulator"),
                 CatalogItem("door-lock-actuator"),
                 CatalogItem("air-conditioning"),
+                // A flush ends with the system refilled, so it is the service too.
+                CatalogItem("ac-flush", covers = setOf("air-conditioning")),
                 CatalogItem("ac-compressor"),
                 CatalogItem("ac-condenser"),
                 CatalogItem("blower-motor"),
