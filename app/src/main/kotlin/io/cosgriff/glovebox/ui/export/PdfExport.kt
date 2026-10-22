@@ -87,7 +87,7 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
 
         section(words.phrase(ExportPhrase.SERVICE_RECORDS))
         if (v.records.isEmpty()) text(words.phrase(ExportPhrase.NO_RECORDS), body)
-        v.records.forEach { record(it, v.unit) }
+        v.entries.forEach { entry -> if (entry.size == 1) record(entry.single(), v.unit) else visit(entry, v.unit) }
 
         if (v.schedule.isNotEmpty()) {
             section(words.phrase(ExportPhrase.MAINTENANCE_SCHEDULE))
@@ -117,6 +117,40 @@ class PdfExport(private val loadPhoto: suspend (fileName: String) -> Bitmap?) {
         if (r.imported) text(words.phrase(ExportPhrase.IMPORTED_NOTE), small, before = 2f)
         r.notes?.let { text(it, body, before = 3f, indent = 10f) }
         r.photoFiles.forEach { photo(it) }
+        gap(6f)
+        room(1f)
+        canvas.drawLine(LEFT, y, RIGHT, y, rule)
+        gap(8f)
+    }
+
+    /**
+     * A visit (#307) as one entry: its heading, then each record with its own source, cost, lines, notes and
+     * photos, then the visit's total when more than one record has a cost.
+     */
+    private suspend fun visit(records: List<ExportRecord>, unit: DistanceUnit) {
+        val head = words.visitHeading(records, unit)
+        val label = words.phrase(ExportPhrase.VISIT, words.records(records.size))
+        room(height(head, strong) + height(label, small) + 48f)
+        text(head, strong, after = 2f)
+        text(label, small)
+        records.forEach { r ->
+            val by = if (r.enteredAsLastDone) words.phrase(ExportPhrase.LAST_DONE_NOTE) else words.phrase(ExportPhrase.DONE_BY, r.doneBy)
+            val source = listOfNotNull(by, words.visitOwn(r, records, unit)).joinToString(" · ")
+            val lines = r.items.map { "•  $it" }
+            room(height(source, body) + lines.sumOf { height(it, body).toDouble() }.toFloat() + 12f)
+            gap(6f)
+            val top = y
+            text(source, body, after = 1f)
+            r.costCents?.let {
+                val cost = words.money(it)
+                canvas.drawText(cost, RIGHT - body.measureText(cost), top - body.ascent(), body)
+            }
+            lines.forEach { text(it, body, indent = 10f) }
+            if (r.imported) text(words.phrase(ExportPhrase.IMPORTED_NOTE), small, before = 2f, indent = 10f)
+            r.notes?.let { text(it, body, before = 3f, indent = 20f) }
+            r.photoFiles.forEach { photo(it) }
+        }
+        words.visitTotal(records)?.let { text(words.phrase(ExportPhrase.VISIT_TOTAL, words.money(it)), strong, before = 6f) }
         gap(6f)
         room(1f)
         canvas.drawLine(LEFT, y, RIGHT, y, rule)

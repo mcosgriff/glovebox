@@ -35,6 +35,8 @@ object EnglishExportWords : ExportWords {
         ExportPhrase.RECALL_OPEN to "Open",
         ExportPhrase.RECALL_NOTE to "Recalls are listed by NHTSA for the year, make and model. \"Marked done\" is the owner's own record; NHTSA can't confirm a repair for a specific vehicle.",
         ExportPhrase.LAST_DONE_NOTE to "Entered by the owner as when this was last done; not logged at the time.",
+        ExportPhrase.VISIT to "One visit · %1\$s",
+        ExportPhrase.VISIT_TOTAL to "Visit total: %1\$s",
         ExportPhrase.IMPORTED_NOTE to "Imported by the owner from a file; not logged in Glovebox at the time.",
         ExportPhrase.SCHEDULE_NOTE to "Intervals are the ones the owner set in Glovebox, not the manufacturer's schedule.",
         ExportPhrase.TAKES_NOTE to "Entered by the owner from their manuals and the parts they use; Glovebox hasn't checked them against the vehicle.",

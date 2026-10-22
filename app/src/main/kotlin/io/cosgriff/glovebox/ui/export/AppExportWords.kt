@@ -29,6 +29,8 @@ object AppExportWords : ExportWords {
             ExportPhrase.RECALL_NOTE -> R.string.export_recall_note
             ExportPhrase.LAST_DONE_NOTE -> R.string.export_last_done_note
             ExportPhrase.IMPORTED_NOTE -> R.string.export_imported_note
+            ExportPhrase.VISIT -> R.string.export_visit
+            ExportPhrase.VISIT_TOTAL -> R.string.export_visit_total
             ExportPhrase.SCHEDULE_NOTE -> R.string.export_schedule_note
             ExportPhrase.TAKES_NOTE -> R.string.export_takes_note
             ExportPhrase.DOCUMENTS_NOTE -> R.string.export_documents_note

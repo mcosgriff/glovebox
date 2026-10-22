@@ -45,6 +45,8 @@ data class ExportRecord(
     val enteredAsLastDone: Boolean = false,
     /** Came from a file the owner imported, not logged in the app at the time. */
     val imported: Boolean = false,
+    /** Shared with the other records the owner linked as one visit (#307); null for one in none. */
+    val visitId: Long? = null,
 )
 
 data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?)
@@ -81,6 +83,12 @@ data class ExportVehicle(
 ) {
     /** Null when no record in the export has a cost. */
     val totalCents: Long? get() = Spending.total(records.map { it.costCents })
+
+    /**
+     * [records] as the export writes them: a visit's records together as one entry, where the first of them
+     * comes, and every other record an entry of its own. A visit cut down to one record by the dates is no visit.
+     */
+    val entries: List<List<ExportRecord>> get() = Visits.grouped(records) { it.visitId }
 }
 
 /** Everything one export says, already filtered and ordered: both writers just lay it out. */
@@ -139,6 +147,7 @@ object Exports {
 enum class ExportPhrase {
     ALL_TIME, DATE_RANGE, CLUSTER_SHOWS_MORE, CLUSTER_SHOWS_LESS, TOTAL, LAST_DONE_AT, NOT_LOGGED,
     RECALL_MARKED_DONE, RECALL_ARCHIVED, RECALL_OPEN,
+    VISIT, VISIT_TOTAL,
     RECALL_NOTE, LAST_DONE_NOTE, IMPORTED_NOTE, SCHEDULE_NOTE, TAKES_NOTE, DOCUMENTS_NOTE,
     SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
     INSTRUMENT_CLUSTER, SOLD, PERIOD, RECORDS, EXPORTED_ON,
@@ -169,6 +178,9 @@ class ExportText(private val words: ExportWords) {
 
     fun money(cents: Long): String = words.money(cents)
 
+    /** "2 records" */
+    fun records(count: Int): String = words.records(count)
+
     fun datesLabel(dates: ExportDates, today: LocalDate): String = when (dates) {
         ExportDates.AllTime -> phrase(ExportPhrase.ALL_TIME)
         ExportDates.ThisYear -> "${today.year}"
@@ -196,6 +208,20 @@ class ExportText(private val words: ExportWords) {
         ?: phrase(ExportPhrase.RECALL_OPEN)
 
     fun paperDate(paper: ExportPaper): String = paper.date?.let { date(it) } ?: ""
+
+    /** A visit's heading: the first record's date, and the reading when every record gives the same one. */
+    fun visitHeading(visit: List<ExportRecord>, unit: DistanceUnit): String =
+        listOfNotNull(date(visit.first().date), Visits.readings(visit.map { it.odometer }).singleOrNull()?.let { distance(it, unit) }).joinToString(" · ")
+
+    /** What a record in [visit] says of its own date and reading: only where they differ from the rest, as entered. */
+    fun visitOwn(r: ExportRecord, visit: List<ExportRecord>, unit: DistanceUnit): String? = listOfNotNull(
+        date(r.date).takeIf { visit.any { it.date != r.date } },
+        distance(r.odometer, unit).takeIf { Visits.readings(visit.map { it.odometer }).size > 1 },
+    ).joinToString(" · ").ifEmpty { null }
+
+    /** The visit's total, only when more than one of its records has a cost: one alone would only be repeated. */
+    fun visitTotal(visit: List<ExportRecord>): Long? =
+        Visits.total(visit.map { it.costCents }).takeIf { visit.count { it.costCents != null } > 1 }
 
     private fun labelled(label: ExportPhrase, value: String): String = phrase(ExportPhrase.LABELLED, phrase(label), value)
 
@@ -231,15 +257,25 @@ class ExportText(private val words: ExportWords) {
 
             append("\n## ${phrase(ExportPhrase.SERVICE_RECORDS)}\n\n")
             if (v.records.isEmpty()) append("${phrase(ExportPhrase.NO_RECORDS)}\n")
-            v.records.forEach { r ->
-                append("### ${date(r.date)} · ${distance(r.odometer, v.unit)}\n\n")
-                r.items.forEach { append("- ${text(it)}\n") }
-                append("\n" + if (r.enteredAsLastDone) phrase(ExportPhrase.LAST_DONE_NOTE) else phrase(ExportPhrase.DONE_BY_LABELLED, text(r.doneBy)))
-                r.costCents?.let { append(" · ${phrase(ExportPhrase.COST, money(it))}") }
-                append("\n")
-                if (r.imported) append("\n${phrase(ExportPhrase.IMPORTED_NOTE)}\n")
-                r.notes?.let { notes -> append("\n" + notes.lines().joinToString("\n") { "> ${text(it)}" } + "\n") }
-                append("\n")
+            v.entries.forEach { entry ->
+                if (entry.size == 1) {
+                    val r = entry.single()
+                    append("### ${date(r.date)} · ${distance(r.odometer, v.unit)}\n\n")
+                    r.items.forEach { append("- ${text(it)}\n") }
+                    append("\n")
+                    source(r, own = null, bold = false)
+                    afterLines(r)
+                } else {
+                    // A visit (#307): one entry, each record with its own source, lines, cost and notes.
+                    append("### ${visitHeading(entry, v.unit)}\n\n${phrase(ExportPhrase.VISIT, records(entry.size))}\n\n")
+                    entry.forEach { r ->
+                        source(r, visitOwn(r, entry, v.unit), bold = true)
+                        append("\n")
+                        r.items.forEach { append("- ${text(it)}\n") }
+                        afterLines(r)
+                    }
+                    visitTotal(entry)?.let { append("${phrase(ExportPhrase.VISIT_TOTAL, money(it))}\n\n") }
+                }
             }
 
             if (v.schedule.isNotEmpty()) {
@@ -256,6 +292,23 @@ class ExportText(private val words: ExportWords) {
             }
         }
     }.trimEnd() + "\n"
+
+    /**
+     * Who did a record's work, and its cost. On its own it follows the record's lines; in a visit it heads them, in
+     * bold, with the record's own date and reading where they differ from the rest ([own]).
+     */
+    private fun StringBuilder.source(r: ExportRecord, own: String?, bold: Boolean) {
+        val by = (if (r.enteredAsLastDone) phrase(ExportPhrase.LAST_DONE_NOTE) else phrase(ExportPhrase.DONE_BY_LABELLED, text(r.doneBy)))
+            .let { if (bold) "**$it**" else it }
+        append(listOfNotNull(by, own, r.costCents?.let { phrase(ExportPhrase.COST, money(it)) }).joinToString(" · ") + "\n")
+    }
+
+    /** A record's imported note and notes, after its lines. */
+    private fun StringBuilder.afterLines(r: ExportRecord) {
+        if (r.imported) append("\n${phrase(ExportPhrase.IMPORTED_NOTE)}\n")
+        r.notes?.let { notes -> append("\n" + notes.lines().joinToString("\n") { "> ${text(it)}" } + "\n") }
+        append("\n")
+    }
 
     private fun text(raw: String): String = raw.replace("\\", "\\\\").replace(Regex("([*_`#\\[\\]<>|])"), "\\\\$1")
 
