@@ -955,6 +955,11 @@ Notes on what's built:
   `.others`), which is why deleting a record needs no tidying and an Undo of the delete, which inserts the record as it
   was, puts it back in its visit. An edit keeps `visitId` (the Log service form copies it). Two records in a visit may
   give different readings; both are shown (`Visits.readings`), never settled.
+  The record screen (`VisitSection` in `RecordDetailScreen`) lists the other records in its visit, each opening that
+  record, with "Add a record" and "Unlink this record"; while it is in none it shows `Visits.offers` in a tinted card,
+  each with Link, and otherwise "Same visit as…" at the foot of the page (`SameVisitSheet`, `Visits.choices`). Link and
+  unlink go through `RecordActions.link` / `.unlink`, with no snackbar or Undo: each is one tap to reverse and changes
+  nothing in the records. A sold vehicle's records show their visit but can't be linked.
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;

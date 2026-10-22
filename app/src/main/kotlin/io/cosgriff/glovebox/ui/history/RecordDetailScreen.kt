@@ -92,6 +92,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
+import io.cosgriff.glovebox.domain.VisitRecord
+import io.cosgriff.glovebox.domain.Visits
+import io.cosgriff.glovebox.ui.components.Chevron
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
+import io.cosgriff.glovebox.ui.components.InkOutlinedButton
+import io.cosgriff.glovebox.ui.service.toVisit
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 data class WorkLine(
     val label: String,
@@ -112,7 +127,16 @@ data class RecordDetail(
     val lines: List<WorkLine>,
     /** Reminders that roll back if this record is deleted, already worded for display. */
     val deleteImpact: List<String>,
+    /** The other records in this one's visit (#307); empty when it is in none. */
+    val visit: List<VisitRow> = emptyList(),
+    /** Records that look like the same visit, offered for linking while it is in none. */
+    val offers: List<VisitRow> = emptyList(),
+    /** What "Same visit as…" lists: the vehicle's other records not in its visit, the same day first. */
+    val choices: List<VisitRow> = emptyList(),
 )
+
+/** Another record, as the visit section and "Same visit as…" show it. [work] and [about] are worded. */
+data class VisitRow(val id: Long, val work: String, val about: String)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -135,9 +159,11 @@ class RecordDetailViewModel @Inject constructor(
 
     private val recordId = savedStateHandle.route<RecordDetailRoute>().recordId
 
-    /** Null while loading and after the record is deleted. */
-    val detail: StateFlow<RecordDetail?> = service.observeRecord(recordId).mapLatest { r ->
-        if (r == null) return@mapLatest null
+    /** Null while loading and after the record is deleted. The vehicle's other records are watched for its visit. */
+    val detail: StateFlow<RecordDetail?> = service.observeRecord(recordId).flatMapLatest { r ->
+        if (r == null) flowOf(null) else service.observeRecords(r.record.vehicleId).map { r to it }
+    }.mapLatest { pair ->
+        val (r, all) = pair ?: return@mapLatest null
         val vehicle = vehicles.observe(r.record.vehicleId).first()
         val items = schedule.allFor(r.record.vehicleId)
         val tracked = items
@@ -146,7 +172,11 @@ class RecordDetailViewModel @Inject constructor(
             .associateBy { it.id }
         val swap = vehicle?.clusterSwap()
         val unit = vehicle?.unit ?: DistanceUnit.MILES
-        val entries = service.recordsFor(r.record.vehicleId).map { it.toEntry(swap, items.answering()) }
+        val entries = all.map { it.toEntry(swap, items.answering()) }
+        val visits = all.map { it.record.toVisit() }
+        val me = r.record.toVisit()
+        val byId = all.associateBy { it.record.id }
+        fun rows(of: List<VisitRecord>) = of.mapNotNull { byId[it.id]?.visitRow(unit) }
         val entry = r.toEntry(swap, items.answering())
 
         RecordDetail(
@@ -170,8 +200,14 @@ class RecordDetailViewModel @Inject constructor(
             },
             deleteImpact = LogEdits.reminderChanges(tracked.values.toList(), entries, entries.filter { it.id != entry.id })
                 .map { it.text(unit) },
+            visit = rows(Visits.others(me, visits)),
+            offers = rows(Visits.offers(me, visits)),
+            choices = rows(Visits.choices(me, visits)),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun link(otherId: Long) = viewModelScope.launch { actions.link(recordId, otherId) }
+    fun unlink() = viewModelScope.launch { actions.unlink(recordId) }
 
     fun delete(onDeleted: () -> Unit) = viewModelScope.launch {
         val r = detail.value?.record ?: return@launch
@@ -179,6 +215,17 @@ class RecordDetailViewModel @Inject constructor(
         onDeleted()
     }
 }
+
+/** "Oil & filter change, Tire rotation" and "May 4, 2026 · 60,012 mi · Lex Brodie's · imported". */
+internal fun ServiceRecordWithItems.visitRow(unit: DistanceUnit) = VisitRow(
+    id = record.id,
+    work = items.joinToString(", ") { it.label },
+    about = listOf(
+        record.date.format(longDate),
+        record.odometer.asDistance(unit),
+        LogEdits.who(record.diy, record.shopName, null, record.enteredAsLastDone, record.imported).text,
+    ).joinToString(" · "),
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -191,6 +238,7 @@ fun RecordDetailScreen(
     onConfirmDeleteShown: () -> Unit,
     onEdit: (vehicleId: Long, recordId: Long) -> Unit,
     onOpenPhoto: (recordId: Long, index: Int) -> Unit,
+    onOpenRecord: (recordId: Long) -> Unit,
     vm: RecordDetailViewModel = hiltViewModel(),
 ) {
     val detail = vm.detail.collectAsStateWithLifecycle().value ?: return
@@ -204,10 +252,19 @@ fun RecordDetailScreen(
     }
 
     val problem by vm.photoProblem.collectAsStateWithLifecycle()
+    var choosingVisit by remember { mutableStateOf(false) }
     RecordDetailContent(
         detail, problem, onBack, onEdit, onOpenPhoto,
         onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onDelete = { confirmingDelete = true },
+        onOpenRecord = onOpenRecord, onLink = { vm.link(it) }, onUnlink = { vm.unlink() }, onChooseVisit = { choosingVisit = true },
     )
+
+    if (choosingVisit) {
+        SameVisitSheet(detail.choices, onDismiss = { choosingVisit = false }, onPick = { id ->
+            choosingVisit = false
+            vm.link(id)
+        })
+    }
 
     if (confirmingDelete) {
 
@@ -300,6 +357,10 @@ internal fun RecordDetailContent(
     onTakePhoto: () -> Unit,
     onChoosePhotos: () -> Unit,
     onDelete: () -> Unit,
+    onOpenRecord: (recordId: Long) -> Unit = {},
+    onLink: (otherId: Long) -> Unit = {},
+    onUnlink: () -> Unit = {},
+    onChooseVisit: () -> Unit = {},
 ) {
     val record = detail.record.record
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -331,6 +392,8 @@ internal fun RecordDetailContent(
                     }
                 }
             }
+
+            VisitSection(detail, onOpenRecord, onLink, onUnlink, onChooseVisit)
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val n = detail.lines.size
@@ -408,6 +471,13 @@ internal fun RecordDetailContent(
                 }
             }
 
+            // With no visit or offer above, linking is still one tap away, at the foot of the page.
+            if (!detail.readOnly && detail.visit.isEmpty() && detail.offers.isEmpty() && detail.choices.isNotEmpty()) {
+                InkOutlinedButton(onClick = onChooseVisit, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text(stringResource(R.string.record_visit_choose))
+                }
+            }
+
             if (detail.readOnly) {
                 Text(
                     stringResource(R.string.record_archived),
@@ -421,6 +491,103 @@ internal fun RecordDetailContent(
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                 ) { Text(stringResource(R.string.record_delete)) }
+            }
+        }
+    }
+}
+
+/**
+ * The other records in this one's visit, each opening that record, with Unlink; or, while it is in none,
+ * the records that look like the same visit, each with Link. Nothing is linked without a tap.
+ */
+@Composable
+private fun VisitSection(
+    detail: RecordDetail,
+    onOpenRecord: (Long) -> Unit,
+    onLink: (Long) -> Unit,
+    onUnlink: () -> Unit,
+    onChooseVisit: () -> Unit,
+) {
+    when {
+        detail.visit.isNotEmpty() -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionLabel(stringResource(R.string.record_visit_title))
+            FilledCard {
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    detail.visit.forEachIndexed { i, row ->
+                        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        VisitRowItem(row, onClick = { onOpenRecord(row.id) }) { Chevron() }
+                    }
+                }
+            }
+            Text(stringResource(R.string.record_visit_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (!detail.readOnly) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (detail.choices.isNotEmpty()) {
+                        InkOutlinedButton(onClick = onChooseVisit, modifier = Modifier.weight(1f).heightIn(min = 48.dp), quiet = true) {
+                            Text(stringResource(R.string.record_visit_add))
+                        }
+                    }
+                    InkOutlinedButton(onClick = onUnlink, modifier = Modifier.weight(1f).heightIn(min = 48.dp), quiet = true) {
+                        Text(stringResource(R.string.record_visit_unlink))
+                    }
+                }
+            }
+        }
+        detail.offers.isNotEmpty() && !detail.readOnly -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionLabel(stringResource(R.string.record_visit_offer_title))
+            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                    Text(
+                        pluralStringResource(R.plurals.record_visit_offer, detail.offers.size, detail.offers.size.asNumber()),
+                        Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    detail.offers.forEach { row ->
+                        VisitRowItem(row, onClick = { onOpenRecord(row.id) }) {
+                            OutlinedButton(onClick = { onLink(row.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                                Text(stringResource(R.string.record_visit_link))
+                            }
+                        }
+                    }
+                }
+            }
+            if (detail.choices.size > detail.offers.size) {
+                TextButton(onClick = onChooseVisit, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.record_visit_choose)) }
+            }
+        }
+    }
+}
+
+/** One other record: its work, then when, the reading and who did it. [trailing] is a chevron or a Link button. */
+@Composable
+private fun VisitRowItem(row: VisitRow, onClick: () -> Unit, trailing: @Composable () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button, onClick = onClick).padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // Ink even on the offer's tint, where the card's accent would make it read as a link.
+            Text(row.work, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(row.about, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        trailing()
+    }
+}
+
+/** "Same visit as…": the vehicle's other records, the same day first. A tap links them; nothing in either changes. */
+@Composable
+private fun SameVisitSheet(choices: List<VisitRow>, onDismiss: () -> Unit, onPick: (Long) -> Unit) {
+    GloveboxSheet(onDismiss) {
+        Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(stringResource(R.string.record_visit_choose), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.record_visit_choose_note), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        LazyColumn(Modifier.navigationBarsPadding().padding(horizontal = 20.dp), contentPadding = PaddingValues(top = 8.dp, bottom = 20.dp)) {
+            itemsIndexed(choices, key = { _, row -> row.id }) { i, row ->
+                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                VisitRowItem(row, onClick = { onPick(row.id) }) {}
             }
         }
     }

@@ -186,6 +186,22 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     @Test
+    fun recordInVisit() = compose.shoot("record_in_visit", shade) {
+        RecordDetailContent(
+            Fixtures.recordInVisit, photoProblem = null,
+            onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
+        )
+    }
+
+    @Test
+    fun recordVisitOffer() = compose.shoot("record_visit_offer", shade) {
+        RecordDetailContent(
+            Fixtures.recordOffer, photoProblem = null,
+            onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
+        )
+    }
+
+    @Test
     fun checkIn() = compose.shootScreen("check_in", shade) {
         CheckInDialog(VehicleCheckIn.Default, default = 14, onSave = {}, onDismiss = {})
     }

@@ -35,6 +35,8 @@ import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
+import io.cosgriff.glovebox.domain.VisitRecord
+import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.domain.readings
 import io.cosgriff.glovebox.domain.toDash
@@ -152,6 +154,9 @@ val NoLinks: Map<String, Set<Long>> = emptyMap()
  * [answering] is the vehicle's own ([answering] above): a line counts for the item it was saved
  * against and for every item that answers to the catalog line it was picked from.
  */
+/** A record as `Visits` sees it (#307). */
+fun ServiceRecordEntity.toVisit(): VisitRecord = VisitRecord(id, visitId, date, odometer, shopName.takeIf { !diy })
+
 fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
     swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
 
