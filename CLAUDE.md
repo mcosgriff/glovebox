@@ -960,6 +960,11 @@ Notes on what's built:
   each with Link, and otherwise "Same visit as…" at the foot of the page (`SameVisitSheet`, `Visits.choices`). Link and
   unlink go through `RecordActions.link` / `.unlink`, with no snackbar or Undo: each is one tap to reverse and changes
   nothing in the records. A sold vehicle's records show their visit but can't be linked.
+  History (`VisitCard`) sorts every record as before, then groups them with `Visits.grouped`, so a visit is one card
+  where its first record sorts; with a category filter or search on, a visit shows whole when any of its records
+  matches. The card has the date, the reading when its records agree (otherwise each record says its own, as does a
+  record from another day), each record's work, tag and cost as a row that opens it, and "Visit total" when two or
+  more records have a cost. The subtitle and the spending line still count records.
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;
