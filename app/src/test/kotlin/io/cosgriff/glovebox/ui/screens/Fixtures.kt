@@ -47,6 +47,7 @@ import io.cosgriff.glovebox.ui.history.VisitRow
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.ui.recalls.RecallsState
 import io.cosgriff.glovebox.domain.Recalls
+import io.cosgriff.glovebox.domain.CustomCount
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageVehicle
 import io.cosgriff.glovebox.ui.history.HistoryState
@@ -208,7 +209,7 @@ object Fixtures {
 
     val vehicleHome = VehicleHome(truck, truckOdometer, DueRule.WHICHEVER_FIRST, truckComingUp, ReminderInputs(tracked, truckEntries, truckReadings))
 
-    val history = HistoryState(listOf(truck, hatch), truck, truckRecords, customLines = 4)
+    val history = HistoryState(listOf(truck, hatch), truck, truckRecords, customLines = CustomCount(lines = 4, wordings = 3))
 
     /** Custom lines as a report might word them: one Glovebox recognises, one the user has a rule for, one neither. */
     val customGroups: List<CustomGroup> = CustomLines.groups(

@@ -233,6 +233,17 @@ internal fun SortCustomContent(
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item { ScreenHeader(stringResource(R.string.sort_custom_title), onBack, subtitle = stringResource(R.string.sort_custom_about)) }
             if (groups.isEmpty()) item { EmptyState(stringResource(R.string.sort_custom_none), title = stringResource(R.string.sort_custom_none_title)) }
+            if (groups.isNotEmpty()) {
+                val lines = groups.sumOf { it.lineIds.size }
+                item {
+                    Text(
+                        pluralStringResource(R.plurals.sort_custom_count, groups.size, lines.asNumber(), groups.size.asNumber()),
+                        Modifier.padding(horizontal = 20.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
             items(groups, key = { it.key }) { group ->
                 GroupCard(
                     group,

@@ -855,8 +855,9 @@ Notes on what's built:
   rules (next note) is offered that rule's line first, "your rule"; still only offered.
 - Custom lines and category rules (#310, `CustomLines` and `CatalogRules` in `:domain`, `SortCustomScreen`,
   `CategoryRulesScreen`, table `catalog_rules`, schema v28). **A line is Custom only when it has no home:** no
-  `catalogId`, no `scheduleItemId`, and not the line on a recall's record. History says "N lines under Custom · Sort
-  them" (not on a sold vehicle's); the sort screen groups them by wording (`CatalogRules.key`: case, spacing and
+  `catalogId`, no `scheduleItemId`, and not the line on a recall's record. History says "N lines under Custom, written M
+  ways · Sort them" (`CustomLines.count`: the lines and wordings the sort screen will show, so the two never seem to
+  disagree; not on a sold vehicle's); the sort screen groups them by wording (`CatalogRules.key`: case, spacing and
   Carfax's "(s)" ignored), each with a suggestion that starts picked: the user's rule first, then the wording Glovebox
   recognises (`CarfaxReport.service`). Filing goes through `RecordActions.fileCustom`, every line and rule in one
   transaction (`ServiceDao.fileLines`), **labels as written**, one Undo (`RecordEvent.Filed`); the preview lists the
