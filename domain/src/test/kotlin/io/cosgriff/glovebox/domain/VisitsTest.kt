@@ -89,6 +89,13 @@ class VisitsTest {
     }
 
     @Test
+    fun `a recall can join the day's records, a visit counting as one choice`() {
+        val all = listOf(rec(1, visit = 7), rec(2), rec(3, visit = 7), rec(4, date = day.minusDays(1)))
+        assertEquals(listOf(listOf(1L, 3L), listOf(2L)), Visits.onDay(all, day).map { g -> g.map { it.id } })
+        assertEquals(emptyList<List<VisitRecord>>(), Visits.onDay(all, day.plusDays(1)))
+    }
+
+    @Test
     fun `a visit's cost is its records' own added up, and readings that disagree are both kept`() {
         assertEquals(13_850L, Visits.total(listOf(4_850L, null, 9_000L)))
         assertNull(Visits.total(listOf(null, null)))

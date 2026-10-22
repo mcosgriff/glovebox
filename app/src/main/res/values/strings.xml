@@ -1469,6 +1469,8 @@
     <string name="recalls_repaired_on">Repaired on %1$s</string>
     <string name="recalls_add_to_history">Add to Service history</string>
     <string name="recalls_add_note">Turn off if it was fixed before you kept records. It won\'t change any reminder either way.</string>
+    <string name="recalls_add_to_visit">Add to the visit on %1$s</string>
+    <string name="recalls_visit_about">%1$s\n%2$s</string>
     <string name="recalls_repair_odometer">Odometer at the repair (%1$s)</string>
     <string name="recalls_dealer_optional">%1$s dealer (optional)</string>
 

@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageContent
 import io.cosgriff.glovebox.ui.history.HistoryContent
 import io.cosgriff.glovebox.ui.history.RecordDetailContent
+import io.cosgriff.glovebox.ui.recalls.MarkDoneSheet
 import io.cosgriff.glovebox.ui.reminders.RemindersContent
 import io.cosgriff.glovebox.ui.schedule.MilestonesContent
 import io.cosgriff.glovebox.ui.schedule.ScheduleContent
@@ -89,6 +90,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     // A launcher shortcut with several vehicles (#235); the third has no nickname.
+    @Test
+    fun markDoneVisit() = compose.shootScreen("mark_done_visit", shade) {
+        // No reading to start from: with one, the field's label sits on its border, and the contrast check takes the
+        // whole field for text in the border's colour (1.8:1). The label and figures themselves are well above 4.5:1.
+        MarkDoneSheet(
+            Fixtures.recall, odometer = null, unit = DistanceUnit.MILES, makeName = "Toyota",
+            visitsOn = { Fixtures.markDoneVisits }, onConfirm = {}, onDismiss = {}, today = Fixtures.TODAY,
+        )
+    }
+
     @Test
     fun chooseVehicle() = compose.shootScreen("choose_vehicle", shade) {
         ChooseVehicleDialog(

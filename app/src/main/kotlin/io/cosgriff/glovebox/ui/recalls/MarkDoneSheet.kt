@@ -2,6 +2,9 @@ package io.cosgriff.glovebox.ui.recalls
 
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.SwitchRow
+import io.cosgriff.glovebox.ui.components.CheckRow
+import io.cosgriff.glovebox.ui.history.VisitRow
+import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.OdometerField
@@ -56,16 +59,24 @@ fun MarkDoneSheet(
     /** What the vehicle's odometer counts in. */
     unit: DistanceUnit,
     makeName: String,
+    /** The visits a record from that day could join (#307). */
+    visitsOn: (LocalDate) -> List<VisitRow> = { emptyList() },
     onConfirm: (RecallCompletion) -> Unit,
     onDismiss: () -> Unit,
+    /** Where the date starts; the screenshot tests pass a fixed day. */
+    today: LocalDate = LocalDate.now(),
 ) {
     val scheme = MaterialTheme.colorScheme
     var addRecord by rememberSaveable { mutableStateOf(true) }
-    var dateDay by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
+    var dateDay by rememberSaveable { mutableLongStateOf(today.toEpochDay()) }
     val date = LocalDate.ofEpochDay(dateDay)
     var odometerText by rememberSaveable { mutableStateOf(odometer?.toString().orEmpty()) }
     var shop by rememberSaveable { mutableStateOf("") }
     val miles = OdometerInput.parse(odometerText.typedNumber())
+    // Never chosen for the user; a choice from another day doesn't carry over when the date changes.
+    var visitWith by rememberSaveable { mutableStateOf<Long?>(null) }
+    val visits = if (addRecord) visitsOn(date) else emptyList()
+    val joining = visitWith?.takeIf { id -> visits.any { it.id == id } }
 
 
     GloveboxSheet(onDismiss = onDismiss) {
@@ -101,11 +112,18 @@ fun MarkDoneSheet(
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                visits.forEach { v ->
+                    CheckRow(
+                        stringResource(R.string.recalls_add_to_visit, date.format(longDate)),
+                        checked = joining == v.id,
+                        detail = stringResource(R.string.recalls_visit_about, v.work, v.about),
+                    ) { on -> visitWith = v.id.takeIf { on } }
+                }
             }
 
             SheetActions(
                 onCancel = onDismiss,
-                onConfirm = { onConfirm(RecallCompletion(date, miles.takeIf { addRecord }, shop.trim().takeIf { addRecord && it.isNotEmpty() })) },
+                onConfirm = { onConfirm(RecallCompletion(date, miles.takeIf { addRecord }, shop.trim().takeIf { addRecord && it.isNotEmpty() }, joining.takeIf { addRecord })) },
                 enabled = !addRecord || miles != null,
             ) {
                 Text(stringResource(R.string.recalls_mark_done), maxLines = 1)

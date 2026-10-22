@@ -965,6 +965,10 @@ Notes on what's built:
   matches. The card has the date, the reading when its records agree (otherwise each record says its own, as does a
   record from another day), each record's work, tag and cost as a row that opens it, and "Visit total" when two or
   more records have a cost. The subtitle and the spending line still count records.
+  Marking a recall done (`MarkDoneSheet`) offers "Add to the visit on <date>" for each of the vehicle's visits or
+  records on the chosen date (`Visits.onDay`, worded by `RecallsState.visitsOn`), never ticked for the user and at
+  most one at a time; `RecordActions.completeRecall(…, visitWith)` links the recall's new record in the same step.
+  Mark as open still deletes only the recall's own record, so the rest of the visit stays.
 - Clear service history (`ClearHistoryScreen`, from Vehicle details): deletes the vehicle's service records
   and their photos, **imported ones only** by default (`service_records.imported`, for importing a Carfax
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;

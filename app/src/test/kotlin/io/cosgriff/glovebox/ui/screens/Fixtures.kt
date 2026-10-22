@@ -43,6 +43,9 @@ import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.history.visitRow
+import io.cosgriff.glovebox.ui.history.VisitRow
+import io.cosgriff.glovebox.data.db.RecallEntity
+import io.cosgriff.glovebox.ui.recalls.RecallsState
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageVehicle
@@ -290,6 +293,18 @@ object Fixtures {
             recallRecord.copy(record = recallRecord.record.copy(visitId = 1)),
         ) + truckRecords.drop(1),
     )
+
+    /** A made-up recall on the truck, being marked done on a day it already has a record from the shop. */
+    val recall = RecallEntity(
+        id = 1, vehicleId = truck.id, campaign = "26V100000", component = "FUEL SYSTEM, GASOLINE:DELIVERY:FUEL PUMP",
+        summary = "A made-up summary.", firstSeenOn = TODAY.minusMonths(2),
+    )
+
+    /** What the sheet offers when the cabin filter was changed at the shop the same day, as `RecallsState` words it. */
+    val markDoneVisits: List<VisitRow> = RecallsState(
+        truck, emptyList(), odometer = null,
+        records = listOf(truckRecords[0].let { it.copy(record = it.record.copy(date = TODAY)) }),
+    ).visitsOn(TODAY)
 
     val vehicleDetails = VehicleDetails(
         vehicle = truck,

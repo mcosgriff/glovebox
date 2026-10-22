@@ -68,6 +68,13 @@ object Visits {
         return setOf(record.id) + if (rest.size == 1) setOf(rest.single().id) else emptySet()
     }
 
+    /**
+     * What marking a recall done offers to add its record to: the vehicle's records on [date], a visit's
+     * records together, in the order given. Each group is one choice, and none is chosen for the user.
+     */
+    fun onDay(all: List<VisitRecord>, date: LocalDate): List<List<VisitRecord>> =
+        grouped(all.filter { it.date == date }) { it.visitId }
+
     /** The readings a visit's records give, each once, lowest first: more than one is a disagreement to show, never to settle. */
     fun readings(odometers: List<Int>): List<Int> = odometers.distinct().sorted()
 
