@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.scan
 
+import androidx.camera.core.ImageProxy
+import io.cosgriff.glovebox.domain.RecentReads
+import io.cosgriff.glovebox.ui.theme.ViewerColors
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.domain.PrintReport
 import io.cosgriff.glovebox.domain.BarcodeReport
@@ -10,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.provider.Settings
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,16 +26,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -43,12 +39,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.domain.BarcodeSeen
 import io.cosgriff.glovebox.domain.ScanReport
@@ -75,7 +67,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.util.concurrent.Executors
 
 /**
  * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
@@ -101,7 +92,6 @@ fun ScanVinScreen(onClose: () -> Unit, onUseVin: (String) -> Unit, vm: ScanVinVi
 
 @Composable
 private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) -> Unit) {
-    val context = LocalContext.current
     /** A VIN that passed its check digit; scanning pauses while it is on screen. */
     var found by rememberSaveable { mutableStateOf<String?>(null) }
     /** [found] was read from print, not from a barcode. */
@@ -119,22 +109,23 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
     val drawing by rememberUpdatedState(details)
 
     val analysis = rememberFrameAnalysis()
-    DisposableEffect(analysis) {
-        val executor = Executors.newSingleThreadExecutor()
+    FrameReader(analysis) { context ->
         val reader = VinBarcodeReader()
-        val print = TextReader.vin(context.applicationContext)
-        // What each recent frame's print and barcode came to; only ever touched on the analyzer's thread.
-        val printed = ArrayDeque<String?>()
-        val barcodes = ArrayDeque<String>()
-        var frame = 0
-        // For the panel: frames counted over the last second, and when a barcode was last in view.
-        var counted = 0
-        var second = System.currentTimeMillis()
-        var lastSeen: VinBarcodeReader.Sighting? = null
-        var lastSeenAt = 0L
+        val print = TextReader.vin(context)
         rate = 0
-        analysis.setAnalyzer(executor) { image ->
-            image.use {
+        object : FrameJob {
+            // What each recent frame's print and barcode came to; only ever touched on the analyzer's thread.
+            val printed = RecentReads<String?>(VinScan.WINDOW)
+            val barcodes = RecentReads<String>(VinScan.WINDOW)
+            var frame = 0
+
+            // For the panel: frames counted over the last second, and when a barcode was last in view.
+            var counted = 0
+            var second = System.currentTimeMillis()
+            var lastSeen: VinBarcodeReader.Sighting? = null
+            var lastSeenAt = 0L
+
+            override fun read(image: ImageProxy) {
                 val now = System.currentTimeMillis()
                 counted++
                 if (now - second >= 1000) {
@@ -146,9 +137,9 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                     // What was read before "Rescan" says nothing about what is in front of the camera now.
                     printed.clear()
                     barcodes.clear()
-                    return@use
+                    return
                 }
-                val (band, width, height) = it.guideBand()
+                val (band, width, height) = image.guideBand()
                 // A barcode first: it is quicker to read and carries its own error checking.
                 val sighting = reader.look(band, width, height)
                 // A barcode stays reported for a moment after it leaves the frame, so the panel doesn't flicker.
@@ -167,32 +158,24 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                         fromPrint = false
                         found = vin
                     } else {
-                        barcodes.addLast(barcode)
-                        while (barcodes.size > VinScan.WINDOW) barcodes.removeFirst()
-                        notAVin = VinScan.notAVin(barcodes.toList())
+                        notAVin = VinScan.notAVin(barcodes.add(barcode))
                     }
-                    return@use
+                    return
                 }
                 // The print reader is slow: give the barcode reader most of the frames.
-                if (frame++ % VinScan.PRINT_EVERY != 0) return@use
+                if (frame++ % VinScan.PRINT_EVERY != 0) return
                 // No barcode in the frame: look for the VIN in print. If the recogniser can't run on
                 // this phone it reads nothing, and the scanner is a barcode scanner as before.
                 val text = print.read(band, width, height)
                 printRan = true
                 printText = text
-                printed.addLast(text?.let(VinScan::printed))
-                while (printed.size > VinScan.WINDOW) printed.removeFirst()
-                VinScan.agreed(printed.toList())?.let { vin ->
+                VinScan.agreed(printed.add(text?.let(VinScan::printed)))?.let { vin ->
                     fromPrint = true
                     found = vin
                 }
             }
-        }
-        onDispose {
-            analysis.clearAnalyzer()
-            // The recogniser is closed on the thread that uses it, after any frame still being read.
-            executor.execute { print.close() }
-            executor.shutdown()
+
+            override fun close() = print.close()
         }
     }
     CameraFeed(analysis, torch)
@@ -200,28 +183,15 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
     Column(Modifier.fillMaxSize()) {
         CameraTopBar(stringResource(R.string.scan_vin_title), stringResource(R.string.scan_close_scanner), torch, onTorch = { torch = it }, onClose = onClose)
 
-        val instruction = @Composable {
-            Text(
-                stringResource(R.string.scan_vin_instruction),
-                style = MaterialTheme.typography.bodyLarge,
-                color = OnScrim,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.background(Scrim.copy(alpha = 0.55f), RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp),
-            )
-        }
-        // Only a band across the middle of the frame is read; this box sits inside it.
-        val guide = @Composable { Box(Modifier.fillMaxWidth().height(150.dp).border(3.dp, Guide, RoundedCornerShape(18.dp))) }
+        val instruction = @Composable { ScrimText(stringResource(R.string.scan_vin_instruction), MaterialTheme.typography.bodyLarge) }
+        val guide = @Composable { GuideBox() }
         val panel = @Composable { if (details && found == null) ScanPanel(view, rate, seen, printText.takeIf { printRan }, printRan) }
         val hint = @Composable {
-            Text(
+            ScrimText(
                 stringResource(if (notAVin && found == null) R.string.scan_vin_not_a_vin else R.string.scan_vin_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = if (notAVin && found == null) Guide else OnScrimMuted,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .background(Scrim.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                    .semantics { liveRegion = LiveRegionMode.Polite },
+                MaterialTheme.typography.bodySmall,
+                color = if (notAVin && found == null) Guide else ViewerColors.OnBackdropMuted,
+                live = true,
             )
         }
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
@@ -258,12 +228,8 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
         }
 
         found?.let { vin ->
-            Surface(
-                Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 16.dp).semantics { liveRegion = LiveRegionMode.Polite },
-                color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(22.dp),
-            ) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            FoundCard(
+                heading = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(18.dp), tint = statusColors().ok)
                         Text(
@@ -273,25 +239,17 @@ private fun Scanner(details: Boolean, onClose: () -> Unit, onUseVin: (String) ->
                             color = statusColors().ok,
                         )
                     }
-                    Text(vin, style = MaterialTheme.typography.titleLarge, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(
-                            onClick = {
-                                found = null
-                                notAVin = false
-                            },
-                            modifier = Modifier.weight(1f).height(52.dp),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-                        ) {
-                            Text(stringResource(R.string.scan_rescan))
-                        }
-                        Button(onClick = { onUseVin(vin) }, modifier = Modifier.weight(2f).height(52.dp), shape = RoundedCornerShape(14.dp)) {
-                            Text(stringResource(R.string.scan_use_vin))
-                        }
-                    }
-                }
-            }
+                },
+                value = vin,
+                valueStyle = MaterialTheme.typography.titleLarge.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
+                again = stringResource(R.string.scan_rescan),
+                onAgain = {
+                    found = null
+                    notAVin = false
+                },
+                use = stringResource(R.string.scan_use_vin),
+                onUse = { onUseVin(vin) },
+            )
         }
     }
 }
@@ -335,7 +293,7 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
     val ok = statusColors().ok
     Column(
         Modifier.fillMaxWidth()
-            .background(Scrim.copy(alpha = 0.75f), RoundedCornerShape(14.dp))
+            .background(ViewerColors.Backdrop.copy(alpha = 0.75f), RoundedCornerShape(14.dp))
             .padding(12.dp)
             .semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -359,8 +317,8 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.scan_panel_heading), style = MaterialTheme.typography.labelSmall, color = OnScrimMuted)
-                Text(rateText(rate), style = MaterialTheme.typography.bodySmall, color = OnScrim)
+                Text(stringResource(R.string.scan_panel_heading), style = MaterialTheme.typography.labelSmall, color = ViewerColors.OnBackdropMuted)
+                Text(rateText(rate), style = MaterialTheme.typography.bodySmall, color = ViewerColors.OnBackdrop)
             }
         }
         Text(
@@ -368,16 +326,16 @@ private fun ScanPanel(view: BandView?, rate: Int?, seen: BarcodeSeen?, print: St
             style = MaterialTheme.typography.bodySmall,
             fontFamily = PlexMono,
             color = when {
-                seen == null -> OnScrimMuted
+                seen == null -> ViewerColors.OnBackdropMuted
                 seen.text == null -> Guide
-                else -> OnScrim
+                else -> ViewerColors.OnBackdrop
             },
         )
         Text(
             if (printRan) ScanReport.print(print).text() else stringResource(R.string.scan_print_waiting),
             style = MaterialTheme.typography.bodySmall,
             fontFamily = PlexMono,
-            color = if (print.isNullOrBlank()) OnScrimMuted else OnScrim,
+            color = if (print.isNullOrBlank()) ViewerColors.OnBackdropMuted else ViewerColors.OnBackdrop,
         )
     }
 }
