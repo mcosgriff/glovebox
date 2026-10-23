@@ -59,8 +59,22 @@ class KnownSchedulesTest {
         bundled.forEach { list ->
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
-            list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, list.model, engine, list.engine?.fuel, list.engine?.powertrain)?.id) }
+            (listOf(list.model) + list.modelAliases).forEach { model ->
+                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain)?.id) }
+            }
         }
+    }
+
+    @Test
+    fun `a list is found by another name NHTSA gives the same car, and by nothing near it`() {
+        val list = (KnownSchedules.parse(file(extra = "\"modelAliases\": [\"Super Roadster\"],")) as KnownScheduleFile.Ok).list
+        assertEquals("made-up", KnownSchedules.match(listOf(list), 2003, "Acme", "Super Roadster")?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(list), 2003, "ACME", "superroadster")?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(list), 2003, "Acme", "Roadster")?.id)
+        assertNull(KnownSchedules.match(listOf(list), 2003, "Acme", "Super Roadster Sport"))
+        assertNull(KnownSchedules.match(listOf(list), 2003, "Acme", "Super"))
+        assertTrue(errors(file(extra = "\"modelAliases\": [\"roadster\"],")).single().contains("repeats the model"))
+        assertTrue(errors(file(extra = "\"modelAliases\": [],")).isNotEmpty())
     }
 
     @Test

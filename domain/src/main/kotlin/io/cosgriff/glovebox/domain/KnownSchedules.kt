@@ -50,6 +50,7 @@ data class KnownScheduleList(
     val manualOnly: Set<String> = emptySet(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
+    override val modelAliases: List<String> = emptyList(),
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -89,7 +90,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -114,6 +115,10 @@ object KnownSchedules {
         val manual = jobs("manualOnly")
         (notManual intersect manual).forEach { check.fail("manualOnly", "\"$it\" is also in manualExcluded") }
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
+        val aliases = o["modelAliases"]?.let { e ->
+            check.array(e, "modelAliases", 1, 5)?.mapIndexedNotNull { i, n -> check.string(n, ImportCheck.at("modelAliases", i), 40) }
+        }.orEmpty()
+        if (header != null && aliases.any { KnownLists.same(it, header.model) }) check.fail("modelAliases", "repeats the model")
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
@@ -123,6 +128,7 @@ object KnownSchedules {
                 manualExcluded = notManual,
                 manualOnly = manual,
                 engine = engine,
+                modelAliases = aliases,
             ),
         )
     }
