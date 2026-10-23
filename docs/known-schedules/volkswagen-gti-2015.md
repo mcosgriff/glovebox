@@ -31,8 +31,9 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
 - **Not covered:**
   - **2016.** Its card drops tire rotation, the yearly airbag check, the door check lubrication, the rear
     washer nozzle check and the service sticker, and gives the dust and pollen filter every 40,000 miles or
-    2 years (at 40,000, 80,000 and 120,000). It needs a list of its own, and NHTSA's vPIC names the 2016
-    car "Golf GTI", not "GTI", so it waits for model names that vPIC spells two ways.
+    2 years (at 40,000, 80,000 and 120,000), so it has a list of its own,
+    [volkswagen-gti-2016](volkswagen-gti-2016.md), found by vPIC's "Golf GTI" too.
   - **2017.** No card was found, and the 2016 and 2018 cards differ, so it isn't inferred from either.
-  - **2018 on.** Those cards put some jobs in an "additional items" table with an interval and no column,
-    which a list can't hold yet.
+  - **2018 on.** 2020–2021 have a list, [volkswagen-gti-2020-2021](volkswagen-gti-2020-2021.md). 2018 and
+    2019 print the panoramic sunroof both in the grid and among the additional items, and 2019's revisions
+    disagree on which DSG row is the GTI's; that page says what is waiting on.
