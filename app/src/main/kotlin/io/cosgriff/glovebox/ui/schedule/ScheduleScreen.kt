@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.log
@@ -89,10 +90,8 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.resetters
 import io.cosgriff.glovebox.ui.ScheduleRoute
 import io.cosgriff.glovebox.ui.service.clusterSwap
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -154,7 +153,7 @@ class ScheduleViewModel @Inject constructor(
 
     /** The user has imported a milestone table of their own, which the Milestones screen shows whatever the schedule holds. */
     val hasMilestoneTable: StateFlow<Boolean> = milestones.observe(vehicleId).map { it.isNotEmpty() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+        .screenState(viewModelScope, false)
 
     private var entities: Map<String, ScheduleItemEntity> = emptyMap()
 
@@ -210,7 +209,7 @@ class ScheduleViewModel @Inject constructor(
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** The item open in the editor. A key that isn't a saved item means a new one. */
     var editing by mutableStateOf<DraftItem?>(null)

@@ -176,9 +176,9 @@ private inline fun <reified T : NavKey> EntryProviderScope<NavKey>.screen(noinli
         }
     }
 
-private const val SCANNED_VIN = "scannedVin"
-private const val DASH_READING = "dashReading"
-private const val CONFIRM_DELETE = "confirmDelete"
+private val SCANNED_VIN = ResultKey<String>("scannedVin")
+private val DASH_READING = ResultKey<Int>("dashReading")
+private val CONFIRM_DELETE = ResultKey<Boolean>("confirmDelete")
 
 private data class Tab(val route: NavKey, @StringRes val label: Int, val icon: ImageVector)
 
@@ -455,7 +455,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
             }
             screen<VehicleHomeRoute> {
                 // What the camera read comes back through the results, as a scanned VIN does.
-                val dashReading = results[DASH_READING] as Int?
+                val dashReading = results[DASH_READING]
                 VehicleHomeScreen(
                     onReadDash = { last, unit -> nav.push(ReadDashRoute(last, unit.name)) },
                     dashReading = dashReading,
@@ -534,7 +534,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
             screen<RecallsRoute> { RecallsScreen(onBack = { nav.pop() }) }
             screen<AddVehicleRoute> {
                 // The scanner hands its VIN back through the results.
-                val scannedVin = results[SCANNED_VIN] as String?
+                val scannedVin = results[SCANNED_VIN]
                 AddVehicleScreen(
                     onBack = { nav.pop() },
                     onNoVin = { nav.push(ManualAddRoute) },

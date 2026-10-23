@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.scan
 
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.cosgriff.glovebox.ui.theme.ViewerColors
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -77,8 +78,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.awaitCancellation
 
@@ -114,13 +113,9 @@ internal fun CameraScreen(why: String, instead: String, onClose: () -> Unit, con
     }
     LaunchedEffect(Unit) { if (!granted) ask.launch(Manifest.permission.CAMERA) }
     // Coming back from Settings with the permission switched on.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) granted = context.hasCamera()
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    LifecycleResumeEffect(Unit) {
+        granted = context.hasCamera()
+        onPauseOrDispose {}
     }
 
     Box(Modifier.fillMaxSize().background(ViewerColors.Backdrop)) {

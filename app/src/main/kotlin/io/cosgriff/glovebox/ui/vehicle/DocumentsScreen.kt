@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.handOut
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.EmptyState
@@ -91,11 +92,9 @@ import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.DocumentsRoute
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
@@ -121,11 +120,11 @@ class DocumentsViewModel @Inject constructor(
         vehicle ?: return@combine null
         val byId = rows.associateBy { it.id }
         DocumentsData(vehicle, VehicleDocuments.sorted(rows.map { it.toStored() }).map { it to byId.getValue(it.id) })
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** A document just added to this vehicle, to ask for its details. */
     val added: StateFlow<Long?> = picker.added.map { it?.takeIf { a -> a.vehicleId == vehicleId }?.id }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
     val problem: StateFlow<DocumentProblem?> = picker.problem
     val working: StateFlow<Boolean> = picker.working
 

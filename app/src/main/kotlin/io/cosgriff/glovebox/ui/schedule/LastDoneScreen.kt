@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.log
@@ -77,10 +78,8 @@ import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -133,7 +132,7 @@ class LastDoneViewModel @Inject constructor(
             swap = log.swap,
             unit = vehicle.unit,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     fun save(row: LastDoneRow, date: LocalDate, odometer: Int) = viewModelScope.launch {
         entities[row.item.id]?.let { actions.addLastDone(vehicleId, it, date, odometer) }

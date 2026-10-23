@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.theme.ViewerColors
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -67,10 +68,8 @@ import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.DocumentViewerRoute
 import io.cosgriff.glovebox.ui.photo.ZoomableImage
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -88,7 +87,7 @@ class DocumentViewerViewModel @Inject constructor(
 
     /** Null while loading. */
     val document: StateFlow<ViewedDocument?> = documents.observeOne(id).map { ViewedDocument(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     suspend fun pdf(row: DocumentEntity) = store.openPdf(row)
 

@@ -45,6 +45,14 @@ class FormatsTest {
     }
 
     @Test
+    fun editableFigures() {
+        // Filled into a field as the app writes figures, and read back by typedDecimal / typedNumber.
+        assertEquals("6.2", 6.2.editableDecimal())
+        assertEquals("5", 5.0.editableDecimal())
+        assertEquals("45.99", editableCost(4_599))
+    }
+
+    @Test
     fun intervals() {
         assertEquals("7,500 mi / 12 mo", Interval(7_500, 12).text(mi))
         assertEquals("30,000 mi", Interval(30_000, null).text(mi))

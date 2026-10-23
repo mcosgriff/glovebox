@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Delete
@@ -51,16 +51,14 @@ import io.cosgriff.glovebox.ui.history.catalogChoices
 import io.cosgriff.glovebox.ui.history.lineWithCategory
 import io.cosgriff.glovebox.ui.service.FileUnderDialog
 import io.cosgriff.glovebox.ui.service.asNumber
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CategoryRulesViewModel @Inject constructor(private val dao: CatalogRuleDao) : ViewModel() {
     /** Null while loading. By wording, ignoring case. */
-    val rules: StateFlow<List<CatalogRuleEntity>?> = dao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val rules: StateFlow<List<CatalogRuleEntity>?> = dao.observeAll().screenState(viewModelScope, null)
 
     fun setLine(id: Long, catalogId: String) = viewModelScope.launch { dao.setLine(id, catalogId) }
 

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.PasswordField
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.BorderedCard
@@ -22,17 +24,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -52,9 +47,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -72,9 +64,7 @@ import io.cosgriff.glovebox.domain.PasswordStrength
 import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.time.LocalDate
@@ -87,7 +77,7 @@ class BackupViewModel @Inject constructor(
     private val saver: ExportSaver,
 ) : ViewModel() {
     /** Null while loading. */
-    val settings: StateFlow<Settings?> = repo.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val settings: StateFlow<Settings?> = repo.settings.screenState(viewModelScope, null)
 
     var contents by mutableStateOf<BackupContents?>(null)
         private set
@@ -152,6 +142,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
     val scheme = MaterialTheme.colorScheme
     val focusManager = LocalFocusManager.current
     var show by remember { mutableStateOf(false) }
+    val toggle = stringResource(if (show) R.string.backup_hide_passwords else R.string.backup_show_passwords)
     val contents = vm.contents
     val last = settings.lastBackupOn
     val stale = last == null || BackupRules.shouldRemind(true, last, null, LocalDate.now())
@@ -185,7 +176,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PasswordField(stringResource(R.string.backup_password), vm.password, { vm.password = it }, show, { show = !show }, ImeAction.Next)
+                PasswordField(stringResource(R.string.backup_password), vm.password, { vm.password = it }, show, { show = !show }, toggle, ImeAction.Next)
                 StrengthMeter(vm.strength, typed = vm.password.isNotEmpty())
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -195,6 +186,7 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
                     { vm.confirm = it },
                     show,
                     { show = !show },
+                    toggle,
                     ImeAction.Done,
                     error = vm.confirm.isNotEmpty() && !vm.matches,
                 )
@@ -291,34 +283,6 @@ fun BackupScreen(onBack: () -> Unit, onRestore: () -> Unit, vm: BackupViewModel 
             }
         }
     }
-}
-
-@Composable
-private fun PasswordField(
-    label: String,
-    value: String,
-    onChange: (String) -> Unit,
-    show: Boolean,
-    onToggleShow: () -> Unit,
-    imeAction: ImeAction,
-    error: Boolean = false,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        label = { Text(label) },
-        singleLine = true,
-        isError = error,
-        visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
-        // Password type also keeps it out of the keyboard's suggestions and learned words.
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false, imeAction = imeAction),
-        trailingIcon = {
-            IconButton(onClick = onToggleShow) {
-                Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.backup_hide_passwords else R.string.backup_show_passwords))
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 /** Four bars and a word, as on the canvas. The word carries the meaning; the bars are decoration. */

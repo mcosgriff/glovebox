@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,10 +46,8 @@ import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.catalogCategoryLabel
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.monthYear
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.heightIn
@@ -150,7 +149,7 @@ class SortCustomViewModel @Inject constructor(
     val state: StateFlow<SortCustomState?> =
         combine(vehicles.observe(vehicleId), service.observeRecords(vehicleId), recalls.observe(vehicleId), rules.observeAll()) { v, records, recallRows, ruleRows ->
             v?.let { SortCustomState(it, records, CustomLines.groups(records.savedLines(recallRows.recordIds()), ruleRows.map { r -> r.toRule() })) }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        }.screenState(viewModelScope, null)
 
     private var inputs by mutableStateOf<PreviewInputs?>(null)
 

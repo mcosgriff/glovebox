@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SheetHandle
@@ -85,11 +86,9 @@ import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
@@ -205,7 +204,7 @@ class RecordDetailViewModel @Inject constructor(
             offers = rows(Visits.offers(me, visits)),
             choices = rows(Visits.choices(me, visits)),
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     fun link(otherId: Long) = viewModelScope.launch { actions.link(recordId, otherId) }
     fun unlink() = viewModelScope.launch { actions.unlink(recordId) }

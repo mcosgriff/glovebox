@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
@@ -62,9 +63,7 @@ import io.cosgriff.glovebox.ui.FluidsPartsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.whatItTakes
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -78,11 +77,11 @@ class FluidsPartsViewModel @Inject constructor(
 
     /** Null while loading, and if the vehicle no longer exists. */
     val vehicle: StateFlow<VehicleEntity?> = vehicles.observe(vehicleId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     /** A maker's list for this vehicle's "What it takes", and the rows filled from one still to check. */
     val known: StateFlow<TakesKnown> = knownTakes.observe(vehicles.observe(vehicleId))
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TakesKnown())
+        .screenState(viewModelScope, TakesKnown())
 
     fun fillKnown() = viewModelScope.launch { vehicle.value?.let { knownTakes.fill(it) } }
 

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.theme.ViewerColors
 import io.cosgriff.glovebox.ui.handOut
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -61,10 +62,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.ui.PhotoViewerRoute
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -81,7 +80,7 @@ class PhotoViewerViewModel @Inject constructor(
     /** The record's photo files in the order the grid shows them. Null while loading. */
     val files: StateFlow<List<String>?> = service.observeRecord(route.recordId)
         .map { record -> record?.photos.orEmpty().map { it.fileName } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     /** A decrypted copy in the private cache for the share sheet; null if the photo can't be read. */
     suspend fun shareCopy(fileName: String): File? = store.shareCopy(fileName)

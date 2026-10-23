@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.highestReading
@@ -98,10 +99,8 @@ import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.ui.service.answering
 import io.cosgriff.glovebox.ui.service.NoLinks
@@ -219,7 +218,7 @@ class MilestonesViewModel @Inject constructor(
             drivetrain = vehicle.drivetrain,
             transmission = vehicle.transmission,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     private val handle = savedStateHandle
 

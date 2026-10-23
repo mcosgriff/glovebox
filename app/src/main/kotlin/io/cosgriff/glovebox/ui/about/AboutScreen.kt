@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
@@ -7,10 +8,8 @@ import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import javax.inject.Inject
 import io.cosgriff.glovebox.ui.torque.KnownSpecCatalog
 import io.cosgriff.glovebox.domain.KnownSpecList
@@ -33,7 +32,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -201,7 +199,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
 /** The bundled torque lists and maintenance schedules, for crediting their sources on the About screen. */
 @HiltViewModel
 class KnownListsViewModel @Inject constructor(catalog: KnownSpecCatalog, scheduleCatalog: KnownScheduleCatalog, takesCatalog: KnownTakesCatalog) : ViewModel() {
-    val takes: StateFlow<List<KnownTakesList>> = flow { emit(takesCatalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val lists: StateFlow<List<KnownSpecList>> = flow { emit(catalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val schedules: StateFlow<List<KnownScheduleList>> = flow { emit(scheduleCatalog.lists()) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val takes: StateFlow<List<KnownTakesList>> = flow { emit(takesCatalog.lists()) }.screenState(viewModelScope, emptyList())
+    val lists: StateFlow<List<KnownSpecList>> = flow { emit(catalog.lists()) }.screenState(viewModelScope, emptyList())
+    val schedules: StateFlow<List<KnownScheduleList>> = flow { emit(scheduleCatalog.lists()) }.screenState(viewModelScope, emptyList())
 }

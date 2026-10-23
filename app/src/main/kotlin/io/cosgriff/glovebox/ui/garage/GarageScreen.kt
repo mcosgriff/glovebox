@@ -1,11 +1,11 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.SectionLabel
-import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.service.ahead
 import io.cosgriff.glovebox.ui.service.amount
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -68,7 +68,6 @@ import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.Attention
-import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.OpenRecalls
@@ -76,10 +75,8 @@ import io.cosgriff.glovebox.domain.UrgentItem
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -87,7 +84,7 @@ import javax.inject.Inject
 class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: RecallRepository, vehicles: VehicleDao) : ViewModel() {
     /** How many vehicles are in the archive. */
     val archived: StateFlow<Int> = vehicles.observeArchived().map { it.size }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+        .screenState(viewModelScope, 0)
 
     init {
         // Once per launch: re-check any vehicle whose recall list is a week old or was never fetched.
@@ -95,7 +92,7 @@ class GarageViewModel @Inject constructor(overview: GarageOverview, recalls: Rec
     }
 
     /** Null while loading. Recomputed whenever a log, schedule or mileage changes. */
-    val garage: StateFlow<Garage?> = overview.garage.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val garage: StateFlow<Garage?> = overview.garage.screenState(viewModelScope, null)
 }
 
 @Composable

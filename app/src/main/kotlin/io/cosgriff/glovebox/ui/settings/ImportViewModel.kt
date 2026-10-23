@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.data.db.jobRows
@@ -66,13 +67,11 @@ import io.cosgriff.glovebox.ui.ImportRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.ui.service.answering
@@ -173,7 +172,7 @@ class ImportViewModel @Inject constructor(
 ) : ViewModel() {
     /** The garage, then sold vehicles: those can still take service history. */
     val vehicles: StateFlow<List<VehicleEntity>?> = combine(vehicles.observeActive(), vehicles.observeArchived()) { active, sold -> active + sold }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     val picked: StateFlow<PickedImport?> = picker.picked
     val problem: StateFlow<String?> = picker.problem
@@ -190,7 +189,7 @@ class ImportViewModel @Inject constructor(
     /** The vehicle to import into: the one chosen, or the only one there is. */
     val vehicleId: StateFlow<Long?> = combine(this.vehicles, chosenVehicle) { list, chosen ->
         chosen?.takeIf { id -> list.orEmpty().any { it.id == id } } ?: list?.singleOrNull()?.id
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     private val parsed = picker.picked.mapLatest { p -> p?.let { it.file ?: withContext(Dispatchers.Default) { ImportFormat.parse(it.text) } } }
 
@@ -215,7 +214,7 @@ class ImportViewModel @Inject constructor(
                 else -> null
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** Points the History tab at [vehicleId] before the user is sent there. */
     fun showHistory(vehicleId: Long) = actions.showIn(vehicleId)

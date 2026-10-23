@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.scan
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.camera.core.ImageProxy
 import io.cosgriff.glovebox.domain.RecentReads
 import io.cosgriff.glovebox.ui.theme.ViewerColors
@@ -63,10 +64,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import javax.inject.Inject
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 
 /**
  * Design: 2 · Scan VIN. Reads the VIN from a barcode (ZXing) or, with no barcode in view, from print
@@ -75,7 +74,7 @@ import kotlinx.coroutines.flow.stateIn
 @HiltViewModel
 class ScanVinViewModel @Inject constructor(repo: SettingsRepository) : ViewModel() {
     /** Settings' "Show what the scanner sees". */
-    val details: StateFlow<Boolean> = repo.settings.map { it.scannerDetails }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    val details: StateFlow<Boolean> = repo.settings.map { it.scannerDetails }.screenState(viewModelScope, false)
 }
 
 @Composable

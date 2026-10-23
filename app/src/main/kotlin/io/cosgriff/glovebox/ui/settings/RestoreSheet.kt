@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.PasswordField
 import io.cosgriff.glovebox.data.displayName
 import io.cosgriff.glovebox.ui.LauncherSlot
 import io.cosgriff.glovebox.ApplicationScope
@@ -19,18 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,9 +38,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -230,21 +221,15 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
             Text(stringResource(R.string.restore_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(picked.name, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
 
-            OutlinedTextField(
-                value = vm.password,
-                onValueChange = { vm.password = it },
-                label = { Text(stringResource(R.string.backup_password)) },
-                singleLine = true,
+            PasswordField(
+                stringResource(R.string.backup_password),
+                vm.password,
+                { vm.password = it },
+                show,
+                { show = !show },
+                stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password),
                 // Once the file is open the password is fixed; changing it would mean checking again.
                 enabled = summary == null && !busy,
-                visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
-                trailingIcon = {
-                    IconButton(onClick = { show = !show }) {
-                        Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password))
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
             )
 
             vm.error?.let {

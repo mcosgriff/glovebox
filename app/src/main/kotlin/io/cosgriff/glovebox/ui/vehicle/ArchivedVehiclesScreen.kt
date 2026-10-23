@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import io.cosgriff.glovebox.ui.service.highestReading
@@ -49,10 +50,8 @@ import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -92,7 +91,7 @@ class ArchivedVehiclesViewModel @Inject constructor(
                 photos = mine.sumOf { it.photos.size },
             )
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** [onMoved] gets the Undo, which archives it again with the same sold date. */
     fun moveBack(v: VehicleEntity, onMoved: (undo: () -> Unit) -> Unit) = viewModelScope.launch {

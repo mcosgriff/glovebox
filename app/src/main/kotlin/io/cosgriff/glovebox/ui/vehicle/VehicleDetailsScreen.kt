@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.editableDecimal
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.highestReading
@@ -150,7 +152,6 @@ import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -158,7 +159,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -198,12 +198,12 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** A maker's list for this vehicle's "What it takes", and the rows filled from one still to check. */
     val known: StateFlow<TakesKnown> = knownTakes.observe(vehicles.observe(vehicleId))
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TakesKnown())
+        .screenState(viewModelScope, TakesKnown())
 
     /** The maker's own manual and guides for this vehicle's make, model and year, to open in the browser. */
     val makerDocs: StateFlow<MakerDocumentList?> = combine(vehicles.observe(vehicleId), flow { emit(makerDocuments.lists()) }) { v, lists ->
         v?.let { MakerDocuments.forVehicle(lists, it.year, it.make, it.model) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
 
@@ -231,17 +231,17 @@ class VehicleDetailsViewModel @Inject constructor(
             documentCount = docs.size,
             documentBytes = docs.sumOf { it.sizeBytes },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** Decrypted in memory only while this screen is open. */
     val photo: StateFlow<ImageBitmap?> = vehicles.observe(vehicleId)
         .map { it?.photoFile }
         .distinctUntilChanged()
         .mapLatest { name -> name?.let { photos.load(it) }?.asImageBitmap() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     val photoFailed: StateFlow<Boolean> = picker.failedFor.map { it == vehicleId }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+        .screenState(viewModelScope, false)
 
     /** The highest reading so far, which a sale's final odometer starts from. */
     val lastOdometer: StateFlow<Int?> = combine(
@@ -250,7 +250,7 @@ class VehicleDetailsViewModel @Inject constructor(
         odometer.observe(vehicleId),
     ) { vehicle, records, readings ->
         vehicle?.highestReading(records, readings)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)
 
@@ -267,7 +267,7 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** The mileage check-in every vehicle without one of its own gets, and whether check-ins are on at all. */
     val noticePrefs: StateFlow<NoticePrefs?> = settings.settings.map { it.notices }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     fun setCheckIn(checkIn: VehicleCheckIn) = viewModelScope.launch { vehicles.setMileageCheckIn(vehicleId, checkIn.stored) }
 
@@ -1071,7 +1071,7 @@ private fun OilDialog(v: VehicleEntity, toCheck: Boolean, onSave: (String?, Stri
     val checked = rememberSaveable { mutableStateOf(false) }
     var grade by rememberSaveable { mutableStateOf(v.oilSpec.orEmpty()) }
     var approval by rememberSaveable { mutableStateOf(v.oilApproval.orEmpty()) }
-    var capacity by rememberSaveable { mutableStateOf(v.oilCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() }.orEmpty()) }
+    var capacity by rememberSaveable { mutableStateOf(v.oilCapacity?.editableDecimal().orEmpty()) }
     var litres by rememberSaveable { mutableStateOf(v.oilCapacityUnit == VehicleSpecEntry.Volume.LITRES.name) }
     var filter by rememberSaveable { mutableStateOf(v.oilFilter.orEmpty()) }
     val unit = if (litres) VehicleSpecEntry.Volume.LITRES else VehicleSpecEntry.Volume.QUARTS
