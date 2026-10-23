@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.domain.VehicleReminders
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
@@ -50,7 +53,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
@@ -84,7 +86,6 @@ import io.cosgriff.glovebox.domain.LicensePlates
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
@@ -144,7 +145,7 @@ class ExportViewModel @Inject constructor(
         options = ExportOptions(format = format)
         viewModelScope.launch {
             val rule = settings.settings.first().defaultRule
-            val list = vehicles.all().map { v -> Exportable(v.id, v.nickname ?: v.model, v.archivedOn != null, exportVehicle(v, rule)) }
+            val list = vehicles.all().map { v -> Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exportVehicle(v, rule)) }
             all = list
             if (list.none { it.id == vehicleId }) vehicleId = list.firstOrNull()?.id
         }
@@ -154,7 +155,8 @@ class ExportViewModel @Inject constructor(
         val records = service.recordsFor(v.id)
         val swap = v.clusterSwap()
         val items = schedule.allFor(v.id)
-        val entries = records.map { it.toEntry(swap, items.answering()) }
+        val links = items.answering()
+        val entries = records.map { it.toEntry(swap, links) }
         val readings = odometer.readingsFor(v.id).toReadings(swap)
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         return ExportVehicle(

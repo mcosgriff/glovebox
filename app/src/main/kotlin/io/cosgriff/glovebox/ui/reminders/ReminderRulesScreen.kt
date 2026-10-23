@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
@@ -143,7 +144,7 @@ class ReminderRulesViewModel @Inject constructor(
         settings.settings,
     ) { active, items, records, readings, s ->
         val several = active.size > 1
-        val names = active.associate { it.id to "${it.year} ${it.nickname ?: it.model}" }
+        val names = active.associate { it.id to it.shortName() }
         val mine = items.filter { it.vehicleId in names }
 
         // The oil change if it qualifies, otherwise the first reminder that does.

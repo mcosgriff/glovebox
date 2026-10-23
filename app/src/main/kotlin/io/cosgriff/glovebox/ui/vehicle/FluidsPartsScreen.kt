@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -90,35 +91,10 @@ class FluidsPartsViewModel @Inject constructor(
      * empty. [checked] is the owner saying they checked a row filled from a list against their manual.
      */
     fun save(item: TakesItem, values: List<Any?>, checked: Boolean) = viewModelScope.launch {
-        fun s(i: Int) = values.getOrNull(i) as String?
-        vehicle.value?.let { v ->
-            val w = v.whatItTakes()
-            val after = when (item) {
-                TakesItem.TRANSMISSION -> w.copy(transmissionFluid = s(0))
-                TakesItem.DIFFERENTIAL -> w.copy(differentialOil = s(0))
-                TakesItem.TRANSFER_CASE -> w.copy(transferCaseOil = s(0))
-                TakesItem.COOLANT -> w.copy(coolant = s(0))
-                TakesItem.BRAKE_FLUID -> w.copy(brakeFluid = s(0))
-                TakesItem.AIR_FILTERS -> w.copy(engineAirFilter = s(0), cabinAirFilter = s(1))
-                TakesItem.SPARK_PLUGS -> w.copy(sparkPlug = s(0), sparkPlugGap = s(1))
-                TakesItem.BATTERY -> w.copy(batteryGroup = s(0), batteryCca = values.getOrNull(1) as Int?)
-                TakesItem.BULBS -> w.copy(bulbLow = s(0), bulbHigh = s(1), bulbFog = s(2))
-                TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> w
-            }
-            knownTakes.saved(v, item, after, checked)
-        }
-        when (item) {
-            TakesItem.TRANSMISSION -> vehicles.setTransmissionFluid(vehicleId, s(0))
-            TakesItem.DIFFERENTIAL -> vehicles.setDifferentialOil(vehicleId, s(0))
-            TakesItem.TRANSFER_CASE -> vehicles.setTransferCaseOil(vehicleId, s(0))
-            TakesItem.COOLANT -> vehicles.setCoolant(vehicleId, s(0))
-            TakesItem.BRAKE_FLUID -> vehicles.setBrakeFluid(vehicleId, s(0))
-            TakesItem.AIR_FILTERS -> vehicles.setAirFilters(vehicleId, s(0), s(1))
-            TakesItem.SPARK_PLUGS -> vehicles.setSparkPlugs(vehicleId, s(0), s(1))
-            TakesItem.BATTERY -> vehicles.setBattery(vehicleId, s(0), values.getOrNull(1) as Int?)
-            TakesItem.BULBS -> vehicles.setBulbs(vehicleId, s(0), s(1), s(2))
-            TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> Unit
-        }
+        val v = vehicle.value ?: return@launch
+        val before = v.whatItTakes()
+        val after = moreFields(item, before).zip(values).fold(before) { w, (field, value) -> field.write(w, value) }
+        knownTakes.save(v, item, after, checked)
     }
 }
 
@@ -145,7 +121,7 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            ScreenHeader(stringResource(R.string.fluids_title), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
+            ScreenHeader(stringResource(R.string.fluids_title), onBack, subtitle = v.subtitle())
         }
         if (entered.isEmpty()) {
             item {
@@ -223,6 +199,8 @@ private class MoreField(
     @StringRes val error: Int,
     val check: (String) -> Any?,
     val current: Any?,
+    /** Puts this field's checked value (null for empty) into the vehicle's "What it takes". */
+    val write: (WhatItTakes, Any?) -> WhatItTakes,
     @StringRes val supporting: Int? = null,
     val keyboard: KeyboardType = KeyboardType.Text,
 )
@@ -231,27 +209,27 @@ private fun moreFields(item: TakesItem, w: WhatItTakes): List<MoreField> {
     val name = R.string.fluids_name_error
     val part = R.string.oil_filter_error
     return when (item) {
-        TakesItem.TRANSMISSION -> listOf(MoreField(R.string.fluids_fluid, name, VehicleSpecEntry::fluidName, w.transmissionFluid, R.string.fluids_transmission_note))
-        TakesItem.DIFFERENTIAL -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.differentialOil, R.string.fluids_differential_note))
-        TakesItem.TRANSFER_CASE -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.transferCaseOil, R.string.fluids_transfer_note))
-        TakesItem.COOLANT -> listOf(MoreField(R.string.takes_coolant, name, VehicleSpecEntry::fluidName, w.coolant, R.string.fluids_coolant_note))
-        TakesItem.BRAKE_FLUID -> listOf(MoreField(R.string.oil_grade, R.string.fluids_brake_error, VehicleSpecEntry::brakeFluid, w.brakeFluid, R.string.fluids_brake_note))
+        TakesItem.TRANSMISSION -> listOf(MoreField(R.string.fluids_fluid, name, VehicleSpecEntry::fluidName, w.transmissionFluid, { t, x -> t.copy(transmissionFluid = x as String?) }, R.string.fluids_transmission_note))
+        TakesItem.DIFFERENTIAL -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.differentialOil, { t, x -> t.copy(differentialOil = x as String?) }, R.string.fluids_differential_note))
+        TakesItem.TRANSFER_CASE -> listOf(MoreField(R.string.fluids_oil, R.string.fluids_gear_error, VehicleSpecEntry::gearOil, w.transferCaseOil, { t, x -> t.copy(transferCaseOil = x as String?) }, R.string.fluids_transfer_note))
+        TakesItem.COOLANT -> listOf(MoreField(R.string.takes_coolant, name, VehicleSpecEntry::fluidName, w.coolant, { t, x -> t.copy(coolant = x as String?) }, R.string.fluids_coolant_note))
+        TakesItem.BRAKE_FLUID -> listOf(MoreField(R.string.oil_grade, R.string.fluids_brake_error, VehicleSpecEntry::brakeFluid, w.brakeFluid, { t, x -> t.copy(brakeFluid = x as String?) }, R.string.fluids_brake_note))
         TakesItem.AIR_FILTERS -> listOf(
-            MoreField(R.string.fluids_engine_air, part, VehicleSpecEntry::partNumbers, w.engineAirFilter),
-            MoreField(R.string.fluids_cabin_air, part, VehicleSpecEntry::partNumbers, w.cabinAirFilter),
+            MoreField(R.string.fluids_engine_air, part, VehicleSpecEntry::partNumbers, w.engineAirFilter, { t, x -> t.copy(engineAirFilter = x as String?) }),
+            MoreField(R.string.fluids_cabin_air, part, VehicleSpecEntry::partNumbers, w.cabinAirFilter, { t, x -> t.copy(cabinAirFilter = x as String?) }),
         )
         TakesItem.SPARK_PLUGS -> listOf(
-            MoreField(R.string.fluids_part_number, part, VehicleSpecEntry::partNumbers, w.sparkPlug),
-            MoreField(R.string.fluids_gap, R.string.fluids_gap_error, VehicleSpecEntry::plugGap, w.sparkPlugGap, R.string.fluids_gap_note),
+            MoreField(R.string.fluids_part_number, part, VehicleSpecEntry::partNumbers, w.sparkPlug, { t, x -> t.copy(sparkPlug = x as String?) }),
+            MoreField(R.string.fluids_gap, R.string.fluids_gap_error, VehicleSpecEntry::plugGap, w.sparkPlugGap, { t, x -> t.copy(sparkPlugGap = x as String?) }, R.string.fluids_gap_note),
         )
         TakesItem.BATTERY -> listOf(
-            MoreField(R.string.fluids_group, R.string.fluids_group_error, VehicleSpecEntry::batteryGroup, w.batteryGroup, R.string.fluids_group_note),
-            MoreField(R.string.fluids_cca, R.string.fluids_cca_error, VehicleSpecEntry::cca, w.batteryCca, keyboard = KeyboardType.Number),
+            MoreField(R.string.fluids_group, R.string.fluids_group_error, VehicleSpecEntry::batteryGroup, w.batteryGroup, { t, x -> t.copy(batteryGroup = x as String?) }, R.string.fluids_group_note),
+            MoreField(R.string.fluids_cca, R.string.fluids_cca_error, VehicleSpecEntry::cca, w.batteryCca, { t, x -> t.copy(batteryCca = x as Int?) }, keyboard = KeyboardType.Number),
         )
         TakesItem.BULBS -> listOf(
-            MoreField(R.string.fluids_low_beam, R.string.fluids_low_beam_error, VehicleSpecEntry::bulbCode, w.bulbLow),
-            MoreField(R.string.fluids_high_beam, R.string.fluids_high_beam_error, VehicleSpecEntry::bulbCode, w.bulbHigh),
-            MoreField(R.string.fluids_fog, R.string.fluids_fog_error, VehicleSpecEntry::bulbCode, w.bulbFog),
+            MoreField(R.string.fluids_low_beam, R.string.fluids_low_beam_error, VehicleSpecEntry::bulbCode, w.bulbLow, { t, x -> t.copy(bulbLow = x as String?) }),
+            MoreField(R.string.fluids_high_beam, R.string.fluids_high_beam_error, VehicleSpecEntry::bulbCode, w.bulbHigh, { t, x -> t.copy(bulbHigh = x as String?) }),
+            MoreField(R.string.fluids_fog, R.string.fluids_fog_error, VehicleSpecEntry::bulbCode, w.bulbFog, { t, x -> t.copy(bulbFog = x as String?) }),
         )
         TakesItem.OIL, TakesItem.TIRES, TakesItem.WIPERS -> emptyList()
     }

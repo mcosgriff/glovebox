@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DangerButton
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
@@ -116,7 +117,7 @@ fun ClearHistoryScreen(onCancel: () -> Unit, onCleared: (Int) -> Unit, vm: Clear
     val count = if (all) d.all else d.imported
     val photos = if (all) d.allPhotos else d.importedPhotos
     val confirmed = TypedConfirmation.matches(typed, DeleteAll.WORD)
-    val name = "${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}"
+    val name = d.vehicle.shortName()
 
     if (exporting) ExportSheet(vehicleId = d.vehicle.id, onDismiss = { exporting = false })
 

@@ -124,26 +124,35 @@ interface VehicleDao {
      */
     @Transaction
     suspend fun fillTakes(id: Long, takes: WhatItTakes, items: List<TakesItem>, list: String, toCheck: String?) {
-        for (item in items) {
-            when (item) {
-                TakesItem.OIL -> setOil(id, takes.oilGrade, takes.oilApproval, takes.oilCapacity, takes.oilCapacityUnit?.name.takeIf { takes.oilCapacity != null }, takes.oilFilter)
-                TakesItem.TIRES -> setTires(
-                    id, takes.tireSize, takes.tireSizeRear.takeIf { takes.tireSize != null },
-                    takes.tirePressureFront, takes.tirePressureRear, takes.tirePressureSpare, takes.tirePressureUnit?.name,
-                )
-                TakesItem.WIPERS -> setWipers(id, takes.wiperDriver, takes.wiperPassenger, takes.wiperRear, takes.wiperNote)
-                TakesItem.TRANSMISSION -> setTransmissionFluid(id, takes.transmissionFluid)
-                TakesItem.DIFFERENTIAL -> setDifferentialOil(id, takes.differentialOil)
-                TakesItem.TRANSFER_CASE -> setTransferCaseOil(id, takes.transferCaseOil)
-                TakesItem.COOLANT -> setCoolant(id, takes.coolant)
-                TakesItem.BRAKE_FLUID -> setBrakeFluid(id, takes.brakeFluid)
-                TakesItem.AIR_FILTERS -> setAirFilters(id, takes.engineAirFilter, takes.cabinAirFilter)
-                TakesItem.SPARK_PLUGS -> setSparkPlugs(id, takes.sparkPlug, takes.sparkPlugGap)
-                TakesItem.BATTERY -> setBattery(id, takes.batteryGroup, takes.batteryCca)
-                TakesItem.BULBS -> setBulbs(id, takes.bulbLow, takes.bulbHigh, takes.bulbFog)
-            }
-        }
+        items.forEach { setTakes(id, takes, it) }
         setTakesKnown(id, list, toCheck)
+    }
+
+    /**
+     * Writes [item]'s row of [takes], whole: the one writer behind every editor and the bundled lists. A unit
+     * goes only with its figure, and a rear tire size only with a front one, whatever [takes] holds.
+     */
+    suspend fun setTakes(id: Long, takes: WhatItTakes, item: TakesItem) {
+        when (item) {
+            TakesItem.OIL -> setOil(id, takes.oilGrade, takes.oilApproval, takes.oilCapacity, takes.oilCapacityUnit?.name.takeIf { takes.oilCapacity != null }, takes.oilFilter)
+            TakesItem.TIRES -> {
+                val pressures = takes.tirePressureFront != null || takes.tirePressureRear != null || takes.tirePressureSpare != null
+                setTires(
+                    id, takes.tireSize, takes.tireSizeRear.takeIf { takes.tireSize != null },
+                    takes.tirePressureFront, takes.tirePressureRear, takes.tirePressureSpare, takes.tirePressureUnit?.name.takeIf { pressures },
+                )
+            }
+            TakesItem.WIPERS -> setWipers(id, takes.wiperDriver, takes.wiperPassenger, takes.wiperRear, takes.wiperNote)
+            TakesItem.TRANSMISSION -> setTransmissionFluid(id, takes.transmissionFluid)
+            TakesItem.DIFFERENTIAL -> setDifferentialOil(id, takes.differentialOil)
+            TakesItem.TRANSFER_CASE -> setTransferCaseOil(id, takes.transferCaseOil)
+            TakesItem.COOLANT -> setCoolant(id, takes.coolant)
+            TakesItem.BRAKE_FLUID -> setBrakeFluid(id, takes.brakeFluid)
+            TakesItem.AIR_FILTERS -> setAirFilters(id, takes.engineAirFilter, takes.cabinAirFilter)
+            TakesItem.SPARK_PLUGS -> setSparkPlugs(id, takes.sparkPlug, takes.sparkPlugGap)
+            TakesItem.BATTERY -> setBattery(id, takes.batteryGroup, takes.batteryCca)
+            TakesItem.BULBS -> setBulbs(id, takes.bulbLow, takes.bulbHigh, takes.bulbFog)
+        }
     }
 
     @Query("UPDATE vehicles SET photoFile = :fileName WHERE id = :id")

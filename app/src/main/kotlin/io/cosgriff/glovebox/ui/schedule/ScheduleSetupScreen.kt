@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -513,4 +514,4 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
 }
 
 private fun VehicleEntity?.displayName(): String =
-    if (this == null) AppText.res.getString(R.string.setup_vehicle) else listOfNotNull("$year", nickname ?: model, engine).joinToString(" ")
+    if (this == null) AppText.res.getString(R.string.setup_vehicle) else listOfNotNull(shortName(), engine?.takeIf { it.isNotBlank() }).joinToString(" ")

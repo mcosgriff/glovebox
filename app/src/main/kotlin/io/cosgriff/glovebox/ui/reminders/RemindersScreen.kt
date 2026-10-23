@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -126,7 +128,7 @@ fun RemindersScreen(
         }
         SnoozeSheet(
             reminder = snoozing,
-            subtitle = listOfNotNull("${snoozing.vehicle.year} ${snoozing.vehicle.shortName()}", snoozing.due()).joinToString(" · "),
+            subtitle = listOfNotNull(snoozing.vehicle.shortName(), snoozing.due()).joinToString(" · "),
             options = Snoozing.options(snoozing.status, owner.odometer, today, owner.oil, snoozing.vehicle.unit),
             skip = Snoozing.skip(snoozing.status, owner.odometer, today),
             onSnooze = { apply(it, false) },
@@ -191,7 +193,7 @@ internal fun RemindersContent(
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     InkChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
                     garage.vehicles.forEach { g ->
-                        InkChip(g.vehicle.shortName(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
+                        InkChip(g.vehicle.nicknameOrModel(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
                     }
                 }
             }
@@ -251,8 +253,6 @@ internal fun RemindersContent(
     }
 }
 
-internal fun VehicleEntity.shortName(): String = nickname ?: model
-
 @Composable
 private fun groupColor(group: ReminderGroup): Color = when (group) {
     ReminderGroup.OVERDUE -> statusColors().overdue
@@ -306,7 +306,7 @@ private fun ReminderCard(
                     )
                 }
                 Text(
-                    "${r.vehicle.year} ${r.vehicle.shortName()} · ${r.status.item.interval.everyShort(r.vehicle.unit)}",
+                    "${r.vehicle.shortName()} · ${r.status.item.interval.everyShort(r.vehicle.unit)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -315,7 +315,7 @@ private fun ReminderCard(
         val buttonShape = RoundedCornerShape(10.dp)
         // Every card has the same buttons, so TalkBack is told whose they are (#234): "Log it: Brake fluid, 2019 Blue truck".
         val job = r.status.item.name
-        val vehicle = "${r.vehicle.year} ${r.vehicle.shortName()}"
+        val vehicle = r.vehicle.shortName()
         val logItFor = stringResource(R.string.reminders_log_it_for, job, vehicle)
         // "Log it" in ink, as on vehicle home: the accent on a row says it is late, so it isn't on every row's button.
         val logIt = @Composable { modifier: Modifier ->

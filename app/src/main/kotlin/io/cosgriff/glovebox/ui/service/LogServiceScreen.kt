@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -78,8 +80,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -336,10 +336,12 @@ class LogServiceViewModel @Inject constructor(
             val records = service.recordsFor(vehicleId)
             form.shops = service.observeShops().first().map { ShopUse(it.name, it.date, it.id) }
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
-            val swap = vehicle?.clusterSwap()
-            val entries = records.map { it.toEntry(swap, items.answering()) }
+            // The form has nothing to log against once the vehicle has gone.
+            val log = (vehicle ?: return@launch).log(items, records, odometer.readingsFor(vehicleId), prefs)
+            val swap = log.swap
+            val entries = log.entries
             val others = entries.filter { it.id != original?.record?.id }
-            val updates = odometer.readingsFor(vehicleId).toReadings(swap)
+            val updates = log.updates
             val categories = ServiceCatalog.forVehicle(items.map { it.toRef() })
             val options = categories.flatMap { it.options }
             // The line to tick for a reminder: the catalog line that is its own, or failing that the one saved
@@ -348,12 +350,12 @@ class LogServiceViewModel @Inject constructor(
             val own = ServiceLinks.own(items.map { it.toRef() })
             val optionFor: Map<Long?, WorkOption> = options.flatMap { o -> own[o.id].orEmpty().map { id -> id to o } }.toMap() +
                 options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
-            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule, swap) }
+            val tracked = log.tracked
 
             val due = if (editing) {
                 emptyList()
             } else {
-                VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), prefs.leadFor(vehicle?.unit ?: DistanceUnit.MILES))
+                log.statuses(LocalDate.now())
                     // Never-logged items count as due, but offering all of them would bury the form on a
                     // new vehicle; they can still be ticked in the categories below.
                     .filter { it.lastDone != null && it.status.state != DueState.OK }
@@ -395,7 +397,7 @@ class LogServiceViewModel @Inject constructor(
 
             form.categoryId = categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: categories.first().id
             form.data = LogServiceData(
-                vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+                vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
                 categories = categories,
                 due = due,
                 tracked = tracked,

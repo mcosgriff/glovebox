@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
@@ -88,8 +92,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -140,14 +142,11 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -161,7 +160,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class VehicleDetails(
@@ -210,9 +208,10 @@ class VehicleDetailsViewModel @Inject constructor(
     fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
 
     /** The row as it was before [item]'s editor saved [after]; [checked] is the owner saying they checked it against their manual. */
-    private suspend fun recheck(item: TakesItem, after: (WhatItTakes) -> WhatItTakes, checked: Boolean) {
+    /** [item]'s row as [change] leaves it, written whole, with its DOUBLE-CHECK tag settled. */
+    private suspend fun saveTakes(item: TakesItem, change: (WhatItTakes) -> WhatItTakes, checked: Boolean) {
         val v = details.value?.vehicle ?: return
-        knownTakes.saved(v, item, after(v.whatItTakes()), checked)
+        knownTakes.save(v, item, change(v.whatItTakes()), checked)
     }
 
     /** Null while loading, and if the vehicle no longer exists. */
@@ -250,8 +249,7 @@ class VehicleDetailsViewModel @Inject constructor(
         service.observeRecords(vehicleId),
         odometer.observe(vehicleId),
     ) { vehicle, records, readings ->
-        val swap = vehicle?.clusterSwap()
-        VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap))
+        vehicle?.highestReading(records, readings)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)
@@ -278,28 +276,19 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** Each is already checked and in its standard form (VehicleSpecEntry); null clears it. */
     fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?, checked: Boolean) = viewModelScope.launch {
-        recheck(TakesItem.OIL, { it.copy(oilGrade = grade, oilApproval = approval, oilCapacity = capacity, oilCapacityUnit = unit.takeIf { capacity != null }, oilFilter = filter) }, checked)
-        vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
+        saveTakes(TakesItem.OIL, { it.copy(oilGrade = grade, oilApproval = approval, oilCapacity = capacity, oilCapacityUnit = unit, oilFilter = filter) }, checked)
     }
 
     fun saveTires(front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, unit: VehicleSpecEntry.Pressure, checked: Boolean) = viewModelScope.launch {
-        val any = pFront != null || pRear != null || pSpare != null
-        recheck(
+        saveTakes(
             TakesItem.TIRES,
-            {
-                it.copy(
-                    tireSize = front, tireSizeRear = rear.takeIf { front != null },
-                    tirePressureFront = pFront, tirePressureRear = pRear, tirePressureSpare = pSpare, tirePressureUnit = unit.takeIf { any },
-                )
-            },
+            { it.copy(tireSize = front, tireSizeRear = rear, tirePressureFront = pFront, tirePressureRear = pRear, tirePressureSpare = pSpare, tirePressureUnit = unit) },
             checked,
         )
-        vehicles.setTires(vehicleId, front, rear.takeIf { front != null }, pFront, pRear, pSpare, unit.name.takeIf { any })
     }
 
     fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?, checked: Boolean) = viewModelScope.launch {
-        recheck(TakesItem.WIPERS, { it.copy(wiperDriver = driver, wiperPassenger = passenger, wiperRear = rear, wiperNote = note) }, checked)
-        vehicles.setWipers(vehicleId, driver, passenger, rear, note)
+        saveTakes(TakesItem.WIPERS, { it.copy(wiperDriver = driver, wiperPassenger = passenger, wiperRear = rear, wiperNote = note) }, checked)
     }
 
     /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */
@@ -438,7 +427,7 @@ fun VehicleDetailsScreen(
             onDismiss = { addingVin = false },
         )
     }
-    val name = v.nickname ?: v.model
+    val name = v.nicknameOrModel()
 
     if (selling) {
         MarkAsSoldSheet(
@@ -531,7 +520,7 @@ internal fun VehicleDetailsContent(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nickname ?: v.model, onPick = onPickPhoto, onRemove = onRemovePhoto)
+                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nicknameOrModel(), onPick = onPickPhoto, onRemove = onRemovePhoto)
                 if (photoFailed) {
                     Text(
                         stringResource(R.string.details_photo_unreadable),

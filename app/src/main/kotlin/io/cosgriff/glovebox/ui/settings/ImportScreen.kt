@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
@@ -449,7 +450,7 @@ class ImportViewModel @Inject constructor(
             kind = view.kind,
             noun = view.noun,
             vehicleId = vehicleId,
-            vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
             archived = vehicle?.archivedOn != null,
             added = view.new.size,
             filled = view.fills.size,
@@ -843,7 +844,7 @@ fun ImportScreen(
             if (fixed != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(R.string.import_into))
-                    Text("${fixed.year} ${fixed.nickname ?: fixed.model}", style = MaterialTheme.typography.titleMedium)
+                    Text(fixed.shortName(), style = MaterialTheme.typography.titleMedium)
                 }
             } else if (vehicles.size > 1) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -853,7 +854,7 @@ fun ImportScreen(
                             vehicles.forEachIndexed { i, v ->
                                 if (i > 0) HorizontalDivider(color = scheme.outlineVariant)
                                 Choice(
-                                    title = "${v.year} ${v.nickname ?: v.model}",
+                                    title = v.shortName(),
                                     detail = listOfNotNull(stringResource(R.string.import_sold).takeIf { v.archivedOn != null }, v.trim, v.engine).joinToString(" · ").ifEmpty { null },
                                     selected = v.id == vehicleId,
                                     onClick = { vm.chooseVehicle(v.id) },

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.log
+import io.cosgriff.glovebox.ui.service.subtitle
+import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -52,9 +57,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -83,13 +86,9 @@ import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.ServiceLog
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.resetters
 import io.cosgriff.glovebox.ui.ScheduleRoute
 import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -104,7 +103,6 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.foundation.layout.size
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import kotlinx.coroutines.flow.map
-import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 /**
@@ -180,17 +178,11 @@ class ScheduleViewModel @Inject constructor(
         val credits = lists.associate { it.id to KnownSchedules.credit(it) }
         entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel, vehicle.unit).associateBy { it.key }
-        val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap, items.answering()) }
-        val updates = readings.toReadings(swap)
+        val log = vehicle.log(items, records, readings, s)
+        val swap = log.swap
+        val entries = log.entries
         val entered = records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet()
-        val statuses = VehicleReminders.statuses(
-            items.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule, swap) },
-            entries,
-            updates,
-            LocalDate.now(),
-            s.leadFor(vehicle.unit),
-        ).associateBy { it.item.id }
+        val statuses = log.statuses(LocalDate.now()).associateBy { it.item.id }
         ScheduleState(
             vehicle = vehicle,
             items = items.mapNotNull { e ->
@@ -228,7 +220,7 @@ class ScheduleViewModel @Inject constructor(
             missing = items.filter { it.templateKey == null }.mapNotNull { HistoryImport.services[it.service]?.resets }.toSet().let { covered ->
                 ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }).filter { it.key !in covered }
             },
-            odometer = VehicleReminders.currentOdometer(entries, updates),
+            odometer = log.odometer,
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
             known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel)
@@ -435,7 +427,7 @@ fun ScheduleScreen(
         state, hasMilestoneTable, onBack, onSetUp, onEnterLastDone, onOpenMilestones,
         onSetTracked = vm::setTracked, onEdit = vm::edit, onAddOwn = vm::addOwn, onAddKnown = { vm.addKnown(it) },
         onAddMissing = { vm.addMissing() }, onChooseSevereUse = { vm.chooseSevereUse(it) }, onSetAllTracked = vm::setAllTracked,
-        onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, "${state.vehicle.year} ${state.vehicle.make} ${state.vehicle.model}") },
+        onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, state.vehicle.fileStem()) },
     )
 }
 
@@ -463,7 +455,7 @@ internal fun ScheduleContent(
     val tracked = state.items.count { it.tracked && !it.dormant }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ScreenHeader(stringResource(R.string.details_schedule), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
+        ScreenHeader(stringResource(R.string.details_schedule), onBack, subtitle = v.subtitle())
 
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),

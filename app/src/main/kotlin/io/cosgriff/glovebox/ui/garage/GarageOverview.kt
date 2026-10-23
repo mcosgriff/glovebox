@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
-import io.cosgriff.glovebox.ui.service.unit
+import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
@@ -16,15 +16,9 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.domain.UrgentItem
-import io.cosgriff.glovebox.domain.VehicleReminders
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
-import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class GarageVehicle(
@@ -69,15 +63,12 @@ class GarageOverview @Inject constructor(
         val today = LocalDate.now()
         Garage(
             active.map { v ->
-                val swap = v.clusterSwap()
-                val entries = recordsBy[v.id].orEmpty().map { it.toEntry(swap, itemsBy[v.id].orEmpty().answering()) }
-                val updates = readingsBy[v.id].orEmpty().toReadings(swap)
-                val tracked = itemsBy[v.id].orEmpty().mapNotNull { it.toTracked(s.defaultRule, swap) }
-                val statuses = VehicleReminders.statuses(tracked, entries, updates, today, s.leadFor(v.unit))
+                val log = v.log(itemsBy[v.id].orEmpty(), recordsBy[v.id].orEmpty(), readingsBy[v.id].orEmpty(), s)
+                val statuses = log.statuses(today)
                 val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
                 GarageVehicle(
                     vehicle = v,
-                    odometer = VehicleReminders.currentOdometer(entries, updates),
+                    odometer = log.odometer,
                     comingUp = ReminderPresentation.comingUp(statuses),
                     oil = statuses.firstOrNull { it.item.id == oilId },
                 )

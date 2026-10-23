@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -55,7 +58,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -63,11 +65,9 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -89,13 +89,9 @@ import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.domain.Recalls
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.RecallsRoute
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -104,7 +100,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.domain.LogEdits
@@ -178,7 +173,7 @@ class RecallsViewModel @Inject constructor(
         RecallsState(
             vehicle = vehicle,
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
-            odometer = vehicle.clusterSwap().let { swap -> VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap)) },
+            odometer = vehicle.highestReading(records, readings),
             records = records,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -265,7 +260,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
-            ScreenHeader(stringResource(R.string.details_recalls), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.vin?.let { stringResource(R.string.recalls_vin_end, it.takeLast(6)) }).joinToString(" · "))
+            ScreenHeader(stringResource(R.string.details_recalls), onBack, subtitle = listOfNotNull(v.shortName(), v.vin?.let { stringResource(R.string.recalls_vin_end, it.takeLast(6)) }).joinToString(" · "))
         }
 
         item {

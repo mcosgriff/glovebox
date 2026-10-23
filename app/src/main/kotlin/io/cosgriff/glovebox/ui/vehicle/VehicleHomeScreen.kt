@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.log
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
@@ -50,10 +54,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -93,16 +95,12 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ReminderProgress
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.VehicleHomeRoute
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -111,7 +109,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class VehicleHome(
@@ -158,16 +155,13 @@ class VehicleHomeViewModel @Inject constructor(
         settings.settings,
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
-        val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap, items.answering()) }
-        val updates = readings.toReadings(swap)
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap) }
+        val log = vehicle.log(items, records, readings, s)
         VehicleHome(
             vehicle = vehicle,
-            odometer = VehicleReminders.currentOdometer(entries, updates),
+            odometer = log.odometer,
             defaultRule = s.defaultRule,
-            comingUp = ReminderPresentation.comingUp(VehicleReminders.statuses(tracked, entries, updates, LocalDate.now(), s.leadFor(vehicle.unit))),
-            inputs = ReminderInputs(tracked, entries, updates, s.leadFor(vehicle.unit)),
+            comingUp = ReminderPresentation.comingUp(log.statuses(LocalDate.now())),
+            inputs = log.inputs,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -215,7 +209,7 @@ fun VehicleHomeScreen(
 
     if (updatingMileage) {
         UpdateMileageSheet(
-            vehicleName = "${v.year} ${v.nickname ?: v.model}",
+            vehicleName = v.shortName(),
             unit = unit,
             preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now(), unit) },
             onSave = { miles ->
@@ -388,7 +382,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("${v.year} ${v.nickname ?: v.model}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(v.shortName(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         // vPIC drive types read like "4WD/4-Wheel Drive/4x4"; the first part is enough here.
                         listOfNotNull(v.trim, v.drivetrain?.substringBefore('/'), v.engine).joinToString(" · "),

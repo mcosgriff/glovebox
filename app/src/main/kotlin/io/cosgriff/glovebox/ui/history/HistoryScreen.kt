@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.domain.CustomCount
 import io.cosgriff.glovebox.data.db.RecallDao
@@ -340,7 +341,7 @@ internal fun HistoryContent(
             state.vehicle?.let { v ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.label(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
+                        stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.shortName(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
                         Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -364,7 +365,7 @@ internal fun HistoryContent(
         if (state.vehicles.size > 1) {
             ChipRow {
                 state.vehicles.forEach { v ->
-                    InkChip(v.label(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
+                    InkChip(v.shortName(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
                 }
             }
         }
@@ -630,4 +631,3 @@ private fun EmptyNote(text: String) {
     )
 }
 
-private fun VehicleEntity.label(): String = "$year ${nickname ?: model}"

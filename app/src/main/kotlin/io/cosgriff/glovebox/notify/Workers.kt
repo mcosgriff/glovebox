@@ -1,7 +1,8 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.ui.service.log
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.recallComponent
-import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.BackupRules
 import android.content.Context
 import androidx.work.BackoffPolicy
@@ -22,7 +23,6 @@ import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -36,17 +36,11 @@ import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleCheckIn
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.asReadOn
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
-import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -82,20 +76,14 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val today = LocalDate.now()
         // Sold vehicles are in the archive and get no reminders of any kind.
         val vehicles = deps.vehicles().active().map { v ->
-            val records = deps.service().recordsFor(v.id)
-            val swap = v.clusterSwap()
-            val items = deps.schedule().allFor(v.id)
-            val entries = records.map { it.toEntry(swap, items.answering()) }
-            val updates = deps.odometer().readingsFor(v.id).toReadings(swap)
-            val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap) }
+            val log = v.log(deps.schedule().allFor(v.id), deps.service().recordsFor(v.id), deps.odometer().readingsFor(v.id), settings)
             NoticeVehicle(
                 id = v.id,
-                name = "${v.year} ${v.nickname ?: v.model}",
+                name = v.shortName(),
                 // Last done goes in as it was read, so recording a cluster replacement doesn't look like the
                 // service being logged again (NoticeRules.cycle) and announce everything a second time.
-                statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.leadFor(v.unit))
-                    .map { s -> s.copy(lastDone = s.lastDone?.let { swap.asReadOn(it) }) },
-                lastReadingOn = ServiceLog.readings(entries, updates).maxOfOrNull { it.date },
+                statuses = log.statuses(today).map { s -> s.copy(lastDone = s.lastDone?.let { log.swap.asReadOn(it) }) },
+                lastReadingOn = ServiceLog.readings(log.entries, log.updates).maxOfOrNull { it.date },
                 checkIn = VehicleCheckIn.of(v.mileageCheckInDays),
             )
         }
@@ -141,7 +129,7 @@ class RecallCheckWorker(context: Context, params: WorkerParameters) : CoroutineW
                 is RecallRefresh.Checked ->
                     if (!firstCheck && settings.notices.recalls && result.added.isNotEmpty()) {
                         deps.notifier().post(
-                            Notice.NewRecalls(v.id, "${v.year} ${v.nickname ?: v.model}", result.added.map { recallComponent(it.component) }),
+                            Notice.NewRecalls(v.id, v.shortName(), result.added.map { recallComponent(it.component) }),
                         )
                     }
                 RecallRefresh.Failed -> failed = true
