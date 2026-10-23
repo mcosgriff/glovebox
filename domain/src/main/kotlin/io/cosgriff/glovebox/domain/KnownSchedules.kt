@@ -10,8 +10,9 @@ package io.cosgriff.glovebox.domain
  * The engine a list is for, when a model's guide has a different schedule for each.
  * [label] is what the owner is shown when they have to say which is theirs ("2.7L 4-cylinder").
  * [fuel] is set only where two engines of one size differ by it ("Diesel"), as vPIC spells it.
+ * [powertrain] is set only where a hybrid, plug-in or flex-fuel model and its petrol twin share a size.
  */
-data class KnownEngine(val label: String, val displacementL: Double, val fuel: String? = null)
+data class KnownEngine(val label: String, val displacementL: Double, val fuel: String? = null, val powertrain: Powertrain? = null)
 
 data class KnownScheduleList(
     override val id: String,
@@ -150,11 +151,14 @@ object KnownSchedules {
     /**
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
-     * give that engine's size, and [fuel] its fuel where the list says one: **an engine that isn't
-     * known matches no engine's list**, and the owner is asked instead ([engineChoices]).
+     * give that engine's size, [fuel] its fuel where the list says one, and [powertrain] its powertrain
+     * where the list says one: **an engine or powertrain that isn't known matches no list that needs it**,
+     * and the owner is asked instead ([engineChoices]).
      */
-    fun match(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): KnownScheduleList? =
-        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel)
+    fun match(
+        lists: List<KnownScheduleList>, year: Int, make: String, model: String,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null,
+    ): KnownScheduleList? = KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain)
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
@@ -162,8 +166,10 @@ object KnownSchedules {
      * doesn't rule out. Empty when nothing is offered for the model, or the vehicle has an engine none
      * of them is for. The pick is the owner's; nothing here chooses for them.
      */
-    fun engineChoices(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): List<KnownScheduleList> =
-        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel)
+    fun engineChoices(
+        lists: List<KnownScheduleList>, year: Int, make: String, model: String,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null,
+    ): List<KnownScheduleList> = KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain)
 
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one

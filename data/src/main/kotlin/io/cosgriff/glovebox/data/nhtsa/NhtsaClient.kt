@@ -35,6 +35,9 @@ data class DecodedVehicle(
     val engineModel: String?,
     val horsepower: String?,
     val fuel: String?,
+    /** vPIC's `FuelTypeSecondary` ("Electric", "Ethanol (E85)") and `ElectrificationLevel`, read for [powertrain] only. */
+    val fuelSecondary: String? = null,
+    val electrification: String? = null,
     val transmission: String?,
     val gvwr: String?,
     val plant: String?,
@@ -71,6 +74,8 @@ class NhtsaClient(private val http: HttpClient) {
             engineModel = r.text("EngineModel"),
             horsepower = r.text("EngineHP"),
             fuel = r.text("FuelTypePrimary"),
+            fuelSecondary = r.text("FuelTypeSecondary"),
+            electrification = r.text("ElectrificationLevel"),
             transmission = listOfNotNull(speeds?.let { "$it-speed" }, style).joinToString(" ").ifEmpty { null },
             gvwr = r.text("GVWR"),
             plant = listOfNotNull(r.text("PlantCity"), r.text("PlantCountry")).joinToString(", ").ifEmpty { null },

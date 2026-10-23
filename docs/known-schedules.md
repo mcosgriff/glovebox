@@ -103,6 +103,15 @@ for every engine the model had in its years. A vehicle is matched by the size in
 have?", offering each list's `label` and "Neither, or I'm not sure"; the pick is the owner's, and it is
 written to the vehicle if it had no engine on record. Nothing is guessed from a trim or a model name.
 
+**A hybrid, plug-in or flex-fuel model and its petrol twin of the same size** are told apart by
+`"powertrain"` in the `engine` block: `gas`, `hybrid`, `plug-in`, `flex-fuel` or `electric`. Set it only
+where two lists of one size differ by it; a list without it is for every powertrain. A vehicle's powertrain
+comes from vPIC only where the decode says it plainly (a strong hybrid, a plug-in, a battery-electric, an
+E85 fuel), or from the owner on "Is this your vehicle?". **A blank is never taken for petrol**, so a list
+marked `gas` is only matched for a vehicle the owner said is petrol; otherwise setup asks "Which engine
+does it have?" with each list's `label` ("2.5L hybrid"), and the pick is written to the vehicle if it had
+no powertrain on record.
+
 ## Making a list
 
 1. Get the maker's guide for every model year the list is to cover.

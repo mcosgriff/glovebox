@@ -59,7 +59,7 @@ class KnownSchedulesTest {
         bundled.forEach { list ->
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
-            list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, list.model, engine, list.engine?.fuel)?.id) }
+            list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, list.model, engine, list.engine?.fuel, list.engine?.powertrain)?.id) }
         }
     }
 
@@ -96,6 +96,45 @@ class KnownSchedulesTest {
         assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", "9.9L", "Coal")?.id)
         // A wrong year or model offers nothing to pick between either.
         assertEquals(emptyList<String>(), KnownSchedules.engineChoices(lists, 2010, "Acme", "Roadster"))
+    }
+
+    @Test
+    fun `a hybrid and its petrol twin of one size are told apart by powertrain, and asked about when it isn't known`() {
+        fun engineList(id: String, engine: String) = (KnownSchedules.parse(file(extra = "\"engine\": $engine,").replace("\"id\": \"made-up\"", "\"id\": \"$id\"")) as KnownScheduleFile.Ok).list
+        val gas = engineList("gas", """{ "label": "2.5L 4-cylinder", "displacementL": 2.5, "powertrain": "gas" }""")
+        val hybrid = engineList("hybrid", """{ "label": "2.5L hybrid", "displacementL": 2.5, "powertrain": "hybrid" }""")
+        assertEquals(Powertrain.HYBRID, hybrid.engine!!.powertrain)
+        val lists = listOf(gas, hybrid)
+        fun match(engine: String?, powertrain: Powertrain?) = KnownSchedules.match(lists, 2003, "Acme", "Roadster", engine, "Gasoline", powertrain)?.id
+        fun choices(engine: String?, powertrain: Powertrain?) = KnownSchedules.engineChoices(lists, 2003, "Acme", "Roadster", engine, "Gasoline", powertrain).map { it.id }
+        assertEquals("hybrid", match("2.5L 4-cyl", Powertrain.HYBRID))
+        assertEquals("gas", match("2.5L 4-cyl", Powertrain.GAS))
+        // The size alone says nothing about which: the owner is asked, and only between the two.
+        assertNull(match("2.5L 4-cyl", null))
+        assertEquals(listOf("gas", "hybrid"), choices("2.5L 4-cyl", null))
+        assertEquals(listOf("hybrid"), choices(null, Powertrain.HYBRID))
+        // A plug-in is neither: nothing matches and nothing is offered.
+        assertNull(match("2.5L 4-cyl", Powertrain.PLUG_IN))
+        assertEquals(emptyList<String>(), choices("2.5L 4-cyl", Powertrain.PLUG_IN))
+        // A list without a powertrain is for every powertrain, as the ones that ship are.
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", null, null, Powertrain.HYBRID)?.id)
+        assertTrue(errors(file(extra = "\"engine\": { \"label\": \"2.5L\", \"displacementL\": 2.5, \"powertrain\": \"steam\" },")).single().contains("must be one of"))
+    }
+
+    @Test
+    fun `a powertrain is taken from vPIC only where it says so plainly`() {
+        assertEquals(Powertrain.HYBRID, Powertrains.fromVpic("Strong HEV (Hybrid Electric Vehicle)", "Gasoline", "Electric"))
+        assertEquals(Powertrain.PLUG_IN, Powertrains.fromVpic("PHEV (Plug-in Hybrid Electric Vehicle)", "Gasoline", "Electric"))
+        assertEquals(Powertrain.ELECTRIC, Powertrains.fromVpic("BEV (Battery Electric Vehicle)", "Electric", null))
+        assertEquals(Powertrain.FLEX_FUEL, Powertrains.fromVpic(null, "Gasoline", "Ethanol (E85)"))
+        assertEquals(Powertrain.FLEX_FUEL, Powertrains.fromVpic(null, "Flexible Fuel Vehicle (FFV)", null))
+        // A blank is "can't tell", never petrol; so is a mild hybrid or one of unknown level.
+        assertNull(Powertrains.fromVpic(null, "Gasoline", null))
+        assertNull(Powertrains.fromVpic("Mild HEV (Hybrid Electric Vehicle)", "Gasoline", "Electric"))
+        assertNull(Powertrains.fromVpic("HEV (Hybrid Electric Vehicle) - Level Unknown", "Gasoline", "Electric"))
+        assertEquals(Powertrain.PLUG_IN, Powertrains.of("PLUG_IN"))
+        assertNull(Powertrains.of(null))
+        assertNull(Powertrains.of("STEAM"))
     }
 
     @Test

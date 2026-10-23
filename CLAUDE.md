@@ -204,7 +204,9 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 - "(4WD)" and "(AWD)" jobs (`fourWheelDriveOnly`, `allWheelDriveOnly`) are left out only for a vehicle **known**
   to be two-wheel drive, and `manualExcluded` jobs only for one known to be manual. **4WD and AWD are different
   systems** (`DriveKind`): a guide's "(4WD)" on a model sold as AWD goes in `allWheelDriveOnly`, named "(AWD)".
-  An engine that isn't on record matches no per-engine list; only setup asks which engine.
+  An engine that isn't on record matches no per-engine list; only setup asks which engine. A list's
+  `engine.powertrain` (#33's rulings) tells a hybrid or flex-fuel model from its petrol twin of one size;
+  `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**.
 - A vehicle set up earlier is offered "Use the maker's schedule"; there is no replace of the user's own items.
   **A replaced typical item is deleted** (the user found an unticked twin confusing) unless a service was logged
   against it, when it stays untracked. That is the one place a typical item is deleted.

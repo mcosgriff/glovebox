@@ -22,6 +22,7 @@ import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.Powertrains
 import kotlinx.coroutines.flow.flow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -214,7 +215,7 @@ class MilestonesViewModel @Inject constructor(
             unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel),
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain)),
             drivetrain = vehicle.drivetrain,
             transmission = vehicle.transmission,
         )

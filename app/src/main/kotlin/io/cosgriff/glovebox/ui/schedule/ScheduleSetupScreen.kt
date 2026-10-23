@@ -18,6 +18,8 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.Powertrain
+import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -184,6 +186,7 @@ class ScheduleSetupViewModel @Inject constructor(
         private set
 
     private var chosenEngine: String? = null
+    private var chosenPowertrain: Powertrain? = null
 
     var vehicle by mutableStateOf<VehicleEntity?>(null)
         private set
@@ -212,10 +215,10 @@ class ScheduleSetupViewModel @Inject constructor(
             vehicle = v
             val unit = v?.unit ?: DistanceUnit.MILES
             val lists = catalog.lists()
-            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel) }
+            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel, Powertrains.of(it.powertrain)) }
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
-            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel)
+            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel, Powertrains.of(v.powertrain))
             items = if (list != null) {
                 knownItems(list, v)
             } else {
@@ -236,12 +239,14 @@ class ScheduleSetupViewModel @Inject constructor(
 
     /**
      * The owner says which of [engineChoices] is their engine. The schedule becomes that list's, and
-     * the engine is written to the vehicle when it is saved, if it has none on record.
+     * the engine (and the powertrain, where the list names one) is written to the vehicle when it is
+     * saved, if it has none on record.
      */
     fun chooseEngine(list: KnownScheduleList) {
         val v = vehicle ?: return
         known = list
         chosenEngine = list.engine?.label
+        chosenPowertrain = list.engine?.powertrain
         engineChoices = emptyList()
         severeUse = false
         items = knownItems(list, v)
@@ -297,6 +302,7 @@ class ScheduleSetupViewModel @Inject constructor(
         val list = items ?: return@launch
         schedule.insertAll(list.map { it.toEntity(vehicleId) })
         chosenEngine?.let { vehicles.setEngineIfBlank(vehicleId, it) }
+        chosenPowertrain?.let { vehicles.setPowertrainIfBlank(vehicleId, it.name) }
         // The maker's table goes with its schedule: it is what the Milestones screen then shows.
         known?.let { list ->
             val unit = vehicle?.unit ?: DistanceUnit.MILES
