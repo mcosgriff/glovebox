@@ -157,6 +157,8 @@ One page per list, named by its `id`:
 - [Toyota 4Runner, 2014](known-schedules/toyota-4runner-2014.md) (`toyota-4runner-2014`)
 - [Toyota 4Runner, 2015–2016](known-schedules/toyota-4runner-2015-2016.md) (`toyota-4runner-2015-2016`)
 - [Toyota 4Runner, 2017–2024](known-schedules/toyota-4runner-2017-2024.md) (`toyota-4runner-2017-2024`)
+- [Toyota Camry V6, 2018–2020](known-schedules/toyota-camry-2018-2020-v6.md) (`toyota-camry-2018-2020-v6`)
+- [Toyota Camry V6, 2021–2024](known-schedules/toyota-camry-2021-2024-v6.md) (`toyota-camry-2021-2024-v6`)
 - [Toyota Highlander 2.7L, 2016](known-schedules/toyota-highlander-2016-2.7.md) (`toyota-highlander-2016-2.7`)
 - [Toyota Highlander 2.7L, 2017](known-schedules/toyota-highlander-2017-2.7.md) (`toyota-highlander-2017-2.7`)
 - [Toyota Highlander 2.7L, 2018–2019](known-schedules/toyota-highlander-2018-2019-2.7.md) (`toyota-highlander-2018-2019-2.7`)
