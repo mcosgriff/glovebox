@@ -168,3 +168,4 @@ One page per list, named by its `id`:
 - [Toyota Sienna, 2018–2020](known-schedules/toyota-sienna-2018-2020.md) (`toyota-sienna-2018-2020`)
 - [Toyota Tundra, 2020–2021](known-schedules/toyota-tundra-2020-2021.md) (`toyota-tundra-2020-2021`)
 - [Volkswagen GTI, 2010–2014 (Mk6)](known-schedules/volkswagen-gti-2010-2014.md) (`volkswagen-gti-2010-2014`)
+- [Volkswagen GTI, 2015 (Mk7)](known-schedules/volkswagen-gti-2015.md) (`volkswagen-gti-2015`)
