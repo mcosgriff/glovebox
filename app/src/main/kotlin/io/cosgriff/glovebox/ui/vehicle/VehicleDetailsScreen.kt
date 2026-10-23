@@ -208,9 +208,10 @@ class VehicleDetailsViewModel @Inject constructor(
     fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
 
     /** The row as it was before [item]'s editor saved [after]; [checked] is the owner saying they checked it against their manual. */
-    private suspend fun recheck(item: TakesItem, after: (WhatItTakes) -> WhatItTakes, checked: Boolean) {
+    /** [item]'s row as [change] leaves it, written whole, with its DOUBLE-CHECK tag settled. */
+    private suspend fun saveTakes(item: TakesItem, change: (WhatItTakes) -> WhatItTakes, checked: Boolean) {
         val v = details.value?.vehicle ?: return
-        knownTakes.saved(v, item, after(v.whatItTakes()), checked)
+        knownTakes.save(v, item, change(v.whatItTakes()), checked)
     }
 
     /** Null while loading, and if the vehicle no longer exists. */
@@ -275,28 +276,19 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** Each is already checked and in its standard form (VehicleSpecEntry); null clears it. */
     fun saveOil(grade: String?, approval: String?, capacity: Double?, unit: VehicleSpecEntry.Volume?, filter: String?, checked: Boolean) = viewModelScope.launch {
-        recheck(TakesItem.OIL, { it.copy(oilGrade = grade, oilApproval = approval, oilCapacity = capacity, oilCapacityUnit = unit.takeIf { capacity != null }, oilFilter = filter) }, checked)
-        vehicles.setOil(vehicleId, grade, approval, capacity, unit?.name.takeIf { capacity != null }, filter)
+        saveTakes(TakesItem.OIL, { it.copy(oilGrade = grade, oilApproval = approval, oilCapacity = capacity, oilCapacityUnit = unit, oilFilter = filter) }, checked)
     }
 
     fun saveTires(front: String?, rear: String?, pFront: Int?, pRear: Int?, pSpare: Int?, unit: VehicleSpecEntry.Pressure, checked: Boolean) = viewModelScope.launch {
-        val any = pFront != null || pRear != null || pSpare != null
-        recheck(
+        saveTakes(
             TakesItem.TIRES,
-            {
-                it.copy(
-                    tireSize = front, tireSizeRear = rear.takeIf { front != null },
-                    tirePressureFront = pFront, tirePressureRear = pRear, tirePressureSpare = pSpare, tirePressureUnit = unit.takeIf { any },
-                )
-            },
+            { it.copy(tireSize = front, tireSizeRear = rear, tirePressureFront = pFront, tirePressureRear = pRear, tirePressureSpare = pSpare, tirePressureUnit = unit) },
             checked,
         )
-        vehicles.setTires(vehicleId, front, rear.takeIf { front != null }, pFront, pRear, pSpare, unit.name.takeIf { any })
     }
 
     fun saveWipers(driver: Int?, passenger: Int?, rear: Int?, note: String?, checked: Boolean) = viewModelScope.launch {
-        recheck(TakesItem.WIPERS, { it.copy(wiperDriver = driver, wiperPassenger = passenger, wiperRear = rear, wiperNote = note) }, checked)
-        vehicles.setWipers(vehicleId, driver, passenger, rear, note)
+        saveTakes(TakesItem.WIPERS, { it.copy(wiperDriver = driver, wiperPassenger = passenger, wiperRear = rear, wiperNote = note) }, checked)
     }
 
     /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */

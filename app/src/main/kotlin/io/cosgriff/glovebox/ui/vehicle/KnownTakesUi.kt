@@ -100,11 +100,17 @@ class KnownTakesRows @Inject constructor(private val catalog: KnownTakesCatalog,
         vehicles.fillTakes(v.id, plan.result, plan.filled, list.id, (v.takesToCheck() + plan.filled).stored())
     }
 
+    /** [item]'s editor saving [after] over [v]'s rows: the row is written, and its tag settled ([saved]). */
+    suspend fun save(v: VehicleEntity, item: TakesItem, after: WhatItTakes, checked: Boolean) {
+        saved(v, item, after, checked)
+        vehicles.setTakes(v.id, after, item)
+    }
+
     /**
      * After [item]'s editor saved [after] over [v]'s rows: the tag stays only while the owner neither
      * said they [checked] it nor changed it ([KnownTakes.stillToCheck]).
      */
-    suspend fun saved(v: VehicleEntity, item: TakesItem, after: WhatItTakes, checked: Boolean) {
+    private suspend fun saved(v: VehicleEntity, item: TakesItem, after: WhatItTakes, checked: Boolean) {
         val toCheck = v.takesToCheck()
         if (item !in toCheck || KnownTakes.stillToCheck(v.whatItTakes().summary(item), after.summary(item), checked)) return
         vehicles.setTakesToCheck(v.id, (toCheck - item).stored())
