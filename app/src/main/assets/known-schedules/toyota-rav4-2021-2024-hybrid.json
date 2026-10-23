@@ -1,0 +1,1445 @@
+{
+  "id": "toyota-rav4-2021-2024-hybrid",
+  "title": "2021–2024 RAV4 Hybrid",
+  "make": "Toyota",
+  "model": "RAV4",
+  "years": {
+    "from": 2021,
+    "to": 2024
+  },
+  "source": {
+    "name": "Toyota Warranty and Maintenance Guide",
+    "url": "https://assets.sia.toyota.com/publications/en/omms-s/T-MMS-22RAV4HV/pdf/T-MMS-22RAV4HV.pdf",
+    "retrieved": "2026-10-23",
+    "note": "Read from the maintenance log in Toyota's guide for these model years, in Glovebox's wording. Check it against the guide that came with your own vehicle.",
+    "basis": "The mileages, months and jobs of the maintenance log in Toyota's own Warranty and Maintenance Guides, which Toyota publishes free: T-MMS-21RAV4HV to T-MMS-24RAV4HV. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "engine": {
+    "label": "2.5L hybrid",
+    "displacementL": 2.5,
+    "powertrain": "hybrid"
+  },
+  "milestones": [
+    {
+      "atMiles": 5000,
+      "orMonths": 6,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 10000,
+      "orMonths": 12,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 15000,
+      "orMonths": 18,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "orMonths": 24,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 25000,
+      "orMonths": 30,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "orMonths": 36,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect automatic transmission for leaks"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 35000,
+      "orMonths": 42,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "orMonths": 48,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 45000,
+      "orMonths": 54,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "orMonths": 60,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 55000,
+      "orMonths": 66,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "orMonths": 72,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect automatic transmission for leaks"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        },
+        {
+          "name": "Replace automatic transmission fluid · towing or heavy loads",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        }
+      ]
+    },
+    {
+      "atMiles": 65000,
+      "orMonths": 78,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "orMonths": 84,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 75000,
+      "orMonths": 90,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "orMonths": 96,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 85000,
+      "orMonths": 102,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "orMonths": 108,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect automatic transmission for leaks"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 95000,
+      "orMonths": 114,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "orMonths": 120,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 105000,
+      "orMonths": 126,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "orMonths": 132,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 115000,
+      "orMonths": 138,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect HV battery cooling intake filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "orMonths": 144,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Clean HV battery cooling intake filter",
+          "service": "hybrid-battery-filter"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots"
+        },
+        {
+          "name": "Inspect engine and inverter coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect automatic transmission for leaks"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        },
+        {
+          "name": "Replace automatic transmission fluid · towing or heavy loads",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Replace engine oil and filter",
+      "everyMiles": 10000,
+      "everyMonths": 12,
+      "severe": {
+        "everyMiles": 5000,
+        "everyMonths": 6
+      },
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires",
+      "everyMiles": 5000,
+      "everyMonths": 6,
+      "service": "rotation"
+    },
+    {
+      "name": "Replace cabin air filter",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "cabin-air"
+    },
+    {
+      "name": "Replace engine air filter",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 120000,
+      "everyMonths": 144,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Clean HV battery cooling intake filter",
+      "everyMiles": 20000,
+      "everyMonths": 24,
+      "service": "hybrid-battery-filter"
+    },
+    {
+      "name": "Replace automatic transmission fluid · towing or heavy loads",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "severeOnly": true,
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Replace rear differential oil · towing or heavy loads",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "severeOnly": true,
+      "service": "rear-diff"
+    }
+  ]
+}
