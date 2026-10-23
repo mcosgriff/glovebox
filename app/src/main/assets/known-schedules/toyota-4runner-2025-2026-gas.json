@@ -1270,7 +1270,11 @@
           "service": "rotation"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect brake linings, drums, pads and discs",
@@ -1920,7 +1924,11 @@
           "service": "engine-air"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
@@ -2023,6 +2031,12 @@
       "name": "Replace engine air filter",
       "everyMiles": 30000,
       "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 100000,
+      "service": "coolant"
     },
     {
       "name": "Replace spark plugs",

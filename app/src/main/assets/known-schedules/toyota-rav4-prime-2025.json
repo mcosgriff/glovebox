@@ -987,7 +987,11 @@
           "service": "oil"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect ball joints and dust covers · dusty roads"
@@ -1519,14 +1523,19 @@
           "name": "Inspect steering linkage and boots"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect rear differential oil",
           "service": "rear-diff-check"
         },
         {
-          "name": "Replace inverter and intercooler coolant (if applicable)"
+          "name": "Replace inverter coolant",
+          "service": "inverter-coolant"
         },
         {
           "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
@@ -1557,6 +1566,18 @@
       "name": "Replace engine air filter",
       "everyMiles": 30000,
       "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
     },
     {
       "name": "Replace spark plugs",

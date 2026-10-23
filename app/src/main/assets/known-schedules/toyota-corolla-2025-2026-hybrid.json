@@ -1093,7 +1093,11 @@
           "service": "wipers-check"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Replace engine oil and filter",
@@ -1655,10 +1659,15 @@
           "service": "engine-air"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
         },
         {
-          "name": "Replace inverter and intercooler coolant (if applicable)"
+          "name": "Replace intercooler coolant (if applicable)"
+        },
+        {
+          "name": "Replace inverter coolant",
+          "service": "inverter-coolant"
         },
         {
           "name": "Replace engine oil and filter",
@@ -1742,6 +1751,18 @@
       "name": "Clean hybrid battery cooling filter",
       "everyMiles": 20000,
       "service": "hybrid-battery-filter"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
     },
     {
       "name": "Replace spark plugs",

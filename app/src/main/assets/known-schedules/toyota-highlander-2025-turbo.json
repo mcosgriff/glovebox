@@ -1123,7 +1123,11 @@
           "service": "oil"
         },
         {
-          "name": "Replace engine coolant and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Rotate tires",
@@ -1725,7 +1729,11 @@
           "service": "engine-air"
         },
         {
-          "name": "Replace engine coolant and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Re-torque propeller shaft bolts (if applicable)"
@@ -1812,6 +1820,12 @@
       "name": "Replace engine air filter",
       "everyMiles": 30000,
       "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "firstAtMiles": 100000,
+      "service": "coolant"
     },
     {
       "name": "Replace spark plugs",
