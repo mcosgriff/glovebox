@@ -347,7 +347,7 @@ A schedule the way an owner's manual prints it: mileage points, each with the wo
 | `atMiles` | this or `atKm` | Whole miles the vehicle has covered, 1 to 1000000. No two milestones in a file may share one |
 | `atKm` | this or `atMiles` | The same in whole kilometres, 1 to 1600000 |
 | `orMonths` | no | The vehicle's age in whole months at which the same work is due if the mileage isn't reached, 1 to 600. Shown for information |
-| `work` | yes | 1 to 40 lines, each with a `name` (up to 80 characters) and optionally a `service` |
+| `work` | yes | 1 to 60 lines, each with a `name` (up to 80 characters) and optionally a `service` |
 
 One optional field goes beside `items`, not inside a milestone, because it is about the table as a
 whole:

@@ -52,7 +52,7 @@ class MilestoneEditsTest {
         assertEquals(mapOf(0 to JobProblem.TooLong), problems(check(jobs = listOf(TableJob("x".repeat(81))))).jobs)
         assertTrue(check(jobs = listOf(TableJob("x".repeat(80)))) is MilestoneEdit.Ok)
         assertEquals(mapOf(0 to JobProblem.NotOneLine), problems(check(jobs = listOf(TableJob("Inspect\nbelts")))).jobs)
-        assertEquals(WorkProblem.TOO_MANY, problems(check(jobs = (1..41).map { TableJob("Job $it") })).work)
+        assertEquals(WorkProblem.TOO_MANY, problems(check(jobs = (1..MilestoneImport.MAX_WORK + 1).map { TableJob("Job $it") })).work)
         assertTrue(check(jobs = (1..30).map { TableJob("Job $it") }) is MilestoneEdit.Ok)
     }
 
@@ -110,8 +110,8 @@ class MilestoneEditsTest {
     fun `a table and a milestone are full at the file's limits`() {
         assertTrue(MilestoneEdits.canAdd(199))
         assertFalse(MilestoneEdits.canAdd(200))
-        assertTrue(MilestoneEdits.canAddJob(39))
-        assertFalse(MilestoneEdits.canAddJob(40))
+        assertTrue(MilestoneEdits.canAddJob(MilestoneImport.MAX_WORK - 1))
+        assertFalse(MilestoneEdits.canAddJob(MilestoneImport.MAX_WORK))
     }
 
     @Test
