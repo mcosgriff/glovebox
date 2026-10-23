@@ -13,11 +13,20 @@ interface KnownList {
     val model: String
     val years: IntRange
     val source: KnownSpecSource
+
+    /**
+     * Other names NHTSA gives the same car in these years ("Golf GTI" beside "GTI"), each one seen in vPIC's own
+     * model list for the make and year and recorded on the list's page. Never a near miss or a related model.
+     */
+    val modelAliases: List<String> get() = emptyList()
 }
 
-/** The lists for a vehicle's make and model (as NHTSA or the owner spelled them, ignoring case and space) and model year. */
+/**
+ * The lists for a vehicle's make and model (as NHTSA or the owner spelled them, ignoring case and space, or as one of
+ * the list's [KnownList.modelAliases]) and model year.
+ */
 fun <T : KnownList> List<T>.forModel(year: Int, make: String, model: String): List<T> =
-    filter { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
+    filter { year in it.years && KnownLists.same(it.make, make) && (listOf(it.model) + it.modelAliases).any { m -> KnownLists.same(m, model) } }
 
 internal data class KnownHeader(val id: String, val title: String, val make: String, val model: String, val years: IntRange, val source: KnownSpecSource)
 

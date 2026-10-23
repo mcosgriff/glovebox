@@ -107,6 +107,12 @@ for every engine the model had in its years. A vehicle is matched by the size in
 have?", offering each list's `label` and "Neither, or I'm not sure"; the pick is the owner's, and it is
 written to the vehicle if it had no engine on record. Nothing is guessed from a trim or a model name.
 
+`modelAliases` lists other names NHTSA gives the same car in those years, such as `"Golf GTI"` beside
+`"GTI"`: vPIC's model list for a make and year changes its spelling between years, and a list is matched
+by the model as decoded or picked. **An alias has to be seen in vPIC's own model list** (`GetModelsForMakeYear`,
+which is sent only the make and year) for a year the list covers, and the list's page says where. Never a
+near miss or a related model ("Golf" is not the GTI).
+
 **A hybrid, plug-in or flex-fuel model and its petrol twin of the same size** are told apart by
 `"powertrain"` in the `engine` block: `gas`, `hybrid`, `plug-in`, `flex-fuel` or `electric`. Set it only
 where two lists of one size differ by it; a list without it is for every powertrain. A vehicle's powertrain
