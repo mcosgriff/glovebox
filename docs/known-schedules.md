@@ -144,6 +144,12 @@ no powertrain on record.
 
 One page per list, named by its `id`:
 
+- [Toyota 4Runner, 2006, 4.0L V6](known-schedules/toyota-4runner-2006-v6.md) (`toyota-4runner-2006-v6`)
+- [Toyota 4Runner, 2006, 4.7L V8](known-schedules/toyota-4runner-2006-v8.md) (`toyota-4runner-2006-v8`)
+- [Toyota 4Runner, 2008, 4.0L V6](known-schedules/toyota-4runner-2008-v6.md) (`toyota-4runner-2008-v6`)
+- [Toyota 4Runner, 2008, 4.7L V8](known-schedules/toyota-4runner-2008-v8.md) (`toyota-4runner-2008-v8`)
+- [Toyota 4Runner, 2009, 4.0L V6](known-schedules/toyota-4runner-2009-v6.md) (`toyota-4runner-2009-v6`)
+- [Toyota 4Runner, 2009, 4.7L V8](known-schedules/toyota-4runner-2009-v8.md) (`toyota-4runner-2009-v8`)
 - [Toyota 4Runner, 2010, 4-cylinder](known-schedules/toyota-4runner-2010-4cyl.md) (`toyota-4runner-2010-4cyl`)
 - [Toyota 4Runner, 2010–2012, V6](known-schedules/toyota-4runner-2010-2012-v6.md) (`toyota-4runner-2010-2012-v6`)
 - [Toyota 4Runner, 2011, 4-cylinder](known-schedules/toyota-4runner-2011-4cyl.md) (`toyota-4runner-2011-4cyl`)
