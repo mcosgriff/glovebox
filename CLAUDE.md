@@ -24,6 +24,9 @@ and there is no baseline: fix a warning, or suppress that one case with a commen
 
 - `./gradlew :domain:test` — fast pure-Kotlin tests. Run often.
 - `./gradlew build` — everything, including the database migration tests (`:data`).
+- `./gradlew koverXmlReportCoverage` — unit-test coverage (Kover) of `:domain`, `:data` and `:app`, merged into
+  `build/reports/kover/reportCoverage.xml`; CI sends it to Codecov (`codecov.yml`: reported, never a gate). A new
+  generated-code pattern is excluded in the root `build.gradle.kts`.
 - `./gradlew :app:installDebug` — install on a connected phone (debug app id `io.cosgriff.glovebox.debug`).
 - **Dependency verification** (#246): every jar, POM and plugin must match `gradle/verification-metadata.xml`
   (keys in `gradle/verification-keyring.keys`), or the build fails, locally and in CI. After changing a

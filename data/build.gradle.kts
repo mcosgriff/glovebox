@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -70,4 +71,11 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.robolectric)
     testImplementation(libs.kotlinx.coroutines.android)
+}
+
+// Feeds the merged coverage report (root build.gradle.kts).
+kover {
+    currentProject {
+        createVariant("coverage") { add("debug") }
+    }
 }

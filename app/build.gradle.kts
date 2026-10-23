@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.baselineprofile)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.kover)
 }
 
 // CI passes -PversionName=1.2.0 -PversionCode=<run number>. Local builds use version.txt, which the
@@ -209,4 +210,11 @@ dependencies {
     testImplementation(libs.roborazzi.accessibility.check)
     // The empty activity the Compose test rule draws into; only in the debug manifest, never the release.
     debugImplementation(libs.compose.ui.test.manifest)
+}
+
+// Feeds the merged coverage report (root build.gradle.kts).
+kover {
+    currentProject {
+        createVariant("coverage") { add("debug") }
+    }
 }
