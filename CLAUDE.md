@@ -195,11 +195,12 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   bundled maker's schedule covers the vehicle; then that is the schedule** (the user's decision, 2026-10-13).
   Its items become the user's own (`knownList` set) and its table the vehicle's milestones.
 - **Never send a vehicle that already has items back through setup**: it inserts every item again.
-- Known maintenance schedules (#134, `KnownSchedules`, `docs/known-schedules.md`, which has the rules and what was
-  read). **Glovebox has no schedule of its own for any model and works none out; a bundled schedule is a maker's
-  published guide, named.** Only facts are taken, in Glovebox's words, for only the years whose guides were read
-  and agree. **An interval has to be the table's own** (`KnownSchedules.parse` refuses one that isn't). An
-  inspection is a reminder only where the user asked. A special-condition job has no `service`.
+- Known maintenance schedules (#134, `KnownSchedules`, `docs/known-schedules.md`, which has the rules, and
+  `docs/known-schedules/<id>.md`, what was read for each list). **Glovebox has no schedule of its own for any
+  model and works none out; a bundled schedule is a maker's published guide, named.** Only facts are taken, in
+  Glovebox's words, for only the years whose guides were read and agree. **An interval has to be the table's
+  own** (`KnownSchedules.parse` refuses one that isn't). An inspection is a reminder only where the user asked. A
+  special-condition job has no `service`.
 - "(4WD)" jobs (`fourWheelDriveOnly`) are left out only for a vehicle **known** to be two-wheel drive, and
   `manualExcluded` jobs only for one known to be manual. **4WD and AWD are different systems** (`DriveKind`).
   An engine that isn't on record matches no per-engine list; only setup asks which engine.
