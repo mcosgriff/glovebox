@@ -1,7 +1,7 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.notify.launchIntent
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import io.cosgriff.glovebox.notify.Destination
 
@@ -18,12 +18,7 @@ class ShortcutActivity : Activity() {
         super.onCreate(savedInstanceState)
         // Only a shortcut's own task is passed on; anything else opens the app as an ordinary launch.
         val shortcut = Destination.from(intent) as? Destination.Shortcut
-        startActivity(
-            Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                shortcut?.putInto(this)
-            },
-        )
+        startActivity(shortcut.launchIntent(this))
         finish()
     }
 }
