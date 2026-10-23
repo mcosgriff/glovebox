@@ -40,4 +40,7 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   ([2015–2016](toyota-4runner-2015-2016.md), which lacks only this list's cabin-filter inspection at 15,000,
   45,000, 75,000 and 105,000; [2014](toyota-4runner-2014.md); [2013](toyota-4runner-2013.md);
   [2010–2012 V6](toyota-4runner-2010-2012-v6.md); [2010](toyota-4runner-2010-4cyl.md) and
-  [2011](toyota-4runner-2011-4cyl.md) 4-cylinder). 2025 on: a new generation, with a chart in place of the log.
+  [2011](toyota-4runner-2011-4cyl.md) 4-cylinder). 2025 on: a new generation, with a chart in place of the log;
+  2025 and 2026 have lists of their own, one for the 2.4L turbo
+  ([toyota-4runner-2025-2026-gas](toyota-4runner-2025-2026-gas.md)) and one for the hybrid
+  ([toyota-4runner-2025-2026-hybrid](toyota-4runner-2025-2026-hybrid.md)).
