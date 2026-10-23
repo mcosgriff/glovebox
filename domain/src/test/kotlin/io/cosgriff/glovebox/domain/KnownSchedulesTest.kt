@@ -400,7 +400,8 @@ class KnownSchedulesTest {
     fun `the GTI list is Volkswagen's card for the car`() {
         val list = KnownSchedules.match(bundled, 2011, "VOLKSWAGEN", "GTI")!!
         assertEquals(2010..2014, list.years)
-        assertNull(KnownSchedules.match(bundled, 2015, "Volkswagen", "GTI"))
+        // 2015 is the Mk7, a list of its own.
+        assertEquals("volkswagen-gti-2015", KnownSchedules.match(bundled, 2015, "Volkswagen", "GTI")?.id)
         assertNull(KnownSchedules.match(bundled, 2011, "Volkswagen", "Golf"))
         // One column per 10,000 miles to 120,000; the card prints no months for them.
         assertEquals((10_000..120_000 step 10_000).toList(), list.milestones.map { it.atMiles })
