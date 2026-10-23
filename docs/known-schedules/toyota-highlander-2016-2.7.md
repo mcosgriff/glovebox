@@ -20,9 +20,10 @@ Read on 2026-10-23.
   - "Steering gear box" for "Steering gear", and spelling.
 - **A list for the 2.7L only.** The guide covers the 2.7L four-cylinder (1AR-FE) and the 3.5L V6 (2GR-FE)
   in one log, and no line in it names an engine, so every line is the 2.7L's. It is written as the 2.7L's
-  list, not as one for every engine, because the Highlander Hybrid is a 3.5L as well, and Glovebox can't
-  yet tell it apart from the V6: a list for every engine would be offered to a hybrid, whose guide is a
-  different one. The same lines would serve the 3.5L V6 once that can be told apart.
+  list, not as one for every engine, because the Highlander Hybrid is a 3.5L as well, with a guide of its
+  own: a list for every engine would be offered to a hybrid. The same lines serve the 3.5L V6, in
+  [toyota-highlander-2016-3.5](toyota-highlander-2016-3.5.md), told apart from
+  [toyota-highlander-2016-hybrid](toyota-highlander-2016-hybrid.md) by powertrain.
 - **"(AWD)"**: the guide prints "(4WD)" on the propeller shaft bolt, rear differential oil and transfer
   case oil lines. Toyota sells the Highlander as AWD, so they are named "(AWD)" and kept in
   `allWheelDriveOnly` (the owner's ruling); a Highlander known to be front-wheel drive doesn't get them.

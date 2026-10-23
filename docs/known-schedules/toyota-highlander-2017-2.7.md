@@ -20,8 +20,9 @@ Read on 2026-10-23.
   plugs at 60,000 and the brake booster's vacuum pump at 120,000, each "(2GR-FKS engine only)". Every other
   line names no engine, so it is the 2.7L's as much as the V6's. This list is the log without those two
   lines. Spark plugs are replaced at 120,000 for every engine.
-- The 3.5L list isn't made here: the Highlander Hybrid is a 3.5L too, and Glovebox can't yet tell the two
-  apart.
+- The 3.5L V6 and the 3.5L Highlander Hybrid have lists of their own, told apart by powertrain
+  ([toyota-highlander-2017-3.5](toyota-highlander-2017-3.5.md),
+  [toyota-highlander-2017-hybrid](toyota-highlander-2017-hybrid.md)).
 - **"(AWD)"**: the guide prints "(4WD)" on the propeller shaft bolt, rear differential oil and transfer
   case oil lines. Toyota sells the Highlander as AWD, so they are named "(AWD)" and kept in
   `allWheelDriveOnly` (the owner's ruling); a Highlander known to be front-wheel drive doesn't get them.
