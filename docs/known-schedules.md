@@ -162,5 +162,7 @@ One page per list, named by its `id`:
 - [Toyota Highlander 2.7L, 2018–2019](known-schedules/toyota-highlander-2018-2019-2.7.md) (`toyota-highlander-2018-2019-2.7`)
 - [Toyota Highlander 3.5L V6, 2020–2022](known-schedules/toyota-highlander-2020-2022-v6.md) (`toyota-highlander-2020-2022-v6`)
 - [Toyota Sequoia, 2019–2022](known-schedules/toyota-sequoia-2019-2022.md) (`toyota-sequoia-2019-2022`)
+- [Toyota Sienna, 2017](known-schedules/toyota-sienna-2017.md) (`toyota-sienna-2017`)
+- [Toyota Sienna, 2018–2020](known-schedules/toyota-sienna-2018-2020.md) (`toyota-sienna-2018-2020`)
 - [Toyota Tundra, 2020–2021](known-schedules/toyota-tundra-2020-2021.md) (`toyota-tundra-2020-2021`)
 - [Volkswagen GTI, 2010–2014 (Mk6)](known-schedules/volkswagen-gti-2010-2014.md) (`volkswagen-gti-2010-2014`)
