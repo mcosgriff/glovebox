@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -131,7 +132,7 @@ class MileageReadingsViewModel @Inject constructor(
         entities = readings.associateBy { it.id }
         val swap = vehicle.clusterSwap()
         MileageReadingsState(
-            vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
+            vehicleName = vehicle.shortName(),
             // Everything as typed; MileageReadings puts it in dash terms to compare.
             rows = MileageReadings.rows(
                 readings.map { LoggedReading(it.id, it.date, it.odometer) } +

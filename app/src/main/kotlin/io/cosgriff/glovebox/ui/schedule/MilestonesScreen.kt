@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -173,7 +175,7 @@ class MilestonesViewModel @Inject constructor(
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = VehicleReminders.currentOdometer(entries, readings.toReadings(swap))?.let { swap.actual(it) }
-        val name = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}"
+        val name = vehicle.shortName()
         if (rows.isNotEmpty()) {
             // The user's own table is shown as it is, in place of the view built from the schedule.
             val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
@@ -196,7 +198,7 @@ class MilestonesViewModel @Inject constructor(
                 hasMileageItems = true,
                 fromTable = true,
                 table = saved,
-                model = "${vehicle.year} ${vehicle.make} ${vehicle.model}",
+                model = vehicle.fileStem(),
                 repeatsEveryMiles = every,
                 startedFrom = vehicle.milestonesKnownList?.let { id -> startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
             )

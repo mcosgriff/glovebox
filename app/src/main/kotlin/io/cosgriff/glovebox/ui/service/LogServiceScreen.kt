@@ -395,7 +395,7 @@ class LogServiceViewModel @Inject constructor(
 
             form.categoryId = categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: categories.first().id
             form.data = LogServiceData(
-                vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+                vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
                 categories = categories,
                 due = due,
                 tracked = tracked,

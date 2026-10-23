@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.asChoice
 import io.cosgriff.glovebox.ui.components.ChooseVehicleDialog
@@ -97,7 +98,7 @@ class SettingsViewModel @Inject constructor(private val repo: SettingsRepository
 
     /** Vehicles in the garage; archived ones have no schedule to keep. */
     val vehicles = vehicles.observeActive()
-        .map { list -> list.map { ScheduleOwner(it.id, "${it.year} ${it.nickname ?: it.model}") } }
+        .map { list -> list.map { ScheduleOwner(it.id, it.shortName()) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** The same vehicles as the chooser names them. */

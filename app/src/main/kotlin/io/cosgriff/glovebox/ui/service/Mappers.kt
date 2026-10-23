@@ -154,6 +154,21 @@ val NoLinks: Map<String, Set<Long>> = emptyMap()
  * [answering] is the vehicle's own ([answering] above): a line counts for the item it was saved
  * against and for every item that answers to the catalog line it was picked from.
  */
+/**
+ * "2019 Blue truck": the year, then the nickname, or the model when there is none. The order is wording, so it is
+ * a string resource. A blank nickname counts as none, as in `VehicleChoice`.
+ */
+fun VehicleEntity.shortName(): String = AppText.res.getString(R.string.vehicle_short_name, "$year", nicknameOrModel())
+
+/** "Blue truck": the nickname, or the model when there is none. */
+fun VehicleEntity.nicknameOrModel(): String = nickname?.takeIf { it.isNotBlank() } ?: model
+
+/** "2019 Blue truck · 4.0L V6": a screen's subtitle, with the engine when it is known. */
+fun VehicleEntity.subtitle(): String = listOfNotNull(shortName(), engine?.takeIf { it.isNotBlank() }).joinToString(" · ")
+
+/** "2019 Toyota 4Runner", which a suggested file name is made from. */
+fun VehicleEntity.fileStem(): String = "$year $make $model"
+
 /** A record as `Visits` sees it (#307). */
 fun ServiceRecordEntity.toVisit(): VisitRecord = VisitRecord(id, visitId, date, odometer, shopName.takeIf { !diy })
 

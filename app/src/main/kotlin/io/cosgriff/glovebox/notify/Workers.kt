@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.BackupRules
@@ -90,7 +91,7 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
             val tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap) }
             NoticeVehicle(
                 id = v.id,
-                name = "${v.year} ${v.nickname ?: v.model}",
+                name = v.shortName(),
                 // Last done goes in as it was read, so recording a cluster replacement doesn't look like the
                 // service being logged again (NoticeRules.cycle) and announce everything a second time.
                 statuses = VehicleReminders.statuses(tracked, entries, updates, today, settings.leadFor(v.unit))
@@ -141,7 +142,7 @@ class RecallCheckWorker(context: Context, params: WorkerParameters) : CoroutineW
                 is RecallRefresh.Checked ->
                     if (!firstCheck && settings.notices.recalls && result.added.isNotEmpty()) {
                         deps.notifier().post(
-                            Notice.NewRecalls(v.id, "${v.year} ${v.nickname ?: v.model}", result.added.map { recallComponent(it.component) }),
+                            Notice.NewRecalls(v.id, v.shortName(), result.added.map { recallComponent(it.component) }),
                         )
                     }
                 RecallRefresh.Failed -> failed = true

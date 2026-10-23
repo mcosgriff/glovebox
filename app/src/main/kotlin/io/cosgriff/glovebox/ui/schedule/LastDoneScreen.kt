@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.OdometerField
@@ -128,7 +129,7 @@ class LastDoneViewModel @Inject constructor(
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
         LastDoneState(
-            vehicleName = "${vehicle.year} ${vehicle.nickname ?: vehicle.model}",
+            vehicleName = vehicle.shortName(),
             rows = LastDoneEntries.rows(
                 items.mapNotNull { it.toTracked(s.defaultRule, swap) },
                 entries,

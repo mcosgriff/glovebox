@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -138,7 +139,7 @@ fun ArchivedVehiclesScreen(
             )
         }
         items(archived, key = { it.vehicle.id }) { a ->
-            val name = a.vehicle.nickname ?: a.vehicle.model
+            val name = a.vehicle.nicknameOrModel()
             ArchivedCard(
                 a,
                 onViewHistory = { onViewHistory(a.vehicle.id) },

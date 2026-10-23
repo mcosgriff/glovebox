@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
@@ -438,7 +439,7 @@ fun VehicleDetailsScreen(
             onDismiss = { addingVin = false },
         )
     }
-    val name = v.nickname ?: v.model
+    val name = v.nicknameOrModel()
 
     if (selling) {
         MarkAsSoldSheet(
@@ -531,7 +532,7 @@ internal fun VehicleDetailsContent(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nickname ?: v.model, onPick = onPickPhoto, onRemove = onRemovePhoto)
+                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nicknameOrModel(), onPick = onPickPhoto, onRemove = onRemovePhoto)
                 if (photoFailed) {
                     Text(
                         stringResource(R.string.details_photo_unreadable),

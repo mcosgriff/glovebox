@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.service.subtitle
+import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -435,7 +437,7 @@ fun ScheduleScreen(
         state, hasMilestoneTable, onBack, onSetUp, onEnterLastDone, onOpenMilestones,
         onSetTracked = vm::setTracked, onEdit = vm::edit, onAddOwn = vm::addOwn, onAddKnown = { vm.addKnown(it) },
         onAddMissing = { vm.addMissing() }, onChooseSevereUse = { vm.chooseSevereUse(it) }, onSetAllTracked = vm::setAllTracked,
-        onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, "${state.vehicle.year} ${state.vehicle.make} ${state.vehicle.model}") },
+        onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, state.vehicle.fileStem()) },
     )
 }
 
@@ -463,7 +465,7 @@ internal fun ScheduleContent(
     val tracked = state.items.count { it.tracked && !it.dormant }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ScreenHeader(stringResource(R.string.details_schedule), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
+        ScreenHeader(stringResource(R.string.details_schedule), onBack, subtitle = v.subtitle())
 
         Column(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),

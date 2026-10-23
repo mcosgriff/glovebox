@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
@@ -144,7 +145,7 @@ class ExportViewModel @Inject constructor(
         options = ExportOptions(format = format)
         viewModelScope.launch {
             val rule = settings.settings.first().defaultRule
-            val list = vehicles.all().map { v -> Exportable(v.id, v.nickname ?: v.model, v.archivedOn != null, exportVehicle(v, rule)) }
+            val list = vehicles.all().map { v -> Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exportVehicle(v, rule)) }
             all = list
             if (list.none { it.id == vehicleId }) vehicleId = list.firstOrNull()?.id
         }

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.service.subtitle
+import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
@@ -149,7 +151,7 @@ class TorqueSpecsViewModel @Inject constructor(
 
     fun saveAsFile(text: String) {
         val v = state.value?.vehicle ?: return
-        viewModelScope.launch { saver.saveImportFile(text, TorqueExport.fileName("${v.year} ${v.make} ${v.model}")) }
+        viewModelScope.launch { saver.saveImportFile(text, TorqueExport.fileName(v.fileStem())) }
     }
 
     /** [draft] with id 0 is a new spec. An edit keeps what the editor doesn't show: that the row came from a bundled list. */
@@ -281,7 +283,7 @@ internal fun TorqueSpecsContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            ScreenHeader(stringResource(R.string.details_torque), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
+            ScreenHeader(stringResource(R.string.details_torque), onBack, subtitle = v.subtitle())
         }
 
         if (state.specs.isEmpty()) {

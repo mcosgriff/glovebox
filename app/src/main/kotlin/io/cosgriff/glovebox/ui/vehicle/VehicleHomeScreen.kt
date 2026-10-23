@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
@@ -215,7 +216,7 @@ fun VehicleHomeScreen(
 
     if (updatingMileage) {
         UpdateMileageSheet(
-            vehicleName = "${v.year} ${v.nickname ?: v.model}",
+            vehicleName = v.shortName(),
             unit = unit,
             preview = { miles -> MileageUpdate.preview(home.inputs, miles, LocalDate.now(), unit) },
             onSave = { miles ->
@@ -388,7 +389,7 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("${v.year} ${v.nickname ?: v.model}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(v.shortName(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         // vPIC drive types read like "4WD/4-Wheel Drive/4x4"; the first part is enough here.
                         listOfNotNull(v.trim, v.drivetrain?.substringBefore('/'), v.engine).joinToString(" · "),

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -231,7 +232,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            ScreenHeader(stringResource(R.string.documents_title), onBack, subtitle = "${d.vehicle.year} ${d.vehicle.nickname ?: d.vehicle.model}")
+            ScreenHeader(stringResource(R.string.documents_title), onBack, subtitle = d.vehicle.shortName())
         }
         if (d.documents.isEmpty()) {
             item {

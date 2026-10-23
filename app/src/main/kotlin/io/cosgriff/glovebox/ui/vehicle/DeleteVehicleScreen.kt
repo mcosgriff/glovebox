@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.DangerButton
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
@@ -84,7 +86,7 @@ data class DeleteVehicleData(
     val lastOdometer: Int?,
 ) {
     /** What the user types to confirm. */
-    val name: String get() = vehicle.nickname ?: vehicle.model
+    val name: String get() = vehicle.nicknameOrModel()
 }
 
 @HiltViewModel
@@ -194,7 +196,7 @@ fun DeleteVehicleScreen(
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    stringResource(R.string.delete_vehicle_title, "${d.vehicle.year} ${d.name}"),
+                    stringResource(R.string.delete_vehicle_title, d.vehicle.shortName()),
                     Modifier.semantics { heading() },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,

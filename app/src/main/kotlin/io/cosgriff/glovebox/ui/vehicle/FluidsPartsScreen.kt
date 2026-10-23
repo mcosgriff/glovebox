@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -145,7 +146,7 @@ fun FluidsPartsScreen(onBack: () -> Unit, vm: FluidsPartsViewModel = hiltViewMod
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            ScreenHeader(stringResource(R.string.fluids_title), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.engine).joinToString(" · "))
+            ScreenHeader(stringResource(R.string.fluids_title), onBack, subtitle = v.subtitle())
         }
         if (entered.isEmpty()) {
             item {

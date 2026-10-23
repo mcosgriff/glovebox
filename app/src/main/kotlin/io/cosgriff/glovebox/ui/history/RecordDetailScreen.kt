@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
@@ -181,7 +182,7 @@ class RecordDetailViewModel @Inject constructor(
 
         RecordDetail(
             record = r,
-            vehicleName = vehicle?.let { "${it.year} ${it.nickname ?: it.model}" }.orEmpty(),
+            vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
             unit = unit,
             readOnly = vehicle?.archivedOn != null,
             lines = r.items.map { item ->

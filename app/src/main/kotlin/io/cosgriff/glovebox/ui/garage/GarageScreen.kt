@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -215,7 +217,7 @@ private fun VehicleCard(g: GarageVehicle, onClick: () -> Unit) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("${v.year} ${v.nickname ?: v.model}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(v.shortName(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(
                         // vPIC drive types read like "4WD/4-Wheel Drive/4x4"; the first part is enough here.
                         listOfNotNull(v.trim, v.drivetrain?.substringBefore('/'), v.engine).joinToString(" · "),
@@ -293,7 +295,7 @@ private fun AcrossAll(vehicleCount: Int, urgent: List<UrgentItem<VehicleEntity>>
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            "${item.status.item.name} · ${item.vehicle.nickname ?: item.vehicle.model}",
+                            "${item.status.item.name} · ${item.vehicle.nicknameOrModel()}",
                             Modifier.weight(1f),
                             style = MaterialTheme.typography.bodyMedium,
                         )

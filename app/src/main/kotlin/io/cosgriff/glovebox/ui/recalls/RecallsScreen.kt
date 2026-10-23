@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -265,7 +266,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
-            ScreenHeader(stringResource(R.string.details_recalls), onBack, subtitle = listOfNotNull("${v.year} ${v.nickname ?: v.model}", v.vin?.let { stringResource(R.string.recalls_vin_end, it.takeLast(6)) }).joinToString(" · "))
+            ScreenHeader(stringResource(R.string.details_recalls), onBack, subtitle = listOfNotNull(v.shortName(), v.vin?.let { stringResource(R.string.recalls_vin_end, it.takeLast(6)) }).joinToString(" · "))
         }
 
         item {

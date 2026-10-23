@@ -2291,4 +2291,6 @@
     <string name="licences_plex">IBM Plex Sans and IBM Plex Mono (fonts)</string>
     <string name="licences_tesseract">Tesseract4Android (Tesseract OCR, Leptonica, libjpeg, libpng and English language data)</string>
     <string name="licences_tesseract_bundled">Leptonica, libjpeg and libpng licences</string>
+    <!-- A vehicle's short name: the year, then its nickname or model ("2019 Blue truck"). -->
+    <string name="vehicle_short_name">%1$s %2$s</string>
 </resources>
