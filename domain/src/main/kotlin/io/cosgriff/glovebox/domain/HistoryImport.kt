@@ -209,25 +209,8 @@ object HistoryImport {
         val points = (after.map { Point(it.date, it.odometer, it) } + updates.map { Point(it.date, it.odometer, null) })
             .sortedWith(compareBy<Point> { it.date }.thenBy { it.odometer })
         if (points.isEmpty()) return emptyList()
-        // Heaviest non-decreasing subsequence, by the plain quadratic method: files are capped well below
-        // where that matters. A saved reading weighs a little more than a new one, which settles ties.
-        fun weight(p: Point) = if (p.new) 2 else 3
-        val length = IntArray(points.size) { weight(points[it]) }
-        val previous = IntArray(points.size) { -1 }
-        for (i in points.indices) {
-            for (j in 0 until i) {
-                if (points[j].odometer <= points[i].odometer && length[j] + weight(points[i]) > length[i]) {
-                    length[i] = length[j] + weight(points[i])
-                    previous[i] = j
-                }
-            }
-        }
-        val fits = mutableSetOf<Int>()
-        var at = length.indices.maxByOrNull { length[it] } ?: -1
-        while (at >= 0) {
-            fits += at
-            at = previous[at]
-        }
+        // A saved reading weighs a little more than a new one, which settles ties: the file is the likelier to be wrong.
+        val fits = MileageReadings.agreeing(points.map { it.odometer }, weight = { if (points[it].new) 2 else 3 }, preferLater = false)
         val run = fits.sorted()
         return points.mapIndexedNotNull { i, p ->
             if (!p.new) return@mapIndexedNotNull null
@@ -254,7 +237,7 @@ object HistoryImport {
         if (history < 365) return false
         val delta = reading.odometer.toLong() - before.odometer
         if (delta <= unit.scheduled(MileageReadings.FAR_MILES)) return false
-        val usual = (before.odometer - first.odometer).toDouble() / history
+        val usual = ReminderEngine.milesPerDay(listOf(first, before)) ?: 0.0
         val days = ChronoUnit.DAYS.between(before.date, reading.date).coerceAtLeast(1)
         return delta > usual * FAR_PACE * days
     }
