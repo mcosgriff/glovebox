@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.domain
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.util.Locale
 
 /** One job from an `interval-schedule` import file, already checked. [rule] null means the app-wide default. */
 data class ImportedScheduleItem(
@@ -114,7 +113,7 @@ object ScheduleImport {
     }
 
     /** Two items are the same job when their names agree, ignoring case. */
-    fun key(name: String): String = name.trim().lowercase(Locale.US)
+    fun key(name: String): String = Names.key(name)
 
     /**
      * The file against the items the user added themselves. The typical items Glovebox suggested

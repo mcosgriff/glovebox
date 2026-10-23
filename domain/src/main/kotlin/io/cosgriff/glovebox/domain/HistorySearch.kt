@@ -40,5 +40,5 @@ object Shops {
     }
 
     /** A shop name as compared: case and the spaces round it ignored. */
-    fun key(name: String) = name.trim().lowercase()
+    fun key(name: String) = Names.key(name)
 }

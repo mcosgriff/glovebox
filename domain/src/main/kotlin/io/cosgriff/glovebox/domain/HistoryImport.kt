@@ -5,7 +5,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 /** One line of work on an imported record. [service] is a [CatalogItem] id; null for anything else. */
 data class ImportedWork(val label: String, val service: String? = null)
@@ -135,7 +134,7 @@ object HistoryImport {
             services[line.service]?.resets?.let { key -> schedule.firstOrNull { it.templateKey == key } }
                 ?: schedule.filter { it.templateKey == null && it.service == line.service }.minByOrNull { it.id }
         } else {
-            schedule.firstOrNull { it.templateKey == null && it.name.trim().equals(line.label, ignoreCase = true) }
+            schedule.firstOrNull { it.templateKey == null && Names.key(it.name) == Names.key(line.label) }
         }
         return ResolvedWork(line.label, line.service, target?.id)
     }
@@ -144,7 +143,7 @@ object HistoryImport {
     fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
         ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
 
-    private fun labels(labels: List<String>): List<String> = labels.map { it.trim().lowercase(Locale.US) }.sorted()
+    private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 
     /**
      * The file against the vehicle's log. A record matches a saved one with the same date and

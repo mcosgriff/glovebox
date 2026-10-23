@@ -2,7 +2,6 @@ package io.cosgriff.glovebox.domain
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import java.util.Locale
 
 /** One line of work at a milestone in the user's own table. [service] is a [CatalogItem] id; null for anything else. */
 data class TableJob(val name: String, val service: String? = null)
@@ -55,7 +54,7 @@ object MilestoneImport {
     }
 
     /** What makes two names in one milestone the same name. */
-    fun nameKey(name: String): String = name.trim().lowercase(Locale.US)
+    fun nameKey(name: String): String = Names.key(name)
 
     /** A cycle shorter than the table would put a repeat of an early milestone among the later ones. */
     fun cycleCovers(everyMiles: Int, lastMiles: Int): Boolean = everyMiles >= lastMiles

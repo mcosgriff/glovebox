@@ -82,7 +82,7 @@ object TorqueImport {
     }
 
     /** Two rows are the same fastener when the category and the name agree, ignoring case. */
-    fun key(name: String, category: TorqueCategory): String = "${category.name}|${name.trim().lowercase(Locale.US)}"
+    fun key(name: String, category: TorqueCategory): String = "${category.name}|${Names.key(name)}"
 
     /** Close enough to be the same setting on a wrench, whichever unit each was written in. */
     private fun sameTorque(a: Torque?, b: Torque?): Boolean =
