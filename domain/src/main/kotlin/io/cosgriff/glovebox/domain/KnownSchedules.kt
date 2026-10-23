@@ -33,6 +33,11 @@ data class KnownScheduleList(
      */
     val fourWheelDriveOnly: Set<String> = emptySet(),
     /**
+     * The names of the jobs the guide marks as for all-wheel drive only. Kept apart from
+     * [fourWheelDriveOnly] because the two are different systems ([DriveKind]); the rule is the same.
+     */
+    val allWheelDriveOnly: Set<String> = emptySet(),
+    /**
      * The names of the jobs that aren't for a manual gearbox (a dual-clutch or automatic
      * transmission's fluid change). A vehicle known to have a manual doesn't get them.
      */
@@ -78,7 +83,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "manualExcluded", "engine")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "engine")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -98,6 +103,7 @@ object KnownSchedules {
             }
         }.orEmpty().map(MilestoneImport::nameKey).toSet()
         val fourWheel = jobs("fourWheelDriveOnly")
+        val allWheel = jobs("allWheelDriveOnly")
         val notManual = jobs("manualExcluded")
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
@@ -105,6 +111,7 @@ object KnownSchedules {
             KnownScheduleList(
                 header.id, header.title, header.make, header.model, header.years, header.source, check.unit, milestones, intervals,
                 fourWheelDriveOnly = fourWheel,
+                allWheelDriveOnly = allWheel,
                 manualExcluded = notManual,
                 engine = engine,
             ),
@@ -161,16 +168,16 @@ object KnownSchedules {
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one
      * picked when the vehicle was added). Only a vehicle **known** to drive two wheels loses the
-     * jobs the guide marks "(4WD)". Anything else keeps them, with "(4WD)" in their names: a
-     * four-wheel-drive vehicle because they are its jobs, and one on record as all-wheel drive or as
-     * nothing at all because the guide has no other line for it and leaving a job out is the worse
-     * mistake. That is not a claim that all-wheel drive is four-wheel drive ([DriveKind]).
+     * jobs the guide marks "(4WD)" or "(AWD)". Anything else keeps them, with the mark in their
+     * names: a vehicle with that drive because they are its jobs, and one on record as the other
+     * kind or as nothing at all because the guide has no other line for it and leaving a job out is
+     * the worse mistake. That is not a claim that all-wheel drive is four-wheel drive ([DriveKind]).
      */
     fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, transmission: String? = null): Boolean {
         val key = MilestoneImport.nameKey(jobName)
         val twoWheel = Drivetrains.kind(drivetrain) == DriveKind.TWO_WHEEL
         // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one.
-        return !(twoWheel && key in list.fourWheelDriveOnly) && !(Transmissions.isManual(transmission) && key in list.manualExcluded)
+        return !(twoWheel && (key in list.fourWheelDriveOnly || key in list.allWheelDriveOnly)) && !(Transmissions.isManual(transmission) && key in list.manualExcluded)
     }
 
     /**

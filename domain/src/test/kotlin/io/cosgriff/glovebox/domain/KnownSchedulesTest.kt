@@ -258,6 +258,32 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a vehicle known to drive two wheels doesn't get the all-wheel-drive jobs`() {
+        val table = someTable.replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the coupling oil (AWD)\" }")
+        val list = (KnownSchedules.parse(file(table, extra = "\"allWheelDriveOnly\": [\"Change the coupling oil (AWD)\"],")) as KnownScheduleFile.Ok).list
+        assertEquals(setOf(MilestoneImport.nameKey("Change the coupling oil (AWD)")), list.allWheelDriveOnly)
+        assertTrue(list.fourWheelDriveOnly.isEmpty())
+        fun jobs(drivetrain: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, drivetrain).flatMap { m -> m.work.map { it.name } }
+        // Only a vehicle known to drive two wheels loses it; a four-wheel-drive one, or one with nothing on record, keeps it.
+        listOf("AWD/All-Wheel Drive", "AWD", "4WD/4-Wheel Drive/4x4", null, "").forEach { drive ->
+            assertTrue("$drive", "Change the coupling oil (AWD)" in jobs(drive))
+        }
+        listOf("4x2", "FWD/Front-Wheel Drive", "RWD").forEach { drive ->
+            assertTrue("$drive", jobs(drive).none { "(AWD)" in it })
+            assertEquals("$drive", 4, KnownSchedules.milestonesIn(list, DistanceUnit.MILES, drive).size)
+        }
+        assertTrue(errors(file(extra = "\"allWheelDriveOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+    }
+
+    @Test
+    fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
+        bundled.forEach { list ->
+            val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
+            assertEquals(list.id, names.filter { "(AWD)" in it }.map(MilestoneImport::nameKey).toSet(), list.allWheelDriveOnly)
+        }
+    }
+
+    @Test
     fun `four-wheel drive and all-wheel drive are told apart`() {
         assertEquals(DriveKind.FOUR_WHEEL, Drivetrains.kind("4WD/4-Wheel Drive/4x4"))
         assertEquals(DriveKind.FOUR_WHEEL, Drivetrains.kind("2WD/4WD"))
