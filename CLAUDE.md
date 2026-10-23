@@ -880,6 +880,10 @@ Notes on what's built:
   are a close call. `LineGuessTest` measures it on two made-up sets: the one it was tuned on, and one written after
   and never tuned to, which is the honest figure (55 of 61 right, 2 wrong at the time of writing). Everything runs on
   the phone; nothing is looked up.
+  On screen (`SuggestionSource.GUESS`, `CustomLines.suggest` asks it last): the sort page says "Looks like: <line>"
+  with "Use this line", and `CustomLines.picked` never starts a guess picked; Log service's custom item (and File
+  under a line) offers it after the user's rule and recognised wording, tagged "a guess"; the Import preview's note
+  names the wordings that will land under Custom with a guess (`CustomLines.guessesFor`), and files nothing.
 - Log service's shop field (`ShopField`, `Shops.suggest` in `:domain`) offers up to five shops from every vehicle's
   records (`ServiceDao.observeShops`, imported ones too), narrowed by what is typed, most recently used first, one per
   name ignoring case and the spaces round it, each as last typed. What is typed is saved as typed unless a suggestion

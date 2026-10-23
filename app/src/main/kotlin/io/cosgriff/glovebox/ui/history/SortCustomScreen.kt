@@ -233,8 +233,9 @@ internal fun SortCustomContent(
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item { ScreenHeader(stringResource(R.string.sort_custom_title), onBack, subtitle = stringResource(R.string.sort_custom_about)) }
             if (groups.isEmpty()) item { EmptyState(stringResource(R.string.sort_custom_none), title = stringResource(R.string.sort_custom_none_title)) }
-            if (groups.isNotEmpty()) {
-                val lines = groups.sumOf { it.lineIds.size }
+            val lines = groups.sumOf { it.lineIds.size }
+            // Said only when a row holds more than one line, which is when the count and the rows seem to disagree.
+            if (lines > groups.size) {
                 item {
                     Text(
                         pluralStringResource(R.plurals.sort_custom_count, groups.size, lines.asNumber(), groups.size.asNumber()),
@@ -251,6 +252,7 @@ internal fun SortCustomContent(
                     remember = remember[group.key] != false,
                     onPick = { picking = group.key },
                     onLeave = { onChoose(group.key, null) },
+                    onUse = { id -> onChoose(group.key, id) },
                     onRemember = { onRemember(group.key, it) },
                     modifier = Modifier.padding(horizontal = 20.dp),
                 )
@@ -286,6 +288,8 @@ private fun GroupCard(
     onLeave: () -> Unit,
     onRemember: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    /** Takes the guess for this group; it is never taken for the user. */
+    onUse: (catalogId: String) -> Unit = {},
 ) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     FilledCard(modifier, padding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 4.dp)) {
@@ -294,13 +298,28 @@ private fun GroupCard(
             Text(groupDetail(group), style = MaterialTheme.typography.bodySmall, color = muted)
             if (picked == null) {
                 Text(stringResource(R.string.sort_custom_stays), Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodyLarge, color = muted)
+                // A guess (#312) is said, labelled as one, and waits for the user's tap.
+                val guess = group.suggestion?.takeIf { it.source == SuggestionSource.GUESS }
+                guess?.let { Text(stringResource(R.string.sort_custom_looks_like, lineWithCategory(it.catalogId)), style = MaterialTheme.typography.bodyMedium) }
                 val pickFor = stringResource(R.string.sort_custom_pick_for, group.label)
-                TextButton(
-                    onClick = onPick,
-                    modifier = Modifier.defaultMinSize(minWidth = 1.dp).heightIn(min = 48.dp).semantics { contentDescription = pickFor },
-                    contentPadding = PaddingValues(horizontal = 0.dp),
-                ) {
-                    Text(stringResource(R.string.sort_custom_pick))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    guess?.let { g ->
+                        val useFor = stringResource(R.string.sort_custom_use_for, group.label, catalogLabel(g.catalogId))
+                        TextButton(
+                            onClick = { onUse(g.catalogId) },
+                            modifier = Modifier.defaultMinSize(minWidth = 1.dp).heightIn(min = 48.dp).semantics { contentDescription = useFor },
+                            contentPadding = PaddingValues(horizontal = 0.dp),
+                        ) {
+                            Text(stringResource(R.string.sort_custom_use))
+                        }
+                    }
+                    TextButton(
+                        onClick = onPick,
+                        modifier = Modifier.defaultMinSize(minWidth = 1.dp).heightIn(min = 48.dp).semantics { contentDescription = pickFor },
+                        contentPadding = PaddingValues(horizontal = 0.dp),
+                    ) {
+                        Text(stringResource(R.string.sort_custom_pick))
+                    }
                 }
             } else {
                 Picked(picked, group.suggestion?.takeIf { it.catalogId == picked }?.source)
@@ -357,7 +376,8 @@ private fun Picked(catalogId: String, source: SuggestionSource?) {
                 when (source) {
                     SuggestionSource.YOUR_RULE -> R.string.sort_custom_from_rule
                     SuggestionSource.GLOVEBOX -> R.string.sort_custom_from_wording
-                    null -> R.string.sort_custom_from_you
+                    // A guess is only ever picked by the user's tap, so it is their pick.
+                    SuggestionSource.GUESS, null -> R.string.sort_custom_from_you
                 },
             ),
             style = MaterialTheme.typography.bodySmall,

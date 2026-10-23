@@ -59,7 +59,9 @@ class CustomLinesTest {
         val rules = listOf(CatalogRule("Water pump replaced", "cooling-check"))
         assertEquals(LineSuggestion("cooling-check", SuggestionSource.YOUR_RULE), CustomLines.suggest("Water pump replaced", rules))
         assertEquals(LineSuggestion("water-pump", SuggestionSource.GLOVEBOX), CustomLines.suggest("Water pump replaced", emptyList()))
-        assertNull(CustomLines.suggest("Roof rack fitted", rules))
+        // Wording no rule or pattern knows gets at most a guess.
+        assertEquals(LineSuggestion("accessory", SuggestionSource.GUESS), CustomLines.suggest("Roof rack fitted", rules))
+        assertNull(CustomLines.suggest("Misc parts", rules))
     }
 
     private val rules = listOf(CatalogRule("Brakes done", "brake-service"))
@@ -120,5 +122,31 @@ class CustomLinesTest {
             listOf(CatalogRule("water pump replaced", "water-pump"), CatalogRule("Brakes done", "brake-inspect")),
             CustomLines.rulesToKeep(sample, mapOf(brakes.key to "brake-inspect"), emptyMap()),
         )
+    }
+
+    @Test
+    fun `a guess is offered last and never starts picked`() {
+        val typo = line(1, "Watr pump replaced")
+        val group = CustomLines.groups(listOf(typo), emptyList()).single()
+        assertEquals(LineSuggestion("water-pump", SuggestionSource.GUESS), group.suggestion)
+        assertEquals(null, CustomLines.picked(group, emptyMap()))
+        assertEquals(emptyList<Pair<Long, String>>(), CustomLines.assignments(listOf(group), emptyMap()))
+        // The user's tap picks it, and then it can be remembered like any pick.
+        assertEquals("water-pump", CustomLines.picked(group, mapOf(group.key to "water-pump")))
+        assertEquals(true, CustomLines.asksToRemember(group, "water-pump"))
+        // Wording Glovebox knows, or a rule, comes before a guess.
+        assertEquals(SuggestionSource.GLOVEBOX, CustomLines.suggest("Water pump replaced", emptyList())?.source)
+        assertEquals(SuggestionSource.YOUR_RULE, CustomLines.suggest("Watr pump replaced", listOf(CatalogRule("Watr pump replaced", "thermostat")))?.source)
+    }
+
+    @Test
+    fun `an import's guesses are its lines that would land under Custom, once each`() {
+        val day = java.time.LocalDate.of(2025, 6, 2)
+        val items = listOf(
+            ImportedRecord(day, 60_000, listOf(ImportedWork("Watr pump replaced"), ImportedWork("Oil changed", service = "oil"), ImportedWork("Misc parts")), diy = false),
+            ImportedRecord(day.plusDays(9), 61_000, listOf(ImportedWork("watr pump  REPLACED"), ImportedWork("Grease hitch")), diy = true),
+        )
+        val own = listOf(ScheduleRef(7, "Grease hitch", templateKey = null, tracked = true))
+        assertEquals(listOf("Watr pump replaced" to "water-pump"), CustomLines.guessesFor(items, own))
     }
 }
