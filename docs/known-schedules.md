@@ -74,8 +74,12 @@ vehicle as schedule figures (5,000 mi is 8,000 km). `KnownSchedulesTest` reads e
 vehicle keeps them, with "(4WD)" in the name: a four-wheel-drive one because they are its jobs, and one
 on record as all-wheel drive, or with no drive type at all, because the guide has no other line for it
 and leaving a job out is the worse mistake. **Four-wheel drive and all-wheel drive are different systems
-and the code keeps them apart** (`DriveKind`); a guide that marks jobs for AWD gets its own field for
-them, and nothing marked for one is taken to be for the other.
+and the code keeps them apart** (`DriveKind`), so nothing marked for one is taken to be for the other.
+
+`allWheelDriveOnly` names the jobs for all-wheel drive only, with "(AWD)" in their names, by the same
+rule: only a vehicle **known** to drive two wheels loses them. Toyota's guides print "(4WD)" on some
+models it sells as AWD (RAV4, Highlander, Sienna); those jobs go here, named "(AWD)", and the list's page
+says the guide prints "(4WD)". `KnownSchedulesTest` holds each field to the mark in the names.
 
 `manualExcluded` names the jobs that aren't for a manual gearbox, such as a dual-clutch transmission's
 fluid change. The rule is the same shape: only a vehicle **known** to have a manual (vPIC's
