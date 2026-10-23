@@ -94,6 +94,14 @@ no distance, marked `time-only`. The table shows it wherever the maker drew it, 
 its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the
 repeating part and the job's name says the rest: Glovebox doesn't know the day a car went into service.
 
+**A job the guide gives only as an interval, apart from its table** (Volkswagen's "Additional
+Maintenance Items", a "Time-Dependent Maintenance Items" box) goes in `additional`, written as the
+`items` of an `interval-schedule` file, with the guide's own figures. It is a reminder and **is never
+placed on the table**, so rule 7 has nothing to hold it to; the owner's ruling of 2026-10-23 (#33). A job
+that is also in the table, or among `intervals`, by its line or its name, is refused: a guide that prints
+one job both ways has to be settled on the list's page first. The drive and gearbox fields name these
+jobs as they do any other.
+
 **A model whose guide has a schedule per engine gets one list per engine**, each with
 
 ```json
