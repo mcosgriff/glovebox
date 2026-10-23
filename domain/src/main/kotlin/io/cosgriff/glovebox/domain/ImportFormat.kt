@@ -225,6 +225,26 @@ class ImportCheck {
         return n.toInt()
     }
 
+    /** A run of model years, `{ "from": 2017, "to": 2024 }`, both ends included. */
+    fun yearRange(e: JsonElement, path: String): IntRange? =
+        obj(e, path, setOf("from", "to"), required = setOf("from", "to"))?.let { range ->
+            val from = range["from"]?.let { int(it, at(path, "from"), 1900, 2100) }
+            val to = range["to"]?.let { int(it, at(path, "to"), 1900, 2100) }
+            if (from != null && to != null && to < from) fail(at(path, "to"), "is before $path.from")
+            if (from != null && to != null && to >= from) from..to else null
+        }
+
+    /** A day written `"YYYY-MM-DD"`, and one the calendar has. */
+    fun date(e: JsonElement, path: String): java.time.LocalDate? {
+        val s = string(e, path, 10) ?: return null
+        if (!Regex("""\d{4}-\d{2}-\d{2}""").matches(s)) return null.also { fail(path, "must be a date written as \"YYYY-MM-DD\"") }
+        return try {
+            java.time.LocalDate.parse(s)
+        } catch (_: java.time.format.DateTimeParseException) {
+            null.also { fail(path, "isn't a day the calendar has") }
+        }
+    }
+
     /** A number, written without quotes. */
     fun number(e: JsonElement, path: String): Double? =
         (e as? JsonPrimitive)?.takeIf { !it.isString && it !is JsonNull }?.doubleOrNull?.takeIf { it.isFinite() }

@@ -1,7 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import java.net.URI
@@ -68,14 +66,8 @@ object MakerDocuments {
     )
 
     fun parse(text: String): MakerDocumentFile {
-        val root = try {
-            Json.parseToJsonElement(text)
-        } catch (_: SerializationException) {
-            return MakerDocumentFile.Invalid(listOf(ImportError("", "This isn't a JSON file.")))
-        }
-        val check = ImportCheck()
-        val keys = setOf("make", "model", "documents")
-        val o = check.obj(root, "", keys, required = keys) ?: return MakerDocumentFile.Invalid(check.invalid().errors)
+        val (o, check) = KnownLists.root(text, setOf("make", "model", "documents"))
+        if (o == null) return MakerDocumentFile.Invalid(check.invalid().errors)
         val make = o["make"]?.let { check.string(it, "make", 40) }
         val model = o["model"]?.let { check.string(it, "model", 40) }
         val documents = o["documents"]?.let { d ->
@@ -83,14 +75,7 @@ object MakerDocuments {
                 val path = ImportCheck.at("documents", i)
                 check.obj(e, path, setOf("kind", "years", "url", "code", "edition", "vinLookup"), required = setOf("kind", "years", "url"))?.let { doc ->
                     val kind = doc["kind"]?.let { check.choice(it, ImportCheck.at(path, "kind"), kinds) }
-                    val years = doc["years"]?.let { y ->
-                        check.obj(y, ImportCheck.at(path, "years"), setOf("from", "to"), required = setOf("from", "to"))?.let { r ->
-                            val from = r["from"]?.let { check.int(it, ImportCheck.at(path, "years.from"), 1900, 2100) }
-                            val to = r["to"]?.let { check.int(it, ImportCheck.at(path, "years.to"), 1900, 2100) }
-                            if (from != null && to != null && to < from) check.fail(ImportCheck.at(path, "years.to"), "is before years.from")
-                            if (from != null && to != null && to >= from) from..to else null
-                        }
-                    }
+                    val years = doc["years"]?.let { check.yearRange(it, ImportCheck.at(path, "years")) }
                     val url = doc["url"]?.let { check.string(it, ImportCheck.at(path, "url"), 300) }?.also { u ->
                         val host = try {
                             URI(u).takeIf { it.scheme == "https" }?.host

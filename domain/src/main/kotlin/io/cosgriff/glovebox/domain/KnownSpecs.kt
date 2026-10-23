@@ -1,7 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlin.math.abs
@@ -29,15 +27,15 @@ data class KnownSpecSource(
  * empty rows. [id] is kept on every row added from it (`torque_specs.knownList`), for good.
  */
 data class KnownSpecList(
-    val id: String,
+    override val id: String,
     /** "5th-generation 4Runner" */
-    val title: String,
-    val make: String,
-    val model: String,
-    val years: IntRange,
-    val source: KnownSpecSource,
+    override val title: String,
+    override val make: String,
+    override val model: String,
+    override val years: IntRange,
+    override val source: KnownSpecSource,
     val items: List<ImportedTorqueSpec>,
-)
+) : KnownList
 
 sealed interface KnownSpecFile {
     data class Ok(val list: KnownSpecList) : KnownSpecFile
@@ -76,13 +74,8 @@ object KnownSpecs {
     private val keys = KnownLists.headerKeys + "items"
 
     fun parse(text: String): KnownSpecFile {
-        val root = try {
-            Json.parseToJsonElement(text)
-        } catch (_: SerializationException) {
-            return KnownSpecFile.Invalid(listOf(ImportError("", "This isn't a JSON file.")))
-        }
-        val check = ImportCheck()
-        val o = check.obj(root, "", keys, required = keys) ?: return KnownSpecFile.Invalid(check.invalid().errors)
+        val (o, check) = KnownLists.root(text, keys, required = keys)
+        if (o == null) return KnownSpecFile.Invalid(check.invalid().errors)
         val header = KnownLists.header(o, check)
         val raw = o["items"]
         val items = raw?.let { TorqueImport.read(it, check) }.orEmpty()
@@ -102,7 +95,7 @@ object KnownSpecs {
      * guessed from a near miss, because a torque value for the wrong model is worse than none.
      */
     fun match(lists: List<KnownSpecList>, year: Int, make: String, model: String): KnownSpecList? =
-        lists.firstOrNull { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
+        lists.forModel(year, make, model).firstOrNull()
 
     /**
      * What adding [list] to a vehicle with [existing] rows would do. Rows match on category and name,
