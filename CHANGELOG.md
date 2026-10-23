@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.21.0](https://github.com/mcosgriff/glovebox/compare/v0.20.0...v0.21.0) (2026-10-23)
+
+
+### Features
+
+* **domain:** LineGuess, a guess at the line for unfamiliar wording ([#335](https://github.com/mcosgriff/glovebox/issues/335)) ([11d3f56](https://github.com/mcosgriff/glovebox/commit/11d3f561fc59249b3747152ee32033eddd46ef5c)), closes [#312](https://github.com/mcosgriff/glovebox/issues/312)
+* **history:** guesses on the sort page, Log service and the Import preview ([#337](https://github.com/mcosgriff/glovebox/issues/337)) ([59a1334](https://github.com/mcosgriff/glovebox/commit/59a1334c4efc3045d9031b667a40442ed1ed5368))
+
+
+### Bug Fixes
+
+* **history:** the record's delete sheet is a GloveboxSheet ([#343](https://github.com/mcosgriff/glovebox/issues/343)) ([2b9e26f](https://github.com/mcosgriff/glovebox/commit/2b9e26fcb507f88d561b8be47005246198f6b20f))
+
+
+### Code Refactoring
+
+* [#297](https://github.com/mcosgriff/glovebox/issues/297)'s :data section ([#342](https://github.com/mcosgriff/glovebox/issues/342)) ([861779a](https://github.com/mcosgriff/glovebox/commit/861779a2ebc1698f6ac0e167fa6f07e0c65dbbf7))
+* [#297](https://github.com/mcosgriff/glovebox/issues/297)'s :domain section ([#341](https://github.com/mcosgriff/glovebox/issues/341)) ([44f4dc7](https://github.com/mcosgriff/glovebox/commit/44f4dc782a1d544635dc651325d78a3a17431cdb))
+* schedule rows, rules out of view models, adding a vehicle ([#297](https://github.com/mcosgriff/glovebox/issues/297)) ([#339](https://github.com/mcosgriff/glovebox/issues/339)) ([69725ee](https://github.com/mcosgriff/glovebox/commit/69725eee5b82c849609d8ddbbe20d1cc2a279a12))
+* the rest of [#297](https://github.com/mcosgriff/glovebox/issues/297)'s app plumbing ([#340](https://github.com/mcosgriff/glovebox/issues/340)) ([ad23eb8](https://github.com/mcosgriff/glovebox/commit/ad23eb8630370368155b7c588b42bab3eaeb3b35))
+* vehicle name, a vehicle's log, and What it takes writes ([#297](https://github.com/mcosgriff/glovebox/issues/297)) ([#338](https://github.com/mcosgriff/glovebox/issues/338)) ([22a1189](https://github.com/mcosgriff/glovebox/commit/22a1189399f1ac854ddee1f8eeeaeca748084c93))
+
 ## [0.20.0](https://github.com/mcosgriff/glovebox/compare/v0.19.0...v0.20.0) (2026-10-22)
 
 
