@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -78,9 +79,7 @@ import io.cosgriff.glovebox.ui.garage.GarageOverview
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.until
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -89,7 +88,7 @@ import kotlin.math.abs
 @HiltViewModel
 class RemindersViewModel @Inject constructor(overview: GarageOverview, private val schedule: ScheduleDao, val notifier: Notifier) : ViewModel() {
     /** Null while loading. */
-    val garage: StateFlow<Garage?> = overview.garage.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val garage: StateFlow<Garage?> = overview.garage.screenState(viewModelScope, null)
 
     /** Null ends the snooze. */
     fun setSnooze(scheduleItemId: Long, snooze: Snooze?) {

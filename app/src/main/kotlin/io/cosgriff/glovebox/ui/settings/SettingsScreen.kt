@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.asChoice
@@ -8,7 +9,6 @@ import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.LabelledCard
 import io.cosgriff.glovebox.ui.components.BorderedCard
-import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.torque.symbolWord
@@ -79,9 +79,7 @@ import io.cosgriff.glovebox.lock.canLockApp
 import io.cosgriff.glovebox.ui.export.ExportSheet
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.cosgriff.glovebox.data.db.CatalogRuleDao
 import javax.inject.Inject
@@ -91,20 +89,20 @@ data class ScheduleOwner(val id: Long, val name: String)
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(private val repo: SettingsRepository, vehicles: VehicleDao, rules: CatalogRuleDao) : ViewModel() {
-    val settings = repo.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings())
+    val settings = repo.settings.screenState(viewModelScope, Settings())
 
     /** How many category rules the user has kept; their row shows only while there are some. */
-    val ruleCount = rules.observeAll().map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    val ruleCount = rules.observeAll().map { it.size }.screenState(viewModelScope, 0)
 
     /** Vehicles in the garage; archived ones have no schedule to keep. */
     val vehicles = vehicles.observeActive()
         .map { list -> list.map { ScheduleOwner(it.id, it.shortName()) } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .screenState(viewModelScope, emptyList())
 
     /** The same vehicles as the chooser names them. */
     val choices = vehicles.observeActive()
         .map { list -> list.map { it.asChoice() } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .screenState(viewModelScope, emptyList())
 
     fun setTheme(m: ThemeMode) = viewModelScope.launch { repo.setTheme(m) }
     fun setBiometric(on: Boolean) = viewModelScope.launch { repo.setBiometricLock(on) }

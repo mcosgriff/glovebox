@@ -1,8 +1,8 @@
 package io.cosgriff.glovebox.widget
 
+import io.cosgriff.glovebox.notify.launchIntent
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -44,7 +44,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.cosgriff.glovebox.MainActivity
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.Attention
 import io.cosgriff.glovebox.domain.DueState
@@ -152,9 +151,7 @@ private object Colors {
 
 /** Opens Glovebox at [destination], or as it was left when there is none. The lock comes first either way. */
 private fun open(context: Context, destination: Destination?) = actionStartActivity(
-    Intent(context, MainActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        destination?.putInto(this)
+    destination.launchIntent(context).apply {
         // Rows differ only in their extras, which Android doesn't compare: a distinct address keeps each
         // row's tap going to its own vehicle.
         data = "glovebox-widget:${(destination as? Destination.VehicleHome)?.vehicleId ?: "app"}".toUri()

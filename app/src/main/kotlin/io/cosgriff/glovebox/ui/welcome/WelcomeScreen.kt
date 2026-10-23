@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.welcome
 
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.BorderedCard
@@ -53,8 +54,6 @@ import io.cosgriff.glovebox.domain.Welcome
 import io.cosgriff.glovebox.lock.canLockApp
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,8 +69,7 @@ enum class WelcomeAction { ADD_VEHICLE, RESTORE }
 
 /** Decides, once per launch, whether this is a first run, and records the welcome's outcome. */
 @Singleton
-class FirstRun @Inject constructor(private val settings: SettingsRepository, private val vehicles: VehicleDao) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class FirstRun @Inject constructor(private val settings: SettingsRepository, private val vehicles: VehicleDao, @ApplicationScope private val scope: CoroutineScope) {
     private val _needsWelcome = MutableStateFlow<Boolean?>(null)
 
     /** Null until the settings and the database have been read. */

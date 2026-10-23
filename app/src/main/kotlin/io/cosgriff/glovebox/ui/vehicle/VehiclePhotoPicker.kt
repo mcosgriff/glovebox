@@ -1,10 +1,10 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import android.net.Uri
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,9 +20,8 @@ import javax.inject.Singleton
  * The activity owns the launcher and this remembers which vehicle the answer is for.
  */
 @Singleton
-class VehiclePhotoPicker @Inject constructor(private val photos: VehiclePhotoStore) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launcher: (() -> Unit)? = null
+class VehiclePhotoPicker @Inject constructor(private val photos: VehiclePhotoStore, @ApplicationScope private val scope: CoroutineScope) {
+    private val slot = LauncherSlot<() -> Unit>()
     private var vehicleId: Long? = null
 
     private val _failedFor = MutableStateFlow<Long?>(null)
@@ -30,17 +29,15 @@ class VehiclePhotoPicker @Inject constructor(private val photos: VehiclePhotoSto
     /** The vehicle whose last picked image couldn't be read; cleared by the next attempt. */
     val failedFor: StateFlow<Long?> = _failedFor.asStateFlow()
 
-    fun attach(launch: () -> Unit) {
-        launcher = launch
-    }
+    fun attach(launch: () -> Unit) = slot.attach(launch)
 
     /** Only [launch]'s own activity lets go, in case a new one attached first. */
     fun detach(launch: () -> Unit) {
-        if (launcher === launch) launcher = null
+        slot.detach(launch)
     }
 
     fun pick(forVehicleId: Long) {
-        val launch = launcher ?: return
+        val launch = slot.launcher ?: return
         vehicleId = forVehicleId
         _failedFor.value = null
         launch()

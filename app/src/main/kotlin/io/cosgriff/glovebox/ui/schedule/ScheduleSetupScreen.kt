@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.data.db.toRows
@@ -81,10 +82,8 @@ import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.ui.ScheduleSetupRoute
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -203,7 +202,7 @@ class ScheduleSetupViewModel @Inject constructor(
         private set
 
     val defaultRule = settings.settings.map { it.defaultRule }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings().defaultRule)
+        .screenState(viewModelScope, Settings().defaultRule)
 
     private var customCount = 0
 

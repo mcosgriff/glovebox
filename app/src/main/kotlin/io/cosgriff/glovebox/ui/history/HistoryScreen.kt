@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.domain.CustomCount
@@ -109,7 +110,6 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -210,7 +210,7 @@ class HistoryViewModel @Inject constructor(
             }
         }
 
-    val state: StateFlow<HistoryState?> = source.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val state: StateFlow<HistoryState?> = source.screenState(viewModelScope, null)
 
     /** The record to mark as just added or just restored, if it is in the list showing. */
     val fresh: StateFlow<HistoryFocus?> = actions.focus.stateIn(viewModelScope, SharingStarted.Eagerly, null)

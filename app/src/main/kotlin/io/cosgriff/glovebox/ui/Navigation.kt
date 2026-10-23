@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -68,7 +73,30 @@ internal val ResultsSaver = Saver<SnapshotStateMap<String, Any>, List<Any>>(
     restore = { saved -> saved.chunked(2) { (name, value) -> name as String to value }.toMutableStateMap() },
 )
 
+/**
+ * A value one screen hands back to the one under it through the nav host's results ([ResultsSaver]), by [name];
+ * [T] is what is kept there, so reading it back needs no cast at each use.
+ */
+internal class ResultKey<T : Any>(val name: String)
+
+@Suppress("UNCHECKED_CAST") // Only ever set through the same key, so the value is a T.
+internal operator fun <T : Any> SnapshotStateMap<String, Any>.get(key: ResultKey<T>): T? = this[key.name] as T?
+
+internal operator fun <T : Any> SnapshotStateMap<String, Any>.set(key: ResultKey<T>, value: T) {
+    this[key.name] = value
+}
+
+internal fun SnapshotStateMap<String, Any>.remove(key: ResultKey<*>) {
+    remove(key.name)
+}
+
 /** Drops everything above the first [keep] entries. */
 internal fun MutableList<NavKey>.trimTo(keep: Int) {
     while (size > keep) removeAt(lastIndex)
 }
+
+/**
+ * A screen's state from this flow, for its ViewModel: worked out while the screen is shown and for five seconds
+ * after, so turning the phone round doesn't start it over, and stopped once the screen has really gone.
+ */
+fun <T> Flow<T>.screenState(scope: CoroutineScope, initial: T): StateFlow<T> = stateIn(scope, SharingStarted.WhileSubscribed(5_000), initial)

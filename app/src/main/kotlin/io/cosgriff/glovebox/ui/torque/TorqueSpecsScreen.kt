@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.screenState
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.EmptyState
@@ -75,12 +77,8 @@ import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.TorqueSpecsRoute
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -102,8 +100,7 @@ data class TorqueSpecsState(
 
 /** Puts a deleted spec back. A singleton with its own scope because Undo can be tapped after the screen has closed. */
 @Singleton
-class TorqueSpecUndo @Inject constructor(private val torque: TorqueDao, private val vehicles: VehicleDao) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class TorqueSpecUndo @Inject constructor(private val torque: TorqueDao, private val vehicles: VehicleDao, @ApplicationScope private val scope: CoroutineScope) {
 
     fun restore(spec: TorqueSpecEntity) {
         scope.launch {
@@ -144,7 +141,7 @@ class TorqueSpecsViewModel @Inject constructor(
             known = known,
             knownSources = lists.associate { it.id to it.source.name },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** The rows as an import file, with values in the unit the user works in. */
     fun written(): WrittenFile = state.value?.let { s -> TorqueExport.file(s.specs.map { it.toSaved() }, s.settingsUnit) } ?: WrittenFile(null, 0)

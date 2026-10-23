@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.ui.settings.ImportContent
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -194,6 +195,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.historyWithVisit, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
             onSortCustom = {},
+        )
+    }
+
+    @Test
+    fun importPreview() = compose.shoot("import_history", shade) {
+        ImportContent(
+            vehicles = listOf(Fixtures.history.vehicles.first()), vehicleId = Fixtures.history.vehicles.first().id, vehicleFixed = true,
+            pickedName = "history.json", pickedPdf = false, problem = null, preview = Fixtures.importPreview, result = null,
+            onBack = {}, onPick = {}, onChooseVehicle = {}, onInclude = { _, _ -> }, onImport = { _, _, _, _ -> },
+            onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> },
         )
     }
 

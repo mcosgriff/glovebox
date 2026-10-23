@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.SwitchRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -13,7 +15,6 @@ import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
-import io.cosgriff.glovebox.domain.DistanceUnit
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -46,7 +47,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,10 +58,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,16 +70,14 @@ import io.cosgriff.glovebox.notify.Notifier
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(private val repo: SettingsRepository, val notifier: Notifier) : ViewModel() {
     /** Null while loading. */
-    val settings: StateFlow<Settings?> = repo.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val settings: StateFlow<Settings?> = repo.settings.screenState(viewModelScope, null)
 
     /** The background jobs follow these on their own: the app watches the settings and reschedules. */
     fun change(prefs: NoticePrefs) = viewModelScope.launch { repo.setNotices(prefs) }
@@ -107,11 +102,9 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
         refused = !granted
     }
     // The answer may also change in Android's settings while this screen is behind them.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) allowed = vm.notifier.allowed }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    LifecycleResumeEffect(Unit) {
+        allowed = vm.notifier.allowed
+        onPauseOrDispose {}
     }
     var pickingTime by rememberSaveable { mutableStateOf(false) }
     var pickingCadence by rememberSaveable { mutableStateOf(false) }

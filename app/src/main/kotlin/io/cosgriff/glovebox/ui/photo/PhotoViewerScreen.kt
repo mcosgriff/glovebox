@@ -1,11 +1,12 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.screenState
+import io.cosgriff.glovebox.ui.theme.ViewerColors
+import io.cosgriff.glovebox.ui.handOut
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,7 +52,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -63,10 +62,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.ui.PhotoViewerRoute
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -83,15 +80,13 @@ class PhotoViewerViewModel @Inject constructor(
     /** The record's photo files in the order the grid shows them. Null while loading. */
     val files: StateFlow<List<String>?> = service.observeRecord(route.recordId)
         .map { record -> record?.photos.orEmpty().map { it.fileName } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     /** A decrypted copy in the private cache for the share sheet; null if the photo can't be read. */
     suspend fun shareCopy(fileName: String): File? = store.shareCopy(fileName)
 }
 
 // The viewer is always dark, like the canvas: a receipt is easier to read against black.
-private val Backdrop = Color(0xFF0E1012)
-private val OnBackdrop = Color(0xFFF4F3EF)
 
 /** Design: the receipt viewer on 6a · Service record. */
 @Composable
@@ -141,18 +136,18 @@ fun PhotoViewerScreen(onClose: () -> Unit, vm: PhotoViewerViewModel = hiltViewMo
         )
     }
 
-    Column(Modifier.fillMaxSize().background(Backdrop)) {
+    Column(Modifier.fillMaxSize().background(ViewerColors.Backdrop)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = OnBackdrop) }
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = ViewerColors.OnBackdrop) }
             Text(
                 if (files.size == 1) stringResource(R.string.photo) else stringResource(R.string.photo_title_of, (pager.currentPage + 1).asNumber(), files.size.asNumber()),
                 Modifier.weight(1f).semantics { heading() },
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = OnBackdrop,
+                color = ViewerColors.OnBackdrop,
                 textAlign = TextAlign.Center,
             )
-            IconButton(onClick = { confirmingShare = true }) { Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.photo_share), tint = OnBackdrop) }
+            IconButton(onClick = { confirmingShare = true }) { Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.photo_share), tint = ViewerColors.OnBackdrop) }
         }
         // Swiping moves between photos only while the one on screen isn't zoomed in.
         HorizontalPager(state = pager, userScrollEnabled = !zoomed, modifier = Modifier.weight(1f)) { page ->
@@ -217,17 +212,4 @@ fun ZoomableImage(image: ImageBitmap?, description: String, key: Any, onZoomChan
 }
 
 /** False if nothing on the phone can take it. */
-private fun Context.share(copy: File): Boolean {
-    val uri = FileProvider.getUriForFile(this, "$packageName.files", copy)
-    val send = Intent(Intent.ACTION_SEND).apply {
-        type = "image/jpeg"
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-    return try {
-        startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
-}
+private fun Context.share(copy: File): Boolean = handOut(copy, "image/jpeg", share = true)

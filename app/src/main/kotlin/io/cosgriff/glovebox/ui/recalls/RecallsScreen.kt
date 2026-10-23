@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
@@ -94,10 +95,8 @@ import io.cosgriff.glovebox.ui.RecallsRoute
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -174,7 +173,7 @@ class RecallsViewModel @Inject constructor(
             odometer = vehicle.highestReading(records, readings),
             records = records,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     var refreshing by mutableStateOf(false)
         private set

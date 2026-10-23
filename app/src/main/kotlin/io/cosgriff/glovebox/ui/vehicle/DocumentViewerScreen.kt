@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
+import io.cosgriff.glovebox.ui.theme.ViewerColors
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -67,10 +68,8 @@ import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.DocumentViewerRoute
 import io.cosgriff.glovebox.ui.photo.ZoomableImage
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -88,7 +87,7 @@ class DocumentViewerViewModel @Inject constructor(
 
     /** Null while loading. */
     val document: StateFlow<ViewedDocument?> = documents.observeOne(id).map { ViewedDocument(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .screenState(viewModelScope, null)
 
     suspend fun pdf(row: DocumentEntity) = store.openPdf(row)
 
@@ -98,9 +97,6 @@ class DocumentViewerViewModel @Inject constructor(
 }
 
 // Always dark, as the photo viewer is: a page or a picture of one reads best against black.
-private val Backdrop = Color(0xFF0E1012)
-private val OnBackdrop = Color(0xFFF4F3EF)
-private val OnBackdropMuted = Color(0xFFB9B6AE)
 
 /**
  * A document, viewed inside Glovebox (#224): a PDF drawn by Jetpack's PDF viewer, whose renderer runs in
@@ -133,21 +129,21 @@ fun DocumentViewerScreen(onClose: () -> Unit, vm: DocumentViewerViewModel = hilt
         }
     }
 
-    Column(Modifier.fillMaxSize().background(Backdrop)) {
+    Column(Modifier.fillMaxSize().background(ViewerColors.Backdrop)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = OnBackdrop) }
+            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.close), tint = ViewerColors.OnBackdrop) }
             Text(
                 row.name,
                 Modifier.weight(1f).padding(horizontal = 8.dp).semantics { heading() },
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = OnBackdrop,
+                color = ViewerColors.OnBackdrop,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Box {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.more_for, row.name), tint = OnBackdrop) }
+                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.more_for, row.name), tint = ViewerColors.OnBackdrop) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(text = { Text(stringResource(R.string.documents_open_elsewhere)) }, onClick = { menu = false; handOut(share = false) })
                     DropdownMenuItem(text = { Text(stringResource(R.string.share)) }, onClick = { menu = false; handOut(share = true) })
@@ -159,7 +155,7 @@ fun DocumentViewerScreen(onClose: () -> Unit, vm: DocumentViewerViewModel = hilt
                 stringResource(it),
                 Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp).semantics { liveRegion = LiveRegionMode.Polite },
                 style = MaterialTheme.typography.bodySmall,
-                color = OnBackdrop,
+                color = ViewerColors.OnBackdrop,
                 textAlign = TextAlign.Center,
             )
         }
@@ -212,15 +208,15 @@ private fun PdfPages(row: DocumentEntity, vm: DocumentViewerViewModel, onOpenEls
         awaitDispose { document.close() }
     }
     when (val s = state) {
-        PdfState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = OnBackdrop) }
+        PdfState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ViewerColors.OnBackdrop) }
         is PdfState.Open -> PdfViewer(pdfDocument = s.document, state = rememberPdfViewerState(), modifier = Modifier.fillMaxSize())
         is PdfState.Failed -> Column(
             Modifier.fillMaxSize().padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
         ) {
-            Text(stringResource(s.message), color = OnBackdropMuted, textAlign = TextAlign.Center)
-            OutlinedButton(onClick = onOpenElsewhere, colors = ButtonDefaults.outlinedButtonColors(contentColor = OnBackdrop)) { Text(stringResource(R.string.documents_open_elsewhere)) }
+            Text(stringResource(s.message), color = ViewerColors.OnBackdropMuted, textAlign = TextAlign.Center)
+            OutlinedButton(onClick = onOpenElsewhere, colors = ButtonDefaults.outlinedButtonColors(contentColor = ViewerColors.OnBackdrop)) { Text(stringResource(R.string.documents_open_elsewhere)) }
         }
     }
 }

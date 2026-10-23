@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.scan
 
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import io.cosgriff.glovebox.ui.theme.ViewerColors
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import android.Manifest
@@ -76,16 +78,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.awaitCancellation
 
 // The camera screens (the VIN scanner and the dash reader) sit over a live camera picture, so they keep
 // the canvas's own colours in both themes.
-internal val Scrim = Color(0xFF0E1012)
-internal val OnScrim = Color(0xFFF4F3EF)
-internal val OnScrimMuted = Color(0xFFB9B6AE)
 internal val Guide = Color(0xFFFDBA74)
 internal val Ink = Color(0xFF17191C)
 
@@ -116,16 +113,12 @@ internal fun CameraScreen(why: String, instead: String, onClose: () -> Unit, con
     }
     LaunchedEffect(Unit) { if (!granted) ask.launch(Manifest.permission.CAMERA) }
     // Coming back from Settings with the permission switched on.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) granted = context.hasCamera()
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    LifecycleResumeEffect(Unit) {
+        granted = context.hasCamera()
+        onPauseOrDispose {}
     }
 
-    Box(Modifier.fillMaxSize().background(Scrim)) {
+    Box(Modifier.fillMaxSize().background(ViewerColors.Backdrop)) {
         if (granted) {
             content()
         } else {
@@ -243,13 +236,13 @@ internal fun CameraTopBar(title: String, closeLabel: String, torch: Boolean, onT
     val context = LocalContext.current
     val hasFlash = remember { context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH) }
     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-        RoundButton(Icons.Outlined.Close, closeLabel, container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
+        RoundButton(Icons.Outlined.Close, closeLabel, container = Color.Black.copy(alpha = 0.45f), content = ViewerColors.OnBackdrop, onClick = onClose)
         Text(
             title,
             Modifier.weight(1f).semantics { heading() },
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = OnScrim,
+            color = ViewerColors.OnBackdrop,
             textAlign = TextAlign.Center,
         )
         if (hasFlash) {
@@ -257,7 +250,7 @@ internal fun CameraTopBar(title: String, closeLabel: String, torch: Boolean, onT
                 Icons.Outlined.FlashOn,
                 stringResource(if (torch) R.string.scan_flashlight_off else R.string.scan_flashlight_on),
                 container = if (torch) Guide else Color.Black.copy(alpha = 0.45f),
-                content = if (torch) Ink else OnScrim,
+                content = if (torch) Ink else ViewerColors.OnBackdrop,
                 onClick = { onTorch(!torch) },
             )
         } else {
@@ -271,15 +264,15 @@ private fun NoCamera(why: String, instead: String, refused: Boolean, onAsk: () -
     val context = LocalContext.current
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
-            RoundButton(Icons.Outlined.Close, stringResource(R.string.scan_close_scanner), container = Color.Black.copy(alpha = 0.45f), content = OnScrim, onClick = onClose)
+            RoundButton(Icons.Outlined.Close, stringResource(R.string.scan_close_scanner), container = Color.Black.copy(alpha = 0.45f), content = ViewerColors.OnBackdrop, onClick = onClose)
         }
         Column(
             Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
         ) {
-            Text(stringResource(R.string.scan_camera_off), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = OnScrim)
-            Text(why, color = OnScrimMuted, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.scan_camera_off), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = ViewerColors.OnBackdrop)
+            Text(why, color = ViewerColors.OnBackdropMuted, textAlign = TextAlign.Center)
             if (refused) {
                 // After a refusal Android may stop showing its prompt, so Settings is the reliable way.
                 Button(onClick = { context.openAppSettings() }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(14.dp)) {
@@ -291,7 +284,7 @@ private fun NoCamera(why: String, instead: String, refused: Boolean, onAsk: () -
                     Text(stringResource(R.string.scan_allow_camera))
                 }
             }
-            TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = OnScrim)) { Text(instead) }
+            TextButton(onClick = onClose, colors = ButtonDefaults.textButtonColors(contentColor = ViewerColors.OnBackdrop)) { Text(instead) }
         }
     }
 }

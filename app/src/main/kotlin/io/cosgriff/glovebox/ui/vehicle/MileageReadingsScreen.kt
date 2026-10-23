@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.DangerTextButton
@@ -78,12 +80,8 @@ import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -99,8 +97,7 @@ data class MileageReadingsState(
 
 /** Puts a reading back as it was. A singleton with its own scope because Undo can be tapped after the screen has closed. */
 @Singleton
-class MileageReadingUndo @Inject constructor(private val odometer: OdometerDao, private val vehicles: VehicleDao) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class MileageReadingUndo @Inject constructor(private val odometer: OdometerDao, private val vehicles: VehicleDao, @ApplicationScope private val scope: CoroutineScope) {
 
     fun restore(reading: OdometerReadingEntity) {
         scope.launch {
@@ -143,7 +140,7 @@ class MileageReadingsViewModel @Inject constructor(
             swap = swap,
             unit = vehicle.unit,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** [onDone] gets the Undo, which puts the old date and value back. */
     fun correct(id: Long, date: LocalDate, miles: Int, onDone: (undo: () -> Unit) -> Unit) = viewModelScope.launch {

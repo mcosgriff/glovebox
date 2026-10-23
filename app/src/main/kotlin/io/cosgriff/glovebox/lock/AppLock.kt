@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.lock
 
+import io.cosgriff.glovebox.ApplicationScope
 import android.os.SystemClock
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -7,8 +8,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.LockDelay
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,9 +24,8 @@ import javax.inject.Singleton
  * the "Lock the app" delay from Settings.
  */
 @Singleton
-class AppLock @Inject constructor(settingsRepo: SettingsRepository) : DefaultLifecycleObserver {
+class AppLock @Inject constructor(settingsRepo: SettingsRepository, @ApplicationScope private val scope: CoroutineScope) : DefaultLifecycleObserver {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val settings = settingsRepo.settings
         .stateIn(scope, SharingStarted.Eagerly, null)
 

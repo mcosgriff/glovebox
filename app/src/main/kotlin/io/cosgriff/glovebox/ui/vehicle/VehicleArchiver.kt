@@ -1,13 +1,12 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.Archive
 import io.cosgriff.glovebox.domain.Sale
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -21,8 +20,7 @@ import javax.inject.Singleton
  * has closed.
  */
 @Singleton
-class VehicleArchiver @Inject constructor(private val vehicles: VehicleDao, private val odometer: OdometerDao) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class VehicleArchiver @Inject constructor(private val vehicles: VehicleDao, private val odometer: OdometerDao, @ApplicationScope private val scope: CoroutineScope) {
 
     /** What [archive] did, so it can be undone exactly. */
     data class Receipt(val vehicleId: Long, val readingId: Long?)

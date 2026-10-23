@@ -84,6 +84,16 @@ sealed interface Destination {
     }
 }
 
+/**
+ * Opens Glovebox at this destination, or as it was left when there is none; the lock comes first either way.
+ * The running app is brought forward rather than a second `MainActivity` started, which `MainActivity`'s
+ * "a launcher intent that isn't the task's root finishes at once" check relies on.
+ */
+fun Destination?.launchIntent(context: Context): Intent = Intent(context, MainActivity::class.java).apply {
+    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+    this@launchIntent?.putInto(this)
+}
+
 /** What a launcher shortcut does. [kind] is the extra `res/xml/shortcuts.xml` sets, so it never changes. */
 enum class ShortcutTask(val kind: String) {
     LOG_SERVICE("log-service"),
@@ -172,10 +182,7 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         val open = PendingIntent.getActivity(
             context,
             id,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                destination.putInto(this)
-            },
+            destination.launchIntent(context),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         fun builder(title: String, text: String?) = NotificationCompat.Builder(context, channel.id)

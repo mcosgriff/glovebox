@@ -1,5 +1,9 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.PasswordField
+import io.cosgriff.glovebox.data.displayName
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
@@ -9,27 +13,18 @@ import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,9 +38,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -62,7 +54,6 @@ import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,9 +73,8 @@ data class PickedBackup(val file: File, val name: String)
  * the cache is still encrypted; it is removed when the sheet closes and on the next launch.
  */
 @Singleton
-class RestorePicker @Inject constructor(@ApplicationContext private val context: Context) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launch: (() -> Unit)? = null
+class RestorePicker @Inject constructor(@ApplicationContext private val context: Context, @ApplicationScope private val scope: CoroutineScope) {
+    private val slot = LauncherSlot<() -> Unit>()
 
     private val _picked = MutableStateFlow<PickedBackup?>(null)
     val picked: StateFlow<PickedBackup?> = _picked.asStateFlow()
@@ -95,16 +85,16 @@ class RestorePicker @Inject constructor(@ApplicationContext private val context:
     private val dir: File get() = File(context.cacheDir, "restore").apply { mkdirs() }
 
     fun attach(launcher: () -> Unit) {
-        launch = launcher
+        slot.attach(launcher)
     }
 
     fun detach(launcher: () -> Unit) {
-        if (launch === launcher) launch = null
+        slot.detach(launcher)
     }
 
     fun pick() {
         _problem.value = null
-        launch?.invoke()
+        slot.launcher?.invoke()
     }
 
     /** Null when the user backed out. */
@@ -121,21 +111,13 @@ class RestorePicker @Inject constructor(@ApplicationContext private val context:
                     false
                 }
             }
-            if (ok) _picked.value = PickedBackup(copy, displayName(uri) ?: AppText.res.getString(R.string.restore_backup_file)) else _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
+            if (ok) _picked.value = PickedBackup(copy, context.contentResolver.displayName(uri) ?: AppText.res.getString(R.string.restore_backup_file)) else _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
         }
     }
 
     fun clear() {
         _picked.value = null
         dir.listFiles()?.forEach { it.delete() }
-    }
-
-    private fun displayName(uri: Uri): String? = try {
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0) else null
-        }
-    } catch (_: SecurityException) {
-        null
     }
 }
 
@@ -239,21 +221,15 @@ fun RestoreSheet(onRestored: (BackupSummary) -> Unit, vm: RestoreViewModel = hil
             Text(stringResource(R.string.restore_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(picked.name, style = MaterialTheme.typography.bodySmall, fontFamily = PlexMono, color = scheme.onSurfaceVariant)
 
-            OutlinedTextField(
-                value = vm.password,
-                onValueChange = { vm.password = it },
-                label = { Text(stringResource(R.string.backup_password)) },
-                singleLine = true,
+            PasswordField(
+                stringResource(R.string.backup_password),
+                vm.password,
+                { vm.password = it },
+                show,
+                { show = !show },
+                stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password),
                 // Once the file is open the password is fixed; changing it would mean checking again.
                 enabled = summary == null && !busy,
-                visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
-                trailingIcon = {
-                    IconButton(onClick = { show = !show }) {
-                        Icon(if (show) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, contentDescription = stringResource(if (show) R.string.restore_hide_password else R.string.restore_show_password))
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
             )
 
             vm.error?.let {

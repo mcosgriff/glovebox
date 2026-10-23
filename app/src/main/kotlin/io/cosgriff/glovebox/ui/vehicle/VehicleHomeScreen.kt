@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.log
@@ -102,11 +103,9 @@ import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.theme.statusColors
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -144,7 +143,7 @@ class VehicleHomeViewModel @Inject constructor(
 
     val openRecalls: StateFlow<OpenRecalls> = recalls.observe(vehicleId)
         .map { list -> Recalls.open(list.map { it.toStored() }) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OpenRecalls(0, null))
+        .screenState(viewModelScope, OpenRecalls(0, null))
 
     /** Null while loading, and if the vehicle no longer exists. Recomputed whenever the log changes. */
     val home: StateFlow<VehicleHome?> = combine(
@@ -163,7 +162,7 @@ class VehicleHomeViewModel @Inject constructor(
             comingUp = ReminderPresentation.comingUp(log.statuses(LocalDate.now())),
             inputs = log.inputs,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     /** Records today's odometer; [onSaved] gets the new row's id so the caller can offer Undo. */
     fun saveMileage(miles: Int, onSaved: (readingId: Long) -> Unit) {

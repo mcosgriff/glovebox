@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
@@ -94,10 +95,8 @@ import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import io.cosgriff.glovebox.ui.service.answering
@@ -183,7 +182,7 @@ class ReminderRulesViewModel @Inject constructor(
                 )
             },
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }.screenState(viewModelScope, null)
 
     fun setDefaultRule(rule: DueRule) = viewModelScope.launch { settings.setDefaultRule(rule) }
     fun setLead(lead: LeadTime) = viewModelScope.launch { settings.setLeadTime(lead) }
