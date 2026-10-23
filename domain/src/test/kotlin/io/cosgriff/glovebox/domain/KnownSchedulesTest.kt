@@ -355,6 +355,25 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a job the guide gives only as an interval, apart from its table, is a reminder and never on the table`() {
+        val extra = """"additional": [
+            { "name": "Replace the brake fluid", "everyMonths": 24, "rule": "time-only", "service": "brake-fluid" },
+            { "name": "Change the coupling oil (AWD)", "everyMiles": 20000 }
+        ], "allWheelDriveOnly": ["Change the coupling oil (AWD)"],"""
+        val list = (KnownSchedules.parse(file(extra = extra)) as KnownScheduleFile.Ok).list
+        assertEquals(2, list.additional.size)
+        fun reminders(drive: String?) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, drive).map { it.name }
+        assertEquals(listOf("Change the oil", "Swap the tires round", "Replace the brake fluid", "Change the coupling oil (AWD)"), reminders("AWD"))
+        assertTrue("Change the coupling oil (AWD)" !in reminders("FWD"))
+        // The table is the guide's, as printed: nothing is placed on it.
+        val table = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "AWD").flatMap { m -> m.work.map { it.name } }
+        assertTrue(table.none { it == "Replace the brake fluid" || it == "Change the coupling oil (AWD)" })
+        // A job of the table can't be one apart from it as well, by its line or its name.
+        assertTrue(errors(file(extra = """"additional": [ { "name": "Oil again", "everyMiles": 3000, "service": "oil" } ],""")).single().contains("is a job of the table"))
+        assertTrue(errors(file(extra = """"additional": [ { "name": "Look at the belts", "everyMiles": 3000 } ],""")).single().contains("is a job of the table"))
+    }
+
+    @Test
     fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
         bundled.forEach { list ->
             val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()

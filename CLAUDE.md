@@ -199,7 +199,8 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   `docs/known-schedules/<id>.md`, what was read for each list). **Glovebox has no schedule of its own for any
   model and works none out; a bundled schedule is a maker's published guide, named.** Only facts are taken, in
   Glovebox's words, for only the years whose guides were read and agree. **An interval has to be the table's
-  own** (`KnownSchedules.parse` refuses one that isn't). An inspection is a reminder only where the user asked. A
+  own** (`KnownSchedules.parse` refuses one that isn't), except a job the guide prints only apart from its table
+  (`additional`, never placed on it). An inspection is a reminder only where the user asked. A
   special-condition job has no `service`.
 - "(4WD)" and "(AWD)" jobs (`fourWheelDriveOnly`, `allWheelDriveOnly`) are left out only for a vehicle **known**
   to be two-wheel drive, `manualExcluded` jobs only for one known to be manual, and `manualOnly` jobs only for

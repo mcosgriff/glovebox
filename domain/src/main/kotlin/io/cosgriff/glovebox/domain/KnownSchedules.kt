@@ -51,6 +51,12 @@ data class KnownScheduleList(
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
     override val modelAliases: List<String> = emptyList(),
+    /**
+     * Jobs the guide gives only as an interval, apart from its table (Volkswagen's "Additional Maintenance
+     * Items", a "Time-Dependent Maintenance Items" box): reminders with the guide's own figures, **never placed
+     * on the table**, so nothing holds them to it. None of them is also a job of the table or of [intervals].
+     */
+    val additional: List<ImportedScheduleItem> = emptyList(),
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -90,7 +96,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -101,7 +107,12 @@ object KnownSchedules {
         val tableFailed = check.failed
         val intervals = o["intervals"]?.let { ScheduleImport.read(it, check) }.orEmpty()
         if (!tableFailed && !check.failed) contradictions(milestones, intervals).forEach { check.fail("intervals", it) }
-        val names = (milestones.flatMap { m -> m.work.map { it.name } } + intervals.map { it.name }).map(MilestoneImport::nameKey).toSet()
+        val additional = o["additional"]?.let { ScheduleImport.read(it, check) }.orEmpty()
+        val tableJobs = milestones.flatMap { m -> m.work.map { MilestoneImport.jobKey(it) } }.toSet() +
+            intervals.map { MilestoneImport.jobKey(TableJob(it.name, it.service)) }
+        additional.filter { MilestoneImport.jobKey(TableJob(it.name, it.service)) in tableJobs }
+            .forEach { check.fail("additional", "\"${it.name}\" is a job of the table; it can't also be apart from it") }
+        val names = (milestones.flatMap { m -> m.work.map { it.name } } + (intervals + additional).map { it.name }).map(MilestoneImport::nameKey).toSet()
         // A field that names some of the list's jobs: every name has to be one.
         fun jobs(field: String): Set<String> = o[field]?.let { e ->
             check.array(e, field, 1, 200)?.mapIndexedNotNull { i, n ->
@@ -129,6 +140,7 @@ object KnownSchedules {
                 manualOnly = manual,
                 engine = engine,
                 modelAliases = aliases,
+                additional = additional,
             ),
         )
     }
@@ -213,7 +225,7 @@ object KnownSchedules {
             .filter { it.work.isNotEmpty() }
 
     fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedScheduleItem> =
-        FileDistances.schedule(list.intervals, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
+        FileDistances.schedule(list.intervals + list.additional, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
 
     /**
      * What adding [intervals] (already in the vehicle's unit) would do. Each becomes an item of the
