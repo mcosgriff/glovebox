@@ -202,8 +202,9 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   own** (`KnownSchedules.parse` refuses one that isn't). An inspection is a reminder only where the user asked. A
   special-condition job has no `service`.
 - "(4WD)" and "(AWD)" jobs (`fourWheelDriveOnly`, `allWheelDriveOnly`) are left out only for a vehicle **known**
-  to be two-wheel drive, and `manualExcluded` jobs only for one known to be manual. **4WD and AWD are different
-  systems** (`DriveKind`): a guide's "(4WD)" on a model sold as AWD goes in `allWheelDriveOnly`, named "(AWD)".
+  to be two-wheel drive, `manualExcluded` jobs only for one known to be manual, and `manualOnly` jobs only for
+  one known to shift itself. **4WD and AWD are different systems** (`DriveKind`): a guide's "(4WD)" on a model
+  sold as AWD goes in `allWheelDriveOnly`, named "(AWD)".
   An engine that isn't on record matches no per-engine list; only setup asks which engine. A list's
   `engine.powertrain` (#33's rulings) tells a hybrid or flex-fuel model from its petrol twin of one size;
   `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**.

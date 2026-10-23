@@ -43,6 +43,11 @@ data class KnownScheduleList(
      * transmission's fluid change). A vehicle known to have a manual doesn't get them.
      */
     val manualExcluded: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that are for a manual gearbox only (its oil change, the clutch). The other way
+     * round from [manualExcluded]: a vehicle known to shift itself doesn't get them.
+     */
+    val manualOnly: Set<String> = emptySet(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
 ) : KnownList
@@ -84,7 +89,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "engine")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -106,6 +111,8 @@ object KnownSchedules {
         val fourWheel = jobs("fourWheelDriveOnly")
         val allWheel = jobs("allWheelDriveOnly")
         val notManual = jobs("manualExcluded")
+        val manual = jobs("manualOnly")
+        (notManual intersect manual).forEach { check.fail("manualOnly", "\"$it\" is also in manualExcluded") }
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
@@ -114,6 +121,7 @@ object KnownSchedules {
                 fourWheelDriveOnly = fourWheel,
                 allWheelDriveOnly = allWheel,
                 manualExcluded = notManual,
+                manualOnly = manual,
                 engine = engine,
             ),
         )
@@ -182,8 +190,11 @@ object KnownSchedules {
     fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, transmission: String? = null): Boolean {
         val key = MilestoneImport.nameKey(jobName)
         val twoWheel = Drivetrains.kind(drivetrain) == DriveKind.TWO_WHEEL
-        // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one.
-        return !(twoWheel && (key in list.fourWheelDriveOnly || key in list.allWheelDriveOnly)) && !(Transmissions.isManual(transmission) && key in list.manualExcluded)
+        // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one,
+        // and only one known to shift itself loses the manual's own.
+        return !(twoWheel && (key in list.fourWheelDriveOnly || key in list.allWheelDriveOnly)) &&
+            !(Transmissions.isManual(transmission) && key in list.manualExcluded) &&
+            !(Transmissions.isAutomatic(transmission) && key in list.manualOnly)
     }
 
     /**
