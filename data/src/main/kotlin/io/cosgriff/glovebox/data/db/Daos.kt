@@ -525,16 +525,18 @@ interface MilestoneDao {
     @Transaction
     suspend fun deleteMilestone(vehicleId: Long, milestoneId: Long) {
         deleteById(milestoneId)
-        if (count(vehicleId) == 0) {
-            setRepeat(vehicleId, null)
-            setKnownList(vehicleId, null)
-        }
+        if (count(vehicleId) == 0) forgetTable(vehicleId)
     }
 
     /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
     @Transaction
     suspend fun deleteTable(vehicleId: Long) {
         deleteMilestones(vehicleId)
+        forgetTable(vehicleId)
+    }
+
+    /** What the vehicle keeps about its table, which means nothing once the table is gone: that it repeats, and where it came from. */
+    suspend fun forgetTable(vehicleId: Long) {
         setRepeat(vehicleId, null)
         setKnownList(vehicleId, null)
     }
@@ -562,15 +564,8 @@ interface MilestoneDao {
         replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
     ) {
         setRepeat(vehicleId, repeatsEveryMiles)
-        added.forEach { (milestone, jobs) ->
-            val id = insert(milestone)
-            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = id, position = i) })
-        }
-        replaced.forEach { (milestone, jobs) ->
-            update(milestone)
-            clearJobs(milestone.id)
-            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = milestone.id, position = i) })
-        }
+        // New rows have no id yet and replaced ones keep theirs, which is what save() goes by.
+        (added + replaced).forEach { (milestone, jobs) -> save(milestone, jobs) }
     }
 }
 
@@ -582,11 +577,6 @@ data class ShopRow(val name: String, val date: LocalDate, val id: Long)
 
 data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?, val firstMiles: Int?)
 
-/**
- * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
- * unit, so the unit can't change without the figures changing with it: [convert] does both in one
- * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
- */
 @Dao
 interface DocumentDao {
     @Query("SELECT * FROM documents WHERE vehicleId = :vehicleId")
@@ -624,6 +614,11 @@ interface DocumentDao {
     suspend fun allEncryptedFiles(): List<String>
 }
 
+/**
+ * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
+ * unit, so the unit can't change without the figures changing with it: [convert] does both in one
+ * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
+ */
 @Dao
 interface UnitDao {
     @Query("SELECT id, odometer AS value FROM odometer_readings WHERE vehicleId = :vehicleId")
