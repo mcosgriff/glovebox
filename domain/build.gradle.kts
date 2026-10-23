@@ -2,6 +2,7 @@
 // so they can be unit-tested quickly in IntelliJ without an emulator.
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -15,4 +16,11 @@ dependencies {
     // Test only: checks the import examples against the published JSON Schemas, so the schemas and
     // ImportFormat can't drift apart. Never ships in the app.
     testImplementation(libs.json.schema.validator)
+}
+
+// Feeds the merged coverage report (root build.gradle.kts).
+kover {
+    currentProject {
+        createVariant("coverage") { add("jvm") }
+    }
 }

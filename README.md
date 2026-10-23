@@ -1,6 +1,7 @@
 # Glovebox
 
 [![CI](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mcosgriff/glovebox/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/mcosgriff/glovebox/graph/badge.svg?branch=main)](https://codecov.io/gh/mcosgriff/glovebox)
 [![Latest release](https://img.shields.io/github/v/release/mcosgriff/glovebox?sort=semver)](https://github.com/mcosgriff/glovebox/releases/latest)
 [![Licence: GPL-3.0](https://img.shields.io/github/license/mcosgriff/glovebox)](LICENSE)
 [![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](#install)

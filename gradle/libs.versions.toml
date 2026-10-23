@@ -46,6 +46,8 @@ profileinstaller = "1.4.1"
 junit = "4.13.2"
 # Screenshot tests (#233) on the JVM through Robolectric: test only, nothing of it ships.
 roborazzi = "1.76.0"
+# Test coverage for Codecov (CI only; nothing of it ships).
+kover = "0.9.11"
 jsonSchemaValidator = "3.0.8"
 turbine = "1.2.1"
 
@@ -142,3 +144,4 @@ android-test = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
