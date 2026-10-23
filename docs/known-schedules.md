@@ -147,6 +147,8 @@ One page per list, named by its `id`:
 - [Toyota 4Runner hybrid, 2025–2026](known-schedules/toyota-4runner-2025-2026-hybrid.md) (`toyota-4runner-2025-2026-hybrid`)
 - [Toyota 4Runner, 2006, 4.0L V6](known-schedules/toyota-4runner-2006-v6.md) (`toyota-4runner-2006-v6`)
 - [Toyota 4Runner, 2006, 4.7L V8](known-schedules/toyota-4runner-2006-v8.md) (`toyota-4runner-2006-v8`)
+- [Toyota 4Runner, 2007, 4.0L V6](known-schedules/toyota-4runner-2007-v6.md) (`toyota-4runner-2007-v6`)
+- [Toyota 4Runner, 2007, 4.7L V8](known-schedules/toyota-4runner-2007-v8.md) (`toyota-4runner-2007-v8`)
 - [Toyota 4Runner, 2008, 4.0L V6](known-schedules/toyota-4runner-2008-v6.md) (`toyota-4runner-2008-v6`)
 - [Toyota 4Runner, 2008, 4.7L V8](known-schedules/toyota-4runner-2008-v8.md) (`toyota-4runner-2008-v8`)
 - [Toyota 4Runner, 2009, 4.0L V6](known-schedules/toyota-4runner-2009-v6.md) (`toyota-4runner-2009-v6`)
