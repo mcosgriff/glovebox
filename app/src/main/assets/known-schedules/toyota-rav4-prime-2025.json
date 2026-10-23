@@ -1585,6 +1585,11 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect rear differential oil",
+      "everyMiles": 30000,
+      "service": "rear-diff-check"
+    },
+    {
       "name": "Replace automatic transmission fluid · towing or heavy loads",
       "everyMiles": 60000,
       "severeOnly": true,

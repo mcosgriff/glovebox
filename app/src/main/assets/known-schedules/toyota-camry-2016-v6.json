@@ -1351,6 +1351,12 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect front differential oil",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "front-diff-check"
+    },
+    {
       "name": "Replace front differential oil · towing or heavy loads",
       "everyMiles": 60000,
       "everyMonths": 72,

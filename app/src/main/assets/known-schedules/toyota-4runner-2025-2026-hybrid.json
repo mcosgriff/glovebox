@@ -2186,6 +2186,21 @@
       "service": "hybrid-battery-filter"
     },
     {
+      "name": "Inspect front differential oil",
+      "everyMiles": 15000,
+      "service": "front-diff-check"
+    },
+    {
+      "name": "Inspect rear differential oil",
+      "everyMiles": 15000,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil",
+      "everyMiles": 30000,
+      "service": "transfer-case-check"
+    },
+    {
       "name": "Replace front differential oil · towing or heavy loads",
       "everyMiles": 15000,
       "severeOnly": true,

@@ -1610,6 +1610,24 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect front differential oil (4WD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "front-diff-check"
+    },
+    {
+      "name": "Inspect rear differential oil",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil (4WD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "transfer-case-check"
+    },
+    {
       "name": "Replace front differential oil (4WD) · towing or heavy loads",
       "everyMiles": 15000,
       "everyMonths": 18,

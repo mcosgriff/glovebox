@@ -1485,6 +1485,12 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect rear differential oil (AWD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "rear-diff-check"
+    },
+    {
       "name": "Replace rear differential oil (AWD) · towing or heavy loads",
       "everyMiles": 15000,
       "everyMonths": 18,

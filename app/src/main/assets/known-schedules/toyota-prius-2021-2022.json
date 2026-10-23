@@ -1501,6 +1501,12 @@
       "service": "hybrid-battery-filter"
     },
     {
+      "name": "Inspect rear differential oil (AWD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "rear-diff-check"
+    },
+    {
       "name": "Replace automatic transmission fluid · towing or heavy loads",
       "everyMiles": 60000,
       "everyMonths": 72,
