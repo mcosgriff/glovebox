@@ -1,0 +1,1737 @@
+{
+  "id": "toyota-tacoma-2017-4cyl",
+  "title": "2017 Tacoma 2.7L 4-cylinder",
+  "make": "Toyota",
+  "model": "Tacoma",
+  "years": {
+    "from": 2017,
+    "to": 2017
+  },
+  "source": {
+    "name": "Toyota Warranty and Maintenance Guide",
+    "url": "https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-17Tacoma/pdf/T-MMS-17Tacoma.pdf",
+    "retrieved": "2026-10-23",
+    "note": "Read from the maintenance log in Toyota's guide for these model years, in Glovebox's wording, for the 2.7L 4-cylinder. Check it against the guide that came with your own vehicle.",
+    "basis": "The mileages, months and jobs of the maintenance log in Toyota's own Warranty and Maintenance Guide, which Toyota publishes free: T-MMS-17Tacoma. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "engine": {
+    "label": "2.7L 4-cylinder",
+    "displacementL": 2.7
+  },
+  "fourWheelDriveOnly": [
+    "Inspect drive shaft boots (4WD)",
+    "Inspect drive shaft boots (4WD) · dusty roads",
+    "Inspect front differential oil (4WD)",
+    "Inspect transfer case oil (4WD)",
+    "Lubricate propeller shaft (4WD)",
+    "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing",
+    "Replace front differential oil (4WD) · towing or heavy loads",
+    "Replace transfer case oil (4WD) · dusty roads or towing"
+  ],
+  "manualExcluded": [
+    "Replace automatic transmission fluid · long idling or low-speed driving"
+  ],
+  "manualOnly": [
+    "Replace manual transmission oil · towing or heavy loads"
+  ],
+  "milestones": [
+    {
+      "atMiles": 5000,
+      "orMonths": 6,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 10000,
+      "orMonths": 12,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 15000,
+      "orMonths": 18,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "orMonths": 24,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 25000,
+      "orMonths": 30,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "orMonths": 36,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
+        },
+        {
+          "name": "Inspect transmission for leaks"
+        },
+        {
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Replace manual transmission oil · towing or heavy loads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 35000,
+      "orMonths": 42,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "orMonths": 48,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 45000,
+      "orMonths": 54,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "orMonths": 60,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 55000,
+      "orMonths": 66,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "orMonths": 72,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive belts",
+          "service": "belt-check"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
+        },
+        {
+          "name": "Inspect transmission for leaks"
+        },
+        {
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Replace transmission fluid or oil · towing or heavy loads",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Replace automatic transmission fluid · long idling or low-speed driving"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 65000,
+      "orMonths": 78,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "orMonths": 84,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 75000,
+      "orMonths": 90,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive belts",
+          "service": "belt-check"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "orMonths": 96,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 85000,
+      "orMonths": 102,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "orMonths": 108,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive belts",
+          "service": "belt-check"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
+        },
+        {
+          "name": "Inspect transmission for leaks"
+        },
+        {
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Replace manual transmission oil · towing or heavy loads"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 95000,
+      "orMonths": 114,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "orMonths": 120,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 105000,
+      "orMonths": 126,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive belts",
+          "service": "belt-check"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "orMonths": 132,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect cabin air filter"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 115000,
+      "orMonths": 138,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers · dusty roads"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD) · dusty roads"
+        },
+        {
+          "name": "Inspect engine air filter · dusty roads"
+        },
+        {
+          "name": "Inspect steering linkage and boots · dusty roads"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD) · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt · dusty or salted roads, or towing"
+        },
+        {
+          "name": "Replace engine oil and filter · dust, towing, short cold trips or long idling"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "orMonths": 144,
+      "work": [
+        {
+          "name": "Check the driver's floor mat is secured"
+        },
+        {
+          "name": "Inspect and adjust fluid levels",
+          "service": "fluid-check"
+        },
+        {
+          "name": "Inspect wiper blades",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Lubricate propeller shaft (4WD)",
+          "service": "driveshaft"
+        },
+        {
+          "name": "Re-torque propeller shaft bolt"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake linings, drums, pads and discs (thickness and runout)",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect ball joints and dust covers"
+        },
+        {
+          "name": "Inspect brake lines and hoses"
+        },
+        {
+          "name": "Inspect drive belts",
+          "service": "belt-check"
+        },
+        {
+          "name": "Inspect drive shaft boots (4WD)"
+        },
+        {
+          "name": "Inspect engine coolant",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Inspect exhaust pipes and mountings"
+        },
+        {
+          "name": "Inspect front differential oil (4WD)",
+          "service": "front-diff-check"
+        },
+        {
+          "name": "Inspect fuel lines, connections, tank band and vapor vent hoses"
+        },
+        {
+          "name": "Inspect fuel tank cap gasket"
+        },
+        {
+          "name": "Inspect radiator and condenser"
+        },
+        {
+          "name": "Inspect rear differential oil",
+          "service": "rear-diff-check"
+        },
+        {
+          "name": "Inspect steering gear"
+        },
+        {
+          "name": "Inspect steering linkage and boots"
+        },
+        {
+          "name": "Inspect transfer case oil (4WD)",
+          "service": "transfer-case-check"
+        },
+        {
+          "name": "Inspect transmission for leaks"
+        },
+        {
+          "name": "Inspect brake booster vacuum pump (except off-road package)"
+        },
+        {
+          "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+          "service": "transfer-case"
+        },
+        {
+          "name": "Replace front differential oil (4WD) · towing or heavy loads",
+          "service": "front-diff"
+        },
+        {
+          "name": "Replace rear differential oil · towing or heavy loads",
+          "service": "rear-diff"
+        },
+        {
+          "name": "Replace transmission fluid or oil · towing or heavy loads",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Replace automatic transmission fluid · long idling or low-speed driving"
+        },
+        {
+          "name": "Tighten chassis and body nuts and bolts · dusty roads or towing"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Replace engine oil and filter",
+      "everyMiles": 10000,
+      "everyMonths": 12,
+      "severe": {
+        "everyMiles": 5000,
+        "everyMonths": 6
+      },
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires",
+      "everyMiles": 5000,
+      "everyMonths": 6,
+      "service": "rotation"
+    },
+    {
+      "name": "Lubricate propeller shaft (4WD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "severe": {
+        "everyMiles": 5000,
+        "everyMonths": 6
+      },
+      "service": "driveshaft"
+    },
+    {
+      "name": "Replace cabin air filter",
+      "everyMiles": 20000,
+      "everyMonths": 24,
+      "service": "cabin-air"
+    },
+    {
+      "name": "Replace engine air filter",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 120000,
+      "everyMonths": 144,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Replace front differential oil (4WD) · towing or heavy loads",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "severeOnly": true,
+      "service": "front-diff"
+    },
+    {
+      "name": "Replace rear differential oil · towing or heavy loads",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "severeOnly": true,
+      "service": "rear-diff"
+    },
+    {
+      "name": "Replace transfer case oil (4WD) · dusty roads or towing",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "severeOnly": true,
+      "service": "transfer-case"
+    },
+    {
+      "name": "Replace transmission fluid or oil · towing or heavy loads",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "severeOnly": true,
+      "service": "trans-fluid"
+    }
+  ]
+}
