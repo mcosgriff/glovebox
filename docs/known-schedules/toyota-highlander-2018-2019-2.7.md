@@ -18,8 +18,9 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   only)" at every milestone. No line names the 2.7L, and every other line names no engine, so it is the
   2.7L's as much as the V6's. This list is the log without those three lines. Spark plugs are replaced
   at 120,000 for every engine.
-- The 3.5L list isn't made here: the Highlander Hybrid is a 3.5L too, with a guide of its own, and
-  Glovebox can't yet tell the two apart.
+- The 3.5L V6 and the 3.5L Highlander Hybrid have lists of their own, told apart by powertrain
+  ([toyota-highlander-2018-2019-3.5](toyota-highlander-2018-2019-3.5.md),
+  [toyota-highlander-2018-2019-hybrid](toyota-highlander-2018-2019-hybrid.md)).
 - **"(AWD)"**: the guide marks the jobs of its all-wheel-drive model "(4WD)" (the propeller shaft bolt,
   rear differential oil and transfer case oil). Toyota sells the Highlander as AWD, not 4WD, so these are
   named "(AWD)" here and kept in `allWheelDriveOnly` (the owner's ruling). A Highlander known to be
