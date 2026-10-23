@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.EmptyState
@@ -75,8 +76,6 @@ import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.TorqueSpecsRoute
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -102,8 +101,7 @@ data class TorqueSpecsState(
 
 /** Puts a deleted spec back. A singleton with its own scope because Undo can be tapped after the screen has closed. */
 @Singleton
-class TorqueSpecUndo @Inject constructor(private val torque: TorqueDao, private val vehicles: VehicleDao) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class TorqueSpecUndo @Inject constructor(private val torque: TorqueDao, private val vehicles: VehicleDao, @ApplicationScope private val scope: CoroutineScope) {
 
     fun restore(spec: TorqueSpecEntity) {
         scope.launch {

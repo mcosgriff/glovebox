@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.DocumentProblem
@@ -12,8 +14,6 @@ import io.cosgriff.glovebox.data.photo.AddedDocument
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,10 +39,10 @@ class DocumentPicker @Inject constructor(
     @ApplicationContext private val context: Context,
     private val store: DocumentStore,
     private val photos: RecordPhotoStore,
+    @ApplicationScope private val scope: CoroutineScope,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launchPicker: (() -> Unit)? = null
-    private var launchCamera: ((Uri) -> Unit)? = null
+    private val picker = LauncherSlot<() -> Unit>()
+    private val camera = LauncherSlot<(Uri) -> Unit>()
     private var vehicleId: Long? = null
     private var captureFile: File? = null
 
@@ -62,20 +62,18 @@ class DocumentPicker @Inject constructor(
     val working: StateFlow<Boolean> = _working.asStateFlow()
 
     fun attach(picker: () -> Unit, camera: (Uri) -> Unit) {
-        launchPicker = picker
-        launchCamera = camera
+        this.picker.attach(picker)
+        this.camera.attach(camera)
     }
 
     /** Only [picker]'s own activity lets go, in case a new one attached first. */
     fun detach(picker: () -> Unit) {
-        if (launchPicker === picker) {
-            launchPicker = null
-            launchCamera = null
-        }
+        // The camera's launcher came with the picker's, from the same activity.
+        if (this.picker.detach(picker)) camera.launcher?.let(camera::detach)
     }
 
     fun pick(vehicleId: Long) {
-        val launch = launchPicker ?: return
+        val launch = picker.launcher ?: return
         _problem.value = null
         this.vehicleId = vehicleId
         launch()
@@ -83,7 +81,7 @@ class DocumentPicker @Inject constructor(
 
     /** The caller must already hold the camera permission: the app declares it, so Android insists. */
     fun capture(vehicleId: Long) {
-        val launch = launchCamera ?: return
+        val launch = camera.launcher ?: return
         _problem.value = null
         this.vehicleId = vehicleId
         val file = File(photos.captureDir, "${UUID.randomUUID()}.jpg")

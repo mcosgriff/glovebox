@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.TypedConfirmField
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
@@ -62,7 +64,6 @@ import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -82,9 +83,8 @@ data class PickedBackup(val file: File, val name: String)
  * the cache is still encrypted; it is removed when the sheet closes and on the next launch.
  */
 @Singleton
-class RestorePicker @Inject constructor(@ApplicationContext private val context: Context) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launch: (() -> Unit)? = null
+class RestorePicker @Inject constructor(@ApplicationContext private val context: Context, @ApplicationScope private val scope: CoroutineScope) {
+    private val slot = LauncherSlot<() -> Unit>()
 
     private val _picked = MutableStateFlow<PickedBackup?>(null)
     val picked: StateFlow<PickedBackup?> = _picked.asStateFlow()
@@ -95,16 +95,16 @@ class RestorePicker @Inject constructor(@ApplicationContext private val context:
     private val dir: File get() = File(context.cacheDir, "restore").apply { mkdirs() }
 
     fun attach(launcher: () -> Unit) {
-        launch = launcher
+        slot.attach(launcher)
     }
 
     fun detach(launcher: () -> Unit) {
-        if (launch === launcher) launch = null
+        slot.detach(launcher)
     }
 
     fun pick() {
         _problem.value = null
-        launch?.invoke()
+        slot.launcher?.invoke()
     }
 
     /** Null when the user backed out. */

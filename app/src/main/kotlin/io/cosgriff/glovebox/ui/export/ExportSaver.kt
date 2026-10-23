@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import android.app.Activity
@@ -12,7 +14,6 @@ import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ImportFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -31,9 +32,8 @@ import javax.inject.Singleton
  * that outlives the screen that asked.
  */
 @Singleton
-class ExportSaver @Inject constructor(@ApplicationContext private val context: Context) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launch: ((mimeType: String, fileName: String) -> Unit)? = null
+class ExportSaver @Inject constructor(@ApplicationContext private val context: Context, @ApplicationScope private val scope: CoroutineScope) {
+    private val slot = LauncherSlot<(mimeType: String, fileName: String) -> Unit>()
     private var pending: Pending? = null
 
     private class Pending(val file: File, val name: String, val done: String, val onSaved: suspend () -> Unit)
@@ -47,11 +47,11 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     private val dir: File get() = File(context.cacheDir, "export").apply { mkdirs() }
 
     fun attach(launcher: (mimeType: String, fileName: String) -> Unit) {
-        launch = launcher
+        slot.attach(launcher)
     }
 
     fun detach(launcher: (mimeType: String, fileName: String) -> Unit) {
-        if (launch === launcher) launch = null
+        slot.detach(launcher)
     }
 
     /** An empty file to write the export into; anything left from an earlier export is removed first. */
@@ -68,7 +68,7 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
      * succeeded, and [done] is then shown to the user.
      */
     fun save(file: File, fileName: String, mimeType: String, done: String, onSaved: suspend () -> Unit) {
-        val launcher = launch
+        val launcher = slot.launcher
         if (launcher == null) {
             file.delete()
             return

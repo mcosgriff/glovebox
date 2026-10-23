@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
@@ -12,8 +14,6 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.RecordPhotos
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,10 +46,10 @@ class RecordPhotoPicker @Inject constructor(
     @ApplicationContext private val context: Context,
     private val store: RecordPhotoStore,
     private val service: ServiceDao,
+    @ApplicationScope private val scope: CoroutineScope,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launchPicker: (() -> Unit)? = null
-    private var launchCamera: ((Uri) -> Unit)? = null
+    private val picker = LauncherSlot<() -> Unit>()
+    private val camera = LauncherSlot<(Uri) -> Unit>()
 
     private var target: PhotoTarget? = null
     private var room = 0
@@ -66,28 +66,26 @@ class RecordPhotoPicker @Inject constructor(
     val problem: StateFlow<String?> = _problem.asStateFlow()
 
     fun attach(picker: () -> Unit, camera: (Uri) -> Unit) {
-        launchPicker = picker
-        launchCamera = camera
+        this.picker.attach(picker)
+        this.camera.attach(camera)
     }
 
     /** Only [picker]'s own activity lets go, in case a new one attached first. */
     fun detach(picker: () -> Unit) {
-        if (launchPicker === picker) {
-            launchPicker = null
-            launchCamera = null
-        }
+        // The camera's launcher came with the picker's, from the same activity.
+        if (this.picker.detach(picker)) camera.launcher?.let(camera::detach)
     }
 
     /** [room] is how many more photos the form or record can take. */
     fun pick(to: PhotoTarget, room: Int) {
-        val launch = launchPicker ?: return
+        val launch = picker.launcher ?: return
         if (!begin(to, room)) return
         launch()
     }
 
     /** The caller must already hold the camera permission: the app declares it, so Android insists. */
     fun capture(to: PhotoTarget, room: Int) {
-        val launch = launchCamera ?: return
+        val launch = camera.launcher ?: return
         if (!begin(to, room)) return
         val file = File(store.captureDir, "${UUID.randomUUID()}.jpg")
         captureFile = file

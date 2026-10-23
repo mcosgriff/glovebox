@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.data.db.jobRows
@@ -127,7 +129,6 @@ import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -164,9 +165,8 @@ data class PickedImport(val name: String, val text: String, val file: ImportFile
  * the activity, like the other pickers: choosing a file leaves the app, which can lock it.
  */
 @Singleton
-class ImportPicker @Inject constructor(@ApplicationContext private val context: Context) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var launch: (() -> Unit)? = null
+class ImportPicker @Inject constructor(@ApplicationContext private val context: Context, @ApplicationScope private val scope: CoroutineScope) {
+    private val slot = LauncherSlot<() -> Unit>()
 
     private val _picked = MutableStateFlow<PickedImport?>(null)
     val picked: StateFlow<PickedImport?> = _picked.asStateFlow()
@@ -175,16 +175,16 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
     val problem: StateFlow<String?> = _problem.asStateFlow()
 
     fun attach(launcher: () -> Unit) {
-        launch = launcher
+        slot.attach(launcher)
     }
 
     fun detach(launcher: () -> Unit) {
-        if (launch === launcher) launch = null
+        slot.detach(launcher)
     }
 
     fun pick() {
         _problem.value = null
-        launch?.invoke()
+        slot.launcher?.invoke()
     }
 
     /** Null when the user backed out. */
