@@ -226,4 +226,13 @@ class BackupFormatTest {
             assertEquals(BackupException.Reason.DAMAGED, reasonOf { r.next() })
         }
     }
+
+    @Test
+    fun `settings come back as they went, each with its type`() {
+        val prefs = mapOf<String, Any>("theme" to "DARK", "lockAfterSeconds" to 30, "lastBackupOn" to 20_400L, "biometrics" to true)
+        assertEquals(prefs, BackupFormat.settingsFromJson(BackupFormat.settingsToJson(prefs)))
+        // One this version can't read is left out, and that setting keeps its default.
+        val odd = kotlinx.serialization.json.Json.parseToJsonElement("""{ "x": { "type": "colour", "value": "red" }, "theme": { "type": "string", "value": "LIGHT" } }""")
+        assertEquals(mapOf<String, Any>("theme" to "LIGHT"), BackupFormat.settingsFromJson(odd as kotlinx.serialization.json.JsonObject))
+    }
 }

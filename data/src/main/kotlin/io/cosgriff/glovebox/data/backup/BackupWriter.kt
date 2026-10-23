@@ -65,12 +65,10 @@ class BackupWriter(
             // One read transaction, so the tables agree with each other even if something is saved meanwhile.
             db.useReaderConnection { connection ->
                 connection.deferredTransaction {
-                    val tables = usePrepared("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name") { s ->
-                        buildList { while (s.step()) add(s.getText(0)) }
-                    }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
+                    val tables = backedUpTables()
                     val vehicles = count("vehicles")
                     val records = count("service_records")
-                    val schemaVersion = usePrepared("PRAGMA user_version") { s -> s.step(); s.getInt(0) }
+                    val schemaVersion = schemaVersion()
 
                     entries.write(
                         BackupEntryKind.MANIFEST,
@@ -97,23 +95,7 @@ class BackupWriter(
                 }
             }
 
-            entries.write(
-                BackupEntryKind.SETTINGS,
-                "",
-                JsonObject(
-                    prefs.mapValues { (_, v) ->
-                        buildJsonObject {
-                            when (v) {
-                                is Boolean -> { put("type", "boolean"); put("value", v) }
-                                is Int -> { put("type", "int"); put("value", v) }
-                                is Long -> { put("type", "long"); put("value", v) }
-                                is String -> { put("type", "string"); put("value", v) }
-                                else -> { put("type", "string"); put("value", v.toString()) }
-                            }
-                        }
-                    },
-                ).toString().toByteArray(),
-            )
+            entries.write(BackupEntryKind.SETTINGS, "", BackupFormat.settingsToJson(prefs).toString().toByteArray())
 
             photos.forEachIndexed { i, name ->
                 onProgress(i, photos.size)

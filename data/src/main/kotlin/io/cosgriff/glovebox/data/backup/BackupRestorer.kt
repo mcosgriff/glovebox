@@ -18,7 +18,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
@@ -96,7 +95,7 @@ class BackupRestorer(
             }
         }
         movePhotosIn()
-        prefs?.let { settings.restore(it.settingValues()) }
+        prefs?.let { settings.restore(BackupFormat.settingsFromJson(it)) }
         // Ids mean different things now; what was announced about the old data says nothing about the new.
         noticeLog.write(NoticeLog())
         summary
@@ -129,7 +128,7 @@ class BackupRestorer(
         staging.deleteRecursively()
     }
 
-    private suspend fun schemaVersion(): Int = db.useReaderConnection { it.usePrepared("PRAGMA user_version") { s -> s.step(); s.getInt(0) } }
+    private suspend fun schemaVersion(): Int = db.useReaderConnection { it.schemaVersion() }
 
     private suspend fun replaceTables(tables: Map<String, JsonArray>) {
         // Room's own write connection, so screens watching these tables refresh once it is done.
@@ -137,9 +136,7 @@ class BackupRestorer(
             connection.immediateTransaction {
                 // Rows go in table by table, children sometimes before parents; the links are checked at commit.
                 executeSQL("PRAGMA defer_foreign_keys = ON")
-                val current = usePrepared("SELECT name FROM sqlite_master WHERE type = 'table'") { s ->
-                    buildList { while (s.step()) add(s.getText(0)) }
-                }.filterNot { it.startsWith("sqlite_") || it == "android_metadata" || it == "room_master_table" }
+                val current = backedUpTables()
                 current.forEach { executeSQL("DELETE FROM `$it`") }
                 for ((table, rows) in tables) {
                     if (table !in current) continue
@@ -176,19 +173,6 @@ class BackupRestorer(
         if (this is JsonNull) return null
         val p = jsonPrimitive
         return if (p.isString) p.content else p.longOrNull ?: p.doubleOrNull ?: p.content
-    }
-
-    private fun JsonObject.settingValues(): Map<String, Any> = buildMap {
-        for ((name, wrapped) in this@settingValues) {
-            val o = wrapped as? JsonObject ?: continue
-            val value = o["value"] as? JsonPrimitive ?: continue
-            when ((o["type"] as? JsonPrimitive)?.content) {
-                "boolean" -> value.booleanOrNull?.let { put(name, it) }
-                "int" -> value.intOrNull?.let { put(name, it) }
-                "long" -> value.longOrNull?.let { put(name, it) }
-                "string" -> put(name, value.content)
-            }
-        }
     }
 
     private fun summary(first: BackupEntry?): BackupSummary {
