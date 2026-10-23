@@ -42,9 +42,8 @@ was sent. Read on 2026-10-23.
 ## Not covered
 
 - Other years of this engine: [2006](toyota-4runner-2006-v6.md), [2009](toyota-4runner-2009-v6.md).
-- 2007: the guide (`https://assets.sipb.toyota.com/publications/en/omms-s/07ToyMS_MS0016/pdf/07ToyMS_MS0016.pdf`) was read, and its towing list at 30,000 and 90,000 miles has "Replace
-  manual transmission oil". A job only for a manual gearbox can't be said in a list yet (`manualExcluded` is the
-  other way round), so no 2007 list was made. 2007 also adds an "if equipped" active height control inspection.
+- 2007: lists of its own, [V6](toyota-4runner-2007-v6.md) and [V8](toyota-4runner-2007-v8.md), with the manual
+  transmission oil under towing in `manualOnly`.
 - 2005 and earlier: Toyota lists no guide for the 4Runner alone, so there is no 4Runner log to read. 2004 and
   2005 have one booklet for every SUV and truck, with lines marked by model; 2002 and 2003 one for every model,
   with two schedules side by side; 1998 to 2001 booklets for every model, or every SUV and truck (not read).
