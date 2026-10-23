@@ -42,5 +42,6 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered: 2021–2024 are a list of their own
   ([toyota-camry-2021-2024-v6](toyota-camry-2021-2024-v6.md)), since their log adds all-wheel-drive
-  lines these years don't have. The 2.5L gas and hybrid Camry are not in this list: they share an
-  engine size and need a way to tell them apart that Glovebox doesn't have yet.
+  lines these years don't have. The 2.5L gas and hybrid Camry have lists of their own, told apart by
+  powertrain ([toyota-camry-2018-2019-2.5](toyota-camry-2018-2019-2.5.md),
+  [toyota-camry-2020-2.5](toyota-camry-2020-2.5.md), [toyota-camry-2018-2020-hybrid](toyota-camry-2018-2020-hybrid.md)).
