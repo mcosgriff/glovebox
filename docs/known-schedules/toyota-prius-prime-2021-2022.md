@@ -55,4 +55,5 @@ Read on 2026-10-23.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered here: the other years of this generation, which have lists of their own
   ([2017](toyota-prius-prime-2017.md), [2018–2020](toyota-prius-prime-2018-2020.md)), 2016 (no Prime that
-  year) and 2023 on (a new generation, whose guides weren't read).
+  year) and 2023 on (a new generation, with lists
+  of its own from [toyota-prius-prime-2023-2024](toyota-prius-prime-2023-2024.md)).

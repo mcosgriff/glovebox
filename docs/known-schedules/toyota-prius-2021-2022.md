@@ -59,4 +59,5 @@ Read on 2026-10-23.
 - Not covered here: the other years of this generation, which have lists of their own
   ([2016](toyota-prius-2016.md), [2017](toyota-prius-2017.md), [2018](toyota-prius-2018.md),
   [2019–2020](toyota-prius-2019-2020.md)), 2015 and earlier (the previous generation, whose guides weren't
-  read) and 2023 on (a new generation, whose guides weren't read).
+  read) and 2023 on (a new generation, with lists
+  of its own from [toyota-prius-2023-2024](toyota-prius-2023-2024.md)).
