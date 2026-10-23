@@ -92,9 +92,5 @@ object LeadTimeInput {
         return LeadTime(m, d)
     }
 
-    private fun number(text: String): Int? {
-        val cleaned = text.filterNot { it == ',' || it.isWhitespace() }
-        if (cleaned.isEmpty() || cleaned.length > 6 || !cleaned.all(Char::isDigit)) return null
-        return cleaned.toInt()
-    }
+    private fun number(text: String): Int? = WholeNumber.parse(text, min = 0, maxDigits = 6)
 }

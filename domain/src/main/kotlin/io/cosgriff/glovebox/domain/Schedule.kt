@@ -97,11 +97,6 @@ object IntervalInput {
     private class Part(val value: Int?)
 
     /** Null = invalid; Part(null) = left blank. */
-    private fun part(text: String): Part? {
-        val cleaned = text.filterNot { it == ',' || it.isWhitespace() }
-        if (cleaned.isEmpty()) return Part(null)
-        if (!cleaned.all(Char::isDigit)) return null
-        val n = cleaned.toIntOrNull() ?: return null
-        return if (n > 0) Part(n) else null
-    }
+    private fun part(text: String): Part? =
+        if (text.none { it != ',' && !it.isWhitespace() }) Part(null) else WholeNumber.parse(text, min = 1)?.let(::Part)
 }

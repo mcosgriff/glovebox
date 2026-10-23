@@ -34,6 +34,5 @@ object VinDecode {
     fun shortDrive(driveType: String?): String? = driveType?.substringBefore('/')?.trim()?.takeIf { it.isNotEmpty() }
 
     /** A model year typed by hand; null unless it is one a road vehicle could have. */
-    fun parseYear(text: String, thisYear: Int): Int? =
-        text.trim().toIntOrNull()?.takeIf { it in FIRST_YEAR..thisYear + 1 }
+    fun parseYear(text: String, thisYear: Int): Int? = WholeNumber.year(text, FIRST_YEAR, thisYear)
 }

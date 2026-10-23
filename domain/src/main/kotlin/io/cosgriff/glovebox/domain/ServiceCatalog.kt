@@ -447,9 +447,5 @@ object OdometerInput {
     }
 
     /** Whole miles above zero; thousands separators are fine. */
-    fun parse(text: String): Int? {
-        val cleaned = text.filterNot { it == ',' || it.isWhitespace() }
-        if (cleaned.isEmpty() || !cleaned.all(Char::isDigit)) return null
-        return cleaned.toIntOrNull()?.takeIf { it > 0 }
-    }
+    fun parse(text: String): Int? = WholeNumber.parse(text, min = 1)
 }
