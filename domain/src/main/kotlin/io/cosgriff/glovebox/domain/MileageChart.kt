@@ -37,7 +37,7 @@ data class MileageSeries(
 
 /** The odometer over time, from the same readings and flags as the Mileage readings list. */
 object MileageChart {
-    const val DAYS_A_YEAR = 365.25
+    const val DAYS_A_YEAR = ReminderEngine.DAYS_A_YEAR
 
     /**
      * The chart for [rows] (as `MileageReadings.rows` gives them, any order) over the last [years],
