@@ -23,19 +23,25 @@ Source: Toyota's 2022 Sienna Warranty and Maintenance Guide,
   20,000 miles; the cleaning is a reminder (`hybrid-battery-filter`), the inspection is in the table only.
 - Coolant: the 100,000-mile line names the engine and inverter coolant together; its footnote gives the
   engine coolant first at 100,000 miles, then every 50,000 / 60 months, and the inverter coolant first at
-  150,000, then every 50,000 / 60. The line is written as "Replace engine coolant" (`coolant`). **The
-  inverter coolant has no reminder**: its first change is past the end of the log and given only in that
-  footnote. The first change's "or 120 months" isn't used (it counts from the day the vehicle went into
-  service, which Glovebox doesn't know).
+  150,000, then every 50,000 / 60. The line is written as "Replace engine coolant" (`coolant`). The
+  inverter coolant's first change is past the end of the log and given only in that footnote, so it is an
+  `additional` item, "Replace inverter coolant" (`inverter-coolant`), every 50,000 / 60 and first at
+  150,000, never placed on the table (the owner's ruling of 2026-10-23, #33). The first changes' "or 120
+  months" (engine coolant) and "or 180 months" (inverter coolant) aren't used: they count from the day the
+  vehicle went into service, which Glovebox doesn't know.
 - Left out: "Add Toyota EFI Tank Additive" (Hawaii, Puerto Rico and Saipan only), the note to change the oil
   again if 0W-16 wasn't used, and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use), tire rotation 5,000 / 6, hybrid
   battery cooling filter cleaning 20,000 / 24, cabin and engine air filters 30,000 / 36, spark plugs
-  120,000 / 144, and engine coolant first at 100,000 miles and then every 50,000 / 60.
+  120,000 / 144, engine coolant first at 100,000 miles and then every 50,000 / 60, and inverter coolant
+  (the `additional` item) first at 150,000 and then every 50,000 / 60.
+- Inspection that is a reminder too: rear differential oil (AWD) every 30,000 / 36. Logging a change
+  counts as its check. This is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential
+  needs it inspected, so the 4Runner's rule applies to every list whose guide prints the inspection.
 - Only for severe use (#136): automatic transmission fluid and rear differential oil (AWD) every
   60,000 / 72 when towing or carrying heavy loads.
 - The special-condition oil change at the odd 5,000s is printed under four conditions in this year (dirt or
   dusty roads, towing, short trips below freezing, long idling); the table names them on one line.
-- Inspections are in the table only, with a check line where the catalog has one. Brake fluid has no
-  replacement in the log, so it has no reminder from this list.
+- The other inspections are in the table only, with a check line where the catalog has one. Brake fluid
+  has no replacement in the log, so it has no reminder from this list.
 - Not covered here: 2021 and 2023 on, which have lists of their own.

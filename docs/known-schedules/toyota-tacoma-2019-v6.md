@@ -63,10 +63,11 @@ What 2019 says, against the others:
 - Jobs for the guide's four special operating conditions (dirt or dusty roads; towing, a car-top carrier or
   heavy loads; repeated short trips below freezing; long idling or low-speed driving) are named with their
   condition. Where the guide repeats a line under two conditions it is one job here, named with both.
-- Inspections are in the table only, never reminders. Those with a catalog line carry it: fluid levels
-  (`fluid-check`), wiper blades (`wipers-check`), brakes (`brake-inspect`), drive belts (`belt-check`,
-  first at 60,000, then every 15,000), engine coolant (`cooling-check`), and the differential and transfer
-  case oils (`front-diff-check`, `rear-diff-check`, `transfer-case-check`).
+- Inspections are in the table only, except the differential and transfer case oils, which are reminders
+  too (below). Those with a catalog line carry it: fluid levels (`fluid-check`), wiper blades
+  (`wipers-check`), brakes (`brake-inspect`), drive belts (`belt-check`, first at 60,000, then every
+  15,000), engine coolant (`cooling-check`), and the differential and transfer case oils
+  (`front-diff-check`, `rear-diff-check`, `transfer-case-check`).
 - Left out, because they aren't jobs at a milestone: the note that the oil is to be replaced at 5,000 miles if
   0W-20 wasn't used at the last change, the note on the cabin filter in heavy traffic or dust, the daily
   checks for off-road driving, and the explanations of each item.
@@ -79,6 +80,10 @@ What 2019 says, against the others:
   at 100,000 and then every 50,000 / 60, and spark plugs every 60,000 / 72 months (the V6's own line at 60,000
   and the line for both engines at 120,000). The guide's "or 120 months" for the first
   coolant change isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
+- Inspections that are reminders too: front differential oil (4WD) and rear differential oil every
+  15,000 / 18, transfer case oil (4WD) every 30,000 / 36. Logging a change of one counts as its check.
+  This is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so
+  the 4Runner's rule applies to every list whose guide prints the inspection.
 - Only for severe use (#136): front (4WD) and rear differential oil every 15,000 / 18 under towing, transfer
   case oil (4WD) every 30,000 / 36 on dusty roads or when towing, and transmission fluid or oil every
   60,000 / 72 under towing.

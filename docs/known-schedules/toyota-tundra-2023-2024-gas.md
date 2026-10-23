@@ -23,12 +23,17 @@ publishes at
   (drive shaft boots, front differential oil and transfer case oil) say `(4WD)` and are left out for a truck
   known to be 2WD. The Tundra is a true 4WD truck; the guide has no "AWD" lines.
 - Inspections are in the table, with a `-check` service where Glovebox has one (fluid levels, wiper blades,
-  brakes, engine coolant, drive belts, differential and transfer case oils). None of them is a reminder.
+  brakes, engine coolant, drive belts, differential and transfer case oils). Only the differential and
+  transfer case oils are reminders too (below).
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 under special operating conditions), tire rotation
   5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 40,000 / 48, and engine coolant and
   intercooler coolant each first at 100,000 miles and then every 50,000 / 60 (the guide's own footnotes give
   both). The "or 120 months" for the first coolant change isn't used: it counts from the day the truck went
   into service, which Glovebox doesn't know.
+- Inspections that are reminders too: front differential oil (4WD) and rear differential oil every
+  15,000 / 18, transfer case oil (4WD) every 30,000 / 36. Logging a change of one counts as its check. This
+  is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so the
+  4Runner's rule applies to every list whose guide prints the inspection.
 - Only for severe use (#136): front differential oil (4WD) every 15,000 / 18, rear differential oil every
   30,000 / 36 and automatic transmission fluid every 60,000 / 72 when towing or carrying heavy loads; transfer
   case oil (4WD) every 30,000 / 36 on dusty roads or when towing.

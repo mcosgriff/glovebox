@@ -19,7 +19,12 @@ Source: Toyota's Warranty and Maintenance Guide for 2016, as listed by Toyota's 
 - Everything else is as on the 2017–2018 list: `"powertrain": "gas"` beside the hybrid's own list, the guide's
   "(4WD)" lines named "(AWD)" and listed in `allWheelDriveOnly` (owner's ruling of 2026-10-23, #33), the same
   notes left out and the same reminders, plus the front differential oil every 60,000 / 72 when towing, only for
-  severe use. Inspections are not reminders.
+  severe use.
+- Inspections that are reminders, at the table's own intervals: front differential oil 30,000 / 36
+  (`front-diff-check`), rear differential oil (AWD) and transfer case oil (AWD) 15,000 / 18
+  (`rear-diff-check`, `transfer-case-check`); logging a change counts as its check. By the owner's ruling of
+  2026-10-23 (#33) any vehicle with a differential needs it inspected, so the 4Runner's rule applies wherever a
+  guide prints the inspection. The other inspections are not reminders.
 - Not covered:
   - **2013–2015.** Toyota's owners site lists a guide for each
     (`https://assets.sipb.toyota.com/publications/en/omms-s/T-MMS-13RAV4/pdf/2013_Toyota_RAV4_WMG_lr.pdf`,

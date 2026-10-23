@@ -33,18 +33,17 @@ Read on 2026-10-23.
 - **Coolant.** The 100,000-mile box prints one row, "engine/inverter coolant", and its footnote gives the
   engine coolant first at 100,000 miles / 120 months and every 50,000 / 60 after, and the inverter coolant
   first at 150,000 / 180 months and every 50,000 / 60 after. So the row at 100,000 is the engine coolant
-  ("Replace engine coolant", `coolant`, first at 100,000 then every 50,000 / 60), and the inverter coolant,
-  which the log never reaches, has no reminder (first at 150,000, then every 50,000 / 60 by the footnote): the owner's
-  ruling puts in `additional` only jobs printed apart from the table, not a footnote's, so add it by
-  hand if you want it. The "or 120 months" and "or 180 months"
-  for the first changes aren't used: they count from the day the vehicle went into service, which Glovebox
-  doesn't know.
+  ("Replace engine coolant", `coolant`, first at 100,000 then every 50,000 / 60). The inverter coolant, which
+  the log never reaches, is printed only in that footnote, apart from the table, so it is an `additional` job
+  ("Replace inverter coolant", `inverter-coolant`, first at 150,000 then every 50,000 / 60), never placed on
+  the table (the owner's ruling of 2026-10-23, #33). The "or 120 months" and "or 180 months" for the first
+  changes aren't used: they count from the day the vehicle went into service, which Glovebox doesn't know.
 - **Spark plugs** every 120,000 / 144, as the log prints. A footnote gives 150,000 for PZEV vehicles; Glovebox
   has no PZEV mark, so a PZEV owner should change that reminder by hand.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval under any
   of its four special operating conditions), tire rotation 5,000 / 6, cabin and engine air filters 30,000 /
   36, spark plugs 120,000 / 144, engine coolant first at 100,000 then every 50,000 / 60, hybrid battery intake
-  filter 20,000 / 24.
+  filter 20,000 / 24. Apart from the table: inverter coolant first at 150,000 then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or carrying heavy
   loads. Under ordinary driving the guide doesn't replace these.
 - Inspections stay in the table only (rule 7), with a `-check` line where Glovebox has one (fluid levels,

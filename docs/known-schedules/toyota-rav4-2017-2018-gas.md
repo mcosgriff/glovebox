@@ -25,16 +25,21 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, as listed b
   used last time, the note on the cabin air filter in heavy traffic or dust, and the footnotes.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 under any of the guide's four special conditions), tire
   rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, and engine coolant
-  first at 100,000 miles and then every 50,000 / 60. The guide's "or 120 months" for the first coolant change
-  isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
+  first at 100,000 miles and then every 50,000 / 60, rear differential oil and transfer case oil inspections
+  (AWD) 15,000 / 18. The guide's "or 120 months" for the first coolant change isn't used: it counts from the
+  day the vehicle went into service, which Glovebox doesn't know.
+- **The rear differential and transfer case oil inspections (AWD) are reminders**, at the table's own
+  15,000 / 18, with the `rear-diff-check` and `transfer-case-check` lines; logging a change counts as its
+  check. By the owner's ruling of 2026-10-23 (#33) any vehicle with a differential needs it inspected, so the
+  4Runner's rule applies wherever a guide prints the inspection.
 - Only for severe use (#136): rear differential oil (AWD) and transfer case oil (AWD) every 15,000 / 18 when
   towing or carrying heavy loads; automatic transmission fluid every 60,000 / 72 when towing or with long
   idling.
 - In the table only: the re-torque of the propeller shaft bolt (every 15,000 miles, and every 5,000 on dusty or
   salted roads or when towing; there is no catalog line for it, as on the 4Runner list), the drive belt
   inspection (first at 60,000, then every 15,000) and the other inspections. Inspections with a catalog line
-  (brakes, drive belts, rear differential oil, transfer case oil) carry it, so logging that work completes them
-  on Milestones; none of them is a reminder.
+  (brakes, drive belts) carry it, so logging that work completes them on Milestones; none of them is a
+  reminder.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered: 2016 (its own list, [toyota-rav4-2016-gas](toyota-rav4-2016-gas.md)), 2013–2015 (see that
   page), 2019 on (a new generation).

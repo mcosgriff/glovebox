@@ -18,7 +18,8 @@ Read on 2026-10-23.
   already cover. Nothing says the chart repeats after 150,000, so the table doesn't.
 - **No months on the milestones.** The columns are in miles only, so the milestones have no months. The
   reminders have months only where the guide prints them for that job: the oil footnote's 12 months (6 for
-  severe use). Rotation, the filters and the spark plugs have none.
+  severe use), and the coolant footnotes' 60 months for every change after the first. Rotation, the filters
+  and the spark plugs have none.
 - 2025 and 2026 have the same cells. 2026 renumbers the footnotes, calls the battery "HEV" for "HV", and
   marks the inverter coolant row "(if applicable)" on the row; 2025 marks it in the row's footnote
   ("inverter/intercooler coolant (if applicable)"). Both were looked at on the page; the row is read as
@@ -27,14 +28,20 @@ Read on 2026-10-23.
   for Toyota (`GetModelsForMakeYear`, checked 2026-10-23) gives `Prius` for 2025 and 2026. The
   `Prius Prime (PHEV)` has its own list ([2025–2026](toyota-prius-prime-2025-2026.md)).
 - **Rows marked "(if applicable)"** are in the table with no `service`, so they never drive a reminder (the
-  owner's ruling of 2026-10-23, #33, and the coordinator's rule that a combined row stays whole): the
-  radiator, condenser and intercooler; the drive shaft nuts and bolts (torqued every 15,000, and at the other
-  columns on dusty roads); the rear differential oil (inspected every 30,000, replaced at 60,000 and 120,000
-  when towing); the engine and intercooler coolant (replaced at 100,000 and 150,000); and the inverter and
-  intercooler coolant (replaced at 150,000). **So this list has no coolant reminder and no rear differential
-  oil reminder**, though a Prius has an engine coolant and an inverter coolant and the AWD has a rear
-  differential: the "(if applicable)" mark is on the whole row, and the owner will decide later whether such
-  rows are split.
+  owner's ruling of 2026-10-23, #33): the radiator, condenser and intercooler; the drive shaft nuts and bolts
+  (torqued every 15,000, and at the other columns on dusty roads); the rear differential oil (inspected every
+  30,000, replaced at 60,000 and 120,000 when towing). **So this list has no rear differential oil reminder**,
+  though the AWD has a rear differential.
+- **Coolant rows are split** (the owner's ruling of 2026-10-23, #33). The chart's engine and intercooler
+  coolant row (replaced at 100,000 and 150,000) and its inverter and intercooler coolant row (replaced at
+  150,000) are marked "(if applicable)", but the mark belongs to the intercooler: every Prius has an engine
+  coolant and an inverter coolant. So the first row is two table jobs, "Replace engine coolant" (`coolant`)
+  and "Replace intercooler coolant (if applicable)" (table only), and the second is "Replace inverter coolant"
+  (`inverter-coolant`) with the same intercooler row (one intercooler row per milestone). The engine coolant
+  is a reminder first at 100,000 then every 50,000 miles / 60 months, and the inverter coolant first at
+  150,000 then every 50,000 / 60, as the guide's footnotes give them. Their first changes' "120 months" and
+  "180 months" count from the day the car went into service, which Glovebox doesn't know, so the first
+  changes are by mileage only.
 - **AWD.** These guides mark no line "(AWD)" (the 2023–2024 log did); the drive shaft and rear differential
   rows are "(if applicable)" instead, which is not a drivetrain mark, so nothing is in `allWheelDriveOnly` and
   those rows are kept for every Prius.
@@ -44,7 +51,8 @@ Read on 2026-10-23.
   runout every 30,000. The table keeps the chart's one row.
 - Reminders: engine oil every 10,000 miles / 12 months (5,000 / 6 for severe use: dirt or dusty roads, or
   repeated short trips below freezing), tire rotation every 5,000, hybrid battery intake filter every 20,000,
-  cabin and engine air filters every 30,000, spark plugs every 120,000.
+  cabin and engine air filters every 30,000, spark plugs every 120,000, engine coolant first at 100,000 then
+  every 50,000 / 60, inverter coolant first at 150,000 then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or carrying heavy loads.
 - Special-condition rows are named with their condition. The oil row's condition is its footnote's (dirt or
   dusty roads, or short trips below freezing); the chassis nuts and bolts are tightened at every column on

@@ -12,9 +12,10 @@ which Toyota's owners site lists for the 2025 Highlander. Downloaded on 2026-10-
   T (torque), with a "Special Operating Conditions" chart beside each standard one. All six pages were read
   in full, cell by cell, and the list written from them: 30 milestones. Nothing says the chart repeats after
   150,000, so the table doesn't.
-- **No months.** The columns are in miles only, so the milestones have none. A reminder has months only
-  where the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months on dirt or dusty
-  roads or short trips below freezing).
+- **No months on the milestones.** The columns are in miles only, so the milestones have none. A reminder
+  has months only where the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months
+  on dirt or dusty roads or short trips below freezing), and the engine coolant 60 months for every change
+  after the first (below).
 - **No wiper blade inspection from 5,000 to 50,000.** The chart's first page (5,000 to 50,000) has no wiper
   blade row; the other two pages inspect them at every column. The table follows the chart: the wiper
   inspection starts at 55,000. The 2026 chart has the row on its first page too, which is one reason 2026
@@ -27,12 +28,14 @@ which Toyota's owners site lists for the 2025 Highlander. Downloaded on 2026-10-
   this chart, not "(4WD)" as in the 2023–2024 logs. They are in the table, named so, with no `service`, so
   they drive no reminder; they aren't in `allWheelDriveOnly`, because the chart doesn't name a drivetrain.
   That leaves no rear differential or transfer case reminder in this list, under any use.
-- **The coolant row.** The chart prints one row, "Engine Coolant / Intercooler Coolant (if applicable)", R
-  at 100,000 and 150,000. A row marked "(if applicable)" is kept whole, as printed, in the table only with no
-  `service`, even though the mark seems to belong to the intercooler (coordinator's rule of 2026-10-23, following the owner's ruling in #33). **So this list has no
-  engine coolant reminder** (its footnote: first at 100,000 miles / 120 months, then every 50,000 / 60);
-  the change shows only on the table, and the owner adds a reminder by hand if wanted. Whether such rows
-  are to be split is left to the owner, so every list reads them the same way.
+- **The coolant row, split** (the owner's ruling of 2026-10-23, #33). The chart prints one row, "Engine
+  Coolant / Intercooler Coolant (if applicable)", R at 100,000 and 150,000. The "(if applicable)" mark
+  belongs to the intercooler: every Highlander has engine coolant. So the row is two table jobs, "Replace
+  engine coolant" (`coolant`) and "Replace intercooler coolant (if applicable)" (table only), and the
+  engine coolant is a reminder first at 100,000 miles and then every 50,000 miles / 60 months, as its
+  footnote gives it (first at 100,000 miles / 120 months, then every 50,000 / 60). The first change's "120
+  months" counts from the day the vehicle went into service, which Glovebox doesn't know, so the first
+  change is by mileage only.
 - **Spark plugs** are replaced at 40,000, 80,000 and 120,000: a reminder every 40,000.
 - **Special operating conditions.** 2025's special charts mark only the cells the standard chart doesn't
   already have, and the table takes them as they are, each named with its condition: on dirt or dusty
@@ -49,7 +52,8 @@ which Toyota's owners site lists for the 2025 Highlander. Downloaded on 2026-10-
 - The brake linings row is I at every column; its footnote says visually every 5,000 and thickness and
   runout every 30,000. The table keeps the chart's one row.
 - Reminders: engine oil every 10,000 miles / 12 months (5,000 / 6 for severe use), tire rotation every
-  5,000, cabin and engine air filters every 30,000, spark plugs every 40,000. No coolant reminder (above).
+  5,000, cabin and engine air filters every 30,000, spark plugs every 40,000, engine coolant first at
+  100,000 and then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing, carrying heavy loads or
   idling long.
 - Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades,

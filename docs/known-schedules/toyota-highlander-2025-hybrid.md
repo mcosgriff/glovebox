@@ -13,9 +13,9 @@ Toyota's owners site lists no guide for the hybrid; it was found only at that ad
   R (replace) or T (torque), with a "Special Operating Conditions" chart beside each standard one that marks
   only cells the standard chart doesn't already have. All six pages were read in full, cell by cell, and the
   list written from them: 30 milestones. Nothing says the chart repeats after 150,000, so the table doesn't.
-- **No months.** The columns are in miles only, so the milestones have none. A reminder has months only
-  where the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months on dirt or dusty
-  roads).
+- **No months on the milestones.** The columns are in miles only, so the milestones have none. A reminder
+  has months only where the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months
+  on dirt or dusty roads), and the two coolants 60 months for every change after the first (below).
 - **The engine:** 2.5-litre hybrid, as on [the 2020–2023 page](toyota-highlander-2020-2023-hybrid.md),
   labelled "2.5L hybrid" (`displacementL` 2.5). The 2025 petrol Highlander is a 2.4-litre turbo with a guide
   and a list of its own, so no `powertrain` is needed.
@@ -24,14 +24,16 @@ Toyota's owners site lists no guide for the hybrid; it was found only at that ad
   logs. They are in the table, named so, with no `service`, so they drive no reminder; they aren't in
   `allWheelDriveOnly`, because the chart doesn't name a drivetrain. That leaves no rear differential
   reminder in this list, under any use.
-- **The coolant rows.** The chart prints "Engine Coolant / Intercooler Coolant (if applicable)", R at
-  100,000 and 150,000, and "Inverter Coolant / Intercooler Coolant (if applicable)", R at 150,000. Each is
-  one row marked "(if applicable)", kept whole, as printed, in the table only with no `service`, even though
-  the mark seems to belong to the intercooler (coordinator's rule of 2026-10-23, following the owner's ruling in #33). **So this list has no engine coolant and no
-  inverter coolant reminder** (their footnotes: engine coolant first at 100,000 miles / 120 months, inverter
-  coolant first at 150,000 / 180, each then every 50,000 / 60); the changes show only on the table, and the
-  owner adds reminders by hand if wanted. Whether such rows are to be split is left to the owner, so every
-  list reads them the same way.
+- **The coolant rows, split** (the owner's ruling of 2026-10-23, #33). The chart prints "Engine Coolant /
+  Intercooler Coolant (if applicable)", R at 100,000 and 150,000, and "Inverter Coolant / Intercooler
+  Coolant (if applicable)", R at 150,000. The "(if applicable)" mark belongs to the intercooler: every
+  Highlander Hybrid has engine coolant and an inverter loop. So each row is split into "Replace engine
+  coolant" (`coolant`) or "Replace inverter coolant" (`inverter-coolant`) and "Replace intercooler coolant
+  (if applicable)" (table only, once per milestone). The engine coolant is a reminder first at 100,000
+  miles and the inverter coolant first at 150,000, each then every 50,000 miles / 60 months, as their
+  footnotes give them (engine coolant first at 100,000 miles / 120 months, inverter coolant first at
+  150,000 / 180, each then every 50,000 / 60). The first changes' months count from the day the vehicle
+  went into service, which Glovebox doesn't know, so the first changes are by mileage only.
 - The HV battery cooling intake filter is inspected at every column and cleaned every 20,000 miles in place
   of the inspection (`hybrid-battery-filter`).
 - **Special operating conditions**, each named with its condition: on dirt or dusty roads, ball joints,
@@ -47,7 +49,8 @@ Toyota's owners site lists no guide for the hybrid; it was found only at that ad
   runout every 30,000. The table keeps the chart's one row.
 - Reminders: engine oil every 10,000 miles / 12 months (5,000 / 6 for severe use, on dirt or dusty roads),
   tire rotation every 5,000, HV battery cooling intake filter cleaned every 20,000, cabin and engine air
-  filters every 30,000, spark plugs every 120,000. No coolant reminder (above).
+  filters every 30,000, spark plugs every 120,000, engine coolant first at 100,000 and inverter coolant
+  first at 150,000, each then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or carrying heavy loads.
 - Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades).
 - Brake fluid has no replacement in the chart, so it has no reminder from this list.

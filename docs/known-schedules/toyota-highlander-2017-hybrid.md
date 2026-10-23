@@ -22,16 +22,23 @@ Read on 2026-10-23.
 - **No drivetrain marks.** The hybrid guide marks no line "(4WD)" or "(AWD)"; nothing on this list is held
   back from any drivetrain.
 - **Engine and inverter coolant.** The 100,000-mile line is "Replace engine/inverter coolant"; its footnote
-  puts the inverter coolant's first change at 150,000 miles or 180 months. The line is named "Replace engine
-  coolant" (`coolant`), and the inverter coolant has no reminder: its first change falls after the log's end
-  and is given only in a footnote (the coordinator's rule of 2026-10-23).
+  puts the inverter coolant's first change at 150,000 miles or 180 months, then every 50,000 / 60. The line
+  is named "Replace engine coolant" (`coolant`). The inverter coolant's first change falls after the log's
+  end and is given only in the footnote, so it is a reminder apart from the table (`additional`, by the
+  owner's ruling of 2026-10-23, #33): "Replace inverter coolant" (`inverter-coolant`), first at 150,000
+  miles and then every 50,000 / 60, never placed on the table. The "180 months" isn't used, for the same
+  reason as the engine coolant's "120 months" below.
 - Left out, because they aren't jobs at a milestone: the 0W-20 oil note, the cabin filter note, and the
   explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use), tire rotation 5,000 / 6, cabin and
   engine air filters 30,000 / 36, spark plugs 60,000 / 72, engine coolant first at 100,000 and then every
   50,000 / 60 (the guide's "or 120 months" counts from the in-service day, which Glovebox doesn't know).
+  Apart from the table: inverter coolant first at 150,000 and then every 50,000 / 60.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil every 30,000 / 36.
+  Logging a change of it counts as its check.
 - Only for severe use: rear differential oil and automatic transmission fluid every 60,000 / 72 when towing
   or carrying heavy loads.
-- Table only: the drive shaft bolt re-torque, every inspection (the rear differential one carries its
-  service line but isn't a reminder) and drive belts (first at 60,000, then every 15,000).
+- Table only: the drive shaft bolt re-torque, every other inspection and drive belts (first at 60,000, then
+  every 15,000).
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.

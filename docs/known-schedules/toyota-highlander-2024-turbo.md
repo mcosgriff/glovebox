@@ -29,17 +29,21 @@ which Toyota's owners site lists for the 2024 Highlander. Downloaded on 2026-10-
 - **Intercooler coolant**, as on the 2023 list: first at 100,000, then every 50,000 / 60
   (`intercooler-coolant`).
 - In the table only: the EFI tank additive, the propeller shaft bolt re-torque and the chassis nuts and
-  bolts, and every inspection, including the brake booster vacuum pump at 120,000.
+  bolts, and every inspection but the rear differential and transfer case oil (below), including the brake
+  booster vacuum pump at 120,000.
 - Left out: the oil note, the cabin air filter note, and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use), tire rotation 5,000 / 6, cabin and
   engine air filters 30,000 / 36, spark plugs 40,000 / 48, engine coolant and intercooler coolant each first
   at 100,000 and then every 50,000 / 60, rear differential oil (AWD) and transfer case oil (AWD)
   30,000 / 36 (15,000 / 18 when towing or carrying heavy loads). The coolants' first "or 120 months" isn't
   used.
+- Inspections that are reminders too, as on the 2023 list (the owner's ruling of 2026-10-23, #33): rear
+  differential oil (AWD) and transfer case oil (AWD), first at 15,000 miles and then every 30,000 / 36.
+  Logging a change of one counts as its check.
 - Only for severe use (#136): automatic transmission fluid at 60,000 / 72 when towing, carrying heavy loads
   or idling long.
-- Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades,
-  engine coolant, drive belts, rear differential oil, transfer case oil).
+- The other inspections are in the table only, with a check line where Glovebox has one (fluid levels,
+  wiper blades, engine coolant, drive belts).
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2025 on, which print a chart in place of the log ([2025](toyota-highlander-2025-turbo.md),
   [2026](toyota-highlander-2026-turbo.md)).

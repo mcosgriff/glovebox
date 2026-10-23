@@ -24,28 +24,37 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   and Toyota prints a guide for each. This list is `"powertrain": "gas"`; a vehicle gets it only when
   the owner has said it is petrol, or picks "2.4L turbo 4-cylinder" when setup asks which engine.
 - **Months:** the chart's columns carry none, so the milestones have no months. The footnotes print
-  months for two jobs: the oil (every 10,000 miles or 12 months; 5,000 or 6 on dirt or dusty roads),
-  which is the only reminder with months, and the coolant, which has no reminder (below).
-- **"(if applicable)":** the guide marks the drive shaft boots, the front differential oil, the
-  propeller shaft boots, the transfer case oil, the radiator, condenser and intercooler, and the engine
-  and intercooler coolant "(if applicable)". Under the owner's ruling of 2026-10-23 (#33) these rows
-  are in the table, named with the mark, with no `service`, so none of them is a reminder. That
-  leaves without a reminder:
-  - the coolant change (first at 100,000 miles, then every 50,000), because the guide prints the
-    engine and intercooler coolant as one row marked "(if applicable)";
-  - the front differential oil change every 15,000 and the transfer case oil change every 30,000
-    under special conditions.
-  No job in this guide is marked "(4WD)" (only the off-road daily checks, which aren't milestone jobs,
-  say "4WD models"), so `fourWheelDriveOnly` is empty and no job is left out for a two-wheel-drive
-  truck.
+  months for two jobs, and their reminders take them: the oil (every 10,000 miles or 12 months; 5,000 or
+  6 on dirt or dusty roads) and the coolant (every 50,000 miles / 60 months after the first change; below).
+- **"(if applicable)":** the guide marks the drive shaft boots, the front differential oil, the propeller
+  shaft boots, the transfer case oil, the radiator, condenser and intercooler, and the engine and
+  intercooler coolant "(if applicable)". Under the owner's ruling of 2026-10-23 (#33) these rows are in
+  the table, named with the mark, with no `service`, so none of them is a reminder. That leaves without a
+  reminder the front differential oil inspection and change (every 15,000, the change under special
+  conditions) and the transfer case oil inspection and change (every 30,000, the change under special
+  conditions). No job in this guide is marked "(4WD)" (only the off-road daily checks, which aren't
+  milestone jobs, say "4WD models"), so `fourWheelDriveOnly` is empty and no job is left out for a
+  two-wheel-drive truck.
+- **The coolant row is split.** The guide prints the engine and intercooler coolant as one row marked
+  "(if applicable)", at 100,000 and 150,000. The mark belongs to the intercooler: every one of these
+  trucks has engine coolant. So, under the owner's ruling of 2026-10-23 (#33), the row is two jobs in
+  the table: "Replace engine coolant" (`coolant`), a reminder first at 100,000 miles and then every
+  50,000 miles / 60 months as the footnote gives it, and "Replace intercooler coolant (if applicable)",
+  in the table only. The footnote's "120 months" for the first change counts from the day the truck went
+  into service, which Glovebox doesn't know, so the first change is by mileage only.
 - Reminders: engine oil 10,000 / 12 mo (5,000 / 6 on dirt or dusty roads), tire rotation 5,000, cabin
-  and engine air filters 30,000, spark plugs 40,000.
+  and engine air filters 30,000, engine coolant first at 100,000 and then every 50,000 / 60, spark plugs
+  40,000, and the rear differential oil inspection 15,000 (`rear-diff-check`).
 - Only for severe use (#136): rear differential oil every 15,000 when towing or carrying heavy loads,
   and automatic transmission fluid every 60,000 when towing or idling for long periods. Long idling
   or low-speed driving (police, taxi or delivery use) is a condition the 2017–2024 guides didn't give.
-- Inspections are table-only, as rule 7 says; the 2017–2024 list's inspection reminders were asked for
-  that list alone. Where Glovebox has a check line, the row has it as its `service` (fluid levels,
-  wiper blades, drive belts, rear differential oil), so a logged check counts against it.
+- **The rear differential inspection is a reminder**, at the table's own 15,000. Under the owner's
+  ruling of 2026-10-23 (#33), any vehicle with a differential needs it inspected, so the 2017–2024
+  list's rule (asked 2026-10-13) applies to every list whose guide prints the inspection; logging a
+  change counts as its check. The front differential and transfer case inspections are marked
+  "(if applicable)" and stay in the table only. Other inspections are table-only, as rule 7 says.
+  Where Glovebox has a check line, the row has it as its `service` (fluid levels, wiper blades, drive
+  belts, rear differential oil), so a logged check counts against it.
 - The brakes are inspected every 5,000 and measured (thickness and runout) every 30,000, as the
   footnote says; at those milestones the row is named so.
 - The vacuum pump for the brake booster is marked "inspect" at 120,000, and its footnote says to

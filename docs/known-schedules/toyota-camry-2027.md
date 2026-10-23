@@ -29,10 +29,17 @@ name on `assets.sia.toyota.com`, where the earlier years are, answered 403. Read
   inspection and replacement when towing) and the two coolant rows, "Engine Coolant / Intercooler Coolant"
   (replace at 100,000 and 150,000; footnote: first at 100,000 miles / 120 months, then every 50,000 / 60)
   and "Inverter Coolant / Intercooler Coolant" (replace at 150,000; footnote: first at 150,000 / 180 months,
-  then every 50,000 / 60). Each coolant row is one row with one mark, so it is kept whole (the coordinator's
-  rule of 2026-10-23), even though the mark seems to belong to the intercooler. **That leaves the engine
-  coolant, the inverter coolant and the rear differential oil with no reminder from this list**; the owner
-  will decide later whether such rows are split.
+  then every 50,000 / 60). Only the intercooler's part of the coolant rows keeps the mark (below). **That
+  leaves the rear differential oil with no reminder from this list**, its inspection included.
+- **The coolant rows are split.** The mark on "Engine Coolant / Intercooler Coolant" and "Inverter
+  Coolant / Intercooler Coolant" belongs to the intercooler: every one of these Camrys has engine coolant
+  and an inverter loop. So, under the owner's ruling of 2026-10-23 (#33), each row is two jobs in the
+  table: "Replace engine coolant" (`coolant`) or "Replace inverter coolant" (`inverter-coolant`), and
+  "Replace intercooler coolant (if applicable)", in the table only, once per milestone. The engine coolant
+  is a reminder first at 100,000 miles and the inverter coolant first at 150,000, both then every 50,000
+  miles / 60 months, as the footnotes give them. The first changes' "120 months" and "180 months" count
+  from the day the car went into service, which Glovebox doesn't know, so the first changes are by mileage
+  only, as on 2025's and 2026's.
 - The special-conditions charts mark every column the work is done at, as 2026's do: on dirt or dusty roads
   the ball joints, drive shaft boots and steering linkage are inspected and the drive shaft nuts and bolts
   re-torqued at every column, the oil changed at every column, the engine air filter inspected at every
@@ -46,7 +53,8 @@ name on `assets.sia.toyota.com`, where the earlier years are, answered 403. Read
   oil selection; and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use: dirt or dusty roads, or short trips in
   freezing weather), tire rotation 5,000 / 6, hybrid battery cooling filter cleaning 20,000 / 24, cabin air
-  filter 10,000 / 12, engine air filter 30,000 / 36, spark plugs 120,000 / 144.
+  filter 10,000 / 12, engine air filter 30,000 / 36, engine coolant first at 100,000 and then every
+  50,000 / 60, inverter coolant first at 150,000 and then every 50,000 / 60, spark plugs 120,000 / 144.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or carrying heavy
   loads. The dusty-roads engine air filter replacement at the 30,000s falls with the normal one and has no
   reminder of its own.

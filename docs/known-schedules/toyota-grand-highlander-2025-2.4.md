@@ -13,30 +13,34 @@ Source: Toyota's 2025 Grand Highlander Warranty and Maintenance Guide,
   and the list written from it: 30 milestones, 5,000 miles apart.
 - **The chart prints no months on its columns**, so the milestones have none. A reminder keeps months only
   where the guide prints them for that job: the oil change (12 months, or 5,000 miles / 6 months on dirt or
-  dusty roads, in its footnote). The other reminders are by distance only.
+  dusty roads, in its footnote) and the engine coolant (60 months for every change after the first, in
+  its footnote; below). The other reminders are by distance only.
 - **Engine and powertrain.** The gas model has one engine (the 2.4L turbo, T24A-FTS). The Hybrid MAX has a
   2.4L turbo too, in a guide of its own, so this list has `engine.powertrain` `gas` and the Hybrid MAX list
   has `hybrid`. NHTSA's model list names it "Grand Highlander" only (checked for 2024, 2025 and 2026 on
   2026-10-23).
 - **"(if applicable)" rows** (the owner's ruling of 2026-10-23, #33) are in the table with no `service`, so
   they never drive a reminder: the propeller shaft bolts, the radiator, condenser and intercooler, the rear
-  differential oil and the transfer case oil (ordinary and when towing), and the coolant row. The 2024 log
-  marks the drivetrain ones "(4WD)", but nothing is inferred from it: they keep the chart's "(if
+  differential oil and the transfer case oil (ordinary and when towing), and the intercooler coolant. The
+  2024 log marks the drivetrain ones "(4WD)", but nothing is inferred from it: they keep the chart's "(if
   applicable)" and are not in `allWheelDriveOnly`, so every Grand Highlander gets them in its table. **That
   leaves no rear differential or transfer case reminder in this list**, where the 2024 list has both.
-- **Coolant has no reminder from this list.** The chart's row is "Engine Coolant / Intercooler Coolant (if
-  applicable)", replaced at 100,000 and 150,000 (footnote: first at 100,000 miles / 120 months, then every
-  50,000 / 60). It is one row marked "(if applicable)", so it is kept whole, in the table only (the
-  coordinator's rule of 2026-10-23, so every chart list reads the same way), even though the mark seems to
-  belong to the intercooler. That leaves the engine coolant and the intercooler coolant without a reminder;
-  the owner will decide later whether such rows are split.
+- **Coolant row split** (the owner's ruling of 2026-10-23, #33). The chart's row is "Engine Coolant /
+  Intercooler Coolant (if applicable)", replaced at 100,000 and 150,000 (footnote: first at 100,000 miles /
+  120 months, then every 50,000 / 60). The "(if applicable)" mark belongs to the intercooler: every Grand
+  Highlander has engine coolant. So the row is two table jobs, "Replace engine coolant" (`coolant`) and
+  "Replace intercooler coolant (if applicable)" (table only), and the engine coolant is a reminder, first at
+  100,000 miles and then every 50,000 miles / 60 months, as the footnote gives it. The footnote's "120
+  months" for the first change counts from the day the vehicle went into service, which Glovebox doesn't
+  know, so the first change is by mileage only.
 - The brake booster's vacuum pump is inspected at 120,000; its footnote says to replace the pump's vane and
   vane caps. It happens once and there is no catalog line for it, so it is in the table only, named "Inspect
   brake booster vacuum pump (new vane and caps)".
 - Left out: "Add EFI Tank Additive" at every milestone (Hawaii only: a job for one region, which the format
   can't name), and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the chart's dusty-roads oil change),
-  tire rotation 5,000, cabin and engine air filters 30,000, spark plugs 40,000.
+  tire rotation 5,000, cabin and engine air filters 30,000, spark plugs 40,000, and engine coolant first at
+  100,000 miles and then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or with long idling or
   low-speed driving (police, taxi, delivery). Under ordinary driving the chart only inspects it.
 - Special operating conditions, as this chart draws them (only the work the recommended chart doesn't

@@ -16,7 +16,8 @@ Read on 2026-10-23. (Toyota's owners site lists no guide for the hybrid; this ad
   only. 2026 is a list of its own ([toyota-corolla-cross-2026-hybrid](toyota-corolla-cross-2026-hybrid.md)).
 - **No months at the milestones.** The chart's columns carry only mileages, so the milestones have no
   months. A reminder keeps months only where the guide prints them for that job: the engine oil's
-  footnote gives 12 months (6 under severe use). The other reminders are by distance only.
+  footnote gives 12 months (6 under severe use), and the two coolants' give 60 months for every change
+  after the first (below). The other reminders are by distance only.
 - **Hybrid, not gas.** The gas Corolla Cross has a 2.0L engine too and a guide of its own, and NHTSA gives
   both as "Corolla Cross" (`GetModelsForMakeYear` for Toyota, 2025, checked 2026-10-23: no separate
   hybrid model). So this list has `engine.powertrain` `hybrid` and the gas list has `gas`; a 2.0L
@@ -28,23 +29,33 @@ Read on 2026-10-23. (Toyota's owners site lists no guide for the hybrid; this ad
 - **Rows marked "(if applicable)"** are in the table as printed, with "(if applicable)" in their names
   and no service line, so none of them drives a reminder (the owner's ruling of 2026-10-23):
   - inspect the radiator, condenser and intercooler every 15,000;
-  - **replace the engine coolant and intercooler coolant** at 100,000 and 150,000, and **replace the
-    inverter coolant and intercooler coolant** at 150,000 (footnotes: first at 100,000 / 120 months and at
-    150,000 / 180 months, then every 50,000 / 60). Each is one row marked "(if applicable)", kept whole
-    and table-only as the coordinator's rule for such rows says, so **neither the engine coolant nor the
-    inverter coolant has a reminder from this list**. The owner may decide later to split such rows.
+  - the intercooler's part of the two coolant rows (below).
+- **The coolant rows are split.** The chart prints "replace the engine coolant and intercooler coolant" at
+  100,000 and 150,000, and "replace the inverter coolant and intercooler coolant" at 150,000 (footnotes:
+  first at 100,000 / 120 months and at 150,000 / 180 months, then every 50,000 / 60), each one row marked
+  "(if applicable)". The mark belongs to the intercooler: every one of these vehicles has engine coolant
+  and an inverter loop. So, under the owner's ruling of 2026-10-23 (#33), each row is two jobs in the
+  table: "Replace engine coolant" (`coolant`) or "Replace inverter coolant" (`inverter-coolant`), and
+  "Replace intercooler coolant (if applicable)", in the table only, once per milestone. The engine
+  coolant is a reminder first at 100,000 miles and the inverter coolant first at 150,000, both then every
+  50,000 miles / 60 months, as the footnotes give them. The first changes' "120 months" and "180 months"
+  count from the day the vehicle went into service, which Glovebox doesn't know, so the first changes are
+  by mileage only.
 - Left out, because they aren't jobs for every owner or aren't jobs at a milestone: adding Toyota's EFI
   tank additive (a row "for island use only") and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval on
   dusty roads), tire rotation 5,000, cabin and engine air filters 30,000, the hybrid battery's cooling
-  filter 20,000, and spark plugs 120,000.
+  filter 20,000, engine coolant first at 100,000 and then every 50,000 / 60, inverter coolant first at
+  150,000 and then every 50,000 / 60, spark plugs 120,000, and the rear differential oil inspection 30,000.
 - Only for severe use (#136): automatic transmission fluid and rear differential oil every 60,000 when
   towing or carrying heavy loads.
-- The inspections are in the table only; the rear differential oil inspection (every 30,000) carries the
-  rear differential check line. The drive shaft nuts and bolts re-torque (every 15,000, and at every other
-  milestone on dusty roads) has no service line and is in the table only. The chart's "brake linings"
-  row is one inspection at every column; its footnote's thickness and runout check every 30,000 isn't
-  drawn as a job of its own.
+- **The rear differential inspection is a reminder**, at the table's own 30,000 (`rear-diff-check`).
+  Under the owner's ruling of 2026-10-23 (#33), any vehicle with a differential needs it inspected, so
+  every list whose guide prints the inspection makes it one; logging a change counts as its check.
+- The other inspections are in the table only. The drive shaft nuts and bolts re-torque (every 15,000, and
+  at every other milestone on dusty roads) has no service line and is in the table only. The chart's
+  "brake linings" row is one inspection at every column; its footnote's thickness and runout check every
+  30,000 isn't drawn as a job of its own.
 - Brake fluid has no replacement in the chart, so it has no reminder from this list.
 - Not covered: 2027 (no Corolla Cross Hybrid guide found: `T-MMS-27CorollaCrossHV` answered 403, and
   Toyota's owners site lists only a warranty guide with no schedule). 2023 and 2024 are lists of their

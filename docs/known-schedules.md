@@ -36,8 +36,10 @@ of the lists; how each one was made is recorded on its own page, `known-schedule
    its job is in the table at exactly the multiples of that interval, with the table's months, or, for
    a job with a first time of its own (`firstAtMiles`: "first at 100,000, then every 50,000"), at that
    mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given for work that gets
-   logged (replace, rotate, lubricate), and for an inspection only where the owner asked for it and
-   there is a service line to log it with; a list doesn't turn every inspection into a reminder.
+   logged (replace, rotate, lubricate). Of the inspections, only the differential and transfer case oil
+   checks are reminders, on every list whose guide prints them (the owner asked for them on the 4Runner on
+   2026-10-13, and for every vehicle with a differential on 2026-10-23, #33); logging a change of one counts
+   as its check. A list doesn't turn other inspections into reminders.
    **A job the guide lists only under special operating conditions is a reminder that is only for
    severe use** (`severeOnly`): it is in the schedule with the guide's interval, named with its
    condition, and reminds only while "How do you drive it?" is on Severe. On normal use it stays on the
@@ -102,6 +104,16 @@ that is also in the table, or among `intervals`, by its line or its name, is ref
 one job both ways has to be settled on the list's page first. The drive and gearbox fields name these
 jobs as they do any other.
 
+Toyota's footnotes give some jobs' intervals past the end of the table, such as the inverter coolant of a
+2016–2024 hybrid (first at 150,000 miles, then every 50,000, on a table that ends at 120,000). Such a job is
+in `additional` with the footnote's figures (the owner's ruling of 2026-10-23, #33).
+
+**A row marked "(if applicable)"** names no drivetrain or engine, so it is in the table with no `service`
+and drives no reminder (#33). Where the chart joins a job every such vehicle has to one that is only
+"if applicable", as the 2025-on "Engine coolant / Intercooler coolant (if applicable)", the row is split:
+the engine (or inverter) coolant change is a job of its own with its service and reminder, and the
+intercooler's stays "(if applicable)" (the owner's ruling of 2026-10-23).
+
 **A model whose guide has a schedule per engine gets one list per engine**, each with
 
 ```json
@@ -128,7 +140,9 @@ comes from vPIC only where the decode says it plainly (a strong hybrid, a plug-i
 E85 fuel), or from the owner on "Is this your vehicle?". **A blank is never taken for petrol**, so a list
 marked `gas` is only matched for a vehicle the owner said is petrol; otherwise setup asks "Which engine
 does it have?" with each list's `label` ("2.5L hybrid"), and the pick is written to the vehicle if it had
-no powertrain on record.
+no powertrain on record. A flex-fuel guide's extra oil change for a truck run mostly on E85 is only a note,
+so it is left out and recorded on the list's page, as the note on changing oil early after the wrong grade
+is (the owner's ruling of 2026-10-23, #33).
 
 ## Making a list
 

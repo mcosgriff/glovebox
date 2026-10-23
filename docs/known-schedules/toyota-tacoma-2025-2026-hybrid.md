@@ -24,8 +24,9 @@ only at that address.
   both, and Glovebox has one switch for severe use, so the reminder is the same; the job's name follows 2025,
   the guide read in full ("dusty roads").
 - **No months are printed for any column**, so the milestones have none. A reminder has months only where
-  the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months on dusty roads). Every
-  other reminder is by distance alone.
+  the guide prints them for that job: engine oil 12 months (5,000 miles or 6 months on dusty roads), and
+  the two coolants 60 months for every change after the first (below). Every other reminder is by distance
+  alone.
 - **The Tacoma has a gas and a hybrid version of one size**, a 2.4L turbo four-cylinder and the i-FORCE MAX
   hybrid built on it, and Toyota prints a guide for each. This list is for the hybrid
   (`"powertrain": "hybrid"`, label "2.4L turbo hybrid"); the gas engine has
@@ -36,13 +37,17 @@ only at that address.
   are no manual-gearbox jobs.
 - Hybrid jobs: the hybrid battery's cooling intake filter is inspected every 5,000 miles and cleaned every
   20,000 (`hybrid-battery-filter`).
-- **The coolant rows** (the coordinator's rule of 2026-10-23 on a combined row): the chart prints "Engine
-  Coolant/Intercooler Coolant (if applicable)", replaced at 100,000 and 150,000, and "Inverter
-  Coolant/Intercooler Coolant (if applicable)", replaced at 150,000. Each is kept whole, as one "(if
-  applicable)" row with no `service` (the owner's ruling of 2026-10-23, #33). **This leaves the engine and
-  inverter coolant with no reminder from this list**, though the footnotes give the engine coolant's first
-  change at 100,000 miles or 120 months and the inverter coolant's at 150,000 or 180 months, each then every
-  50,000 / 60.
+- **The coolant rows**: the chart prints "Engine Coolant/Intercooler Coolant (if applicable)", replaced at
+  100,000 and 150,000, and "Inverter Coolant/Intercooler Coolant (if applicable)", replaced at 150,000. The
+  footnotes give the engine coolant's first change at 100,000 miles or 120 months and the inverter
+  coolant's at 150,000 or 180 months, each then every 50,000 / 60. Each row is split into two table jobs
+  (the owner's ruling of 2026-10-23, #33): "Replace engine coolant" (`coolant`) or "Replace inverter
+  coolant" (`inverter-coolant`), and "Replace intercooler coolant (if applicable)", with no `service`, once
+  per milestone. The "(if applicable)" mark belongs to the intercooler: every one of these trucks has
+  engine coolant and an inverter loop. Engine coolant is a reminder first at 100,000 and then every 50,000
+  miles / 60 months, inverter coolant first at 150,000 and then every 50,000 / 60. The first changes' 120
+  and 180 months count from the day the truck went into service, which Glovebox doesn't know, so the first
+  changes are by mileage only.
 - The radiator row, "Radiator/Condenser/Intercooler (if applicable)", is in the table under that name with no
   `service`.
 - **The vacuum pump** is inspected at 120,000 miles, and the footnote says to replace its vane and vane caps.
@@ -53,10 +58,15 @@ only at that address.
   or Hawaii only (a job for one region, which the format can't name), the note on the cabin air filter in
   heavy traffic or dust, the daily checks for off-road driving, and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 on dirt or dusty roads), tire rotation 5,000, cleaning
-  the hybrid battery cooling intake filter 20,000, cabin and engine air filters 30,000, spark plugs 40,000.
-- Inspections are in the table only (no reminders), with a check line where there is one: fluid levels,
-  wiper blades, brakes, drive belts (first at 60,000, then every 15,000), and front and rear differential
-  and transfer case oil.
+  the hybrid battery cooling intake filter 20,000, cabin and engine air filters 30,000, spark plugs 40,000,
+  engine coolant first at 100,000 and then every 50,000 / 60, and inverter coolant first at 150,000 and
+  then every 50,000 / 60.
+- Inspections that are reminders too: front and rear differential oil every 15,000, transfer case oil every
+  30,000, unmarked as the chart prints them. Logging a change of one counts as its check. This is the
+  owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so the 4Runner's
+  rule applies to every list whose guide prints the inspection. The other inspections are in the table
+  only, with a check line where there is one: fluid levels, wiper blades, brakes and drive belts (first at
+  60,000, then every 15,000).
 - Only for severe use (#136): front and rear differential oil every 15,000 when towing or carrying heavy
   loads; transfer case oil every 30,000 on dusty roads or when towing; automatic transmission fluid every
   60,000 when towing or under long idling or low-speed driving.
@@ -64,7 +74,7 @@ only at that address.
   or salted roads or when towing) and tightening the chassis and body nuts and bolts.
 - Against 2024: the chart runs to 150,000; it has no cabin air filter inspection and no coolant inspections,
   and it inspects the automatic transmission fluid where the log inspects the transmission for leaks. Its
-  coolant rows are "(if applicable)", so the engine coolant reminder of 2024 isn't in this list.
+  inverter coolant is on the table at 150,000, where 2024's is an `additional` item.
 - The chart has no brake fluid replacement, so it has no reminder from this list.
 - Not covered: 2027 on (no guide found on 2026-10-22: `T-MMS-27TacomaHV` is refused at both of Toyota's
   addresses), 2024 (a log in place of the chart: [the 2024 list](toyota-tacoma-2024-hybrid.md)).

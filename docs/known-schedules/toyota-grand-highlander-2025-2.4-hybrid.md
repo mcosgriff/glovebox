@@ -14,7 +14,8 @@ Read on 2026-10-23.
   and the list written from it: 30 milestones, 5,000 miles apart.
 - **The chart prints no months on its columns**, so the milestones have none. A reminder keeps months only
   where the guide prints them for that job: the oil change (12 months, or 5,000 miles / 6 months on dirt or
-  dusty roads, in its footnote). The other reminders are by distance only.
+  dusty roads, in its footnote) and the two coolants (60 months for every change after the first, in their
+  footnotes; below). The other reminders are by distance only.
 - **One chart, split by engine** (the owner's ruling of 2026-10-23, #33). The guide prints one chart for
   both hybrids: the 2.5L hybrid and the Hybrid MAX (2.4L turbo, T24A-FTS). Every row that is only the
   turbo's says so, and every other row names no engine and so is for both. This list has every row: the
@@ -36,23 +37,28 @@ Read on 2026-10-23.
   2024, 2025 and 2026 on 2026-10-23).
 - **"(if applicable)" rows** (the owner's ruling of 2026-10-23) are in the table with no `service`, so they
   never drive a reminder: the radiator, condenser and intercooler, the rear differential oil (inspected
-  every 30,000, and replaced at 60,000 and 120,000 when towing) and the two coolant rows. Nothing is
+  every 30,000, and replaced at 60,000 and 120,000 when towing) and the intercooler coolant. Nothing is
   inferred from the 2024 log's "(4WD)": these rows keep the chart's "(if applicable)" and are not in
   `allWheelDriveOnly`.
-- **Coolant has no reminder from this list.** The chart's rows are "Engine Coolant / Intercooler Coolant (if
-  applicable)" (replaced at 100,000 and 150,000; footnote: first at 100,000 miles / 120 months, then every
-  50,000 / 60) and "Inverter Coolant / Intercooler Coolant (if applicable)" (replaced at 150,000; footnote:
-  first at 150,000 miles / 180 months, then every 50,000 / 60). Each is one row marked "(if applicable)", so
-  each is kept whole, in the table only (the coordinator's rule of 2026-10-23, so every chart list reads the
-  same way), even though the mark seems to belong to the intercooler. That leaves the engine, inverter and
-  intercooler coolants without a reminder; the owner will decide later whether such rows are split.
+- **Coolant rows split** (the owner's ruling of 2026-10-23, #33). The chart's rows are "Engine Coolant /
+  Intercooler Coolant (if applicable)" (replaced at 100,000 and 150,000; footnote: first at 100,000 miles /
+  120 months, then every 50,000 / 60) and "Inverter Coolant / Intercooler Coolant (if applicable)" (replaced
+  at 150,000; footnote: first at 150,000 miles / 180 months, then every 50,000 / 60). The "(if applicable)"
+  mark belongs to the intercooler: every one of these hybrids has engine coolant and an inverter loop. So
+  each row is split into "Replace engine coolant" (`coolant`) or "Replace inverter coolant"
+  (`inverter-coolant`) and "Replace intercooler coolant (if applicable)" (table only, once per milestone).
+  The engine coolant is a reminder first at 100,000 miles and the inverter coolant first at 150,000, each
+  then every 50,000 miles / 60 months, as the footnotes give them. The footnotes' "120 months" and "180
+  months" for the first changes count from the day the vehicle went into service, which Glovebox doesn't
+  know, so the first changes are by mileage only.
 - Hybrid jobs: the hybrid battery's cooling intake filter is inspected at every milestone and cleaned every
   20,000 miles; the cleaning is a reminder (`hybrid-battery-filter`), the inspection is in the table only.
 - Left out: "Add EFI Tank Additive" at every milestone (island use only: a job for one region, which the
   format can't name), and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the chart's dusty-roads oil change),
   tire rotation 5,000, hybrid battery cooling filter cleaning 20,000, cabin and engine air filters 30,000,
-  spark plugs 40,000.
+  spark plugs 40,000, engine coolant first at 100,000 miles and inverter coolant first at 150,000, each then
+  every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or with long idling or
   low-speed driving (police, taxi, delivery). The rear differential oil beside it is "(if applicable)" and
   has no reminder.

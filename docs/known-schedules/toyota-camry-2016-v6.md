@@ -16,9 +16,10 @@ list of guides for the 2016 Camry. Read on 2026-10-23.
   the explanations of each item.
 - No line is marked for a drivetrain or a gearbox: every Camry of these years is front-wheel drive with an
   automatic.
-- Inspections are in the table only (rule 7). Those with a check line carry it: fluid levels
-  (`fluid-check`), wiper blades (`wipers-check`), engine coolant (`cooling-check`), brakes
-  (`brake-inspect`), drive belts (`belt-check`), front differential oil (`front-diff-check`).
+- Inspections are in the table only (rule 7), except the front differential oil's (below). Those with a
+  check line carry it: fluid levels (`fluid-check`), wiper blades (`wipers-check`), engine coolant
+  (`cooling-check`), brakes (`brake-inspect`), drive belts (`belt-check`), front differential oil
+  (`front-diff-check`).
 - The guide's "or 120 months" for the first coolant change isn't used: it counts from the day the vehicle
   went into service, which Glovebox doesn't know.
 - Brake fluid has no replacement in the log, so it has no reminder from this list.
@@ -36,14 +37,19 @@ list of guides for the 2016 Camry. Read on 2026-10-23.
   box" where 2017 prints "Steering gear"; both are "Inspect steering gear" here.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the guide's interval under any of
   its four conditions), tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs
-  120,000 / 144, and engine coolant first at 100,000 miles and then every 50,000 / 60.
+  120,000 / 144, engine coolant first at 100,000 miles and then every 50,000 / 60, and the front
+  differential oil inspection every 30,000 / 36 (`front-diff-check`). That inspection is a reminder
+  under the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so
+  every list whose guide prints the inspection makes it one, at the table's own interval, and logging a
+  change counts as its check.
 - Only for severe use (#136): automatic transmission fluid and front differential oil every 60,000 / 72
   when towing or carrying heavy loads. Under ordinary driving the guide only inspects the differential oil
   (every 30,000), and the transmission only for leaks.
 - **The front differential oil lines are as printed.** The 2016 log inspects "Front differential oil" at
-  30,000, 60,000, 90,000 and 120,000, and replaces it when towing at 60,000 and 120,000, on a front-wheel-drive
-  car, with no drivetrain mark; the 2017 log has neither line. They are kept, unmarked, as the guide prints
-  them (`front-diff-check`, `front-diff`), and left for the owner to check against their own guide.
+  30,000, 60,000, 90,000 and 120,000, and replaces it when towing at 60,000 and 120,000, on a
+  front-wheel-drive car, with no drivetrain mark; the 2017 log has neither line. They are kept, unmarked,
+  as the guide prints them (`front-diff-check`, `front-diff`), and left for the owner to check against
+  their own guide.
 - Also left out: a note on the 15,000-mile pages that heavy traffic, dusty roads or desert areas may
   shorten the cabin air filter's life (advice, not a job at a milestone).
 - NHTSA's model list for Toyota (`GetModelsForMakeYear`, 2016 and 2017, checked 2026-10-23) has only

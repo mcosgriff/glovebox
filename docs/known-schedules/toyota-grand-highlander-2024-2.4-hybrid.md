@@ -40,9 +40,11 @@ Read on 2026-10-23.
   engine coolant is first replaced at 100,000 miles / 120 months, the inverter coolant first at 150,000
   miles / 180 months, and both every 50,000 / 60 after that. So the 100,000 job is the engine coolant's,
   named "Replace engine coolant" (`coolant`). The intercooler coolant's footnote gives its first change at
-  150,000 miles / 180 months, then every 50,000 / 60, and the log has no line replacing it. **The inverter
-  coolant and the intercooler coolant have no reminder**: each first change is past the end of the log and
-  given only in a footnote.
+  150,000 miles / 180 months, then every 50,000 / 60, and the log has no line replacing it. Both are
+  reminders apart from the table (`additional`, by the owner's ruling of 2026-10-23, #33), never placed on
+  it: "Replace inverter coolant" (`inverter-coolant`) and "Replace intercooler coolant"
+  (`intercooler-coolant`), each first at 150,000 miles and then every 50,000 / 60. Their "180 months" isn't
+  used, for the same reason as the engine coolant's "120 months" below.
 - Left out: "Add Toyota EFI Tank Additive" at every milestone (Hawaii and Puerto Rico only: a job for one
   region, which the format can't name), the note that the oil is to be replaced if the recommended oil
   wasn't used at the last change, the note on the cabin air filter, and the explanations of each item.
@@ -50,7 +52,11 @@ Read on 2026-10-23.
   tire rotation 5,000 / 6, hybrid battery cooling filter cleaning 20,000 / 24, cabin and engine air filters
   30,000 / 36, spark plugs 40,000 / 48, and engine coolant first at 100,000 miles and then every
   50,000 / 60. The first change's "or 120 months" isn't used (it counts from the day the vehicle went into
-  service, which Glovebox doesn't know).
+  service, which Glovebox doesn't know). Apart from the table: inverter and intercooler coolant, each first at
+  150,000 miles and then every 50,000 / 60.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil (AWD) every
+  30,000 / 36. Logging a change of it counts as its check.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or with long
   idling or low-speed driving (police, taxi, delivery), and rear differential oil (AWD) every 60,000 / 72
   when towing or carrying heavy loads.
@@ -58,8 +64,8 @@ Read on 2026-10-23.
   shaft boots and steering linkage are inspected at the milestones where the ordinary log doesn't, the
   engine air filter at every milestone but the 30,000s, and the oil is changed at the odd 5,000s; nuts and
   bolts are tightened at every milestone on dusty roads or when towing.
-- Inspections are in the table only, with a check line where the catalog has one (fluid levels, wiper
-  blades, brakes, drive belts, engine and inverter coolant, rear differential oil). The brake inspection is
+- The other inspections are in the table only, with a check line where the catalog has one (fluid levels,
+  wiper blades, brakes, drive belts, engine and inverter coolant). The brake inspection is
   visual at every 5,000 miles, with thickness and runout at the 30,000s. Brake fluid has no replacement in
   the log, so it has no reminder from this list.
 - Not covered: 2025 (a chart in place of the log, with a list of its own:

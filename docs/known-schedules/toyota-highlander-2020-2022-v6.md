@@ -33,15 +33,18 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
     ("Brake booster" is a different part), and the log never repeats it;
   - the propeller shaft bolt re-torque and the chassis nuts and bolts, which are torque jobs, as on the
     4Runner;
-  - every inspection. Rear differential and transfer case oil are inspected at 15,000, 45,000, 75,000
-    and 105,000 and replaced at the 30,000s, so the inspection fits no interval of its own; logging a
-    change counts as its check.
+  - every inspection but the rear differential and transfer case oil (below).
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval
   under any of its four special operating conditions), tire rotation 5,000 / 6, cabin and engine air
   filters 30,000 / 36, spark plugs 60,000 / 72, engine coolant first at 100,000 miles and then every
   50,000 / 60, rear differential oil (AWD) and transfer case oil (AWD) 30,000 / 36 (15,000 / 18 when
   towing or carrying heavy loads). The guide's "or 120 months" for the first coolant change isn't used:
   it counts from the day the vehicle went into service, which Glovebox doesn't know.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil (AWD) and transfer case
+  oil (AWD) are inspected at 15,000, 45,000, 75,000 and 105,000 and replaced at the 30,000s, so each
+  inspection is a reminder first at 15,000 miles and then every 30,000 / 36. Logging a change of one counts
+  as its check.
 - Only for severe use (#136): automatic transmission fluid at 60,000 / 72 when towing, carrying heavy
   loads or idling long. Under ordinary driving the guide only inspects the transmission.
 - Shorter under severe use: engine oil, rear differential oil and transfer case oil, as above. The

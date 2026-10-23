@@ -35,6 +35,10 @@ Source: Toyota's 2024 Grand Highlander Warranty and Maintenance Guide,
   spark plugs 40,000 / 48, rear differential oil (AWD) and transfer case oil (AWD) 30,000 / 36 (15,000 / 18
   when towing or carrying heavy loads), and engine and intercooler coolant first at 100,000 miles and then
   every 50,000 / 60.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil (AWD) and transfer case
+  oil (AWD), first at 15,000 miles and then every 30,000 / 36, as the log prints them. Logging a change of
+  one counts as its check.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or with long
   idling or low-speed driving (police, taxi, delivery). Under ordinary driving the log only inspects the
   transmission.
@@ -43,8 +47,8 @@ Source: Toyota's 2024 Grand Highlander Warranty and Maintenance Guide,
   engine air filter at every milestone but the 30,000s, and the oil is changed at the odd 5,000s; the
   propeller shaft bolt (AWD) is re-torqued at the milestones the ordinary log doesn't, on dusty or salted
   roads or when towing; nuts and bolts are tightened at every milestone on dusty roads or when towing.
-- Inspections are in the table only, with a check line where the catalog has one (fluid levels, wiper
-  blades, brakes, drive belts, engine coolant, rear differential and transfer case oil). The brake
+- The other inspections are in the table only, with a check line where the catalog has one (fluid levels,
+  wiper blades, brakes, drive belts, engine coolant). The brake
   inspection is visual at every 5,000 miles, with thickness and runout at the 30,000s. Drive belts are
   first inspected at 60,000, then every 15,000. Brake fluid has no replacement in the log, so it has no
   reminder from this list.

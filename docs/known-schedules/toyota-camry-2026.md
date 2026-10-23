@@ -11,9 +11,10 @@ online has a back cover dated 5/26). Read on 2026-10-23.
   5,000 miles from 5,000 to 150,000, three standard charts each followed by a "Special Operating
   Conditions" chart. All six pages were read in full, as page images, and the list written from them: 30
   milestones, 5,000 miles apart. Nothing says the chart repeats after 150,000.
-- **No months.** The chart's columns are in miles only, so the milestones have none. A reminder has months
-  only where the guide prints them for that job: the oil change (12 months; 5,000 miles / 6 months on dirt
-  or dusty roads or short trips in freezing weather, in its footnote).
+- **No months on the milestones.** The chart's columns are in miles only, so the milestones have none. A
+  reminder has months only where the guide prints them for that job: the oil change (12 months; 5,000 miles
+  / 6 months on dirt or dusty roads or short trips in freezing weather, in its footnote) and the two
+  coolants (every 50,000 / 60 months after the first change, in theirs; below).
 - Compared with 2025 ([2025](toyota-camry-2025.md)):
   - A new standard row, "Rear Differential Oil (if applicable)", inspected at every 30,000.
   - The 2025 "(AWD only)" rows are "(if applicable)": "Drive Shaft Nuts or Bolts (if applicable)" and the
@@ -38,17 +39,26 @@ online has a back cover dated 5/26). Read on 2026-10-23.
   inspection and replacement when towing) and the two coolant rows, "Engine Coolant / Intercooler Coolant"
   (replace at 100,000 and 150,000; footnote: first at 100,000 miles / 120 months, then every 50,000 / 60)
   and "Inverter Coolant / Intercooler Coolant" (replace at 150,000; footnote: first at 150,000 / 180 months,
-  then every 50,000 / 60). Each coolant row is one row with one mark, so it is kept whole (the coordinator's
-  rule of 2026-10-23), even though the mark seems to belong to the intercooler. **That leaves the engine
-  coolant, the inverter coolant and the rear differential oil with no reminder from this list**; the owner
-  will decide later whether such rows are split.
+  then every 50,000 / 60). Only the intercooler's part of the coolant rows keeps the mark (below). **That
+  leaves the rear differential oil with no reminder from this list**, its inspection included.
+- **The coolant rows are split.** The mark on "Engine Coolant / Intercooler Coolant" and "Inverter
+  Coolant / Intercooler Coolant" belongs to the intercooler: every one of these Camrys has engine coolant
+  and an inverter loop. So, under the owner's ruling of 2026-10-23 (#33), each row is two jobs in the
+  table: "Replace engine coolant" (`coolant`) or "Replace inverter coolant" (`inverter-coolant`), and
+  "Replace intercooler coolant (if applicable)", in the table only, once per milestone. The engine coolant
+  is a reminder first at 100,000 miles and the inverter coolant first at 150,000, both then every 50,000
+  miles / 60 months, as the footnotes give them. The first changes' "120 months" and "180 months" count
+  from the day the car went into service, which Glovebox doesn't know, so the first changes are by mileage
+  only.
 - Hybrid jobs: the hybrid battery's cooling intake filter is inspected at every column and cleaned every
   20,000 miles; the cleaning is a reminder (`hybrid-battery-filter`), the inspection is in the table only.
 - "Reset Scheduled Maintenance Reminder" (P at every column) is in the table, with no reminder.
 - Left out: "Add EFI Tank Additive (Hawaii only)", at every column, which is for one region; the notes on
   oil selection; and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use), tire rotation 5,000, hybrid battery
-  cooling filter cleaning 20,000, cabin air filter 10,000, engine air filter 30,000, spark plugs 120,000.
+  cooling filter cleaning 20,000, cabin air filter 10,000, engine air filter 30,000, engine coolant first
+  at 100,000 and then every 50,000 / 60, inverter coolant first at 150,000 and then every 50,000 / 60,
+  spark plugs 120,000.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or carrying heavy loads.
   The dusty-roads engine air filter replacement at the 30,000s falls with the normal one and has no reminder
   of its own.

@@ -22,21 +22,27 @@ hatchback's,
   and needs no powertrain.
 - **No months at the milestones.** The chart's columns carry only mileages, so the milestones have no
   months. A reminder keeps months only where the guide prints them for that job: the engine oil's
-  footnote gives 12 months (6 under severe use). The other reminders are by distance only.
+  footnote gives 12 months (6 under severe use), and the engine coolant's gives 60 months for every
+  change after the first (below). The other reminders are by distance only.
 - **Rows marked "(if applicable)"** are in the table as printed, with "(if applicable)" in their names and
   no service line, so none of them drives a reminder (the owner's ruling of 2026-10-23):
   - inspect the radiator, condenser and intercooler every 15,000;
-  - **replace the engine coolant and intercooler coolant** at 100,000 and 150,000 (its footnote: first at
-    100,000 miles / 120 months, then every 50,000 / 60). The chart prints this as one row marked "(if
-    applicable)", so it is kept whole and table-only, as the coordinator's rule for such rows says; the
-    **engine coolant has no reminder from this list**. The owner may decide later to split such rows.
+  - the intercooler's part of the coolant row (below).
+- **The coolant row is split.** The chart prints "replace the engine coolant and intercooler coolant" as
+  one row marked "(if applicable)", at 100,000 and 150,000 (its footnote: first at 100,000 miles /
+  120 months, then every 50,000 / 60). The mark belongs to the intercooler: every one of these cars has
+  engine coolant. So, under the owner's ruling of 2026-10-23 (#33), the row is two jobs in the table:
+  "Replace engine coolant" (`coolant`), a reminder first at 100,000 miles and then every 50,000 miles /
+  60 months, and "Replace intercooler coolant (if applicable)", in the table only. The first change's "120
+  months" counts from the day the car went into service, which Glovebox doesn't know, so the first change
+  is by mileage only.
 - **Automatic transmission fluid** is replaced at 60,000 and 120,000 when towing or idling for long periods
   (one cell, with both footnotes), so it is one line, "· towing or long idling".
 - Left out, because they aren't jobs for every owner or aren't jobs at a milestone: adding Toyota's EFI
   tank additive (a row for Hawaii, Puerto Rico and Saipan only) and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval under
   any of its four special operating conditions), tire rotation 5,000, cabin and engine air filters 30,000,
-  and spark plugs 120,000.
+  engine coolant first at 100,000 and then every 50,000 / 60, and spark plugs 120,000.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or idling for long
   periods.
 - The inspections are in the table only, with the check line where Glovebox has one (fluid levels, wiper

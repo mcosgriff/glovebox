@@ -30,7 +30,10 @@ publishes at
   100,000 miles / 120 months, the inverter coolant first at 150,000 miles / 180 months, and both every
   50,000 / 60 after that. So the 100,000 job is the engine coolant's, and that is how this list names
   it. The inverter coolant's first change is past the end of the log (120,000), so it has no place in
-  the table and, by rule 7, no reminder. The inverter coolant line is not used by this list.
+  the table and can't be the table's own interval (rule 7). Under the owner's ruling of 2026-10-23
+  (#33) it is an `additional` item, never on the table: "Replace inverter coolant"
+  (`inverter-coolant`), first at 150,000 miles and then every 50,000 / 60. The "180 months" isn't used,
+  for the same reason as the coolant's 120 (below).
 - Left out, because they aren't jobs for every owner or aren't jobs at a milestone: adding Toyota's
   EFI tank additive (printed at every milestone for Hawaii and Puerto Rico only), the note that the oil
   is to be replaced at 5,000 miles if 0W-16 wasn't used at the last change, and the explanations of
@@ -38,8 +41,9 @@ publishes at
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval
   under any of its four special operating conditions), tire rotation 5,000 / 6, cabin air filter
   10,000 / 12, engine air filter 30,000 / 36, spark plugs 120,000 / 144, and engine coolant first at
-  100,000 miles and then every 50,000 / 60. The guide's "or 120 months" for the first coolant change
-  isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
+  100,000 miles and then every 50,000 / 60, and (`additional`) inverter coolant first at 150,000 miles
+  and then every 50,000 / 60. The guide's "or 120 months" for the first coolant change isn't used: it
+  counts from the day the vehicle went into service, which Glovebox doesn't know.
 - Only for severe use (#136): the hybrid battery's cooling filter every 5,000 / 6 for long idling or
   low-speed driving, and automatic transmission fluid every 60,000 / 72 when towing or carrying heavy
   loads.

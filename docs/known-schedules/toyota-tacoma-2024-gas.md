@@ -44,9 +44,12 @@ Read on 2026-10-23.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 on dirt or dusty roads, the only condition the log
   gives for the oil), tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs
   40,000 / 48, engine coolant and intercooler coolant each first at 100,000 miles and then every 50,000 / 60.
-- Inspections are in the table only (no reminders), with a check line where there is one: fluid levels,
-  wiper blades, brakes, drive belts (first at 60,000, then every 15,000), engine coolant, and front and rear
-  differential and transfer case oil.
+- Inspections that are reminders too: front differential oil (4WD) and rear differential oil every
+  15,000 / 18, transfer case oil (4WD) every 30,000 / 36. Logging a change of one counts as its check. This
+  is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so the
+  4Runner's rule applies to every list whose guide prints the inspection. The other inspections are in the
+  table only, with a check line where there is one: fluid levels, wiper blades, brakes, drive belts (first
+  at 60,000, then every 15,000) and engine coolant.
 - Only for severe use (#136): front (4WD) and rear differential oil every 15,000 / 18 when towing or carrying
   heavy loads; transfer case oil (4WD) every 30,000 / 36 on dusty roads or when towing; automatic
   transmission fluid every 60,000 / 72 under long idling or low-speed driving.

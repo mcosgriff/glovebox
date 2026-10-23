@@ -23,10 +23,12 @@ Highlander's guide is a different one, with a list per engine
 - **Engine and inverter coolant.** The 100,000-mile line is "Replace engine/inverter coolant", with a
   footnote: the engine coolant is first replaced at 100,000 miles or 120 months, the inverter coolant at
   150,000 miles or 180 months, each every 50,000 miles or 60 months after. So the 100,000-mile line is the
-  engine coolant's, and is named "Replace engine coolant" (`coolant`). The inverter coolant has no
-  reminder: its first change falls after the log's end and is given only in that footnote, not in the
-  table (the coordinator's rule of 2026-10-23 for footnote-only intervals). The inspections are named
-  "Inspect engine and inverter coolant", as the guide lists them.
+  engine coolant's, and is named "Replace engine coolant" (`coolant`). The inverter coolant's first change
+  falls after the log's end and is given only in that footnote, not in the table, so it is a reminder
+  apart from the table (`additional`, by the owner's ruling of 2026-10-23, #33): "Replace inverter coolant"
+  (`inverter-coolant`), first at 150,000 miles and then every 50,000 / 60, never placed on the table. The
+  "180 months" isn't used, for the same reason as the engine coolant's "120 months" below. The inspections
+  are named "Inspect engine and inverter coolant", as the guide lists them.
 - Left out: the EFI tank additive at every milestone, which is for Hawaii and Puerto Rico only; Glovebox
   has no way to say a job is for one region. Also left out, because they aren't jobs at a milestone: the
   note that the oil is to be replaced at 5,000 miles if 0W-20 wasn't used at the last change, and the
@@ -35,15 +37,18 @@ Highlander's guide is a different one, with a list per engine
   its four special operating conditions), tire rotation 5,000 / 6, cabin air filter 10,000 / 12, engine
   air filter 30,000 / 36, spark plugs 60,000 / 72, and engine coolant first at 100,000 miles and then every
   50,000 / 60. The guide's "or 120 months" for the first coolant change isn't used: it counts from the day
-  the vehicle went into service, which Glovebox doesn't know.
+  the vehicle went into service, which Glovebox doesn't know. Apart from the table: inverter coolant first
+  at 150,000 miles and then every 50,000 / 60.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil every 30,000 / 36.
+  Logging a change of it counts as its check.
 - Only for severe use: cleaning the HV battery's cooling intake filter every 5,000 / 6 under extensive
   idling or low-speed driving (`hybrid-battery-filter`); rear differential oil and automatic transmission
   fluid every 60,000 / 72 when towing or carrying heavy loads. Under ordinary driving the guide only
   inspects the rear differential, at every 30,000.
 - Table only, with no reminder: the drive shaft bolt re-torque (at every 15,000, and every 5,000 on dusty
-  roads; no service line fits, as with the gasoline model's propeller shaft bolt), every inspection, and
-  drive belts, which are inspected first at 60,000 and then every 15,000. The rear differential
-  inspection carries its service line, so logging one is linked, but it isn't a reminder.
+  roads; no service line fits, as with the gasoline model's propeller shaft bolt), every other inspection,
+  and drive belts, which are inspected first at 60,000 and then every 15,000.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered here: 2016 and 2017 have lists of their own (their logs differ). A 2015 hybrid guide was
   found but not read, and no 2014 hybrid guide was found.

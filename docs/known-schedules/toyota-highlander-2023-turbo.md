@@ -36,9 +36,8 @@ which Toyota's owners site lists for the 2023 Highlander. Downloaded on 2026-10-
   it counts from the day the vehicle went into service, which Glovebox doesn't know.
 - In the table only: the EFI tank additive, which the log lists at every milestone for Hawaii only, named
   so; the propeller shaft bolt re-torque and the chassis nuts and bolts, which are torque jobs; and every
-  inspection, including the brake booster vacuum pump at 120,000 (its footnote says what to replace in it).
-  Rear differential and transfer case oil are inspected at 15,000, 45,000, 75,000 and 105,000 and replaced
-  at the 30,000s, so the inspection fits no interval of its own; logging a change counts as its check.
+  inspection but the rear differential and transfer case oil (below), including the brake booster vacuum
+  pump at 120,000 (its footnote says what to replace in it).
 - Left out, because they aren't jobs at a milestone: the note that the oil is to be replaced at 5,000 miles
   if 0W-20 wasn't used at the last change, the note on the cabin air filter in heavy traffic or dust, and
   the explanations of each item.
@@ -46,10 +45,15 @@ which Toyota's owners site lists for the 2023 Highlander. Downloaded on 2026-10-
   engine air filters 30,000 / 36, engine coolant and intercooler coolant each first at 100,000 and then
   every 50,000 / 60, rear differential oil (AWD) and transfer case oil (AWD) 30,000 / 36 (15,000 / 18 when
   towing or carrying heavy loads).
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil (AWD) and transfer case
+  oil (AWD) are inspected at 15,000, 45,000, 75,000 and 105,000 and replaced at the 30,000s, so each
+  inspection is a reminder first at 15,000 miles and then every 30,000 / 36. Logging a change of one counts
+  as its check.
 - Only for severe use (#136): automatic transmission fluid at 60,000 / 72 when towing, carrying heavy loads
   or idling long. Under ordinary driving the guide only inspects the transmission.
-- Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades,
-  engine coolant, drive belts, rear differential oil, transfer case oil).
+- The other inspections are in the table only, with a check line where Glovebox has one (fluid levels,
+  wiper blades, engine coolant, drive belts).
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2020–2022 (the 3.5-litre V6, a list of its own), 2024 ([its own list](toyota-highlander-2024-turbo.md)),
   2025 and 2026 (charts, [2025](toyota-highlander-2025-turbo.md) and [2026](toyota-highlander-2026-turbo.md)),

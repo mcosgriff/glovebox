@@ -23,22 +23,27 @@ Source: Toyota's 2021 Sienna Warranty and Maintenance Guide,
   in the table only.
 - Coolant: the log's 100,000-mile line names the engine and inverter coolant together. Its footnote gives
   the engine coolant first at 100,000 miles, then every 50,000 / 60 months, and the inverter coolant first
-  at 150,000, then every 50,000 / 60. The line is written as "Replace engine coolant" (`coolant`). **The
-  inverter coolant has no reminder**: its first change is past the end of the log and it is given only in
-  that footnote, which isn't a job printed apart from the table, so it is not an `additional` item either.
-  The guide's "or 120 months" for the first coolant change isn't used: it counts from the day the vehicle
-  went into service, which Glovebox doesn't know.
+  at 150,000, then every 50,000 / 60. The line is written as "Replace engine coolant" (`coolant`). The
+  inverter coolant's first change is past the end of the log and given only in that footnote, so it is an
+  `additional` item, "Replace inverter coolant" (`inverter-coolant`), every 50,000 / 60 and first at
+  150,000, never placed on the table (the owner's ruling of 2026-10-23, #33). The footnote's "or 120
+  months" for the first engine coolant change and "or 180 months" for the first inverter coolant change
+  aren't used: they count from the day the vehicle went into service, which Glovebox doesn't know.
 - Left out: "Add Toyota EFI Tank Additive" at every milestone, which is for Hawaii, Puerto Rico and Saipan
   only; the note that the oil is to be changed again if 0W-16 wasn't used at the last change (a condition,
   not a job at a milestone); and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the log's oil change under any of its
   special conditions), tire rotation 5,000 / 6, hybrid battery cooling filter cleaning 20,000 / 24, cabin
-  and engine air filters 30,000 / 36, spark plugs 120,000 / 144, and engine coolant first at 100,000 miles
-  and then every 50,000 / 60.
+  and engine air filters 30,000 / 36, spark plugs 120,000 / 144, engine coolant first at 100,000 miles
+  and then every 50,000 / 60, and inverter coolant (the `additional` item) first at 150,000 and then every
+  50,000 / 60.
+- Inspection that is a reminder too: rear differential oil (AWD) every 30,000 / 36. Logging a change
+  counts as its check. This is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential
+  needs it inspected, so the 4Runner's rule applies to every list whose guide prints the inspection.
 - Only for severe use (#136): automatic transmission fluid and rear differential oil (AWD) every
   60,000 / 72 when towing or carrying heavy loads.
-- Inspections are in the table only, with a check line where the catalog has one (fluid levels, wiper
-  blades, brakes, engine and inverter coolant, rear differential oil). The table names the radiator,
+- The other inspections are in the table only, with a check line where the catalog has one (fluid levels,
+  wiper blades, brakes, engine and inverter coolant). The table names the radiator,
   condenser and intercooler as the guide does.
 - The special-condition oil change at the odd 5,000s is printed under four conditions in this year (dirt or
   dusty roads, towing, short trips below freezing, long idling); the table names them on one line.

@@ -23,17 +23,22 @@ Toyota's owners site lists no guide for the hybrid; it was found only at that ad
 - **"(4WD)" read as "(AWD)"**, as on the 2020–2023 list: the guide prints "(4WD)" on the rear differential
   oil, and these jobs are in `allWheelDriveOnly`, named "(AWD)" (the owner's ruling of 2026-10-23, #33).
 - **Engine and inverter coolant** as on the 2020–2023 list: the 100,000 line is the engine coolant
-  (`coolant`); the inverter coolant, first at 150,000 by footnote only, past the log's end, has no
-  reminder.
+  (`coolant`); the inverter coolant, first at 150,000 by footnote only, past the log's end, is a reminder
+  apart from the table (`additional`, by the owner's ruling of 2026-10-23, #33), first at 150,000 miles and
+  then every 50,000 / 60 (`inverter-coolant`).
 - In the table only: the EFI tank additive (Hawaii and Puerto Rico only), the chassis and body nuts and
-  bolts, and every inspection. Left out: the oil note, the cabin air filter note, and the explanations.
+  bolts, and every inspection but the rear differential oil's. Left out: the oil note, the cabin air
+  filter note, and the explanations.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the log's interval on dusty roads),
   tire rotation 5,000 / 6, HV battery cooling intake filter cleaned every 20,000 / 24, cabin and engine air
   filters 30,000 / 36, spark plugs 120,000 / 144, engine coolant first at 100,000 and then every 50,000 / 60.
+  Apart from the table: inverter coolant first at 150,000 and then every 50,000 / 60.
+- Inspections that are reminders too, as on the 2020–2023 list (the owner's ruling of 2026-10-23, #33):
+  rear differential oil (AWD) every 30,000 / 36. Logging a change of it counts as its check.
 - Only for severe use (#136): automatic transmission fluid and rear differential oil (AWD) every 60,000 / 72
   when towing or carrying heavy loads.
-- Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades,
-  engine and inverter coolant, rear differential oil).
+- The other inspections are in the table only, with a check line where Glovebox has one (fluid levels,
+  wiper blades, engine and inverter coolant).
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2025 on, which print a chart in place of the log ([2025](toyota-highlander-2025-hybrid.md),
   [2026](toyota-highlander-2026-hybrid.md)).

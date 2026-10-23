@@ -27,14 +27,17 @@ Toyota's owners site lists no guide for the hybrid; it was found only at that ad
   the rear differential oil and intercooler "(if applicable)" rows in the table with no `service` (the
   owner's ruling of 2026-10-23, #33), so no rear differential reminder; the two combined coolant rows
   ("Engine Coolant / Intercooler Coolant (if applicable)" at 100,000 and 150,000, "Inverter Coolant /
-  Intercooler Coolant (if applicable)" at 150,000) kept whole, as printed, with no `service`, **so no
-  engine or inverter coolant reminder** (coordinator's rule of 2026-10-23); the battery filter cleaned every
-  20,000.
+  Intercooler Coolant (if applicable)" at 150,000) split, by the same ruling, into "Replace engine coolant"
+  (`coolant`) or "Replace inverter coolant" (`inverter-coolant`) and "Replace intercooler coolant (if
+  applicable)" (table only), since the mark belongs to the intercooler and every Highlander Hybrid has
+  engine coolant and an inverter loop; the battery filter cleaned every 20,000.
 - In the table only: the EFI tank additive (Hawaii and Puerto Rico only), the chassis nuts and bolts, and
   every inspection.
 - Reminders: engine oil every 10,000 miles / 12 months (5,000 / 6 for severe use: dirt or dusty roads, or
   short trips below freezing), tire rotation every 5,000, hybrid battery cooling intake filter cleaned every
-  20,000, cabin and engine air filters every 30,000, spark plugs every 120,000. No coolant reminder (above).
+  20,000, cabin and engine air filters every 30,000, spark plugs every 120,000, engine coolant first at
+  100,000 and inverter coolant first at 150,000, each then every 50,000 / 60 (their footnotes' months
+  after the first change; the first change is by mileage only, as on the 2025 page).
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or carrying heavy loads.
 - Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper blades).
 - Brake fluid has no replacement in the chart, so it has no reminder from this list.

@@ -39,9 +39,11 @@ Source: Toyota's Warranty and Maintenance Guide for the 2017 model year,
 - Only for severe use (#136): rear differential oil (AWD) and transfer case oil (AWD) every 15,000 / 18,
   and automatic transmission fluid every 60,000 / 72, all when towing or carrying heavy loads. Under
   ordinary driving the guide only inspects these.
-- Inspections are in the table only. The differential and transfer case checks carry their service lines
-  (`rear-diff-check`, `transfer-case-check`) so a logged change counts as the check, but none is made a
-  reminder, since the owner hasn't asked for that on this model.
+- Inspections that are reminders too: rear differential oil (AWD) and transfer case oil (AWD) every
+  15,000 / 18, with their service lines (`rear-diff-check`, `transfer-case-check`), so logging a change
+  counts as the check. This is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential
+  needs it inspected, so the 4Runner's rule applies to every list whose guide prints the inspection. The
+  other inspections are in the table only.
 - The drive belts are inspected first at 60,000 / 72 and then every 15,000 / 18; they are in the table
   only.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.

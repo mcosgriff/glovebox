@@ -33,23 +33,28 @@ Read on 2026-10-23.
 - **Coolant.** The 100,000-mile page prints one line, "engine/inverter coolant", and its footnote gives the
   engine coolant first at 100,000 miles / 120 months and every 50,000 / 60 after, and the inverter coolant
   first at 150,000 / 180 months and every 50,000 / 60 after. The line at 100,000 is the engine coolant
-  ("Replace engine coolant", `coolant`, first at 100,000 then every 50,000 / 60). **The inverter coolant has
-  no reminder:** its interval is only in a footnote, and its first time falls past the log's end, so it is
-  neither a job of the table nor one the guide prints apart from it (coordinator's rule of 2026-10-23). The
-  "or 120 months" for the first change isn't used: it counts from the day the vehicle went into service,
-  which Glovebox doesn't know.
+  ("Replace engine coolant", `coolant`, first at 100,000 then every 50,000 / 60). The inverter coolant, which
+  the log never reaches, is printed only in that footnote, apart from the table, so it is an `additional` job
+  ("Replace inverter coolant", `inverter-coolant`, first at 150,000 then every 50,000 / 60), never placed on
+  the table (the owner's ruling of 2026-10-23, #33). The "or 120 months" and "or 180 months" for the first
+  changes aren't used: they count from the day the vehicle went into service, which Glovebox doesn't know.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the guide's interval on dusty roads),
-  tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, engine
-  coolant first at 100,000 then every 50,000 / 60, hybrid battery intake filter 20,000 / 24.
+  tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, engine coolant
+  first at 100,000 then every 50,000 / 60, hybrid battery intake filter 20,000 / 24, rear differential oil
+  inspection (AWD) 30,000 / 36 (`rear-diff-check`). Apart from the table: inverter coolant first at 150,000
+  then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or carrying heavy
   loads; rear differential oil (AWD) every 60,000 / 72 when towing. Under ordinary driving the guide doesn't
   replace these (it only inspects the transmission for leaks and the differential oil).
 - The guide's special operating conditions are dirt or dusty roads, and towing, a car-top carrier or heavy
   loads. Each job under them is named with its condition; the chassis nuts and bolts are tightened at every
   milestone under either, so that is one line, "dusty roads or towing".
-- Inspections stay in the table only (rule 7), with a check line where Glovebox has one (fluid levels, wiper
-  blades, engine and inverter coolant, rear differential oil, brakes). The guide's "radiator, condenser and/or
-  intercooler" is "Inspect radiator, condenser and intercooler".
+- **The rear differential oil inspection (AWD) is a reminder** (30,000 / 36, the table's own interval, with
+  the `rear-diff-check` line; logging a change counts as its check). By the owner's ruling of 2026-10-23 (#33)
+  any vehicle with a differential needs it inspected, so the 4Runner's rule applies wherever a guide prints
+  the inspection. The other inspections stay in the table only (rule 7), with a check line where Glovebox has
+  one (fluid levels, wiper blades, engine and inverter coolant, brakes). The guide's "radiator, condenser
+  and/or intercooler" is "Inspect radiator, condenser and intercooler".
 - Left out: "Add Toyota EFI Tank Additive or equivalent (Hawaii only)", at every milestone (a job for one
   state only); the note on the oil (above), the note on the cabin air filter, and the explanations of each
   item.
