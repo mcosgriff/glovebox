@@ -49,9 +49,6 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   towing; it is in the table only.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered:
-  - the 2020–2022 Highlander Hybrid (2.5L), whose log has an HV battery cooling filter cleaning and an
-    engine/inverter coolant line that Glovebox has no service line for yet;
-  - 2023 on, with a 2.4-litre turbo in place of the V6: 2023 and 2024 add intercooler coolant (no
-    service line yet) and change the spark plug mileages (2023's fit no interval), and 2025 on is a
-    chart with no months and "(if applicable)" drivetrain rows;
+  - the Highlander Hybrid (2.5L) and, from 2023, the 2.4-litre turbo, which have lists of their own
+    ([toyota-highlander-2020-2023-hybrid](toyota-highlander-2020-2023-hybrid.md) and the others in the index);
   - 2019 and before (an earlier generation; not read).
