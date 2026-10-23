@@ -85,6 +85,10 @@ says the guide prints "(4WD)". `KnownSchedulesTest` holds each field to the mark
 fluid change. The rule is the same shape: only a vehicle **known** to have a manual (vPIC's
 `Manual/Standard`) loses them; an automatic, a dual-clutch or nothing on record keeps them.
 
+`manualOnly` is the other way round: the jobs for a manual gearbox only, such as its oil change. Only a
+vehicle **known** to shift itself (an automatic, a CVT, a dual-clutch or an automated manual) loses them;
+a manual or nothing on record keeps them. A job can't be in both.
+
 A job a guide gives by time alone ("every 2 years regardless of mileage") is a reminder with months and
 no distance, marked `time-only`. The table shows it wherever the maker drew it, and the check doesn't hold
 its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the

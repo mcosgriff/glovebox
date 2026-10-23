@@ -315,6 +315,32 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a vehicle known to shift itself doesn't get the manual gearbox's jobs, and a manual doesn't get the automatic's`() {
+        val table = someTable
+            .replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the manual gearbox oil\" }")
+            .replace("{ \"name\": \"Look at the belts\" }", "{ \"name\": \"Change the automatic's fluid\" }")
+        val extra = "\"manualOnly\": [\"Change the manual gearbox oil\"], \"manualExcluded\": [\"Change the automatic's fluid\"],"
+        val list = (KnownSchedules.parse(file(table, extra = extra)) as KnownScheduleFile.Ok).list
+        fun jobs(transmission: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, transmission).flatMap { m -> m.work.map { it.name } }
+        // As vPIC writes a gearbox, and as an owner might.
+        listOf("6-speed Automatic", "CVT", "7-speed Dual-Clutch Transmission (DCT)", "Automated Manual").forEach { t ->
+            assertTrue(t, "Change the manual gearbox oil" !in jobs(t))
+            assertTrue(t, "Change the automatic's fluid" in jobs(t))
+        }
+        listOf("6-speed Manual/Standard", "Manual").forEach { t ->
+            assertTrue(t, "Change the manual gearbox oil" in jobs(t))
+            assertTrue(t, "Change the automatic's fluid" !in jobs(t))
+        }
+        // Nothing on record, or something else: both kept, since leaving a job out is the worse mistake.
+        listOf(null, "", "Other").forEach { t ->
+            assertTrue("$t", "Change the manual gearbox oil" in jobs(t))
+            assertTrue("$t", "Change the automatic's fluid" in jobs(t))
+        }
+        assertTrue(errors(file(extra = "\"manualOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+        assertTrue(errors(file(extra = "\"manualOnly\": [\"Change the oil\"], \"manualExcluded\": [\"Change the oil\"],")).single().contains("also in manualExcluded"))
+    }
+
+    @Test
     fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
         bundled.forEach { list ->
             val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
