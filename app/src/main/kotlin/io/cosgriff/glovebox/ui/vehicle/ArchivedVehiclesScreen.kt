@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -10,9 +13,6 @@ import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.unit
-import io.cosgriff.glovebox.domain.DistanceUnit
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import io.cosgriff.glovebox.ui.export.ExportSheet
@@ -45,20 +45,15 @@ import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class ArchivedVehicle(
@@ -89,9 +84,9 @@ class ArchivedVehiclesViewModel @Inject constructor(
             val mine = recordsBy[v.id].orEmpty()
             ArchivedVehicle(
                 vehicle = v,
-                finalOdometer = VehicleReminders.currentOdometer(
-                    mine.map { it.toEntry(v.clusterSwap(), NoLinks) },
-                    readingsBy[v.id].orEmpty().toReadings(v.clusterSwap()),
+                finalOdometer = v.highestReading(
+                    mine,
+                    readingsBy[v.id].orEmpty(),
                 ),
                 records = mine.size,
                 photos = mine.sumOf { it.photos.size },

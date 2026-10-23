@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -89,8 +92,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -141,14 +142,11 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -162,7 +160,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 data class VehicleDetails(
@@ -251,8 +248,7 @@ class VehicleDetailsViewModel @Inject constructor(
         service.observeRecords(vehicleId),
         odometer.observe(vehicleId),
     ) { vehicle, records, readings ->
-        val swap = vehicle?.clusterSwap()
-        VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap))
+        vehicle?.highestReading(records, readings)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)

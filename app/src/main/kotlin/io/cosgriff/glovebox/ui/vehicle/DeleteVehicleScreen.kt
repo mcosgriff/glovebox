@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -34,10 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
@@ -62,14 +63,9 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.TypedConfirmation
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.DeleteVehicleRoute
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.ui.service.NoLinks
 import javax.inject.Inject
 
 /** What deleting the vehicle takes with it, counted when the screen opens. */
@@ -124,9 +120,9 @@ class DeleteVehicleViewModel @Inject constructor(
                 recalls = recalls.recallsFor(vehicleId).size,
                 mileageReadings = readings.size,
                 documents = documents.documentsFor(vehicleId).size,
-                lastOdometer = VehicleReminders.currentOdometer(
-                    records.map { it.toEntry(v.clusterSwap(), NoLinks) },
-                    readings.toReadings(v.clusterSwap()),
+                lastOdometer = v.highestReading(
+                    records,
+                    readings,
                 ),
             )
         }

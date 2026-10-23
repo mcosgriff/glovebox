@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.PrimaryButton
@@ -10,7 +13,6 @@ import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.service.asNumber
-import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
@@ -41,11 +43,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -71,16 +71,11 @@ import io.cosgriff.glovebox.domain.LastDoneEntries
 import io.cosgriff.glovebox.domain.LastDoneRow
 import io.cosgriff.glovebox.domain.NoteTone
 import io.cosgriff.glovebox.domain.OdometerInput
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.ui.LastDoneRoute
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -88,7 +83,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.ui.service.answering
 import javax.inject.Inject
 
 data class LastDoneState(
@@ -126,18 +120,17 @@ class LastDoneViewModel @Inject constructor(
     ) { vehicle, items, records, readings, s ->
         if (vehicle == null) return@combine null
         entities = items.associateBy { it.id }
-        val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap, items.answering()) }
+        val log = vehicle.log(items, records, readings, s)
         LastDoneState(
             vehicleName = vehicle.shortName(),
             rows = LastDoneEntries.rows(
-                items.mapNotNull { it.toTracked(s.defaultRule, swap) },
-                entries,
+                log.tracked,
+                log.entries,
                 records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet(),
-                swap,
+                log.swap,
             ),
-            odometer = VehicleReminders.currentOdometer(entries, readings.toReadings(swap)),
-            swap = swap,
+            odometer = log.odometer,
+            swap = log.swap,
             unit = vehicle.unit,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

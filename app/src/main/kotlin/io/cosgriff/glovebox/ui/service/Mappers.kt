@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.settings.Settings
+import io.cosgriff.glovebox.domain.ItemStatus
+import io.cosgriff.glovebox.domain.LeadTime
+import io.cosgriff.glovebox.domain.ReminderInputs
+import io.cosgriff.glovebox.domain.VehicleReminders
 import java.text.DecimalFormatSymbols
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
@@ -178,6 +183,50 @@ fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Se
 /** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
 fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =
     swap.readings(map { OdometerReading(it.date, it.odometer) })
+
+/**
+ * A vehicle's log, readings and tracked reminders, set up the one way the screens and workers need them: in dash
+ * terms through the vehicle's cluster swap, with every link a logged line counts for (built once, not per record),
+ * and the lead time in the vehicle's own unit. Build it with [VehicleEntity.log].
+ */
+class VehicleLog(
+    val swap: ClusterSwap?,
+    val entries: List<ServiceEntry>,
+    val updates: List<OdometerReading>,
+    val tracked: List<TrackedItem>,
+    val lead: LeadTime,
+) {
+    /** The highest reading on record, as the dash shows it. */
+    val odometer: Int? get() = VehicleReminders.currentOdometer(entries, updates)
+
+    fun statuses(today: LocalDate): List<ItemStatus> = VehicleReminders.statuses(tracked, entries, updates, today, lead)
+
+    val inputs: ReminderInputs get() = ReminderInputs(tracked, entries, updates, lead)
+}
+
+/** [items] may be every schedule item or only the tracked ones: only tracked items get a reminder either way. */
+fun VehicleEntity.log(
+    items: List<ScheduleItemEntity>,
+    records: List<ServiceRecordWithItems>,
+    readings: List<OdometerReadingEntity>,
+    settings: Settings,
+): VehicleLog {
+    val swap = clusterSwap()
+    val links = items.answering()
+    return VehicleLog(
+        swap = swap,
+        entries = records.map { it.toEntry(swap, links) },
+        updates = readings.toReadings(swap),
+        tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap) },
+        lead = settings.leadFor(unit),
+    )
+}
+
+/** The highest reading on record, as the dash shows it, where nothing else about the log is needed. */
+fun VehicleEntity.highestReading(records: List<ServiceRecordWithItems>, readings: List<OdometerReadingEntity>): Int? {
+    val swap = clusterSwap()
+    return VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap))
+}
 
 /** "73,412 mi or Apr 10, 2027" */
 fun NextDue.text(unit: DistanceUnit): String = either(odometer?.asDistance(unit), date?.format(longDate))

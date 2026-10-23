@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.DangerTextButton
@@ -45,10 +48,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -85,7 +86,6 @@ import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.MilestonePlace
 import io.cosgriff.glovebox.domain.MilestoneStatus
 import io.cosgriff.glovebox.domain.Milestones
-import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
@@ -93,7 +93,6 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
 import io.cosgriff.glovebox.ui.service.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
@@ -174,7 +173,7 @@ class MilestonesViewModel @Inject constructor(
         val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
-        val current = VehicleReminders.currentOdometer(entries, readings.toReadings(swap))?.let { swap.actual(it) }
+        val current = vehicle.highestReading(records, readings)?.let { swap.actual(it) }
         val name = vehicle.shortName()
         if (rows.isNotEmpty()) {
             // The user's own table is shown as it is, in place of the view built from the schedule.
