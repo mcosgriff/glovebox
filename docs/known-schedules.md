@@ -157,6 +157,7 @@ One page per list, named by its `id`:
 - [Toyota 4Runner, 2014](known-schedules/toyota-4runner-2014.md) (`toyota-4runner-2014`)
 - [Toyota 4Runner, 2015–2016](known-schedules/toyota-4runner-2015-2016.md) (`toyota-4runner-2015-2016`)
 - [Toyota 4Runner, 2017–2024](known-schedules/toyota-4runner-2017-2024.md) (`toyota-4runner-2017-2024`)
+- [Toyota Highlander 3.5L V6, 2020–2022](known-schedules/toyota-highlander-2020-2022-v6.md) (`toyota-highlander-2020-2022-v6`)
 - [Toyota Sequoia, 2019–2022](known-schedules/toyota-sequoia-2019-2022.md) (`toyota-sequoia-2019-2022`)
 - [Toyota Tundra, 2020–2021](known-schedules/toyota-tundra-2020-2021.md) (`toyota-tundra-2020-2021`)
 - [Volkswagen GTI, 2010–2014 (Mk6)](known-schedules/volkswagen-gti-2010-2014.md) (`volkswagen-gti-2010-2014`)
