@@ -55,6 +55,11 @@ class DistanceUnitTest {
     fun `milestones keep their order and never land on each other`() {
         assertEquals(listOf(16_000, 32_000, 48_000), DistanceConversion.milestones(listOf(10_000, 20_000, 30_000), mi, km))
         assertEquals(listOf(1, 2, 3, 6_250), DistanceConversion.milestones(listOf(1, 2, 3, 10_000), km, mi))
+        // The cycle comes with the table, and is never left shorter than it.
+        assertEquals(listOf(16_000, 32_000) to 48_000, DistanceConversion.table(listOf(10_000, 20_000), 30_000, mi, km))
+        // 3 km alone would be 2 mi, shorter than the table's last milestone, which was kept at 3.
+        assertEquals(listOf(1, 2, 3) to 3, DistanceConversion.table(listOf(1, 2, 3), 3, km, mi))
+        assertEquals(listOf(16_000) to null, DistanceConversion.table(listOf(10_000), null, mi, km))
     }
 
     @Test

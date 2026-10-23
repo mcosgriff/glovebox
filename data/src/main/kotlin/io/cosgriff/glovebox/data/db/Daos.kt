@@ -677,13 +677,11 @@ interface UnitDao {
         }
 
         val table = milestones(vehicleId)
-        val moved = DistanceConversion.milestones(table.map { it.value ?: 0 }, from, to)
+        val (moved, repeat) = DistanceConversion.table(table.map { it.value ?: 0 }, vehicle.milestonesRepeatEveryMiles, from, to)
         // One milestone per mileage is enforced row by row, so they are moved in the order that never
         // steps on a row still waiting: from the top when the figures grow, from the bottom when they shrink.
         val order = if (to == DistanceUnit.KILOMETERS) table.indices.reversed() else table.indices
         for (i in order) setMilestone(table[i].id, moved[i])
-        // A cycle is never shorter than its table.
-        val repeat = vehicle.milestonesRepeatEveryMiles?.let { maxOf(scheduled(it), moved.lastOrNull() ?: 0) }
 
         setVehicle(vehicleId, to.name, measured(vehicle.odometerOffset), vehicle.clusterStartReading?.let(::measured), repeat)
     }

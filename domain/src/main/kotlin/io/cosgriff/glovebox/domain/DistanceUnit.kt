@@ -70,6 +70,16 @@ object DistanceConversion {
         var floor = 0
         return ascending.map { at -> maxOf(convert(at, from, to, DistanceKind.SCHEDULED), floor + 1).also { floor = it } }
     }
+
+    /**
+     * A milestone table in the new unit: its mileages ([milestones]) and the length of the cycle it [repeats] over,
+     * if it does. **A cycle is never shorter than its table**, so one the rounding would leave short takes the
+     * last milestone's figure. Used for an import file and for a vehicle whose unit is changed alike.
+     */
+    fun table(ascending: List<Int>, repeats: Int?, from: DistanceUnit, to: DistanceUnit): Pair<List<Int>, Int?> {
+        val at = milestones(ascending, from, to)
+        return at to repeats?.let { maxOf(convert(it, from, to, DistanceKind.SCHEDULED), at.lastOrNull() ?: 0) }
+    }
 }
 
 /**

@@ -116,9 +116,8 @@ object FileDistances {
     fun milestones(items: List<ImportedMilestone>, repeats: Int?, from: DistanceUnit, to: DistanceUnit): Pair<List<ImportedMilestone>, Int?> {
         if (from == to) return items to repeats
         val sorted = items.sortedBy { it.atMiles }
-        val at = DistanceConversion.milestones(sorted.map { it.atMiles }, from, to)
-        // A cycle is never shorter than its table.
-        return sorted.mapIndexed { i, m -> m.copy(atMiles = at[i]) } to repeats?.let { maxOf(scheduled(it, from, to), at.lastOrNull() ?: 0) }
+        val (at, cycle) = DistanceConversion.table(sorted.map { it.atMiles }, repeats, from, to)
+        return sorted.mapIndexed { i, m -> m.copy(atMiles = at[i]) } to cycle
     }
 
     /** A history file's records, written in [from], with each reading as a dash in [to] would have shown it. */
