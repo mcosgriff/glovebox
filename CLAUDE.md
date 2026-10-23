@@ -499,8 +499,8 @@ Notes on what's built:
   change, because both go table by table from SQLite.
 - A table that repeats (#113): `repeatsEveryMiles` sits beside `items` in the file, the one field a
   kind has of its own (`ImportFormat.ownKeys`), and is the length of the whole cycle, never less than
-  the highest `atMiles`. It is kept in `vehicles.milestonesRepeatEveryMiles`, written only by
-  `MilestoneDao.applyImport` and cleared by `deleteTable`; it means nothing while the vehicle has no
+  the highest `atMiles`. It is kept in `vehicles.milestonesRepeatEveryMiles`, written by
+  `MilestoneDao.applyImport` and the editor's repeat row (`setRepeat`) and cleared with the table (`forgetTable`); it means nothing while the vehicle has no
   table. `MilestoneImport.milestones(table, every, current, more)` lays the cycles out: the table as
   written, then on to the sixth point past the odometer, with "Show further ahead" adding more, and it
   is matched with `status(continues = true)`. A repeat has `Milestone.repeatOf` and **no `orMonths`**,
@@ -701,7 +701,7 @@ Notes on what's built:
   (picked, or a photo taken of the paper), each with a `DocumentType`, a name and an optional date.
   **A document is encrypted with the photo key in `PhotoCrypto.photoDir`, named `document-…`**, so
   `RecordPhotoStore.sweep`, `BackupWriter`, `BackupRestorer` and the crypto-erase cover it as they
-  cover photos; any new place that lists photo files must list `DocumentDao.allFiles` too. A PDF is
+  cover photos; any new place that lists photo files takes them from `DocumentDao.allEncryptedFiles()`, which lists both. A PDF is
   kept as it came; a picture is redrawn as a JPEG of at most `VehicleDocuments.MAX_EDGE`, which drops
   its metadata. Files are read into memory up to `MAX_BYTES` (20 MB). **A document opens inside Glovebox**
   (#224, the user's decision of 2026-10-16, reversing "handed to another app"): `DocumentViewerScreen`
@@ -817,7 +817,7 @@ Notes on what's built:
   `app/src/main/assets/licences/<group>_<artifact>.txt` and add one for any new such dependency. The app's
   own GPL text is copied from the repo's `LICENSE` at build time (`copyAppLicence`).
 - Delete all data (`DeleteAllScreen`, from the bottom of Settings): typing DELETE enables the button,
-  which then asks for the fingerprint or screen lock (`confirmWithScreenLock`); a phone with no screen
+  which then asks for the fingerprint or screen lock (`rememberScreenLockCheck`); a phone with no screen
   lock has only the typed word, and the screen says so (`DeleteAll` in `:domain`). `DataWipe.deleteEverything`
   writes a marker file first, destroys both Keystore keys, then deletes the database, photos, settings and
   cache; the app then restarts its process and lands on the welcome. `DataWipe.finishInterrupted` runs
@@ -996,7 +996,7 @@ Notes on what's built:
   report again clean) or all of them, confirmed by typing DELETE, with no Undo. `DataWipe.clearHistory`;
   everything else about the vehicle stays (what it takes, torque specs, schedule, recalls, milestones,
   mileage updates), and reminders count from what is left. A recall marked done keeps its mark.
-- A long press on the VIN row of Vehicle details copies the VIN (`copyVin`), marked sensitive
+- A long press on the VIN row of Vehicle details copies the VIN (`copyText` in `ui/components/`), marked sensitive
   (`ClipDescription.EXTRA_IS_SENSITIVE`) so Android hides it in its clipboard preview; Android 13+ says
   "Copied" itself, earlier versions get a toast. The row also has an accessibility long-press action.
 - Vehicle details opens from the overflow button on vehicle home. Its editable fields are written one
