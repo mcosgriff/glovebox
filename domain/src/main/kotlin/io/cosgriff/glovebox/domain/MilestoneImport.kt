@@ -24,7 +24,8 @@ data class SavedMilestone(val id: Long, val atMiles: Int, val work: List<TableJo
  */
 object MilestoneImport {
     const val MAX_ITEMS = 200
-    const val MAX_WORK = 40
+    // 40 until 2026-10-23, when Toyota's 2025-on charts, which repeat special-condition cells, needed more (#33).
+    const val MAX_WORK = 60
     const val MAX_NAME = 80
     const val MAX_MILES = 1_000_000
     const val MAX_MONTHS = 600
