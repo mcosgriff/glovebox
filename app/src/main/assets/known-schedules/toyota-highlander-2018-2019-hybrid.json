@@ -1515,5 +1515,14 @@
       "severeOnly": true,
       "service": "hybrid-battery-filter"
     }
+  ],
+  "additional": [
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
+    }
   ]
 }
