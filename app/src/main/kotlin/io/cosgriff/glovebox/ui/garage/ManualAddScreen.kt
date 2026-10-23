@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.OdometerField
@@ -57,8 +58,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
@@ -84,7 +83,6 @@ sealed interface PickList {
 class ManualAddViewModel @Inject constructor(
     private val nhtsa: NhtsaClient,
     private val vehicles: VehicleDao,
-    private val odometer: OdometerDao,
     settings: SettingsRepository,
 ) : ViewModel() {
     /** What this vehicle's odometer counts in; starts as the unit chosen in Settings. */
@@ -171,23 +169,21 @@ class ManualAddViewModel @Inject constructor(
         saving = true
         viewModelScope.launch {
             val today = LocalDate.now()
-            val id = vehicles.insert(
+            val id = vehicles.add(
                 VehicleEntity(
                     vin = null,
                     enteredByHand = true,
                     year = y,
-                    make = make,
-                    model = model,
+                    make = make.trim(),
+                    model = model.trim(),
                     trim = VehicleText.clean(trim, VehicleText.MAX_NICKNAME),
                     engine = VehicleText.clean(engine, VehicleText.MAX_SPEC),
                     drivetrain = drivetrain,
                     createdOn = today,
                     distanceUnit = unit.name,
                 ),
+                firstReading = OdometerInput.parse(odometerText.typedNumber()),
             )
-            odometerText.toIntOrNull()?.let {
-                odometer.insert(OdometerReadingEntity(vehicleId = id, date = today, odometer = it))
-            }
             onSaved(id)
         }
     }
