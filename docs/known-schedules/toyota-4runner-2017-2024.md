@@ -35,5 +35,9 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
 - Shorter under severe use: engine oil 5,000 / 6 (any of the guide's four conditions), propeller shaft
   lubrication 5,000 / 6 (dust, salted roads or towing).
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
-- Not covered: 2010 and 2012–2016 (no guide found at that address), 2011 (found; it has separate
-  schedules for the 4-cylinder and the V6), 2025 on (a new generation, with a chart in place of the log).
+- Not covered: 2010 to 2016, whose guides are on `assets.sipb.toyota.com` under their own file names (2011's
+  is at the address above) and whose logs differ from this one; they have lists of their own
+  ([2015–2016](toyota-4runner-2015-2016.md), which lacks only this list's cabin-filter inspection at 15,000,
+  45,000, 75,000 and 105,000; [2014](toyota-4runner-2014.md); [2013](toyota-4runner-2013.md);
+  [2010–2012 V6](toyota-4runner-2010-2012-v6.md); [2010](toyota-4runner-2010-4cyl.md) and
+  [2011](toyota-4runner-2011-4cyl.md) 4-cylinder). 2025 on: a new generation, with a chart in place of the log.

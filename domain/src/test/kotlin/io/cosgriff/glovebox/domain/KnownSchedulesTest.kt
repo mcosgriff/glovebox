@@ -168,7 +168,8 @@ class KnownSchedulesTest {
     fun `the 4Runner list is the maintenance log of Toyota's guide`() {
         val list = KnownSchedules.match(bundled, 2020, "TOYOTA", "4Runner")!!
         assertEquals(2017..2024, list.years)
-        assertNull(KnownSchedules.match(bundled, 2016, "Toyota", "4Runner"))
+        // 2016 has a list of its own: its guide has no cabin-filter inspection at 15,000, 45,000, 75,000 and 105,000.
+        assertEquals("toyota-4runner-2015-2016", KnownSchedules.match(bundled, 2016, "Toyota", "4Runner")?.id)
         assertNull(KnownSchedules.match(bundled, 2025, "Toyota", "4Runner"))
         // One page of the log per 5,000 miles and 6 months, to 120,000.
         assertEquals((5_000..120_000 step 5_000).toList(), list.milestones.map { it.atMiles })
