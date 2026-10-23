@@ -88,7 +88,7 @@ class DocumentStore(
             )
         } catch (e: Exception) {
             // The vehicle went meanwhile; the file has nothing to belong to.
-            File(crypto.photoDir, fileName).delete()
+            crypto.delete(fileName)
             throw e
         }
     }
@@ -96,7 +96,7 @@ class DocumentStore(
     /** Removes the row, then the file. No Undo: nothing else hangs off a document. */
     suspend fun delete(document: DocumentEntity) = withContext(Dispatchers.IO) {
         documents.delete(document.id)
-        File(crypto.photoDir, document.fileName).delete()
+        crypto.delete(document.fileName)
     }
 
     /**

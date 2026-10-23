@@ -42,6 +42,13 @@ class PhotoCrypto(private val context: Context) {
         }
     }
 
+    /** Deletes these encrypted files; one already gone is no matter. */
+    fun delete(fileNames: Iterable<String>) {
+        fileNames.forEach { File(photoDir, it).delete() }
+    }
+
+    fun delete(fileName: String) = delete(listOf(fileName))
+
     fun decrypt(fileName: String, sink: OutputStream) {
         File(photoDir, fileName).inputStream().use { raw ->
             aead.newDecryptingStream(raw, fileName.toByteArray()).use { dec -> dec.copyTo(sink) }

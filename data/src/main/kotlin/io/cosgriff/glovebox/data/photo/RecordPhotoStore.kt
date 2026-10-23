@@ -83,7 +83,7 @@ class RecordPhotoStore(
     }
 
     suspend fun delete(fileNames: Collection<String>) = withContext(Dispatchers.IO) {
-        fileNames.forEach { File(crypto.photoDir, it).delete() }
+        crypto.delete(fileNames)
     }
 
     /**
@@ -111,8 +111,8 @@ class RecordPhotoStore(
         viewingDir.listFiles()?.forEach { it.delete() }
         val files = crypto.photoDir.listFiles().orEmpty().filter { it.isFile }.map { StoredFile(it.name, it.lastModified()) }
         if (files.isEmpty()) return@withContext
-        val referenced = (service.allPhotoFiles() + vehicles.allPhotoFiles() + documents.allFiles()).toSet()
-        RecordPhotos.orphans(files, referenced, System.currentTimeMillis()).forEach { File(crypto.photoDir, it).delete() }
+        val referenced = documents.allEncryptedFiles().toSet()
+        crypto.delete(RecordPhotos.orphans(files, referenced, System.currentTimeMillis()))
     }
 
     private fun decrypt(fileName: String): ByteArray? = try {

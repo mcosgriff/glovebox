@@ -113,7 +113,7 @@ class BackupRestorer(
 
     private suspend fun movePhotosIn() {
         val staging = crypto.restoreDir
-        val wanted = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles() + db.documents().allFiles()).toSet()
+        val wanted = db.documents().allEncryptedFiles().toSet()
         val staged = staging.listFiles().orEmpty()
         if (staged.any { it.name in wanted }) {
             // The old photos belonged to the data that was replaced.

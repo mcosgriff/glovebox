@@ -46,10 +46,6 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET archivedOn = :date WHERE id = :id")
     suspend fun setArchived(id: Long, date: LocalDate?)
 
-    /** Every vehicle's own photo file, archived vehicles included. */
-    @Query("SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL")
-    suspend fun allPhotoFiles(): List<String>
-
     /** For a vehicle added without one. */
     @Query("UPDATE vehicles SET vin = :vin WHERE id = :id")
     suspend fun setVin(id: Long, vin: String)
@@ -189,9 +185,6 @@ interface VehicleDao {
 
     /** Cascades to readings, schedule, records, record items, photos rows, torque specs and recalls. */
     @Delete suspend fun delete(vehicle: VehicleEntity)
-
-    @Query("SELECT p.fileName FROM photos p JOIN service_records r ON p.recordId = r.id WHERE r.vehicleId = :vehicleId")
-    suspend fun photoFilesFor(vehicleId: Long): List<String>
 }
 
 @Dao
@@ -294,10 +287,6 @@ interface ServiceDao {
 
     @Query("SELECT COUNT(*) FROM photos WHERE recordId = :recordId")
     suspend fun photoCount(recordId: Long): Int
-
-    /** Every receipt and parts photo file any record points at. */
-    @Query("SELECT fileName FROM photos")
-    suspend fun allPhotoFiles(): List<String>
 
     @Query("UPDATE service_record_items SET catalogId = :catalogId WHERE id IN (:ids)")
     suspend fun setCatalogId(ids: List<Long>, catalogId: String?)
@@ -623,6 +612,16 @@ interface DocumentDao {
     /** Every document file, archived vehicles' included. */
     @Query("SELECT fileName FROM documents")
     suspend fun allFiles(): List<String>
+
+    /**
+     * Every encrypted file a row points at: receipt and parts photos, vehicle photos and documents, all in
+     * `PhotoCrypto.photoDir`. The backup, the restore and the orphan sweep all go by this, so a new kind of
+     * file is added here once and none of them can miss it.
+     */
+    @Query(
+        "SELECT fileName FROM photos UNION SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL UNION SELECT fileName FROM documents",
+    )
+    suspend fun allEncryptedFiles(): List<String>
 }
 
 @Dao

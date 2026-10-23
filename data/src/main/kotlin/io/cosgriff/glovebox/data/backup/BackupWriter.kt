@@ -130,7 +130,7 @@ class BackupWriter(
     }
 
     /** Every encrypted file the database points at: photos, and documents, which a backup carries the same way. */
-    private suspend fun photoFiles(): List<String> = (db.service().allPhotoFiles() + db.vehicles().allPhotoFiles() + db.documents().allFiles()).distinct()
+    private suspend fun photoFiles(): List<String> = db.documents().allEncryptedFiles()
 
     private suspend fun PooledConnection.count(table: String): Int =
         usePrepared("SELECT COUNT(*) FROM `$table`") { if (it.step()) it.getInt(0) else 0 }

@@ -11,7 +11,6 @@ import io.cosgriff.glovebox.domain.PhotoSizing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.IOException
 import java.security.GeneralSecurityException
 import java.util.UUID
@@ -42,14 +41,14 @@ class VehiclePhotoStore(
         val name = "vehicle-$vehicleId-${UUID.randomUUID()}.jpg"
         crypto.encryptTo(name, jpeg.inputStream())
         vehicles.setPhotoFile(vehicleId, name)
-        vehicle.photoFile?.let { File(crypto.photoDir, it).delete() }
+        vehicle.photoFile?.let(crypto::delete)
         true
     }
 
     suspend fun remove(vehicleId: Long) = withContext(Dispatchers.IO) {
         val old = vehicles.byId(vehicleId)?.photoFile ?: return@withContext
         vehicles.setPhotoFile(vehicleId, null)
-        File(crypto.photoDir, old).delete()
+        crypto.delete(old)
     }
 
     /** Decrypted in memory only; null if the file is missing or can't be read. */
