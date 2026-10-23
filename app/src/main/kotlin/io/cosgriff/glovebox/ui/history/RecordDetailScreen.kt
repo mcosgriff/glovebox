@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.history
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.FilledCard
-import io.cosgriff.glovebox.ui.components.SheetHandle
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -44,7 +43,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -267,8 +265,7 @@ fun RecordDetailScreen(
     }
 
     if (confirmingDelete) {
-
-        ModalBottomSheet(onDismissRequest = { confirmingDelete = false }, dragHandle = { SheetHandle() }) {
+        GloveboxSheet(onDismiss = { confirmingDelete = false }) {
             Column(
                 Modifier.navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
