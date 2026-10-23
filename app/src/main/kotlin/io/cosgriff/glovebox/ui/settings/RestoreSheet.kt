@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.data.displayName
 import io.cosgriff.glovebox.ui.LauncherSlot
 import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.components.SheetActions
@@ -11,11 +12,9 @@ import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -121,21 +120,13 @@ class RestorePicker @Inject constructor(@ApplicationContext private val context:
                     false
                 }
             }
-            if (ok) _picked.value = PickedBackup(copy, displayName(uri) ?: AppText.res.getString(R.string.restore_backup_file)) else _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
+            if (ok) _picked.value = PickedBackup(copy, context.contentResolver.displayName(uri) ?: AppText.res.getString(R.string.restore_backup_file)) else _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
         }
     }
 
     fun clear() {
         _picked.value = null
         dir.listFiles()?.forEach { it.delete() }
-    }
-
-    private fun displayName(uri: Uri): String? = try {
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0) else null
-        }
-    } catch (_: SecurityException) {
-        null
     }
 }
 

@@ -1,11 +1,10 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.handOut
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -52,7 +51,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -217,17 +215,4 @@ fun ZoomableImage(image: ImageBitmap?, description: String, key: Any, onZoomChan
 }
 
 /** False if nothing on the phone can take it. */
-private fun Context.share(copy: File): Boolean {
-    val uri = FileProvider.getUriForFile(this, "$packageName.files", copy)
-    val send = Intent(Intent.ACTION_SEND).apply {
-        type = "image/jpeg"
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-    return try {
-        startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
-}
+private fun Context.share(copy: File): Boolean = handOut(copy, "image/jpeg", share = true)

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.newCapture
+import io.cosgriff.glovebox.data.displayName
 import io.cosgriff.glovebox.ui.LauncherSlot
 import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.label
@@ -7,8 +9,6 @@ import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.DocumentProblem
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
-import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.data.photo.AddedDocument
 import io.cosgriff.glovebox.data.photo.DocumentStore
@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -84,9 +83,9 @@ class DocumentPicker @Inject constructor(
         val launch = camera.launcher ?: return
         _problem.value = null
         this.vehicleId = vehicleId
-        val file = File(photos.captureDir, "${UUID.randomUUID()}.jpg")
+        val (file, uri) = context.newCapture(photos.captureDir)
         captureFile = file
-        launch(FileProvider.getUriForFile(context, "${context.packageName}.files", file))
+        launch(uri)
     }
 
     /** Null when the user backed out of the picker. */
@@ -94,7 +93,7 @@ class DocumentPicker @Inject constructor(
         val to = vehicleId ?: return
         vehicleId = null
         if (uri == null) return
-        scope.launch { add(to, uri, displayName(uri)) }
+        scope.launch { add(to, uri, context.contentResolver.displayName(uri)) }
     }
 
     fun onCaptured(saved: Boolean) {
@@ -132,13 +131,5 @@ class DocumentPicker @Inject constructor(
 
     fun clearProblem() {
         _problem.value = null
-    }
-
-    private fun displayName(uri: Uri): String? = try {
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0) else null
-        }
-    } catch (_: SecurityException) {
-        null
     }
 }

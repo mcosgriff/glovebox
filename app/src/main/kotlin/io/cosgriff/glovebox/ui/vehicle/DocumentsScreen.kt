@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.handOut
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.DangerTextButton
@@ -15,9 +16,7 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import android.Manifest
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -73,7 +72,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -444,27 +442,7 @@ private fun DetailsDialog(
 }
 
 /** Hands a decrypted copy to another app to view, or to the share sheet. False if nothing on the phone can take it. */
-internal fun Context.hand(copy: File, format: DocumentFormat, share: Boolean): Boolean {
-    val uri = FileProvider.getUriForFile(this, "$packageName.files", copy)
-    val intent = if (share) {
-        Intent.createChooser(
-            Intent(Intent.ACTION_SEND).apply {
-                type = format.mimeType
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            },
-            null,
-        )
-    } else {
-        Intent(Intent.ACTION_VIEW).setDataAndType(uri, format.mimeType)
-    }
-    return try {
-        startActivity(intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    }
-}
+internal fun Context.hand(copy: File, format: DocumentFormat, share: Boolean): Boolean = handOut(copy, format.mimeType, share)
 
 /** "3 documents · 4.2 MB", or "None yet". */
 @Composable

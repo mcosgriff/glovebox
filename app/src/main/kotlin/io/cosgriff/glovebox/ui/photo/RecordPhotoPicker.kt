@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.newCapture
 import io.cosgriff.glovebox.ui.LauncherSlot
 import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.asNumber
@@ -7,7 +8,6 @@ import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.R
 import android.content.Context
 import android.net.Uri
-import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -87,9 +86,9 @@ class RecordPhotoPicker @Inject constructor(
     fun capture(to: PhotoTarget, room: Int) {
         val launch = camera.launcher ?: return
         if (!begin(to, room)) return
-        val file = File(store.captureDir, "${UUID.randomUUID()}.jpg")
+        val (file, uri) = context.newCapture(store.captureDir)
         captureFile = file
-        launch(FileProvider.getUriForFile(context, "${context.packageName}.files", file))
+        launch(uri)
     }
 
     private fun begin(to: PhotoTarget, room: Int): Boolean {

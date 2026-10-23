@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.data.photo
 
+import io.cosgriff.glovebox.data.readCapped
 import io.cosgriff.glovebox.domain.DocumentProblem
 import android.content.Context
 import android.graphics.Bitmap
@@ -53,13 +54,8 @@ class DocumentStore(
      * The file is read into memory, never past the size cap.
      */
     suspend fun add(vehicleId: Long, source: Uri, displayName: String?, unnamed: String, today: LocalDate): AddedDocument = withContext(Dispatchers.IO) {
-        val bytes = try {
-            readCapped(source)
-        } catch (_: IOException) {
-            null
-        } catch (_: SecurityException) {
-            null
-        } ?: return@withContext AddedDocument.Refused(DocumentProblem.UNREADABLE)
+        val bytes = context.contentResolver.readCapped(source, VehicleDocuments.MAX_BYTES)
+            ?: return@withContext AddedDocument.Refused(DocumentProblem.UNREADABLE)
         VehicleDocuments.problem(bytes.size.toLong())?.let { return@withContext AddedDocument.Refused(it) }
         val name = VehicleDocuments.nameFromFile(displayName) ?: unnamed
         if (VehicleDocuments.isPdf(bytes)) {
@@ -166,18 +162,6 @@ class DocumentStore(
 
     /** A picture document, decrypted in memory for the in-app viewer; null if it can't be read. */
     suspend fun loadPicture(document: DocumentEntity): Bitmap? = photos.load(document.fileName, VehicleDocuments.MAX_EDGE)
-
-    /** Up to the cap and one byte more, so a file over it is told apart without reading it all. */
-    private fun readCapped(source: Uri): ByteArray? = context.contentResolver.openInputStream(source)?.use { input ->
-        val out = ByteArrayOutputStream()
-        val buffer = ByteArray(64 * 1024)
-        while (out.size() <= VehicleDocuments.MAX_BYTES) {
-            val n = input.read(buffer)
-            if (n < 0) break
-            out.write(buffer, 0, n)
-        }
-        out.toByteArray()
-    }
 
     private fun redraw(bytes: ByteArray): ByteArray? = try {
         val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(ByteBuffer.wrap(bytes))) { decoder, info, _ ->

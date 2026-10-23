@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.data.readCapped
+import io.cosgriff.glovebox.data.displayName
 import io.cosgriff.glovebox.ui.LauncherSlot
 import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.shortName
@@ -36,7 +38,6 @@ import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -139,8 +140,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.IOException
 import io.cosgriff.glovebox.ui.service.answering
 import io.cosgriff.glovebox.ui.service.toRef
 import io.cosgriff.glovebox.data.photo.DocumentStore
@@ -192,7 +191,7 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
         if (uri == null) return
         scope.launch {
             // A PDF is read as a Carfax report: its service visits become a service-history import.
-            val bytes = withContext(Dispatchers.IO) { readBytes(uri, PDF_MAX_BYTES) }
+            val bytes = withContext(Dispatchers.IO) { context.contentResolver.readCapped(uri, PDF_MAX_BYTES.toLong()) }
             if (bytes != null && bytes.size >= 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "%PDF") {
                 if (bytes.size > PDF_MAX_BYTES) {
                     _problem.value = AppText.res.getString(R.string.import_pdf_too_big)
@@ -202,14 +201,14 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
                     PdfWords.read(context, bytes)?.let { CarfaxReport.read(it, LocalDate.now()) }
                 }
                 if (file == null) _problem.value = AppText.res.getString(R.string.import_pdf_unreadable)
-                else _picked.value = PickedImport(displayName(uri) ?: AppText.res.getString(R.string.import_carfax_report), "", file, pdf = bytes)
+                else _picked.value = PickedImport(context.contentResolver.displayName(uri) ?: AppText.res.getString(R.string.import_carfax_report), "", file, pdf = bytes)
                 return@launch
             }
             val text = withContext(Dispatchers.IO) { read(uri) }
             when (text) {
                 null -> _problem.value = AppText.res.getString(R.string.document_problem_unreadable)
                 TOO_BIG -> _problem.value = AppText.res.getString(R.string.import_too_big)
-                else -> _picked.value = PickedImport(displayName(uri) ?: AppText.res.getString(R.string.import_file), text)
+                else -> _picked.value = PickedImport(context.contentResolver.displayName(uri) ?: AppText.res.getString(R.string.import_file), text)
             }
         }
     }
@@ -220,48 +219,8 @@ class ImportPicker @Inject constructor(@ApplicationContext private val context: 
     }
 
     /** Stops reading as soon as the file is past the size cap, so a huge file is never held in memory. */
-    private fun read(uri: Uri): String? = try {
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            val out = ByteArrayOutputStream()
-            val buffer = ByteArray(16 * 1024)
-            while (out.size() <= ImportFormat.MAX_BYTES) {
-                val n = input.read(buffer)
-                if (n < 0) break
-                out.write(buffer, 0, n)
-            }
-            if (out.size() > ImportFormat.MAX_BYTES) TOO_BIG else out.toString(Charsets.UTF_8.name())
-        }
-    } catch (_: IOException) {
-        null
-    } catch (_: SecurityException) {
-        null
-    }
-
-    /** Up to [cap] bytes and one more, so a caller can tell a file over the cap; null when it can't be opened. */
-    private fun readBytes(uri: Uri, cap: Int): ByteArray? = try {
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            val out = ByteArrayOutputStream()
-            val buffer = ByteArray(64 * 1024)
-            while (out.size() <= cap) {
-                val n = input.read(buffer)
-                if (n < 0) break
-                out.write(buffer, 0, n)
-            }
-            out.toByteArray()
-        }
-    } catch (_: IOException) {
-        null
-    } catch (_: SecurityException) {
-        null
-    }
-
-    private fun displayName(uri: Uri): String? = try {
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0) else null
-        }
-    } catch (_: SecurityException) {
-        null
-    }
+    private fun read(uri: Uri): String? = context.contentResolver.readCapped(uri, ImportFormat.MAX_BYTES.toLong())
+        ?.let { if (it.size > ImportFormat.MAX_BYTES) TOO_BIG else it.toString(Charsets.UTF_8) }
 
     private companion object {
         // Not valid JSON, so it can never be mistaken for a file's contents.
