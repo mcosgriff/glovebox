@@ -1,0 +1,717 @@
+{
+  "id": "volkswagen-gti-2022",
+  "title": "2022 GTI",
+  "make": "Volkswagen",
+  "model": "Golf GTI",
+  "years": {
+    "from": 2022,
+    "to": 2022
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10199495-0001.pdf",
+    "retrieved": "2026-10-23",
+    "note": "Read from Volkswagen's 2022 USA maintenance schedule for gasoline models, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for its gasoline models, as filed with NHTSA, for a car the owner maintains. Only the GTI's facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "manualExcluded": [
+    "Change DSG transmission fluid (DSG only)"
+  ],
+  "milestones": [
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check interior lights, power outlets and warning lamps"
+        },
+        {
+          "name": "Check ribbed belt condition",
+          "service": "belt-check"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check interior lights, power outlets and warning lamps"
+        },
+        {
+          "name": "Check ribbed belt condition",
+          "service": "belt-check"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Test battery, and auxiliary battery if fitted",
+          "service": "battery-check"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
+          "name": "Check ribbed belt and belt starter-generator tensioning roller"
+        },
+        {
+          "name": "Road test: brakes, kickdown, steering, electrics, climate and parking brake"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Check tire pressures, spare included"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check torque splitter oil with the diagnostic tester (if fitted)"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check interior lights, power outlets and warning lamps"
+        },
+        {
+          "name": "Check ribbed belt condition",
+          "service": "belt-check"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 10000,
+      "service": "oil"
+    }
+  ],
+  "additional": [
+    {
+      "name": "Replace air filter element and clean housing",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "engine-air"
+    },
+    {
+      "name": "Change brake fluid (at 3 years, then every 2 years)",
+      "everyMonths": 24,
+      "rule": "time-only",
+      "service": "brake-fluid"
+    },
+    {
+      "name": "Replace dust and pollen filter",
+      "everyMiles": 40000,
+      "everyMonths": 24,
+      "service": "cabin-air"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 80000,
+      "everyMonths": 72,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Change DSG transmission fluid (DSG only)",
+      "everyMiles": 80000,
+      "service": "trans-fluid"
+    }
+  ]
+}
