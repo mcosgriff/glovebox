@@ -26,7 +26,7 @@ Downloaded on 2026-10-22 and read on 2026-10-23.
   without asking. **This is not a split of the log by engine** (the owner's ruling of 2026-10-23 on splits
   doesn't come into it): the 4.6 L and 5.7 L lists of a year are the same table and the same reminders.
 - The list for the other engine of these years is `toyota-tundra-2018-2019-5.7`, the same table. The FFV
-  truck has no list yet (below).
+  truck has its own lists (below).
 - Drivetrain is marked on the guide's own lines, so 2WD and 4WD share the list and the 4WD-only jobs say
   `(4WD)` and are left out for a truck known to be 2WD. The Tundra is a four-wheel-drive truck, not an AWD
   model, so these stay in `fourWheelDriveOnly`. The guide has no "AWD" lines. Automatic only; nothing is
@@ -55,6 +55,6 @@ Downloaded on 2026-10-22 and read on 2026-10-23.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - No guide was seen to say what follows 120,000 miles, so the table doesn't repeat.
 - Not covered by this list: 2016 and 2017 (their logs differ: their own lists), and 2020–2021
-  (`toyota-tundra-2020-2021`); FFV trucks: their guides' extra oil change every 2,500 miles applies only
-  when E85 is used more than half the time, which only a note says; how to hold that is the owner's decision
-  (#33), so no FFV list is shipped yet; 2022 on (a new generation).
+  (`toyota-tundra-2020-2021`); FFV trucks: their own guide's lists,
+  [toyota-tundra-2018-5.7-ffv](toyota-tundra-2018-5.7-ffv.md) and [toyota-tundra-2019-5.7-ffv](toyota-tundra-2019-5.7-ffv.md)
+  (the owner's ruling of 2026-10-23, #33); 2022 on (a new generation).

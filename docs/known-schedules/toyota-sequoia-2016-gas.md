@@ -49,9 +49,6 @@ Read on 2026-10-23.
 - Re-torquing the propeller shaft bolt and tightening the chassis and body nuts and bolts have no
   service line and are in the table only.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
-- Not covered: the 2016 flexible-fuel Sequoia. Its guide's log is 48 boxes 2,500 miles apart: the oil
-  is changed at every 5,000 as an ordinary job, and the boxes at the odd 2,500s also change it; the
-  guide's notes say that is for a truck run on E85 more than half of the time. That condition isn't
-  one of the guide's special operating conditions and can't be stated as a reminder the table holds
-  (the extra change is printed only at the odd 2,500s), so no flexible-fuel list was written. Years
+- Not covered: the 2016 flexible-fuel Sequoia. Its guide's log is 48 boxes 2,500 miles apart, with an oil
+  change in every box; it has a list of its own, [toyota-sequoia-2016-ffv](toyota-sequoia-2016-ffv.md). Years
   before 2016 are outside this issue and were not looked up.
