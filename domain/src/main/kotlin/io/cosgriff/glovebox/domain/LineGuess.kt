@@ -242,6 +242,9 @@ object LineWords {
         "cooling-fan" to line("cooling fan", "radiator fan", "fan motor"),
         "fan-clutch" to line("fan clutch"),
         "heater-core" to line("heater core"),
+        "inverter-coolant" to line("inverter coolant", "hybrid coolant", "power control unit coolant"),
+        "intercooler-coolant" to line("intercooler coolant", "charge air coolant"),
+        "hybrid-battery-filter" to line("hybrid battery filter", "battery cooling filter", "battery intake filter", "hybrid filter"),
 
         "fuel-filter" to line("fuel filter", "gas filter"),
         "fuel-system" to line("fuel system", "fuel injection", "injector cleaning", "induction"),

@@ -183,6 +183,10 @@ object CarfaxReport {
      */
     private val services: List<Pair<Regex, String>> = listOf(
         """oil and filter changed|oil changed""" to "oil",
+        // A hybrid's and a turbo's own cooling, before the engine's coolant and air filter take their words.
+        """inverter coolant (replaced|changed|flushed|serviced)""" to "inverter-coolant",
+        """intercooler coolant (replaced|changed|flushed|serviced)""" to "intercooler-coolant",
+        """hybrid battery (cooling |intake )?(air )?filters? (replaced|cleaned|changed|serviced)""" to "hybrid-battery-filter",
         """cabin air filters?""" to "cabin-air",
         """(engine )?air filters? (replaced|changed)""" to "engine-air",
         """tires? rotated|tire rotation""" to "rotation",

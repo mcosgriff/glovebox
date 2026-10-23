@@ -222,7 +222,7 @@ count for a reminder. The values, by the category History files them under:
 | Tires & wheels | `rotation`, `balance`, `alignment`, `new-tires`, `flat`, `tire-check`, `tpms` |
 | Brakes | `front-pads`, `rear-pads`, `brake-pads`, `rotors`, `brake-shoes`, `brake-drums`, `brake-fluid`, `brake-fluid-check`, `brake-inspect`, `brake-service`, `calipers`, `wheel-cylinders`, `master-cylinder`, `brake-booster`, `brake-lines`, `parking-brake`, `abs-sensor` |
 | Fluids | `trans-fluid`, `power-steering`, `washer`, `fluid-check` |
-| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core` |
+| Cooling | `coolant`, `cooling-check`, `water-pump`, `thermostat`, `radiator`, `radiator-cap`, `coolant-reservoir`, `coolant-hoses`, `cooling-fan`, `fan-clutch`, `heater-core`, `inverter-coolant`, `intercooler-coolant`, `hybrid-battery-filter` |
 | Fuel | `fuel-filter`, `fuel-system`, `throttle-body`, `fuel-injectors`, `fuel-pump`, `evap-system` |
 | Exhaust | `oxygen-sensor`, `egr-valve`, `secondary-air-pump`, `catalytic-converter`, `muffler`, `exhaust` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |

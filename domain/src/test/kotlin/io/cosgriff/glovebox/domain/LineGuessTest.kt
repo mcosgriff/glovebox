@@ -109,6 +109,8 @@ class LineGuessTest {
         "coolant flush" to "coolant", "antifreeze replaced" to "coolant", "cooling system pressure tested" to "cooling-check",
         "water pump replaced" to "water-pump", "waterpump replaced" to null, "thermostat housing replaced" to "thermostat",
         "radiator replaced" to "radiator", "upper radiator hose replaced" to "coolant-hoses", "heater core flushed" to "heater-core",
+        "inverter coolant replaced" to "inverter-coolant", "intercooler coolant changed" to "intercooler-coolant",
+        "hybrid battery filter cleaned" to "hybrid-battery-filter",
         "radiator fan motor replaced" to "cooling-fan", "fan clutch replaced" to "fan-clutch", "overflow tank replaced" to "coolant-reservoir",
         "fuel filter replaced" to "fuel-filter", "fuel injection service" to "fuel-system", "throttle body cleaned" to "throttle-body",
         "fuel pump replaced" to "fuel-pump", "injectors replaced" to "fuel-injectors", "purge valve replaced" to "evap-system",
