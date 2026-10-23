@@ -31,7 +31,7 @@ class Converters {
         DocumentEntity::class,
         CatalogRuleEntity::class,
     ],
-    version = 29,
+    version = 30,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -62,6 +62,7 @@ class Converters {
         AutoMigration(from = 26, to = 27), // vehicles.mileageCheckInDays
         AutoMigration(from = 27, to = 28), // catalog_rules
         AutoMigration(from = 28, to = 29), // service_records.visitId
+        AutoMigration(from = 29, to = 30), // vehicles.powertrain
     ],
 )
 @ColumnTypeConverters(Converters::class)

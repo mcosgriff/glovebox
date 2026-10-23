@@ -86,6 +86,10 @@ import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.domain.VinDecode
+import io.cosgriff.glovebox.domain.Powertrain
+import io.cosgriff.glovebox.domain.Powertrains
+import io.cosgriff.glovebox.ui.components.ChoiceDialog
+import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -136,6 +140,8 @@ class AddVehicleViewModel @Inject constructor(
         private set
     var fields by mutableStateOf(emptyMap<DecodedField, String>())
         private set
+    /** Only what vPIC says plainly ([Powertrains.fromVpic]), then the owner's pick; null is "not known". */
+    var powertrain by mutableStateOf<Powertrain?>(null)
     var trim by mutableStateOf("")
         private set
     var trimChoices by mutableStateOf(emptyList<String>())
@@ -197,6 +203,7 @@ class AddVehicleViewModel @Inject constructor(
             d.fuel?.let { put(DecodedField.FUEL, it) }
             d.transmission?.let { put(DecodedField.TRANSMISSION, it) }
         }
+        powertrain = Powertrains.fromVpic(d.electrification, d.fuel, d.fuelSecondary)
         trimChoices = VinDecode.trimChoices(d.trim)
         // More than one candidate is left for the user to choose between.
         trim = trimChoices.singleOrNull().orEmpty()
@@ -265,6 +272,7 @@ class AddVehicleViewModel @Inject constructor(
                     trimConfirmed = trimConfirmed && savedTrim != null,
                     engine = fields[DecodedField.ENGINE],
                     fuel = fields[DecodedField.FUEL],
+                    powertrain = powertrain?.name,
                     drivetrain = fields[DecodedField.DRIVE],
                     transmission = fields[DecodedField.TRANSMISSION],
                     bodyClass = fields[DecodedField.BODY],
@@ -450,6 +458,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     val focusManager = LocalFocusManager.current
     var editing by rememberSaveable { mutableStateOf<DecodedField?>(null) }
     var editingVehicle by rememberSaveable { mutableStateOf(false) }
+    var editingPowertrain by rememberSaveable { mutableStateOf(false) }
     val identified = vm.year != null && vm.make.isNotBlank() && vm.model.isNotBlank()
 
     if (editing == DecodedField.DRIVE) {
@@ -470,6 +479,17 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                 editing = null
             },
             onDismiss = { editing = null },
+        )
+    }
+    if (editingPowertrain) {
+        ChoiceDialog(
+            title = stringResource(R.string.add_vehicle_powertrain),
+            options = Powertrain.entries + null,
+            selected = vm.powertrain,
+            label = { stringResource(it?.label() ?: R.string.add_vehicle_powertrain_unsure) },
+            onPick = { vm.powertrain = it },
+            onDismiss = { editingPowertrain = false },
+            note = stringResource(R.string.add_vehicle_powertrain_note),
         )
     }
     if (editingVehicle) {
@@ -540,6 +560,14 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     FieldRow(stringResource(field.label), shown ?: stringResource(R.string.add), muted = shown == null, onClick = { editing = field })
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
+                val powertrain = vm.powertrain
+                FieldRow(
+                    stringResource(R.string.add_vehicle_powertrain),
+                    stringResource(powertrain?.label() ?: R.string.add),
+                    muted = powertrain == null,
+                    onClick = { editingPowertrain = true },
+                )
+                HorizontalDivider(color = scheme.outlineVariant)
                 d.gvwr?.let {
                     FieldRow(stringResource(R.string.add_vehicle_gvwr), it)
                     HorizontalDivider(color = scheme.outlineVariant)

@@ -145,6 +145,8 @@ import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
 import io.cosgriff.glovebox.domain.VehicleText
+import io.cosgriff.glovebox.domain.Powertrains
+import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -591,6 +593,7 @@ internal fun VehicleDetailsContent(
                         v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
                         v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
                         v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
+                        Powertrains.of(v.powertrain)?.let { Triple(stringResource(R.string.add_vehicle_powertrain), stringResource(it.label()), false) },
                         v.bodyClass?.let { Triple(stringResource(R.string.details_body), it, false) },
                     )
                     val copyVinLabel = stringResource(R.string.details_copy_vin)

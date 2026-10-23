@@ -107,6 +107,14 @@
     <string name="add_vehicle_drive_type">Drive type</string>
     <string name="add_vehicle_engine">Engine</string>
     <string name="add_vehicle_fuel">Fuel</string>
+    <string name="add_vehicle_powertrain">Powertrain</string>
+    <string name="add_vehicle_powertrain_unsure">Not sure</string>
+    <string name="add_vehicle_powertrain_note">Only matters where the maker\'s schedule differs, as it does for a hybrid. NHTSA\'s answer is filled in only where it says so plainly.</string>
+    <string name="powertrain_gas">Gas or diesel</string>
+    <string name="powertrain_hybrid">Hybrid</string>
+    <string name="powertrain_plug_in">Plug-in hybrid</string>
+    <string name="powertrain_flex_fuel">Flex-fuel</string>
+    <string name="powertrain_electric">Electric</string>
     <string name="add_vehicle_transmission">Transmission</string>
     <string name="add_vehicle_recalls_checking">Checking…</string>
     <string name="add_vehicle_recalls_failed">Couldn\'t check</string>
