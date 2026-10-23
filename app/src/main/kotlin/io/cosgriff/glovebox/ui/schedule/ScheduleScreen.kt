@@ -5,6 +5,9 @@ import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
+import io.cosgriff.glovebox.data.db.toEntity
+import io.cosgriff.glovebox.data.db.rule
+import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -18,8 +21,6 @@ import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.HistoryImport
-import io.cosgriff.glovebox.data.db.MilestoneJobEntity
-import io.cosgriff.glovebox.data.db.MilestoneEntity
 import androidx.compose.material3.Surface
 import androidx.compose.material.icons.outlined.Info
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -78,7 +79,6 @@ import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.DueRule
-import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.ScheduleSummaries
@@ -185,24 +185,7 @@ class ScheduleViewModel @Inject constructor(
         val statuses = log.statuses(LocalDate.now()).associateBy { it.item.id }
         ScheduleState(
             vehicle = vehicle,
-            items = items.mapNotNull { e ->
-                val normal = interval(e.intervalMiles, e.intervalMonths) ?: return@mapNotNull null
-                DraftItem(
-                    key = e.id.toString(),
-                    name = e.name,
-                    normal = normal,
-                    severe = interval(e.severeMiles, e.severeMonths),
-                    useSevere = e.useSevere,
-                    rule = e.ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
-                    tracked = e.tracked,
-                    template = e.templateKey?.let(templates::get),
-                    own = e.templateKey == null,
-                    service = e.service,
-                    knownList = e.knownList,
-                    firstAt = e.firstMiles,
-                    severeOnly = e.severeOnly,
-                )
-            },
+            items = items.mapNotNull { e -> e.toDraft(e.templateKey?.let(templates::get)) },
             templateKeys = items.associate { it.id.toString() to it.templateKey },
             logs = items.associate { e ->
                 val last = ServiceLog.lastEntry(e.id, entries)
@@ -294,32 +277,14 @@ class ScheduleViewModel @Inject constructor(
         val (list, plan) = s.known ?: return@launch
         val severe = s.use == DrivingUse.SEVERE
         schedule.applyKnown(
-            added = plan.new.map {
-                ScheduleItemEntity(
-                    vehicleId = vehicleId,
-                    name = it.name,
-                    intervalMiles = it.normal.miles,
-                    intervalMonths = it.normal.months,
-                    severeMiles = it.severe?.miles,
-                    severeMonths = it.severe?.months,
-                    useSevere = severe && (it.severe != null || it.severeOnly),
-                    severeOnly = it.severeOnly,
-                    ruleOverride = it.rule?.name,
-                    service = it.service,
-                    knownList = list.id,
-                    firstMiles = it.firstAt,
-                )
-            },
+            added = plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly)) },
             replaced = plan.doubles.map { it.id }.filter { it in stop },
         )
         // The maker's table goes with its schedule, unless the vehicle already has a table of its own.
         milestones.addKnown(
             vehicleId,
             list.id,
-            KnownSchedules.milestonesIn(list, s.vehicle.unit, s.vehicle.drivetrain, s.vehicle.transmission).map { m ->
-                MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
-                    m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
-            },
+            KnownSchedules.milestonesIn(list, s.vehicle.unit, s.vehicle.drivetrain, s.vehicle.transmission).map { it.toRows(vehicleId) },
         )
     }
 
@@ -342,8 +307,6 @@ class ScheduleViewModel @Inject constructor(
             },
         )
     }
-
-    private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 
     /** Keeps everything the editor doesn't touch, such as a snooze. */
     private fun DraftItem.applyTo(entity: ScheduleItemEntity) = entity.copy(

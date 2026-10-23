@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.reminders
 
 import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
@@ -178,7 +179,7 @@ class ReminderRulesViewModel @Inject constructor(
                 RuleItem(
                     id = item.id,
                     label = if (several) "${item.name} · ${names[item.vehicleId]}" else item.name,
-                    rule = item.ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
+                    rule = item.rule,
                 )
             },
         )

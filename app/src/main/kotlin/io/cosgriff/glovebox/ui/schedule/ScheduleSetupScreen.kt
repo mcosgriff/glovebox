@@ -1,6 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
 import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.data.db.rule
+import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -13,8 +15,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.data.db.MilestoneDao
-import io.cosgriff.glovebox.data.db.MilestoneEntity
-import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -121,6 +121,46 @@ data class DraftItem(
         fun blank(key: String, unit: DistanceUnit) = DraftItem(key = key, name = "", normal = Interval(unit.scheduled(5_000), 6), severe = null)
     }
 }
+
+/** The row a draft is saved as, at setup. A service is kept only on an item of the user's own. */
+fun DraftItem.toEntity(vehicleId: Long): ScheduleItemEntity = ScheduleItemEntity(
+    vehicleId = vehicleId,
+    name = name,
+    templateKey = template?.key,
+    intervalMiles = normal.miles,
+    intervalMonths = normal.months,
+    severeMiles = severe?.miles,
+    severeMonths = severe?.months,
+    useSevere = useSevere,
+    ruleOverride = rule?.name,
+    tracked = tracked,
+    service = service.takeIf { own },
+    knownList = knownList,
+    firstMiles = firstAt,
+    severeOnly = severeOnly,
+)
+
+/** A saved row as the editor's draft, keyed by its id; null for one with no interval. [template] is the typical item it is, if any. */
+fun ScheduleItemEntity.toDraft(template: ScheduleTemplateItem?): DraftItem? {
+    val normal = interval(intervalMiles, intervalMonths) ?: return null
+    return DraftItem(
+        key = id.toString(),
+        name = name,
+        normal = normal,
+        severe = interval(severeMiles, severeMonths),
+        useSevere = useSevere,
+        rule = rule,
+        tracked = tracked,
+        template = template,
+        own = templateKey == null,
+        service = service,
+        knownList = knownList,
+        firstAt = firstMiles,
+        severeOnly = severeOnly,
+    )
+}
+
+private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 
 @HiltViewModel
 class ScheduleSetupViewModel @Inject constructor(
@@ -256,26 +296,7 @@ class ScheduleSetupViewModel @Inject constructor(
     /** Unticked items are kept as untracked rows so they can be switched on later. */
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
-        schedule.insertAll(
-            list.map {
-                ScheduleItemEntity(
-                    vehicleId = vehicleId,
-                    name = it.name,
-                    templateKey = it.template?.key,
-                    intervalMiles = it.normal.miles,
-                    intervalMonths = it.normal.months,
-                    severeMiles = it.severe?.miles,
-                    severeMonths = it.severe?.months,
-                    useSevere = it.useSevere,
-                    ruleOverride = it.rule?.name,
-                    tracked = it.tracked,
-                    service = it.service.takeIf { _ -> it.own },
-                    knownList = it.knownList,
-                    firstMiles = it.firstAt,
-                    severeOnly = it.severeOnly,
-                )
-            },
-        )
+        schedule.insertAll(list.map { it.toEntity(vehicleId) })
         chosenEngine?.let { vehicles.setEngineIfBlank(vehicleId, it) }
         // The maker's table goes with its schedule: it is what the Milestones screen then shows.
         known?.let { list ->
@@ -283,10 +304,7 @@ class ScheduleSetupViewModel @Inject constructor(
             milestones.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain, vehicle?.transmission).map { m ->
-                    MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
-                        m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
-                },
+                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain, vehicle?.transmission).map { it.toRows(vehicleId) },
             )
         }
         onDone(vehicleId)

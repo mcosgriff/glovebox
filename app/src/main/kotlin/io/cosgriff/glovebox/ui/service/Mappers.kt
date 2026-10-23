@@ -19,6 +19,7 @@ import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -133,7 +134,7 @@ fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?): Trac
     if (miles == null && months == null) return null
     // A job only for severe use isn't a reminder on normal use: it is on the list, switched off.
     if (severeOnly && !useSevere) return null
-    val rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: defaultRule
+    val rule = this.rule ?: defaultRule
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
     val zeroAt = -(swap?.offset ?: 0)
     return TrackedItem(id, name, Interval(miles, months), rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
@@ -325,7 +326,7 @@ fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
     name = name,
     normal = savedInterval(intervalMiles, intervalMonths),
     severe = savedInterval(severeMiles, severeMonths),
-    rule = ruleOverride?.let { runCatching { DueRule.valueOf(it) }.getOrNull() },
+    rule = this.rule,
     templateKey = templateKey,
     tracked = tracked,
     service = service,
