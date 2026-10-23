@@ -18,6 +18,20 @@ class RecallsTest {
     private val labels = notice("18V753000", "EQUIPMENT:OTHER:LABELS", reportedOn = LocalDate.of(2018, 10, 25))
 
     @Test
+    fun `each filter shows its recalls, and one done counts as done even if archived first`() {
+        val open = StoredRecall(1, fuelPump, done = false)
+        val done = StoredRecall(2, fuelPump, done = true)
+        val archived = StoredRecall(3, fuelPump, done = false, archived = true)
+        val doneAfterArchiving = StoredRecall(4, fuelPump, done = true, archived = true)
+        val all = listOf(open, done, archived, doneAfterArchiving)
+        fun ids(view: RecallView) = all.filter { it.shownIn(view) }.map { it.id }
+        assertEquals(listOf(1L, 2L, 3L, 4L), ids(RecallView.ALL))
+        assertEquals(listOf(1L), ids(RecallView.OPEN))
+        assertEquals(listOf(2L, 4L), ids(RecallView.DONE))
+        assertEquals(listOf(3L), ids(RecallView.ARCHIVED))
+    }
+
+    @Test
     fun `a first check adds everything`() {
         val changes = Recalls.merge(emptyList(), listOf(fuelPump, steering))
         assertEquals(listOf(fuelPump, steering), changes.added)

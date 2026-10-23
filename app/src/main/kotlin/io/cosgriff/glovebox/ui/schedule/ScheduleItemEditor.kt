@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.typedNumber
@@ -97,8 +98,8 @@ fun ScheduleItemEditor(
     var milesText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.miles.asText()) }
     var monthsText by remember(item.key) { mutableStateOf(if (isNew) "" else item.active.months.asText()) }
     var firstText by remember(item.key) { mutableStateOf(item.firstAt.asText()) }
-    // Blank is "one interval in, like any other"; otherwise a whole distance above zero.
-    val firstTyped = firstText.typedNumber().filterNot { it == ',' || it.isWhitespace() }.let { if (it.isEmpty()) null else it.toIntOrNull()?.takeIf { n -> n > 0 } }
+    // Blank is "one interval in, like any other"; otherwise a whole distance above zero, read as an odometer is.
+    val firstTyped = firstText.typedNumber().takeIf { it.isNotBlank() }?.let(OdometerInput::parse)
     val firstBad = firstText.isNotBlank() && firstTyped == null
     var showErrors by remember(item.key) { mutableStateOf(false) }
 

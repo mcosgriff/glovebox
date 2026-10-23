@@ -79,6 +79,14 @@ enum class ReminderGroup { NOT_LOGGED, OVERDUE, NEXT_30_DAYS, LATER }
 data class UrgentItem<V>(val vehicle: V, val status: ItemStatus, val progress: ReminderProgress)
 
 object ReminderPresentation {
+    /**
+     * Log service's "due now" chips: reminders that are due or overdue and have a log entry to count from,
+     * overdue first. Never-logged ones are left out: offering every one would bury the form on a new vehicle,
+     * and they can still be ticked in the categories.
+     */
+    fun logSuggestions(statuses: List<ItemStatus>): List<ItemStatus> =
+        statuses.filter { it.lastDone != null && it.status.state != DueState.OK }
+            .sortedBy { it.status.state != DueState.OVERDUE }
 
     /**
      * Picks the limit to show. When both mileage and time apply, it is the one further along
