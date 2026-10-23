@@ -38,10 +38,7 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, as listed o
   transfer case oil every 30,000 / 36 on dusty roads or when towing. Under ordinary driving the guide
   only inspects these.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
-- Not covered: 2016–2019. Those years have a guide, but flex-fuel (FFV) trucks of those years had a
-  guide of their own (T-MMS-16TundraFFV to T-MMS-19TundraFFV) with a different oil schedule, and
-  Glovebox can't yet tell an FFV truck from a gasoline one, so a gasoline list would be given to an FFV
-  truck without asking (the owner's ruling, 2026-10-23, #189: these years wait for the flex-fuel
-  marker). The 2016 and 2017 gasoline guides also differ from 2018–2021 (2016 and 2017 lubricate the
-  propeller shaft; 2016 has no cabin air filter inspection). Toyota's owners site lists no FFV guide
-  for 2020 or 2021. 2022 on (a new generation) wasn't read.
+- Other years: 2016–2019 gasoline trucks have lists of their own, one per engine with `"powertrain":
+  "gas"` (e.g. [toyota-tundra-2018-2019-5.7](toyota-tundra-2018-2019-5.7.md)), since flex-fuel (FFV) trucks
+  of those years had a guide of their own; no FFV list is shipped yet. Toyota's owners site lists no FFV
+  guide for 2020 or 2021, so this list has no engine block. 2022 on has lists of its own.
