@@ -53,31 +53,29 @@ class NhtsaClient(private val http: HttpClient) {
             parameter("format", "json")
         }.body()
         val r = body["Results"]!!.jsonArray.first().jsonObject
-        fun f(key: String) = r[key]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
-
-        val speeds = f("TransmissionSpeeds")
-        val style = f("TransmissionStyle")
+        val speeds = r.text("TransmissionSpeeds")
+        val style = r.text("TransmissionStyle")
         return DecodedVehicle(
             vin = vin,
-            year = f("ModelYear")?.toIntOrNull(),
-            make = f("Make"),
-            model = f("Model"),
-            trim = f("Trim"),
-            bodyClass = f("BodyClass"),
-            driveType = f("DriveType"),
+            year = r.text("ModelYear")?.toIntOrNull(),
+            make = r.text("Make"),
+            model = r.text("Model"),
+            trim = r.text("Trim"),
+            bodyClass = r.text("BodyClass"),
+            driveType = r.text("DriveType"),
             // vPIC reports e.g. "2.998832712"; show it the way people say it ("3.0").
-            displacementL = f("DisplacementL")?.let { raw ->
+            displacementL = r.text("DisplacementL")?.let { raw ->
                 raw.toDoubleOrNull()?.let { String.format(Locale.US, "%.1f", it) } ?: raw
             },
-            cylinders = f("EngineCylinders"),
-            engineModel = f("EngineModel"),
-            horsepower = f("EngineHP"),
-            fuel = f("FuelTypePrimary"),
+            cylinders = r.text("EngineCylinders"),
+            engineModel = r.text("EngineModel"),
+            horsepower = r.text("EngineHP"),
+            fuel = r.text("FuelTypePrimary"),
             transmission = listOfNotNull(speeds?.let { "$it-speed" }, style).joinToString(" ").ifEmpty { null },
-            gvwr = f("GVWR"),
-            plant = listOfNotNull(f("PlantCity"), f("PlantCountry")).joinToString(", ").ifEmpty { null },
-            errorCode = f("ErrorCode"),
-            errorText = f("ErrorText"),
+            gvwr = r.text("GVWR"),
+            plant = listOfNotNull(r.text("PlantCity"), r.text("PlantCountry")).joinToString(", ").ifEmpty { null },
+            errorCode = r.text("ErrorCode"),
+            errorText = r.text("ErrorText"),
         )
     }
 
@@ -121,17 +119,19 @@ class NhtsaClient(private val http: HttpClient) {
             ?: throw ResponseException(response, "NHTSA recalls: no results list")
         return results.map { el ->
             val o = el.jsonObject
-            fun f(key: String) = o[key]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
             RecallNotice(
-                campaign = f("NHTSACampaignNumber").orEmpty(),
-                component = f("Component").orEmpty(),
-                summary = f("Summary").orEmpty(),
-                consequence = f("Consequence"),
-                remedy = f("Remedy"),
-                reportedOn = Recalls.parseReportDate(f("ReportReceivedDate")),
+                campaign = o.text("NHTSACampaignNumber").orEmpty(),
+                component = o.text("Component").orEmpty(),
+                summary = o.text("Summary").orEmpty(),
+                consequence = o.text("Consequence"),
+                remedy = o.text("Remedy"),
+                reportedOn = Recalls.parseReportDate(o.text("ReportReceivedDate")),
             )
         }
     }
+
+    /** A field's text, or null when NHTSA left it out or blank. */
+    private fun JsonObject.text(key: String) = this[key]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
 
     private companion object {
         const val VPIC = "https://vpic.nhtsa.dot.gov/api"
