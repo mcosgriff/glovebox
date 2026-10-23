@@ -16,9 +16,9 @@ class DataWipe(
 ) {
     /** Removes the vehicle row (cascading to all its data) and its encrypted photo and document files. */
     suspend fun deleteVehicle(vehicle: VehicleEntity) {
-        val files = db.vehicles().photoFilesFor(vehicle.id) + listOfNotNull(vehicle.photoFile) + db.documents().documentsFor(vehicle.id).map { it.fileName }
+        val files = db.service().photoFilesOf(vehicle.id, all = true) + listOfNotNull(vehicle.photoFile) + db.documents().documentsFor(vehicle.id).map { it.fileName }
         db.vehicles().delete(vehicle)
-        files.forEach { File(photos.photoDir, it).delete() }
+        photos.delete(files)
     }
 
     /**
@@ -30,7 +30,7 @@ class DataWipe(
         val service = db.service()
         val files = service.photoFilesOf(vehicleId, all)
         val deleted = service.clearRecords(vehicleId, all)
-        files.forEach { File(photos.photoDir, it).delete() }
+        photos.delete(files)
         return deleted
     }
 

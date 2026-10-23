@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.data.backup
 
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator
 import org.bouncycastle.crypto.params.Argon2Parameters
 import java.io.DataInputStream
@@ -21,6 +28,38 @@ import javax.crypto.spec.SecretKeySpec
  * Plain JVM code with no Android in it, so the format is covered by ordinary unit tests.
  */
 object BackupFormat {
+    /**
+     * The app's settings as the backup's settings entry writes them: each value with its type, so a restore puts back
+     * exactly what was there. A value of another type is written as text.
+     */
+    fun settingsToJson(prefs: Map<String, Any>): JsonObject = JsonObject(
+        prefs.mapValues { (_, v) ->
+            buildJsonObject {
+                when (v) {
+                    is Boolean -> { put("type", "boolean"); put("value", v) }
+                    is Int -> { put("type", "int"); put("value", v) }
+                    is Long -> { put("type", "long"); put("value", v) }
+                    is String -> { put("type", "string"); put("value", v) }
+                    else -> { put("type", "string"); put("value", v.toString()) }
+                }
+            }
+        },
+    )
+
+    /** [settingsToJson] read back. An entry this version can't read is left out, and its setting keeps its default. */
+    fun settingsFromJson(o: JsonObject): Map<String, Any> = buildMap {
+        for ((name, wrapped) in o) {
+            val entry = wrapped as? JsonObject ?: continue
+            val value = entry["value"] as? JsonPrimitive ?: continue
+            when ((entry["type"] as? JsonPrimitive)?.content) {
+                "boolean" -> value.booleanOrNull?.let { put(name, it) }
+                "int" -> value.intOrNull?.let { put(name, it) }
+                "long" -> value.longOrNull?.let { put(name, it) }
+                "string" -> put(name, value.content)
+            }
+        }
+    }
+
     /** Raised whenever the layout below changes in a way an older app couldn't read. */
     const val VERSION = 1
     val MAGIC: ByteArray = "GLOVEBOX".toByteArray(Charsets.US_ASCII)

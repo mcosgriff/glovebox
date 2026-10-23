@@ -10,10 +10,6 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.PhotoSizing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
-import java.security.GeneralSecurityException
 import java.util.UUID
 
 /**
@@ -27,40 +23,30 @@ class VehiclePhotoStore(
 ) {
     /** Replaces the vehicle's photo with the image at [source]. False if it couldn't be read. */
     suspend fun set(vehicleId: Long, source: Uri): Boolean = withContext(Dispatchers.IO) {
-        val jpeg = try {
-            val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, source)) { decoder, info, _ ->
-                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                val (w, h) = PhotoSizing.fit(info.size.width, info.size.height)
-                decoder.setTargetSize(w, h)
-            }
-            ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 85, it) }.toByteArray()
-        } catch (_: IOException) {
-            return@withContext false
-        }
+        val jpeg = redrawJpeg(ImageDecoder.createSource(context.contentResolver, source), PhotoSizing.MAX_EDGE, QUALITY)
+            ?: return@withContext false
         // The vehicle may have been deleted while the picker was open.
         val vehicle = vehicles.byId(vehicleId) ?: return@withContext false
         val name = "vehicle-$vehicleId-${UUID.randomUUID()}.jpg"
         crypto.encryptTo(name, jpeg.inputStream())
         vehicles.setPhotoFile(vehicleId, name)
-        vehicle.photoFile?.let { File(crypto.photoDir, it).delete() }
+        vehicle.photoFile?.let(crypto::delete)
         true
     }
 
     suspend fun remove(vehicleId: Long) = withContext(Dispatchers.IO) {
         val old = vehicles.byId(vehicleId)?.photoFile ?: return@withContext
         vehicles.setPhotoFile(vehicleId, null)
-        File(crypto.photoDir, old).delete()
+        crypto.delete(old)
     }
 
     /** Decrypted in memory only; null if the file is missing or can't be read. */
     suspend fun load(fileName: String): Bitmap? = withContext(Dispatchers.IO) {
-        try {
-            val bytes = ByteArrayOutputStream().also { crypto.decrypt(fileName, it) }.toByteArray()
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        } catch (_: IOException) {
-            null
-        } catch (_: GeneralSecurityException) {
-            null
-        }
+        crypto.decryptBytes(fileName)?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+    }
+
+    private companion object {
+        /** The JPEG quality a vehicle's photo is saved at. */
+        const val QUALITY = 85
     }
 }

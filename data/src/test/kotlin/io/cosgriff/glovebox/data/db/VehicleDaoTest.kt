@@ -31,4 +31,16 @@ class VehicleDaoTest {
         val none = db.vehicles().add(VehicleEntity(vin = null, year = 2013, make = "Volkswagen", model = "GTI", createdOn = day), firstReading = null)
         assertEquals(emptyList<OdometerReadingEntity>(), db.odometer().readingsFor(none))
     }
+
+    @Test
+    fun `every encrypted file is found by the one query, photos, vehicle photos and documents alike`() = runBlocking {
+        val id = db.vehicles().add(VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = day, photoFile = "vehicle.enc"), firstReading = null)
+        val record = db.service().insertWithItems(
+            ServiceRecordEntity(vehicleId = id, date = day, odometer = 60_000, diy = true),
+            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Work")),
+        )
+        db.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = "receipt.enc")))
+        db.documents().insert(DocumentEntity(vehicleId = id, type = "TITLE", name = "Title", fileName = "document-title.enc", format = "PDF", sizeBytes = 1, addedOn = day))
+        assertEquals(setOf("vehicle.enc", "receipt.enc", "document-title.enc"), db.documents().allEncryptedFiles().toSet())
+    }
 }

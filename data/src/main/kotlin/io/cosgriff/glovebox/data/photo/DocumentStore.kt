@@ -17,11 +17,9 @@ import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.domain.DocumentFormat
 import io.cosgriff.glovebox.domain.DocumentType
-import io.cosgriff.glovebox.domain.PhotoSizing
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -88,7 +86,7 @@ class DocumentStore(
             )
         } catch (e: Exception) {
             // The vehicle went meanwhile; the file has nothing to belong to.
-            File(crypto.photoDir, fileName).delete()
+            crypto.delete(fileName)
             throw e
         }
     }
@@ -96,7 +94,7 @@ class DocumentStore(
     /** Removes the row, then the file. No Undo: nothing else hangs off a document. */
     suspend fun delete(document: DocumentEntity) = withContext(Dispatchers.IO) {
         documents.delete(document.id)
-        File(crypto.photoDir, document.fileName).delete()
+        crypto.delete(document.fileName)
     }
 
     /**
@@ -163,14 +161,10 @@ class DocumentStore(
     /** A picture document, decrypted in memory for the in-app viewer; null if it can't be read. */
     suspend fun loadPicture(document: DocumentEntity): Bitmap? = photos.load(document.fileName, VehicleDocuments.MAX_EDGE)
 
-    private fun redraw(bytes: ByteArray): ByteArray? = try {
-        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(ByteBuffer.wrap(bytes))) { decoder, info, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            val (w, h) = PhotoSizing.fit(info.size.width, info.size.height, VehicleDocuments.MAX_EDGE)
-            decoder.setTargetSize(w, h)
-        }
-        ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 88, it); bitmap.recycle() }.toByteArray()
-    } catch (_: IOException) {
-        null
+    private fun redraw(bytes: ByteArray): ByteArray? = redrawJpeg(ImageDecoder.createSource(ByteBuffer.wrap(bytes)), VehicleDocuments.MAX_EDGE, QUALITY)
+
+    private companion object {
+        /** The JPEG quality a picture document is saved at. */
+        const val QUALITY = 88
     }
 }

@@ -46,10 +46,6 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET archivedOn = :date WHERE id = :id")
     suspend fun setArchived(id: Long, date: LocalDate?)
 
-    /** Every vehicle's own photo file, archived vehicles included. */
-    @Query("SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL")
-    suspend fun allPhotoFiles(): List<String>
-
     /** For a vehicle added without one. */
     @Query("UPDATE vehicles SET vin = :vin WHERE id = :id")
     suspend fun setVin(id: Long, vin: String)
@@ -189,9 +185,6 @@ interface VehicleDao {
 
     /** Cascades to readings, schedule, records, record items, photos rows, torque specs and recalls. */
     @Delete suspend fun delete(vehicle: VehicleEntity)
-
-    @Query("SELECT p.fileName FROM photos p JOIN service_records r ON p.recordId = r.id WHERE r.vehicleId = :vehicleId")
-    suspend fun photoFilesFor(vehicleId: Long): List<String>
 }
 
 @Dao
@@ -294,10 +287,6 @@ interface ServiceDao {
 
     @Query("SELECT COUNT(*) FROM photos WHERE recordId = :recordId")
     suspend fun photoCount(recordId: Long): Int
-
-    /** Every receipt and parts photo file any record points at. */
-    @Query("SELECT fileName FROM photos")
-    suspend fun allPhotoFiles(): List<String>
 
     @Query("UPDATE service_record_items SET catalogId = :catalogId WHERE id IN (:ids)")
     suspend fun setCatalogId(ids: List<Long>, catalogId: String?)
@@ -536,16 +525,18 @@ interface MilestoneDao {
     @Transaction
     suspend fun deleteMilestone(vehicleId: Long, milestoneId: Long) {
         deleteById(milestoneId)
-        if (count(vehicleId) == 0) {
-            setRepeat(vehicleId, null)
-            setKnownList(vehicleId, null)
-        }
+        if (count(vehicleId) == 0) forgetTable(vehicleId)
     }
 
     /** Removes the whole table, and that it repeats; the Milestones screen then goes back to the view built from the schedule. */
     @Transaction
     suspend fun deleteTable(vehicleId: Long) {
         deleteMilestones(vehicleId)
+        forgetTable(vehicleId)
+    }
+
+    /** What the vehicle keeps about its table, which means nothing once the table is gone: that it repeats, and where it came from. */
+    suspend fun forgetTable(vehicleId: Long) {
         setRepeat(vehicleId, null)
         setKnownList(vehicleId, null)
     }
@@ -573,15 +564,8 @@ interface MilestoneDao {
         replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
     ) {
         setRepeat(vehicleId, repeatsEveryMiles)
-        added.forEach { (milestone, jobs) ->
-            val id = insert(milestone)
-            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = id, position = i) })
-        }
-        replaced.forEach { (milestone, jobs) ->
-            update(milestone)
-            clearJobs(milestone.id)
-            insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = milestone.id, position = i) })
-        }
+        // New rows have no id yet and replaced ones keep theirs, which is what save() goes by.
+        (added + replaced).forEach { (milestone, jobs) -> save(milestone, jobs) }
     }
 }
 
@@ -593,11 +577,6 @@ data class ShopRow(val name: String, val date: LocalDate, val id: Long)
 
 data class ScheduleDistances(val id: Long, val intervalMiles: Int?, val severeMiles: Int?, val snoozedUntilOdometer: Int?, val firstMiles: Int?)
 
-/**
- * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
- * unit, so the unit can't change without the figures changing with it: [convert] does both in one
- * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
- */
 @Dao
 interface DocumentDao {
     @Query("SELECT * FROM documents WHERE vehicleId = :vehicleId")
@@ -623,8 +602,23 @@ interface DocumentDao {
     /** Every document file, archived vehicles' included. */
     @Query("SELECT fileName FROM documents")
     suspend fun allFiles(): List<String>
+
+    /**
+     * Every encrypted file a row points at: receipt and parts photos, vehicle photos and documents, all in
+     * `PhotoCrypto.photoDir`. The backup, the restore and the orphan sweep all go by this, so a new kind of
+     * file is added here once and none of them can miss it.
+     */
+    @Query(
+        "SELECT fileName FROM photos UNION SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL UNION SELECT fileName FROM documents",
+    )
+    suspend fun allEncryptedFiles(): List<String>
 }
 
+/**
+ * Changing what a vehicle's odometer counts in. Every distance stored for a vehicle is in its own
+ * unit, so the unit can't change without the figures changing with it: [convert] does both in one
+ * transaction, once, and nothing else writes `vehicles.distanceUnit` for a vehicle that exists.
+ */
 @Dao
 interface UnitDao {
     @Query("SELECT id, odometer AS value FROM odometer_readings WHERE vehicleId = :vehicleId")
