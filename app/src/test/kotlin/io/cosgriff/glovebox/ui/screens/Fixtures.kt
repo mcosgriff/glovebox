@@ -1,5 +1,12 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.ui.settings.ImportPreview
+import io.cosgriff.glovebox.ui.settings.PlanView
+import io.cosgriff.glovebox.ui.settings.PlanLine
+import io.cosgriff.glovebox.ui.settings.PlanNoun
+import io.cosgriff.glovebox.ui.settings.DoubtLine
+import io.cosgriff.glovebox.domain.ImportKind
+import io.cosgriff.glovebox.domain.ImportMode
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.CatalogRuleEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -306,6 +313,28 @@ object Fixtures {
         truck, emptyList(), odometer = null,
         records = listOf(truckRecords[0].let { it.copy(record = it.record.copy(date = TODAY)) }),
     ).visitsOn(TODAY)
+
+    /**
+     * A made-up service-history file for the truck: two new visits, one that differs from a saved record, one
+     * whose reading looks mistyped (left out until ticked), and the reminders an import would move.
+     */
+    val importPreview: ImportPreview.Ready = ImportPreview.Ready(
+        PlanView(
+            kind = ImportKind.SERVICE_HISTORY,
+            noun = PlanNoun.RECORD,
+            total = 4,
+            new = listOf(
+                PlanLine("Jan 12, 2026 · 60,900 mi", "Oil & filter change · Main Street Auto · $52.00"),
+                PlanLine("Aug 3, 2025 · 57,600 mi", "Tire rotation · Main Street Auto"),
+            ),
+            fills = emptyList(),
+            differs = listOf(PlanLine("May 15, 2025 · 55,100 mi", "Oil & filter change, Tire rotation · Main Street Auto · $89.95", "Engine oil & filter, Tire rotation · Main Street Auto · $89.95")),
+            same = 0,
+            caution = AppText.res.getString(R.string.import_caution_history),
+            moves = mapOf(ImportMode.ADD_NEW to listOf("Oil & filter change — next due 70,900 mi")),
+            doubts = listOf(DoubtLine(LocalDate.of(2025, 11, 2) to 95_800, "Nov 2, 2025 · 95,800 mi", "35,000 mi above the reading before it", included = false)),
+        ),
+    ) { _, _ -> }
 
     val vehicleDetails = VehicleDetails(
         vehicle = truck,
