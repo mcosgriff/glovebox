@@ -15,10 +15,7 @@ import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.StoredFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
-import java.security.GeneralSecurityException
 import java.util.UUID
 
 /**
@@ -51,16 +48,8 @@ class RecordPhotoStore(
      * when it was taken).
      */
     suspend fun import(source: Uri): String? = withContext(Dispatchers.IO) {
-        val jpeg = try {
-            val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, source)) { decoder, info, _ ->
-                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                val (w, h) = PhotoSizing.fit(info.size.width, info.size.height, RecordPhotos.MAX_EDGE)
-                decoder.setTargetSize(w, h)
-            }
-            ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.JPEG, 82, it) }.toByteArray()
-        } catch (_: IOException) {
-            return@withContext null
-        }
+        val jpeg = redrawJpeg(ImageDecoder.createSource(context.contentResolver, source), RecordPhotos.MAX_EDGE, QUALITY)
+            ?: return@withContext null
         val name = "record-${UUID.randomUUID()}.jpg"
         crypto.encryptTo(name, jpeg.inputStream())
         name
@@ -115,11 +104,10 @@ class RecordPhotoStore(
         crypto.delete(RecordPhotos.orphans(files, referenced, System.currentTimeMillis()))
     }
 
-    private fun decrypt(fileName: String): ByteArray? = try {
-        ByteArrayOutputStream().also { crypto.decrypt(fileName, it) }.toByteArray()
-    } catch (_: IOException) {
-        null
-    } catch (_: GeneralSecurityException) {
-        null
+    private fun decrypt(fileName: String): ByteArray? = crypto.decryptBytes(fileName)
+
+    private companion object {
+        /** The JPEG quality a receipt or parts photo is saved at. */
+        const val QUALITY = 82
     }
 }
