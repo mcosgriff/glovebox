@@ -1,13 +1,43 @@
 package io.cosgriff.glovebox.domain
 
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
-/** What every bundled list says about itself, whatever it holds: [KnownSpecs] and [KnownSchedules]. */
+/** What every bundled list says about itself, whatever it holds: torque specs, schedules, "What it takes". */
+interface KnownList {
+    val id: String
+    val title: String
+    val make: String
+    val model: String
+    val years: IntRange
+    val source: KnownSpecSource
+}
+
+/** The lists for a vehicle's make and model (as NHTSA or the owner spelled them, ignoring case and space) and model year. */
+fun <T : KnownList> List<T>.forModel(year: Int, make: String, model: String): List<T> =
+    filter { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
+
 internal data class KnownHeader(val id: String, val title: String, val make: String, val model: String, val years: IntRange, val source: KnownSpecSource)
 
 internal object KnownLists {
     val headerKeys = setOf("id", "title", "make", "model", "years", "source")
+
+    /**
+     * A bundled file's text as its top-level object, with only [keys] and all of [required], and the check that
+     * goes on reading it; the object is null when the text isn't JSON or isn't an object, which the check says.
+     */
+    fun root(text: String, keys: Set<String>, required: Set<String> = keys): Pair<JsonObject?, ImportCheck> {
+        val check = ImportCheck()
+        val root = try {
+            Json.parseToJsonElement(text)
+        } catch (_: SerializationException) {
+            check.fail("", "This isn't a JSON file.")
+            return null to check
+        }
+        return check.obj(root, "", keys, required) to check
+    }
 
     /** Null when any part is missing or wrong, which [check] then says. */
     fun header(o: JsonObject, check: ImportCheck): KnownHeader? {
@@ -15,23 +45,15 @@ internal object KnownLists {
         val title = o["title"]?.let { check.string(it, "title", 60) }
         val make = o["make"]?.let { check.string(it, "make", 40) }
         val model = o["model"]?.let { check.string(it, "model", 40) }
-        val years = o["years"]?.let { y ->
-            check.obj(y, "years", setOf("from", "to"), required = setOf("from", "to"))?.let { range ->
-                val from = range["from"]?.let { check.int(it, "years.from", 1900, 2100) }
-                val to = range["to"]?.let { check.int(it, "years.to", 1900, 2100) }
-                if (from != null && to != null && to < from) check.fail("years.to", "is before years.from")
-                if (from != null && to != null && to >= from) from..to else null
-            }
-        }
+        val years = o["years"]?.let { check.yearRange(it, "years") }
         val source = o["source"]?.let { s ->
             check.obj(s, "source", setOf("name", "url", "retrieved", "note", "basis"), required = setOf("name", "retrieved", "note", "basis"))?.let { src ->
                 val name = src["name"]?.let { check.string(it, "source.name", 40) }
                 val url = src["url"]?.let { check.string(it, "source.url", 300) }
-                val retrieved = src["retrieved"]?.let { check.string(it, "source.retrieved", 10) }
+                val retrieved = src["retrieved"]?.let { check.date(it, "source.retrieved") }?.toString()
                 val note = src["note"]?.let { check.string(it, "source.note", 200) }
                 val basis = src["basis"]?.let { check.string(it, "source.basis", 300) }
                 if (url != null && !url.startsWith("https://")) check.fail("source.url", "must be an https address")
-                if (retrieved != null && !Regex("""\d{4}-\d{2}-\d{2}""").matches(retrieved)) check.fail("source.retrieved", "must be a date written as \"YYYY-MM-DD\"")
                 if (name != null && retrieved != null && note != null && basis != null && ("url" !in src || url != null)) {
                     KnownSpecSource(name, url, retrieved, note, basis)
                 } else {

@@ -53,9 +53,9 @@ object VehicleDocuments {
     const val MAX_EDGE = 2500
 
     /** A stored name, or [DocumentType.OTHER] for one this version doesn't know. */
-    fun type(name: String?): DocumentType = DocumentType.entries.firstOrNull { it.name == name } ?: DocumentType.OTHER
+    fun type(name: String?): DocumentType = enumOrNull<DocumentType>(name) ?: DocumentType.OTHER
 
-    fun format(name: String?): DocumentFormat = DocumentFormat.entries.firstOrNull { it.name == name } ?: DocumentFormat.PDF
+    fun format(name: String?): DocumentFormat = enumOrNull<DocumentFormat>(name) ?: DocumentFormat.PDF
 
     /** A PDF says so in its first bytes, whatever the file is called. */
     fun isPdf(start: ByteArray): Boolean = start.size >= 4 && String(start, 0, 4, Charsets.US_ASCII) == "%PDF"

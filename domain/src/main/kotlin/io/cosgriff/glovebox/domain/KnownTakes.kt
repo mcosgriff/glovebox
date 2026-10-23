@@ -1,7 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
@@ -27,13 +25,13 @@ data class KnownTakesVariant(
  * filled from it (`vehicles.takesKnownList`).
  */
 data class KnownTakesList(
-    val id: String,
+    override val id: String,
     /** "2017–2024 4Runner" */
-    val title: String,
-    val make: String,
-    val model: String,
-    val years: IntRange,
-    val source: KnownSpecSource,
+    override val title: String,
+    override val make: String,
+    override val model: String,
+    override val years: IntRange,
+    override val source: KnownSpecSource,
     /** What the whole model takes, whatever its drive or gearbox. */
     val takes: WhatItTakes,
     /** The tire sizes the documents list for the model, by trim or option. Offered to pick from, never filled when there are several. */
@@ -41,7 +39,7 @@ data class KnownTakesList(
     val variants: List<KnownTakesVariant> = emptyList(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
-)
+) : KnownList
 
 sealed interface KnownTakesFile {
     data class Ok(val list: KnownTakesList) : KnownTakesFile
@@ -80,13 +78,8 @@ object KnownTakes {
     private val gearboxes = mapOf("manual" to true, "automatic" to false)
 
     fun parse(text: String): KnownTakesFile {
-        val root = try {
-            Json.parseToJsonElement(text)
-        } catch (_: SerializationException) {
-            return KnownTakesFile.Invalid(listOf(ImportError("", "This isn't a JSON file.")))
-        }
-        val check = ImportCheck()
-        val o = check.obj(root, "", keys, required = required) ?: return KnownTakesFile.Invalid(check.invalid().errors)
+        val (o, check) = KnownLists.root(text, keys, required = required)
+        if (o == null) return KnownTakesFile.Invalid(check.invalid().errors)
         val header = KnownLists.header(o, check)
         val sizes = mutableListOf<String>()
         val takes = o["takes"]?.let { takes(it, "takes", check, sizes) }
@@ -248,16 +241,13 @@ object KnownTakes {
         return w
     }
 
-    private fun forModel(lists: List<KnownTakesList>, year: Int, make: String, model: String) =
-        lists.filter { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
-
     /**
      * The list for a vehicle, or null: its make and model, a year whose documents were read, and its
      * engine where the model has a list per engine (one that isn't on record matches none). No near
      * misses: an oil for the wrong engine is worse than an empty row.
      */
     fun match(lists: List<KnownTakesList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): KnownTakesList? =
-        KnownLists.forEngine(forModel(lists, year, make, model), KnownTakesList::engine, engine, fuel)
+        KnownLists.forEngine(lists.forModel(year, make, model), KnownTakesList::engine, engine, fuel)
 
     /** What [list] says for a vehicle with this drive and gearbox: the whole model's rows and the variants it is known to fit. */
     fun forVehicle(list: KnownTakesList, drivetrain: String?, transmission: String?): WhatItTakes =

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.CustomLines
@@ -179,7 +180,7 @@ class HistoryViewModel @Inject constructor(
     /** Kept across vehicles: it is how the owner likes to read a history, not a choice about one vehicle. */
     var order by mutableStateOf(
         HistoryOrder(
-            savedStateHandle.get<String>(SORT_BY)?.let { s -> HistorySort.entries.firstOrNull { it.name == s } } ?: HistorySort.DATE,
+            enumOrNull<HistorySort>(savedStateHandle.get<String>(SORT_BY)) ?: HistorySort.DATE,
             savedStateHandle.get<Boolean>(DESCENDING) ?: true,
         ),
     )

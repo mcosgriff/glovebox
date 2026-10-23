@@ -10,8 +10,7 @@ object VehiclePick {
     /** Newest first, starting with next model year. */
     fun years(thisYear: Int): List<Int> = (thisYear + 1 downTo FIRST_YEAR).toList()
 
-    fun parseYear(text: String, thisYear: Int): Int? =
-        text.trim().toIntOrNull()?.takeIf { it in FIRST_YEAR..thisYear + 1 }
+    fun parseYear(text: String, thisYear: Int): Int? = WholeNumber.year(text, FIRST_YEAR, thisYear)
 
     /** [options] matching what was typed: names that start with it first, then names that contain it. */
     fun filter(options: List<String>, query: String): List<String> {

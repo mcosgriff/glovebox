@@ -13,7 +13,7 @@ enum class TorqueCategory {
 
     companion object {
         /** Anything unrecognised (an older or hand-edited value) lands in Other rather than vanishing. */
-        fun of(stored: String): TorqueCategory = entries.firstOrNull { it.name == stored } ?: OTHER
+        fun of(stored: String): TorqueCategory = enumOrNull<TorqueCategory>(stored) ?: OTHER
     }
 }
 
@@ -33,7 +33,7 @@ enum class TorqueSource {
     ;
 
     companion object {
-        fun of(stored: String): TorqueSource = entries.firstOrNull { it.name == stored } ?: USER
+        fun of(stored: String): TorqueSource = enumOrNull<TorqueSource>(stored) ?: USER
     }
 }
 

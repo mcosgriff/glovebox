@@ -2,7 +2,6 @@ package io.cosgriff.glovebox.domain
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /**
@@ -46,17 +45,14 @@ object RulePreviews {
         milesPerDay: Double?,
     ): RulePreview {
         val miles = requireNotNull(interval.miles) { "The preview needs a mileage interval" }
-        val months = requireNotNull(interval.months) { "The preview needs a time interval" }
+        requireNotNull(interval.months) { "The preview needs a time interval" }
         val pace = milesPerDay?.takeIf { it > 0 }
 
-        val dueAtOdometer = last.odometer + miles
-        val dueByDate = last.date.plusMonths(months.toLong())
+        val next = interval.nextDueAfter(last)
+        val dueAtOdometer = next.odometer!!
+        val dueByDate = next.date!!
         val milesLeft = dueAtOdometer - currentOdometer
-        val mileageDate = when {
-            milesLeft <= 0 -> today
-            pace != null -> today.plusDays(ceil(milesLeft / pace).toLong())
-            else -> null
-        }
+        val mileageDate = ReminderEngine.dateAtPace(milesLeft, today, pace)
         val totalDays = ChronoUnit.DAYS.between(last.date, dueByDate).coerceAtLeast(1)
         val daysLeft = ChronoUnit.DAYS.between(today, dueByDate)
 
@@ -78,7 +74,7 @@ object RulePreviews {
     }
 
     /** "~2,080 mi/month" figure: rounded to the nearest 10 so it doesn't look more exact than it is. */
-    fun milesPerMonth(milesPerDay: Double): Int = (milesPerDay * 365.25 / 12 / 10).roundToInt() * 10
+    fun milesPerMonth(milesPerDay: Double): Int = (milesPerDay * ReminderEngine.DAYS_A_YEAR / 12 / 10).roundToInt() * 10
 }
 
 object LeadTimeInput {
@@ -92,9 +88,5 @@ object LeadTimeInput {
         return LeadTime(m, d)
     }
 
-    private fun number(text: String): Int? {
-        val cleaned = text.filterNot { it == ',' || it.isWhitespace() }
-        if (cleaned.isEmpty() || cleaned.length > 6 || !cleaned.all(Char::isDigit)) return null
-        return cleaned.toInt()
-    }
+    private fun number(text: String): Int? = WholeNumber.parse(text, min = 0, maxDigits = 6)
 }

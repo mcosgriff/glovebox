@@ -52,6 +52,15 @@ data class DueStatus(
 }
 
 object ReminderEngine {
+    /** The average year, for paces given per year or per month. */
+    const val DAYS_A_YEAR = 365.25
+
+    /** When [milesLeft] runs out at [milesPerDay]: today if it already has, null with no pace to go by. */
+    fun dateAtPace(milesLeft: Int, today: LocalDate, milesPerDay: Double?): LocalDate? = when {
+        milesLeft <= 0 -> today
+        milesPerDay != null && milesPerDay > 0 -> today.plusDays(ceil(milesLeft / milesPerDay).toLong())
+        else -> null
+    }
 
     /**
      * Status of one schedule item.
@@ -83,20 +92,15 @@ object ReminderEngine {
         val useTime = interval.months != null && rule != DueRule.MILEAGE_ONLY ||
             interval.miles == null
 
-        val dueAtOdo = if (useMiles) lastDone.odometer + interval.miles!! else null
-        val dueByDate = if (useTime) lastDone.date.plusMonths(interval.months!!.toLong()) else null
+        val next = interval.nextDueAfter(lastDone)
+        val dueAtOdo = next.odometer.takeIf { useMiles }
+        val dueByDate = next.date.takeIf { useTime }
 
         val milesLeft = dueAtOdo?.let { it - currentOdometer }
         val daysLeft = dueByDate?.let { ChronoUnit.DAYS.between(today, it) }
 
         // Estimated calendar date the mileage limit is hit, at the current pace.
-        val mileageDate: LocalDate? = milesLeft?.let { left ->
-            when {
-                left <= 0 -> today
-                milesPerDay != null && milesPerDay > 0 -> today.plusDays(ceil(left / milesPerDay).toLong())
-                else -> null
-            }
-        }
+        val mileageDate: LocalDate? = milesLeft?.let { dateAtPace(it, today, milesPerDay) }
 
         val milesReached = milesLeft != null && milesLeft <= 0
         val timeReached = daysLeft != null && daysLeft <= 0
@@ -144,11 +148,7 @@ object ReminderEngine {
             dueByDate = null,
             milesRemaining = left,
             daysRemaining = null,
-            estimatedDueDate = when {
-                left <= 0 -> today
-                milesPerDay != null && milesPerDay > 0 -> today.plusDays(ceil(left / milesPerDay).toLong())
-                else -> null
-            },
+            estimatedDueDate = dateAtPace(left, today, milesPerDay),
             decidedBy = DecidedBy.MILEAGE,
         )
     }

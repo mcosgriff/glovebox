@@ -2,7 +2,6 @@ package io.cosgriff.glovebox.domain
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import java.util.Locale
 
 /** One line of work at a milestone in the user's own table. [service] is a [CatalogItem] id; null for anything else. */
 data class TableJob(val name: String, val service: String? = null)
@@ -34,10 +33,16 @@ object MilestoneImport {
     const val REPEATS = "repeatsEveryMiles"
     const val REPEATS_KM = "repeatsEveryKm"
 
+    /** How long a table's cycle is, when it repeats. */
+    val REPEATS_EVERY = DistanceField(REPEATS, REPEATS_KM, MAX_MILES, MAX_KM)
+
+    /** Where a milestone is. */
+    val AT = DistanceField("atMiles", "atKm", MAX_MILES, MAX_KM)
+
     /** The same limit for a table given in kilometres: 1,000,000 mi as a schedule figure. */
     const val MAX_KM = 1_600_000
 
-    private val itemKeys = setOf("atMiles", "atKm", "orMonths", "work")
+    private val itemKeys = setOf("orMonths", "work") + AT.names
 
     /**
      * The rules a table keeps however it is made, shared by the file reader here and the editor
@@ -48,14 +53,14 @@ object MilestoneImport {
      * one before it that it repeats. An entry that is null takes no part.
      */
     fun <T : Any> repeated(keys: List<T?>): Map<Int, Int> {
-        val seen = mutableMapOf<T, Int>()
+        val seen = Repeats<T>()
         val out = mutableMapOf<Int, Int>()
-        keys.forEachIndexed { i, key -> if (key != null) seen.put(key, i)?.let { out[i] = it } }
+        keys.forEachIndexed { i, key -> if (key != null) seen.seen(key, i)?.let { out[i] = it } }
         return out
     }
 
     /** What makes two names in one milestone the same name. */
-    fun nameKey(name: String): String = name.trim().lowercase(Locale.US)
+    fun nameKey(name: String): String = Names.key(name)
 
     /** A cycle shorter than the table would put a repeat of an early milestone among the later ones. */
     fun cycleCovers(everyMiles: Int, lastMiles: Int): Boolean = everyMiles >= lastMiles
@@ -67,8 +72,8 @@ object MilestoneImport {
         val read = list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("work")) ?: return@mapIndexedNotNull null
-            if (!check.has(o, "atMiles", "atKm")) check.fail(path, "needs \"atMiles\" or \"atKm\"")
-            val at = check.distance(o, path, "atMiles", "atKm", MAX_MILES, MAX_KM)
+            if (!check.has(o, AT)) check.fail(path, "needs \"${AT.miles}\" or \"${AT.km}\"")
+            val at = check.distance(o, path, AT)
             val months = o["orMonths"]?.let { check.int(it, "$path.orMonths", 1, MAX_MONTHS) }
             val work = o["work"]?.let { work(it, "$path.work", check) }
             ats[i] = at
@@ -76,7 +81,7 @@ object MilestoneImport {
             ImportedMilestone(at, work, months)
         }
         repeated(ats.asList()).forEach { (i, first) ->
-            check.fail("${ImportCheck.at("items", i)}.${if (check.unit == DistanceUnit.KILOMETERS) "atKm" else "atMiles"}", "is the same mileage as items[$first]; put all the work for one mileage in one milestone")
+            check.fail("${ImportCheck.at("items", i)}.${AT.name(check.unit)}", "is the same mileage as items[$first]; put all the work for one mileage in one milestone")
         }
         return read.sortedBy { it.atMiles }
     }
@@ -86,10 +91,10 @@ object MilestoneImport {
      * would land among the later ones; that is the rule a schema can't state.
      */
     fun repeats(envelope: JsonObject, items: List<ImportedMilestone>, check: ImportCheck): Int? {
-        val every = check.distance(envelope, "", REPEATS, REPEATS_KM, MAX_MILES, MAX_KM) ?: return null
+        val every = check.distance(envelope, "", REPEATS_EVERY) ?: return null
         val last = items.maxOfOrNull { it.atMiles } ?: return every
         if (!cycleCovers(every, last)) {
-            val (field, at) = if (check.unit == DistanceUnit.KILOMETERS) REPEATS_KM to "atKm" else REPEATS to "atMiles"
+            val (field, at) = REPEATS_EVERY.name(check.unit) to AT.name(check.unit)
             check.fail(field, "is $every, less than the highest $at in the file ($last); it is the length of the whole cycle, so it can't be shorter than the table")
             return null
         }

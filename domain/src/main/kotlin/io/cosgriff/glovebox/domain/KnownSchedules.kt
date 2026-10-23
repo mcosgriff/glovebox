@@ -1,7 +1,5 @@
 package io.cosgriff.glovebox.domain
 
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 
 /**
  * A manufacturer's maintenance schedule that ships with the app for one model: the table as the
@@ -16,13 +14,13 @@ import kotlinx.serialization.json.Json
 data class KnownEngine(val label: String, val displacementL: Double, val fuel: String? = null)
 
 data class KnownScheduleList(
-    val id: String,
+    override val id: String,
     /** "2017–2024 4Runner" */
-    val title: String,
-    val make: String,
-    val model: String,
-    val years: IntRange,
-    val source: KnownSpecSource,
+    override val title: String,
+    override val make: String,
+    override val model: String,
+    override val years: IntRange,
+    override val source: KnownSpecSource,
     /** What [milestones] and [intervals] are in. A vehicle that counts in the other gets them as schedule figures. */
     val unit: DistanceUnit,
     /** The guide's table, every line of it, in mileage order. */
@@ -41,7 +39,7 @@ data class KnownScheduleList(
     val manualExcluded: Set<String> = emptySet(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
-)
+) : KnownList
 
 sealed interface KnownScheduleFile {
     data class Ok(val list: KnownScheduleList) : KnownScheduleFile
@@ -83,13 +81,8 @@ object KnownSchedules {
     private val keys = required + setOf("fourWheelDriveOnly", "manualExcluded", "engine")
 
     fun parse(text: String): KnownScheduleFile {
-        val root = try {
-            Json.parseToJsonElement(text)
-        } catch (_: SerializationException) {
-            return KnownScheduleFile.Invalid(listOf(ImportError("", "This isn't a JSON file.")))
-        }
-        val check = ImportCheck()
-        val o = check.obj(root, "", keys, required = required) ?: return KnownScheduleFile.Invalid(check.invalid().errors)
+        val (o, check) = KnownLists.root(text, keys, required = required)
+        if (o == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         val header = KnownLists.header(o, check)
         // Both readers report under "items", as they do for an import file; the two errors lists are kept apart.
         val milestones = o["milestones"]?.let { MilestoneImport.read(it, check) }.orEmpty()
@@ -147,9 +140,6 @@ object KnownSchedules {
         }
     }
 
-    private fun forModel(lists: List<KnownScheduleList>, year: Int, make: String, model: String) =
-        lists.filter { year in it.years && KnownLists.same(it.make, make) && KnownLists.same(it.model, model) }
-
     /**
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
@@ -157,7 +147,7 @@ object KnownSchedules {
      * known matches no engine's list**, and the owner is asked instead ([engineChoices]).
      */
     fun match(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): KnownScheduleList? =
-        KnownLists.forEngine(forModel(lists, year, make, model), KnownScheduleList::engine, engine, fuel)
+        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel)
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
@@ -166,7 +156,7 @@ object KnownSchedules {
      * of them is for. The pick is the owner's; nothing here chooses for them.
      */
     fun engineChoices(lists: List<KnownScheduleList>, year: Int, make: String, model: String, engine: String? = null, fuel: String? = null): List<KnownScheduleList> =
-        KnownLists.engineChoices(forModel(lists, year, make, model), KnownScheduleList::engine, engine, fuel)
+        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel)
 
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one

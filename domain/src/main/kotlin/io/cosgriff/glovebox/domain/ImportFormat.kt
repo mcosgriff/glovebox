@@ -121,6 +121,28 @@ object ImportFormat {
  * Collects what is wrong with a file while it is read. Each reader returns null and records why
  * when a value isn't acceptable, so the caller can carry on and find the next problem.
  */
+/**
+ * The entries of a list said twice, found as they are read: [seen] gives the index of the entry before this one
+ * with the same key, so the reader can report it with the rest of that item's errors and in their order.
+ */
+class Repeats<K : Any> {
+    private val at = mutableMapOf<K, Int>()
+
+    /** The index of the last earlier entry with [key], or null for the first; this one is remembered either way. */
+    fun seen(key: K, index: Int): Int? = at.put(key, index)
+}
+
+/**
+ * A distance an import file gives in either unit, under the field named for it: [miles] or [km], each with its cap.
+ * The readers check it and the writers name it from this one value, so a file the app writes never uses a name its
+ * reader doesn't know.
+ */
+data class DistanceField(val miles: String, val km: String, val maxMiles: Int, val maxKm: Int) {
+    fun name(unit: DistanceUnit): String = if (unit == DistanceUnit.KILOMETERS) km else miles
+
+    val names: Set<String> get() = setOf(miles, km)
+}
+
 class ImportCheck {
     private val errors = mutableListOf<ImportError>()
     val failed: Boolean get() = errors.isNotEmpty()
@@ -141,7 +163,8 @@ class ImportCheck {
      * read settles it and one in the other unit is refused. Null when the field is absent, and when
      * it is there but wrong, which has been reported; [has] tells the two apart.
      */
-    fun distance(o: JsonObject, path: String, milesKey: String, kmKey: String, maxMiles: Int, maxKm: Int): Int? {
+    fun distance(o: JsonObject, path: String, field: DistanceField): Int? {
+        val (milesKey, kmKey, maxMiles, maxKm) = field
         if (milesKey in o && kmKey in o) return null.also { fail(at(path, kmKey), "give \"$milesKey\" or \"$kmKey\", not both") }
         val (key, found, max) = when {
             milesKey in o -> Triple(milesKey, DistanceUnit.MILES, maxMiles)
@@ -159,7 +182,7 @@ class ImportCheck {
         return value
     }
 
-    fun has(o: JsonObject, milesKey: String, kmKey: String): Boolean = milesKey in o || kmKey in o
+    fun has(o: JsonObject, field: DistanceField): Boolean = field.miles in o || field.km in o
 
     fun invalid(): ImportFile.Invalid =
         ImportFile.Invalid(errors.take(ImportFormat.MAX_ERRORS), (errors.size - ImportFormat.MAX_ERRORS).coerceAtLeast(0))
@@ -183,30 +206,25 @@ class ImportCheck {
      * Text of 1 to [max] characters with no space at either end and no line breaks. Nothing is
      * trimmed for the user: what is in the file is exactly what would be saved.
      */
-    fun string(e: JsonElement, path: String, max: Int): String? {
-        if (e !is JsonPrimitive || !e.isString) return null.also { fail(path, "must be text in quotes") }
-        val s = e.content
-        return when {
-            s.isEmpty() -> null.also { fail(path, "must not be empty; leave the field out instead") }
-            s.length > max -> null.also { fail(path, "is ${s.length} characters; the most allowed is $max") }
-            s.first().isWhitespace() || s.last().isWhitespace() -> null.also { fail(path, "must not start or end with a space") }
-            s.any { it.isISOControl() } -> null.also { fail(path, "must be on one line, with no tabs or line breaks") }
-            else -> s
-        }
-    }
+    fun string(e: JsonElement, path: String, max: Int): String? = written(e, path, max, multiline = false)
 
     /**
      * Longer text that may run over several lines: 1 to [max] characters, no space or blank line at
      * either end, and no control characters other than a line break.
      */
-    fun text(e: JsonElement, path: String, max: Int): String? {
+    fun text(e: JsonElement, path: String, max: Int): String? = written(e, path, max, multiline = true)
+
+    private fun written(e: JsonElement, path: String, max: Int, multiline: Boolean): String? {
         if (e !is JsonPrimitive || !e.isString) return null.also { fail(path, "must be text in quotes") }
         val s = e.content
         return when {
             s.isEmpty() -> null.also { fail(path, "must not be empty; leave the field out instead") }
             s.length > max -> null.also { fail(path, "is ${s.length} characters; the most allowed is $max") }
-            s.first().isWhitespace() || s.last().isWhitespace() -> null.also { fail(path, "must not start or end with a space or a blank line") }
-            s.any { it.isISOControl() && it != '\n' } -> null.also { fail(path, "must not contain tabs or other control characters; line breaks are fine") }
+            s.first().isWhitespace() || s.last().isWhitespace() ->
+                null.also { fail(path, if (multiline) "must not start or end with a space or a blank line" else "must not start or end with a space") }
+            multiline && s.any { it.isISOControl() && it != '\n' } ->
+                null.also { fail(path, "must not contain tabs or other control characters; line breaks are fine") }
+            !multiline && s.any { it.isISOControl() } -> null.also { fail(path, "must be on one line, with no tabs or line breaks") }
             else -> s
         }
     }
@@ -223,6 +241,26 @@ class ImportCheck {
             ?: return null.also { fail(path, "must be a whole number, without quotes") }
         if (n < min || n > max) return null.also { fail(path, if (max == Int.MAX_VALUE) "must be $min or more" else "must be from $min to $max") }
         return n.toInt()
+    }
+
+    /** A run of model years, `{ "from": 2017, "to": 2024 }`, both ends included. */
+    fun yearRange(e: JsonElement, path: String): IntRange? =
+        obj(e, path, setOf("from", "to"), required = setOf("from", "to"))?.let { range ->
+            val from = range["from"]?.let { int(it, at(path, "from"), 1900, 2100) }
+            val to = range["to"]?.let { int(it, at(path, "to"), 1900, 2100) }
+            if (from != null && to != null && to < from) fail(at(path, "to"), "is before $path.from")
+            if (from != null && to != null && to >= from) from..to else null
+        }
+
+    /** A day written `"YYYY-MM-DD"`, and one the calendar has. */
+    fun date(e: JsonElement, path: String): java.time.LocalDate? {
+        val s = string(e, path, 10) ?: return null
+        if (!Regex("""\d{4}-\d{2}-\d{2}""").matches(s)) return null.also { fail(path, "must be a date written as \"YYYY-MM-DD\"") }
+        return try {
+            java.time.LocalDate.parse(s)
+        } catch (_: java.time.format.DateTimeParseException) {
+            null.also { fail(path, "isn't a day the calendar has") }
+        }
     }
 
     /** A number, written without quotes. */

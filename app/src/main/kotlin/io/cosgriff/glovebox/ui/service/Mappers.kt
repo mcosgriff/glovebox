@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.LeadTime
@@ -341,14 +342,14 @@ fun VehicleEntity.whatItTakes(): WhatItTakes = WhatItTakes(
     oilGrade = oilSpec,
     oilApproval = oilApproval,
     oilCapacity = oilCapacity,
-    oilCapacityUnit = oilCapacityUnit?.let { u -> VehicleSpecEntry.Volume.entries.firstOrNull { it.name == u } },
+    oilCapacityUnit = enumOrNull<VehicleSpecEntry.Volume>(oilCapacityUnit),
     oilFilter = oilFilter,
     tireSize = tireSize,
     tireSizeRear = tireSizeRear,
     tirePressureFront = tirePressureFront,
     tirePressureRear = tirePressureRear,
     tirePressureSpare = tirePressureSpare,
-    tirePressureUnit = tirePressureUnit?.let { u -> VehicleSpecEntry.Pressure.entries.firstOrNull { it.name == u } },
+    tirePressureUnit = enumOrNull<VehicleSpecEntry.Pressure>(tirePressureUnit),
     wiperDriver = wiperDriverIn,
     wiperPassenger = wiperPassengerIn,
     wiperRear = wiperRearIn,

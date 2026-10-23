@@ -59,9 +59,5 @@ object ClusterSwaps {
     fun oldReading(swap: ClusterSwap): Int = swap.startReading + swap.offset
 
     /** Whole miles from zero up; thousands separators are fine. Unlike a reading, zero counts. */
-    fun parseReading(text: String): Int? {
-        val cleaned = text.filterNot { it == ',' || it.isWhitespace() }
-        if (cleaned.isEmpty() || cleaned.length > MileageUpdate.MAX_DIGITS || !cleaned.all(Char::isDigit)) return null
-        return cleaned.toInt()
-    }
+    fun parseReading(text: String): Int? = WholeNumber.parse(text, min = 0, maxDigits = MileageUpdate.MAX_DIGITS)
 }

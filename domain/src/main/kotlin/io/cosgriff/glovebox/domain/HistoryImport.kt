@@ -5,7 +5,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 /** One line of work on an imported record. [service] is a [CatalogItem] id; null for anything else. */
 data class ImportedWork(val label: String, val service: String? = null)
@@ -53,25 +52,27 @@ object HistoryImport {
     /** What `service` may be: every line the Log service screen offers. */
     val services: Map<String, CatalogItem> = ServiceCatalog.categories.flatMap { it.items }.associateBy { it.id }
 
-    private val itemKeys = setOf("date", "odometer", "odometerKm", "work", "doneBy", "cost", "notes")
+    val ODOMETER = DistanceField("odometer", "odometerKm", MAX_ODOMETER, MAX_ODOMETER)
+
+    private val itemKeys = setOf("date", "work", "doneBy", "cost", "notes") + ODOMETER.names
     private val date = Regex("""\d{4}-\d{2}-\d{2}""")
 
     fun read(items: JsonElement, check: ImportCheck, today: LocalDate): List<ImportedRecord> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
-        val seen = mutableMapOf<Pair<LocalDate, Int>, Int>()
+        val seen = Repeats<Pair<LocalDate, Int>>()
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("date", "work", "doneBy")) ?: return@mapIndexedNotNull null
             val on = o["date"]?.let { date(it, "$path.date", check, today) }
             // Miles as `odometer`, or kilometres as `odometerKm`. The limit is the seven digits a dash shows, in either.
-            if (!check.has(o, "odometer", "odometerKm")) check.fail(path, "needs \"odometer\" (miles) or \"odometerKm\"")
-            val odometer = check.distance(o, path, "odometer", "odometerKm", MAX_ODOMETER, MAX_ODOMETER)
+            if (!check.has(o, ODOMETER)) check.fail(path, "needs \"${ODOMETER.miles}\" (miles) or \"${ODOMETER.km}\"")
+            val odometer = check.distance(o, path, ODOMETER)
             val work = o["work"]?.let { work(it, "$path.work", check) }
             val doneBy = o["doneBy"]?.let { doneBy(it, "$path.doneBy", check) }
             val cost = o["cost"]?.let { cost(it, "$path.cost", check) }
             val notes = o["notes"]?.let { check.text(it, "$path.notes", MAX_NOTES) }
             if (on == null || odometer == null || work == null || doneBy == null) return@mapIndexedNotNull null
-            seen.put(on to odometer, i)?.let { first ->
+            seen.seen(on to odometer, i)?.let { first ->
                 check.fail(path, "has the same date and odometer as items[$first]; put the work of one visit in one record")
             }
             ImportedRecord(on, odometer, work, doneBy.first, doneBy.second, cost, notes)
@@ -135,7 +136,7 @@ object HistoryImport {
             services[line.service]?.resets?.let { key -> schedule.firstOrNull { it.templateKey == key } }
                 ?: schedule.filter { it.templateKey == null && it.service == line.service }.minByOrNull { it.id }
         } else {
-            schedule.firstOrNull { it.templateKey == null && it.name.trim().equals(line.label, ignoreCase = true) }
+            schedule.firstOrNull { it.templateKey == null && Names.key(it.name) == Names.key(line.label) }
         }
         return ResolvedWork(line.label, line.service, target?.id)
     }
@@ -144,7 +145,7 @@ object HistoryImport {
     fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
         ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
 
-    private fun labels(labels: List<String>): List<String> = labels.map { it.trim().lowercase(Locale.US) }.sorted()
+    private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 
     /**
      * The file against the vehicle's log. A record matches a saved one with the same date and
@@ -209,25 +210,8 @@ object HistoryImport {
         val points = (after.map { Point(it.date, it.odometer, it) } + updates.map { Point(it.date, it.odometer, null) })
             .sortedWith(compareBy<Point> { it.date }.thenBy { it.odometer })
         if (points.isEmpty()) return emptyList()
-        // Heaviest non-decreasing subsequence, by the plain quadratic method: files are capped well below
-        // where that matters. A saved reading weighs a little more than a new one, which settles ties.
-        fun weight(p: Point) = if (p.new) 2 else 3
-        val length = IntArray(points.size) { weight(points[it]) }
-        val previous = IntArray(points.size) { -1 }
-        for (i in points.indices) {
-            for (j in 0 until i) {
-                if (points[j].odometer <= points[i].odometer && length[j] + weight(points[i]) > length[i]) {
-                    length[i] = length[j] + weight(points[i])
-                    previous[i] = j
-                }
-            }
-        }
-        val fits = mutableSetOf<Int>()
-        var at = length.indices.maxByOrNull { length[it] } ?: -1
-        while (at >= 0) {
-            fits += at
-            at = previous[at]
-        }
+        // A saved reading weighs a little more than a new one, which settles ties: the file is the likelier to be wrong.
+        val fits = MileageReadings.agreeing(points.map { it.odometer }, weight = { if (points[it].new) 2 else 3 }, preferLater = false)
         val run = fits.sorted()
         return points.mapIndexedNotNull { i, p ->
             if (!p.new) return@mapIndexedNotNull null
@@ -254,7 +238,7 @@ object HistoryImport {
         if (history < 365) return false
         val delta = reading.odometer.toLong() - before.odometer
         if (delta <= unit.scheduled(MileageReadings.FAR_MILES)) return false
-        val usual = (before.odometer - first.odometer).toDouble() / history
+        val usual = ReminderEngine.milesPerDay(listOf(first, before)) ?: 0.0
         val days = ChronoUnit.DAYS.between(before.date, reading.date).coerceAtLeast(1)
         return delta > usual * FAR_PACE * days
     }

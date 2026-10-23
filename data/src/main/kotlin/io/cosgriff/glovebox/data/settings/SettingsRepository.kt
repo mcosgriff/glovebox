@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.data.settings
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -133,13 +134,13 @@ class SettingsRepository(private val context: Context) {
     val settings: Flow<Settings> = context.dataStore.data.map { p ->
         val d = Settings()
         Settings(
-            theme = p[Keys.theme]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: d.theme,
+            theme = enumOrNull<ThemeMode>(p[Keys.theme]) ?: d.theme,
             biometricLock = p[Keys.biometric] ?: d.biometricLock,
             lockAfterSeconds = p[Keys.lockAfter] ?: d.lockAfterSeconds,
             hideInRecents = p[Keys.hideRecents] ?: d.hideInRecents,
-            defaultRule = p[Keys.rule]?.let { runCatching { DueRule.valueOf(it) }.getOrNull() } ?: d.defaultRule,
+            defaultRule = enumOrNull<DueRule>(p[Keys.rule]) ?: d.defaultRule,
             lead = LeadTime(p[Keys.leadMiles] ?: d.lead.miles, p[Keys.leadDays] ?: d.lead.days),
-            torqueUnit = p[Keys.torque]?.let { runCatching { TorqueUnit.valueOf(it) }.getOrNull() } ?: d.torqueUnit,
+            torqueUnit = enumOrNull<TorqueUnit>(p[Keys.torque]) ?: d.torqueUnit,
             distanceUnit = p[Keys.distance]?.let(DistanceUnit::of) ?: d.distanceUnit,
             notices = NoticePrefs(
                 serviceDue = p[Keys.notifyDue] ?: d.notices.serviceDue,
@@ -153,7 +154,7 @@ class SettingsRepository(private val context: Context) {
                 mileageHour = p[Keys.mileageHour]?.coerceIn(0, 23),
                 mileageMinute = (p[Keys.mileageMinute] ?: 0).coerceIn(0, 59),
             ),
-            recallCadence = p[Keys.recallCadence]?.let { runCatching { RecallCadence.valueOf(it) }.getOrNull() } ?: d.recallCadence,
+            recallCadence = enumOrNull<RecallCadence>(p[Keys.recallCadence]) ?: d.recallCadence,
             welcomeSeen = p[Keys.welcomeSeen] ?: d.welcomeSeen,
             lastBackupOn = p[Keys.lastBackup]?.let(LocalDate::ofEpochDay),
             backupReminder = p[Keys.backupReminder] ?: d.backupReminder,

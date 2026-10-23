@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -63,7 +64,7 @@ class KnownTakesCatalog @Inject constructor(@ApplicationContext private val cont
 
 /** The rows of a vehicle filled from a list that are still tagged DOUBLE-CHECK. */
 fun VehicleEntity.takesToCheck(): Set<TakesItem> =
-    takesToCheck?.split(',')?.mapNotNull { n -> TakesItem.entries.firstOrNull { it.name == n } }?.toSet().orEmpty()
+    takesToCheck?.split(',')?.mapNotNull { enumOrNull<TakesItem>(it) }?.toSet().orEmpty()
 
 private fun Set<TakesItem>.stored(): String? = TakesItem.entries.filter { it in this }.joinToString(",") { it.name }.ifEmpty { null }
 

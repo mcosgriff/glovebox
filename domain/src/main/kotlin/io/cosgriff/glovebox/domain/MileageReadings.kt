@@ -21,6 +21,8 @@ data class ReadingRow(
     val outOfLine: Boolean = false,
     /** How far it is above the reading before it, when that is further than a vehicle is driven in the time. */
     val jump: Int? = null,
+    /** The reading in dash terms ([ClusterSwap.toDash]), which is how it is compared with the rest. */
+    val dash: Int = reading.odometer,
 )
 
 /**
@@ -68,6 +70,7 @@ object MileageReadings {
                 current = i == current,
                 outOfLine = i !in fits,
                 jump = before?.takeIf { i in fits && farAhead(dash[i], reading.date, it, unit) }?.let { dash[i] - it.odometer },
+                dash = dash[i],
             )
         }.reversed()
     }
@@ -79,22 +82,30 @@ object MileageReadings {
      * later is believed, since later readings are the ones still being added to.
      * (`HistoryImport.doubtful` does the same for an import, weighing saved readings over new ones.)
      */
-    private fun fitting(odometers: List<Int>): Set<Int> {
+    private fun fitting(odometers: List<Int>): Set<Int> = agreeing(odometers, weight = { 1 }, preferLater = true)
+
+    /**
+     * The indices of [odometers] (in date order) that agree with each other: the heaviest run that never goes down,
+     * each reading weighing [weight]. With [preferLater], a tie keeps the nearer reading as the one before and the
+     * run that ends later; otherwise the earlier. This screen and `HistoryImport.doubtful` both use it, each its own
+     * way round, and their tests hold both. The plain quadratic method: a vehicle's readings are few enough.
+     */
+    internal fun agreeing(odometers: List<Int>, weight: (Int) -> Int, preferLater: Boolean): Set<Int> {
         if (odometers.isEmpty()) return emptySet()
-        val length = IntArray(odometers.size) { 1 }
+        val length = IntArray(odometers.size) { weight(it) }
         val previous = IntArray(odometers.size) { -1 }
         for (i in odometers.indices) {
             for (j in 0 until i) {
-                // On a tie the nearer reading is kept as the one before, which keeps the run in recent readings.
-                if (odometers[j] <= odometers[i] && length[j] + 1 >= length[i]) {
-                    length[i] = length[j] + 1
+                val longer = length[j] + weight(i)
+                if (odometers[j] <= odometers[i] && (longer > length[i] || preferLater && longer == length[i])) {
+                    length[i] = longer
                     previous[i] = j
                 }
             }
         }
-        val longest = length.max()
+        val heaviest = length.max()
         val fits = mutableSetOf<Int>()
-        var at = length.indices.last { length[it] == longest }
+        var at = if (preferLater) length.indices.last { length[it] == heaviest } else length.indices.first { length[it] == heaviest }
         while (at >= 0) {
             fits += at
             at = previous[at]
