@@ -1,6 +1,9 @@
 package io.cosgriff.glovebox.ui.settings
 
 import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.data.db.toRows
+import io.cosgriff.glovebox.data.db.jobRows
+import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
@@ -72,14 +75,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.data.db.MilestoneDao
-import io.cosgriff.glovebox.data.db.MilestoneEntity
-import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
-import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -89,7 +89,6 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
-import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.ImportedRecord
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
@@ -97,7 +96,6 @@ import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.SavedRecord
-import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.ImportFormat
@@ -110,7 +108,6 @@ import io.cosgriff.glovebox.domain.SavedScheduleItem
 import io.cosgriff.glovebox.domain.SavedTorqueSpec
 import io.cosgriff.glovebox.domain.ScheduleImport
 import io.cosgriff.glovebox.domain.Torque
-import io.cosgriff.glovebox.domain.TorqueCategory
 import io.cosgriff.glovebox.domain.TorqueImport
 import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
@@ -119,7 +116,6 @@ import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toEntry
 import io.cosgriff.glovebox.ui.service.toReadings
@@ -522,20 +518,7 @@ class ImportViewModel @Inject constructor(
         )
         return ImportPreview.Ready(view) { mode, stopDoubles ->
             // The user's own items, tracked from the start, exactly like "+ Add your own item".
-            val added = plan.new.map {
-                ScheduleItemEntity(
-                    vehicleId = vehicleId,
-                    name = it.name,
-                    intervalMiles = it.normal.miles,
-                    intervalMonths = it.normal.months,
-                    severeMiles = it.severe?.miles,
-                    severeMonths = it.severe?.months,
-                    ruleOverride = it.rule?.name,
-                    service = it.service,
-                    firstMiles = it.firstAt,
-                    severeOnly = it.severeOnly,
-                )
-            }
+            val added = plan.new.map { it.toEntity(vehicleId) }
             // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
             // every record linked to the item stay as they are.
             val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
@@ -579,9 +562,8 @@ class ImportViewModel @Inject constructor(
             note = listOfNotNull(repeatNote(repeats, unit), convertedNote(file.unit, unit)).joinToString(" "),
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            fun jobs(m: ImportedMilestone) = m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
-            val added = plan.new.map { MilestoneEntity(vehicleId = vehicleId, atMiles = it.atMiles, orMonths = it.orMonths) to jobs(it) }
-            val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to jobs(item) } }
+            val added = plan.new.map { it.toRows(vehicleId) }
+            val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to item.jobRows() } }
             milestones.applyImport(vehicleId, repeats, added, replaced)
             finish(view, vehicleId, mode)
         }

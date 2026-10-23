@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.ui.recalls
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
+import io.cosgriff.glovebox.domain.RecallView
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -135,13 +136,10 @@ data class RecallsState(
         }
     }
 
-    val open: Int get() = recalls.count { it.isOpen }
+    val open: Int get() = recalls.count { it.toStored().open }
     val canCheck: Boolean get() = Recalls.canCheck(vehicle.year, vehicle.make, vehicle.model)
     val makeName: String get() = Recalls.makeName(vehicle.make)
 }
-
-/** Neither marked done nor archived as not applying. */
-private val RecallEntity.isOpen: Boolean get() = completedOn == null && archivedOn == null
 
 /**
  * How a recall is being marked done: on its own, or with a record of the work. [visitWith] is a record
@@ -222,7 +220,12 @@ class RecallsViewModel @Inject constructor(
     fun unarchive(recall: RecallEntity) = viewModelScope.launch { recalls.setArchived(recall.id, null) }
 }
 
-private enum class RecallTab(@StringRes val label: Int) { ALL(R.string.history_all), OPEN(R.string.recalls_tab_open), DONE(R.string.recalls_tab_done), ARCHIVED(R.string.recalls_tab_archived) }
+private enum class RecallTab(@StringRes val label: Int, val view: RecallView) {
+    ALL(R.string.history_all, RecallView.ALL),
+    OPEN(R.string.recalls_tab_open, RecallView.OPEN),
+    DONE(R.string.recalls_tab_done, RecallView.DONE),
+    ARCHIVED(R.string.recalls_tab_archived, RecallView.ARCHIVED),
+}
 
 /** Design: 8 · Recalls. */
 @Composable
@@ -249,14 +252,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
         )
     }
 
-    val shown = state.recalls.filter {
-        when (tab) {
-            RecallTab.ALL -> true
-            RecallTab.OPEN -> it.isOpen
-            RecallTab.DONE -> it.completedOn != null
-            RecallTab.ARCHIVED -> it.completedOn == null && it.archivedOn != null
-        }
-    }
+    val shown = state.recalls.filter { it.toStored().shownIn(tab.view) }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {

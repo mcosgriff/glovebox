@@ -22,7 +22,18 @@ data class RecallNotice(
  */
 data class StoredRecall(val id: Long, val notice: RecallNotice, val done: Boolean, val archived: Boolean = false) {
     val open: Boolean get() = !done && !archived
+
+    /** Whether the Recalls screen shows it under [view]. One marked done is done, whether or not it was archived first. */
+    fun shownIn(view: RecallView): Boolean = when (view) {
+        RecallView.ALL -> true
+        RecallView.OPEN -> open
+        RecallView.DONE -> done
+        RecallView.ARCHIVED -> !done && archived
+    }
 }
+
+/** The Recalls screen's filters. */
+enum class RecallView { ALL, OPEN, DONE, ARCHIVED }
 
 /** What a fresh list from NHTSA changes in the stored one. */
 data class RecallChanges(

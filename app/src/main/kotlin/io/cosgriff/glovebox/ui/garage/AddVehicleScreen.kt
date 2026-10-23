@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -74,8 +75,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.DecodedVehicle
@@ -106,7 +105,6 @@ enum class DecodedField(@StringRes val label: Int) {
 class AddVehicleViewModel @Inject constructor(
     private val nhtsa: NhtsaClient,
     private val vehicles: VehicleDao,
-    private val odometer: OdometerDao,
     private val recallRepository: RecallRepository,
     settings: SettingsRepository,
 ) : ViewModel() {
@@ -257,7 +255,7 @@ class AddVehicleViewModel @Inject constructor(
         viewModelScope.launch {
             val today = LocalDate.now()
             val savedTrim = VehicleText.clean(trim, VehicleText.MAX_NICKNAME)
-            val id = vehicles.insert(
+            val id = vehicles.add(
                 VehicleEntity(
                     vin = d.vin,
                     year = y,
@@ -273,10 +271,8 @@ class AddVehicleViewModel @Inject constructor(
                     createdOn = today,
                     distanceUnit = unit.name,
                 ),
+                firstReading = OdometerInput.parse(odometerText.typedNumber()),
             )
-            odometerText.toIntOrNull()?.let {
-                odometer.insert(OdometerReadingEntity(vehicleId = id, date = today, odometer = it))
-            }
             // Keep the list already on screen; if it never arrived, the garage re-checks later.
             (recalls as? RecallLookup.Found)?.let { recallRepository.store(id, it.notices, today) }
             onSaved(id)

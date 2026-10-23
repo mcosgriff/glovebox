@@ -175,6 +175,16 @@ interface VehicleDao {
     }
 
     @Insert suspend fun insert(vehicle: VehicleEntity): Long
+
+    @Insert suspend fun insertReading(reading: OdometerReadingEntity): Long
+
+    /** A new vehicle and its first reading, if one was given, dated the day it was added: both or neither. */
+    @Transaction
+    suspend fun add(vehicle: VehicleEntity, firstReading: Int?): Long {
+        val id = insert(vehicle)
+        firstReading?.let { insertReading(OdometerReadingEntity(vehicleId = id, date = vehicle.createdOn, odometer = it)) }
+        return id
+    }
     @Update suspend fun update(vehicle: VehicleEntity)
 
     /** Cascades to readings, schedule, records, record items, photos rows, torque specs and recalls. */

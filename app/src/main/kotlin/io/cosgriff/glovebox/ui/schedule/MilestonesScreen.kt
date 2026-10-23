@@ -5,6 +5,7 @@ import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
+import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -269,10 +270,7 @@ class MilestonesViewModel @Inject constructor(
             table.addKnown(
                 vehicleId,
                 list.id,
-                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain, s.transmission).map { m ->
-                    MilestoneEntity(vehicleId = vehicleId, atMiles = m.atMiles, orMonths = m.orMonths) to
-                        m.work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
-                },
+                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain, s.transmission).map { it.toRows(vehicleId) },
             )
         }
     }

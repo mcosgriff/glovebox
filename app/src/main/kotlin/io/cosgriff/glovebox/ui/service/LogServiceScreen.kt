@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.service
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -355,11 +356,7 @@ class LogServiceViewModel @Inject constructor(
             val due = if (editing) {
                 emptyList()
             } else {
-                log.statuses(LocalDate.now())
-                    // Never-logged items count as due, but offering all of them would bury the form on a
-                    // new vehicle; they can still be ticked in the categories below.
-                    .filter { it.lastDone != null && it.status.state != DueState.OK }
-                    .sortedBy { it.status.state != DueState.OVERDUE }
+                ReminderPresentation.logSuggestions(log.statuses(LocalDate.now()))
                     .mapNotNull { s ->
                         val option = optionFor[s.item.id] ?: return@mapNotNull null
                         DueSuggestion(option.id, option.label, overdue = s.status.state == DueState.OVERDUE)

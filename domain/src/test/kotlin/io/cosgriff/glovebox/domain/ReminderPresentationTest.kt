@@ -23,6 +23,15 @@ class ReminderPresentationTest {
     }
 
     @Test
+    fun `Log service offers what is due with a log entry, overdue first`() {
+        val fine = status(Interval(5_000, null), odometer = 61_000, id = 1)
+        val soon = status(Interval(5_000, null), odometer = 64_800, id = 2)
+        val overdue = status(Interval(5_000, null), odometer = 66_000, id = 3)
+        val neverLogged = status(Interval(5_000, null), lastDate = null, id = 4)
+        assertEquals(listOf(3L, 2L), ReminderPresentation.logSuggestions(listOf(fine, soon, overdue, neverLogged)).map { it.item.id })
+    }
+
+    @Test
     fun `never logged has no progress`() {
         val p = ReminderPresentation.progress(status(Interval(5_000, 6), lastDate = null))
         assertEquals(DueHeadline.NotLogged, p.headline)
