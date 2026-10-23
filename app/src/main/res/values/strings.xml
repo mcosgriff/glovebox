@@ -826,6 +826,9 @@
     <string name="catalog_cooling_fan">Cooling fan</string>
     <string name="catalog_fan_clutch">Fan clutch</string>
     <string name="catalog_heater_core">Heater core</string>
+    <string name="catalog_inverter_coolant">Inverter coolant</string>
+    <string name="catalog_intercooler_coolant">Intercooler coolant</string>
+    <string name="catalog_hybrid_battery_filter">Hybrid battery cooling filter</string>
     <string name="catalog_diff_fluid">Differential / transfer case fluid</string>
     <string name="catalog_front_diff_check">Front differential oil check</string>
     <string name="catalog_front_diff">Front differential oil change</string>

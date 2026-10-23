@@ -184,6 +184,11 @@ object ServiceCatalog {
                 CatalogItem("cooling-fan"),
                 CatalogItem("fan-clutch"),
                 CatalogItem("heater-core"),
+                // A hybrid's own cooling: the inverter's loop and the hybrid battery's air intake filter. Neither is the
+                // engine's coolant, so neither covers it. A turbo engine's intercooler loop is likewise its own.
+                CatalogItem("inverter-coolant"),
+                CatalogItem("intercooler-coolant"),
+                CatalogItem("hybrid-battery-filter"),
             ),
         ),
         CatalogCategory(
