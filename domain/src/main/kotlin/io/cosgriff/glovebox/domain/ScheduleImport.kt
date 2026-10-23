@@ -59,15 +59,16 @@ object ScheduleImport {
         "time-only" to DueRule.TIME_ONLY,
     )
 
-    private val intervalKeys = setOf("everyMiles", "everyKm", "everyMonths")
+    val EVERY = DistanceField("everyMiles", "everyKm", MAX_MILES, MAX_KM)
+
+    private val intervalKeys = EVERY.names + "everyMonths"
     /** The file's fields for a first time that isn't one interval in: one or the other, in the file's unit. */
-    const val FIRST = "firstAtMiles"
-    const val FIRST_KM = "firstAtKm"
+    val FIRST_AT = DistanceField("firstAtMiles", "firstAtKm", MAX_MILES, MAX_KM)
 
     /** The file's field for a job that exists only under severe use. Only ever `true`; left out otherwise. */
     const val SEVERE_ONLY = "severeOnly"
 
-    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", FIRST, FIRST_KM, SEVERE_ONLY)
+    private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", SEVERE_ONLY) + FIRST_AT.names
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
@@ -80,8 +81,8 @@ object ScheduleImport {
             val severe = o["severe"]?.let { s -> check.obj(s, "$path.severe", intervalKeys)?.let { interval(it, "$path.severe", check) } }
             val rule = o["rule"]?.let { check.choice(it, "$path.rule", rules) }
             val service = o["service"]?.let { check.choice(it, "$path.service", HistoryImport.services.mapValues { s -> s.key }) }
-            val first = check.distance(o, path, FIRST, FIRST_KM, MAX_MILES, MAX_KM)
-            if (name == null || normal == null || (check.has(o, FIRST, FIRST_KM) && first == null)) return@mapIndexedNotNull null
+            val first = check.distance(o, path, FIRST_AT)
+            if (name == null || normal == null || (check.has(o, FIRST_AT) && first == null)) return@mapIndexedNotNull null
             seen.put(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
             // Only ever `true`: an ordinary job leaves the field out, so there is one way to write each.
             val severeOnly = o[SEVERE_ONLY]?.let { e ->
@@ -102,13 +103,13 @@ object ScheduleImport {
      * has to be there. The distance comes back in the file's own unit ([ImportCheck.unit]).
      */
     private fun interval(o: JsonObject, path: String, check: ImportCheck): Interval? {
-        val distance = check.distance(o, path, "everyMiles", "everyKm", MAX_MILES, MAX_KM)
+        val distance = check.distance(o, path, EVERY)
         val months = o["everyMonths"]?.let { check.int(it, "$path.everyMonths", 1, MAX_MONTHS) }
-        if (!check.has(o, "everyMiles", "everyKm") && "everyMonths" !in o) {
+        if (!check.has(o, EVERY) && "everyMonths" !in o) {
             return null.also { check.fail(path.ifEmpty { "items" }, "needs \"everyMiles\" or \"everyKm\", \"everyMonths\", or a distance and months") }
         }
         // Null when a field was there but wrong: that has been reported already.
-        if ((check.has(o, "everyMiles", "everyKm") && distance == null) || ("everyMonths" in o && months == null)) return null
+        if ((check.has(o, EVERY) && distance == null) || ("everyMonths" in o && months == null)) return null
         return Interval(distance, months)
     }
 

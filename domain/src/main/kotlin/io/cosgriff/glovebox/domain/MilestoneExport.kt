@@ -19,7 +19,7 @@ object MilestoneExport {
         kind = ImportKind.MILESTONE_SCHEDULE,
         items = table.sortedBy { it.atMiles }.map { m ->
             buildJsonObject {
-                put(if (unit == DistanceUnit.KILOMETERS) "atKm" else "atMiles", m.atMiles)
+                put(MilestoneImport.AT.name(unit), m.atMiles)
                 m.orMonths?.let { put("orMonths", it) }
                 put(
                     "work",
@@ -36,7 +36,7 @@ object MilestoneExport {
                 )
             }
         },
-        own = { repeatsEveryMiles?.let { put(if (unit == DistanceUnit.KILOMETERS) MilestoneImport.REPEATS_KM else MilestoneImport.REPEATS, it) } },
+        own = { repeatsEveryMiles?.let { put(MilestoneImport.REPEATS_EVERY.name(unit), it) } },
     )
 
     /** The table as the save row takes it. Nothing is ever left out: the editor and the reader keep the same rules. */

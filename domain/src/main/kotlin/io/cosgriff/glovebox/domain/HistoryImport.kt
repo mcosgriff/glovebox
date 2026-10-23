@@ -52,7 +52,9 @@ object HistoryImport {
     /** What `service` may be: every line the Log service screen offers. */
     val services: Map<String, CatalogItem> = ServiceCatalog.categories.flatMap { it.items }.associateBy { it.id }
 
-    private val itemKeys = setOf("date", "odometer", "odometerKm", "work", "doneBy", "cost", "notes")
+    val ODOMETER = DistanceField("odometer", "odometerKm", MAX_ODOMETER, MAX_ODOMETER)
+
+    private val itemKeys = setOf("date", "work", "doneBy", "cost", "notes") + ODOMETER.names
     private val date = Regex("""\d{4}-\d{2}-\d{2}""")
 
     fun read(items: JsonElement, check: ImportCheck, today: LocalDate): List<ImportedRecord> {
@@ -63,8 +65,8 @@ object HistoryImport {
             val o = check.obj(e, path, itemKeys, required = setOf("date", "work", "doneBy")) ?: return@mapIndexedNotNull null
             val on = o["date"]?.let { date(it, "$path.date", check, today) }
             // Miles as `odometer`, or kilometres as `odometerKm`. The limit is the seven digits a dash shows, in either.
-            if (!check.has(o, "odometer", "odometerKm")) check.fail(path, "needs \"odometer\" (miles) or \"odometerKm\"")
-            val odometer = check.distance(o, path, "odometer", "odometerKm", MAX_ODOMETER, MAX_ODOMETER)
+            if (!check.has(o, ODOMETER)) check.fail(path, "needs \"${ODOMETER.miles}\" (miles) or \"${ODOMETER.km}\"")
+            val odometer = check.distance(o, path, ODOMETER)
             val work = o["work"]?.let { work(it, "$path.work", check) }
             val doneBy = o["doneBy"]?.let { doneBy(it, "$path.doneBy", check) }
             val cost = o["cost"]?.let { cost(it, "$path.cost", check) }

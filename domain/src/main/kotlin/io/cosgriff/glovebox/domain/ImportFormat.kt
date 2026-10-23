@@ -121,6 +121,17 @@ object ImportFormat {
  * Collects what is wrong with a file while it is read. Each reader returns null and records why
  * when a value isn't acceptable, so the caller can carry on and find the next problem.
  */
+/**
+ * A distance an import file gives in either unit, under the field named for it: [miles] or [km], each with its cap.
+ * The readers check it and the writers name it from this one value, so a file the app writes never uses a name its
+ * reader doesn't know.
+ */
+data class DistanceField(val miles: String, val km: String, val maxMiles: Int, val maxKm: Int) {
+    fun name(unit: DistanceUnit): String = if (unit == DistanceUnit.KILOMETERS) km else miles
+
+    val names: Set<String> get() = setOf(miles, km)
+}
+
 class ImportCheck {
     private val errors = mutableListOf<ImportError>()
     val failed: Boolean get() = errors.isNotEmpty()
@@ -141,7 +152,8 @@ class ImportCheck {
      * read settles it and one in the other unit is refused. Null when the field is absent, and when
      * it is there but wrong, which has been reported; [has] tells the two apart.
      */
-    fun distance(o: JsonObject, path: String, milesKey: String, kmKey: String, maxMiles: Int, maxKm: Int): Int? {
+    fun distance(o: JsonObject, path: String, field: DistanceField): Int? {
+        val (milesKey, kmKey, maxMiles, maxKm) = field
         if (milesKey in o && kmKey in o) return null.also { fail(at(path, kmKey), "give \"$milesKey\" or \"$kmKey\", not both") }
         val (key, found, max) = when {
             milesKey in o -> Triple(milesKey, DistanceUnit.MILES, maxMiles)
@@ -159,7 +171,7 @@ class ImportCheck {
         return value
     }
 
-    fun has(o: JsonObject, milesKey: String, kmKey: String): Boolean = milesKey in o || kmKey in o
+    fun has(o: JsonObject, field: DistanceField): Boolean = field.miles in o || field.km in o
 
     fun invalid(): ImportFile.Invalid =
         ImportFile.Invalid(errors.take(ImportFormat.MAX_ERRORS), (errors.size - ImportFormat.MAX_ERRORS).coerceAtLeast(0))
