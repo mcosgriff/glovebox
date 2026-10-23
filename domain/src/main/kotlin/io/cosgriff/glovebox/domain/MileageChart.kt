@@ -51,10 +51,10 @@ object MileageChart {
     fun series(rows: List<ReadingRow>, swap: ClusterSwap?, years: Int?, today: LocalDate): MileageSeries? {
         val from = years?.let { today.minusYears(it.toLong()) }
         val inRange = rows.filter { from == null || !it.reading.date.isBefore(from) }
-            .sortedWith(compareBy<ReadingRow> { it.reading.date }.thenBy { swap.toDash(it.reading.odometer, it.reading.date) })
+            .sortedWith(compareBy<ReadingRow> { it.reading.date }.thenBy { it.dash })
         if (inRange.size < 2) return null
-        val points = inRange.map { ChartPoint(it, swap.actual(swap.toDash(it.reading.odometer, it.reading.date))) }
-        val dash = inRange.map { OdometerReading(it.reading.date, swap.toDash(it.reading.odometer, it.reading.date)) } +
+        val points = inRange.map { ChartPoint(it, swap.actual(it.dash)) }
+        val dash = inRange.map { OdometerReading(it.reading.date, it.dash) } +
             listOfNotNull(swap?.reading?.takeIf { from == null || !it.date.isBefore(from) })
         val pace = ReminderEngine.milesPerDay(dash)
         return MileageSeries(

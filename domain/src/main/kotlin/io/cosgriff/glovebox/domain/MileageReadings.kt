@@ -21,6 +21,8 @@ data class ReadingRow(
     val outOfLine: Boolean = false,
     /** How far it is above the reading before it, when that is further than a vehicle is driven in the time. */
     val jump: Int? = null,
+    /** The reading in dash terms ([ClusterSwap.toDash]), which is how it is compared with the rest. */
+    val dash: Int = reading.odometer,
 )
 
 /**
@@ -68,6 +70,7 @@ object MileageReadings {
                 current = i == current,
                 outOfLine = i !in fits,
                 jump = before?.takeIf { i in fits && farAhead(dash[i], reading.date, it, unit) }?.let { dash[i] - it.odometer },
+                dash = dash[i],
             )
         }.reversed()
     }

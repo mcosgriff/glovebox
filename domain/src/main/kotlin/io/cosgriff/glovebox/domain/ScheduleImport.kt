@@ -59,6 +59,9 @@ object ScheduleImport {
         "time-only" to DueRule.TIME_ONLY,
     )
 
+    /** What a file calls each rule. */
+    val ruleNames: Map<DueRule, String> = rules.entries.associate { (name, rule) -> rule to name }
+
     val EVERY = DistanceField("everyMiles", "everyKm", MAX_MILES, MAX_KM)
 
     private val intervalKeys = EVERY.names + "everyMonths"
@@ -72,7 +75,7 @@ object ScheduleImport {
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
-        val seen = mutableMapOf<String, Int>()
+        val seen = Repeats<String>()
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("name")) ?: return@mapIndexedNotNull null
@@ -83,7 +86,7 @@ object ScheduleImport {
             val service = o["service"]?.let { check.choice(it, "$path.service", HistoryImport.services.mapValues { s -> s.key }) }
             val first = check.distance(o, path, FIRST_AT)
             if (name == null || normal == null || (check.has(o, FIRST_AT) && first == null)) return@mapIndexedNotNull null
-            seen.put(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
+            seen.seen(key(name), i)?.let { first -> check.fail("$path.name", "\"$name\" is already in this file, at items[$first]") }
             // Only ever `true`: an ordinary job leaves the field out, so there is one way to write each.
             val severeOnly = o[SEVERE_ONLY]?.let { e ->
                 if ((e as? JsonPrimitive)?.let { !it.isString && it.content == "true" } == true) true

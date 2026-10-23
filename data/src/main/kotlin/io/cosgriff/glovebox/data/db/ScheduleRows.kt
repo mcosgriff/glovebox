@@ -1,11 +1,12 @@
 package io.cosgriff.glovebox.data.db
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.ImportedScheduleItem
 
 /** The item's own rule; null follows the default rule, as does a name this version doesn't know. */
-val ScheduleItemEntity.rule: DueRule? get() = ruleOverride?.let { name -> DueRule.entries.firstOrNull { it.name == name } }
+val ScheduleItemEntity.rule: DueRule? get() = enumOrNull<DueRule>(ruleOverride)
 
 /**
  * A milestone of a table, a maker's or a file's, as the rows it is saved as: the milestone, and its jobs in

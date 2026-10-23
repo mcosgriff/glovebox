@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.recallComponent
@@ -69,7 +70,7 @@ private fun Context.notify(): NotifyEntryPoint = EntryPointAccessors.fromApplica
  */
 class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val runs = inputData.getNullableStringArray(RUNS)?.mapNotNull { name -> NoticeRun.entries.firstOrNull { it.name == name } }?.toSet()
+        val runs = inputData.getNullableStringArray(RUNS)?.mapNotNull { enumOrNull<NoticeRun>(it) }?.toSet()
             ?: NoticeRun.entries.toSet()
         val deps = applicationContext.notify()
         val settings = deps.settings().settings.first()

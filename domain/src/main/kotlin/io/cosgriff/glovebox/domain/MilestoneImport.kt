@@ -53,9 +53,9 @@ object MilestoneImport {
      * one before it that it repeats. An entry that is null takes no part.
      */
     fun <T : Any> repeated(keys: List<T?>): Map<Int, Int> {
-        val seen = mutableMapOf<T, Int>()
+        val seen = Repeats<T>()
         val out = mutableMapOf<Int, Int>()
-        keys.forEachIndexed { i, key -> if (key != null) seen.put(key, i)?.let { out[i] = it } }
+        keys.forEachIndexed { i, key -> if (key != null) seen.seen(key, i)?.let { out[i] = it } }
         return out
     }
 

@@ -46,7 +46,7 @@ enum class DistanceUnit(val symbol: String, val plural: String) {
         const val SCHEDULE_KM_PER_MILE = 1.6
 
         /** Whatever is stored; anything unrecognised is miles, which is what every vehicle was before units existed. */
-        fun of(name: String?): DistanceUnit = entries.firstOrNull { it.name == name } ?: MILES
+        fun of(name: String?): DistanceUnit = enumOrNull<DistanceUnit>(name) ?: MILES
     }
 }
 

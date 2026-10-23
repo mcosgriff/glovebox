@@ -122,6 +122,17 @@ object ImportFormat {
  * when a value isn't acceptable, so the caller can carry on and find the next problem.
  */
 /**
+ * The entries of a list said twice, found as they are read: [seen] gives the index of the entry before this one
+ * with the same key, so the reader can report it with the rest of that item's errors and in their order.
+ */
+class Repeats<K : Any> {
+    private val at = mutableMapOf<K, Int>()
+
+    /** The index of the last earlier entry with [key], or null for the first; this one is remembered either way. */
+    fun seen(key: K, index: Int): Int? = at.put(key, index)
+}
+
+/**
  * A distance an import file gives in either unit, under the field named for it: [miles] or [km], each with its cap.
  * The readers check it and the writers name it from this one value, so a file the app writes never uses a name its
  * reader doesn't know.
@@ -195,30 +206,25 @@ class ImportCheck {
      * Text of 1 to [max] characters with no space at either end and no line breaks. Nothing is
      * trimmed for the user: what is in the file is exactly what would be saved.
      */
-    fun string(e: JsonElement, path: String, max: Int): String? {
-        if (e !is JsonPrimitive || !e.isString) return null.also { fail(path, "must be text in quotes") }
-        val s = e.content
-        return when {
-            s.isEmpty() -> null.also { fail(path, "must not be empty; leave the field out instead") }
-            s.length > max -> null.also { fail(path, "is ${s.length} characters; the most allowed is $max") }
-            s.first().isWhitespace() || s.last().isWhitespace() -> null.also { fail(path, "must not start or end with a space") }
-            s.any { it.isISOControl() } -> null.also { fail(path, "must be on one line, with no tabs or line breaks") }
-            else -> s
-        }
-    }
+    fun string(e: JsonElement, path: String, max: Int): String? = written(e, path, max, multiline = false)
 
     /**
      * Longer text that may run over several lines: 1 to [max] characters, no space or blank line at
      * either end, and no control characters other than a line break.
      */
-    fun text(e: JsonElement, path: String, max: Int): String? {
+    fun text(e: JsonElement, path: String, max: Int): String? = written(e, path, max, multiline = true)
+
+    private fun written(e: JsonElement, path: String, max: Int, multiline: Boolean): String? {
         if (e !is JsonPrimitive || !e.isString) return null.also { fail(path, "must be text in quotes") }
         val s = e.content
         return when {
             s.isEmpty() -> null.also { fail(path, "must not be empty; leave the field out instead") }
             s.length > max -> null.also { fail(path, "is ${s.length} characters; the most allowed is $max") }
-            s.first().isWhitespace() || s.last().isWhitespace() -> null.also { fail(path, "must not start or end with a space or a blank line") }
-            s.any { it.isISOControl() && it != '\n' } -> null.also { fail(path, "must not contain tabs or other control characters; line breaks are fine") }
+            s.first().isWhitespace() || s.last().isWhitespace() ->
+                null.also { fail(path, if (multiline) "must not start or end with a space or a blank line" else "must not start or end with a space") }
+            multiline && s.any { it.isISOControl() && it != '\n' } ->
+                null.also { fail(path, "must not contain tabs or other control characters; line breaks are fine") }
+            !multiline && s.any { it.isISOControl() } -> null.also { fail(path, "must be on one line, with no tabs or line breaks") }
             else -> s
         }
     }

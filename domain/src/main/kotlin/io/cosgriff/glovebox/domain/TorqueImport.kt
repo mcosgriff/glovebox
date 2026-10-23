@@ -36,11 +36,16 @@ object TorqueImport {
     val categories: Map<String, TorqueCategory> = TorqueCategory.entries.associateBy { it.name.lowercase(Locale.US) }
     val sources: Map<String, TorqueSource> = mapOf("factory-manual" to TorqueSource.FACTORY, "own" to TorqueSource.USER)
 
+    // The same, the other way round: what a file calls each, for the writers and the messages.
+    val unitNames: Map<TorqueUnit, String> = units.entries.associate { (name, unit) -> unit to name }
+    val categoryNames: Map<TorqueCategory, String> = categories.entries.associate { (name, category) -> category to name }
+    val sourceNames: Map<TorqueSource, String> = sources.entries.associate { (name, source) -> source to name }
+
     private val itemKeys = setOf("name", "category", "socket", "torque", "source", "note")
 
     fun read(items: JsonElement, check: ImportCheck): List<ImportedTorqueSpec> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
-        val seen = mutableMapOf<String, Int>()
+        val seen = Repeats<String>()
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("name", "category")) ?: return@mapIndexedNotNull null
@@ -54,7 +59,7 @@ object TorqueImport {
                 check.fail("$path.source", "\"factory-manual\" needs a torque value; it says where the value came from")
             }
             if (name == null || category == null) return@mapIndexedNotNull null
-            seen.put(key(name, category), i)?.let { first ->
+            seen.seen(key(name, category), i)?.let { first ->
                 check.fail("$path.name", "\"$name\" is already in this file under the same category, at items[$first]")
             }
             ImportedTorqueSpec(name, category, socket, torque, source, note)
@@ -69,7 +74,7 @@ object TorqueImport {
         if (value <= 0) return null.also { check.fail("$path.value", "must be above zero") }
         // The cap is stated per unit, in round figures, so the schema can say exactly the same thing.
         if (value > maxIn(unit)) {
-            return null.also { check.fail("$path.value", "is more than Glovebox accepts (${maxIn(unit)} ${units.entries.first { it.value == unit }.key}); check the number and the unit") }
+            return null.also { check.fail("$path.value", "is more than Glovebox accepts (${maxIn(unit)} ${unitNames.getValue(unit)}); check the number and the unit") }
         }
         return Torque.of(value, unit)
     }

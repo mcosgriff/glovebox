@@ -59,7 +59,7 @@ object HistoryImport {
 
     fun read(items: JsonElement, check: ImportCheck, today: LocalDate): List<ImportedRecord> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
-        val seen = mutableMapOf<Pair<LocalDate, Int>, Int>()
+        val seen = Repeats<Pair<LocalDate, Int>>()
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
             val o = check.obj(e, path, itemKeys, required = setOf("date", "work", "doneBy")) ?: return@mapIndexedNotNull null
@@ -72,7 +72,7 @@ object HistoryImport {
             val cost = o["cost"]?.let { cost(it, "$path.cost", check) }
             val notes = o["notes"]?.let { check.text(it, "$path.notes", MAX_NOTES) }
             if (on == null || odometer == null || work == null || doneBy == null) return@mapIndexedNotNull null
-            seen.put(on to odometer, i)?.let { first ->
+            seen.seen(on to odometer, i)?.let { first ->
                 check.fail(path, "has the same date and odometer as items[$first]; put the work of one visit in one record")
             }
             ImportedRecord(on, odometer, work, doneBy.first, doneBy.second, cost, notes)

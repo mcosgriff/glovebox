@@ -35,7 +35,7 @@ object ScheduleExport {
         item.normal?.let { interval(it, unit) }
         item.firstAt?.let { put(ScheduleImport.FIRST_AT.name(unit), it) }
         if (item.severeOnly) put(ScheduleImport.SEVERE_ONLY, true) else item.severe?.let { put("severe", buildJsonObject { interval(it, unit) }) }
-        item.rule?.let { rule -> put("rule", ScheduleImport.rules.entries.first { it.value == rule }.key) }
+        item.rule?.let { rule -> put("rule", ScheduleImport.ruleNames.getValue(rule)) }
         service(item)?.let { put("service", it) }
     }
 
@@ -77,7 +77,7 @@ object TorqueExport {
 
     private fun json(row: SavedTorqueSpec, unit: TorqueUnit): JsonObject = buildJsonObject {
         put("name", row.name.trim())
-        put("category", TorqueImport.categories.entries.first { it.value == row.category }.key)
+        put("category", TorqueImport.categoryNames.getValue(row.category))
         row.socket?.let { put("socket", it) }
         row.torque?.let { torque ->
             // The file's cap is a whole figure per unit, a shade under 1,000 N·m in the others; a value up there is written in N·m.
@@ -86,11 +86,11 @@ object TorqueExport {
                 "torque",
                 buildJsonObject {
                     putFigure("value", torque.inUnit(written))
-                    put("unit", TorqueImport.units.entries.first { it.value == written }.key)
+                    put("unit", TorqueImport.unitNames.getValue(written))
                 },
             )
             // Where a value came from means nothing without the value.
-            put("source", TorqueImport.sources.entries.first { it.value == row.source }.key)
+            put("source", TorqueImport.sourceNames.getValue(row.source))
         }
         row.note?.let { put("note", it) }
     }
