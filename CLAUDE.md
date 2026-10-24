@@ -156,7 +156,8 @@ accent `#F08A4B` (on-accent `#17191C`), accent-soft `#3A2418`/`#FDBA74`, ok `#5E
 
 ## Screens
 
-Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
+Every board on the canvas is built except 6e · History — timeline view. Still to build: that timeline, and VIN
+scan follow-up (#83).
 
 ## Rules by feature
 
