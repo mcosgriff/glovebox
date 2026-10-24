@@ -163,9 +163,11 @@ class ReportRenderer(private val fonts: ReportFonts) {
         y += titlePaint.textSize * 1.05f + 4f
         val sub = paint(14f, fonts.sans, INK2)
         var x = LEFT
-        listOfNotNull(v.specs).forEach {
-            c.textTop("$it · ", x, y, sub)
-            x += sub.measureText("$it · ")
+        v.specs?.let {
+            // The separator only goes in when a VIN follows.
+            val shown = if (v.vin != null) "$it · " else it
+            c.textTop(shown, x, y, sub)
+            x += sub.measureText(shown)
         }
         v.vin?.let { vin ->
             val label = s(R.string.report_vin) + " "
