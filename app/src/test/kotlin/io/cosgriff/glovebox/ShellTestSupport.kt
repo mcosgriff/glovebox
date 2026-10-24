@@ -3,6 +3,9 @@ package io.cosgriff.glovebox
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -19,6 +22,7 @@ import dagger.hilt.android.internal.builders.ViewModelComponentBuilder
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
+import dagger.hilt.android.internal.lifecycle.HiltWrapper_HiltViewModelFactory_ActivityCreatorEntryPoint
 import dagger.hilt.android.internal.lifecycle.RetainedLifecycleImpl
 import dagger.hilt.android.internal.managers.ActivityComponentManager
 import dagger.hilt.android.internal.managers.HiltWrapper_ActivityRetainedComponentManager_ActivityRetainedComponentBuilderEntryPoint
@@ -199,11 +203,15 @@ class ShellGraph(private val app: Application) {
         ActivityComponent,
         GeneratedComponent,
         MainActivity_GeneratedInjector,
-        DefaultViewModelFactories.ActivityEntryPoint {
+        DefaultViewModelFactories.ActivityEntryPoint,
+        HiltWrapper_HiltViewModelFactory_ActivityCreatorEntryPoint {
         override fun injectMainActivity(mainActivity: MainActivity) = inject(mainActivity)
 
         override fun getHiltInternalFactoryFactory(): DefaultViewModelFactories.InternalFactoryFactory =
             DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(ViewModelKeys, ViewModels())
+
+        override fun getViewModelKeys(): Map<Class<*>, Boolean> = ViewModelKeys
+        override fun getViewModelComponentBuilder(): ViewModelComponentBuilder = ViewModels()
     }
 
     /** Field injection, as Dagger does it for `@Inject lateinit var`. */
@@ -287,6 +295,30 @@ class ShellGraph(private val app: Application) {
     fun close() {
         scope.cancel()
         db.close()
+    }
+}
+
+/** A tall phone, so a whole screen fits without scrolling. */
+const val SHELL_PHONE = "w411dp-h1100dp-xhdpi"
+
+/** Waits for [text] to be on screen: the app's screens read DataStore and Room off the main thread. */
+fun ComposeTestRule.waitForText(text: String, substring: Boolean = false, timeoutMs: Long = 10_000) =
+    waitUntil(timeoutMs) { onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty() }
+
+/** As [waitForText], by a node's content description. */
+fun ComposeTestRule.waitForDescription(description: String, timeoutMs: Long = 10_000) =
+    waitUntil(timeoutMs) { onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty() }
+
+fun string(id: Int, vararg args: Any): String = ShellTestApp.current.getString(id, *args)
+
+/** Runs the main thread's queue until [done], for work that arrives there from another thread (DataStore, Room). */
+fun idleMainUntil(timeoutMs: Long = 10_000, done: () -> Boolean) {
+    val end = System.currentTimeMillis() + timeoutMs
+    while (true) {
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        if (done()) return
+        check(System.currentTimeMillis() < end) { "Still waiting after $timeoutMs ms" }
+        Thread.sleep(5)
     }
 }
 
