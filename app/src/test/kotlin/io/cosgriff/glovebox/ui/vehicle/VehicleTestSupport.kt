@@ -1,6 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
 import android.app.Application
+import android.os.Looper
+import androidx.core.content.FileProvider
+import org.robolectric.Shadows.shadowOf
 import androidx.annotation.StringRes
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
@@ -31,7 +34,9 @@ import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.utils.io.InternalAPI
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -57,7 +62,10 @@ class VehicleTestGarage : ExternalResource() {
     val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
 
     /** Stands in for `@ApplicationScope`: work that outlives a screen, such as an Undo. */
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> appErrors += e; e.printStackTrace() })
+
+    /** What failed on [appScope], which would otherwise go unseen. */
+    val appErrors: MutableList<Throwable> = CopyOnWriteArrayList()
 
     val crypto = PhotoCrypto(context)
     val settings = SettingsRepository(context)
@@ -92,6 +100,14 @@ class VehicleTestGarage : ExternalResource() {
         })[made.javaClass.name, made.javaClass]
     }
 
+    /**
+     * FileProvider keeps the folders it serves in a static cache, so a test after the first would be handed the
+     * first test's (Robolectric gives each test new ones) and refuse every file. Forget them before each test.
+     */
+    override fun before() {
+        FileProvider::class.java.getDeclaredField("sCache").apply { isAccessible = true }.let { (it.get(null) as MutableMap<*, *>).clear() }
+    }
+
     /** Use as the outer rule around the Compose rule, so the screens have gone before the database closes. */
     override fun after() {
         store.clear()
@@ -120,11 +136,15 @@ internal fun ComposeContentTestRule.awaitThat(timeoutMillis: Long = 10_000, cond
     }
 }
 
-/** Waits until [condition] holds, for work on the app's own scope (an Undo), which needs no screen. */
+/**
+ * Waits until [condition] holds, for work on the app's own scope (an Undo, a picked file), which needs no
+ * screen; the main looper runs between looks, for whatever that work hands back to it.
+ */
 internal suspend fun eventually(timeoutMillis: Long = 10_000, condition: suspend () -> Boolean) {
     val end = System.currentTimeMillis() + timeoutMillis
     while (!condition()) {
         check(System.currentTimeMillis() < end) { "Still not so after $timeoutMillis ms" }
+        if (Looper.myLooper() == Looper.getMainLooper()) shadowOf(Looper.getMainLooper()).idle()
         Thread.sleep(10)
     }
 }
