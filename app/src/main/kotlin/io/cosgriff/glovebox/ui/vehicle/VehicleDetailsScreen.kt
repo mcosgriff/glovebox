@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.BackToTop
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import io.cosgriff.glovebox.ui.service.editableDecimal
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
@@ -514,340 +516,344 @@ internal fun VehicleDetailsContent(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
-        ScreenHeader(stringResource(R.string.home_vehicle_details), onBack)
+    val scrollState = rememberScrollState()
+    Box(Modifier.fillMaxSize().imePadding()) {
+        Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+            ScreenHeader(stringResource(R.string.home_vehicle_details), onBack)
 
-        Column(
-            Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nicknameOrModel(), onPick = onPickPhoto, onRemove = onRemovePhoto)
-                if (photoFailed) {
-                    Text(
-                        stringResource(R.string.details_photo_unreadable),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
-
-            OutlinedTextField(
-                value = nickname,
-                onValueChange = { onNicknameChange(it.take(VehicleText.MAX_NICKNAME)) },
-                label = { Text(stringResource(R.string.details_nickname)) },
-                placeholder = { Text(v.model) },
-                supportingText = { Text(stringResource(R.string.details_nickname_note)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            RowsCard {
-                val plate = LicensePlates.label(v.plate, v.plateRegion)
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onEditPlate),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(stringResource(R.string.details_plate), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(
-                        plate ?: stringResource(R.string.add),
-                        Modifier.weight(1f).padding(vertical = 8.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = if (v.plate != null) PlexMono else null,
-                        color = if (plate == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.End,
-                    )
-                    Chevron()
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel(stringResource(if (v.enteredByHand) R.string.details_section_vehicle else R.string.details_section_from_vin))
-                RowsCard {
-                    if (v.vin == null) {
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onAddVin),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Text(stringResource(R.string.details_vin), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                stringResource(R.string.add),
-                                Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.End,
-                            )
-                            Chevron()
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                    val rows = listOfNotNull(
-                        v.vin?.let { Triple(stringResource(R.string.details_vin), it, true) },
-                        Triple(stringResource(R.string.details_vehicle), VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle), false),
-                        v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
-                        v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
-                        v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
-                        Powertrains.of(v.powertrain)?.let { Triple(stringResource(R.string.add_vehicle_powertrain), stringResource(it.label()), false) },
-                        v.bodyClass?.let { Triple(stringResource(R.string.details_body), it, false) },
-                    )
-                    val copyVinLabel = stringResource(R.string.details_copy_vin)
-                    rows.forEach { (label, value, mono) ->
-                        // The VIN is the one value worth having elsewhere (an insurer's or a parts site's form): a long
-                        // press copies it. It is the one row in mono.
-                        val copy = if (mono) ({ copyText(context, label, value, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
-                        Row(
-                            Modifier.fillMaxWidth()
-                                .then(
-                                    if (copy == null) {
-                                        Modifier
-                                    } else {
-                                        Modifier
-                                            .pointerInput(value) { detectTapGestures(onLongPress = { copy() }) }
-                                            .semantics { onLongClick(label = copyVinLabel) { copy(); true } }
-                                    },
-                                )
-                                // 48dp: the VIN row is a touch target (a long press copies it), and the rest match it.
-                                .heightIn(min = 48.dp)
-                                .padding(vertical = 11.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                value,
-                                Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = if (mono) PlexMono else null,
-                                textAlign = TextAlign.End,
-                            )
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                    Text(
-                        when {
-                            v.enteredByHand -> stringResource(R.string.details_entered_by_you)
-                            v.trimConfirmed -> stringResource(R.string.details_source_trim_confirmed)
-                            else -> stringResource(R.string.details_source)
-                        },
-                        Modifier.padding(vertical = 10.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SectionLabel(stringResource(R.string.details_section_takes))
-                RowsCard {
-                    takes.basics().forEachIndexed { i, spec ->
-                        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        val value = takes.line(spec)
-                        // A long press copies the row's part numbers, for a parts site's search box.
-                        val parts = takes.partNumbers(spec)
-                        val partsLabel = stringResource(R.string.details_part_numbers)
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                .combinedClickable(
-                                    role = Role.Button,
-                                    onClick = { onEditTakes(spec) },
-                                    onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
-                                    onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                if (spec in known.toCheck) DoubleCheckTag()
-                            }
-                            Text(
-                                value ?: stringResource(R.string.add),
-                                Modifier.weight(1f).padding(vertical = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (value == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.End,
-                            )
-                            Chevron()
-                        }
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    // The rest have a page of their own, like torque and fastener specs.
-                    val entered = takes.entered().size
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { onOpenMoreTakes(v.id) }),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-                            Text(stringResource(R.string.fluids_title), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                if (entered == 0) stringResource(R.string.none_saved_yet) else stringResource(R.string.details_takes_saved, entered.asNumber(), (entered + takes.notEntered().size).asNumber()),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (entered == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                        Chevron()
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onSetOffset),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Text(stringResource(R.string.offset_title), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(
+                Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp + BackToTopRoom),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    PhotoBox(photo, hasPhoto = v.photoFile != null, name = v.nicknameOrModel(), onPick = onPickPhoto, onRemove = onRemovePhoto)
+                    if (photoFailed) {
                         Text(
-                            swap?.let { offsetLabel(it.offset, v.unit) } ?: stringResource(R.string.none),
+                            stringResource(R.string.details_photo_unreadable),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = nickname,
+                    onValueChange = { onNicknameChange(it.take(VehicleText.MAX_NICKNAME)) },
+                    label = { Text(stringResource(R.string.details_nickname)) },
+                    placeholder = { Text(v.model) },
+                    supportingText = { Text(stringResource(R.string.details_nickname_note)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                RowsCard {
+                    val plate = LicensePlates.label(v.plate, v.plateRegion)
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onEditPlate),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text(stringResource(R.string.details_plate), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            plate ?: stringResource(R.string.add),
                             Modifier.weight(1f).padding(vertical = 8.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            fontFamily = if (swap != null) PlexMono else null,
+                            fontFamily = if (v.plate != null) PlexMono else null,
+                            color = if (plate == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.End,
                         )
                         Chevron()
                     }
                 }
-                known.toCheckFrom?.let { KnownTakesNote(it) }
-                known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = onFillKnown, Modifier.padding(top = 4.dp)) } }
-                Text(
-                    stringResource(R.string.details_takes_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
 
-            makerDocs?.let { maker ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel(stringResource(R.string.details_section_maker))
+                    SectionLabel(stringResource(if (v.enteredByHand) R.string.details_section_vehicle else R.string.details_section_from_vin))
                     RowsCard {
-                        maker.documents.forEachIndexed { i, doc ->
+                        if (v.vin == null) {
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onAddVin),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Text(stringResource(R.string.details_vin), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    stringResource(R.string.add),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = TextAlign.End,
+                                )
+                                Chevron()
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                        val rows = listOfNotNull(
+                            v.vin?.let { Triple(stringResource(R.string.details_vin), it, true) },
+                            Triple(stringResource(R.string.details_vehicle), VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle), false),
+                            v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
+                            v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
+                            v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
+                            Powertrains.of(v.powertrain)?.let { Triple(stringResource(R.string.add_vehicle_powertrain), stringResource(it.label()), false) },
+                            v.bodyClass?.let { Triple(stringResource(R.string.details_body), it, false) },
+                        )
+                        val copyVinLabel = stringResource(R.string.details_copy_vin)
+                        rows.forEach { (label, value, mono) ->
+                            // The VIN is the one value worth having elsewhere (an insurer's or a parts site's form): a long
+                            // press copies it. It is the one row in mono.
+                            val copy = if (mono) ({ copyText(context, label, value, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
+                            Row(
+                                Modifier.fillMaxWidth()
+                                    .then(
+                                        if (copy == null) {
+                                            Modifier
+                                        } else {
+                                            Modifier
+                                                .pointerInput(value) { detectTapGestures(onLongPress = { copy() }) }
+                                                .semantics { onLongClick(label = copyVinLabel) { copy(); true } }
+                                        },
+                                    )
+                                    // 48dp: the VIN row is a touch target (a long press copies it), and the rest match it.
+                                    .heightIn(min = 48.dp)
+                                    .padding(vertical = 11.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    value,
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontFamily = if (mono) PlexMono else null,
+                                    textAlign = TextAlign.End,
+                                )
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                        Text(
+                            when {
+                                v.enteredByHand -> stringResource(R.string.details_entered_by_you)
+                                v.trimConfirmed -> stringResource(R.string.details_source_trim_confirmed)
+                                else -> stringResource(R.string.details_source)
+                            },
+                            Modifier.padding(vertical = 10.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(stringResource(R.string.details_section_takes))
+                    RowsCard {
+                        takes.basics().forEachIndexed { i, spec ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            val res = LocalResources.current
-                            val vinLabel = stringResource(R.string.details_vin)
-                            LinkRow(
-                                title = stringResource(doc.titleRes),
-                                detail = when {
-                                    doc.vinLookup -> stringResource(if (v.vin != null) R.string.maker_doc_vin_lookup else R.string.maker_doc_vin_lookup_none, maker.make)
-                                    else -> {
-                                        val code = doc.code.orEmpty().let { c -> doc.edition?.let { stringResource(R.string.maker_doc_code_edition, c, it) } ?: c }
-                                        stringResource(if (doc.viaNhtsa) R.string.maker_doc_from_nhtsa else R.string.maker_doc_from, maker.make, code)
-                                    }
-                                },
-                                onClick = {
-                                    // The VIN never goes in the link: it is copied, marked sensitive, for the owner to paste on the maker's page.
-                                    if (doc.vinLookup) v.vin?.let { copyText(context, vinLabel, it, sensitive = true) }
-                                    if (!context.openWebPage(doc.url)) Toast.makeText(context, res.getString(R.string.licences_no_browser, doc.url), Toast.LENGTH_LONG).show()
-                                },
+                            val value = takes.line(spec)
+                            // A long press copies the row's part numbers, for a parts site's search box.
+                            val parts = takes.partNumbers(spec)
+                            val partsLabel = stringResource(R.string.details_part_numbers)
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                    .combinedClickable(
+                                        role = Role.Button,
+                                        onClick = { onEditTakes(spec) },
+                                        onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
+                                        onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    if (spec in known.toCheck) DoubleCheckTag()
+                                }
+                                Text(
+                                    value ?: stringResource(R.string.add),
+                                    Modifier.weight(1f).padding(vertical = 8.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (value == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.End,
+                                )
+                                Chevron()
+                            }
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        // The rest have a page of their own, like torque and fastener specs.
+                        val entered = takes.entered().size
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = { onOpenMoreTakes(v.id) }),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                                Text(stringResource(R.string.fluids_title), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    if (entered == 0) stringResource(R.string.none_saved_yet) else stringResource(R.string.details_takes_saved, entered.asNumber(), (entered + takes.notEntered().size).asNumber()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (entered == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                            Chevron()
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onSetOffset),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(stringResource(R.string.offset_title), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                swap?.let { offsetLabel(it.offset, v.unit) } ?: stringResource(R.string.none),
+                                Modifier.weight(1f).padding(vertical = 8.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = if (swap != null) PlexMono else null,
+                                textAlign = TextAlign.End,
                             )
+                            Chevron()
                         }
                     }
+                    known.toCheckFrom?.let { KnownTakesNote(it) }
+                    known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = onFillKnown, Modifier.padding(top = 4.dp)) } }
                     Text(
-                        stringResource(R.string.details_maker_note),
+                        stringResource(R.string.details_takes_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            }
 
-            RowsCard {
-                LinkRow(
-                    title = stringResource(R.string.details_torque),
-                    detail = if (details.torqueSpecs == 0) stringResource(R.string.details_torque_none) else stringResource(R.string.details_torque_saved, details.torqueSpecs.asNumber()),
-                    onClick = { onOpenTorqueSpecs(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                val schedule = details.schedule
-                LinkRow(
-                    title = stringResource(R.string.details_schedule),
-                    detail = schedule?.text() ?: stringResource(R.string.details_schedule_none),
-                    // An empty schedule offers the typical one, or adding items one at a time.
-                    onClick = { onOpenSchedule(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                val open = details.recalls
-                LinkRow(
-                    title = stringResource(R.string.details_recalls),
-                    detail = when {
-                        open == null -> stringResource(R.string.details_recalls_not_checked)
-                        open.count == 0 -> stringResource(R.string.no_open_recalls)
-                        else -> stringResource(R.string.details_recalls_open, open.count.asNumber())
-                    },
-                    detailColor = when {
-                        open == null -> MaterialTheme.colorScheme.onSurfaceVariant
-                        open.count == 0 -> statusColors().ok
-                        else -> MaterialTheme.colorScheme.onPrimaryContainer
-                    },
-                    onClick = { onOpenRecalls(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.details_units),
-                    detail = stringResource(R.string.details_units_detail, v.unit.titleWord),
-                    onClick = onChangeUnit,
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.readings_title),
-                    detail = stringResource(R.string.details_readings_detail),
-                    onClick = { onOpenReadings(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.channel_mileage),
-                    detail = when {
-                        !noticePrefs.mileage -> stringResource(R.string.details_checkin_all_off)
-                        else -> when (val own = VehicleCheckIn.of(v.mileageCheckInDays)) {
-                            VehicleCheckIn.Default -> stringResource(R.string.checkin_as_default, checkInLabel(noticePrefs.mileageEveryDays))
-                            VehicleCheckIn.Off -> stringResource(R.string.details_checkin_off)
-                            is VehicleCheckIn.Every -> checkInLabel(own.days)
+                makerDocs?.let { maker ->
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SectionLabel(stringResource(R.string.details_section_maker))
+                        RowsCard {
+                            maker.documents.forEachIndexed { i, doc ->
+                                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                val res = LocalResources.current
+                                val vinLabel = stringResource(R.string.details_vin)
+                                LinkRow(
+                                    title = stringResource(doc.titleRes),
+                                    detail = when {
+                                        doc.vinLookup -> stringResource(if (v.vin != null) R.string.maker_doc_vin_lookup else R.string.maker_doc_vin_lookup_none, maker.make)
+                                        else -> {
+                                            val code = doc.code.orEmpty().let { c -> doc.edition?.let { stringResource(R.string.maker_doc_code_edition, c, it) } ?: c }
+                                            stringResource(if (doc.viaNhtsa) R.string.maker_doc_from_nhtsa else R.string.maker_doc_from, maker.make, code)
+                                        }
+                                    },
+                                    onClick = {
+                                        // The VIN never goes in the link: it is copied, marked sensitive, for the owner to paste on the maker's page.
+                                        if (doc.vinLookup) v.vin?.let { copyText(context, vinLabel, it, sensitive = true) }
+                                        if (!context.openWebPage(doc.url)) Toast.makeText(context, res.getString(R.string.licences_no_browser, doc.url), Toast.LENGTH_LONG).show()
+                                    },
+                                )
+                            }
                         }
-                    },
-                    onClick = onEditCheckIn,
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.documents_title),
-                    detail = if (details.documentCount == 0) stringResource(R.string.details_documents_none) else stringResource(R.string.details_documents, documentsSummary(details.documentCount, details.documentBytes)),
-                    onClick = { onOpenDocuments(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.details_import),
-                    detail = stringResource(R.string.details_import_detail),
-                    onClick = { onOpenImport(v.id) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                LinkRow(
-                    title = stringResource(R.string.details_clear),
-                    detail = stringResource(R.string.details_clear_detail),
-                    onClick = { onClearHistory(v.id) },
-                )
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                InkOutlinedButton(onClick = onSell, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Text(stringResource(R.string.details_mark_sold))
+                        Text(
+                            stringResource(R.string.details_maker_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                Text(
-                    stringResource(R.string.details_sold_note),
-                    Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-                DangerTextButton(onClick = { onDelete(v.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.details_delete), fontWeight = FontWeight.SemiBold)
+
+                RowsCard {
+                    LinkRow(
+                        title = stringResource(R.string.details_torque),
+                        detail = if (details.torqueSpecs == 0) stringResource(R.string.details_torque_none) else stringResource(R.string.details_torque_saved, details.torqueSpecs.asNumber()),
+                        onClick = { onOpenTorqueSpecs(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    val schedule = details.schedule
+                    LinkRow(
+                        title = stringResource(R.string.details_schedule),
+                        detail = schedule?.text() ?: stringResource(R.string.details_schedule_none),
+                        // An empty schedule offers the typical one, or adding items one at a time.
+                        onClick = { onOpenSchedule(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    val open = details.recalls
+                    LinkRow(
+                        title = stringResource(R.string.details_recalls),
+                        detail = when {
+                            open == null -> stringResource(R.string.details_recalls_not_checked)
+                            open.count == 0 -> stringResource(R.string.no_open_recalls)
+                            else -> stringResource(R.string.details_recalls_open, open.count.asNumber())
+                        },
+                        detailColor = when {
+                            open == null -> MaterialTheme.colorScheme.onSurfaceVariant
+                            open.count == 0 -> statusColors().ok
+                            else -> MaterialTheme.colorScheme.onPrimaryContainer
+                        },
+                        onClick = { onOpenRecalls(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.details_units),
+                        detail = stringResource(R.string.details_units_detail, v.unit.titleWord),
+                        onClick = onChangeUnit,
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.readings_title),
+                        detail = stringResource(R.string.details_readings_detail),
+                        onClick = { onOpenReadings(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.channel_mileage),
+                        detail = when {
+                            !noticePrefs.mileage -> stringResource(R.string.details_checkin_all_off)
+                            else -> when (val own = VehicleCheckIn.of(v.mileageCheckInDays)) {
+                                VehicleCheckIn.Default -> stringResource(R.string.checkin_as_default, checkInLabel(noticePrefs.mileageEveryDays))
+                                VehicleCheckIn.Off -> stringResource(R.string.details_checkin_off)
+                                is VehicleCheckIn.Every -> checkInLabel(own.days)
+                            }
+                        },
+                        onClick = onEditCheckIn,
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.documents_title),
+                        detail = if (details.documentCount == 0) stringResource(R.string.details_documents_none) else stringResource(R.string.details_documents, documentsSummary(details.documentCount, details.documentBytes)),
+                        onClick = { onOpenDocuments(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.details_import),
+                        detail = stringResource(R.string.details_import_detail),
+                        onClick = { onOpenImport(v.id) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LinkRow(
+                        title = stringResource(R.string.details_clear),
+                        detail = stringResource(R.string.details_clear_detail),
+                        onClick = { onClearHistory(v.id) },
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    InkOutlinedButton(onClick = onSell, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                        Text(stringResource(R.string.details_mark_sold))
+                    }
+                    Text(
+                        stringResource(R.string.details_sold_note),
+                        Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                    DangerTextButton(onClick = { onDelete(v.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text(stringResource(R.string.details_delete), fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
         }
+        BackToTop(scrollState, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp))
     }
 }
 

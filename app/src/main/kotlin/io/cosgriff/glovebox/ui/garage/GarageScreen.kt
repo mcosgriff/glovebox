@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
+import io.cosgriff.glovebox.ui.components.BackToTop
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
@@ -147,20 +152,26 @@ internal fun GarageContent(
         return
     }
 
-    LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        item { Header(garage, onAddVehicle) }
-        items(garage.vehicles, key = { it.vehicle.id }) { v -> VehicleCard(v, onClick = { onOpenVehicle(v.vehicle.id) }) }
-        val urgent = garage.urgent
-        if (urgent.isNotEmpty()) {
-            item { AcrossAll(garage.vehicles.size, urgent, onSeeReminders) }
+    val listState = rememberLazyListState()
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            Modifier.fillMaxSize().padding(horizontal = 20.dp),
+            state = listState,
+            contentPadding = PaddingValues(bottom = BackToTopRoom),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            item { Header(garage, onAddVehicle) }
+            items(garage.vehicles, key = { it.vehicle.id }) { v -> VehicleCard(v, onClick = { onOpenVehicle(v.vehicle.id) }) }
+            val urgent = garage.urgent
+            if (urgent.isNotEmpty()) {
+                item { AcrossAll(garage.vehicles.size, urgent, onSeeReminders) }
+            }
+            if (archived > 0) {
+                item { ArchivedRow(archived, onOpenArchive) }
+            }
+            item { Spacer(Modifier.height(6.dp)) }
         }
-        if (archived > 0) {
-            item { ArchivedRow(archived, onOpenArchive) }
-        }
-        item { Spacer(Modifier.height(6.dp)) }
+        BackToTop(listState, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp))
     }
 }
 

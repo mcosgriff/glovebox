@@ -43,7 +43,18 @@ class TextReaderTest {
         assertTrue(reader.failed)
         assertEquals(emptyList<TextReader.Word>(), reader.words(ByteArray(16), 4, 4))
         reader.close()
-        // Only one reader here: once the library has failed to load, a second TessBaseAPI throws
-        // NoClassDefFoundError, which TextReader doesn't catch (see the coverage report).
+    }
+
+    @Test
+    fun `every reader after the first also fails quietly when the engine can't start`() {
+        // Once the library has failed to load, TessBaseAPI is left unusable for the life of the process and
+        // a new one throws NoClassDefFoundError: reopening the dash reader, or the scanner's print reader
+        // after it, must give up the same way instead of crashing the analyzer thread.
+        repeat(3) {
+            val reader = if (it % 2 == 0) TextReader.digits(context) else TextReader.vin(context)
+            assertNull(reader.read(ByteArray(16) { 0 }, 4, 4))
+            assertTrue(reader.failed)
+            reader.close()
+        }
     }
 }

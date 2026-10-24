@@ -79,8 +79,9 @@ class TextReader private constructor(private val context: Context, private val c
             TessBaseAPI().takeIf { it.init(data.parentFile!!.parentFile!!.absolutePath, LANGUAGE, TessBaseAPI.OEM_LSTM_ONLY, NO_WORD_LISTS) }
         } catch (_: IOException) {
             null
-        } catch (_: UnsatisfiedLinkError) {
-            // No native library for this phone's processor.
+        } catch (_: LinkageError) {
+            // No native library for this phone's processor: UnsatisfiedLinkError the first time, and
+            // NoClassDefFoundError for every reader after that, since TessBaseAPI never finished loading.
             null
         }
         if (engine == null) {
