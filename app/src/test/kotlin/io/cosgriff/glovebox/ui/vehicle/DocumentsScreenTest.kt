@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.semantics.Role
@@ -188,4 +189,48 @@ class DocumentsScreenTest {
     }
 
     private fun eventuallyBlocking(condition: () -> Boolean) = runBlocking { eventually { condition() } }
+
+    @Test
+    fun `a document just added asks for its details, and can be taken back off at once`() {
+        val id = g.add(VehicleFixtures.wagon)
+        show(id, until = g.string(R.string.documents_empty_body))
+        item(R.string.documents_add)
+        item(R.string.documents_choose)
+        g.documentPicker.onPicked(Uri.fromFile(File(g.context.cacheDir, "made-up.pdf").apply { writeBytes(pdf) }))
+
+        compose.awaitThat { compose.onAllNodes(hasText(g.string(R.string.documents_added))).fetchSemanticsNodes().isNotEmpty() }
+        val row = runBlocking { g.db.documents().documentsFor(id) }.single()
+        assertTrue(File(g.crypto.photoDir, row.fileName).exists())
+        // The screen has taken it: it won't open again on its own.
+        assertNull(g.documentPicker.added.value)
+
+        compose.onNode(hasText(g.string(R.string.documents_dont_keep)) and hasClickAction()).click()
+        compose.awaitThat { g.db.documents().documentsFor(id).isEmpty() }
+        assertFalse(File(g.crypto.photoDir, row.fileName).exists())
+    }
+
+    @Test
+    fun `a readable document is handed to another app only as a decrypted copy in the share folder`() {
+        val id = g.add(VehicleFixtures.wagon)
+        g.documentPicker.attach({ picks++ }, { captures += it })
+        val doc = runBlocking { g.documentStore.addPdf(id, pdf, DocumentType.REPORT, "History report", null, LocalDate.now()) }
+        show(id, until = "History report")
+        menu("History report")
+        item(R.string.documents_open_elsewhere)
+
+        val started = run {
+            var intent: Intent? = null
+            compose.awaitThat { intent = shadowOf(g.context).nextStartedActivity; intent != null }
+            intent!!
+        }
+        assertEquals(Intent.ACTION_VIEW, started.action)
+        assertEquals("content", started.data!!.scheme)
+        assertEquals("application/pdf", started.type)
+        val copy = g.recordPhotos.sharedDir.listFiles()!!.single()
+        assertTrue(copy.readBytes().contentEquals(pdf))
+        compose.onNodeWithText(g.string(R.string.documents_unreadable)).assertDoesNotExist()
+        assertEquals(doc, runBlocking { g.db.documents().documentsFor(id) }.single().id)
+    }
+
+    private val pdf = "%PDF-1.4\n% made up for a test\n%%EOF\n".toByteArray()
 }

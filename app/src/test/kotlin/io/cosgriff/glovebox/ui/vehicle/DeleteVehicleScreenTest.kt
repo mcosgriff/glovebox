@@ -12,7 +12,6 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.DocumentEntity
-import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity

@@ -10,7 +10,6 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
@@ -379,7 +378,7 @@ class VehicleDetailsScreenTest {
     }
 
     @Test
-    fun `the cluster swap and check-in are written through the ViewModel one column at a time`() {
+    fun `a cluster swap set through the ViewModel leaves every other column alone`() {
         val id = g.add(VehicleFixtures.wagon.copy(nickname = "Keep me", oilSpec = "5W-30"))
         val vm = show(id)
         vm.setClusterSwap(ClusterSwap(on = LocalDate.of(2025, 1, 2), offset = 1_000, startReading = 5))
