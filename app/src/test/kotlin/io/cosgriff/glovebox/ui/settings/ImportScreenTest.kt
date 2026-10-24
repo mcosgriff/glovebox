@@ -59,7 +59,8 @@ class ImportScreenTest {
         var opened: Long? = null
         var asked = 0
         picker.attach { asked++ }
-        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = { opened = it }, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = vm()) }
+        val screenVm = vm()
+        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = { opened = it }, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = screenVm) }
 
         compose.waitForText(text(R.string.import_choose))
         compose.onNodeWithText(text(R.string.import_choose)).performClick()
@@ -92,7 +93,8 @@ class ImportScreenTest {
     fun `after a history import, See history points History at the vehicle`() {
         val id = runBlocking { g.vehicle() }
         var opened: Pair<Long, Boolean>? = null
-        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { v, a -> opened = v to a }, vm = vm(ImportRoute(id))) }
+        val screenVm = vm(ImportRoute(id))
+        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { v, a -> opened = v to a }, vm = screenVm) }
         compose.waitForText(text(R.string.import_choose))
         // The vehicle it was opened from is named, with nothing to choose.
         compose.onNodeWithText(text(R.string.import_into)).assertIsDisplayed()
@@ -113,7 +115,8 @@ class ImportScreenTest {
             val sold = g.vehicle(make = "Volkswagen", model = "GTI")
             g.db.vehicles().setArchived(sold, LocalDate.of(2025, 1, 1))
         }
-        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = vm()) }
+        val screenVm = vm()
+        compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = screenVm) }
         compose.waitForText(text(R.string.import_sold))
         pick("torque-specs.json")
         compose.waitForText(text(R.string.import_needs_vehicle))

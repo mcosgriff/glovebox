@@ -59,7 +59,8 @@ class BackupScreenTest {
         val asked = mutableListOf<String>()
         saver.attach { _, name -> asked += name }
         var restore = 0
-        compose.show { BackupScreen(onBack = {}, onRestore = { restore++ }, vm = BackupViewModel(g.settings, BackupWriter(g.db, g.crypto, g.settings), saver)) }
+        val vm = BackupViewModel(g.settings, BackupWriter(g.db, g.crypto, g.settings), saver)
+        compose.show { BackupScreen(onBack = {}, onRestore = { restore++ }, vm = vm) }
 
         compose.waitForText(text(R.string.backup_last, text(R.string.backup_never)))
         compose.waitForText(backupContents(1, 0, 0))
@@ -91,7 +92,8 @@ class BackupScreenTest {
     @Test
     fun `with nothing to back up the screen says so, and the reminder switch is the setting`() {
         runBlocking { g.settings.setLastBackup(LocalDate.of(2026, 1, 2)) }
-        compose.show { BackupScreen(onBack = {}, onRestore = {}, vm = BackupViewModel(g.settings, BackupWriter(g.db, g.crypto, g.settings), saver)) }
+        val vm = BackupViewModel(g.settings, BackupWriter(g.db, g.crypto, g.settings), saver)
+        compose.show { BackupScreen(onBack = {}, onRestore = {}, vm = vm) }
         compose.waitForText(text(R.string.backup_nothing))
         compose.waitForText("2026", substring = true)
         val reminder = compose.onNode(isToggleable() and androidx.compose.ui.test.hasText(text(R.string.backup_reminder), substring = true))

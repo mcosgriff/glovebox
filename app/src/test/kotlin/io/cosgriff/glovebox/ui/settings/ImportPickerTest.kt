@@ -1,6 +1,5 @@
 package io.cosgriff.glovebox.ui.settings
 
-import android.content.Context
 import android.net.Uri
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -20,7 +19,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -169,7 +167,7 @@ class ImportPickerTest {
     )
 
     private fun pdf(title: List<Pair<Float, String>>, entries: List<Entry>): ByteArray {
-        PDFBoxResourceLoader.init(g.context as Context)
+        PDFBoxResourceLoader.init(g.context)
         val page = PDPage(PDRectangle.LETTER)
         val height = page.mediaBox.height
         val out = ByteArrayOutputStream()

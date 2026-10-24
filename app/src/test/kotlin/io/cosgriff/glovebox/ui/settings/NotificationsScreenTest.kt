@@ -41,8 +41,9 @@ class NotificationsScreenTest {
 
     private fun saved(): Settings = runBlocking { g.settings.settings.first() }
 
-    private fun show(onOpenRules: () -> Unit = {}) = compose.show {
-        NotificationsScreen(onBack = {}, onOpenRules = onOpenRules, vm = NotificationsViewModel(g.settings, Notifier(g.context)))
+    private fun show(onOpenRules: () -> Unit = {}) {
+        val vm = NotificationsViewModel(g.settings, Notifier(g.context))
+        compose.show { NotificationsScreen(onBack = {}, onOpenRules = onOpenRules, vm = vm) }
     }
 
     private fun switch(title: String) = compose.onNode(isToggleable() and hasText(title)).performScrollTo()

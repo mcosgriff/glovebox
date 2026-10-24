@@ -52,14 +52,16 @@ class ExportSheetTest {
 
     @Test
     fun `with no vehicle there is nothing to export`() {
-        compose.show { ExportSheet(vehicleId = null, onDismiss = {}, vm = vm()) }
+        val screenVm = vm()
+        compose.show { ExportSheet(vehicleId = null, onDismiss = {}, vm = screenVm) }
         compose.waitForText(text(R.string.export_no_vehicle))
     }
 
     @Test
     fun `a vehicle with nothing on it can't be exported, and says so`() {
         runBlocking { g.vehicle() }
-        compose.show { ExportSheet(vehicleId = null, onDismiss = {}, vm = vm()) }
+        val screenVm = vm()
+        compose.show { ExportSheet(vehicleId = null, onDismiss = {}, vm = screenVm) }
         compose.waitForText(text(R.string.export_nothing))
         compose.onNodeWithText(text(R.string.export_button, AppExportWords.records(0))).assertIsNotEnabled()
     }

@@ -55,6 +55,7 @@ class SettingsScreenTest {
         }
         val opened = mutableListOf<String>()
         var schedule: Long? = null
+        val vm = SettingsViewModel(g.settings, g.db.vehicles(), g.db.catalogRules())
         compose.show {
             SettingsScreen(
                 onOpenRules = { opened += "rules" },
@@ -65,7 +66,7 @@ class SettingsScreenTest {
                 onOpenAbout = { opened += "about" },
                 onOpenSchedule = { schedule = it },
                 onOpenCategoryRules = { opened += "categories" },
-                vm = SettingsViewModel(g.settings, g.db.vehicles(), g.db.catalogRules()),
+                vm = vm,
             )
         }
         compose.waitForText(counted(R.plurals.settings_rules_note, 1, "1"))
@@ -108,9 +109,8 @@ class SettingsScreenTest {
 
     @Test
     fun `the app lock and when it locks are saved, and rows with nowhere to lead are left out`() {
-        compose.show {
-            SettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, vm = SettingsViewModel(g.settings, g.db.vehicles(), g.db.catalogRules()))
-        }
+        val vm = SettingsViewModel(g.settings, g.db.vehicles(), g.db.catalogRules())
+        compose.show { SettingsScreen({}, {}, {}, {}, {}, {}, {}, {}, vm = vm) }
         // Robolectric's phone reports a screen lock, so the lock can be set as on a phone that has one.
         compose.waitForText(text(R.string.settings_lock_the_app))
         compose.onNodeWithText(LockDelay.ONE_MINUTE.label).performClick()

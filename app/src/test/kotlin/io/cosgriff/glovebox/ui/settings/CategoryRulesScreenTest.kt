@@ -28,7 +28,10 @@ class CategoryRulesScreenTest {
     @get:Rule(order = 0) val g = TestGraph()
 
 
-    private fun show() = compose.show { CategoryRulesScreen(onBack = {}, vm = CategoryRulesViewModel(g.db.catalogRules())) }
+    private fun show() {
+        val vm = CategoryRulesViewModel(g.db.catalogRules())
+        compose.show { CategoryRulesScreen(onBack = {}, vm = vm) }
+    }
 
     @Test
     fun `with no rules the page says how they are made`() {

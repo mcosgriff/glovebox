@@ -43,7 +43,8 @@ class AboutScreenTest {
         val schedules = runBlocking { KnownScheduleCatalog(app).lists() }
         assertTrue("the app ships makers' schedules", schedules.isNotEmpty())
         val opened = mutableListOf<String>()
-        compose.show { AboutScreen(onBack = {}, onOpenPrivacy = { opened += "privacy" }, onOpenLicences = { opened += "licences" }, onMessage = {}, vm = vm()) }
+        val screenVm = vm()
+        compose.show { AboutScreen(onBack = {}, onOpenPrivacy = { opened += "privacy" }, onOpenLicences = { opened += "licences" }, onMessage = {}, vm = screenVm) }
         compose.onNodeWithText(text(R.string.about_vpic)).assertIsDisplayed()
         val first = schedules.first()
         compose.waitForText(text(R.string.about_known_schedule, first.title, first.source.note))
@@ -56,7 +57,8 @@ class AboutScreenTest {
     @Test
     fun `the source opens in the browser, or the screen says there is none`() {
         val messages = mutableListOf<String>()
-        compose.show { AboutScreen(onBack = {}, onOpenPrivacy = {}, onOpenLicences = {}, onMessage = { messages += it }, vm = vm()) }
+        val screenVm = vm()
+        compose.show { AboutScreen(onBack = {}, onOpenPrivacy = {}, onOpenLicences = {}, onMessage = { messages += it }, vm = screenVm) }
         compose.onNodeWithText(text(R.string.about_source)).performScrollTo().performClick()
         val opened = shadowOf(app).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, opened.action)
