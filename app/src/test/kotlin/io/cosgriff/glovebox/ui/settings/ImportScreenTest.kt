@@ -17,7 +17,6 @@ import io.cosgriff.glovebox.ui.ImportRoute
 import io.cosgriff.glovebox.ui.screens.PHONE
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -32,16 +31,15 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, qualifiers = PHONE, sdk = [35])
 class ImportScreenTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
 
-    private val g = TestGraph()
+    @get:Rule(order = 0) val g = TestGraph()
     private val picker = ImportPicker(g.context, g.appScope)
 
     init {
         runBlocking { g.resetSettings() }
     }
 
-    @After fun close() = g.close()
 
     private fun vm(route: ImportRoute = ImportRoute()) = ImportViewModel(
         g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), g.db.odometer(), g.db.milestones(),

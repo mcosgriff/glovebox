@@ -26,7 +26,6 @@ import io.cosgriff.glovebox.ui.screens.PHONE
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -42,16 +41,15 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, qualifiers = PHONE, sdk = [35])
 class BackupScreenTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 1) val compose = createComposeRule()
 
-    private val g = TestGraph()
+    @get:Rule(order = 0) val g = TestGraph()
     private val saver = ExportSaver(g.context, g.appScope)
 
     init {
         runBlocking { g.resetSettings() }
     }
 
-    @After fun close() = g.close()
 
     private fun field(i: Int) = compose.onAllNodes(hasSetTextAction())[i]
 

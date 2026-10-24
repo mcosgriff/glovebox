@@ -41,8 +41,11 @@ import java.time.LocalDate
  * driver, as `:data`'s tests build it), the real settings store, and the app's classes built over them the way
  * Hilt builds them. Nothing here is a mock; the encryption key store is the one thing Robolectric lacks, and no
  * test here reaches it.
+ *
+ * Use it as a rule (`@get:Rule(order = 0)`), outside the compose rule, so the database closes after the screens
+ * that read it have gone.
  */
-class TestGraph : Closeable {
+class TestGraph : org.junit.rules.ExternalResource(), Closeable {
     val context: Context = ApplicationProvider.getApplicationContext()
     val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
     val settings = SettingsRepository(context)
@@ -76,6 +79,9 @@ class TestGraph : Closeable {
     suspend fun resetSettings() {
         settingsStore(context).edit { it.clear() }
     }
+
+    /** As a rule, ordered outside the compose rule, it closes only once the screen has gone. */
+    override fun after() = close()
 
     override fun close() {
         appScope.cancel()

@@ -10,7 +10,6 @@ import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -31,9 +30,9 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
 class RestoreViewModelTest {
-    @get:Rule val main = MainDispatcherRule()
+    @get:Rule(order = 1) val main = MainDispatcherRule()
 
-    private val g = TestGraph()
+    @get:Rule(order = 0) val g = TestGraph()
     private val picker = RestorePicker(g.context, g.appScope)
     private val restorer = BackupRestorer(g.db, g.crypto, g.settings, NoticeLogStore(g.context))
     private val res get() = AppText.res
@@ -41,7 +40,6 @@ class RestoreViewModelTest {
 
     @Before fun reset() = runBlocking { g.resetSettings() }
 
-    @After fun close() = g.close()
 
     /** A backup of what is on the phone now, made with [password], as a file the user could pick. */
     private suspend fun backup(password: String): File {

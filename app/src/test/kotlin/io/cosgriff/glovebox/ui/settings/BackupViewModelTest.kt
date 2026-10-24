@@ -12,7 +12,6 @@ import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -33,9 +32,9 @@ import java.time.LocalDate
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
 class BackupViewModelTest {
-    @get:Rule val main = MainDispatcherRule()
+    @get:Rule(order = 1) val main = MainDispatcherRule()
 
-    private val g = TestGraph()
+    @get:Rule(order = 0) val g = TestGraph()
     private val saver = ExportSaver(g.context, g.appScope)
     private val writer = BackupWriter(g.db, g.crypto, g.settings)
 
@@ -45,7 +44,6 @@ class BackupViewModelTest {
 
     @Before fun reset() = runBlocking { g.resetSettings() }
 
-    @After fun close() = g.close()
 
     private suspend fun vm(): BackupViewModel = BackupViewModel(g.settings, writer, saver).also { vm -> eventually { vm.contents != null } }
 
