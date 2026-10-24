@@ -371,3 +371,10 @@ private fun scrollIntoView(node: androidx.compose.ui.test.SemanticsNodeInteracti
         .any { it.config.contains(androidx.compose.ui.semantics.SemanticsActions.ScrollBy) }
     if (inScroller) node.performScrollTo()
 }
+
+/** Switches to the bottom bar's tab labelled [label]. */
+fun ComposeTestRule.tab(label: String) {
+    waitUntil(10_000) { onAllNodes(androidx.compose.ui.test.hasText(label) and androidx.compose.ui.test.isSelectable()).fetchSemanticsNodes().isNotEmpty() }
+    onAllNodes(androidx.compose.ui.test.hasText(label) and androidx.compose.ui.test.isSelectable()).onLast().performClick()
+    waitForIdle()
+}
