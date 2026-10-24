@@ -23,6 +23,13 @@ a{color:#C2410C}a:hover{color:#9A3412}
     <a href="ExportSheet.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Export · PDF / MD</a>
   </div>
 
+  <div style="padding: 12px 20px 0 20px">
+    <div role="tablist" aria-label="History view" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #E9E7E0">
+      <a href="History.dc.html" role="tab" aria-selected="true" style="height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #17191C; text-decoration: none; background: #FFFFFF; box-shadow: 0 1px 3px rgba(23,25,28,0.18)">List</a>
+      <a href="Timeline.dc.html" role="tab" aria-selected="false" style="height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #3A3E44; text-decoration: none">Timeline</a>
+    </div>
+  </div>
+
   <div style="display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto">
     <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
       <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>

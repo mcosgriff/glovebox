@@ -56,3 +56,4 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 9d · Delete all data | `screens/DeleteAll.png` | `source/DeleteAll.dc.html` |
 | 6c · Edit service + undo | `screens/EditRecord.png` | `source/EditRecord.dc.html` |
 | 6d · Delete record + undo | `screens/DeleteRecord.png` | `source/DeleteRecord.dc.html` |
+| 6e · History — timeline view | `screens/Timeline.png` | `source/Timeline.dc.html` |
