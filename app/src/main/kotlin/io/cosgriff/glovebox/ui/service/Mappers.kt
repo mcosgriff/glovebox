@@ -63,6 +63,9 @@ val shortDate: DateTimeFormatter get() = AppText.current.shortDate
 /** "Oct 2026" */
 val monthYear: DateTimeFormatter get() = AppText.current.monthYear
 
+/** "2026" */
+val yearOnly: DateTimeFormatter get() = AppText.current.year
+
 /** "12,345": a count. A distance always goes through [asDistance], which says its unit. */
 fun Int.asNumber(): String = AppText.current.number.format(this)
 

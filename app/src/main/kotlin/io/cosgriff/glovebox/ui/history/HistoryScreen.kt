@@ -124,6 +124,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.semantics.Role
 import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.components.Chevron
+import io.cosgriff.glovebox.domain.ItemStatus
+import io.cosgriff.glovebox.domain.ReminderProgress
+import io.cosgriff.glovebox.ui.garage.GarageOverview
 
 data class HistoryState(
     val vehicles: List<VehicleEntity>,
@@ -133,6 +136,11 @@ data class HistoryState(
     val records: List<ServiceRecordWithItems>,
     /** Lines under Custom that sorting could file (`CustomLines`); none for an archived vehicle, which is read only. */
     val customLines: CustomCount = CustomCount(0, 0),
+    /**
+     * The vehicle's next reminder for the timeline: `ComingUp.next`, from the same statuses as the Reminders
+     * tab. Null when nothing is counting down, and for a sold vehicle, which has no reminders.
+     */
+    val next: Pair<ItemStatus, ReminderProgress>? = null,
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -150,6 +158,7 @@ class HistoryViewModel @Inject constructor(
     service: ServiceDao,
     recalls: RecallDao,
     private val actions: RecordActions,
+    overview: GarageOverview,
 ) : ViewModel() {
     /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
     private val archivedId: Long? = savedStateHandle.routeOrNull<ArchivedHistoryRoute>()?.vehicleId
@@ -192,6 +201,15 @@ class HistoryViewModel @Inject constructor(
         savedStateHandle[DESCENDING] = chosen.descending
     }
 
+    /** List or timeline; kept like the order, across vehicles and through a restart. */
+    var view by mutableStateOf(enumOrNull<HistoryView>(savedStateHandle.get<String>(VIEW)) ?: HistoryView.LIST)
+        private set
+
+    fun chooseView(chosen: HistoryView) {
+        view = chosen
+        savedStateHandle[VIEW] = chosen.name
+    }
+
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
             combine(vehicles.observe(archivedId), service.observeRecords(archivedId)) { vehicle, records ->
@@ -204,8 +222,11 @@ class HistoryViewModel @Inject constructor(
                 if (vehicle == null) {
                     flowOf(HistoryState(list, null, emptyList()))
                 } else {
-                    combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id)) { records, recallRows ->
-                        HistoryState(list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())))
+                    combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id), overview.garage) { records, recallRows, garage ->
+                        HistoryState(
+                            list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())),
+                            next = garage.vehicles.firstOrNull { it.vehicle.id == vehicle.id }?.comingUp?.next,
+                        )
                     }
                 }
             }
@@ -241,6 +262,7 @@ class HistoryViewModel @Inject constructor(
         const val SEARCH = "search"
         const val SORT_BY = "sortBy"
         const val DESCENDING = "descending"
+        const val VIEW = "view"
     }
 
     /** History is being left: the mark has been seen, and the next visit starts wherever the user left it. */
@@ -254,6 +276,8 @@ fun HistoryScreen(
     onSortCustom: ((vehicleId: Long) -> Unit)? = null,
     /** Shown as a back arrow; the History tab itself has none. */
     onBack: (() -> Unit)? = null,
+    /** Log service with that job ticked, from the timeline's next reminder. */
+    onLogIt: ((vehicleId: Long, scheduleItemId: Long) -> Unit)? = null,
     vm: HistoryViewModel = hiltViewModel(),
 ) {
     val state = vm.state.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -268,6 +292,7 @@ fun HistoryScreen(
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
         onChooseOrder = vm::chooseOrder, search = vm.search, onSearch = vm::search,
         onSortCustom = onSortCustom?.let { open -> state.vehicle?.let { v -> { open(v.id) } } },
+        view = vm.view, onChooseView = vm::chooseView, onLogIt = onLogIt,
     )
 }
 
@@ -291,6 +316,9 @@ internal fun HistoryContent(
     search: String = "",
     onSearch: (String) -> Unit = {},
     onSortCustom: (() -> Unit)? = null,
+    view: HistoryView = HistoryView.LIST,
+    onChooseView: (HistoryView) -> Unit = {},
+    onLogIt: ((vehicleId: Long, scheduleItemId: Long) -> Unit)? = null,
 ) {
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
@@ -310,9 +338,13 @@ internal fun HistoryContent(
     val shown = groups.flatten()
     // A record's cost covers all of its lines, so it can't be split by category: no line while a filter is on.
     val searching = HistorySearch.query(search) != null
-    val spending = if (filter == null && !searching) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
+    // The switch only shows with records to lay out; the choice is kept for when there are some.
+    val timeline = view == HistoryView.TIMELINE && state.records.isNotEmpty()
+    // The spending line is the list's; the timeline shows time, not money.
+    val spending = if (filter == null && !searching && !timeline) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
 
     val listState = rememberLazyListState()
+    val timelineState = rememberLazyListState()
     // A new order starts at the top. Without this the list would hold on to the record that was first and
     // follow it to wherever it now sorts; coming back from a record keeps the place, since that is a new composition.
     var lastOrder by remember { mutableStateOf(order) }
@@ -347,7 +379,8 @@ internal fun HistoryContent(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    if (state.records.size > 1) SortControls(order, onChooseOrder)
+                    // The timeline always runs newest first, so there is nothing to sort.
+                    if (state.records.size > 1 && !timeline) SortControls(order, onChooseOrder)
                 }
             }
             spending?.let { SpendingLine(it) }
@@ -361,6 +394,10 @@ internal fun HistoryContent(
                     )
                 }
             }
+        }
+
+        if (state.vehicle != null && state.records.isNotEmpty()) {
+            HistoryViewSwitch(view, onChooseView, Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 8.dp))
         }
 
         if (state.vehicles.size > 1) {
@@ -390,6 +427,24 @@ internal fun HistoryContent(
                 TextButton(onClick = { onSearch("") }, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.history_search_show_all))
                 }
+            }
+            timeline -> {
+                // Always by date, newest first, whatever the list's order: a visit is one entry, where its newest record is.
+                val byDate = HistoryOrdering.sorted(
+                    state.records, HistoryOrder(HistorySort.DATE, descending = true),
+                    date = { it.record.date }, dash = { swap.toDash(it.record.odometer, it.record.date) }, id = { it.record.id },
+                )
+                HistoryTimelineList(
+                    vehicle = state.vehicle,
+                    groups = Visits.grouped(byDate) { it.record.visitId }.filter { g -> g.any(::matches) },
+                    // Like the spending line, the next reminder is about the whole vehicle, so it goes while a filter or search is on.
+                    next = state.next.takeIf { filter == null && !searching },
+                    since = state.records.minOfOrNull { it.record.date },
+                    fresh = fresh,
+                    listState = timelineState,
+                    onOpenRecord = onOpenRecord,
+                    onLogIt = onLogIt.takeIf { !archived },
+                )
             }
             else -> LazyColumn(
                 state = listState,

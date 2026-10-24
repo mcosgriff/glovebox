@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.ui.components.asChoice
 import io.cosgriff.glovebox.ui.garage.Garage
 import io.cosgriff.glovebox.ui.garage.GarageContent
 import io.cosgriff.glovebox.ui.history.HistoryContent
+import io.cosgriff.glovebox.ui.history.HistoryView
 import io.cosgriff.glovebox.ui.history.RecordDetailContent
 import io.cosgriff.glovebox.ui.recalls.MarkDoneSheet
 import io.cosgriff.glovebox.ui.reminders.RemindersContent
@@ -159,6 +160,26 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
             onSortCustom = {},
+        )
+    }
+
+    /** 6e · History — timeline view: the next reminder, the records under their years with the time between, and the key. */
+    @Test
+    fun historyTimeline() = compose.shoot("history_timeline", shade) {
+        HistoryContent(
+            Fixtures.historyTimeline, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            onSortCustom = {}, view = HistoryView.TIMELINE, onLogIt = { _, _ -> },
+        )
+    }
+
+    /** A visit on the timeline is one entry, with each of its records. */
+    @Test
+    fun historyTimelineVisit() = compose.shoot("history_timeline_visit", shade) {
+        HistoryContent(
+            Fixtures.historyWithVisit, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            view = HistoryView.TIMELINE,
         )
     }
 

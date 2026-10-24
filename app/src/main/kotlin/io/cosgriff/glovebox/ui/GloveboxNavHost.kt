@@ -604,6 +604,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 HistoryScreen(
                     onOpenRecord = { recordId -> nav.push(RecordDetailRoute(recordId)) },
                     onSortCustom = { vehicleId -> nav.push(SortCustomRoute(vehicleId)) },
+                    onLogIt = { vehicleId, scheduleItemId -> nav.push(LogServiceRoute(vehicleId, scheduleItemId = scheduleItemId)) },
                 )
             }
             screen<SortCustomRoute> { SortCustomScreen(onBack = { nav.pop() }) }
