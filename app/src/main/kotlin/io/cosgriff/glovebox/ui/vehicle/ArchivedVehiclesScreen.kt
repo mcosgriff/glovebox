@@ -3,7 +3,7 @@ package io.cosgriff.glovebox.ui.vehicle
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
-import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill

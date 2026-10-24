@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -48,8 +49,8 @@ class VehicleHomeScreenTest {
     private fun show(id: Long, updateMileage: Boolean = false, until: String) {
         val vm = g.viewModel {
             VehicleHomeViewModel(
-                routeHandle(VehicleHomeRoute(id, updateMileage)), g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(),
-                g.settings, g.db.recalls(), g.recallRepository,
+                routeHandle(VehicleHomeRoute(id, updateMileage)), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings),
+                g.db.odometer(), g.db.recalls(), g.recallRepository,
             )
         }
         compose.setContent {

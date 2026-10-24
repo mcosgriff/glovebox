@@ -1,7 +1,7 @@
 package io.cosgriff.glovebox.notify
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.domain.enumOrNull
-import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.domain.BackupRules
@@ -20,9 +20,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
@@ -37,7 +34,6 @@ import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleCheckIn
-import io.cosgriff.glovebox.domain.asReadOn
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
@@ -50,9 +46,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 interface NotifyEntryPoint {
     fun vehicles(): VehicleDao
-    fun schedule(): ScheduleDao
-    fun service(): ServiceDao
-    fun odometer(): OdometerDao
+    fun logs(): VehicleLogs
     fun settings(): SettingsRepository
     fun noticeLog(): NoticeLogStore
     fun recalls(): RecallRepository
@@ -76,14 +70,12 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val settings = deps.settings().settings.first()
         val today = LocalDate.now()
         // Sold vehicles are in the archive and get no reminders of any kind.
-        val vehicles = deps.vehicles().active().map { v ->
-            val log = v.log(deps.schedule().allFor(v.id), deps.service().recordsFor(v.id), deps.odometer().readingsFor(v.id), settings)
+        val vehicles = deps.vehicles().active().mapNotNull { v ->
+            val log = deps.logs().load(v.id) ?: return@mapNotNull null
             NoticeVehicle(
                 id = v.id,
                 name = v.shortName(),
-                // Last done goes in as it was read, so recording a cluster replacement doesn't look like the
-                // service being logged again (NoticeRules.cycle) and announce everything a second time.
-                statuses = log.statuses(today).map { s -> s.copy(lastDone = s.lastDone?.let { log.swap.asReadOn(it) }) },
+                statuses = log.statusesAsRead(today),
                 lastReadingOn = ServiceLog.readings(log.entries, log.updates).maxOfOrNull { it.date },
                 checkIn = VehicleCheckIn.of(v.mileageCheckInDays),
             )

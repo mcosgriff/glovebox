@@ -340,6 +340,10 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
     fun observeAll(vehicleId: Long): Flow<List<ScheduleItemEntity>>
 
+    /** Every vehicle's schedule items, tracked or not. */
+    @Query("SELECT * FROM schedule_items ORDER BY name")
+    fun observeEvery(): Flow<List<ScheduleItemEntity>>
+
     /** Tracked and untracked. */
     @Query("SELECT * FROM schedule_items WHERE vehicleId = :vehicleId ORDER BY name")
     suspend fun allFor(vehicleId: Long): List<ScheduleItemEntity>

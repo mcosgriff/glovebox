@@ -1,9 +1,9 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -75,13 +75,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.nhtsa.toStored
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
@@ -101,10 +97,9 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -122,11 +117,8 @@ data class VehicleHome(
 @HiltViewModel
 class VehicleHomeViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
-    service: ServiceDao,
+    logs: VehicleLogs,
     private val odometer: OdometerDao,
-    settings: SettingsRepository,
     recalls: RecallDao,
     recallRepository: RecallRepository,
 ) : ViewModel() {
@@ -146,19 +138,12 @@ class VehicleHomeViewModel @Inject constructor(
         .screenState(viewModelScope, OpenRecalls(0, null))
 
     /** Null while loading, and if the vehicle no longer exists. Recomputed whenever the log changes. */
-    val home: StateFlow<VehicleHome?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeTracked(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
-        settings.settings,
-    ) { vehicle, items, records, readings, s ->
-        if (vehicle == null) return@combine null
-        val log = vehicle.log(items, records, readings, s)
+    val home: StateFlow<VehicleHome?> = logs.observe(vehicleId).map { log ->
+        log ?: return@map null
         VehicleHome(
-            vehicle = vehicle,
+            vehicle = log.vehicle,
             odometer = log.odometer,
-            defaultRule = s.defaultRule,
+            defaultRule = log.defaultRule,
             comingUp = ReminderPresentation.comingUp(log.statuses(LocalDate.now())),
             inputs = log.inputs,
         )

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -59,7 +60,7 @@ class RemindersScreenTest {
     private fun show() {
         vm = world.viewModel(RemindersViewModel::class) {
             RemindersViewModel(
-                GarageOverview(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings, world.db.recalls()),
+                GarageOverview(VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings), world.db.recalls()),
                 world.db.schedule(), Notifier(world.context),
             )
         }

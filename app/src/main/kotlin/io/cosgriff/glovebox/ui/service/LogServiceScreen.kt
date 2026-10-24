@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.log.toRef
+import io.cosgriff.glovebox.data.log.answering
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.domain.ReminderPresentation
@@ -97,15 +100,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
@@ -293,11 +292,8 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
 @HiltViewModel
 class LogServiceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
+    logs: VehicleLogs,
     service: ServiceDao,
-    odometer: OdometerDao,
-    settings: SettingsRepository,
     catalogRules: CatalogRuleDao,
     private val actions: RecordActions,
     private val photoPicker: RecordPhotoPicker,
@@ -330,15 +326,14 @@ class LogServiceViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val vehicle = vehicles.observe(vehicleId).first()
-            val items = schedule.allFor(vehicleId)
-            val prefs = settings.settings.first()
-            val defaultRule = prefs.defaultRule
-            val records = service.recordsFor(vehicleId)
+            // The form has nothing to log against once the vehicle has gone.
+            val log = logs.load(vehicleId) ?: return@launch
+            val vehicle = log.vehicle
+            val items = log.items
+            val defaultRule = log.defaultRule
+            val records = log.records
             form.shops = service.observeShops().first().map { ShopUse(it.name, it.date, it.id) }
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
-            // The form has nothing to log against once the vehicle has gone.
-            val log = (vehicle ?: return@launch).log(items, records, odometer.readingsFor(vehicleId), prefs)
             val swap = log.swap
             val entries = log.entries
             val others = entries.filter { it.id != original?.record?.id }
@@ -394,7 +389,7 @@ class LogServiceViewModel @Inject constructor(
 
             form.categoryId = categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: categories.first().id
             form.data = LogServiceData(
-                vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
+                vehicleName = vehicle.shortName(),
                 categories = categories,
                 due = due,
                 tracked = tracked,
@@ -402,9 +397,9 @@ class LogServiceViewModel @Inject constructor(
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
                 swap = swap,
-                unit = vehicle?.unit ?: DistanceUnit.MILES,
+                unit = vehicle.unit,
                 answering = items.answering(),
-                specs = vehicle?.whatItTakes() ?: WhatItTakes(),
+                specs = vehicle.whatItTakes(),
                 original = original,
                 rules = catalogRules.all().map { it.toRule() },
             )

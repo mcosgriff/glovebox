@@ -75,11 +75,11 @@ import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.service.RecordActions
-import io.cosgriff.glovebox.ui.service.answering
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.answering
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.data.log.toEntry
+import io.cosgriff.glovebox.data.log.toTracked
 import io.cosgriff.glovebox.ui.service.unit
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

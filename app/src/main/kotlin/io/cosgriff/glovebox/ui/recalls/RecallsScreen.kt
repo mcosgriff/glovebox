@@ -2,7 +2,7 @@ package io.cosgriff.glovebox.ui.recalls
 
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.RecallView
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton

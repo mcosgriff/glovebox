@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.history
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -66,7 +67,7 @@ class HistoryScreenTest {
         }
     }
 
-    private fun overview() = GarageOverview(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings, t.db.recalls())
+    private fun overview() = GarageOverview(VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.recalls())
 
     /** History opens on the timeline; these tests read the list unless they say so. */
     private fun listHandle() = SavedStateHandle(mapOf("view" to HistoryView.LIST.name))

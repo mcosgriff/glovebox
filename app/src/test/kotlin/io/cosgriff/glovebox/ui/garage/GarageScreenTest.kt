@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasScrollAction
@@ -96,7 +97,7 @@ class GarageScreenTest {
     }
 
     private fun viewModel() = GarageViewModel(
-        GarageOverview(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings, db.recalls()),
+        GarageOverview(VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings), db.recalls()),
         FakeNhtsa().repository(db, settings),
         db.vehicles(),
     )

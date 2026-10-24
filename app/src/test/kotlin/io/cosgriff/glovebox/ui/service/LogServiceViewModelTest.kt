@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -47,7 +48,7 @@ class LogServiceViewModelTest {
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T = LogServiceViewModel(
-                    routeHandle(route), t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings,
+                    routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(),
                     t.db.catalogRules(), t.actions, t.picker,
                 ) as T
             },

@@ -92,15 +92,15 @@ import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
+import io.cosgriff.glovebox.data.log.clusterSwap
+import io.cosgriff.glovebox.data.log.toEntry
+import io.cosgriff.glovebox.data.log.toReadings
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.ui.service.answering
-import io.cosgriff.glovebox.ui.service.activeInterval
+import io.cosgriff.glovebox.data.log.answering
+import io.cosgriff.glovebox.data.log.activeInterval
 import javax.inject.Inject
 
 /** A real, logged service with both intervals, used as the worked example. */

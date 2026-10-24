@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -178,9 +179,7 @@ class ShellGraph(private val app: Application) {
         }
 
         override fun vehicles() = db.vehicles()
-        override fun schedule() = db.schedule()
-        override fun service() = db.service()
-        override fun odometer() = db.odometer()
+        override fun logs() = get<VehicleLogs>()
         override fun settings() = get<SettingsRepository>()
         override fun noticeLog() = get<io.cosgriff.glovebox.data.settings.NoticeLogStore>()
         override fun recalls() = get<io.cosgriff.glovebox.data.nhtsa.RecallRepository>()

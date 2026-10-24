@@ -6,7 +6,7 @@ import io.cosgriff.glovebox.ui.service.editableDecimal
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -152,7 +152,7 @@ import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

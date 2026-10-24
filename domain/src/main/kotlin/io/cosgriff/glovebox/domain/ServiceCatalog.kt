@@ -359,7 +359,31 @@ data class TrackedItem(
      * replaced. A schedule counts from there, so "one interval from zero" is this plus the interval.
      */
     val zeroAt: Int = 0,
-)
+) {
+    companion object {
+        /**
+         * A schedule item as a reminder; null when it is none: it has no usable [interval], or it is a job only
+         * for severe use on a vehicle not on the severe schedule (on the list, switched off). [firstMiles] is
+         * distance really covered, and is put in dash terms here through [swap], as everything reminders count
+         * is. **Pass the vehicle's swap wherever statuses are worked out.**
+         */
+        fun of(
+            id: Long,
+            name: String,
+            interval: Interval?,
+            rule: DueRule,
+            snooze: Snooze?,
+            firstMiles: Int?,
+            severeOnly: Boolean,
+            useSevere: Boolean,
+            swap: ClusterSwap?,
+        ): TrackedItem? {
+            if (interval == null || (severeOnly && !useSevere)) return null
+            val zeroAt = -(swap?.offset ?: 0)
+            return TrackedItem(id, name, interval, rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
+        }
+    }
+}
 
 /**
  * For a job with nothing logged that the vehicle is already past: the schedule's most recent point
