@@ -73,7 +73,23 @@ internal class ServiceTestDb {
 
     fun hasFile(name: String) = File(photoDir, name).exists()
 
+    /** ViewModels made by a test, cleared before the database closes so none is left reading a closed one. */
+    private val viewModels = androidx.lifecycle.ViewModelStore()
+    private var owned = 0
+
+    fun <T : androidx.lifecycle.ViewModel> owned(vm: T): T {
+        androidx.lifecycle.ViewModelProvider.create(
+            viewModels,
+            object : androidx.lifecycle.ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <V : androidx.lifecycle.ViewModel> create(modelClass: kotlin.reflect.KClass<V>, extras: androidx.lifecycle.viewmodel.CreationExtras): V = vm as V
+            },
+        )["vm-${owned++}", vm::class]
+        return vm
+    }
+
     fun close() {
+        viewModels.clear()
         db.close()
         photoDir.deleteRecursively()
     }
@@ -141,4 +157,14 @@ internal fun awaitUntil(what: String = "the condition", timeoutMs: Long = 5_000,
         check(System.currentTimeMillis() < end) { "Timed out waiting for $what" }
         Thread.sleep(5)
     }
+}
+
+/**
+ * FileProvider keeps each authority's folders for the life of the process, and every Robolectric test has a
+ * folder of its own, so the one cached by an earlier test would refuse this test's files. Call before a test
+ * that hands a file out.
+ */
+internal fun forgetFileProviderRoots() {
+    val cache = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache").apply { isAccessible = true }.get(null) as MutableMap<*, *>
+    synchronized(cache) { cache.clear() }
 }
