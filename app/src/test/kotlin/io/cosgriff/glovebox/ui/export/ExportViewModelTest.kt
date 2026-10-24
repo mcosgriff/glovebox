@@ -30,6 +30,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.time.LocalDate
@@ -39,6 +40,7 @@ import java.time.LocalDate
  * clear and handed to "save as", which is the only place it stays.
  */
 @RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(application = ScreenshotApp::class, sdk = [35], shadows = [ShadowPdfDocument::class])
 class ExportViewModelTest {
     @get:Rule(order = 0) val g = TestGraph()
@@ -49,7 +51,7 @@ class ExportViewModelTest {
     private val day = LocalDate.of(2025, 5, 4)
 
     private fun vm() = ExportViewModel(
-        g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver,
+        g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver, ReportFonts(g.context),
     )
 
     /** A made-up vehicle with a record, a schedule item, a recall and a document on file. */
@@ -130,7 +132,7 @@ class ExportViewModelTest {
     }
 
     @Test
-    fun `a Markdown export is written to a working file, offered to save as, and gone once copied out`() = runTest {
+    fun `a Markdown export asks where to save it, then is written straight there`() = runTest {
         fullVehicle()
         saver.attach { mime, name -> asked += mime to name }
         val vm = vm()
@@ -149,11 +151,11 @@ class ExportViewModelTest {
         assertTrue(text.contains("JTEBU5JR7K5900001"))
         assertTrue(text.contains("Oil & filter change"))
         assertTrue(text.contains("Corner Garage"))
-        assertTrue("the working copy in the clear is gone", File(g.context.cacheDir, "export").listFiles().orEmpty().isEmpty())
+        assertTrue("nothing is written in the clear inside the app", File(g.context.cacheDir, "export").listFiles().orEmpty().isEmpty())
     }
 
     @Test
-    fun `a PDF export draws each record with its photos, through the encrypted photo store`() = runTest {
+    fun `a PDF export draws the report with its photos, through the encrypted photo store`() = runTest {
         val jpeg = ByteArrayOutputStream().also { Bitmap.createBitmap(40, 30, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.GRAY) }.compress(Bitmap.CompressFormat.JPEG, 90, it) }.toByteArray()
         g.crypto.encryptTo("photo-1.enc", jpeg.inputStream())
         fullVehicle(photo = "photo-1.enc")
@@ -173,7 +175,7 @@ class ExportViewModelTest {
         val drawn = pages(out.readBytes()).flatten()
         assertTrue(drawn.contains("JTEBU5JR7K5900001"))
         assertTrue(drawn.toString(), drawn.any { it.startsWith("[picture") })
-        assertTrue(drawn.contains(io.cosgriff.glovebox.domain.Recalls.campaignLabel("99V999000")))
+        assertTrue(drawn.any { it.contains(io.cosgriff.glovebox.domain.Recalls.campaignLabel("99V999000")) })
     }
 
     @Test

@@ -30,10 +30,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.time.LocalDate
 
 /** The export sheet: choose the vehicle, the dates and what goes in, see the file's name, and export. */
 @RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(application = ScreenshotApp::class, qualifiers = PHONE, sdk = [35], shadows = [ShadowPdfDocument::class])
 class ExportSheetTest {
     @get:Rule(order = 0) val g = TestGraph()
@@ -41,7 +43,7 @@ class ExportSheetTest {
 
     private val saver = ExportSaver(g.context, g.appScope)
 
-    private fun vm() = ExportViewModel(g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver)
+    private fun vm() = ExportViewModel(g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver, ReportFonts(g.context))
 
     private fun record(id: Long, date: LocalDate) = runBlocking {
         g.db.service().insertWithItems(
