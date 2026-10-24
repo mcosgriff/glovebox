@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.components.ZoomableImage
 import android.Manifest
 import android.app.Application
 import androidx.compose.foundation.layout.size

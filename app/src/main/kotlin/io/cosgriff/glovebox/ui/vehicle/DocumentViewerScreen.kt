@@ -66,7 +66,7 @@ import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentFormat
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.DocumentViewerRoute
-import io.cosgriff.glovebox.ui.photo.ZoomableImage
+import io.cosgriff.glovebox.ui.components.ZoomableImage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
