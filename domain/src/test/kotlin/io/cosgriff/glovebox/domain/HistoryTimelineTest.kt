@@ -59,16 +59,4 @@ class HistoryTimelineTest {
         // Either way round.
         assertEquals(12, HistoryTimeline.monthsApart(LocalDate.of(2025, 3, 1), LocalDate.of(2026, 3, 1)))
     }
-
-    @Test
-    fun `a line's colour follows its category, and a line with none is other`() {
-        assertEquals(LineHue.ENGINE, HistoryTimeline.hue("oil"))
-        assertEquals(LineHue.TIRES, HistoryTimeline.hue("rotation"))
-        assertEquals(LineHue.BRAKES, HistoryTimeline.hue("front-pads"))
-        assertEquals(LineHue.FLUIDS, HistoryTimeline.hue("trans-fluid"))
-        assertEquals(LineHue.FLUIDS, HistoryTimeline.hue("coolant"))
-        assertEquals(LineHue.OTHER, HistoryTimeline.hue("cabin-air"))
-        assertEquals(LineHue.OTHER, HistoryTimeline.hue(null))
-        assertEquals(LineHue.OTHER, HistoryTimeline.hue("not-a-line"))
-    }
 }

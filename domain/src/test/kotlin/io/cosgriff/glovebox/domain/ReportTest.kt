@@ -17,17 +17,17 @@ class ReportTest {
     private val diffFluid = TrackedItem(4, "Diff fluid", Interval(30_000, null), DueRule.MILEAGE_ONLY)
     private val cabin = TrackedItem(5, "Cabin air filter", Interval(30_000, null), DueRule.MILEAGE_ONLY)
     private val categories = mapOf(
-        1L to ReportCategory.OIL_ENGINE,
-        2L to ReportCategory.TIRES,
-        3L to ReportCategory.BRAKES,
-        4L to ReportCategory.FLUIDS_4WD,
-        5L to ReportCategory.OTHER,
+        1L to ServiceGroup.OIL_ENGINE,
+        2L to ServiceGroup.TIRES,
+        3L to ServiceGroup.BRAKES,
+        4L to ServiceGroup.FLUIDS_4WD,
+        5L to ServiceGroup.OTHER,
     )
 
-    private val fluids = record(LocalDate.of(2025, 10, 18), 50_200, diy = false, ReportCategory.FLUIDS_4WD)
-    private val brakes = record(LocalDate.of(2026, 2, 2), 54_800, diy = true, ReportCategory.BRAKES)
-    private val june = record(LocalDate.of(2026, 6, 14), 60_100, diy = false, ReportCategory.OIL_ENGINE, ReportCategory.TIRES)
-    private val october = record(LocalDate.of(2026, 10, 10), 68_412, diy = true, ReportCategory.OIL_ENGINE, ReportCategory.TIRES)
+    private val fluids = record(LocalDate.of(2025, 10, 18), 50_200, diy = false, ServiceGroup.FLUIDS_4WD)
+    private val brakes = record(LocalDate.of(2026, 2, 2), 54_800, diy = true, ServiceGroup.BRAKES)
+    private val june = record(LocalDate.of(2026, 6, 14), 60_100, diy = false, ServiceGroup.OIL_ENGINE, ServiceGroup.TIRES)
+    private val october = record(LocalDate.of(2026, 10, 10), 68_412, diy = true, ServiceGroup.OIL_ENGINE, ServiceGroup.TIRES)
     private val records = listOf(fluids, brakes, june, october)
 
     private val entries = listOf(
@@ -38,7 +38,7 @@ class ReportTest {
         ServiceEntry(5, LocalDate.of(2025, 6, 1), 45_000, setOf(5)),
     )
 
-    private fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg categories: ReportCategory) =
+    private fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg categories: ServiceGroup) =
         ExportRecord(date, odometer, categories.map { it.name }, if (diy) "DIY" else "Shop", null, null, diy = diy, categories = categories.toList())
 
     private fun vehicle(
@@ -63,20 +63,6 @@ class ReportTest {
 
     private fun model(v: ExportVehicle = vehicle(), options: ExportOptions = ExportOptions()) =
         Reports.build(Exports.document(listOf(v), options, today)).single()
-
-    @Test
-    fun `categories come from the service catalog`() {
-        assertEquals(ReportCategory.OIL_ENGINE, ReportCategory.ofLine("oil"))
-        assertEquals(ReportCategory.OIL_ENGINE, ReportCategory.ofLine("engine-air"))
-        assertEquals(ReportCategory.TIRES, ReportCategory.ofLine("rotation"))
-        assertEquals(ReportCategory.BRAKES, ReportCategory.ofLine("front-pads"))
-        assertEquals(ReportCategory.FLUIDS_4WD, ReportCategory.ofLine("transfer-case"))
-        assertEquals(ReportCategory.OTHER, ReportCategory.ofLine("wipers"))
-        assertEquals(ReportCategory.OTHER, ReportCategory.ofLine(null))
-        assertEquals(ReportCategory.OIL_ENGINE, ReportCategory.ofItem(templateKey = "oil", service = null))
-        assertEquals(ReportCategory.BRAKES, ReportCategory.ofItem(templateKey = null, service = "brake-inspect"))
-        assertEquals(ReportCategory.OTHER, ReportCategory.ofItem(templateKey = null, service = null))
-    }
 
     @Test
     fun `stat tiles count the export's records, the distance since the first, and the recalls marked done`() {
@@ -122,16 +108,17 @@ class ReportTest {
     @Test
     fun `lanes hold each group's services and its soonest next-due mileage`() {
         val chart = model().chart!!
-        assertEquals(ReportCategory.entries, chart.lanes.map { it.category })
+        // Only the groups with work done or due get a lane.
+        assertEquals(listOf(ServiceGroup.OIL_ENGINE, ServiceGroup.TIRES, ServiceGroup.BRAKES, ServiceGroup.FLUIDS_4WD, ServiceGroup.OTHER), chart.lanes.map { it.category })
         val byCategory = chart.lanes.associateBy { it.category }
-        assertEquals(listOf(60_100, 68_412), byCategory.getValue(ReportCategory.OIL_ENGINE).done)
-        assertEquals(78_412, byCategory.getValue(ReportCategory.OIL_ENGINE).nextDue)
-        assertEquals(73_412, byCategory.getValue(ReportCategory.TIRES).nextDue)
-        assertEquals(69_800, byCategory.getValue(ReportCategory.BRAKES).nextDue)
-        assertEquals(80_200, byCategory.getValue(ReportCategory.FLUIDS_4WD).nextDue)
+        assertEquals(listOf(60_100, 68_412), byCategory.getValue(ServiceGroup.OIL_ENGINE).done)
+        assertEquals(78_412, byCategory.getValue(ServiceGroup.OIL_ENGINE).nextDue)
+        assertEquals(73_412, byCategory.getValue(ServiceGroup.TIRES).nextDue)
+        assertEquals(69_800, byCategory.getValue(ServiceGroup.BRAKES).nextDue)
+        assertEquals(80_200, byCategory.getValue(ServiceGroup.FLUIDS_4WD).nextDue)
         // Cabin filter: nothing done in the export, but a job coming due.
-        assertEquals(emptyList<Int>(), byCategory.getValue(ReportCategory.OTHER).done)
-        assertEquals(75_000, byCategory.getValue(ReportCategory.OTHER).nextDue)
+        assertEquals(emptyList<Int>(), byCategory.getValue(ServiceGroup.OTHER).done)
+        assertEquals(75_000, byCategory.getValue(ServiceGroup.OTHER).nextDue)
         assertEquals(68_412, chart.now)
         assertEquals(records.map { it.date }, chart.visits.map { it.date })
     }
@@ -164,7 +151,7 @@ class ReportTest {
         assertEquals(listOf("Brake inspection", "Cabin air filter", "Diff fluid", "Tire rotation", "Oil & filter"), rows.map { it.name })
         assertEquals(DueNextState.DUE_SOON, rows[0].state)
         assertEquals(69_800, rows[0].dueAt)
-        assertEquals(ReportCategory.BRAKES, rows[0].category)
+        assertEquals(ServiceGroup.BRAKES, rows[0].category)
         assertEquals(DueNextState.OK, rows[1].state)
         assertEquals(DueNextState.JUST_DONE, rows[3].state)
         assertEquals(DueNextState.JUST_DONE, rows[4].state)
@@ -179,7 +166,7 @@ class ReportTest {
         val rows = Reports.dueNext(statuses, emptyMap())
         assertEquals(Reports.DUE_NEXT, rows.size)
         assertTrue(rows.none { it.name == "Never" })
-        assertTrue(rows.all { it.category == ReportCategory.OTHER })
+        assertTrue(rows.all { it.category == ServiceGroup.OTHER })
     }
 
     @Test
@@ -217,7 +204,7 @@ class ReportTest {
         val rows = model().schedule.associateBy { it.name }
         assertEquals(68_412, rows.getValue("Oil & filter").lastDone!!.odometer)
         assertEquals(78_412, rows.getValue("Oil & filter").nextDue)
-        assertEquals(ReportCategory.FLUIDS_4WD, rows.getValue("Diff fluid").category)
+        assertEquals(ServiceGroup.FLUIDS_4WD, rows.getValue("Diff fluid").category)
         assertEquals(75_000, rows.getValue("Cabin air filter").nextDue)
     }
 
@@ -255,7 +242,7 @@ class ReportTest {
         val wiperRow = m.schedule.single { it.name == "Wiper blades" }
         assertEquals(LocalDate.of(2027, 3, 1), wiperRow.nextBy)
         assertNull(wiperRow.nextDue)
-        assertEquals(ReportCategory.OTHER, wiperRow.category)
+        assertEquals(ServiceGroup.OTHER, wiperRow.category)
         assertEquals(LocalDate.of(2027, 3, 1), m.dueNext.single { it.name == "Wiper blades" }.dueBy)
         val loose = m.schedule.single { it.name == "Made-up job" }
         assertNull(loose.nextDue)

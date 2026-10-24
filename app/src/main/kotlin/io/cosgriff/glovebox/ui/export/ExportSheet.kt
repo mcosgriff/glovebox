@@ -127,7 +127,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.cosgriff.glovebox.data.settings.Settings
-import io.cosgriff.glovebox.domain.ReportCategory
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.ui.components.ZoomableImage
 import io.cosgriff.glovebox.ui.service.log
@@ -232,7 +232,7 @@ class ExportViewModel @Inject constructor(
         val log = v.log(items, records, odometer.readingsFor(v.id), current)
         val swap = log.swap
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
-        val categories = items.associate { it.id to ReportCategory.ofItem(it.templateKey, it.service) }
+        val categories = items.associate { it.id to ServiceGroup.ofItem(it.templateKey, it.service) }
         return ExportVehicle(
             title = VehicleText.title(v.year, v.make, v.model, v.trim) ?: AppText.res.getString(R.string.unknown_vehicle),
             nickname = v.nickname,
@@ -258,7 +258,7 @@ class ExportViewModel @Inject constructor(
                     visitId = r.record.visitId,
                     diy = r.record.diy,
                     categories = r.items.map { line ->
-                        line.catalogId?.let { ReportCategory.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ReportCategory.OTHER
+                        line.catalogId?.let { ServiceGroup.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ServiceGroup.OTHER
                     },
                 )
             },

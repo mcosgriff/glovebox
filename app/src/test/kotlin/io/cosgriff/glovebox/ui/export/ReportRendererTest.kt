@@ -16,7 +16,7 @@ import io.cosgriff.glovebox.domain.Exports
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.OdometerReading
-import io.cosgriff.glovebox.domain.ReportCategory
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.domain.ReportStatus
 import io.cosgriff.glovebox.domain.Reports
@@ -55,7 +55,7 @@ class ReportRendererTest {
 
     private val records = SampleReport.records
 
-    private fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg lines: Pair<String, ReportCategory>) = SampleReport.record(date, odometer, diy, *lines)
+    private fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg lines: Pair<String, ServiceGroup>) = SampleReport.record(date, odometer, diy, *lines)
 
     private fun vehicle(records: List<ExportRecord> = this.records, title: String = "2019 Toyota 4Runner SR5") = SampleReport.vehicle(today, records, title)
 
@@ -109,7 +109,7 @@ class ReportRendererTest {
 
     @Test
     fun `a long log runs onto continued pages, and every footer counts all the pages`() {
-        val many = (1..40).map { i -> record(LocalDate.of(2024, 1, 1).plusDays(i * 9L), 30_000 + i * 900, i % 2 == 0, "Oil & filter" to ReportCategory.OIL_ENGINE) }
+        val many = (1..40).map { i -> record(LocalDate.of(2024, 1, 1).plusDays(i * 9L), 30_000 + i * 900, i % 2 == 0, "Oil & filter" to ServiceGroup.OIL_ENGINE) }
         val pages = write(doc(vehicle(many)))
         assertTrue(pages.size >= 3)
         pages.forEachIndexed { i, p -> assertTrue(p.toString(), p.contains(page(i + 1, pages.size))) }
@@ -153,8 +153,8 @@ class ReportRendererTest {
     @Test
     fun `a visit is one entry under its date, with each record's notes and the visit's total`() {
         val visit = listOf(
-            record(LocalDate.of(2026, 10, 10), 68_412, false, "Oil & filter" to ReportCategory.OIL_ENGINE).copy(visitId = 7, notes = "Made-up note"),
-            record(LocalDate.of(2026, 10, 10), 68_412, false, "Tire rotation" to ReportCategory.TIRES).copy(visitId = 7, imported = true),
+            record(LocalDate.of(2026, 10, 10), 68_412, false, "Oil & filter" to ServiceGroup.OIL_ENGINE).copy(visitId = 7, notes = "Made-up note"),
+            record(LocalDate.of(2026, 10, 10), 68_412, false, "Tire rotation" to ServiceGroup.TIRES).copy(visitId = 7, imported = true),
         )
         val log = write(doc(vehicle(records.take(3) + visit)))[1]
         assertTrue(log.toString(), log.any { it.contains(res.getString(R.string.export_visit, AppExportWords.records(2))) })

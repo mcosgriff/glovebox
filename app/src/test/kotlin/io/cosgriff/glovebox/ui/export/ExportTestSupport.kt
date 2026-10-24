@@ -19,7 +19,7 @@ import io.cosgriff.glovebox.domain.ExportVehicle
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.OdometerReading
-import io.cosgriff.glovebox.domain.ReportCategory
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.ServiceLog
@@ -127,16 +127,16 @@ object SampleReport {
         TrackedItem(4, "Diff fluid", Interval(30_000, null), DueRule.MILEAGE_ONLY),
     )
     private val every = mapOf(1L to "10,000 mi / 12 mo", 2L to "5,000 mi / 6 mo", 3L to "15,000 mi", 4L to "30,000 mi")
-    val categories = mapOf(1L to ReportCategory.OIL_ENGINE, 2L to ReportCategory.TIRES, 3L to ReportCategory.BRAKES, 4L to ReportCategory.FLUIDS_4WD)
+    val categories = mapOf(1L to ServiceGroup.OIL_ENGINE, 2L to ServiceGroup.TIRES, 3L to ServiceGroup.BRAKES, 4L to ServiceGroup.FLUIDS_4WD)
 
-    fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg lines: Pair<String, ReportCategory>, photos: List<String> = emptyList()): ExportRecord =
+    fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg lines: Pair<String, ServiceGroup>, photos: List<String> = emptyList()): ExportRecord =
         ExportRecord(date, odometer, lines.map { it.first }, if (diy) "DIY" else "Corner Garage", 4_200, null, photos, diy = diy, categories = lines.map { it.second })
 
     val records = listOf(
-        record(LocalDate.of(2025, 10, 18), 50_200, false, "Diff fluid" to ReportCategory.FLUIDS_4WD),
-        record(LocalDate.of(2026, 2, 2), 54_800, true, "Brake inspection" to ReportCategory.BRAKES),
-        record(LocalDate.of(2026, 6, 14), 60_100, false, "Oil & filter" to ReportCategory.OIL_ENGINE, "Tire rotation" to ReportCategory.TIRES),
-        record(LocalDate.of(2026, 10, 10), 68_412, true, "Oil & filter" to ReportCategory.OIL_ENGINE, "Tire rotation" to ReportCategory.TIRES),
+        record(LocalDate.of(2025, 10, 18), 50_200, false, "Diff fluid" to ServiceGroup.FLUIDS_4WD),
+        record(LocalDate.of(2026, 2, 2), 54_800, true, "Brake inspection" to ServiceGroup.BRAKES),
+        record(LocalDate.of(2026, 6, 14), 60_100, false, "Oil & filter" to ServiceGroup.OIL_ENGINE, "Tire rotation" to ServiceGroup.TIRES),
+        record(LocalDate.of(2026, 10, 10), 68_412, true, "Oil & filter" to ServiceGroup.OIL_ENGINE, "Tire rotation" to ServiceGroup.TIRES),
     )
     val entries = listOf(
         ServiceEntry(1, records[0].date, 50_200, setOf(4)),

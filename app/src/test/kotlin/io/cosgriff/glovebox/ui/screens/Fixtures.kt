@@ -304,6 +304,8 @@ object Fixtures {
             listOf(
                 ServiceRecordItemEntity(1_000, 100, null, "Front brake pads", "front-pads"),
                 ServiceRecordItemEntity(1_001, 100, null, "Hitch greased", null),
+                ServiceRecordItemEntity(1_002, 100, null, "Sway bar links", "sway-bar-links"),
+                ServiceRecordItemEntity(1_003, 100, null, "Fuel filter", "fuel-filter"),
             ),
             emptyList(),
         ),
