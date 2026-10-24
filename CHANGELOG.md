@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.25.0](https://github.com/mcosgriff/glovebox/compare/v0.24.0...v0.25.0) (2026-10-24)
+
+
+### Features
+
+* **export:** PDF infographic report and a live preview in the export sheet ([#409](https://github.com/mcosgriff/glovebox/issues/409)) ([ee6b7af](https://github.com/mcosgriff/glovebox/commit/ee6b7af008a56d5ba238feec8edfe8dc7832d818))
+* **history:** seven colours for the timeline and the PDF report, light and dark ([#412](https://github.com/mcosgriff/glovebox/issues/412)) ([83a2495](https://github.com/mcosgriff/glovebox/commit/83a249529a3c460bbf7e825e4c49e7bf32a04599)), closes [#410](https://github.com/mcosgriff/glovebox/issues/410)
+
+
+### Bug Fixes
+
+* **build:** hold Bouncy Castle and httpclient at patched versions in the build tools ([#413](https://github.com/mcosgriff/glovebox/issues/413)) ([b805d3d](https://github.com/mcosgriff/glovebox/commit/b805d3d3fb6aa0b98802b1aa644586b0911e8f71))
+
 ## [0.24.0](https://github.com/mcosgriff/glovebox/compare/v0.23.0...v0.24.0) (2026-10-24)
 
 
