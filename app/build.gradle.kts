@@ -83,6 +83,9 @@ android {
 
     // The screenshot tests (#233) draw screens under Robolectric, which needs the app's resources and fonts.
     testOptions.unitTests.isIncludeAndroidResources = true
+    // Gradle's default 512 MB test heap ran out under `build`, where Robolectric screen tests share the
+    // machine with every other module: they died of OutOfMemoryError or timed out waiting on a busy JVM.
+    testOptions.unitTests.all { it.maxHeapSize = "2g" }
 
     lint {
         abortOnError = true
