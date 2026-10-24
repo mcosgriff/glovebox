@@ -2,6 +2,9 @@ package io.cosgriff.glovebox.ui.garage
 
 import android.content.Context
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
 import androidx.room3.Room
@@ -198,4 +201,24 @@ fun waitFor(what: String = "the condition", condition: () -> Boolean) {
         check(System.currentTimeMillis() < until) { "Timed out waiting for $what" }
         Thread.sleep(10)
     }
+}
+
+/**
+ * Holds a test's ViewModels the way a screen's entry does, so [clear] stops their flows before the test closes the
+ * database under them.
+ */
+class TestViewModels {
+    private val store = ViewModelStore()
+    private var made = 0
+
+    fun <T : ViewModel> make(build: () -> T): T {
+        val vm = build()
+        val factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST") // Only ever asked for the class of the one it holds.
+            override fun <V : ViewModel> create(modelClass: Class<V>): V = vm as V
+        }
+        return ViewModelProvider(store, factory)["vm${made++}", vm.javaClass]
+    }
+
+    fun clear() = store.clear()
 }
