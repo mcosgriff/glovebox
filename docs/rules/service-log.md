@@ -3,6 +3,10 @@
 Rules for Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits. Read before changing any of it; review holds a diff to every line here.
 
 - **All service-log writes go through `RecordActions`**, which drives the snackbar and its Undo.
+- **A write that takes more than one step is one transaction** (#419): it goes in `ServiceLogWriter` (`:data`),
+  which writes rows only. `RecordActions` calls it and keeps the events, focus, Undo and photo files. A process
+  that dies part-way must leave the log as it was, never a record without its photos or a recall's record with
+  the recall still open.
 - Log service: **the odometer is never prefilled** (a prefilled reading gets saved untouched and miscounts every
   reminder); "Use current" fills it on a tap. Future dates are refused. "Due" chips only for reminders that have
   a log entry. Category buttons are tabs, not ticks (the user found the solid "open" button read as chosen).

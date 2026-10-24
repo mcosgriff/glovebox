@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.recalls
 
 import androidx.test.core.app.ApplicationProvider
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
@@ -70,7 +71,7 @@ internal class RecallsHarness(cadence: RecallCadence = RecallCadence.WEEKLY) {
         return viewModels.make {
             RecallsViewModel(
                 routeHandle(RecallsRoute(vehicleId)), db.vehicles(), db.recalls(), db.service(), db.odometer(),
-                nhtsa.repository(db, settings), RecordActions(db.service(), db.recalls(), db.vehicles(), photos),
+                nhtsa.repository(db, settings), RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos),
             )
         }
     }

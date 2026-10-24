@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -28,7 +29,7 @@ class RecordActionsTest {
     private val t = ServiceTestDb()
     private val service = t.db.service()
     private val recalls = t.db.recalls()
-    private val actions = RecordActions(service, recalls, t.db.vehicles(), t.photos)
+    private val actions = RecordActions(service, recalls, ServiceLogWriter(t.db), t.photos)
     private val day = ServiceFixtures.DAY
 
     @After fun close() = t.close()

@@ -101,7 +101,7 @@ import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.components.Chevron
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
-import io.cosgriff.glovebox.ui.service.toVisit
+import io.cosgriff.glovebox.data.db.toVisit
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map

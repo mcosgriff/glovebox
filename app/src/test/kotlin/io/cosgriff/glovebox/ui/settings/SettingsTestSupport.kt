@@ -11,6 +11,7 @@ import androidx.room3.Room
 import androidx.savedstate.serialization.encodeToSavedState
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -52,7 +53,7 @@ class TestGraph : org.junit.rules.ExternalResource(), Closeable {
     val crypto = PhotoCrypto(context)
     val photos = RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents())
     val documents = DocumentStore(context, crypto, db.documents(), photos)
-    val actions = RecordActions(db.service(), db.recalls(), db.vehicles(), photos)
+    val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
 
     /** For the singletons that launch on the application's scope. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
