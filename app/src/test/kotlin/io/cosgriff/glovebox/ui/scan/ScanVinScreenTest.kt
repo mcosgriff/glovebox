@@ -47,7 +47,8 @@ class ScanVinScreenTest {
     @Test
     fun `without the camera it says what it would read and offers typing the VIN`() {
         var closes = 0
-        compose.setContent { ScanVinScreen(onClose = { closes++ }, onUseVin = {}, vm = ScanVinViewModel(testSettings())) }
+        val vm = ScanVinViewModel(testSettings())
+        compose.setContent { ScanVinScreen(onClose = { closes++ }, onUseVin = {}, vm = vm) }
         compose.waitForIdle()
         compose.onNodeWithText(compose.activity.getString(R.string.scan_vin_camera_why)).assertExists()
         compose.onNodeWithText(compose.activity.getString(R.string.scan_vin_type_instead)).performClick()

@@ -83,9 +83,12 @@ fun testSettings(
 fun routeHandle(key: NavKey): SavedStateHandle =
     SavedStateHandle(mapOf("io.cosgriff.glovebox.route" to encodeToSavedState(NavKeySerializer(), key)))
 
+/** How long a test waits on the wall clock for other threads; generous, as the machine running them may be busy. */
+const val TIMEOUT = 15_000L
+
 /** The first value of this flow that [matches], waiting on the wall clock for Room's threads. */
 suspend fun <T> Flow<T>.awaitMatching(matches: (T) -> Boolean): T =
-    withContext(Dispatchers.Default) { withTimeout(5_000) { first(matches) } }
+    withContext(Dispatchers.Default) { withTimeout(TIMEOUT) { first(matches) } }
 
 /**
  * Runs ViewModels' `viewModelScope` without Robolectric's paused main looper, so a test blocked on a flow
@@ -196,7 +199,7 @@ fun recallRow(campaign: String, component: String = "FUEL SYSTEM") =
 
 /** Waits on the wall clock for work a ViewModel started on another thread (NHTSA's, Room's) to land. */
 fun waitFor(what: String = "the condition", condition: () -> Boolean) {
-    val until = System.currentTimeMillis() + 5_000
+    val until = System.currentTimeMillis() + TIMEOUT
     while (!condition()) {
         check(System.currentTimeMillis() < until) { "Timed out waiting for $what" }
         Thread.sleep(10)

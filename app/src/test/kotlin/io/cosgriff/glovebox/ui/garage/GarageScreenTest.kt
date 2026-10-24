@@ -32,6 +32,9 @@ import java.time.LocalDate
 class GarageScreenTest {
     @get:Rule val compose = createComposeRule()
 
+    // Room's and DataStore's flows reach viewModelScope only off Robolectric's paused main looper.
+    @get:Rule val main = UnconfinedMainRule()
+
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val db = testDatabase()
     private val settings = testSettings()
@@ -107,7 +110,7 @@ class GarageScreenTest {
                 GarageScreen(true, {}, onOpenVehicle = { opened += "vehicle $it" }, {}, {}, {}, vm)
             }
         }
-        compose.waitUntil(5_000) { opened.isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { opened.isNotEmpty() }
         compose.waitForIdle()
         assertEquals(listOf("vehicle $id"), opened)
         // The list isn't drawn on its way out.
@@ -126,7 +129,7 @@ class GarageScreenTest {
                 GarageScreen(false, {}, onOpenVehicle = { opened += "vehicle $it" }, {}, {}, {}, vm)
             }
         }
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(context.getString(R.string.garage_title)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(context.getString(R.string.garage_title)).fetchSemanticsNodes().isNotEmpty() }
         compose.onAllNodesWithText(Fixtures.truck.nickname!!, substring = true).onFirst().assertExists()
         assertEquals(emptyList<String>(), opened)
     }

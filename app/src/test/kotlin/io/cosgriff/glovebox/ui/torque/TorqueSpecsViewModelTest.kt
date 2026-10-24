@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.domain.Torque
+import io.cosgriff.glovebox.domain.ImportFiles
 import io.cosgriff.glovebox.domain.TorqueCategory
+import io.cosgriff.glovebox.domain.TorqueExport
 import io.cosgriff.glovebox.domain.TorqueImport
 import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueSpecs
@@ -47,6 +49,7 @@ internal class TorqueHarness(unit: TorqueUnit = TorqueUnit.NEWTON_METER) {
     val settings = testSettings(torque = unit)
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val viewModels = TestViewModels()
+    val saver = ExportSaver(context, scope)
 
     /** The screenshot truck: a 2019 4Runner, which a bundled list is for. */
     fun addTruck(model: String = "4Runner"): Long = runBlocking { db.vehicles().add(Fixtures.truck.copy(id = 0, model = model), firstReading = null) }
@@ -61,7 +64,7 @@ internal class TorqueHarness(unit: TorqueUnit = TorqueUnit.NEWTON_METER) {
     fun viewModel(vehicleId: Long) = viewModels.make {
         TorqueSpecsViewModel(
             routeHandle(TorqueSpecsRoute(vehicleId)), db.vehicles(), db.torque(), settings,
-            TorqueSpecUndo(db.torque(), db.vehicles(), scope), ExportSaver(context, scope), KnownSpecCatalog(context),
+            TorqueSpecUndo(db.torque(), db.vehicles(), scope), saver, KnownSpecCatalog(context),
         )
     }
 
@@ -194,5 +197,21 @@ class TorqueSpecsViewModelTest {
         } finally {
             ftLb.close()
         }
+    }
+
+    @Test
+    fun `the rows are saved as a file named for the model, never the VIN, after asking where`() = runBlocking {
+        val truck = h.addTruck()
+        h.insert(h.spec(truck, "Drain plug", nm = 40.0))
+        val asked = mutableListOf<Pair<String, String>>()
+        h.saver.attach { mime, name -> asked += mime to name }
+        val vm = h.viewModel(truck)
+        vm.state.awaitMatching { it?.specs?.size == 1 }
+        vm.saveAsFile(vm.written().text!!)
+        waitFor("the question") { asked.isNotEmpty() }
+        val (mime, name) = asked.single()
+        assertEquals(ImportFiles.MIME_TYPE, mime)
+        assertEquals(TorqueExport.fileName("2019 Toyota 4Runner"), name)
+        assertTrue(Fixtures.truck.vin!! !in name)
     }
 }

@@ -80,7 +80,7 @@ class AddVehicleScreenTest {
     private fun decode() {
         field(R.string.add_vehicle_vin_label).performTextInput(vin)
         compose.onNodeWithText(str(R.string.add_vehicle_decode)).performScrollTo().performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.add_vehicle_confirm_title)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.add_vehicle_confirm_title)).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test
@@ -114,7 +114,7 @@ class AddVehicleScreenTest {
         show()
         field(R.string.add_vehicle_vin_label).performTextInput(vin)
         compose.onNodeWithText(str(R.string.add_vehicle_decode)).performScrollTo().performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.add_vehicle_nhtsa_unreachable)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.add_vehicle_nhtsa_unreachable)).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test
@@ -127,7 +127,7 @@ class AddVehicleScreenTest {
         text("4.0L 6-cyl · 1GR-XX · ${str(R.string.add_vehicle_horsepower, "270")}").assertExists()
         text("Class 1D").assertExists()
         text("Testville, Nowhere").assertExists()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.add_vehicle_recalls_found, "2")).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.add_vehicle_recalls_found, "2")).fetchSemanticsNodes().isNotEmpty() }
         // One trim from vPIC fills the field; there is nothing to pick between.
         compose.onAllNodesWithText(str(R.string.add_vehicle_pick_trim)).assertCountEquals(0)
 
@@ -237,7 +237,7 @@ class AddVehicleScreenTest {
         compose.onNodeWithText(str(R.string.unit_kilometres_title)).performScrollTo().performClick()
         compose.onNode(hasSetTextAction() and hasText(str(R.string.odometer_in, DistanceUnit.KILOMETERS.symbolWord))).performTextInput("98000")
         compose.onNodeWithText(str(R.string.add_vehicle_next)).performScrollTo().performClick()
-        compose.waitUntil(5_000) { events.any { it.startsWith("saved") } }
+        compose.waitUntil(TIMEOUT) { events.any { it.startsWith("saved") } }
 
         val id = events.single { it.startsWith("saved") }.removePrefix("saved ").toLong()
         val v = runBlocking { db.vehicles().byId(id)!! }
@@ -249,7 +249,7 @@ class AddVehicleScreenTest {
     @Test
     fun `a VIN handed back by the scanner is decoded at once`() {
         show(scanned = vin)
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.add_vehicle_confirm_title)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.add_vehicle_confirm_title)).fetchSemanticsNodes().isNotEmpty() }
         assertEquals(listOf("scan used"), events)
     }
 }

@@ -2,6 +2,9 @@ package io.cosgriff.glovebox.ui.recalls
 
 import android.app.Application
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -11,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.ui.garage.TIMEOUT
 import io.cosgriff.glovebox.domain.RecallCadence
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.ui.garage.UnconfinedMainRule
@@ -57,12 +61,12 @@ class RecallsScreenTest {
     private fun show(vehicleId: Long): RecallsViewModel {
         val vm = h.viewModel(vehicleId)
         compose.setContent { GloveboxTheme { RecallsScreen(onBack = { backs++ }, vm = vm) } }
-        compose.waitUntil(5_000) { vm.state.value != null && !vm.refreshing }
+        compose.waitUntil(TIMEOUT) { vm.state.value != null && !vm.refreshing }
         return vm
     }
 
     private fun shows(text: String) {
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
     }
 
     private fun startedUrl(): String = shadowOf(app).nextStartedActivity.let { assertEquals(Intent.ACTION_VIEW, it.action); it.dataString!! }
@@ -136,11 +140,11 @@ class RecallsScreenTest {
         compose.onNodeWithText(str(R.string.recalls_add_to_history)).performClick()
         compose.onAllNodesWithText(str(R.string.recalls_mark_done))[1].performClick()
 
-        compose.waitUntil(5_000) { runBlocking { h.db.recalls().recallsFor(truck) }.single().completedOn != null }
+        compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.single().completedOn != null }
         assertNull(runBlocking { h.db.recalls().recallsFor(truck) }.single().serviceRecordId)
         shows(str(R.string.recalls_pill_completed))
         compose.onNodeWithText(str(R.string.recalls_mark_open)).performClick()
-        compose.waitUntil(5_000) { runBlocking { h.db.recalls().recallsFor(truck) }.single().completedOn == null }
+        compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.single().completedOn == null }
     }
 
     @Test
@@ -159,7 +163,7 @@ class RecallsScreenTest {
         compose.onNodeWithText(str(R.string.recalls_tab_archived)).performClick()
         shows(str(R.string.recalls_pill_archived))
         compose.onNodeWithText(str(R.string.recalls_move_back)).performClick()
-        compose.waitUntil(5_000) { runBlocking { h.db.recalls().recallsFor(truck) }.all { it.archivedOn == null } }
+        compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.all { it.archivedOn == null } }
         shows(str(R.string.recalls_none_archived))
     }
 
@@ -185,5 +189,31 @@ class RecallsScreenTest {
         compose.onNodeWithContentDescription(str(R.string.back)).performClick()
         assertEquals(1, backs)
         assertNotNull(runBlocking { h.db.vehicles().byId(truck) }!!.recallsCheckedOn)
+    }
+
+    @Test
+    fun `nothing done yet says so under Completed`() {
+        val truck = h.addTruck()
+        h.insert(h.recall(truck, "26V100000"))
+        show(truck)
+        compose.onNodeWithText(str(R.string.recalls_tab_done)).performClick()
+        shows(str(R.string.recalls_none_done))
+    }
+
+    @Test
+    fun `without a maps app, Find a dealer opens the maker's page, and without a browser nothing happens`() {
+        val truck = h.addTruck()
+        h.insert(h.recall(truck, "26V100000"))
+        show(truck)
+        // Only intents something on the phone answers are started.
+        shadowOf(app).checkActivities(true)
+        compose.onNodeWithText(str(R.string.recalls_find_dealer)).performClick()
+        assertNull(shadowOf(app).nextStartedActivity)
+
+        val site = Recalls.manufacturerSite("Toyota")!!.recallUrl
+        val browser = ResolveInfo().apply { activityInfo = ActivityInfo().apply { packageName = "made.up.browser"; name = "Browser" } }
+        shadowOf(app.packageManager).addResolveInfoForIntent(Intent(Intent.ACTION_VIEW, Uri.parse(site)), browser)
+        compose.onNodeWithText(str(R.string.recalls_find_dealer)).performClick()
+        assertEquals(site, startedUrl())
     }
 }

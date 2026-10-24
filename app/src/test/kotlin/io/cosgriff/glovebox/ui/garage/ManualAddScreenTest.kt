@@ -80,12 +80,12 @@ class ManualAddScreenTest {
         search("2019")
         inDialog("2019").performClick()
         picker(R.string.add_vehicle_make).performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Toyota").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText("Toyota").fetchSemanticsNodes().isNotEmpty() }
         // NHTSA's capitals are shown as the make is written.
         inDialog("Toyota").performClick()
 
         picker(R.string.add_vehicle_model).assertIsEnabled().performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Tacoma").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText("Tacoma").fetchSemanticsNodes().isNotEmpty() }
         search("ta")
         compose.onAllNodesWithText("4Runner").assertCountEquals(0)
         inDialog("Tacoma").performClick()
@@ -108,10 +108,10 @@ class ManualAddScreenTest {
         nhtsa.makes = null
         show()
         picker(R.string.add_vehicle_make).performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.manual_add_load_failed)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.manual_add_load_failed)).fetchSemanticsNodes().isNotEmpty() }
         nhtsa.makes = listOf("FORD")
         inDialog(str(R.string.retry)).performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Ford").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText("Ford").fetchSemanticsNodes().isNotEmpty() }
         inDialog(str(R.string.cancel)).performClick()
         compose.onAllNodesWithText("Ford").assertCountEquals(0)
     }
@@ -123,7 +123,7 @@ class ManualAddScreenTest {
         vm.chooseYear(1931)
         vm.chooseMake("FORD")
         picker(R.string.add_vehicle_model).performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.manual_add_no_models, "1931", "Ford")).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.manual_add_no_models, "1931", "Ford")).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test
@@ -146,7 +146,7 @@ class ManualAddScreenTest {
         vm.chooseModel("Tacoma")
         compose.onNode(hasSetTextAction() and hasText(str(R.string.manual_add_engine))).performTextInput("2.4L")
         compose.onNodeWithText(str(R.string.add_vehicle_next)).performScrollTo().performClick()
-        compose.waitUntil(5_000) { events.any { it.startsWith("saved") } }
+        compose.waitUntil(TIMEOUT) { events.any { it.startsWith("saved") } }
         val id = events.last().removePrefix("saved ").toLong()
         assertEquals("back", events.first())
         assertEquals("2.4L", runBlocking { db.vehicles().byId(id)!!.engine })

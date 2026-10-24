@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.ui.garage.TIMEOUT
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Assert.assertEquals
@@ -44,7 +45,7 @@ class CameraFeedTest {
 
     /** The answer to the last permission prompt, as Android gives it. */
     private fun answer(granted: Boolean) {
-        compose.waitUntil(5_000) { shadowOf(activity).lastRequestedPermission != null }
+        compose.waitUntil(TIMEOUT) { shadowOf(activity).lastRequestedPermission != null }
         val request = shadowOf(activity).lastRequestedPermission
         assertEquals(listOf(Manifest.permission.CAMERA), request.requestedPermissions.toList())
         if (granted) shadowOf(activity.application).grantPermissions(Manifest.permission.CAMERA)

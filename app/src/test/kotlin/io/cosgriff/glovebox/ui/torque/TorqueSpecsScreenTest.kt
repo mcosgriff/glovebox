@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.ui.garage.TIMEOUT
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.domain.KnownSpecs
 import io.cosgriff.glovebox.domain.Torque
@@ -22,6 +23,7 @@ import io.cosgriff.glovebox.ui.garage.UnconfinedMainRule
 import io.cosgriff.glovebox.ui.garage.waitFor
 import io.cosgriff.glovebox.ui.screens.Fixtures
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
+import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -155,18 +157,29 @@ class TorqueSpecsScreenTest {
                 TorqueSpecsScreen(onBack = {}, onMessage = { message, action, onAction -> events += "$message|$action"; undo = onAction }, vm = vm)
             }
         }
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Drain plug").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText("Drain plug").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Drain plug").performClick()
         compose.onNodeWithText(str(R.string.torque_delete)).performClick()
-        compose.waitUntil(5_000) { undo != null }
+        compose.waitUntil(TIMEOUT) { undo != null }
         assertEquals(listOf("${str(R.string.torque_deleted, "Drain plug")}|${str(R.string.undo)}"), events)
         assertTrue(h.specs(truck).isEmpty())
         undo!!()
         waitFor("the undo") { h.specs(truck).isNotEmpty() }
 
         // The common fasteners from the screen are added through the ViewModel.
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(str(R.string.torque_add_missing)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.torque_add_missing)).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(str(R.string.torque_add_missing)).performClick()
         waitFor("the common fasteners") { h.specs(truck).size == 1 + TorqueSpecs.common.size }
+    }
+
+    @Test
+    fun `the offer says how many of the user's own rows it leaves alone`() {
+        val list = runBlocking { KnownSpecCatalog(h.context).lists() }.first { it.id == "toyota-4runner-2017-2024" }
+        val mine = spec(9, list.items.first().name, list.items.first().category, 99.9)
+        val plan = KnownSpecs.plan(list, listOf(mine.toSaved()))
+        assertEquals(1, plan.kept.size)
+        content(TorqueSpecsState(Fixtures.truck, listOf(mine), TorqueUnit.NEWTON_METER, known = list to plan))
+        compose.onNodeWithText(offer(list, plan)).assertExists()
+        assertTrue(offer(list, plan).startsWith(offer(list, plan.copy(kept = emptyList()))))
     }
 }
