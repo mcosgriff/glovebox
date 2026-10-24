@@ -295,6 +295,9 @@ class ShellGraph(private val app: Application) {
     fun close() {
         scope.cancel()
         db.close()
+        // So the next test, whichever application it runs in, starts from the defaults.
+        clearStore("io.cosgriff.glovebox.data.settings.SettingsRepositoryKt", "getDataStore")
+        clearStore("io.cosgriff.glovebox.data.settings.NoticeLogStoreKt", "getNoticeLog")
     }
 }
 
