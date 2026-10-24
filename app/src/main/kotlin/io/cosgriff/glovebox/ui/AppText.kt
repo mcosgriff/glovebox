@@ -61,6 +61,9 @@ object AppText {
 
         /** "Oct 2026" */
         val monthYear: DateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMyyyy"), locale)
+
+        /** "2026" */
+        val year: DateTimeFormatter = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "yyyy"), locale)
     }
 }
 

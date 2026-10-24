@@ -156,8 +156,7 @@ accent `#F08A4B` (on-accent `#17191C`), accent-soft `#3A2418`/`#FDBA74`, ok `#5E
 
 ## Screens
 
-Every board on the canvas is built except 6e · History — timeline view. Still to build: that timeline, and VIN
-scan follow-up (#83).
+Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 
 ## Rules by feature
 
@@ -264,6 +263,10 @@ scan follow-up (#83).
 - History's spending line (#285) counts records with a cost and is **hidden while a filter or search is on**,
   since a cost covers all a record's lines. Search (#284) and the sort order live in saved state; nothing is
   stored.
+- History's timeline (`HistoryTimeline`, board 6e) is the same records, filter and search as the list, always
+  newest first; the List / Timeline choice is saved state. Its "Coming up" is **only `ComingUp.next`**, from the
+  Reminders tab's statuses (never a never-logged job), with a date only where vehicle home gives one
+  (`paceEstimate`); it goes while a filter or search is on, like the spending line. Gaps are whole months.
 - "Add custom item" (#309) only offers lines, never ticks one; filing a custom line under a line **keeps its
   wording**. So Custom stays rare.
 - Custom lines and category rules (#310): **a line is Custom only when it has no home** (no `catalogId`, no

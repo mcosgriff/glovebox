@@ -13,7 +13,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.SavedStateHandle
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import androidx.compose.ui.test.performScrollTo
+import io.cosgriff.glovebox.ui.garage.GarageOverview
+import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistorySort
 import io.cosgriff.glovebox.domain.Money
@@ -62,7 +66,9 @@ class HistoryScreenTest {
         }
     }
 
-    private fun tab(handle: SavedStateHandle = SavedStateHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions))
+    private fun overview() = GarageOverview(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings, t.db.recalls())
+
+    private fun tab(handle: SavedStateHandle = SavedStateHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
 
     @Test
     fun `the first vehicle shows, another is one tap away, and the choice is kept`() = runBlocking {
@@ -213,7 +219,7 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
         t.record(car, lines = listOf(line("Hitch greased")))
-        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions))
+        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
         show(vm)
         compose.waitForText(string(R.string.history_subtitle_archived, "2019 Corolla", plural(R.plurals.records, 1, 1.asNumber())))
         compose.onNodeWithText(plural(R.plurals.history_custom_lines, 1, 1.asNumber())).assertDoesNotExist()
@@ -224,8 +230,39 @@ class HistoryScreenTest {
     fun `an archived vehicle with no records says none were logged`() = runBlocking {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
-        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions)))
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview())))
         compose.waitForText(string(R.string.history_none_archived))
+    }
+
+    @Test
+    fun `the timeline is kept in the saved state, lays the records out by date, and its next reminder opens Log service`() = runBlocking {
+        val car = t.vehicle()
+        t.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null)))
+        val oil = t.db.schedule().allFor(car).single().id
+        t.record(car, date = LocalDate.of(2025, 10, 18), odometer = 50_200, lines = listOf(line("Oil and filter", "oil")))
+        t.record(car, date = LocalDate.of(2026, 2, 2), odometer = 54_800, lines = listOf(line("Front brake pads", "front-pads")))
+        val handle = SavedStateHandle()
+        val vm = tab(handle)
+        val opened = mutableListOf<Long>()
+        val logged = mutableListOf<Pair<Long, Long>>()
+        compose.setContent {
+            GloveboxTheme { HistoryScreen(onOpenRecord = { opened += it }, onLogIt = { v, item -> logged += v to item }, vm = vm) }
+        }
+        compose.waitForText("Front brake pads")
+
+        compose.onNodeWithText(string(R.string.history_view_timeline)).performClick()
+        compose.waitForText(string(R.string.history_timeline_coming_up))
+        assertEquals("TIMELINE", handle.get<String>("view"))
+        assertEquals(HistoryView.TIMELINE, tab(handle).view)
+        compose.onNodeWithText(string(R.string.history_view_timeline)).assertIsSelected()
+        // Newest first, gaps between them, and the oldest record's month at the end.
+        compose.onNodeWithText(plural(R.plurals.history_timeline_apart, 3, 3.asNumber())).assertExists()
+        compose.onNodeWithText(string(R.string.history_timeline_since, LocalDate.of(2025, 10, 1).format(monthYear))).performScrollTo().assertExists()
+
+        compose.onNodeWithText("Oil change").performClick()
+        assertEquals(listOf(car to oil), logged)
+        compose.onNodeWithText("Front brake pads").performScrollTo().performClick()
+        assertEquals(1, opened.size)
     }
 
     @Test

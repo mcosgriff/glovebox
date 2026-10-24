@@ -294,6 +294,22 @@ object Fixtures {
         choices = listOf(recallRecord.visitRow(unit), truckRecords[1].visitRow(unit)),
     )
 
+    /**
+     * The truck's history for the timeline, with its next reminder and one more, older record: brake pads and a
+     * Custom line, three weeks before the oil change.
+     */
+    val historyTimeline: HistoryState = history.copy(
+        records = truckRecords + ServiceRecordWithItems(
+            ServiceRecordEntity(100, truck.id, TODAY.minusMonths(13).minusDays(20), 54_600, diy = true),
+            listOf(
+                ServiceRecordItemEntity(1_000, 100, null, "Front brake pads", "front-pads"),
+                ServiceRecordItemEntity(1_001, 100, null, "Hitch greased", null),
+            ),
+            emptyList(),
+        ),
+        next = truckComingUp.next,
+    )
+
     /** History with the imported cabin filter and the recall's record linked as one visit. */
     val historyWithVisit: HistoryState = history.copy(
         records = listOf(

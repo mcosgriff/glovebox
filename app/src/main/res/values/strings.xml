@@ -1113,6 +1113,24 @@
     </plurals>
     <!-- The spending line, then how many records it counted. -->
     <string name="history_spending_partial">%1$s · %2$s</string>
+    <!-- The switch between History's two views. -->
+    <string name="history_view_list">List</string>
+    <string name="history_view_timeline">Timeline</string>
+    <!-- Over the vehicle's next reminder, at the top of the timeline. -->
+    <string name="history_timeline_coming_up">COMING UP</string>
+    <!-- %1$s is when the reminder is due ("In 640 mi"), %2$s the date estimated from the driving pace ("est. Nov 5, 2026"). -->
+    <string name="history_timeline_due_estimate">%1$s · %2$s</string>
+    <!-- The time between two records next to each other on the timeline. -->
+    <plurals name="history_timeline_apart">
+        <item quantity="one">%1$s month apart</item>
+        <item quantity="other">%1$s months apart</item>
+    </plurals>
+    <string name="history_timeline_under_a_month">Under a month apart</string>
+    <!-- At the end of the timeline. %1$s is the month and year of the oldest record ("Oct 2025"). -->
+    <string name="history_timeline_since">Tracking since %1$s</string>
+    <!-- The colour key under the timeline; the other entries are the category names. -->
+    <string name="history_timeline_hue_fluids">Fluids &amp; driveline</string>
+    <string name="history_timeline_hue_other">Everything else</string>
 
     <!-- Service record (RecordDetailScreen) -->
     <string name="record_next_due">Next due %1$s</string>
