@@ -47,9 +47,14 @@ data class ExportRecord(
     val imported: Boolean = false,
     /** Shared with the other records the owner linked as one visit (#307); null for one in none. */
     val visitId: Long? = null,
+    /** The owner did the work; [doneBy] says it in words. */
+    val diy: Boolean = false,
+    /** Each of [items]' group in the PDF report, in the same order. */
+    val categories: List<ReportCategory> = emptyList(),
 )
 
-data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?)
+/** [itemId] is the schedule item the line is, to find its status in [ReportFacts]. */
+data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?, val itemId: Long? = null)
 
 /** [completedOn] is the owner's own mark; NHTSA can't confirm a repair. */
 /** [archivedOn] is the owner saying it doesn't apply to this vehicle. */
@@ -80,6 +85,10 @@ data class ExportVehicle(
     val whatItTakes: List<Pair<String, String>> = emptyList(),
     /** The documents the owner keeps for it, in the order the Documents screen lists them. */
     val documents: List<ExportPaper> = emptyList(),
+    /** "4WD · 4.0L V6": the drive and engine as stored; null when neither is known. */
+    val specs: String? = null,
+    /** What only the PDF report uses; null leaves its charts and "due next" empty. */
+    val report: ReportFacts? = null,
 ) {
     /** Null when no record in the export has a cost. */
     val totalCents: Long? get() = Spending.total(records.map { it.costCents })

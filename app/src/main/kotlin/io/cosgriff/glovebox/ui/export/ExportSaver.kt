@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.domain.ExportFormat
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.io.OutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +38,14 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
     private val slot = LauncherSlot<(mimeType: String, fileName: String) -> Unit>()
     private var pending: Pending? = null
 
-    private class Pending(val file: File, val name: String, val done: String, val onSaved: suspend () -> Unit)
+    /** [write] fills the chosen document; [cleanUp] runs however it ends. */
+    private class Pending(
+        val name: String,
+        val done: String,
+        val write: suspend (OutputStream) -> Unit,
+        val cleanUp: () -> Unit,
+        val onSaved: suspend () -> Unit,
+    )
 
     private val _results = Channel<String>(Channel.BUFFERED)
 
@@ -60,8 +69,15 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
         return File(dir, "export.tmp")
     }
 
-    /** Asks where to put [file], suggesting [fileName]. */
-    fun save(file: File, fileName: String, format: ExportFormat) = save(file, fileName, format.mimeType, AppText.res.getString(R.string.export_saved, fileName)) {}
+    /**
+     * Asks where to save an export, suggesting [fileName], and only then has [write] put it straight into the
+     * document Android hands back: nothing is written in the clear inside the app, not even for a moment.
+     */
+    fun saveExport(fileName: String, format: ExportFormat, write: suspend (OutputStream) -> Unit) {
+        val launcher = slot.launcher ?: return
+        pending = Pending(fileName, AppText.res.getString(R.string.export_saved, fileName), write, cleanUp = {}, onSaved = {})
+        launcher(format.mimeType, fileName)
+    }
 
     /**
      * Asks where to put [file], suggesting [fileName]. [onSaved] runs only once the copy has
@@ -73,7 +89,7 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
             file.delete()
             return
         }
-        pending = Pending(file, fileName, done, onSaved)
+        pending = Pending(fileName, done, write = { out -> file.inputStream().use { it.copyTo(out) } }, cleanUp = { file.delete() }, onSaved = onSaved)
         launcher(mimeType, fileName)
     }
 
@@ -87,27 +103,34 @@ class ExportSaver @Inject constructor(@ApplicationContext private val context: C
         save(file, fileName, ImportFiles.MIME_TYPE, AppText.res.getString(R.string.export_saved_file, fileName)) {}
     }
 
-    /** [destination] is null when the user backed out. Either way the working copy goes. */
+    /** [destination] is null when the user backed out. Either way the working copy, if there is one, goes. */
     fun onDestination(destination: Uri?) {
         val p = pending ?: return
         pending = null
+        if (destination == null) {
+            p.cleanUp()
+            return
+        }
         scope.launch {
-            val saved = destination != null && withContext(Dispatchers.IO) {
+            val saved = withContext(Dispatchers.IO) {
                 try {
-                    context.contentResolver.openOutputStream(destination)?.use { out -> p.file.inputStream().use { it.copyTo(out) } } != null
+                    context.contentResolver.openOutputStream(destination)?.use { p.write(it) } != null
                 } catch (_: IOException) {
                     false
+                } catch (_: RuntimeException) {
+                    // A page that couldn't be drawn: the save fails and says so, rather than taking the app down.
+                    false
                 } finally {
-                    p.file.delete()
+                    p.cleanUp()
                 }
             }
-            when {
-                destination == null -> p.file.delete()
-                saved -> {
-                    p.onSaved()
-                    _results.send(p.done)
-                }
-                else -> _results.send(AppText.res.getString(R.string.export_couldnt_save, p.name))
+            if (saved) {
+                p.onSaved()
+                _results.send(p.done)
+            } else {
+                // Don't leave a half-written file behind where the user chose to save it.
+                runCatching { DocumentsContract.deleteDocument(context.contentResolver, destination) }
+                _results.send(AppText.res.getString(R.string.export_couldnt_save, p.name))
             }
         }
     }

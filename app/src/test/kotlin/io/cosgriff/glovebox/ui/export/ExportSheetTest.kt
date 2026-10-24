@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import android.os.Looper
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
@@ -7,15 +8,21 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.domain.ExportDates
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.ui.screens.PHONE
+import io.cosgriff.glovebox.ui.service.photoCount
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import io.cosgriff.glovebox.ui.settings.TestGraph
 import io.cosgriff.glovebox.ui.settings.show
@@ -29,11 +36,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import java.time.Duration
 import java.time.LocalDate
 
 /** The export sheet: choose the vehicle, the dates and what goes in, see the file's name, and export. */
 @RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(application = ScreenshotApp::class, qualifiers = PHONE, sdk = [35], shadows = [ShadowPdfDocument::class])
 class ExportSheetTest {
     @get:Rule(order = 0) val g = TestGraph()
@@ -41,7 +52,7 @@ class ExportSheetTest {
 
     private val saver = ExportSaver(g.context, g.appScope)
 
-    private fun vm() = ExportViewModel(g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver)
+    private fun vm() = ExportViewModel(g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.recalls(), g.db.odometer(), g.db.documents(), g.settings, g.photos, saver, ReportFonts(g.context))
 
     private fun record(id: Long, date: LocalDate) = runBlocking {
         g.db.service().insertWithItems(
@@ -134,5 +145,25 @@ class ExportSheetTest {
         compose.onNodeWithText(text(R.string.ok)).performClick()
         val after = vm.options.dates as ExportDates.Custom
         assertTrue(!after.from.isAfter(after.to))
+    }
+
+    @Test
+    fun `a photo's size is said before export, and a thumbnail opens the page full screen`() {
+        val id = runBlocking { g.vehicle() }
+        val recordId = record(id, LocalDate.now())
+        runBlocking { g.db.service().insertPhotos(listOf(PhotoEntity(recordId = recordId, fileName = "made-up.enc"))) }
+        val vm = vm()
+        compose.show { ExportSheet(vehicleId = id, onDismiss = {}, format = ExportFormat.PDF, vm = vm) }
+        compose.waitForText(photoCount(1)!!, substring = true)
+
+        // Two report pages and the photo's. The preview waits for the choices to settle, on the main looper's clock.
+        compose.waitFor {
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(300))
+            (vm.preview as? ExportPreview.Pdf)?.pageCount == 3
+        }
+        compose.onAllNodesWithContentDescription(text(R.string.export_preview_page, "1")).onFirst().performScrollTo().performClick()
+        compose.waitForText(text(R.string.report_page, "1", "3"))
+        compose.onNodeWithContentDescription(text(R.string.export_preview_close)).performClick()
+        compose.waitFor { compose.onAllNodesWithText(text(R.string.report_page, "1", "3")).fetchSemanticsNodes().isEmpty() }
     }
 }

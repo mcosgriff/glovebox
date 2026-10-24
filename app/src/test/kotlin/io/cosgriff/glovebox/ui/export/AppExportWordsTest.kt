@@ -61,7 +61,7 @@ class AppExportWordsTest {
     fun `a finished save is announced to the nav host`() = runTest {
         val saver = ExportSaver(g.context, g.appScope)
         saver.attach { _, _ -> }
-        saver.save(File(g.context.cacheDir, "x.md").apply { writeText("x") }, "x.md", io.cosgriff.glovebox.domain.ExportFormat.MARKDOWN)
+        saver.saveExport("x.md", io.cosgriff.glovebox.domain.ExportFormat.MARKDOWN) { it.write("x".toByteArray()) }
         saver.onDestination(Uri.fromFile(File(g.context.filesDir, "x.md")))
         assertEquals(AppText.res.getString(R.string.export_saved, "x.md"), ExportResultsViewModel(saver).results.awaitValue { true })
     }

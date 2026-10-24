@@ -41,7 +41,21 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.asImageBitmap
+import io.cosgriff.glovebox.domain.ExportFormat
+import io.cosgriff.glovebox.domain.ExportOptions
+import io.cosgriff.glovebox.domain.ExportText
+import io.cosgriff.glovebox.domain.Exports
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
+import io.cosgriff.glovebox.ui.export.AppExportWords
+import io.cosgriff.glovebox.ui.export.Exportable
+import io.cosgriff.glovebox.ui.export.ExportPreview
+import io.cosgriff.glovebox.ui.export.ExportSheetContent
+import io.cosgriff.glovebox.ui.export.ReportFonts
+import io.cosgriff.glovebox.ui.export.ReportRenderer
+import io.cosgriff.glovebox.ui.export.SampleReport
 import org.junit.Rule
+import org.robolectric.RuntimeEnvironment
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
@@ -351,6 +365,33 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.torque, onBack = {}, onSave = {}, onDelete = {}, onAddCommon = {}, onAddKnown = {},
             onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {},
         )
+    }
+
+    @Test
+    fun exportSheetPdf() = exportSheet("export_pdf", ExportFormat.PDF)
+
+    @Test
+    fun exportSheetMarkdown() = exportSheet("export_markdown", ExportFormat.MARKDOWN)
+
+    /** The export sheet with its preview drawn from the made-up sample report. */
+    private fun exportSheet(name: String, format: ExportFormat) {
+        val options = ExportOptions(format = format)
+        val vehicle = SampleReport.vehicle(Fixtures.TODAY)
+        val doc = Exports.document(listOf(vehicle), options, Fixtures.TODAY)
+        val renderer = ReportRenderer(ReportFonts(RuntimeEnvironment.getApplication()))
+        val preview = when (format) {
+            ExportFormat.PDF -> renderer.layout(doc).let { pages -> ExportPreview.Pdf(pages.take(2).mapIndexed { i, p -> renderer.bitmap(p, i + 1, pages.size, 270).asImageBitmap() }, pages.size) }
+            ExportFormat.MARKDOWN -> ExportPreview.Markdown(ExportText(AppExportWords).markdown(doc).lines().take(14).joinToString("\n"))
+        }
+        compose.shootScreen(name, shade) {
+            GloveboxSheet(onDismiss = {}) {
+                ExportSheetContent(
+                    all = listOf(Exportable(1, "Blue truck", archived = false, vehicle = vehicle)), vehicleId = 1, options = options, document = doc,
+                    fileName = Exports.fileName("Blue truck", Fixtures.TODAY, format), working = false, preview = preview, today = Fixtures.TODAY,
+                    onChange = {}, onChooseVehicle = {}, onPickDate = {}, onViewPage = {}, onExport = {},
+                )
+            }
+        }
     }
 
     companion object {

@@ -47,7 +47,7 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | Navigation map | `screens/NavMap.png` | `source/NavMap.dc.html` |
 | 1a · Add without a VIN | `screens/ManualAdd.png` | `source/ManualAdd.dc.html` |
 | 4f · Archived vehicles | `screens/Archived.png` | `source/Archived.dc.html` |
-| 6b · Export sheet | `screens/ExportSheet.png` | `source/ExportSheet.dc.html` |
+| 6b · Export sheet (with PDF / Markdown preview) | `screens/ExportSheet.png` | `source/ExportSheet.dc.html` |
 | 10a · Snooze sheet | `screens/Snooze.png` | `source/Snooze.dc.html` |
 | 9a · Notifications | `screens/Notifications.png` | `source/Notifications.dc.html` |
 | 9b · Create encrypted backup | `screens/BackupCreate.png` | `source/BackupCreate.dc.html` |
@@ -57,3 +57,13 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 6c · Edit service + undo | `screens/EditRecord.png` | `source/EditRecord.dc.html` |
 | 6d · Delete record + undo | `screens/DeleteRecord.png` | `source/DeleteRecord.dc.html` |
 | 6e · History — timeline view | `screens/Timeline.png` | `source/Timeline.dc.html` |
+| PDF report · page 1 (infographic) — 816×1056 Letter | `screens/ReportPage1.png` | `source/ReportPage1.dc.html` |
+| PDF report · page 2 (service log) — 816×1056 Letter | `screens/ReportPage2.png` | `source/ReportPage2.dc.html` |
+
+## PDF report
+
+`ReportPage1` and `ReportPage2` are the exported PDF, one US Letter page each (816×1056 px at 96 dpi
+= 8.5×11 in). In the app, render them with Android's `PdfDocument` on a 612×792 pt Letter page (design px × 0.75 = pt). Category colors
+(oil `#eb6834`, tires `#2a78d6`, brakes `#eda100`, fluids & 4WD `#1baf7a`, other `#8A8E94`) were
+checked for colorblind separation; every color also has a text label, so the report reads in grayscale.
+

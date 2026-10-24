@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.photo
 
+import io.cosgriff.glovebox.ui.components.ZoomableImage
+
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.theme.ViewerColors
 import io.cosgriff.glovebox.ui.handOut
@@ -165,50 +167,6 @@ fun PhotoViewerScreen(onClose: () -> Unit, vm: PhotoViewerViewModel = hiltViewMo
 private fun ZoomablePhoto(fileName: String, description: String, loader: PhotoLoaderViewModel, onZoomChange: (Boolean) -> Unit) {
     val image by produceState<ImageBitmap?>(null, fileName) { value = loader.full(fileName) }
     ZoomableImage(image, description, key = fileName, onZoomChange = onZoomChange)
-}
-
-/**
- * A picture that fills the space it is given: pinch or double-tap to zoom, and one finger pans once
- * zoomed in (otherwise a swipe is left for a pager around it). Blank while [image] is still null.
- * Zoom starts again whenever [key] changes.
- */
-@Composable
-fun ZoomableImage(image: ImageBitmap?, description: String, key: Any, onZoomChange: (Boolean) -> Unit = {}) {
-    var scale by remember(key) { mutableFloatStateOf(1f) }
-    var offset by remember(key) { mutableStateOf(Offset.Zero) }
-    val transform = rememberTransformableState { _, zoomChange, panChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 5f)
-        offset = if (scale == 1f) Offset.Zero else offset + panChange
-        onZoomChange(scale > 1f)
-    }
-    Box(
-        Modifier.fillMaxSize()
-            .transformable(transform, canPan = { scale > 1f })
-            .pointerInput(key) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        scale = if (scale > 1f) 1f else 2.5f
-                        offset = Offset.Zero
-                        onZoomChange(scale > 1f)
-                    },
-                )
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        image?.let {
-            Image(
-                it,
-                contentDescription = description,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize().graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                    translationX = offset.x
-                    translationY = offset.y
-                },
-            )
-        }
-    }
 }
 
 /** False if nothing on the phone can take it. */

@@ -125,6 +125,9 @@ fun ComposeContentTestRule.shoot(name: String, shade: Shade, content: @Composabl
     onRoot().captureRoboImage("src/test/screenshots/${name}_${shade.name.lowercase()}.png", roborazziOptions = exact)
 }
 
+/** A picture drawn without Compose, such as a page of the PDF report, compared exactly with `src/test/screenshots/<name>.png`. */
+fun android.graphics.Bitmap.shoot(name: String) = captureRoboImage("src/test/screenshots/$name.png", roborazziOptions = exact)
+
 /**
  * As [shoot], for a bottom sheet or dialog: those are windows of their own, so the whole screen is
  * captured, with the sheet over an empty page.
