@@ -64,12 +64,12 @@ class HistoryTimelineContentTest {
         val total = Money.format(Fixtures.historyTimeline.records.sumOf { it.record.costCents ?: 0 })
         compose.onNodeWithText(total, substring = true).assertExists()
         compose.onNodeWithContentDescription(string(R.string.history_sort_by)).assertExists()
-        compose.onNodeWithText(string(R.string.history_view_list)).assertIsSelected()
+        compose.onNodeWithContentDescription(string(R.string.history_view_list)).assertIsSelected()
 
-        compose.onNodeWithText(string(R.string.history_view_timeline)).performClick()
+        compose.onNodeWithContentDescription(string(R.string.history_view_timeline)).performClick()
         assertEquals(listOf(HistoryView.TIMELINE), views)
-        compose.onNodeWithText(string(R.string.history_view_timeline)).assertIsSelected()
-        compose.onNodeWithText(string(R.string.history_view_list)).assertIsNotSelected()
+        compose.onNodeWithContentDescription(string(R.string.history_view_timeline)).assertIsSelected()
+        compose.onNodeWithContentDescription(string(R.string.history_view_list)).assertIsNotSelected()
         compose.onNodeWithText(total, substring = true).assertDoesNotExist()
         compose.onNodeWithContentDescription(string(R.string.history_sort_by)).assertDoesNotExist()
     }
@@ -110,7 +110,7 @@ class HistoryTimelineContentTest {
     @Test
     fun `with no records there is no switch`() {
         show(state = Fixtures.historyTimeline.copy(records = emptyList()))
-        compose.onNodeWithText(string(R.string.history_view_timeline)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(string(R.string.history_view_timeline)).assertDoesNotExist()
         compose.onNodeWithText(string(R.string.history_none)).assertExists()
     }
 }

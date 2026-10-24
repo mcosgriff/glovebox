@@ -68,7 +68,10 @@ class HistoryScreenTest {
 
     private fun overview() = GarageOverview(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings, t.db.recalls())
 
-    private fun tab(handle: SavedStateHandle = SavedStateHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
+    /** History opens on the timeline; these tests read the list unless they say so. */
+    private fun listHandle() = SavedStateHandle(mapOf("view" to HistoryView.LIST.name))
+
+    private fun tab(handle: SavedStateHandle = listHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
 
     @Test
     fun `the first vehicle shows, another is one tap away, and the choice is kept`() = runBlocking {
@@ -76,7 +79,7 @@ class HistoryScreenTest {
         val truck = t.vehicle(model = "Tacoma")
         t.record(t.db.vehicles().all().first { it.model == "Corolla" }.id, lines = listOf(line("Corolla wipers")))
         t.record(truck, lines = listOf(line("Tacoma wipers")))
-        val handle = SavedStateHandle()
+        val handle = listHandle()
         val vm = tab(handle)
         show(vm)
 
@@ -93,7 +96,7 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Oil and filter", "oil")), costCents = 5_000)
         t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Tires rotated", "rotation")), costCents = 3_000, shop = "Made-up Tire")
-        val handle = SavedStateHandle()
+        val handle = listHandle()
         val vm = tab(handle)
         show(vm)
 
@@ -129,7 +132,7 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.record(car, date = today.minusDays(30), odometer = 45_000)
         t.record(car, date = today.minusDays(10), odometer = 44_000)
-        val handle = SavedStateHandle()
+        val handle = listHandle()
         val vm = tab(handle)
         show(vm)
         compose.waitForText(plural(R.plurals.records, 2, 2.asNumber()), substring = true)
@@ -248,13 +251,20 @@ class HistoryScreenTest {
         compose.setContent {
             GloveboxTheme { HistoryScreen(onOpenRecord = { opened += it }, onLogIt = { v, item -> logged += v to item }, vm = vm) }
         }
-        compose.waitForText("Front brake pads")
+        // With nothing chosen yet, History opens on the timeline.
+        compose.waitForText(string(R.string.history_timeline_coming_up))
+        compose.onNodeWithContentDescription(string(R.string.history_view_timeline)).assertIsSelected()
+        assertEquals(HistoryView.TIMELINE, vm.view)
 
-        compose.onNodeWithText(string(R.string.history_view_timeline)).performClick()
+        compose.onNodeWithContentDescription(string(R.string.history_view_list)).performClick()
+        compose.waitForNoText(string(R.string.history_timeline_coming_up))
+        assertEquals("LIST", handle.get<String>("view"))
+        assertEquals(HistoryView.LIST, tab(handle).view)
+
+        compose.onNodeWithContentDescription(string(R.string.history_view_timeline)).performClick()
         compose.waitForText(string(R.string.history_timeline_coming_up))
         assertEquals("TIMELINE", handle.get<String>("view"))
         assertEquals(HistoryView.TIMELINE, tab(handle).view)
-        compose.onNodeWithText(string(R.string.history_view_timeline)).assertIsSelected()
         // Newest first, gaps between them, and the oldest record's month at the end.
         compose.onNodeWithText(plural(R.plurals.history_timeline_apart, 3, 3.asNumber())).assertExists()
         compose.onNodeWithText(string(R.string.history_timeline_since, LocalDate.of(2025, 10, 1).format(monthYear))).performScrollTo().assertExists()

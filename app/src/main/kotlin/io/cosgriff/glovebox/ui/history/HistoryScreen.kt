@@ -14,6 +14,11 @@ import io.cosgriff.glovebox.R
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import io.cosgriff.glovebox.ui.components.BackToTop
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -75,7 +80,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -201,8 +205,8 @@ class HistoryViewModel @Inject constructor(
         savedStateHandle[DESCENDING] = chosen.descending
     }
 
-    /** List or timeline; kept like the order, across vehicles and through a restart. */
-    var view by mutableStateOf(enumOrNull<HistoryView>(savedStateHandle.get<String>(VIEW)) ?: HistoryView.LIST)
+    /** Timeline (the first choice) or list; kept like the order, across vehicles and through a restart. */
+    var view by mutableStateOf(enumOrNull<HistoryView>(savedStateHandle.get<String>(VIEW)) ?: HistoryView.TIMELINE)
         private set
 
     fun chooseView(chosen: HistoryView) {
@@ -316,9 +320,12 @@ internal fun HistoryContent(
     search: String = "",
     onSearch: (String) -> Unit = {},
     onSortCustom: (() -> Unit)? = null,
-    view: HistoryView = HistoryView.LIST,
+    view: HistoryView = HistoryView.TIMELINE,
     onChooseView: (HistoryView) -> Unit = {},
     onLogIt: ((vehicleId: Long, scheduleItemId: Long) -> Unit)? = null,
+    /** Where each view is scrolled to; given only by tests that start part way down. */
+    listState: LazyListState = rememberLazyListState(),
+    timelineState: LazyListState = rememberLazyListState(),
 ) {
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
@@ -343,8 +350,6 @@ internal fun HistoryContent(
     // The spending line is the list's; the timeline shows time, not money.
     val spending = if (filter == null && !searching && !timeline) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
 
-    val listState = rememberLazyListState()
-    val timelineState = rememberLazyListState()
     // A new order starts at the top. Without this the list would hold on to the record that was first and
     // follow it to wherever it now sorts; coming back from a record keeps the place, since that is a new composition.
     var lastOrder by remember { mutableStateOf(order) }
@@ -355,80 +360,84 @@ internal fun HistoryContent(
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
+    // The header and the filters are the first items of the list showing, so they scroll away with it
+    // and the records get the screen; the Top button brings them back.
+    val header: LazyListScope.() -> Unit = {
         if (onBack != null) {
-            IconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
-            }
-        }
-        Column(
-            Modifier.padding(start = 20.dp, top = if (onBack != null) 0.dp else 16.dp, end = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.history_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
-                if (state.vehicle != null) {
-                    InkOutlinedButton(onClick = onExport, modifier = Modifier.heightIn(min = 48.dp), quiet = true) { Text(stringResource(R.string.history_export)) }
+            item(key = "back") {
+                Box(Modifier.fillMaxWidth()) {
+                    IconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
                 }
             }
-            state.vehicle?.let { v ->
+        }
+        item(key = "header") {
+            Column(
+                Modifier.padding(start = 20.dp, top = if (onBack != null) 0.dp else 16.dp, end = 20.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.shortName(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
-                        Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    // The timeline always runs newest first, so there is nothing to sort.
-                    if (state.records.size > 1 && !timeline) SortControls(order, onChooseOrder)
+                    Text(stringResource(R.string.history_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium)
+                    // The title gives way first: the toggle and Export keep their 48dp.
+                    if (state.vehicle != null && state.records.isNotEmpty()) HistoryViewToggle(view, onChooseView)
+                    if (state.vehicle != null) {
+                        InkOutlinedButton(onClick = onExport, modifier = Modifier.heightIn(min = 48.dp), quiet = true) { Text(stringResource(R.string.history_export)) }
+                    }
                 }
-            }
-            spending?.let { SpendingLine(it) }
-            val custom = state.customLines
-            if (!archived && custom.lines > 0 && onSortCustom != null) {
-                TextButton(onClick = onSortCustom, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
-                    // The sort page has a row per wording, so a count of lines alone reads as if the two disagree.
-                    Text(
-                        if (custom.wordings == custom.lines) pluralStringResource(R.plurals.history_custom_lines, custom.lines, custom.lines.asNumber())
-                        else pluralStringResource(R.plurals.history_custom_ways, custom.wordings, custom.lines.asNumber(), custom.wordings.asNumber()),
-                    )
+                state.vehicle?.let { v ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            stringResource(if (archived) R.string.history_subtitle_archived else R.string.history_subtitle, v.shortName(), pluralStringResource(R.plurals.records, shown.size, shown.size.asNumber())),
+                            Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        // The timeline always runs newest first, so there is nothing to sort.
+                        if (state.records.size > 1 && !timeline) SortControls(order, onChooseOrder)
+                    }
+                }
+                spending?.let { SpendingLine(it) }
+                val custom = state.customLines
+                if (!archived && custom.lines > 0 && onSortCustom != null) {
+                    TextButton(onClick = onSortCustom, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
+                        // The sort page has a row per wording, so a count of lines alone reads as if the two disagree.
+                        Text(
+                            if (custom.wordings == custom.lines) pluralStringResource(R.plurals.history_custom_lines, custom.lines, custom.lines.asNumber())
+                            else pluralStringResource(R.plurals.history_custom_ways, custom.wordings, custom.lines.asNumber(), custom.wordings.asNumber()),
+                        )
+                    }
                 }
             }
         }
-
-        if (state.vehicle != null && state.records.isNotEmpty()) {
-            HistoryViewSwitch(view, onChooseView, Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 8.dp))
-        }
-
         if (state.vehicles.size > 1) {
-            ChipRow {
-                state.vehicles.forEach { v ->
-                    InkChip(v.shortName(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
+            item(key = "vehicles") {
+                ChipRow {
+                    state.vehicles.forEach { v ->
+                        InkChip(v.shortName(), selected = v.id == state.vehicle?.id) { onChooseVehicle(v.id) }
+                    }
                 }
             }
         }
         if (categories.isNotEmpty()) {
-            ChipRow {
-                InkChip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
-                categories.forEach { c ->
-                    InkChip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
+            item(key = "categories") {
+                ChipRow {
+                    InkChip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
+                    categories.forEach { c ->
+                        InkChip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
+                    }
                 }
             }
         }
+        // A focused field is kept composed by the list while it is scrolled off, so typing goes on.
+        if (state.records.isNotEmpty()) item(key = "search") { SearchField(search, onSearch) }
+    }
 
-        if (state.records.isNotEmpty()) SearchField(search, onSearch)
-
+    Box(Modifier.fillMaxSize()) {
+        val showing: LazyListState
         when {
-            state.vehicle == null -> EmptyNote(stringResource(R.string.history_no_vehicle))
-            state.records.isEmpty() && archived -> EmptyNote(stringResource(R.string.history_none_archived))
-            state.records.isEmpty() -> EmptyNote(stringResource(R.string.history_none))
-            shown.isEmpty() && searching -> Column {
-                EmptyNote(stringResource(R.string.history_no_match, search.trim()))
-                TextButton(onClick = { onSearch("") }, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.history_search_show_all))
-                }
-            }
-            timeline -> {
+            timeline && state.vehicle != null && !(shown.isEmpty() && searching) -> {
+                showing = timelineState
                 // Always by date, newest first, whatever the list's order: a visit is one entry, where its newest record is.
                 val byDate = HistoryOrdering.sorted(
                     state.records, HistoryOrder(HistorySort.DATE, descending = true),
@@ -444,23 +453,41 @@ internal fun HistoryContent(
                     listState = timelineState,
                     onOpenRecord = onOpenRecord,
                     onLogIt = onLogIt.takeIf { !archived },
+                    header = header,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
-            else -> LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(groups, key = { it.first().record.id }) { g ->
-                    if (g.size == 1) {
-                        val r = g.single()
-                        RecordCard(r, state.vehicle.unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
-                    } else {
-                        VisitCard(g, state.vehicle.unit, fresh, onOpenRecord)
+            else -> {
+                showing = listState
+                LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(bottom = 16.dp + BackToTopRoom)) {
+                    header()
+                    when {
+                        state.vehicle == null -> item(key = "empty") { EmptyNote(stringResource(R.string.history_no_vehicle)) }
+                        state.records.isEmpty() && archived -> item(key = "empty") { EmptyNote(stringResource(R.string.history_none_archived)) }
+                        state.records.isEmpty() -> item(key = "empty") { EmptyNote(stringResource(R.string.history_none)) }
+                        shown.isEmpty() && searching -> item(key = "no-match") {
+                            Column {
+                                EmptyNote(stringResource(R.string.history_no_match, search.trim()))
+                                TextButton(onClick = { onSearch("") }, modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)) {
+                                    Text(stringResource(R.string.history_search_show_all))
+                                }
+                            }
+                        }
+                        else -> itemsIndexed(groups, key = { _, g -> g.first().record.id }) { i, g ->
+                            Box(Modifier.padding(start = 20.dp, top = if (i == 0) 8.dp else 10.dp, end = 20.dp)) {
+                                if (g.size == 1) {
+                                    val r = g.single()
+                                    RecordCard(r, state.vehicle.unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
+                                } else {
+                                    VisitCard(g, state.vehicle.unit, fresh, onOpenRecord)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+        BackToTop(showing, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp))
     }
 }
 

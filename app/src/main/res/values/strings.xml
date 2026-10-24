@@ -97,6 +97,10 @@
 
     <!-- Shared, more -->
     <string name="back">Back</string>
+    <!-- The button that comes up on a long list, beside an up arrow. -->
+    <string name="scroll_top">Top</string>
+    <!-- What TalkBack reads for that button. -->
+    <string name="scroll_back_to_top">Back to top</string>
     <string name="save">Save</string>
     <string name="add">Add</string>
     <!-- %1$s is the unit: mi or km. -->
