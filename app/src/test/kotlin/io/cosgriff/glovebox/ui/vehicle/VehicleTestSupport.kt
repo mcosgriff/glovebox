@@ -2,7 +2,11 @@ package io.cosgriff.glovebox.ui.vehicle
 
 import android.app.Application
 import androidx.annotation.StringRes
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
@@ -115,6 +119,21 @@ internal fun ComposeContentTestRule.awaitThat(timeoutMillis: Long = 10_000, cond
         Thread.sleep(10)
     }
 }
+
+/** Waits until [condition] holds, for work on the app's own scope (an Undo), which needs no screen. */
+internal suspend fun eventually(timeoutMillis: Long = 10_000, condition: suspend () -> Boolean) {
+    val end = System.currentTimeMillis() + timeoutMillis
+    while (!condition()) {
+        check(System.currentTimeMillis() < end) { "Still not so after $timeoutMillis ms" }
+        Thread.sleep(10)
+    }
+}
+
+/** Clicks through the node's semantics, so a sheet only partly on screen doesn't swallow the tap. */
+internal fun SemanticsNodeInteraction.click(): SemanticsNodeInteraction = performSemanticsAction(SemanticsActions.OnClick)
+
+/** A node whose click is labelled [label] for screen readers. */
+internal fun clickLabelled(label: String) = SemanticsMatcher("clicks to $label") { it.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label }
 
 /** NHTSA's stand-in: every request is counted and refused, as if the phone were offline. */
 class RefusingEngine : HttpClientEngineBase("refusing") {

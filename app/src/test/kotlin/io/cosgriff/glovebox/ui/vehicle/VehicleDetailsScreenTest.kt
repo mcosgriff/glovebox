@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.vehicle
 import android.content.ClipboardManager
 import android.content.Intent
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -90,7 +89,6 @@ class VehicleDetailsScreenTest {
 
     private fun text(id: Int, vararg args: Any) = compose.onNodeWithText(g.string(id, *args))
     private fun field(label: String) = compose.onNode(hasSetTextAction() and hasText(label))
-    private fun clickLabelled(label: String) = SemanticsMatcher("clicks to $label") { it.config.getOrElseNullable(SemanticsActions.OnClick) { null }?.label == label }
     private fun longClickLabelled(label: String) = SemanticsMatcher("long-clicks to $label") { it.config.getOrElseNullable(SemanticsActions.OnLongClick) { null }?.label == label }
     private fun tap(label: String) = compose.onNode(hasText(label) and hasClickAction()).performScrollTo().click()
 
@@ -392,6 +390,3 @@ class VehicleDetailsScreenTest {
         assertEquals(5, v.clusterStartReading)
     }
 }
-
-/** Clicks through the node's semantics, so a sheet only partly on screen doesn't swallow the tap. */
-internal fun SemanticsNodeInteraction.click(): SemanticsNodeInteraction = performSemanticsAction(SemanticsActions.OnClick)
