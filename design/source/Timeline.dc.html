@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Service timeline</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1560px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 4px 20px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
+      <div style="font-size: 13px; color: #5A5F66">{{subtitle}}</div>
+    </div>
+    <a href="ExportSheet.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Export</a>
+  </div>
+
+  <div style="padding: 12px 20px 0 20px">
+    <div role="tablist" aria-label="History view" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #E9E7E0">
+      <a href="History.dc.html" role="tab" aria-selected="false" style="height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #3A3E44; text-decoration: none">List</a>
+      <a href="Timeline.dc.html" role="tab" aria-selected="true" style="height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #17191C; text-decoration: none; background: #FFFFFF; box-shadow: 0 1px 3px rgba(23,25,28,0.18)">Timeline</a>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; padding: 12px 20px 4px 20px">
+    <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+      <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="position: relative; padding: 12px 20px 24px 20px">
+    <div aria-hidden="true" style="position: absolute; left: 39px; top: 24px; bottom: 24px; width: 2px; background: #DEDCD5"></div>
+
+    <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="2">
+      <div style="position: relative; display: flex; gap: 14px; padding-bottom: 12px">
+        <div style="width: 40px; flex-shrink: 0; display: flex; justify-content: center; padding-top: 14px">
+          <div style="width: 16px; height: 16px; border-radius: 8px; box-sizing: border-box; border: 2px dashed #C2410C; background: #F4F3EF"></div>
+        </div>
+        <div style="flex: 1; min-width: 0; border: 1.5px dashed #C2410C; border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #9A3412">COMING UP · {{u.vehicle}}</span>
+          <span style="font-size: 15px; font-weight: 600">{{u.name}}</span>
+          <span style="font-size: 13px; color: #3A3E44">{{u.when}}</span>
+        </div>
+      </div>
+    </sc-for>
+
+    <sc-for list="{{items}}" as="e" hint-placeholder-count="6">
+      <sc-if value="{{e.isYear}}" hint-placeholder-val="{{ false }}">
+        <div style="position: relative; display: flex; gap: 14px; padding: 8px 0 10px 0">
+          <div style="width: 40px; flex-shrink: 0; display: flex; justify-content: center">
+            <div style="padding: 2px 6px; border-radius: 6px; background: #17191C; color: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600">{{e.year}}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{e.isGap}}" hint-placeholder-val="{{ false }}">
+        <div style="position: relative; display: flex; gap: 14px; padding: 0 0 12px 0">
+          <div style="width: 40px; flex-shrink: 0"></div>
+          <div style="font-size: 12px; color: #5A5F66; font-style: italic">{{e.gap}}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{e.isEntry}}" hint-placeholder-val="{{ true }}">
+        <div style="position: relative; display: flex; gap: 14px; padding-bottom: 12px">
+          <div style="width: 40px; flex-shrink: 0; display: flex; justify-content: center; padding-top: 16px">
+            <div style="width: 16px; height: 16px; border-radius: 8px; box-sizing: border-box; border: 3px solid {{e.ring}}; background: #FFFFFF"></div>
+          </div>
+          <a href="RecordDetail.dc.html" style="flex: 1; min-width: 0; background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; color: #17191C; text-decoration: none">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+              <span style="font-size: 14px; font-weight: 700">{{e.date}}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3A3E44">{{e.miles}}</span>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{e.work}}" as="w" hint-placeholder-count="2">
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 8px; background: #F4F3EF; font-size: 13px">
+                  <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: {{w.color}}"></span>{{w.label}}
+                </span>
+              </sc-for>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5A5F66">
+              <span style="font-weight: 600; color: {{e.vehicleColor}}">{{e.vehicle}}</span>
+              <span>{{e.who}}</span>
+            </div>
+          </a>
+        </div>
+      </sc-if>
+    </sc-for>
+
+    <div style="position: relative; display: flex; gap: 14px">
+      <div style="width: 40px; flex-shrink: 0; display: flex; justify-content: center">
+        <div style="width: 10px; height: 10px; border-radius: 5px; background: #B9B6AE"></div>
+      </div>
+      <div style="font-size: 12px; color: #5A5F66">{{startNote}}</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 20px 20px 20px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #3A3E44">
+    <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: #C2410C"></span>Oil &amp; engine</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: #3A3E44"></span>Tires</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: #B42318"></span>Brakes</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: #0F766E"></span>Fluids &amp; 4WD</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 2px; background: #B9B6AE"></span>Cabin &amp; other</span>
+  </div>
+
+  <div style="flex: 1"></div>
+
+  <nav style="height: 80px; background: #FFFFFF; border-top: 1px solid #DEDCD5; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr))">
+    <a href="GarageMulti.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"></path><path d="M7 21v-7h10v7"></path></svg></div>
+      Garage
+    </a>
+    <a href="Timeline.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #17191C; text-decoration: none; font-size: 12px; font-weight: 700">
+      <div style="width: 56px; height: 30px; border-radius: 15px; background: #FBE9DF; display: flex; align-items: center; justify-content: center; color: #C2410C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
+      History
+    </a>
+    <a href="Upcoming.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></div>
+      Reminders
+    </a>
+    <a href="Settings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></div>
+      Settings
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { v: 'all' };
+}
+renderVals() {
+var self = this, v = this.state.v;
+var CAT = { oil: '#C2410C', tires: '#3A3E44', brakes: '#B42318', fluids: '#0F766E', other: '#B9B6AE' };
+var VEH = {
+'4r': { name: '2019 4Runner', ring: '#C2410C', text: '#9A3412' },
+gti: { name: '2011 GTI', ring: '#17191C', text: '#3A3E44' }
+};
+// Sample data — not real records.
+var D = [
+{ v: '4r', d: '2026-10-10', mi: 68412, who: 'DIY', work: [['Oil & filter', 'oil'], ['Engine air filter', 'oil'], ['Tire rotation', 'tires']] },
+{ v: 'gti', d: '2026-08-22', mi: 110800, who: 'DIY', work: [['Tire rotation', 'tires'], ['Wiper blades', 'other']] },
+{ v: '4r', d: '2026-06-14', mi: 60100, who: 'Shop', work: [['Oil & filter', 'oil'], ['Tire rotation', 'tires']] },
+{ v: 'gti', d: '2026-03-09', mi: 105900, who: 'Shop', work: [['Rear brake pads', 'brakes'], ['Cabin air filter', 'other']] },
+{ v: '4r', d: '2026-02-02', mi: 54800, who: 'DIY', work: [['Front brake pads', 'brakes'], ['Brake inspection', 'brakes']] },
+{ v: 'gti', d: '2025-11-15', mi: 102940, who: 'DIY', work: [['Oil & filter (VW 502 00)', 'oil'], ['Spark plugs', 'oil']] },
+{ v: '4r', d: '2025-10-18', mi: 50200, who: 'Shop', work: [['Transfer case fluid', 'fluids'], ['Front & rear diff fluid', 'fluids']] }
+];
+var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var parse = function (s) { var p = s.split('-'); return { y: +p[0], m: +p[1], d: +p[2] }; };
+var fmtDate = function (s) { var p = parse(s); return MON[p.m - 1] + ' ' + p.d + ', ' + p.y; };
+var months = function (a, b) { var x = parse(a), y = parse(b); return (x.y - y.y) * 12 + (x.m - y.m) - (x.d < y.d ? 1 : 0); };
+var rows = D.filter(function (d) { return v === 'all' || d.v === v; });
+var items = [];
+var lastYear = null;
+rows.forEach(function (r, i) {
+var yr = r.d.slice(0, 4);
+if (yr !== lastYear) { items.push({ isYear: true, isGap: false, isEntry: false, year: yr }); lastYear = yr; }
+var veh = VEH[r.v];
+items.push({
+isYear: false, isGap: false, isEntry: true,
+date: fmtDate(r.d), miles: r.mi.toLocaleString('en-US') + ' mi', who: r.who,
+vehicle: veh.name, vehicleColor: veh.text, ring: veh.ring,
+work: r.work.map(function (w) { return { label: w[0], color: CAT[w[1]] }; })
+});
+var next = rows[i + 1];
+if (next) {
+var m = months(r.d, next.d);
+var t = m <= 0 ? 'Under a month' : (m === 1 ? '1 month' : m + ' months');
+var txt = next.v === r.v ? t + ' · ' + (r.mi - next.mi).toLocaleString('en-US') + ' mi since the previous service' : t + ' apart';
+items.push({ isYear: false, isGap: true, isEntry: false, gap: txt });
+}
+});
+var UP = [
+{ v: '4r', vehicle: '4Runner', name: 'Oil & filter', when: 'At 70,100 mi · est. early Nov 2026' },
+{ v: 'gti', vehicle: 'GTI', name: 'Oil & filter (VW 502 00)', when: 'In 640 mi' }
+];
+var F = [['all', 'Both'], ['4r', '4Runner'], ['gti', 'GTI']];
+return {
+items: items,
+upcoming: UP.filter(function (u) { return v === 'all' || u.v === v; }),
+subtitle: (v === 'all' ? '2 vehicles' : VEH[v].name) + ' · ' + rows.length + ' services',
+startNote: v === 'all' ? 'Tracking since Oct 2025' : 'Added to Glovebox · ' + fmtDate(rows[rows.length - 1].d),
+filters: F.map(function (f) {
+var a = f[0] === v;
+return { label: f[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ v: f[0] }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>
