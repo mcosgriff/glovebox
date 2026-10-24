@@ -473,3 +473,17 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 - Any Python helper scripts: use `uv run` with inline script dependencies.
 - Public repo: never commit real personal data (VINs, records, photos, reports), keystores,
   `local.properties` or `.idea/`. Test fixtures use made-up values.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `mcosgriff/glovebox`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five roles, label string = role name (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root, created lazily. See `docs/agents/domain.md`.
