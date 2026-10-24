@@ -32,6 +32,8 @@ zxing = "3.5.4"
 tesseract4android = "4.9.0"
 # Argon2id for the backup password. Only the lightweight API is used (no provider), so R8 keeps little of it.
 bouncycastle = "1.86"
+# Build tools only (#273): AGP 9.4 brings older httpclient onto the build classpath; held at the last 4.x.
+httpclient = "4.5.14"
 
 hilt = "2.60.1"
 # Build-time only: lists the bundled libraries and their licences for the About screen. No runtime library is added.
@@ -100,6 +102,9 @@ camerax-compose = { module = "androidx.camera:camera-compose", version.ref = "ca
 androidx-pdf-compose = { module = "androidx.pdf:pdf-compose", version.ref = "pdf" }
 androidx-pdf-document-service = { module = "androidx.pdf:pdf-document-service", version.ref = "pdf" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-util = { module = "org.bouncycastle:bcutil-jdk18on", version.ref = "bouncycastle" }
+httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "httpclient" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 # Reads the VIN barcodes (#161): the C++ successor to ZXing, far better on blurred and unevenly lit camera frames.
 # No network code: checked in its native library's imported functions (none are network calls) and its POM

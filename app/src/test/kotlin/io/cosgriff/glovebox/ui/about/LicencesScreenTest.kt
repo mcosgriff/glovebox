@@ -65,6 +65,15 @@ class LicencesScreenTest {
     }
 
     @Test
+    fun `every licence the build lists has its wording, from the app's own copies`() {
+        // The build fetches no wording, so a dependency that brings a new licence needs its text in assets/licences.
+        val groups = runBlocking { catalog.groups() }
+        val missing = groups.map { it.licence.id }.filter { runBlocking { catalog.document(it) }?.text.isNullOrBlank() }
+        assertEquals(emptyList<String>(), missing)
+        assertEquals("MIT License", groups.single { it.licence.id == "MIT" }.title)
+    }
+
+    @Test
     fun `the list leads to each licence, the app's own first`() {
         val opened = mutableListOf<String>()
         val vm = LicencesViewModel(catalog)

@@ -37,6 +37,8 @@ and there is no baseline: fix a warning, or suppress that one case with a commen
   the list of what is now trusted. Dependabot's PRs get the same command from `dependabot-verification.yml`.
   To prune old entries, delete both files and run it again. Tesseract4Android (JitPack) is unsigned, so only
   its checksum vouches for it: **never accept a changed checksum for a version already in the file.**
+  The root `build.gradle.kts` holds Bouncy Castle and httpclient on the build's and lint's classpaths above what
+  AGP asks for (#273, advisories in the build tools, not the APK); drop those constraints once AGP itself moves on.
 - **On-device tests** (`app/src/androidTest`): `TextReaderTest` and `EndToEndTest` (first launch through the
   maker's schedule, "Log it", a mileage update, a backup and its restore). `EndToEndTest` finds things by the
   words on screen, so change it with the wording; it turns airplane mode on and **skips itself unless the
@@ -439,8 +441,10 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 - Settings rows that lead nowhere are left out, not shown dead.
 - The Privacy screen (`privacy_*` arrays in `strings.xml`) **must stay true of the code**: update it with any
   change to the network, permissions, storage, backup or export.
-- Licences come from the AboutLibraries plugin at build time; a library with a licence of its own needs its text
-  in `app/src/main/assets/licences/<group>_<artifact>.txt`.
+- Licences come from the AboutLibraries plugin at build time, **offline** (`offlineMode`: it would otherwise download
+  the wording from GitHub and leave it blank when that failed). So the app carries every wording: a standard licence
+  in `app/src/main/assets/licences/spdx/<SPDX id>.txt` with its name in `LicenceCatalog.STANDARD`, a library's own
+  in `app/src/main/assets/licences/<group>_<artifact>.txt`. `LicencesScreenTest` fails on a licence with no wording.
 
 ### Database
 

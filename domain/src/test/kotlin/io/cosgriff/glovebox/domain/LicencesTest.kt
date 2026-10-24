@@ -44,6 +44,7 @@ class LicencesTest {
     @Test
     fun `asset name is the coordinate with the colon replaced`() {
         assertEquals("licences/net.zetetic_sqlcipher-android.txt", Licences.assetName("net.zetetic:sqlcipher-android"))
+        assertEquals("licences/spdx/Apache-2.0.txt", Licences.standardAssetName("Apache-2.0"))
     }
 
     @Test
