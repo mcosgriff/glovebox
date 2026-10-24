@@ -190,7 +190,10 @@ class RemindersScreenTest {
         messages.last().second()
         compose.until { read(rotate).snoozedUntilOdometer == null }
 
-        compose.onNodeWithContentDescription(text(R.string.reminders_snooze_for, "Rotate tires", hatch.shortName())).performClick()
+        // The sheet is still closing after the Undo; wait until the row's snooze button can be tapped again.
+        val snoozeRotate = text(R.string.reminders_snooze_for, "Rotate tires", hatch.shortName())
+        compose.until { compose.onAllNodesWithContentDescription(snoozeRotate).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithContentDescription(snoozeRotate).performClick()
         compose.onNodeWithText(text(R.string.snooze_already_done)).performClick()
         assertEquals(listOf(a to rotate), logged)
         compose.onNodeWithText(text(R.string.snooze_title, "Rotate tires")).assertDoesNotExist()
