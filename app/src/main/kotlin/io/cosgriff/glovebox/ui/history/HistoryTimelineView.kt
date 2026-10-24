@@ -64,9 +64,9 @@ import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.HistoryTimeline
 import io.cosgriff.glovebox.domain.ItemStatus
-import io.cosgriff.glovebox.domain.LineHue
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.ReminderProgress
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.TimelineRow
 import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.components.Chevron
@@ -80,7 +80,7 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.service.yearOnly
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import io.cosgriff.glovebox.ui.theme.statusColors
+import io.cosgriff.glovebox.ui.theme.groupColor
 import java.time.LocalDate
 
 /** How History shows its records. Kept in the saved state with the sort order; nothing is stored. */
@@ -136,7 +136,7 @@ internal fun HistoryTimelineList(
 ) {
     val unit = vehicle.unit
     val rows = HistoryTimeline.rows(groups) { it.first().record.date }
-    val hues = groups.flatten().flatMap { r -> r.items.map { HistoryTimeline.hue(it.catalogId) } }.toSet()
+    val shown = groups.flatten().flatMap { r -> r.items.map { ServiceGroup.ofLine(it.catalogId) } }.toSet()
     // Everything drawn on the line, in order; the key comes after it, off the line.
     val onLine: List<LineRow> =
         listOfNotNull(next?.let { LineRow.Next(it.first, it.second) }) + rows.map(LineRow::Past) + listOfNotNull(since?.let(LineRow::Since))
@@ -180,8 +180,8 @@ internal fun HistoryTimelineList(
                 }
             } }
         }
-        if (hues.isNotEmpty()) {
-            item(key = "legend") { Legend(hues, Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp)) }
+        if (shown.isNotEmpty()) {
+            item(key = "legend") { Legend(shown, Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp)) }
         }
     }
 }
@@ -416,46 +416,43 @@ private fun Lines(r: ServiceRecordWithItems) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Swatch(HistoryTimeline.hue(line.catalogId).color())
+                Swatch(ServiceGroup.ofLine(line.catalogId))
                 Text(line.label, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
 }
 
-/** Decorative: the line or key beside it names what it stands for. */
+/** Decorative: the line or key beside it names what it stands for. Other is an outline (see [groupColor]). */
 @Composable
-private fun Swatch(color: Color) {
-    Box(Modifier.size(8.dp).background(color, RoundedCornerShape(2.dp)).clearAndSetSemantics { })
+private fun Swatch(group: ServiceGroup) {
+    val color = groupColor(group)
+    val shape = RoundedCornerShape(2.dp)
+    val mark = if (group == ServiceGroup.OTHER) Modifier.border(1.5.dp, color, shape) else Modifier.background(color, shape)
+    Box(Modifier.size(8.dp).then(mark).clearAndSetSemantics { })
 }
 
 /** The colour key, for the colours on the timeline only. */
 @Composable
-private fun Legend(hues: Set<LineHue>, modifier: Modifier = Modifier) {
+private fun Legend(shown: Set<ServiceGroup>, modifier: Modifier = Modifier) {
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        LineHue.entries.filter { it in hues }.forEach { hue ->
+        ServiceGroup.entries.filter { it in shown }.forEach { group ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Swatch(hue.color())
-                Text(hue.label(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Swatch(group)
+                Text(group.label(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
 }
 
 @Composable
-private fun LineHue.color(): Color = when (this) {
-    LineHue.ENGINE -> MaterialTheme.colorScheme.primary
-    LineHue.TIRES -> statusColors().soon
-    LineHue.BRAKES -> MaterialTheme.colorScheme.error
-    LineHue.FLUIDS -> MaterialTheme.colorScheme.tertiary
-    LineHue.OTHER -> MaterialTheme.colorScheme.outline
+private fun ServiceGroup.label(): String = when (this) {
+    ServiceGroup.OIL_ENGINE -> catalogCategoryLabel("engine")
+    ServiceGroup.TIRES -> catalogCategoryLabel("tires")
+    ServiceGroup.BRAKES -> catalogCategoryLabel("brakes")
+    ServiceGroup.FLUIDS_4WD -> stringResource(R.string.history_timeline_hue_fluids)
+    ServiceGroup.SUSPENSION -> catalogCategoryLabel("suspension")
+    ServiceGroup.FUEL_EXHAUST -> stringResource(R.string.history_timeline_hue_fuel)
+    ServiceGroup.OTHER -> stringResource(R.string.history_timeline_hue_other)
 }
 
-@Composable
-private fun LineHue.label(): String = when (this) {
-    LineHue.ENGINE -> catalogCategoryLabel("engine")
-    LineHue.TIRES -> catalogCategoryLabel("tires")
-    LineHue.BRAKES -> catalogCategoryLabel("brakes")
-    LineHue.FLUIDS -> stringResource(R.string.history_timeline_hue_fluids)
-    LineHue.OTHER -> stringResource(R.string.history_timeline_hue_other)
-}

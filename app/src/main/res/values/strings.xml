@@ -1134,6 +1134,7 @@
     <string name="history_timeline_since">Tracking since %1$s</string>
     <!-- The colour key under the timeline; the other entries are the category names. -->
     <string name="history_timeline_hue_fluids">Fluids &amp; driveline</string>
+    <string name="history_timeline_hue_fuel">Fuel &amp; exhaust</string>
     <string name="history_timeline_hue_other">Everything else</string>
 
     <!-- Service record (RecordDetailScreen) -->
@@ -2343,6 +2344,8 @@
     <string name="report_category_tires">Tires</string>
     <string name="report_category_brakes">Brakes</string>
     <string name="report_category_fluids">Fluids &amp; 4WD</string>
+    <string name="report_category_suspension">Suspension &amp; steering</string>
+    <string name="report_category_fuel">Fuel &amp; exhaust</string>
     <string name="report_category_other">Other</string>
     <string name="report_thousands">%1$sK</string>
     <string name="report_tick">%1$sK %2$s</string>

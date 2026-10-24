@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.domain.ServiceGroup
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Font
@@ -166,3 +167,37 @@ fun statusColors(dark: Boolean): StatusColors =
     } else {
         StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
     }
+
+/**
+ * Each [ServiceGroup]'s colour on History's timeline and in the PDF report (#410), which is always [dark] false.
+ * Picked as a set and checked with the dataviz palette validator, every pair against every other: told apart with
+ * full colour vision (OKLab ΔE ≥ 15) and, with the name always beside the mark, with red-green colour blindness
+ * (ΔE ≥ 6); each 3:1 against the card and the page ground of its mode. Change one only by checking the set again.
+ * [ServiceGroup.OTHER] is grey, which colour blindness can mistake for a muted hue, so it is drawn as an outline.
+ */
+fun groupColor(group: ServiceGroup, dark: Boolean): Color = Color(
+    if (dark) {
+        when (group) {
+            ServiceGroup.OIL_ENGINE -> 0xFFD73819
+            ServiceGroup.TIRES -> 0xFF0A8FD1
+            ServiceGroup.BRAKES -> 0xFFC58202
+            ServiceGroup.FLUIDS_4WD -> 0xFF139E6F
+            ServiceGroup.SUSPENSION -> 0xFF9278FD
+            ServiceGroup.FUEL_EXHAUST -> 0xFFD75DA1
+            ServiceGroup.OTHER -> 0xFF8A8E94
+        }
+    } else {
+        when (group) {
+            ServiceGroup.OIL_ENGINE -> 0xFFE9632B
+            ServiceGroup.TIRES -> 0xFF227BD5
+            ServiceGroup.BRAKES -> 0xFF976213
+            ServiceGroup.FLUIDS_4WD -> 0xFF1B9F63
+            ServiceGroup.SUSPENSION -> 0xFF663BD5
+            ServiceGroup.FUEL_EXHAUST -> 0xFFD268A3
+            ServiceGroup.OTHER -> 0xFF7C8087
+        }
+    },
+)
+
+@Composable
+fun groupColor(group: ServiceGroup): Color = groupColor(group, dark = MaterialTheme.colorScheme.background == DarkScheme.background)

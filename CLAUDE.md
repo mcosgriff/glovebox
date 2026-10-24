@@ -267,6 +267,11 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   newest first; the List / Timeline choice is saved state. Its "Coming up" is **only `ComingUp.next`**, from the
   Reminders tab's statuses (never a never-logged job), with a date only where vehicle home gives one
   (`paceEstimate`); it goes while a filter or search is on, like the spending line. Gaps are whole months.
+- The timeline and the PDF report colour work by `ServiceGroup` (#410): seven groups from the catalog's categories,
+  **no more** (small marks past seven aren't told apart). `groupColor` (`Theme.kt`) has a light and a dark step for
+  each, chosen as a set with the dataviz palette validator (every pair ΔE ≥ 15, ≥ 6 for red-green colour blindness,
+  3:1 on the card and the page ground); **change one only by checking the whole set again.** Every coloured mark
+  sits beside its name, and Other's grey is an outline, not a fill.
 - "Add custom item" (#309) only offers lines, never ticks one; filing a custom line under a line **keeps its
   wording**. So Custom stays rare.
 - Custom lines and category rules (#310): **a line is Custom only when it has no home** (no `catalogId`, no
@@ -396,8 +401,7 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   export is not encrypted, and every recall or schedule table says what it is.
 - The PDF report (design `ReportPage1`/`ReportPage2`) is drawn on a `Canvas` in design pixels, 0.75 to a PDF point.
   **The sheet's preview is the same drawing into a bitmap; never write a PDF to preview one.** It is always light,
-  on white paper. The report's category colours (`ReportRenderer.categoryColor`) were checked for colour-blind
-  separation and must not change; every coloured mark sits beside its name. "Maintenance current" follows the
+  on white paper, in the light `groupColor`s. "Maintenance current" follows the
   garage's rule (never with a job still to log), and nothing is guessed for a job never logged.
 - Backup format: `docs/backup-format.md` and `BackupFormat.kt`. **Change the two together, and never change how a
   version-1 file is read.** Tables are read generically, so new columns need nothing. The password is never

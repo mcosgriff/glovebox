@@ -15,12 +15,6 @@ sealed interface TimelineRow<out T> {
 }
 
 /**
- * The colour a line is drawn with on the timeline: a few families of the catalog's categories, so the
- * colours stay few enough to tell apart. A line with no catalog category (Custom, the user's own) is [OTHER].
- */
-enum class LineHue { ENGINE, TIRES, BRAKES, FLUIDS, OTHER }
-
-/**
  * History as a timeline: past entries newest first, under year markers, with how far apart each is from
  * the next. It only lays out what was logged; nothing is worked out about what wasn't.
  */
@@ -45,12 +39,4 @@ object HistoryTimeline {
     /** Whole calendar months from [older] to [newer]: Oct 18 to Nov 15 is 0, Oct 18 to Nov 18 is 1. Never negative. */
     fun monthsApart(newer: LocalDate, older: LocalDate): Int =
         ChronoUnit.MONTHS.between(minOf(newer, older), maxOf(newer, older)).toInt()
-
-    fun hue(catalogId: String?): LineHue = when (ServiceCatalog.categoryOf(catalogId)?.id) {
-        "engine" -> LineHue.ENGINE
-        "tires" -> LineHue.TIRES
-        "brakes" -> LineHue.BRAKES
-        "fluids", "cooling", "driveline" -> LineHue.FLUIDS
-        else -> LineHue.OTHER
-    }
 }

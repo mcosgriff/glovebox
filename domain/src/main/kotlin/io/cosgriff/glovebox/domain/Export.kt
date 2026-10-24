@@ -50,7 +50,7 @@ data class ExportRecord(
     /** The owner did the work; [doneBy] says it in words. */
     val diy: Boolean = false,
     /** Each of [items]' group in the PDF report, in the same order. */
-    val categories: List<ReportCategory> = emptyList(),
+    val categories: List<ServiceGroup> = emptyList(),
 )
 
 /** [itemId] is the schedule item the line is, to find its status in [ReportFacts]. */

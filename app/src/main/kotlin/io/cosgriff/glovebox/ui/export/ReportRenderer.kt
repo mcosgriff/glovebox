@@ -16,6 +16,7 @@ import android.text.TextPaint
 import android.text.TextUtils
 import androidx.annotation.FontRes
 import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.PathParser
 import androidx.core.graphics.createBitmap
@@ -30,11 +31,11 @@ import io.cosgriff.glovebox.domain.ExportRecall
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.domain.ExportPhrase
-import io.cosgriff.glovebox.domain.ReportCategory
 import io.cosgriff.glovebox.domain.ReportChart
 import io.cosgriff.glovebox.domain.ReportModel
 import io.cosgriff.glovebox.domain.ReportStatus
 import io.cosgriff.glovebox.domain.Reports
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asDistance
@@ -42,6 +43,7 @@ import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.ui.service.photoCount
+import io.cosgriff.glovebox.ui.theme.groupColor
 import java.io.OutputStream
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -202,7 +204,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
             y += 24f + 10f
             m.dueNext.forEach { row ->
                 val name = paint(14f, fonts.sansSemibold)
-                c.drawRoundRect(RectF(LEFT, y + 5f, LEFT + 10f, y + 15f), 2f, 2f, fill(categoryColor(row.category)))
+                c.groupSquare(RectF(LEFT, y + 5f, LEFT + 10f, y + 15f), row.category)
                 c.textMiddle(TextUtils.ellipsize(row.name, name, 196f - 18f, TextUtils.TruncateAt.END).toString(), LEFT + 18f, y + 10f, name)
                 val barLeft = LEFT + 196f + 14f
                 val barRight = RIGHT - 160f - 14f
@@ -283,7 +285,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
      * are labelled along the top as fit, the latest first.
      */
     private fun chart(c: Canvas, chart: ReportChart, unit: DistanceUnit, left: Float, top: Float) {
-        val x0 = left + 140f
+        val x0 = left + 160f
         val x1 = left + 700f
         fun x(at: Int): Float = x0 + (at - chart.low).toFloat() / (chart.high - chart.low).coerceAtLeast(1) * (x1 - x0)
         val nowX = chart.now?.let(::x)
@@ -304,22 +306,24 @@ class ReportRenderer(private val fonts: ReportFonts) {
 
         val n = chart.lanes.size
         val spacing = if (n <= 1) 0f else minOf(44f, (210f - 56f) / (n - 1))
-        val nameP = paint(13f, fonts.sansSemibold)
         val dueP = paint(11f, fonts.mono, INK2)
         chart.lanes.forEachIndexed { i, lane ->
             val y = top + 56f + i * spacing
             val color = categoryColor(lane.category)
-            c.textMiddle(TextUtils.ellipsize(categoryName(lane.category), nameP, 110f, TextUtils.TruncateAt.END).toString(), left, y, nameP)
-            c.drawRoundRect(RectF(left + 116f, y - 5f, left + 126f, y + 5f), 2f, 2f, fill(color))
-            c.drawLine(left + 130f, y, left + CONTENT, y, stroke(LINE, 1f))
+            // A long name steps down to 11px before it is cut short.
+            val name = categoryName(lane.category)
+            val p = paint(13f, fonts.sansSemibold).apply { while (measureText(name) > 130f && textSize > 11f) textSize -= 0.5f }
+            c.textMiddle(TextUtils.ellipsize(name, p, 130f, TextUtils.TruncateAt.END).toString(), left, y, p)
+            c.groupSquare(RectF(left + 136f, y - 5f, left + 146f, y + 5f), lane.category)
+            c.drawLine(left + 150f, y, left + CONTENT, y, stroke(LINE, 1f))
             lane.nextDue?.let { due ->
                 val nx = x(due)
-                val from = lane.done.lastOrNull()?.let { x(it) + 8f } ?: (left + 130f)
+                val from = lane.done.lastOrNull()?.let { x(it) + 8f } ?: (left + 150f)
                 c.drawLine(from, y, nx, y, stroke(color, 2f).apply { pathEffect = DashPathEffect(floatArrayOf(3f, 3f), 0f) })
             }
             lane.done.forEach { at ->
                 c.drawCircle(x(at), y, 8f, fill(Color.WHITE))
-                c.drawCircle(x(at), y, 6f, fill(color))
+                if (lane.category == ServiceGroup.OTHER) c.drawCircle(x(at), y, 5f, stroke(color, 2f)) else c.drawCircle(x(at), y, 6f, fill(color))
             }
             lane.nextDue?.let { due ->
                 val nx = x(due)
@@ -335,13 +339,13 @@ class ReportRenderer(private val fonts: ReportFonts) {
         }
 
         nowX?.let { c.drawLine(it, top + 26f, it, top + 226f, stroke(INK, 1.5f)) }
-        c.drawLine(left + 130f, top + 226f, left + CONTENT, top + 226f, stroke(AXIS, 1f))
+        c.drawLine(left + 150f, top + 226f, left + CONTENT, top + 226f, stroke(AXIS, 1f))
         val tickP = paint(11f, fonts.mono, MUTED)
         val nowLabel = chart.now?.let { if (small) it.asDistance(unit) else s(R.string.report_now, compact(it)) }
         val nowW = nowLabel?.let { maxOf(76f, paint(11f, fonts.monoSemibold).measureText(it) + 12f) } ?: 0f
         chart.ticks.forEach { t ->
             val tx = x(t)
-            if (tx < left + 130f || tx > left + CONTENT) return@forEach
+            if (tx < left + 150f || tx > left + CONTENT) return@forEach
             c.drawLine(tx, top + 226f, tx, top + 231f, stroke(AXIS, 1f))
             val label = if (small) t.asDistance(unit) else s(R.string.report_tick, compact(t), unitShort(unit))
             val lw = tickP.measureText(label)
@@ -575,11 +579,11 @@ class ReportRenderer(private val fonts: ReportFonts) {
     private fun chips(r: ExportRecord, width: Float): Block {
         val p = paint(13f, fonts.sans)
         val chipH = 23f
-        val placed = mutableListOf<Triple<Float, Float, Pair<String, ReportCategory>>>()
+        val placed = mutableListOf<Triple<Float, Float, Pair<String, ServiceGroup>>>()
         var cx = 0f
         var cy = 0f
         r.items.forEachIndexed { i, item ->
-            val category = r.categories.getOrNull(i) ?: ReportCategory.OTHER
+            val category = r.categories.getOrNull(i) ?: ServiceGroup.OTHER
             val text = TextUtils.ellipsize(item, p, width - 30f, TextUtils.TruncateAt.END).toString()
             val w = 8f + 8f + 6f + p.measureText(text) + 8f
             if (cx > 0f && cx + w > width) {
@@ -595,7 +599,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
                 val (text, category) = item
                 val w = 8f + 8f + 6f + p.measureText(text) + 8f
                 drawRoundRect(RectF(x + px, y + py, x + px + w, y + py + chipH), 6f, 6f, fill(GROUND))
-                drawRoundRect(RectF(x + px + 8f, y + py + 7.5f, x + px + 16f, y + py + 15.5f), 2f, 2f, fill(categoryColor(category)))
+                groupSquare(RectF(x + px + 8f, y + py + 7.5f, x + px + 16f, y + py + 15.5f), category)
                 textMiddle(text, x + px + 22f, y + py + chipH / 2f, p)
             }
         }
@@ -677,7 +681,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
         val next = row.nextDue?.asDistance(unit) ?: row.nextBy?.format(longDate) ?: s(R.string.report_none)
         val h = 7f + maxOf(name.height, every.height).toFloat() + 7f
         return Block(h) { x, y ->
-            drawRoundRect(RectF(x, y + 7f + 5f, x + 8f, y + 7f + 13f), 2f, 2f, fill(categoryColor(row.category)))
+            groupSquare(RectF(x, y + 7f + 5f, x + 8f, y + 7f + 13f), row.category)
             withTranslation(x + 16f, y + 7f) { name.draw(this) }
             withTranslation(x + INTERVAL_X, y + 7f) { every.draw(this) }
             textTop(last, x + LAST_RIGHT - mono.measureText(last), y + 7f, mono)
@@ -837,6 +841,15 @@ class ReportRenderer(private val fonts: ReportFonts) {
         this.color = color
     }
 
+    /** A group's square: filled, or outlined for [ServiceGroup.OTHER], whose grey alone could pass for a hue (#410). */
+    private fun Canvas.groupSquare(rect: RectF, group: ServiceGroup) {
+        if (group == ServiceGroup.OTHER) {
+            drawRoundRect(RectF(rect.left + 0.75f, rect.top + 0.75f, rect.right - 0.75f, rect.bottom - 0.75f), 2f, 2f, stroke(categoryColor(group), 1.5f))
+        } else {
+            drawRoundRect(rect, 2f, 2f, fill(categoryColor(group)))
+        }
+    }
+
     private fun fill(color: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         this.color = color
         style = Paint.Style.FILL
@@ -907,22 +920,18 @@ class ReportRenderer(private val fonts: ReportFonts) {
         private const val OK = 0xFF0F766E.toInt()
         private const val DANGER = 0xFFB42318.toInt()
 
-        /** Checked for colour-blind separation; each is always drawn beside its group's name. Don't change them. */
-        fun categoryColor(category: ReportCategory): Int = when (category) {
-            ReportCategory.OIL_ENGINE -> 0xFFEB6834.toInt()
-            ReportCategory.TIRES -> 0xFF2A78D6.toInt()
-            ReportCategory.BRAKES -> 0xFFEDA100.toInt()
-            ReportCategory.FLUIDS_4WD -> 0xFF1BAF7A.toInt()
-            ReportCategory.OTHER -> 0xFF8A8E94.toInt()
-        }
+        /** The app's light colour for the group: the report is always on white paper. Each is drawn beside its name. */
+        fun categoryColor(category: ServiceGroup): Int = groupColor(category, dark = false).toArgb()
 
-        fun categoryName(category: ReportCategory): String = AppText.res.getString(
+        fun categoryName(category: ServiceGroup): String = AppText.res.getString(
             when (category) {
-                ReportCategory.OIL_ENGINE -> R.string.report_category_oil
-                ReportCategory.TIRES -> R.string.report_category_tires
-                ReportCategory.BRAKES -> R.string.report_category_brakes
-                ReportCategory.FLUIDS_4WD -> R.string.report_category_fluids
-                ReportCategory.OTHER -> R.string.report_category_other
+                ServiceGroup.OIL_ENGINE -> R.string.report_category_oil
+                ServiceGroup.TIRES -> R.string.report_category_tires
+                ServiceGroup.BRAKES -> R.string.report_category_brakes
+                ServiceGroup.FLUIDS_4WD -> R.string.report_category_fluids
+                ServiceGroup.SUSPENSION -> R.string.report_category_suspension
+                ServiceGroup.FUEL_EXHAUST -> R.string.report_category_fuel
+                ServiceGroup.OTHER -> R.string.report_category_other
             },
         )
 

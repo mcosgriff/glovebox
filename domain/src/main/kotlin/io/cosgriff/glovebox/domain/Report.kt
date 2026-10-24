@@ -8,40 +8,6 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
- * The few groups the PDF report sorts work into, each drawn in its own colour and always named beside it.
- * They come from the service catalog's categories; anything that has no catalog line is [OTHER].
- */
-enum class ReportCategory {
-    OIL_ENGINE, TIRES, BRAKES, FLUIDS_4WD, OTHER;
-
-    companion object {
-        private val byCatalogCategory = mapOf(
-            "engine" to OIL_ENGINE,
-            "tires" to TIRES,
-            "brakes" to BRAKES,
-            "fluids" to FLUIDS_4WD,
-            "cooling" to FLUIDS_4WD,
-            "driveline" to FLUIDS_4WD,
-        )
-
-        private val byCatalogItem: Map<String, ReportCategory> = ServiceCatalog.categories
-            .flatMap { c -> c.items.map { it.id to (byCatalogCategory[c.id] ?: OTHER) } }
-            .toMap()
-
-        private val byTemplateKey: Map<String, ReportCategory> = ServiceCatalog.categories
-            .flatMap { c -> c.items.mapNotNull { item -> item.resets?.let { it to (byCatalogCategory[c.id] ?: OTHER) } } }
-            .toMap()
-
-        /** A logged line's group, from the catalog line it was picked from. */
-        fun ofLine(catalogId: String?): ReportCategory = catalogId?.let(byCatalogItem::get) ?: OTHER
-
-        /** A schedule item's group: a typical item through its [templateKey], the owner's own through its [service]. */
-        fun ofItem(templateKey: String?, service: String?): ReportCategory =
-            templateKey?.let(byTemplateKey::get) ?: service?.let(byCatalogItem::get) ?: OTHER
-    }
-}
-
-/**
  * What only the PDF report needs about a vehicle, read with the rest when the export sheet opens.
  * Every odometer here is in dash terms, as the reminders count.
  */
@@ -49,7 +15,7 @@ data class ReportFacts(
     /** Every tracked item's status today (`VehicleReminders.statuses`), whatever dates the export covers. */
     val statuses: List<ItemStatus>,
     /** Each tracked item's group, by its id. */
-    val itemCategories: Map<Long, ReportCategory>,
+    val itemCategories: Map<Long, ServiceGroup>,
     /** Every reading on record, the service records' included. */
     val readings: List<OdometerReading>,
 )
@@ -81,7 +47,7 @@ data class ReportStats(
 data class ChartVisit(val date: LocalDate, val odometer: Int)
 
 /** One row of the chart: where its work was done, and the soonest of its jobs is next due ([nextDue]). */
-data class ReportLane(val category: ReportCategory, val done: List<Int>, val nextDue: Int?)
+data class ReportLane(val category: ServiceGroup, val done: List<Int>, val nextDue: Int?)
 
 /** The chart of service by mileage: an axis from [low] to [high] marked at [ticks], with the odometer at [now]. */
 data class ReportChart(
@@ -99,7 +65,7 @@ enum class DueNextState { OVERDUE, DUE_SOON, SNOOZED, OK, JUST_DONE }
 /** A row of "What's due next". [used] is the share of its interval gone, 0..1; it is due at [dueAt] or by [dueBy]. */
 data class DueNextRow(
     val name: String,
-    val category: ReportCategory,
+    val category: ServiceGroup,
     val used: Double,
     val dueAt: Int?,
     val dueBy: LocalDate?,
@@ -122,7 +88,7 @@ data class MonthlyDistance(
 /** A row of the report's schedule table; [nextDue] / [nextBy] are null for a job with nothing to count from. */
 data class ReportScheduleRow(
     val name: String,
-    val category: ReportCategory,
+    val category: ServiceGroup,
     val every: String,
     /** As the odometer read that day. */
     val lastDone: LastDone?,
@@ -190,7 +156,7 @@ object Reports {
                 val s = line.itemId?.let(byId::get)?.takeIf { it.counting }
                 ReportScheduleRow(
                     name = line.name,
-                    category = line.itemId?.let(facts.itemCategories::get) ?: ReportCategory.OTHER,
+                    category = line.itemId?.let(facts.itemCategories::get) ?: ServiceGroup.OTHER,
                     every = line.every,
                     lastDone = line.lastDone,
                     nextDue = s?.status?.dueAtOdometer,
@@ -215,7 +181,7 @@ object Reports {
      * The jobs with something to count from, the furthest through their interval first. A snoozed job counts as
      * used up: the owner has held back one that was due. A job never logged gets no row; nothing is guessed for it.
      */
-    fun dueNext(statuses: List<ItemStatus>, categories: Map<Long, ReportCategory>): List<DueNextRow> =
+    fun dueNext(statuses: List<ItemStatus>, categories: Map<Long, ServiceGroup>): List<DueNextRow> =
         statuses.filter { it.counting }
             .map { s ->
                 val used = ReminderPresentation.progress(s).fraction ?: 1.0
@@ -228,7 +194,7 @@ object Reports {
                 }
                 DueNextRow(
                     name = s.item.name,
-                    category = categories[s.item.id] ?: ReportCategory.OTHER,
+                    category = categories[s.item.id] ?: ServiceGroup.OTHER,
                     used = used,
                     dueAt = s.status.dueAtOdometer,
                     dueBy = s.status.dueByDate.takeIf { s.status.dueAtOdometer == null },
@@ -239,18 +205,18 @@ object Reports {
             .take(DUE_NEXT)
 
     /** One lane per group that has work in the export or a job coming due; null when there is neither. */
-    fun chart(v: ExportVehicle, statuses: List<ItemStatus>, categories: Map<Long, ReportCategory>): ReportChart? {
+    fun chart(v: ExportVehicle, statuses: List<ItemStatus>, categories: Map<Long, ServiceGroup>): ReportChart? {
         val swap = v.clusterSwap
-        val done = mutableMapOf<ReportCategory, MutableSet<Int>>()
+        val done = mutableMapOf<ServiceGroup, MutableSet<Int>>()
         v.records.forEach { r ->
             val at = swap.toDash(r.odometer, r.date)
-            r.categories.ifEmpty { listOf(ReportCategory.OTHER) }.forEach { done.getOrPut(it) { sortedSetOf() } += at }
+            r.categories.ifEmpty { listOf(ServiceGroup.OTHER) }.forEach { done.getOrPut(it) { sortedSetOf() } += at }
         }
         val next = statuses.filter { it.counting }
-            .mapNotNull { s -> s.status.dueAtOdometer?.let { (categories[s.item.id] ?: ReportCategory.OTHER) to it } }
+            .mapNotNull { s -> s.status.dueAtOdometer?.let { (categories[s.item.id] ?: ServiceGroup.OTHER) to it } }
             .groupBy({ it.first }, { it.second })
             .mapValues { (_, at) -> at.min() }
-        val lanes = ReportCategory.entries.filter { it in done || it in next }
+        val lanes = ServiceGroup.entries.filter { it in done || it in next }
             .map { ReportLane(it, done[it].orEmpty().sorted(), next[it]) }
         if (lanes.isEmpty()) return null
         val values = lanes.flatMap { it.done + listOfNotNull(it.nextDue) } + listOfNotNull(v.odometer)
