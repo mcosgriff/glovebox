@@ -1,3 +1,17 @@
+// Build tools only (#273): AGP 9.4 brings Bouncy Castle 1.80.2 (known advisories) and an older httpclient onto the
+// build's classpath and lint's. None of it ships, but the build runs where the signing key is. Hold them at patched
+// versions until AGP moves on (9.6 does), then drop these constraints.
+buildscript {
+    dependencies {
+        constraints {
+            classpath(libs.bouncycastle)
+            classpath(libs.bouncycastle.pkix)
+            classpath(libs.bouncycastle.util)
+            classpath(libs.httpclient)
+        }
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -12,6 +26,14 @@ plugins {
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.kover)
+}
+
+subprojects {
+    pluginManager.withPlugin("com.android.base") {
+        dependencies.constraints {
+            listOf(libs.bouncycastle, libs.bouncycastle.pkix, libs.bouncycastle.util, libs.httpclient).forEach { add("androidLintTool", it) }
+        }
+    }
 }
 
 // Test coverage (Codecov): `./gradlew koverXmlReportCoverage` runs the unit tests of :domain, :data and

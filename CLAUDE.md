@@ -37,6 +37,8 @@ and there is no baseline: fix a warning, or suppress that one case with a commen
   the list of what is now trusted. Dependabot's PRs get the same command from `dependabot-verification.yml`.
   To prune old entries, delete both files and run it again. Tesseract4Android (JitPack) is unsigned, so only
   its checksum vouches for it: **never accept a changed checksum for a version already in the file.**
+  The root `build.gradle.kts` holds Bouncy Castle and httpclient on the build's and lint's classpaths above what
+  AGP asks for (#273, advisories in the build tools, not the APK); drop those constraints once AGP itself moves on.
 - **On-device tests** (`app/src/androidTest`): `TextReaderTest` and `EndToEndTest` (first launch through the
   maker's schedule, "Log it", a mileage update, a backup and its restore). `EndToEndTest` finds things by the
   words on screen, so change it with the wording; it turns airplane mode on and **skips itself unless the
