@@ -122,3 +122,30 @@ suspend fun eventually(timeoutMs: Long = 10_000, check: suspend () -> Boolean) =
 suspend fun <T> kotlinx.coroutines.flow.Flow<T>.awaitValue(timeoutMs: Long = 10_000, check: (T) -> Boolean): T = withContext(Dispatchers.Default) {
     withTimeout(timeoutMs) { first(check) }
 }
+
+/** A string as the screens word it, in the app's language. */
+fun text(@androidx.annotation.StringRes id: Int, vararg args: Any): String = io.cosgriff.glovebox.ui.AppText.res.getString(id, *args)
+
+/** A counted string as the screens word it. */
+fun counted(@androidx.annotation.PluralsRes id: Int, n: Int, vararg args: Any): String = io.cosgriff.glovebox.ui.AppText.res.getQuantityString(id, n, *args)
+
+/** Draws [content] in the app's theme on its page colour, as the nav host does. */
+fun androidx.compose.ui.test.junit4.ComposeContentTestRule.show(content: @androidx.compose.runtime.Composable () -> Unit) = setContent {
+    io.cosgriff.glovebox.ui.theme.GloveboxTheme(io.cosgriff.glovebox.data.settings.ThemeMode.LIGHT) {
+        androidx.compose.material3.Surface(color = androidx.compose.material3.MaterialTheme.colorScheme.background) { content() }
+    }
+}
+
+/**
+ * Waits, in real time, until [condition] holds. The compose rule's own wait doesn't run Robolectric's main looper,
+ * where a ViewModel's work resumes once the database or the settings store has answered, so this runs it each time.
+ */
+fun androidx.compose.ui.test.junit4.ComposeContentTestRule.waitFor(timeoutMs: Long = 10_000, condition: () -> Boolean) =
+    waitUntil(timeoutMs) {
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        condition()
+    }
+
+/** Waits, in real time, until something on screen reads [text]. */
+fun androidx.compose.ui.test.junit4.ComposeContentTestRule.waitForText(text: String, substring: Boolean = false, timeoutMs: Long = 10_000) =
+    waitFor(timeoutMs) { onAllNodes(androidx.compose.ui.test.hasText(text, substring = substring), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
