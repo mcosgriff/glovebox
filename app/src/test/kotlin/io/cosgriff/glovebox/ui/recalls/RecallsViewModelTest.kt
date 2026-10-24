@@ -183,7 +183,8 @@ class RecallsViewModelTest {
         assertEquals(emptyList<Any>(), state.visitsOn(h.today))
 
         vm.markDone(state.recalls.single(), RecallCompletion(visitDay, 61_000, null, visitWith = oil))
-        val done = vm.state.awaitMatching { it?.recalls?.single()?.completedOn != null && it.records.size == 2 }!!
+        // The record and its visit link are written one after the other; wait for both.
+        val done = vm.state.awaitMatching { s -> s?.recalls?.single()?.completedOn != null && s.records.size == 2 && s.records.all { it.record.visitId != null } }!!
         val visits = done.records.map { it.record.visitId }.toSet()
         assertEquals(1, visits.size)
         assertNotNull(visits.single())
