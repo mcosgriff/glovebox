@@ -486,7 +486,7 @@ GitHub Issues on `mcosgriff/glovebox`, via the `gh` CLI. See `docs/agents/issue-
 
 ### Triage labels
 
-Default five roles, label string = role name (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Five default triage roles. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
