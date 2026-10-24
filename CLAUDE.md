@@ -441,8 +441,10 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 - Settings rows that lead nowhere are left out, not shown dead.
 - The Privacy screen (`privacy_*` arrays in `strings.xml`) **must stay true of the code**: update it with any
   change to the network, permissions, storage, backup or export.
-- Licences come from the AboutLibraries plugin at build time; a library with a licence of its own needs its text
-  in `app/src/main/assets/licences/<group>_<artifact>.txt`.
+- Licences come from the AboutLibraries plugin at build time, **offline** (`offlineMode`: it would otherwise download
+  the wording from GitHub and leave it blank when that failed). So the app carries every wording: a standard licence
+  in `app/src/main/assets/licences/spdx/<SPDX id>.txt` with its name in `LicenceCatalog.STANDARD`, a library's own
+  in `app/src/main/assets/licences/<group>_<artifact>.txt`. `LicencesScreenTest` fails on a licence with no wording.
 
 ### Database
 

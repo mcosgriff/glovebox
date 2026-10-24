@@ -61,6 +61,9 @@ object Licences {
     /** Where the wording of a library's own licence is kept when the build doesn't carry it. */
     fun assetName(libraryId: String): String = "licences/" + libraryId.replace(':', '_') + ".txt"
 
+    /** Where the wording of a standard licence (by its SPDX id) is kept: the build never fetches it. */
+    fun standardAssetName(spdxId: String): String = "licences/spdx/$spdxId.txt"
+
     /** How many libraries there are, each counted once whatever its licences. */
     fun libraryCount(groups: List<LicenceGroup>): Int = groups.flatMap { it.libraries }.distinctBy { it.id }.size
 

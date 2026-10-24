@@ -101,6 +101,12 @@ kotlin {
     jvmToolchain(17)
 }
 
+// The plugin otherwise downloads each licence's wording from GitHub while it builds, and quietly leaves it empty
+// when that fails. The wording is the app's own copy instead (assets/licences/spdx), so a build fetches nothing.
+aboutLibraries {
+    offlineMode = true
+}
+
 /** Puts the repository's LICENSE into the app's assets, so the About screen shows the same text the repo carries. */
 abstract class CopyAppLicence : DefaultTask() {
     @get:InputFile

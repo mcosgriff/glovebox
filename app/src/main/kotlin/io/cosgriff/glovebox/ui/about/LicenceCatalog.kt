@@ -23,7 +23,8 @@ data class LicenceDocument(val name: String, val url: String?, val text: String?
 /**
  * The libraries built into this APK and their licences. The list is written at build time by the
  * AboutLibraries Gradle plugin from the release dependencies (`R.raw.aboutlibraries`), so it can't
- * fall behind the build. Nothing is fetched while the app runs.
+ * fall behind the build. Nothing is fetched while the app runs, nor while it builds (`offlineMode`): the wording
+ * of each licence is the app's own copy in assets/licences.
  */
 @Singleton
 class LicenceCatalog @Inject constructor(@ApplicationContext private val context: Context) {
@@ -61,7 +62,7 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
             definitions.libraries.map {
                 if (it.uniqueId == TESSERACT) tesseract.copy(version = it.artifactVersion) else BundledLibrary(it.uniqueId, it.name, it.artifactVersion, it.licenses)
             } + fonts,
-            definitions.licenses.mapValues { (id, terms) -> Licence(id, terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) } + fontLicence + tesseractLicence,
+            definitions.licenses.mapValues { (id, terms) -> Licence(id, STANDARD[id] ?: terms.name, terms.url, terms.content?.takeIf(String::isNotBlank)) } + fontLicence + tesseractLicence,
         )
     }
 
@@ -73,8 +74,9 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
             return@withContext LicenceDocument(Licences.APP_LICENCE_NAME, null, asset(Licences.assetName(Licences.APP_LICENCE_ID)))
         }
         val group = loaded.firstOrNull { it.licence.id == id } ?: return@withContext null
-        // A library's own licence comes without its wording; the app keeps a copy for each of those.
-        val text = group.licence.text ?: group.libraries.singleOrNull()?.let { asset(Licences.assetName(it.id)) }
+        // The build lists licences without their wording (it fetches nothing), so the app keeps a copy of each
+        // standard licence, and of each library's own.
+        val text = group.licence.text ?: asset(Licences.standardAssetName(id)) ?: group.libraries.singleOrNull()?.let { asset(Licences.assetName(it.id)) }
         LicenceDocument(group.title, group.licence.url, text)
     }
 
@@ -83,6 +85,16 @@ class LicenceCatalog @Inject constructor(@ApplicationContext private val context
         const val TESSERACT = "cz.adaptech.tesseract4android:tesseract4android"
         const val TESSERACT_BUNDLED = "tesseract4android-bundled"
         const val APACHE = "Apache-2.0"
+
+        /**
+         * The standard licences the libraries use, by SPDX id, with SPDX's full name; their wording is in
+         * assets/licences/spdx. The build, working offline, gives only the name a library's POM happens to use.
+         */
+        val STANDARD = mapOf(
+            APACHE to "Apache License 2.0",
+            "BSD-3-Clause" to "BSD 3-Clause \"New\" or \"Revised\" License",
+            "MIT" to "MIT License",
+        )
     }
 
     private fun asset(name: String): String? = try {
