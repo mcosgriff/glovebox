@@ -57,15 +57,15 @@ class NavigationTest {
         val vin = ResultKey<String>("scannedVin")
         val results = mutableStateMapOf<String, Any>()
         results[dash] = 61_234
-        results[vin] = "1HGCM82633A004352"
+        results[vin] = "JTEBU5JR7K5900001"
         val saved = with(ResultsSaver) { SaverScope { true }.save(results) }!!
         val restored = ResultsSaver.restore(saved)!!
         assertEquals(61_234, restored[dash])
-        assertEquals("1HGCM82633A004352", restored[vin])
+        assertEquals("JTEBU5JR7K5900001", restored[vin])
 
         restored.remove(dash)
         assertNull(restored[dash])
-        assertEquals("1HGCM82633A004352", restored[vin])
+        assertEquals("JTEBU5JR7K5900001", restored[vin])
     }
 
     @Test
