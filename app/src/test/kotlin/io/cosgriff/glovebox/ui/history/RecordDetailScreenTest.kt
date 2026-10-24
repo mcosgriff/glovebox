@@ -22,6 +22,7 @@ import io.cosgriff.glovebox.ui.service.forgetFileProviderRoots
 import io.cosgriff.glovebox.ui.service.line
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.routeHandle
+import io.cosgriff.glovebox.ui.service.settle
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import io.cosgriff.glovebox.domain.DistanceUnit
 import androidx.test.core.app.ApplicationProvider
@@ -145,8 +146,7 @@ class RecordDetailScreenTest {
         compose.onNodeWithText(string(R.string.record_delete)).performScrollTo().performClick()
         waitForText(string(R.string.record_delete_title))
         compose.onNodeWithText(string(R.string.delete)).performClick()
-        compose.waitForIdle()
-        compose.waitUntil(5_000) { deleted == 1 }
+        compose.settle("the delete") { deleted == 1 }
         assertNull(t.db.service().record(newer))
         assertEquals(listOf(older), t.db.service().recordsFor(t.db.service().record(older)!!.record.vehicleId).map { it.record.id })
     }
@@ -221,8 +221,7 @@ class RecordDetailScreenTest {
         compose.onNodeWithText(string(R.string.record_visit_choose)).performScrollTo().performClick()
         waitForText(string(R.string.record_visit_choose_note))
         compose.onNodeWithText("Wipers").performClick()
-        compose.waitForIdle()
-        compose.waitUntil(5_000) { runBlocking { t.db.service().record(far)!!.record.visitId } != null }
+        compose.settle("the link") { runBlocking { t.db.service().record(far)!!.record.visitId } != null }
         assertEquals(t.db.service().record(far)!!.record.visitId, t.db.service().record(id)!!.record.visitId)
     }
 

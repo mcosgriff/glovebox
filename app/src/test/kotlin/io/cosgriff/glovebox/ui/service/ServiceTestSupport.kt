@@ -168,3 +168,17 @@ internal fun forgetFileProviderRoots() {
     val cache = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache").apply { isAccessible = true }.get(null) as MutableMap<*, *>
     synchronized(cache) { cache.clear() }
 }
+
+/**
+ * Lets the main thread run until [condition] holds: work a ViewModel started goes back and forth between the
+ * database's threads and the main one, and `waitUntil` alone doesn't always let the main one run.
+ */
+internal fun androidx.compose.ui.test.junit4.ComposeTestRule.settle(what: String = "the condition", timeoutMs: Long = 5_000, condition: () -> Boolean) {
+    val end = System.currentTimeMillis() + timeoutMs
+    while (true) {
+        waitForIdle()
+        if (condition()) return
+        check(System.currentTimeMillis() < end) { "Timed out waiting for $what" }
+        Thread.sleep(10)
+    }
+}
