@@ -110,7 +110,12 @@ class RecordPhotoPickerTest {
     fun `a picture that can't be read is counted and the rest are kept`() {
         attach()
         picker.pick(PhotoTarget.Draft("form"), room = 5)
-        picker.onPicked(listOf(t.imageUri(), Uri.parse("content://made.up.provider/missing.png")))
+        // Bytes that aren't a picture, which ImageDecoder refuses with an IOException as on a phone. A stream that
+        // throws, or a URI left unregistered, makes Robolectric's native decoder report an uncaught exception on
+        // its thread, which a later runTest then fails on.
+        val unreadable = Uri.parse("content://made.up.provider/unreadable.png")
+        shadowOf(t.context.contentResolver).registerInputStream(unreadable, "not a picture".byteInputStream())
+        picker.onPicked(listOf(t.imageUri(), unreadable))
         assertEquals(string(R.string.photos_unreadable, 1.asNumber()), awaitProblem())
         assertEquals(1, draft("form").size)
     }
