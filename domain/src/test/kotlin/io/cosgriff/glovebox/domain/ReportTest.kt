@@ -241,4 +241,38 @@ class ReportTest {
         assertEquals(listOf(200, 4_800), m.chart!!.visits.take(2).map { it.odometer })
         assertEquals(68_412 - 50_000 - 200, m.stats.sinceFirst)
     }
+
+    @Test
+    fun `a job counted by time alone is due by a date, and a line with no item or facts has no next due`() {
+        val wipers = TrackedItem(6, "Wiper blades", Interval(null, 12), DueRule.TIME_ONLY)
+        val withWipers = entries + ServiceEntry(6, LocalDate.of(2026, 3, 1), 56_000, setOf(6))
+        val base = vehicle()
+        val v = base.copy(
+            schedule = base.schedule + ExportScheduleLine("Wiper blades", "every", ServiceLog.lastDone(6, withWipers), 6) + ExportScheduleLine("Made-up job", "every", null),
+            report = base.report!!.copy(statuses = VehicleReminders.statuses(listOf(oilItem, rotation, brakeCheck, diffFluid, cabin, wipers), withWipers, emptyList(), today, lead)),
+        )
+        val m = model(v)
+        val wiperRow = m.schedule.single { it.name == "Wiper blades" }
+        assertEquals(LocalDate.of(2027, 3, 1), wiperRow.nextBy)
+        assertNull(wiperRow.nextDue)
+        assertEquals(ReportCategory.OTHER, wiperRow.category)
+        assertEquals(LocalDate.of(2027, 3, 1), m.dueNext.single { it.name == "Wiper blades" }.dueBy)
+        val loose = m.schedule.single { it.name == "Made-up job" }
+        assertNull(loose.nextDue)
+        assertNull(loose.nextBy)
+
+        // A vehicle without the report's facts still gets its log and tiles, with nothing said about what is due.
+        val bare = model(base.copy(report = null, odometer = null))
+        assertTrue(bare.dueNext.isEmpty())
+        assertNull(bare.stats.sinceFirst)
+        assertEquals(4, bare.log.size)
+    }
+
+    @Test
+    fun `two readings on one day are one point, the higher`() {
+        val sameDay = vehicle().let { it.copy(report = it.report!!.copy(readings = it.report!!.readings + OdometerReading(october.date, 68_000))) }
+        val monthly = model(sameDay).monthly!!
+        assertEquals(68_412, monthly.points.last().odometer)
+        assertEquals(1, monthly.points.count { it.date == october.date })
+    }
 }

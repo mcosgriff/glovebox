@@ -6,6 +6,7 @@ import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportOptions
+import io.cosgriff.glovebox.domain.ExportPhrase
 import io.cosgriff.glovebox.domain.ExportPaper
 import io.cosgriff.glovebox.domain.ExportRecall
 import io.cosgriff.glovebox.domain.ExportRecord
@@ -17,8 +18,11 @@ import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReportCategory
 import io.cosgriff.glovebox.domain.ReportFacts
+import io.cosgriff.glovebox.domain.ReportStatus
+import io.cosgriff.glovebox.domain.Reports
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.ServiceLog
+import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.ui.AppText
@@ -144,6 +148,42 @@ class ReportRendererTest {
         assertFalse(drawn.contains(res.getString(R.string.report_status_current)))
         assertFalse(drawn.contains(res.getString(R.string.report_recalls_title)))
         assertTrue(drawn.contains(res.getString(R.string.report_chart_title)))
+    }
+
+    @Test
+    fun `a visit is one entry under its date, with each record's notes and the visit's total`() {
+        val visit = listOf(
+            record(LocalDate.of(2026, 10, 10), 68_412, false, "Oil & filter" to ReportCategory.OIL_ENGINE).copy(visitId = 7, notes = "Made-up note"),
+            record(LocalDate.of(2026, 10, 10), 68_412, false, "Tire rotation" to ReportCategory.TIRES).copy(visitId = 7, imported = true),
+        )
+        val log = write(doc(vehicle(records.take(3) + visit)))[1]
+        assertTrue(log.toString(), log.any { it.contains(res.getString(R.string.export_visit, AppExportWords.records(2))) })
+        assertTrue(log.any { it.contains(res.getString(R.string.export_visit_total, "$84.00")) })
+        assertTrue(log.any { it.contains("Made-up note") })
+        assertTrue(log.any { it.contains(res.getString(R.string.export_imported_note).substringBefore(';')) })
+    }
+
+    @Test
+    fun `items past due are counted in the status, and a snoozed one is shown as snoozed`() {
+        val snoozed = SampleReport.items.map { if (it.id == 3L) it.copy(snooze = Snooze(untilOdometer = 85_000)) else it }
+        val readings = SampleReport.entries.map { OdometerReading(it.date, it.odometer) } + OdometerReading(today, 79_000)
+        val statuses = VehicleReminders.statuses(snoozed, SampleReport.entries, listOf(readings.last()), today, LeadTime(1_500))
+        val v = vehicle().copy(odometer = 79_000, report = ReportFacts(statuses, SampleReport.categories, readings))
+        val overdue = (Reports.build(doc(v)).single().status as ReportStatus.Overdue).count
+        val first = write(doc(v)).first()
+        assertTrue(first.toString(), first.any { it.contains(res.getQuantityString(R.plurals.report_status_overdue, overdue, overdue.toString())) })
+        assertTrue(first.contains(res.getString(R.string.report_due_overdue)))
+        assertTrue(first.contains(res.getString(R.string.report_due_snoozed)))
+    }
+
+    @Test
+    fun `a table that runs past the page repeats its header on the next`() {
+        val papers = (1..60).map { ExportPaper("Receipt", "Made-up paper $it", LocalDate.of(2026, 1, 1)) }
+        val pages = write(doc(vehicle().copy(documents = papers)))
+        val header = AppExportWords.phrase(ExportPhrase.TYPE)
+        val withHeader = pages.drop(1).count { page -> page.contains(header) && page.any { it.startsWith("Made-up paper") } }
+        assertTrue(pages.joinToString("\n"), withHeader >= 2)
+        assertEquals(60, pages.flatten().count { it.startsWith("Made-up paper") })
     }
 
     @Test
