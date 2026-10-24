@@ -1923,8 +1923,8 @@
   "intervals": [
     {
       "name": "Replace engine oil and filter",
-      "everyMiles": 2500,
-      "everyMonths": 3,
+      "everyMiles": 5000,
+      "everyMonths": 6,
       "service": "oil"
     },
     {
@@ -2003,6 +2003,13 @@
       "everyMonths": 72,
       "severeOnly": true,
       "service": "trans-fluid"
+    }
+  ],
+  "e85": [
+    {
+      "name": "Replace engine oil and filter",
+      "everyMiles": 2500,
+      "everyMonths": 3
     }
   ]
 }

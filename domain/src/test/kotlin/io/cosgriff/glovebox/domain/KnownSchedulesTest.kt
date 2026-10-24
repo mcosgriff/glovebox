@@ -417,6 +417,20 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `every bundled E85 interval is for a flex-fuel list's oil, and its oil otherwise follows the guide's normal schedule`() {
+        val fuelled = bundled.filter { it.e85.isNotEmpty() }
+        assertTrue(fuelled.isNotEmpty())
+        fuelled.forEach { list ->
+            assertEquals(list.id, Powertrain.FLEX_FUEL, list.engine?.powertrain)
+            val oil = list.intervals.single { it.service == "oil" }
+            assertEquals(list.id, Interval(2_500, 3), list.e85[MilestoneImport.nameKey(oil.name)])
+            assertEquals(list.id, Interval(5_000, 6), oil.normal)
+        }
+        // Every flex-fuel list has it.
+        assertEquals(bundled.filter { it.engine?.powertrain == Powertrain.FLEX_FUEL }.map { it.id }, fuelled.map { it.id })
+    }
+
+    @Test
     fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
         bundled.forEach { list ->
             val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
