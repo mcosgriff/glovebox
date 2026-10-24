@@ -37,6 +37,7 @@ import io.cosgriff.glovebox.ui.settings.CheckInDialog
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsContent
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -159,7 +160,17 @@ class ScreensScreenshotTest(private val shade: Shade) {
         HistoryContent(
             Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
-            onSortCustom = {},
+            onSortCustom = {}, view = HistoryView.LIST,
+        )
+    }
+
+    /** Well down a long history: the filters have scrolled away and the Top button is there to bring them back. */
+    @Test
+    fun historyTop() = compose.shoot("history_top", shade) {
+        HistoryContent(
+            Fixtures.longHistory, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            view = HistoryView.LIST, listState = rememberLazyListState(initialFirstVisibleItemIndex = 12),
         )
     }
 
@@ -197,7 +208,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
         HistoryContent(
             Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
-            search = "rotation",
+            search = "rotation", view = HistoryView.LIST,
         )
     }
 
@@ -206,7 +217,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
         HistoryContent(
             Fixtures.history, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
-            search = "serpentine",
+            search = "serpentine", view = HistoryView.LIST,
         )
     }
 
@@ -215,7 +226,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
         HistoryContent(
             Fixtures.historyWithVisit, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
             onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
-            onSortCustom = {},
+            onSortCustom = {}, view = HistoryView.LIST,
         )
     }
 

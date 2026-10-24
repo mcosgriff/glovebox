@@ -310,6 +310,18 @@ object Fixtures {
         next = truckComingUp.next,
     )
 
+    /**
+     * Years of made-up records on the truck, more than a screen of them: oil changes every six months with a
+     * rotation every other one, for a list long enough to scroll the filters away and bring up Top.
+     */
+    val longHistory: HistoryState = history.copy(
+        records = (0L until 24L).map { i ->
+            record(200 + i, 3 + 6 * i, 62_000 - 3_000 * i.toInt(), if (i % 2 == 0L) listOf("oil", "rotation") else listOf("oil"),
+                shop = "Main Street Auto".takeIf { i % 3 != 0L }, cents = 6_500L + 100 * i)
+        },
+        next = truckComingUp.next,
+    )
+
     /** History with the imported cabin filter and the recall's record linked as one visit. */
     val historyWithVisit: HistoryState = history.copy(
         records = listOf(

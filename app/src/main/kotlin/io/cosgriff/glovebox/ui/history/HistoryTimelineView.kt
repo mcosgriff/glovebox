@@ -19,13 +19,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Timeline
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -35,13 +42,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -81,30 +86,29 @@ import java.time.LocalDate
 /** How History shows its records. Kept in the saved state with the sort order; nothing is stored. */
 enum class HistoryView { LIST, TIMELINE }
 
-/** The List / Timeline switch under History's header. Design: 6e · History — timeline view. */
+/**
+ * The Timeline / List toggle in History's title row: two icons, the chosen one on a tonal fill. Each is a
+ * tab named by its word, so TalkBack (and anything that finds it by its words) reads "Timeline" and "List".
+ */
 @Composable
-internal fun HistoryViewSwitch(view: HistoryView, onChoose: (HistoryView) -> Unit, modifier: Modifier = Modifier) {
+internal fun HistoryViewToggle(view: HistoryView, onChoose: (HistoryView) -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    // In dark the page's own surface hardly stands off the track, so the chosen side takes the next step up.
-    val chosenColor = if (scheme.background.luminance() < 0.5f) scheme.surfaceContainerHighest else scheme.surface
-    val segment = RoundedCornerShape(9.dp)
-    Row(
-        modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.surfaceVariant).padding(4.dp).selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        HistoryView.entries.forEach { v ->
+    Row(modifier.selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
+        listOf(HistoryView.TIMELINE, HistoryView.LIST).forEach { v ->
             val on = v == view
             Box(
-                Modifier.weight(1f).heightIn(min = 48.dp)
-                    .then(if (on) Modifier.shadow(1.dp, segment).background(chosenColor, segment) else Modifier)
-                    .clip(segment)
+                // As Material's icon buttons: 36dp to see, 48dp to touch.
+                Modifier.minimumInteractiveComponentSize().size(36.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(if (on) scheme.primaryContainer else Color.Transparent)
                     .selectable(selected = on, role = Role.Tab, onClick = { if (!on) onChoose(v) }),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    stringResource(if (v == HistoryView.LIST) R.string.history_view_list else R.string.history_view_timeline),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (on) scheme.onSurface else scheme.onSurfaceVariant,
+                Icon(
+                    if (v == HistoryView.LIST) Icons.AutoMirrored.Outlined.List else Icons.Outlined.Timeline,
+                    contentDescription = stringResource(if (v == HistoryView.LIST) R.string.history_view_list else R.string.history_view_timeline),
+                    modifier = Modifier.size(20.dp),
+                    tint = if (on) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
                 )
             }
         }
@@ -126,6 +130,9 @@ internal fun HistoryTimelineList(
     listState: LazyListState,
     onOpenRecord: (Long) -> Unit,
     onLogIt: ((vehicleId: Long, scheduleItemId: Long) -> Unit)?,
+    modifier: Modifier = Modifier,
+    /** History's header and filters, the list's first items, so they scroll away with it. */
+    header: LazyListScope.() -> Unit = {},
 ) {
     val unit = vehicle.unit
     val rows = HistoryTimeline.rows(groups) { it.first().record.date }
@@ -134,10 +141,12 @@ internal fun HistoryTimelineList(
     val onLine: List<LineRow> =
         listOfNotNull(next?.let { LineRow.Next(it.first, it.second) }) + rows.map(LineRow::Past) + listOfNotNull(since?.let(LineRow::Since))
 
-    LazyColumn(state = listState, contentPadding = PaddingValues(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 20.dp)) {
+    // Room at the end for the Top button, so it never sits over the last of the line.
+    LazyColumn(modifier, state = listState, contentPadding = PaddingValues(bottom = 20.dp + BackToTopRoom)) {
+        header()
         itemsIndexed(onLine, key = { i, row -> row.key ?: "row-$i" }) { i, row ->
             val first = i == 0
-            when (row) {
+            Box(Modifier.padding(start = 20.dp, top = if (first) 12.dp else 0.dp, end = 20.dp)) { when (row) {
                 is LineRow.Next -> OnLine(first, last = false, dotTop = 22.dp, dot = { DashedDot() }) {
                     ComingUpCard(row.status, row.progress, unit, onLogIt?.let { log -> { log(vehicle.id, row.status.item.id) } })
                 }
@@ -169,10 +178,10 @@ internal fun HistoryTimelineList(
                         }
                     }
                 }
-            }
+            } }
         }
         if (hues.isNotEmpty()) {
-            item(key = "legend") { Legend(hues, Modifier.padding(top = 20.dp)) }
+            item(key = "legend") { Legend(hues, Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp)) }
         }
     }
 }
