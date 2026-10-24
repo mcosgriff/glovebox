@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/mcosgriff/glovebox/compare/v0.23.0...v0.24.0) (2026-10-24)
+
+
+### Features
+
+* **ui:** the Top button on Reminders, Garage, Vehicle details and Settings ([#405](https://github.com/mcosgriff/glovebox/issues/405)) ([da4350b](https://github.com/mcosgriff/glovebox/commit/da4350b12692308843108302cf509f10023a1434))
+
 ## [0.23.0](https://github.com/mcosgriff/glovebox/compare/v0.22.0...v0.23.0) (2026-10-24)
 
 
