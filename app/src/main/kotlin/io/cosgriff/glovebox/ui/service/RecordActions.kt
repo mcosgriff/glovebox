@@ -6,22 +6,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallDao
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.lineFor
-import io.cosgriff.glovebox.domain.Visits
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -69,7 +67,7 @@ sealed interface RecordEvent {
 class RecordActions @Inject constructor(
     private val service: ServiceDao,
     private val recalls: RecallDao,
-    private val vehicles: VehicleDao,
+    private val writer: ServiceLogWriter,
     private val photos: RecordPhotoStore,
 ) {
     private val _events = Channel<RecordEvent>(Channel.BUFFERED)
@@ -86,8 +84,7 @@ class RecordActions @Inject constructor(
 
     /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
     suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, photoFiles: List<String> = emptyList()) {
-        val id = service.insertWithItems(record, items)
-        service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
+        val id = writer.add(record, items, photoFiles)
         _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
@@ -130,9 +127,7 @@ class RecordActions @Inject constructor(
         addedPhotos: List<String> = emptyList(),
         removedPhotoIds: Set<Long> = emptySet(),
     ) {
-        service.replaceWithItems(record, items)
-        service.deletePhotos(removedPhotoIds.toList())
-        service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
+        writer.replace(record, items, addedPhotos, removedPhotoIds)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
         _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
     }
@@ -152,23 +147,16 @@ class RecordActions @Inject constructor(
      * link the new one with, as one visit.
      */
     suspend fun completeRecall(recallId: Long, completedOn: LocalDate, record: ServiceRecordEntity?, visitWith: Long? = null) {
-        val recall = recalls.byId(recallId)?.takeIf { it.completedOn == null } ?: return
-        val recordId = record?.let {
-            val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = recallServiceLine(recall.toNotice()))
-            service.insertWithItems(it, listOf(line))
-        }
+        val recall = recalls.byId(recallId) ?: return
+        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = recallServiceLine(recall.toNotice()))
         // "Add to the visit on …" (#307): the recall's record joins the visit it was done on from the start.
-        if (recordId != null && visitWith != null) link(recordId, visitWith)
-        recalls.setDone(recall.id, completedOn, recordId)
-        _events.send(RecordEvent.RecallDone(recall.id, recordId))
+        val done = writer.completeRecall(recall.id, completedOn, record, listOf(line), visitWith) ?: return
+        _events.send(RecordEvent.RecallDone(recall.id, done.recordId))
     }
 
     /** Back to open. The record that marking it done added is removed with it. */
     suspend fun reopenRecall(recallId: Long) {
-        val recall = recalls.byId(recallId)?.takeIf { it.completedOn != null } ?: return
-        val record = recall.serviceRecordId?.let { service.record(it) }
-        record?.let { service.deleteRecord(it.record) }
-        recalls.setDone(recall.id, null, null)
+        val (recall, record) = writer.reopenRecall(recallId) ?: return
         _events.send(RecordEvent.RecallReopened(recall, record))
     }
 
@@ -188,38 +176,18 @@ class RecordActions @Inject constructor(
      * [recordId] and [otherId] are one visit (#307), with whatever visit each was in already. Only which
      * visit they are in changes; nothing in either record does, so there is nothing to undo but Unlink.
      */
-    suspend fun link(recordId: Long, otherId: Long) {
-        val record = service.record(recordId)?.record ?: return
-        val all = service.recordsFor(record.vehicleId).map { it.record.toVisit() }
-        val a = all.find { it.id == recordId } ?: return
-        val b = all.find { it.id == otherId } ?: return
-        service.link(Visits.joined(a, b, all))
-    }
+    suspend fun link(recordId: Long, otherId: Long) = writer.link(recordId, otherId)
 
     /** [recordId] out of its visit; the rest stay linked, unless one is left. */
-    suspend fun unlink(recordId: Long) {
-        val record = service.record(recordId)?.record ?: return
-        val all = service.recordsFor(record.vehicleId).map { it.record.toVisit() }
-        val r = all.find { it.id == recordId } ?: return
-        service.unlink(Visits.unlinked(r, all))
-    }
+    suspend fun unlink(recordId: Long) = writer.unlink(recordId)
 
     /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */
     suspend fun undo(event: RecordEvent): Boolean = when (event) {
         is RecordEvent.Edited ->
-            if (vehicles.byId(event.previous.record.vehicleId) != null) {
-                service.replaceWithItems(event.previous.record, event.previous.items)
-                service.clearPhotos(event.previous.record.id)
-                service.insertPhotos(event.previous.photos.map { it.copy(id = 0) })
-                photos.delete(event.addedPhotos)
-                true
-            } else {
-                false
-            }
+            writer.revertEdit(event.previous).also { if (it) photos.delete(event.addedPhotos) }
         is RecordEvent.Deleted -> {
-            val id = restore(event.record)
+            val id = writer.restore(event.record, event.recallIds)
             if (id != null) {
-                recalls.linkRecord(event.recallIds, id)
                 _focus.value = HistoryFocus(event.record.record.vehicleId, id, RecordMark.RESTORED)
             }
             id != null
@@ -229,7 +197,7 @@ class RecordActions @Inject constructor(
             true
         }
         is RecordEvent.RecallReopened -> {
-            recalls.setDone(event.recall.id, event.recall.completedOn, event.record?.let { restore(it) })
+            writer.redoRecall(ServiceLogWriter.Reopened(event.recall, event.record))
             true
         }
         is RecordEvent.Filed -> {
@@ -238,15 +206,6 @@ class RecordActions @Inject constructor(
             true
         }
         is RecordEvent.Saved -> true
-    }
-
-    /** Null if the vehicle was deleted while the snackbar was up: there is nothing to put the record back on. */
-    private suspend fun restore(record: ServiceRecordWithItems): Long? {
-        if (vehicles.byId(record.record.vehicleId) == null) return null
-        val id = service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
-        // The files were left alone when the record went, for exactly this.
-        service.insertPhotos(record.photos.map { it.copy(id = 0, recordId = id) })
-        return id
     }
 
     /**

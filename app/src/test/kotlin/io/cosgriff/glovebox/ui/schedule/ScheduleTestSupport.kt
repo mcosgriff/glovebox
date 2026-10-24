@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onAllNodesWithText
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.settings.ThemeMode
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import android.os.Looper
@@ -66,7 +67,7 @@ class ScheduleWorld {
     val saver = ExportSaver(context, appScope)
     val actions by lazy {
         val crypto = PhotoCrypto(context)
-        RecordActions(db.service(), db.recalls(), db.vehicles(), RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents()))
+        RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents()))
     }
 
     private val store = ViewModelStore()

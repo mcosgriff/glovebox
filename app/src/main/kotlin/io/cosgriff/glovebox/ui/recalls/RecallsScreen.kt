@@ -107,7 +107,7 @@ import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.history.VisitRow
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.ui.service.toVisit
+import io.cosgriff.glovebox.data.db.toVisit
 
 data class RecallsState(
     val vehicle: VehicleEntity,

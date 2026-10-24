@@ -21,7 +21,8 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   never sent.
 - Archiving is only `vehicles.archivedOn`; nothing is deleted. Screens that list the garage read
   `observeActive`, so a sold vehicle gets no reminders or recall checks. Its history is read-only.
-- Delete vehicle (`DataWipe.deleteVehicle`) has no Undo; `RecordActions.undo` checks the vehicle still exists.
+- Delete vehicle (`DataWipe.deleteVehicle`) has no Undo; `RecordActions.undo` checks the vehicle still exists,
+  in the same transaction as the restore (`ServiceLogWriter`).
 - Odometer offset (`ClusterSwap`): **every reading stays as typed**, and everything computed is in "dash terms"
   (what the cluster now in the dash reads). **Never hand `record.odometer` or an `odometer_readings` row to
   `:domain` raw:** go through `toEntry(swap)` / `toReadings(swap)` (`Mappers.kt`); compare a typed reading

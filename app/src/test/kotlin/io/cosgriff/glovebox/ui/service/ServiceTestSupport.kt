@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream
 import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
+import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.RecallEntity
@@ -42,7 +43,7 @@ internal class ServiceTestDb {
     /** Runs its work at once on the caller's thread, so a test sees it done when the call returns. */
     val appScope = CoroutineScope(Dispatchers.Unconfined)
     val picker = RecordPhotoPicker(context, photos, db.service(), appScope)
-    val actions = RecordActions(db.service(), db.recalls(), db.vehicles(), photos)
+    val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
 
     /** The folder encrypted files live in; the tests only ever look at which names are there. */
     val photoDir: File get() = crypto.photoDir

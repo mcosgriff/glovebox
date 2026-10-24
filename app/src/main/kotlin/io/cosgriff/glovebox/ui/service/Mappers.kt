@@ -43,8 +43,6 @@ import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
-import io.cosgriff.glovebox.domain.VisitRecord
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.domain.nextDueAfter
 import io.cosgriff.glovebox.domain.readings
 import io.cosgriff.glovebox.domain.toDash
@@ -186,9 +184,6 @@ fun VehicleEntity.subtitle(): String = listOfNotNull(shortName(), engine?.takeIf
 
 /** "2019 Toyota 4Runner", which a suggested file name is made from. */
 fun VehicleEntity.fileStem(): String = "$year $make $model"
-
-/** A record as `Visits` sees it (#307). */
-fun ServiceRecordEntity.toVisit(): VisitRecord = VisitRecord(id, visitId, date, odometer, shopName.takeIf { !diy })
 
 fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
     swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
