@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/mcosgriff/glovebox/compare/v0.22.0...v0.23.0) (2026-10-24)
+
+
+### Features
+
+* **history:** scroll the filters away with the list, and a Top button ([#402](https://github.com/mcosgriff/glovebox/issues/402)) ([c796a43](https://github.com/mcosgriff/glovebox/commit/c796a430cdc0c5bfa8d488ffdf68383ba28ec8d2))
+
 ## [0.22.0](https://github.com/mcosgriff/glovebox/compare/v0.21.0...v0.22.0) (2026-10-24)
 
 
