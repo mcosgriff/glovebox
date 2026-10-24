@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.components.BackToTop
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
@@ -224,221 +226,225 @@ internal fun SettingsContent(
 ) {
     val scheme = MaterialTheme.colorScheme
     val dark = scheme.background.luminance() < 0.5f
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        Text(stringResource(R.string.settings_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
+    val scrollState = rememberScrollState()
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(scrollState).padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 24.dp + BackToTopRoom),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Text(stringResource(R.string.settings_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium)
 
-        LabelledCard(stringResource(R.string.settings_appearance)) {
-            Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Row(
-                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.background).padding(4.dp).selectableGroup(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    ThemeMode.entries.forEach { mode ->
-                        val on = mode == s.theme
-                        Box(
-                            Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(10.dp))
-                                .background(if (on) scheme.onSurface else Color.Transparent)
-                                .selectable(selected = on, role = Role.RadioButton, onClick = { onSetTheme(mode) }),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                stringResource(mode.label),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (on) scheme.surface else scheme.onSurface,
-                            )
-                        }
-                    }
-                }
-                Text(
-                    themeText(followsPhone = s.theme == ThemeMode.SYSTEM, dark = dark),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        LabelledCard(stringResource(R.string.settings_security)) {
-            SwitchRow(
-                title = stringResource(R.string.settings_biometrics),
-                about = if (canLock) {
-                    stringResource(R.string.settings_biometrics_note)
-                } else {
-                    // Said plainly: with no screen lock there is nothing for the app to lock with.
-                    stringResource(R.string.settings_no_screen_lock)
-                },
-                checked = s.biometricLock && canLock,
-                enabled = canLock,
-                onChange = onSetBiometric,
-            )
-            Divider()
-            if (s.biometricLock && canLock) {
-                Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.settings_lock_the_app), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    val current = LockDelay.fromSeconds(s.lockAfterSeconds)
-                    FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LockDelay.entries.forEach { delay ->
-                            val on = delay == current
-                            // 48dp tall to touch; the pill inside is the design's 36dp.
+            LabelledCard(stringResource(R.string.settings_appearance)) {
+                Column(Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Row(
+                        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.background).padding(4.dp).selectableGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        ThemeMode.entries.forEach { mode ->
+                            val on = mode == s.theme
                             Box(
-                                Modifier.height(48.dp).selectable(selected = on, role = Role.RadioButton, onClick = { onSetLockDelay(delay) }),
+                                Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(if (on) scheme.onSurface else Color.Transparent)
+                                    .selectable(selected = on, role = Role.RadioButton, onClick = { onSetTheme(mode) }),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Surface(
-                                    color = if (on) scheme.onSurface else scheme.surface,
-                                    contentColor = if (on) scheme.surface else scheme.onSurface,
-                                    shape = RoundedCornerShape(50),
-                                    border = BorderStroke(1.5.dp, if (on) scheme.onSurface else scheme.outlineVariant),
+                                Text(
+                                    stringResource(mode.label),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (on) scheme.surface else scheme.onSurface,
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        themeText(followsPhone = s.theme == ThemeMode.SYSTEM, dark = dark),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            LabelledCard(stringResource(R.string.settings_security)) {
+                SwitchRow(
+                    title = stringResource(R.string.settings_biometrics),
+                    about = if (canLock) {
+                        stringResource(R.string.settings_biometrics_note)
+                    } else {
+                        // Said plainly: with no screen lock there is nothing for the app to lock with.
+                        stringResource(R.string.settings_no_screen_lock)
+                    },
+                    checked = s.biometricLock && canLock,
+                    enabled = canLock,
+                    onChange = onSetBiometric,
+                )
+                Divider()
+                if (s.biometricLock && canLock) {
+                    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.settings_lock_the_app), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        val current = LockDelay.fromSeconds(s.lockAfterSeconds)
+                        FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            LockDelay.entries.forEach { delay ->
+                                val on = delay == current
+                                // 48dp tall to touch; the pill inside is the design's 36dp.
+                                Box(
+                                    Modifier.height(48.dp).selectable(selected = on, role = Role.RadioButton, onClick = { onSetLockDelay(delay) }),
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Text(
-                                        delay.label,
-                                        Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
+                                    Surface(
+                                        color = if (on) scheme.onSurface else scheme.surface,
+                                        contentColor = if (on) scheme.surface else scheme.onSurface,
+                                        shape = RoundedCornerShape(50),
+                                        border = BorderStroke(1.5.dp, if (on) scheme.onSurface else scheme.outlineVariant),
+                                    ) {
+                                        Text(
+                                            delay.label,
+                                            Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                    Divider()
                 }
+                SwitchRow(
+                    title = stringResource(R.string.settings_hide_recents),
+                    about = stringResource(R.string.settings_hide_recents_note),
+                    checked = s.hideInRecents,
+                    onChange = onSetHideInRecents,
+                )
                 Divider()
-            }
-            SwitchRow(
-                title = stringResource(R.string.settings_hide_recents),
-                about = stringResource(R.string.settings_hide_recents_note),
-                checked = s.hideInRecents,
-                onChange = onSetHideInRecents,
-            )
-            Divider()
-            Row(Modifier.padding(vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Surface(
-                    color = scheme.tertiaryContainer,
-                    contentColor = scheme.onTertiaryContainer,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.size(36.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(20.dp)) }
-                }
-                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Text(stringResource(R.string.settings_encrypted), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    Text(
-                        stringResource(R.string.settings_encrypted_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-
-        LabelledCard(stringResource(R.string.settings_maintenance)) {
-            ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onClick = onOpenRules)
-            schedulesText(vehicles.map { it.name })?.let { value ->
-                Divider()
-                ValueRow(stringResource(R.string.details_schedule), value) {
-                    vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { onPick(Picking.SCHEDULE) }
-                }
-            }
-            Divider()
-            ValueRow(stringResource(R.string.details_units), s.distanceUnit.titleWord) { onPick(Picking.DISTANCE) }
-            Divider()
-            ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { onPick(Picking.TORQUE) }
-            Divider()
-            ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onClick = onOpenNotifications)
-            Divider()
-            ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
-        }
-
-        LabelledCard(stringResource(R.string.settings_camera)) {
-            SwitchRow(
-                title = stringResource(R.string.settings_scanner_details),
-                about = stringResource(R.string.settings_scanner_details_note),
-                checked = s.scannerDetails,
-                onChange = onSetScannerDetails,
-            )
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            LabelledCard(stringResource(R.string.settings_your_data)) {
-                Column(
-                    Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenBackup).padding(vertical = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.bodyLarge)
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
+                Row(Modifier.padding(vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Surface(
+                        color = scheme.tertiaryContainer,
+                        contentColor = scheme.onTertiaryContainer,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(20.dp)) }
                     }
-                    Text(
-                        s.lastBackupOn?.let { stringResource(R.string.settings_backup_last, it.format(longDate)) }
-                            ?: stringResource(R.string.settings_backup_never),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-                Divider()
-                Column(Modifier.padding(vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(stringResource(R.string.settings_export), style = MaterialTheme.typography.bodyLarge)
+                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(stringResource(R.string.settings_encrypted), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                         Text(
-                            stringResource(R.string.settings_export_note),
+                            stringResource(R.string.settings_encrypted_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ExportButton(stringResource(R.string.export_pdf), stringResource(R.string.export_pdf_note), Modifier.weight(1f)) { onExport(ExportFormat.PDF) }
-                        ExportButton(stringResource(R.string.export_markdown), stringResource(R.string.export_markdown_note), Modifier.weight(1f)) { onExport(ExportFormat.MARKDOWN) }
+                }
+            }
+
+            LabelledCard(stringResource(R.string.settings_maintenance)) {
+                ValueRow(stringResource(R.string.settings_reminder_rule), s.defaultRule.ruleLabel(), onClick = onOpenRules)
+                schedulesText(vehicles.map { it.name })?.let { value ->
+                    Divider()
+                    ValueRow(stringResource(R.string.details_schedule), value) {
+                        vehicles.singleOrNull()?.let { onOpenSchedule(it.id) } ?: run { onPick(Picking.SCHEDULE) }
                     }
                 }
-                // Needs a vehicle to import into; with none there is nowhere for it to lead.
-                if (vehicles.isNotEmpty()) {
-                    Divider()
+                Divider()
+                ValueRow(stringResource(R.string.details_units), s.distanceUnit.titleWord) { onPick(Picking.DISTANCE) }
+                Divider()
+                ValueRow(stringResource(R.string.settings_torque_units), s.torqueUnit.symbolWord) { onPick(Picking.TORQUE) }
+                Divider()
+                ValueRow(stringResource(R.string.notifications_title), notificationsText(s.notices), onClick = onOpenNotifications)
+                Divider()
+                ValueRow(stringResource(R.string.settings_recall_checks), s.recallCadence.label) { onPick(Picking.RECALLS) }
+            }
+
+            LabelledCard(stringResource(R.string.settings_camera)) {
+                SwitchRow(
+                    title = stringResource(R.string.settings_scanner_details),
+                    about = stringResource(R.string.settings_scanner_details_note),
+                    checked = s.scannerDetails,
+                    onChange = onSetScannerDetails,
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LabelledCard(stringResource(R.string.settings_your_data)) {
                     Column(
-                        Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenImport).padding(vertical = 10.dp),
+                        Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenBackup).padding(vertical = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(R.string.settings_import), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.bodyLarge)
                             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
                         }
                         Text(
-                            stringResource(R.string.settings_import_note),
+                            s.lastBackupOn?.let { stringResource(R.string.settings_backup_last, it.format(longDate)) }
+                                ?: stringResource(R.string.settings_backup_never),
                             style = MaterialTheme.typography.bodySmall,
                             color = scheme.onSurfaceVariant,
                         )
                     }
-                }
-                if (rules > 0) {
                     Divider()
-                    CategoryRulesRow(rules, onOpenCategoryRules)
+                    Column(Modifier.padding(vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(stringResource(R.string.settings_export), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                stringResource(R.string.settings_export_note),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ExportButton(stringResource(R.string.export_pdf), stringResource(R.string.export_pdf_note), Modifier.weight(1f)) { onExport(ExportFormat.PDF) }
+                            ExportButton(stringResource(R.string.export_markdown), stringResource(R.string.export_markdown_note), Modifier.weight(1f)) { onExport(ExportFormat.MARKDOWN) }
+                        }
+                    }
+                    // Needs a vehicle to import into; with none there is nowhere for it to lead.
+                    if (vehicles.isNotEmpty()) {
+                        Divider()
+                        Column(
+                            Modifier.fillMaxWidth().heightIn(min = 60.dp).clickable(role = Role.Button, onClick = onOpenImport).padding(vertical = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.settings_import), style = MaterialTheme.typography.bodyLarge)
+                                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
+                            }
+                            Text(
+                                stringResource(R.string.settings_import_note),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (rules > 0) {
+                        Divider()
+                        CategoryRulesRow(rules, onOpenCategoryRules)
+                    }
+                    Divider()
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDeleteAll),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(R.string.settings_delete_all), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = scheme.error)
+                    }
                 }
-                Divider()
+                Text(
+                    stringResource(R.string.settings_privacy_line),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+
+            BorderedCard {
                 Row(
-                    Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onDeleteAll),
+                    Modifier.heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onOpenAbout).padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(stringResource(R.string.settings_delete_all), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = scheme.error)
+                    Text(stringResource(R.string.about_title), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
                 }
             }
-            Text(
-                stringResource(R.string.settings_privacy_line),
-                style = MaterialTheme.typography.bodySmall,
-                color = scheme.onSurfaceVariant,
-            )
         }
-
-        BorderedCard {
-            Row(
-                Modifier.heightIn(min = 52.dp).clickable(role = Role.Button, onClick = onOpenAbout).padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.about_title), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
-            }
-        }
+        BackToTop(scrollState, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp))
     }
 }
 

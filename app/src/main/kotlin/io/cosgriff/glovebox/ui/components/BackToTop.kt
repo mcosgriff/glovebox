@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
@@ -40,7 +41,29 @@ import kotlinx.coroutines.launch
 @Composable
 fun BackToTop(state: LazyListState, modifier: Modifier = Modifier) {
     val far by remember(state) { derivedStateOf { state.pastOneScreen() } }
-    val shown = far && (!state.isScrollInProgress || state.lastScrolledBackward)
+    TopPill(
+        shown = far && (!state.isScrollInProgress || state.lastScrolledBackward),
+        modifier = modifier,
+        toTop = { state.animateScrollToItem(0) },
+    )
+}
+
+/**
+ * The same pill over a `Column(Modifier.verticalScroll(state))`: a page laid out whole, so how far down it is
+ * is known exactly. It shows once [state] is more than a screen (its viewport) down.
+ */
+@Composable
+fun BackToTop(state: ScrollState, modifier: Modifier = Modifier) {
+    val far by remember(state) { derivedStateOf { state.viewportSize > 0 && state.value > state.viewportSize } }
+    TopPill(
+        shown = far && (!state.isScrollInProgress || state.lastScrolledBackward),
+        modifier = modifier,
+        toTop = { state.animateScrollTo(0) },
+    )
+}
+
+@Composable
+private fun TopPill(shown: Boolean, modifier: Modifier, toTop: suspend () -> Unit) {
     val scope = rememberCoroutineScope()
     val label = stringResource(R.string.scroll_back_to_top)
     AnimatedVisibility(
@@ -51,7 +74,7 @@ fun BackToTop(state: LazyListState, modifier: Modifier = Modifier) {
     ) {
         val scheme = MaterialTheme.colorScheme
         Surface(
-            onClick = { scope.launch { state.animateScrollToItem(0) } },
+            onClick = { scope.launch { toTop() } },
             modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = label },
             shape = CircleShape,
             // See-through enough to show the list going under it; the arrow and word stay opaque, so they read.
@@ -72,7 +95,7 @@ fun BackToTop(state: LazyListState, modifier: Modifier = Modifier) {
     }
 }
 
-/** Space to leave at the end of a list with [BackToTop] over it, so the button never covers the last item. */
+/** Space to leave at the end of a list or page with [BackToTop] over it, so the button never covers the last item. */
 val BackToTopRoom = 64.dp
 
 /**

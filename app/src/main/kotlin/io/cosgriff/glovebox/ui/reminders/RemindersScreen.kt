@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.reminders
 
+import io.cosgriff.glovebox.ui.components.BackToTopRoom
+import io.cosgriff.glovebox.ui.components.BackToTop
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
@@ -171,84 +176,93 @@ internal fun RemindersContent(
     val shown = garage.vehicles.filter { it.vehicle.id == filterId }.ifEmpty { garage.vehicles }
     val groups = ReminderPresentation.grouped(shown.map { it.vehicle to it.comingUp }, today)
     val rulesLabel = stringResource(R.string.reminder_rules_title)
+    val listState = rememberLazyListState()
 
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        item {
-            Row(Modifier.padding(top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(R.string.reminders_title),
-                    Modifier.weight(1f).semantics { heading() },
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                InkOutlinedButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = rulesLabel }, quiet = true) {
-                    Text(stringResource(R.string.reminders_rules))
-                }
-            }
-        }
-
-        if (garage.vehicles.size > 1) {
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            Modifier.fillMaxSize().padding(horizontal = 20.dp),
+            state = listState,
+            contentPadding = PaddingValues(bottom = BackToTopRoom),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             item {
-                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    InkChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
-                    garage.vehicles.forEach { g ->
-                        InkChip(g.vehicle.nicknameOrModel(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
-                    }
-                }
-            }
-        }
-
-        // The moment reminders exist is the moment being told about them is worth something.
-        if (groups.isNotEmpty() && !notificationsAllowed) {
-            item {
-                Surface(
-                    onClick = onOpenNotifications,
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = MaterialTheme.shapes.small,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(Modifier.heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.reminders_notifications_off), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                            Text(
-                                stringResource(R.string.reminders_turn_on),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
-
-        if (groups.isEmpty()) {
-            item { Empty(noVehicles = garage.vehicles.isEmpty(), onAddVehicle) }
-        }
-
-        groups.forEach { (group, reminders) ->
-            item(key = group.name) { GroupHeader(group) }
-            if (group == ReminderGroup.NOT_LOGGED) {
-                item(key = "not-logged-note") {
+                Row(Modifier.padding(top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        stringResource(R.string.item_log_once),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        stringResource(R.string.reminders_title),
+                        Modifier.weight(1f).semantics { heading() },
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    InkOutlinedButton(onClick = onOpenRules, modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = rulesLabel }, quiet = true) {
+                        Text(stringResource(R.string.reminders_rules))
+                    }
+                }
+            }
+
+            if (garage.vehicles.size > 1) {
+                item {
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        InkChip(stringResource(R.string.home_all_vehicles), selected = shown.size > 1) { filterId = 0 }
+                        garage.vehicles.forEach { g ->
+                            InkChip(g.vehicle.nicknameOrModel(), selected = shown.size == 1 && shown.single() == g) { filterId = g.vehicle.id }
+                        }
+                    }
+                }
+            }
+
+            // The moment reminders exist is the moment being told about them is worth something.
+            if (groups.isNotEmpty() && !notificationsAllowed) {
+                item {
+                    Surface(
+                        onClick = onOpenNotifications,
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = MaterialTheme.shapes.small,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(Modifier.heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.reminders_notifications_off), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    stringResource(R.string.reminders_turn_on),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+
+            if (groups.isEmpty()) {
+                item { Empty(noVehicles = garage.vehicles.isEmpty(), onAddVehicle) }
+            }
+
+            groups.forEach { (group, reminders) ->
+                item(key = group.name) { GroupHeader(group) }
+                if (group == ReminderGroup.NOT_LOGGED) {
+                    item(key = "not-logged-note") {
+                        Text(
+                            stringResource(R.string.item_log_once),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                items(reminders, key = { "${group.name}-${it.status.item.id}" }) { r ->
+                    ReminderCard(
+                        group = group,
+                        r = r,
+                        onLogIt = { onLogIt(r.vehicle.id, r.status.item.id) },
+                        onSnooze = { onSnooze(r) },
+                        onEndSnooze = { onEndSnooze(r) },
                     )
                 }
             }
-            items(reminders, key = { "${group.name}-${it.status.item.id}" }) { r ->
-                ReminderCard(
-                    group = group,
-                    r = r,
-                    onLogIt = { onLogIt(r.vehicle.id, r.status.item.id) },
-                    onSnooze = { onSnooze(r) },
-                    onEndSnooze = { onEndSnooze(r) },
-                )
-            }
+            item { Spacer(Modifier.height(8.dp)) }
         }
-        item { Spacer(Modifier.height(8.dp)) }
+        BackToTop(listState, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp))
     }
 }
 
