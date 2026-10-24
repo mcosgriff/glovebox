@@ -1,0 +1,237 @@
+package io.cosgriff.glovebox.ui.history
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.SavedStateHandle
+import io.cosgriff.glovebox.R
+import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.domain.HistoryOrder
+import io.cosgriff.glovebox.domain.HistorySort
+import io.cosgriff.glovebox.domain.Money
+import io.cosgriff.glovebox.domain.format
+import io.cosgriff.glovebox.ui.ArchivedHistoryRoute
+import io.cosgriff.glovebox.ui.screens.PHONE
+import io.cosgriff.glovebox.ui.screens.ScreenshotApp
+import io.cosgriff.glovebox.ui.service.ServiceTestDb
+import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.service.line
+import io.cosgriff.glovebox.ui.service.routeHandle
+import io.cosgriff.glovebox.ui.theme.GloveboxTheme
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.time.LocalDate
+
+/** History through its ViewModel, on a real database: what the tab shows as records come and go and the user picks. */
+@RunWith(RobolectricTestRunner::class)
+@Config(application = ScreenshotApp::class, qualifiers = PHONE, sdk = [35])
+class HistoryScreenTest {
+    @get:Rule val compose = createComposeRule()
+    private val t = ServiceTestDb()
+    private val today: LocalDate = LocalDate.now()
+
+    @After fun close() = t.close()
+
+    private fun string(id: Int, vararg args: Any) = t.context.getString(id, *args)
+    private fun plural(id: Int, n: Int, vararg args: Any) = t.context.resources.getQuantityString(id, n, *args)
+
+    private fun SemanticsNodeInteractionsProvider.waitForText(text: String, substring: Boolean = false) =
+        compose.waitUntil(5_000) { onAllNodes(androidx.compose.ui.test.hasText(text, substring = substring)).fetchSemanticsNodes().isNotEmpty() }
+
+    private fun SemanticsNodeInteractionsProvider.waitForNoText(text: String, substring: Boolean = false) =
+        compose.waitUntil(5_000) { onAllNodes(androidx.compose.ui.test.hasText(text, substring = substring)).fetchSemanticsNodes().isEmpty() }
+
+    private fun show(vm: HistoryViewModel, opened: MutableList<Long> = mutableListOf(), sorting: MutableList<Long> = mutableListOf()) {
+        compose.setContent {
+            GloveboxTheme { HistoryScreen(onOpenRecord = { opened += it }, onSortCustom = { sorting += it }, vm = vm) }
+        }
+    }
+
+    private fun tab(handle: SavedStateHandle = SavedStateHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions))
+
+    @Test
+    fun `the first vehicle shows, another is one tap away, and the choice is kept`() = runBlocking {
+        t.vehicle(model = "Corolla")
+        val truck = t.vehicle(model = "Tacoma")
+        t.record(t.db.vehicles().all().first { it.model == "Corolla" }.id, lines = listOf(line("Corolla wipers")))
+        t.record(truck, lines = listOf(line("Tacoma wipers")))
+        val handle = SavedStateHandle()
+        val vm = tab(handle)
+        show(vm)
+
+        compose.waitForText("Corolla wipers")
+        compose.onNodeWithText("Tacoma wipers").assertDoesNotExist()
+        compose.onNodeWithText("2019 Tacoma").performClick()
+        compose.waitForText("Tacoma wipers")
+        compose.onNodeWithText("2019 Tacoma").assertIsSelected()
+        assertEquals(truck, handle.get<Long>("chosenVehicle"))
+    }
+
+    @Test
+    fun `a category filter or a search hides the spending line, and a search with no match offers every record again`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Oil and filter", "oil")), costCents = 5_000)
+        t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Tires rotated", "rotation")), costCents = 3_000, shop = "Made-up Tire")
+        val handle = SavedStateHandle()
+        val vm = tab(handle)
+        show(vm)
+
+        val total = Money.format(8_000)
+        compose.waitForText(total, substring = true)
+
+        compose.onNodeWithText(io.cosgriff.glovebox.ui.service.catalogCategoryLabel("tires")).performClick()
+        compose.waitForNoText(total, substring = true)
+        compose.onNodeWithText("Oil and filter").assertDoesNotExist()
+        compose.onNodeWithText("Tires rotated").assertExists()
+        assertEquals("tires", handle.get<String>("filter"))
+
+        compose.onNodeWithText(string(R.string.history_all)).performClick()
+        compose.waitForText(total, substring = true)
+
+        compose.onNode(hasSetTextAction()).performTextInput("tire")
+        compose.waitForNoText(total, substring = true)
+        compose.onNodeWithText("Oil and filter").assertDoesNotExist()
+        assertEquals("tire", handle.get<String>("search"))
+
+        compose.onNodeWithContentDescription(string(R.string.history_search_clear)).performClick()
+        compose.waitForText("Oil and filter")
+
+        compose.onNode(hasSetTextAction()).performTextInput("serpentine")
+        compose.waitForText(string(R.string.history_no_match, "serpentine"))
+        compose.onNodeWithText(string(R.string.history_search_show_all)).performClick()
+        compose.waitForText("Oil and filter")
+        assertEquals("", vm.search)
+    }
+
+    @Test
+    fun `the order can be turned round and set to mileage, and is kept`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(30), odometer = 45_000)
+        t.record(car, date = today.minusDays(10), odometer = 44_000)
+        val handle = SavedStateHandle()
+        val vm = tab(handle)
+        show(vm)
+        compose.waitForText(plural(R.plurals.records, 2, 2.asNumber()), substring = true)
+
+        compose.onNodeWithContentDescription(string(R.string.history_reverse)).performClick()
+        compose.waitForIdle()
+        assertEquals(HistoryOrder(HistorySort.DATE, descending = false), vm.order)
+
+        compose.onNodeWithContentDescription(string(R.string.history_sort_by)).performClick()
+        compose.onNodeWithText(string(R.string.history_sort_mileage)).performClick()
+        compose.waitForIdle()
+        assertEquals(HistoryOrder(HistorySort.MILEAGE, descending = false), vm.order)
+        assertEquals("MILEAGE", handle.get<String>("sortBy"))
+        assertEquals(false, handle.get<Boolean>("descending"))
+
+        // Picking what is already chosen changes nothing.
+        compose.onNodeWithContentDescription(string(R.string.history_sort_by)).performClick()
+        compose.onNodeWithText(string(R.string.history_sort_mileage)).performClick()
+        assertEquals(HistoryOrder(HistorySort.MILEAGE, descending = false), vm.order)
+
+        // A ViewModel made again from the saved state reads the same way.
+        assertEquals(HistoryOrder(HistorySort.MILEAGE, descending = false), tab(handle).order)
+    }
+
+    @Test
+    fun `a new record anywhere brings its vehicle up with the search cleared, and leaving History clears the mark`() = runBlocking {
+        t.vehicle(model = "Corolla")
+        val truck = t.vehicle(model = "Tacoma")
+        val vm = tab()
+        var showing by mutableStateOf(true)
+        compose.setContent { GloveboxTheme { if (showing) HistoryScreen(onOpenRecord = {}, vm = vm) } }
+        compose.waitForText(string(R.string.history_none))
+        vm.search("wipers")
+
+        t.actions.add(ServiceRecordEntity(vehicleId = truck, date = today, odometer = 30_000, diy = true), listOf(line("Brake fluid flushed")))
+        compose.waitForText("Brake fluid flushed")
+        assertEquals("", vm.search)
+        assertEquals(truck, vm.fresh.value?.vehicleId)
+
+        showing = false
+        compose.waitForIdle()
+        assertNull(t.actions.focus.value)
+    }
+
+    @Test
+    fun `an opened record is the one tapped`() = runBlocking {
+        val car = t.vehicle()
+        val id = t.record(car, lines = listOf(line("Cabin filter")))
+        val opened = mutableListOf<Long>()
+        show(tab(), opened)
+        compose.waitForText("Cabin filter")
+        compose.onNodeWithText("Cabin filter").performClick()
+        assertEquals(listOf(id), opened)
+    }
+
+    @Test
+    fun `Custom lines are counted and open the sort screen for that vehicle`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(5), lines = listOf(line("Hitch greased"), line("Roof rack fitted")))
+        t.record(car, date = today.minusDays(3), lines = listOf(line("Hitch greased")))
+        val sorting = mutableListOf<Long>()
+        show(tab(), sorting = sorting)
+        val label = plural(R.plurals.history_custom_ways, 2, 3.asNumber(), 2.asNumber())
+        compose.waitForText(label)
+        compose.onNodeWithText(label).performClick()
+        assertEquals(listOf(car), sorting)
+    }
+
+    @Test
+    fun `records linked as a visit are one card with each record and the visit's total`() = runBlocking {
+        val car = t.vehicle()
+        val a = t.record(car, date = today.minusDays(5), odometer = 50_000, lines = listOf(line("Oil and filter", "oil")), costCents = 6_000)
+        val b = t.record(car, date = today.minusDays(5), odometer = 50_000, lines = listOf(line("Tires rotated", "rotation")), costCents = 2_500, shop = "Made-up Tire")
+        t.actions.link(a, b)
+        val opened = mutableListOf<Long>()
+        show(tab(), opened)
+
+        compose.waitForText(plural(R.plurals.history_visit, 2, 2.asNumber()))
+        compose.onNodeWithText(string(R.string.history_visit_total)).assertExists()
+        compose.onNodeWithText(Money.format(8_500)).assertExists()
+        compose.onNodeWithText("Tires rotated").performClick()
+        assertEquals(listOf(b), opened)
+    }
+
+    @Test
+    fun `an archived vehicle's history is read only and offers no sorting`() = runBlocking {
+        val car = t.vehicle()
+        t.db.vehicles().setArchived(car, today)
+        t.record(car, lines = listOf(line("Hitch greased")))
+        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions))
+        show(vm)
+        compose.waitForText(string(R.string.history_subtitle_archived, "2019 Corolla", plural(R.plurals.records, 1, 1.asNumber())))
+        compose.onNodeWithText(plural(R.plurals.history_custom_lines, 1, 1.asNumber())).assertDoesNotExist()
+        assertEquals(true, vm.archived)
+    }
+
+    @Test
+    fun `an archived vehicle with no records says none were logged`() = runBlocking {
+        val car = t.vehicle()
+        t.db.vehicles().setArchived(car, today)
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions)))
+        compose.waitForText(string(R.string.history_none_archived))
+    }
+
+    @Test
+    fun `an empty garage says to add a vehicle`() {
+        show(tab())
+        compose.waitForText(string(R.string.history_no_vehicle))
+        compose.onNodeWithText(string(R.string.history_export)).assertDoesNotExist()
+    }
+}
