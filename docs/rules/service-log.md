@@ -3,6 +3,10 @@
 Rules for Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits. Read before changing any of it; review holds a diff to every line here.
 
 - **All service-log writes go through `RecordActions`**, which drives the snackbar and its Undo.
+- **A vehicle's reminders are read through `VehicleLogs`** (#420, `:data`): the vehicle, all its schedule items,
+  records, readings and settings, put together one way in dash terms. A screen, the widget or a worker doesn't
+  gather those rows and call `log()` itself. Milestones is the one exception: it goes by actual mileage, with
+  no swap, and builds its own on the same functions.
 - **A write that takes more than one step is one transaction** (#419): it goes in `ServiceLogWriter` (`:data`),
   which writes rows only. `RecordActions` calls it and keeps the events, focus, Undo and photo files. A process
   that dies part-way must leave the log as it was, never a record without its photos or a recall's record with

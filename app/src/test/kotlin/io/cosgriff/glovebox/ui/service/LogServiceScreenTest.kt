@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.Manifest
 import android.app.Application
 import androidx.compose.ui.test.hasAnyAncestor
@@ -80,7 +81,7 @@ class LogServiceScreenTest {
     private fun open(route: LogServiceRoute): LogServiceViewModel {
         val vm = t.owned(
             LogServiceViewModel(
-                routeHandle(route), t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings, t.db.catalogRules(), t.actions, t.picker,
+                routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(), t.db.catalogRules(), t.actions, t.picker,
             ),
         )
         compose.setContent {

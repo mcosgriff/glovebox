@@ -3,14 +3,9 @@ package io.cosgriff.glovebox.ui.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.R
-import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.data.settings.Settings
-import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DocumentProblem
 import io.cosgriff.glovebox.domain.DocumentType
@@ -21,7 +16,6 @@ import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.NextDue
 import io.cosgriff.glovebox.domain.OdometerNote
-import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.domain.ReminderChange
@@ -38,7 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
 
-/** The shared formatters and mappers: every distance in the vehicle's own unit, every reading through its cluster swap. */
+/** The shared formatters and mappers: every distance in the vehicle's own unit. A vehicle's log is `VehicleLogTest`'s. */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
 class MappersTest {
@@ -50,16 +44,9 @@ class MappersTest {
     private fun string(id: Int, vararg args: Any) = context.getString(id, *args)
     private fun plural(id: Int, n: Int, vararg args: Any) = context.resources.getQuantityString(id, n, *args)
 
-    /** A cluster put in on [day]: the old one read 150,000, the new one 20,000. */
-    private val swap = ClusterSwap(day, offset = 130_000, startReading = 20_000)
-
-    private fun vehicle(unit: String = "MILES", swapped: Boolean = false) = VehicleEntity(
+    private fun vehicle(unit: String = "MILES") = VehicleEntity(
         id = 1, vin = null, year = 2019, make = "Toyota", model = "Tacoma", createdOn = day, distanceUnit = unit,
-        clusterSwappedOn = day.takeIf { swapped }, odometerOffset = if (swapped) 130_000 else 0, clusterStartReading = 20_000.takeIf { swapped },
     )
-
-    private fun record(id: Long, date: LocalDate, odometer: Int, vararg lines: io.cosgriff.glovebox.data.db.ServiceRecordItemEntity) =
-        ServiceRecordWithItems(ServiceRecordEntity(id = id, vehicleId = 1, date = date, odometer = odometer, diy = true), lines.toList(), emptyList())
 
     @Test
     fun `a distance always says its unit, and figures are grouped`() {
@@ -89,75 +76,6 @@ class MappersTest {
             string(R.string.interval_first_then_every, 100_000.asDistance(mi), 50_000.asDistance(mi)),
             Interval(50_000, null).text(mi, firstAt = 100_000),
         )
-    }
-
-    @Test
-    fun `a reading from before the swap is put in dash terms, and one after is left as typed`() {
-        val before = record(1, day.minusDays(10), 140_000)
-        val after = record(2, day.plusDays(10), 25_000)
-        assertEquals(10_000, before.toEntry(swap, NoLinks).odometer)
-        assertEquals(25_000, after.toEntry(swap, NoLinks).odometer)
-        assertEquals(140_000, before.toEntry(null, NoLinks).odometer)
-
-        val readings = listOf(OdometerReadingEntity(vehicleId = 1, date = day.minusDays(5), odometer = 149_000))
-        assertEquals(listOf(OdometerReading(day.minusDays(5), 19_000), OdometerReading(day, 20_000)), readings.toReadings(swap))
-        assertEquals(listOf(OdometerReading(day.minusDays(5), 149_000)), readings.toReadings(null))
-    }
-
-    @Test
-    fun `the highest reading is in dash terms, so an old cluster's big figure doesn't win`() {
-        val v = vehicle(swapped = true)
-        val records = listOf(record(1, day.minusDays(10), 148_000), record(2, day.plusDays(3), 21_000))
-        assertEquals(21_000, v.highestReading(records, emptyList()))
-        assertEquals(swap, v.clusterSwap())
-        assertNull(vehicle().clusterSwap())
-        assertEquals(148_000, vehicle().highestReading(records, emptyList()))
-    }
-
-    @Test
-    fun `a line counts for the item it was saved against and every item answering to its catalog line`() {
-        val items = listOf(
-            ScheduleItemEntity(id = 11, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6),
-            ScheduleItemEntity(id = 12, vehicleId = 1, name = "Synthetic oil", service = "oil", intervalMiles = 10_000, intervalMonths = 12),
-        )
-        val r = record(1, day, 40_000, line("Oil and filter", "oil"))
-        assertEquals(setOf(11L, 12L), r.toEntry(null, items.answering()).itemIds)
-        assertEquals(emptySet<Long>(), r.toEntry(null, NoLinks).itemIds)
-    }
-
-    @Test
-    fun `a vehicle's log is in dash terms with the lead in its own unit`() {
-        val v = vehicle(swapped = true)
-        val items = listOf(
-            ScheduleItemEntity(id = 11, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null),
-            ScheduleItemEntity(id = 12, vehicleId = 1, name = "Untracked", intervalMiles = 5_000, intervalMonths = null, tracked = false),
-        )
-        val log = v.log(items, listOf(record(1, day.plusDays(1), 21_000, line("Oil", "oil", 11))), emptyList(), Settings())
-        assertEquals(swap, log.swap)
-        assertEquals(listOf(11L), log.tracked.map { it.id })
-        assertEquals(21_000, log.odometer)
-        assertEquals(Settings().leadFor(mi), log.lead)
-        assertEquals(1, log.statuses(day.plusDays(2)).size)
-        assertEquals(log.tracked, log.inputs.items)
-    }
-
-    @Test
-    fun `a tracked job counts from the new cluster's zero, and a severe-only job is off on normal use`() {
-        val first = ScheduleItemEntity(id = 1, vehicleId = 1, name = "Timing belt", intervalMiles = 50_000, intervalMonths = null, firstMiles = 100_000)
-        val tracked = first.toTracked(DueRule.WHICHEVER_FIRST, swap)!!
-        assertEquals(-130_000, tracked.zeroAt)
-        assertEquals(-30_000, tracked.firstAt)
-        assertEquals(100_000, first.toTracked(DueRule.WHICHEVER_FIRST, null)!!.firstAt)
-
-        val severeOnly = ScheduleItemEntity(id = 2, vehicleId = 1, name = "Dusty filter", intervalMiles = null, intervalMonths = null, severeMiles = 5_000, severeMonths = null, severeOnly = true)
-        assertNull(severeOnly.toTracked(DueRule.WHICHEVER_FIRST, null))
-        assertEquals(Interval(5_000, null), severeOnly.copy(useSevere = true).toTracked(DueRule.WHICHEVER_FIRST, null)!!.interval)
-
-        val snoozed = ScheduleItemEntity(id = 3, vehicleId = 1, name = "Wipers", intervalMiles = null, intervalMonths = 12, ruleOverride = DueRule.TIME_ONLY.name, snoozedUntilDate = day)
-        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, null)!!
-        assertEquals(DueRule.TIME_ONLY, s.rule)
-        assertEquals(Snooze(untilDate = day), s.snooze)
-        assertNull(ScheduleItemEntity(id = 4, vehicleId = 1, name = "Nothing", intervalMiles = null, intervalMonths = null).toTracked(DueRule.WHICHEVER_FIRST, null))
     }
 
     @Test

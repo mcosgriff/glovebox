@@ -76,7 +76,7 @@ import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.CoroutineScope

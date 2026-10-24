@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
@@ -34,7 +35,7 @@ class GarageViewModelTest {
 
     @After fun close() = db.close()
 
-    private fun overview() = GarageOverview(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings, db.recalls())
+    private fun overview() = GarageOverview(VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings), db.recalls())
 
     private fun viewModel() = GarageViewModel(overview(), nhtsa.repository(db, settings), db.vehicles())
 

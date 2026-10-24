@@ -51,7 +51,7 @@ import io.cosgriff.glovebox.domain.SpendingSummary
 import io.cosgriff.glovebox.ui.service.monthYear
 import java.time.LocalDate
 import io.cosgriff.glovebox.domain.toDash
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.ArchivedHistoryRoute
 import io.cosgriff.glovebox.ui.routeOrNull
 import androidx.compose.ui.res.pluralStringResource

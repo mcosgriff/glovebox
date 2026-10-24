@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -52,8 +53,8 @@ class ScheduleScreenTest {
     private fun show(vehicleId: Long) {
         vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
-                routeHandle(ScheduleRoute(vehicleId)), world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(),
-                world.settings, world.actions, world.db.milestones(), world.saver, world.catalog,
+                routeHandle(ScheduleRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
+                world.db.schedule(), world.actions, world.db.milestones(), world.saver, world.catalog,
             )
         }
         compose.show {

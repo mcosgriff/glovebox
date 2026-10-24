@@ -25,7 +25,7 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   in the same transaction as the restore (`ServiceLogWriter`).
 - Odometer offset (`ClusterSwap`): **every reading stays as typed**, and everything computed is in "dash terms"
   (what the cluster now in the dash reads). **Never hand `record.odometer` or an `odometer_readings` row to
-  `:domain` raw:** go through `toEntry(swap)` / `toReadings(swap)` (`Mappers.kt`); compare a typed reading
+  `:domain` raw:** go through `toEntry(swap)` / `toReadings(swap)` (`data/log/VehicleLog.kt`); compare a typed reading
   with `swap.toDash`, show a past figure with `swap.asReadOn`. The swap day belongs to the new cluster.
 - Distance units (#93): `UnitDao.convert` is the only thing that changes a vehicle's unit, in one transaction.
   **Two conversions** (`DistanceKind`): a measurement (reading, snooze point, offset) goes exactly at 1.609344; a

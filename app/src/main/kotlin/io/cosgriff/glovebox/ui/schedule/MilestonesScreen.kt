@@ -3,7 +3,7 @@ package io.cosgriff.glovebox.ui.schedule
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.highestReading
+import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.toRows
@@ -93,18 +93,18 @@ import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.data.log.toEntry
+import io.cosgriff.glovebox.data.log.toTracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.ui.service.answering
-import io.cosgriff.glovebox.ui.service.NoLinks
+import io.cosgriff.glovebox.data.log.answering
+import io.cosgriff.glovebox.data.log.NoLinks
 import javax.inject.Inject
 
 data class MilestonesState(
@@ -160,7 +160,10 @@ class MilestonesViewModel @Inject constructor(
 
     private val knownLists = flow { emit(catalog.lists()) }
 
-    /** Null while loading, and if the vehicle no longer exists. */
+    /**
+     * Null while loading, and if the vehicle no longer exists. Not read through `VehicleLogs`: milestones go by
+     * actual mileage, with no swap, and the user's own table, so this builds its own on the same functions.
+     */
     val state: StateFlow<MilestonesState?> = combine(
         vehicles.observe(vehicleId),
         schedule.observeTracked(vehicleId),

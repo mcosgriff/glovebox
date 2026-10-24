@@ -20,7 +20,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit

@@ -1,9 +1,9 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.toEntity
@@ -72,13 +72,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.LastDone
@@ -90,7 +86,7 @@ import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.resetters
 import io.cosgriff.glovebox.ui.ScheduleRoute
-import io.cosgriff.glovebox.ui.service.clusterSwap
+import io.cosgriff.glovebox.data.log.clusterSwap
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -143,11 +139,8 @@ data class ScheduleState(
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
+    logs: VehicleLogs,
     private val schedule: ScheduleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
-    settings: SettingsRepository,
     private val actions: RecordActions,
     private val milestones: MilestoneDao,
     private val saver: ExportSaver,
@@ -171,17 +164,16 @@ class ScheduleViewModel @Inject constructor(
 
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<ScheduleState?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeAll(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
-        combine(settings.settings, flow { emit(catalog.lists()) }) { s, lists -> s to lists },
-    ) { vehicle, items, records, readings, (s, lists) ->
-        if (vehicle == null) return@combine null
+        logs.observe(vehicleId),
+        flow { emit(catalog.lists()) },
+    ) { log, lists ->
+        log ?: return@combine null
+        val vehicle = log.vehicle
+        val items = log.items
+        val records = log.records
         val credits = lists.associate { it.id to KnownSchedules.credit(it) }
         entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel, vehicle.unit).associateBy { it.key }
-        val log = vehicle.log(items, records, readings, s)
         val swap = log.swap
         val entries = log.entries
         val entered = records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet()
@@ -201,7 +193,7 @@ class ScheduleViewModel @Inject constructor(
                     estimate = status?.paceEstimate,
                 )
             },
-            defaultRule = s.defaultRule,
+            defaultRule = log.defaultRule,
             // Not a typical item whose job one of the user's own already is: adding it back would be a second reminder.
             missing = items.filter { it.templateKey == null }.mapNotNull { HistoryImport.services[it.service]?.resets }.toSet().let { covered ->
                 ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }).filter { it.key !in covered }

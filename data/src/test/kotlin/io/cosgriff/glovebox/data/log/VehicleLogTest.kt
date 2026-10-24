@@ -1,0 +1,154 @@
+package io.cosgriff.glovebox.data.log
+
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import io.cosgriff.glovebox.data.db.OdometerReadingEntity
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.inMemoryDatabase
+import io.cosgriff.glovebox.data.resetDataStores
+import io.cosgriff.glovebox.data.settings.Settings
+import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.data.testVehicle
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.LastDone
+import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.Snooze
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.time.LocalDate
+
+/** A vehicle's log: every reading through its cluster swap, and read the one way through [VehicleLogs]. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
+class VehicleLogTest {
+    private val context: Context = ApplicationProvider.getApplicationContext()
+    private val day = LocalDate.of(2026, 5, 4)
+
+    /** A cluster put in on [day]: the old one read 150,000, the new one 20,000. */
+    private val swap = ClusterSwap(day, offset = 130_000, startReading = 20_000)
+
+    private fun vehicle(swapped: Boolean = false) = VehicleEntity(
+        id = 1, vin = null, year = 2019, make = "Toyota", model = "Tacoma", createdOn = day,
+        clusterSwappedOn = day.takeIf { swapped }, odometerOffset = if (swapped) 130_000 else 0, clusterStartReading = 20_000.takeIf { swapped },
+    )
+
+    private fun line(label: String, catalogId: String? = null, scheduleItemId: Long? = null) =
+        ServiceRecordItemEntity(recordId = 0, scheduleItemId = scheduleItemId, label = label, catalogId = catalogId)
+
+    private fun record(id: Long, date: LocalDate, odometer: Int, vararg lines: ServiceRecordItemEntity) =
+        ServiceRecordWithItems(ServiceRecordEntity(id = id, vehicleId = 1, date = date, odometer = odometer, diy = true), lines.toList(), emptyList())
+
+    @Test
+    fun `a reading from before the swap is put in dash terms, and one after is left as typed`() {
+        val before = record(1, day.minusDays(10), 140_000)
+        val after = record(2, day.plusDays(10), 25_000)
+        assertEquals(10_000, before.toEntry(swap, NoLinks).odometer)
+        assertEquals(25_000, after.toEntry(swap, NoLinks).odometer)
+        assertEquals(140_000, before.toEntry(null, NoLinks).odometer)
+
+        val readings = listOf(OdometerReadingEntity(vehicleId = 1, date = day.minusDays(5), odometer = 149_000))
+        assertEquals(listOf(OdometerReading(day.minusDays(5), 19_000), OdometerReading(day, 20_000)), readings.toReadings(swap))
+        assertEquals(listOf(OdometerReading(day.minusDays(5), 149_000)), readings.toReadings(null))
+    }
+
+    @Test
+    fun `the highest reading is in dash terms, so an old cluster's big figure doesn't win`() {
+        val v = vehicle(swapped = true)
+        val records = listOf(record(1, day.minusDays(10), 148_000), record(2, day.plusDays(3), 21_000))
+        assertEquals(21_000, v.highestReading(records, emptyList()))
+        assertEquals(swap, v.clusterSwap())
+        assertNull(vehicle().clusterSwap())
+        assertEquals(148_000, vehicle().highestReading(records, emptyList()))
+    }
+
+    @Test
+    fun `a line counts for the item it was saved against and every item answering to its catalog line`() {
+        val items = listOf(
+            ScheduleItemEntity(id = 11, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6),
+            ScheduleItemEntity(id = 12, vehicleId = 1, name = "Synthetic oil", service = "oil", intervalMiles = 10_000, intervalMonths = 12),
+        )
+        val r = record(1, day, 40_000, line("Oil and filter", "oil"))
+        assertEquals(setOf(11L, 12L), r.toEntry(null, items.answering()).itemIds)
+        assertEquals(emptySet<Long>(), r.toEntry(null, NoLinks).itemIds)
+    }
+
+    @Test
+    fun `a vehicle's log is in dash terms, keeps every item, and leads in its own unit`() {
+        val v = vehicle(swapped = true)
+        val items = listOf(
+            ScheduleItemEntity(id = 11, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null),
+            ScheduleItemEntity(id = 12, vehicleId = 1, name = "Untracked", intervalMiles = 5_000, intervalMonths = null, tracked = false),
+        )
+        val records = listOf(record(1, day.plusDays(1), 21_000, line("Oil", "oil", 11)))
+        val log = v.log(items, records, emptyList(), Settings())
+        assertEquals(v, log.vehicle)
+        assertEquals(items, log.items)
+        assertEquals(records, log.records)
+        assertEquals(swap, log.swap)
+        assertEquals(listOf(11L), log.tracked.map { it.id })
+        assertEquals(21_000, log.odometer)
+        assertEquals(Settings().leadFor(DistanceUnit.MILES), log.lead)
+        assertEquals(Settings().defaultRule, log.defaultRule)
+        assertEquals(1, log.statuses(day.plusDays(2)).size)
+        assertEquals(log.tracked, log.inputs.items)
+    }
+
+    @Test
+    fun `an item's own rule, snooze and swap are passed to its reminder`() {
+        val snoozed = ScheduleItemEntity(id = 3, vehicleId = 1, name = "Wipers", intervalMiles = null, intervalMonths = 12, ruleOverride = DueRule.TIME_ONLY.name, snoozedUntilDate = day)
+        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, swap)!!
+        assertEquals(DueRule.TIME_ONLY, s.rule)
+        assertEquals(Snooze(untilDate = day), s.snooze)
+        assertEquals(-130_000, s.zeroAt)
+        assertEquals(DueRule.WHICHEVER_FIRST, snoozed.copy(ruleOverride = null).toTracked(DueRule.WHICHEVER_FIRST, null)!!.rule)
+    }
+
+    @Test
+    fun `statuses as read give last done as the cluster in the dash that day showed it`() {
+        val v = vehicle(swapped = true)
+        val items = listOf(ScheduleItemEntity(id = 11, vehicleId = 1, name = "Oil change", intervalMiles = 5_000, intervalMonths = null))
+        val log = v.log(items, listOf(record(1, day.minusDays(10), 148_000, line("Oil", scheduleItemId = 11))), emptyList(), Settings())
+        assertEquals(LastDone(day.minusDays(10), 18_000), log.statuses(day).single().lastDone)
+        assertEquals(LastDone(day.minusDays(10), 148_000), log.statusesAsRead(day).single().lastDone)
+    }
+
+    @Test
+    fun `the source reads a vehicle's log afresh when a record is added, and none once it is gone`() = runBlocking {
+        resetDataStores()
+        val db = inMemoryDatabase(context)
+        try {
+            val logs = VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), SettingsRepository(context))
+            val car = db.vehicles().insert(testVehicle())
+            db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", intervalMiles = 5_000, intervalMonths = null)))
+            assertEquals(null, withTimeout(5_000) { logs.observe(car).filterNotNull().first() }.odometer)
+
+            db.service().insertWithItems(ServiceRecordEntity(vehicleId = car, date = day, odometer = 41_000, diy = true), listOf(line("Oil")))
+            assertEquals(41_000, withTimeout(5_000) { logs.observe(car).filterNotNull().first { it.odometer != null } }.odometer)
+            assertEquals(41_000, logs.load(car)!!.odometer)
+            assertEquals(listOf(car), logs.observeGarage().first().map { it.vehicle.id })
+
+            db.vehicles().delete(db.vehicles().byId(car)!!)
+            assertNull(logs.load(car))
+            assertNull(logs.observe(car).first())
+        } finally {
+            db.close()
+        }
+    }
+
+    @After fun forget() = resetDataStores()
+}

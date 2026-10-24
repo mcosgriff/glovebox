@@ -1,9 +1,10 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
+import kotlinx.coroutines.flow.map
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.ui.service.log
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.ui.components.PrimaryButton
@@ -61,12 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.LastDoneEntries
 import io.cosgriff.glovebox.domain.LastDoneRow
@@ -79,7 +75,6 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -98,11 +93,7 @@ data class LastDoneState(
 @HiltViewModel
 class LastDoneViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
-    settings: SettingsRepository,
+    logs: VehicleLogs,
     private val actions: RecordActions,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<LastDoneRoute>().vehicleId
@@ -110,22 +101,16 @@ class LastDoneViewModel @Inject constructor(
     private var entities: Map<Long, ScheduleItemEntity> = emptyMap()
 
     /** Null while loading, and if the vehicle no longer exists. */
-    val state: StateFlow<LastDoneState?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeTracked(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
-        settings.settings,
-    ) { vehicle, items, records, readings, s ->
-        if (vehicle == null) return@combine null
-        entities = items.associateBy { it.id }
-        val log = vehicle.log(items, records, readings, s)
+    val state: StateFlow<LastDoneState?> = logs.observe(vehicleId).map { log ->
+        log ?: return@map null
+        val vehicle = log.vehicle
+        entities = log.items.associateBy { it.id }
         LastDoneState(
             vehicleName = vehicle.shortName(),
             rows = LastDoneEntries.rows(
                 log.tracked,
                 log.entries,
-                records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet(),
+                log.records.filter { it.record.enteredAsLastDone }.map { it.record.id }.toSet(),
                 log.swap,
             ),
             odometer = log.odometer,

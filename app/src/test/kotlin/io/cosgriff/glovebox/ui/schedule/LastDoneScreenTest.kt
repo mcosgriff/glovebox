@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -47,7 +48,7 @@ class LastDoneScreenTest {
 
     private fun show(vehicleId: Long) {
         vm = world.viewModel(LastDoneViewModel::class) {
-            LastDoneViewModel(routeHandle(LastDoneRoute(vehicleId)), world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings, world.actions)
+            LastDoneViewModel(routeHandle(LastDoneRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings), world.actions)
         }
         compose.show { LastDoneScreen(onDone = { done++ }, onOpenRecord = { opened = it }, vm = vm) }
         compose.until { vm.state.value != null }

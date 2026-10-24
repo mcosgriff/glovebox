@@ -27,8 +27,8 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   against it, when it stays untracked. That is the one place a typical item is deleted.
 - **A list's source is said once per screen, never under every item** (the user found that too busy).
 - `firstMiles` ("first at 100,000, then every 50,000") is distance really covered; **pass the vehicle's swap
-  wherever statuses are worked out** (`toTracked(rule, swap)`).
-- Severe-only jobs (#136): `toTracked` returns null for them while `useSevere` is off. **One Normal / Severe
+  wherever statuses are worked out** (`TrackedItem.of`, through `toTracked(rule, swap)`).
+- Severe-only jobs (#136): `TrackedItem.of` returns null for them while `useSevere` is off. **One Normal / Severe
   switch, not one per condition** (the user's choice). The editor can't make one.
 - E85 (#33): a flex-fuel list's `e85` intervals are counted by while **"Runs mostly on E85"** is on, a separate
   switch shown only for items that have one, off by default; Normal / Severe is not folded into it (the

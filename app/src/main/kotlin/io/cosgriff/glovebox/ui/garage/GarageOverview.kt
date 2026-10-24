@@ -1,14 +1,10 @@
 package io.cosgriff.glovebox.ui.garage
 
-import io.cosgriff.glovebox.ui.service.log
-import io.cosgriff.glovebox.data.db.OdometerDao
+import io.cosgriff.glovebox.data.log.VehicleLogs
+import kotlinx.coroutines.flow.map
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.toStored
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ComingUp
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.OpenRecalls
@@ -43,31 +39,17 @@ data class Garage(val vehicles: List<GarageVehicle>) {
 
 /** Every active vehicle with its reminders, for the screens that look across the whole garage. */
 class GarageOverview @Inject constructor(
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
-    settings: SettingsRepository,
+    logs: VehicleLogs,
     recalls: RecallDao,
 ) {
-    val garage: Flow<Garage> = combine(
-        vehicles.observeActive(),
-        schedule.observeAllTracked(),
-        service.observeAllRecords(),
-        odometer.observeAll(),
-        settings.settings,
-    ) { active, items, records, readings, s ->
-        val itemsBy = items.groupBy { it.vehicleId }
-        val recordsBy = records.groupBy { it.record.vehicleId }
-        val readingsBy = readings.groupBy { it.vehicleId }
+    val garage: Flow<Garage> = logs.observeGarage().map { all ->
         val today = LocalDate.now()
         Garage(
-            active.map { v ->
-                val log = v.log(itemsBy[v.id].orEmpty(), recordsBy[v.id].orEmpty(), readingsBy[v.id].orEmpty(), s)
+            all.map { log ->
                 val statuses = log.statuses(today)
-                val oilId = itemsBy[v.id].orEmpty().firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
+                val oilId = log.items.firstOrNull { it.templateKey == Snoozing.OIL_TEMPLATE_KEY }?.id
                 GarageVehicle(
-                    vehicle = v,
+                    vehicle = log.vehicle,
                     odometer = log.odometer,
                     comingUp = ReminderPresentation.comingUp(statuses),
                     oil = statuses.firstOrNull { it.item.id == oilId },

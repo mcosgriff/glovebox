@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.export
 
-import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.data.log.VehicleLog
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.RowsCard
@@ -60,15 +61,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ExportDates
 import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportFormat
@@ -86,16 +82,13 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.ui.service.clusterSwap
-import io.cosgriff.glovebox.ui.service.toEntry
-import io.cosgriff.glovebox.ui.service.toReadings
-import io.cosgriff.glovebox.ui.service.toTracked
+import io.cosgriff.glovebox.data.log.clusterSwap
+import io.cosgriff.glovebox.data.log.toTracked
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import io.cosgriff.glovebox.ui.service.answering
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.domain.ExportPaper
 import io.cosgriff.glovebox.domain.VehicleDocuments
@@ -126,11 +119,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.ui.components.ZoomableImage
-import io.cosgriff.glovebox.ui.service.log
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -152,12 +143,9 @@ sealed interface ExportPreview {
 @HiltViewModel
 class ExportViewModel @Inject constructor(
     private val vehicles: VehicleDao,
-    private val service: ServiceDao,
-    private val schedule: ScheduleDao,
+    private val logs: VehicleLogs,
     private val recalls: RecallDao,
-    private val odometer: OdometerDao,
     private val documents: DocumentDao,
-    private val settings: SettingsRepository,
     private val photos: RecordPhotoStore,
     private val saver: ExportSaver,
     fonts: ReportFonts,
@@ -219,17 +207,17 @@ class ExportViewModel @Inject constructor(
         vehicleId = startVehicleId
         options = ExportOptions(format = format)
         viewModelScope.launch {
-            val current = settings.settings.first()
-            val list = vehicles.all().map { v -> Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exportVehicle(v, current)) }
+            // A vehicle deleted meanwhile is left out.
+            val list = vehicles.all().mapNotNull { v -> logs.load(v.id)?.let { Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exportVehicle(it)) } }
             all = list
             if (list.none { it.id == vehicleId }) vehicleId = list.firstOrNull()?.id
         }
     }
 
-    private suspend fun exportVehicle(v: VehicleEntity, current: Settings): ExportVehicle {
-        val records = service.recordsFor(v.id)
-        val items = schedule.allFor(v.id)
-        val log = v.log(items, records, odometer.readingsFor(v.id), current)
+    private suspend fun exportVehicle(log: VehicleLog): ExportVehicle {
+        val v = log.vehicle
+        val records = log.records
+        val items = log.items
         val swap = log.swap
         val stored = recalls.recallsFor(v.id).associateBy { it.id }
         val categories = items.associate { it.id to ServiceGroup.ofItem(it.templateKey, it.service) }
@@ -263,7 +251,7 @@ class ExportViewModel @Inject constructor(
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->
-                val tracked = item.toTracked(current.defaultRule, swap) ?: return@mapNotNull null
+                val tracked = item.toTracked(log.defaultRule, swap) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
                 ExportScheduleLine(item.name, tracked.interval.text(v.unit, item.firstMiles), ServiceLog.lastDone(item.id, log.entries)?.let { swap.asReadOn(it) }, item.id)
             },
