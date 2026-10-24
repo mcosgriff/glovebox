@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.25.1](https://github.com/mcosgriff/glovebox/compare/v0.25.0...v0.25.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **data:** write each multi-step service-log change in one transaction ([#421](https://github.com/mcosgriff/glovebox/issues/421)) ([c16af3e](https://github.com/mcosgriff/glovebox/commit/c16af3e0138dac0a7a106aebd830e639260d3448)), closes [#419](https://github.com/mcosgriff/glovebox/issues/419)
+
+
+### Code Refactoring
+
+* read a vehicle's log through VehicleLogs in :data ([#423](https://github.com/mcosgriff/glovebox/issues/423)) ([1cc317e](https://github.com/mcosgriff/glovebox/commit/1cc317edc7f6c50d0ab7485f724f7129721e8ba8)), closes [#420](https://github.com/mcosgriff/glovebox/issues/420)
+
 ## [0.25.0](https://github.com/mcosgriff/glovebox/compare/v0.24.0...v0.25.0) (2026-10-24)
 
 
