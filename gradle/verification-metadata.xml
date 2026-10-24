@@ -11,15 +11,9 @@
          <ignored-key id="0374CF2E8DD1BDFD" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="571A5291E827E1C7" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="5E1F79A7C298661E" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="5ED22F661BBF0ACC" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="5F7786DF73E61F56" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="6751E1A6E2001B8D" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="7A8860944FAD5F62" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="8118B3BCDB1A5000" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="873A8E86B4372146" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="A8BBFE8A95073AD2" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="DA70BCBA6D76AD03" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="EB380DC13C39F675" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="EE92349AD86DE446" reason="Key couldn't be downloaded from any key server"/>
       </ignored-keys>
       <trusted-keys>
@@ -79,10 +73,12 @@
             <trusting group="^com[.]squareup($|([.].*))" regex="true"/>
          </trusted-key>
          <trusted-key id="217BFC8CA98788CB33198A8E7FAC222BF1FC0C12" group="net.thauvin.erik.urlencoder"/>
+         <trusted-key id="24D04176586361FDA94EE0315F7786DF73E61F56" group="com.google.devtools.ksp"/>
          <trusted-key id="28118C070CB22A0175A2E8D43D12CA2AC19F3181">
             <trusting group="^com[.]fasterxml($|([.].*))" regex="true"/>
             <trusting group="^tools[.]jackson($|([.].*))" regex="true"/>
          </trusted-key>
+         <trusted-key id="2BAB4466B44F54F8F99BBBDD5ED22F661BBF0ACC" group="com.almworks.sqlite4java" name="sqlite4java" version="1.0.392"/>
          <trusted-key id="2DB4F1EF0FA761ECC4EA935C86FDC7E2A11262CB">
             <trusting group="commons-codec"/>
             <trusting group="commons-io"/>
@@ -119,6 +115,7 @@
          <trusted-key id="5767F9CDE920750621875079A40E24B5B408DBD5" group="org.robolectric"/>
          <trusted-key id="57DF5E469A649A108A95D75C77EC03D7A65FF411" group="io.github.zxing-cpp" name="android" version="3.1.1"/>
          <trusted-key id="5897253BEA3046AEEA95A067E93671C7272B7B3F" group="org.jdom" name="jdom2" version="2.0.6"/>
+         <trusted-key id="5DD80B0DDCCBE005F0A47FD66751E1A6E2001B8D" group="^com[.]squareup($|([.].*))" regex="true"/>
          <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985" group="org.slf4j"/>
          <trusted-key id="61DEBD732F3F07771269972E2F87304808D40CEC" group="net.zetetic" name="sqlcipher-android" version="4.19.1"/>
          <trusted-key id="638DBA7FF338F537EACB7AC0AE1B9D6007DDFA7C" group="com.google.testparameterinjector"/>
@@ -126,7 +123,10 @@
          <trusted-key id="6A93161EB1990E8346E7BA2B23738DFD7C40DE43" group="org.apache.ivy" name="ivy" version="2.6.0"/>
          <trusted-key id="6DD3B8C64EF75253BEB2C53AD908A43FB7EC07AC" group="jakarta.activation"/>
          <trusted-key id="6F538074CCEBF35F28AF9B066A0975F8B1127B83" group="^org[.]jetbrains[.]kotlin($|([.].*))" regex="true"/>
-         <trusted-key id="73976C9C39C1479B84E2641A5A68A2249128E2C6" group="com.google.crypto.tink" name="tink-android" version="1.23.0"/>
+         <trusted-key id="73976C9C39C1479B84E2641A5A68A2249128E2C6">
+            <trusting group="com.google.crypto.tink" name="tink-android" version="1.23.0"/>
+            <trusting group="com.google.crypto.tink" name="tink-android" version="1.24.0"/>
+         </trusted-key>
          <trusted-key id="7440F1F7D27BAC115F953D55EB095DA7D2F6AC0E" group="org.tensorflow" name="tensorflow-lite-metadata" version="0.2.0"/>
          <trusted-key id="7616EB882DAF57A11477AAF559A252FB1199D873" group="com.google.code.findbugs" name="jsr305" version="3.0.2"/>
          <trusted-key id="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0" group="org.bouncycastle"/>
@@ -177,6 +177,7 @@
          </trusted-key>
          <trusted-key id="CE3285F320685193D11FEA01F6CE9695C9318406" group="com.google.zxing"/>
          <trusted-key id="DBD744ACE7ADE6AA50DD591F66B50994442D2D40" group="^com[.]squareup($|([.].*))" regex="true"/>
+         <trusted-key id="E01ED293981AE484403B65D7DA70BCBA6D76AD03" group="com.charleskorn.kaml"/>
          <trusted-key id="E52F07877A5805F9AF4AB0ACD46C5610D06E7001" group="com.ibm.icu" name="icu4j" version="78.3"/>
          <trusted-key id="E7DC75FC24FB3C8DFE8086AD3D5839A2262CBBFB" group="org.jetbrains.kotlinx"/>
          <trusted-key id="EE0CA873074092F806F59B65D364ABAA39A47320" group="^com[.]google($|([.].*))" regex="true"/>
@@ -184,6 +185,8 @@
          <trusted-key id="F3184BCD55F4D016E30D4C9BF42E87F9665015C9" group="org.jsoup" name="jsoup" version="1.15.1"/>
          <trusted-key id="FA1703B1D287CAEA3A60F931E0130A3ED5A2079E" group="org.webjars"/>
          <trusted-key id="FA7929F83AD44C4590F6CC6815C71C0A4E0B8EDD" group="net.java.dev.jna"/>
+         <trusted-key id="FAABC3738B1F58DA2D776FA2EB380DC13C39F675" group="com.intellij" name="annotations" version="12.0"/>
+         <trusted-key id="FC411CD3CB7DCB0ABC9801058118B3BCDB1A5000" group="jakarta.xml.bind"/>
          <trusted-key id="FF6E2C001948C5F2F38B0CC385911F425EC61B51">
             <trusting group="junit"/>
             <trusting group="org.junit"/>
