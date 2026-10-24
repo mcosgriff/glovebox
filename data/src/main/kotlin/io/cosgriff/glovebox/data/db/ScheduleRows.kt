@@ -19,9 +19,10 @@ fun ImportedMilestone.jobRows(): List<MilestoneJobEntity> = work.map { Milestone
 
 /**
  * An interval from an import file or a maker's schedule as an item of the user's own, tracked. [knownList] is
- * the bundled list it came from, kept on the row for good; [useSevere] whether severe use is on.
+ * the bundled list it came from, kept on the row for good; [useSevere] whether severe use is on, and [useE85]
+ * whether the vehicle runs mostly on E85 (which matters only to an item with an E85 interval).
  */
-fun ImportedScheduleItem.toEntity(vehicleId: Long, knownList: String? = null, useSevere: Boolean = false): ScheduleItemEntity = ScheduleItemEntity(
+fun ImportedScheduleItem.toEntity(vehicleId: Long, knownList: String? = null, useSevere: Boolean = false, useE85: Boolean = false): ScheduleItemEntity = ScheduleItemEntity(
     vehicleId = vehicleId,
     name = name,
     intervalMiles = normal.miles,
@@ -30,6 +31,9 @@ fun ImportedScheduleItem.toEntity(vehicleId: Long, knownList: String? = null, us
     severeMonths = severe?.months,
     useSevere = useSevere,
     severeOnly = severeOnly,
+    e85Miles = e85?.miles,
+    e85Months = e85?.months,
+    useE85 = useE85 && e85 != null,
     ruleOverride = rule?.name,
     service = service,
     knownList = knownList,

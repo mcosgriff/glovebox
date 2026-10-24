@@ -23,6 +23,12 @@ data class ImportedScheduleItem(
      * under severe use, and on normal use it is never due. It has no [severe] of its own.
      */
     val severeOnly: Boolean = false,
+    /**
+     * The job's interval for a vehicle run mostly on E85, from a flex-fuel maker's list ([KnownScheduleList.e85]).
+     * **An import file never carries one** (the `interval-schedule` format has no field for it), so the reader
+     * leaves it null.
+     */
+    val e85: Interval? = null,
 )
 
 /**
@@ -64,7 +70,7 @@ object ScheduleImport {
 
     val EVERY = DistanceField("everyMiles", "everyKm", MAX_MILES, MAX_KM)
 
-    private val intervalKeys = EVERY.names + "everyMonths"
+    internal val intervalKeys = EVERY.names + "everyMonths"
     /** The file's fields for a first time that isn't one interval in: one or the other, in the file's unit. */
     val FIRST_AT = DistanceField("firstAtMiles", "firstAtKm", MAX_MILES, MAX_KM)
 
@@ -105,7 +111,7 @@ object ScheduleImport {
      * A distance (`everyMiles`, or `everyKm`), `everyMonths`, or a distance and months; one of them
      * has to be there. The distance comes back in the file's own unit ([ImportCheck.unit]).
      */
-    private fun interval(o: JsonObject, path: String, check: ImportCheck): Interval? {
+    internal fun interval(o: JsonObject, path: String, check: ImportCheck): Interval? {
         val distance = check.distance(o, path, EVERY)
         val months = o["everyMonths"]?.let { check.int(it, "$path.everyMonths", 1, MAX_MONTHS) }
         if (!check.has(o, EVERY) && "everyMonths" !in o) {

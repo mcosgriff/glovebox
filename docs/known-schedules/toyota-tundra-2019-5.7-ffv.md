@@ -15,14 +15,15 @@ Downloaded on 2026-10-22 and read on 2026-10-23.
 - Apart from the oil, the jobs and where they fall are those of the 2019 gasoline log, without its "(4WD)"
   marks.
 - **Oil.** The FFV log draws an oil change in every box, so every 2,500 miles or 3 months, and has no oil
-  change among its special operating conditions. The list takes it as printed: the ordinary job (`oil`) in
-  every box, and a reminder every 2,500 / 3 with no severe interval.
-- **Left out: the E85 note** (the owner's ruling of 2026-10-23, #33). The guide's introduction and its
-  explanation of the oil say that the change every 2,500 / 3 is for a truck run on E85 more than half the
-  time, and that otherwise the normal schedule of every 5,000 / 6 applies. Only that note says so; the log
-  itself draws the change in every box. The note is left out, as the gasoline guides' note on replacing the
-  oil at 5,000 miles if 0W-20 wasn't used is, and the table and the reminder stay as the log prints them.
-  An owner who runs on E85 less than half the time can change the reminder.
+  change among its special operating conditions. So the table has the ordinary job (`oil`) in every box, as
+  printed.
+- **E85: the "Runs mostly on E85" switch** (the owner's ruling of 2026-10-23, #33). The guide's introduction
+  and its explanation of the oil say that the change every 2,500 / 3 is for a truck run on E85 more than half
+  the time, and that otherwise the normal schedule of every 5,000 / 6 applies. So the oil reminder is every
+  5,000 / 6, and the list's `e85` gives it every 2,500 / 3, which is what it counts by while the owner has
+  switched "Runs mostly on E85" on (off until they do; nothing is assumed). The E85 interval is held to the
+  log as any interval is; the 5,000 / 6 falls on it, at every second box with its months. Neither has a
+  severe interval: Normal / Severe still governs only the special-condition jobs below.
 - The boxes at the odd 2,500s also hold the floor mat, fluid level and wiper checks; they are in the table
   as printed, with no condition, since the guide gives them none.
 - **Engine.** The FFV Tundra had the 5.7 L V8 only (fueleconomy.gov's model lists, checked 2026-10-23; the

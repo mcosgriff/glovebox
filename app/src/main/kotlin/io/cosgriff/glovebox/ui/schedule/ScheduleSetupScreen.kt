@@ -54,6 +54,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
@@ -111,11 +112,17 @@ data class DraftItem(
     val firstAt: Int? = null,
     /** A job that exists only under severe use; [normal] is its interval then. On normal use it is listed, switched off. */
     val severeOnly: Boolean = false,
+    /** A flex-fuel maker's interval for a vehicle run mostly on E85; null for every other item. */
+    val e85: Interval? = null,
+    /** The vehicle runs mostly on E85. Changes nothing on an item without an [e85] interval. */
+    val useE85: Boolean = false,
 ) {
     /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
     val dormant: Boolean get() = severeOnly && !useSevere
-    val active: Interval get() = if (useSevere) severe ?: normal else normal
-    val showsSevere: Boolean get() = useSevere && severe != null && severe != normal
+    val active: Interval get() = if (showsE85) e85 ?: normal else if (useSevere) severe ?: normal else normal
+    val showsSevere: Boolean get() = !showsE85 && useSevere && severe != null && severe != normal
+    /** On its E85 interval. */
+    val showsE85: Boolean get() = useE85 && e85 != null
 
     companion object {
         /** A new item of the user's own, starting at 5,000 mi or 6 months: Glovebox's figure, so a schedule figure in [unit]. */
@@ -139,6 +146,9 @@ fun DraftItem.toEntity(vehicleId: Long): ScheduleItemEntity = ScheduleItemEntity
     knownList = knownList,
     firstMiles = firstAt,
     severeOnly = severeOnly,
+    e85Miles = e85?.miles,
+    e85Months = e85?.months,
+    useE85 = useE85 && e85 != null,
 )
 
 /** A saved row as the editor's draft, keyed by its id; null for one with no interval. [template] is the typical item it is, if any. */
@@ -158,6 +168,8 @@ fun ScheduleItemEntity.toDraft(template: ScheduleTemplateItem?): DraftItem? {
         knownList = knownList,
         firstAt = firstMiles,
         severeOnly = severeOnly,
+        e85 = interval(e85Miles, e85Months),
+        useE85 = useE85,
     )
 }
 
@@ -197,6 +209,10 @@ class ScheduleSetupViewModel @Inject constructor(
     var severeUse by mutableStateOf(false)
         private set
 
+    /** "Runs mostly on E85": off until the owner says so, and offered only for a schedule with E85 intervals. */
+    var e85Use by mutableStateOf(false)
+        private set
+
     /** "Know when these were last done?": true goes on to ask, false leaves them to be logged as they come up. */
     var enterLastDone by mutableStateOf(false)
 
@@ -233,7 +249,7 @@ class ScheduleSetupViewModel @Inject constructor(
         KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
             DraftItem(
                 key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
-                own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly,
+                own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly, e85 = it.e85,
             )
         }
 
@@ -249,6 +265,7 @@ class ScheduleSetupViewModel @Inject constructor(
         chosenPowertrain = list.engine?.powertrain
         engineChoices = emptyList()
         severeUse = false
+        e85Use = false
         items = knownItems(list, v)
     }
 
@@ -260,6 +277,12 @@ class ScheduleSetupViewModel @Inject constructor(
     fun chooseSevereUse(on: Boolean) {
         severeUse = on
         items = items?.map { it.copy(useSevere = on) }
+    }
+
+    /** Whether the vehicle runs mostly on E85, for every item that has an E85 interval. */
+    fun chooseE85Use(on: Boolean) {
+        e85Use = on
+        items = items?.map { it.copy(useE85 = on && it.e85 != null) }
     }
 
     fun toggle(key: String) {
@@ -400,6 +423,8 @@ fun ScheduleSetupScreen(
                     DrivingUseSwitch(severe = vm.severeUse, onPick = vm::chooseSevereUse)
                 }
             }
+            // Only for a flex-fuel maker's schedule, whose guide gives some jobs a shorter interval on E85.
+            if (items.any { it.e85 != null }) E85Switch(on = vm.e85Use, onPick = vm::chooseE85Use)
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 SectionLabel(stringResource(R.string.setup_selected, count.asNumber(), items.size.asNumber()), Modifier.weight(1f))
@@ -484,7 +509,7 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
                     item.active.text(unit, item.firstAt),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = PlexMono,
-                    color = if (item.showsSevere) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (item.showsSevere || item.showsE85) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (item.severeOnly) {
                     Text(
@@ -496,6 +521,9 @@ internal fun ItemRow(item: DraftItem, unit: DistanceUnit, onToggle: () -> Unit, 
             }
             if (item.showsSevere) {
                 Pill(stringResource(R.string.setup_severe_tag), MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer, small = true)
+            }
+            if (item.showsE85) {
+                Pill(stringResource(R.string.setup_e85_tag), MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer, small = true)
             }
         }
         IconButton(onClick = onEdit) {
@@ -532,6 +560,37 @@ internal fun DrivingUseSwitch(severe: Boolean?, onPick: (severe: Boolean) -> Uni
                     Text(text.second, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                 }
             }
+        }
+    }
+}
+
+/**
+ * "Runs mostly on E85", as a switch: a flex-fuel guide's shorter intervals for a vehicle that is. Apart from
+ * Normal / Severe, which keeps governing towing and dusty-road jobs (the owner's choice, #33). [on] null is
+ * a schedule whose items differ, shown off with a line saying so.
+ */
+@Composable
+internal fun E85Switch(on: Boolean?, onPick: (on: Boolean) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            Modifier.fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .toggleable(value = on == true, role = Role.Switch, onValueChange = onPick),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.schedule_e85), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.schedule_e85_detail), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(checked = on == true, onCheckedChange = null)
+        }
+        if (on == null) {
+            Text(
+                stringResource(R.string.schedule_e85_mixed),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

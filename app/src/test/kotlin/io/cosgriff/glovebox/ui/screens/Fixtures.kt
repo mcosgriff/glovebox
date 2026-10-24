@@ -363,6 +363,29 @@ object Fixtures {
         )
     }
 
+    /**
+     * A made-up flex-fuel schedule, to draw "Runs mostly on E85": the oil on its E85 interval, a job only for
+     * severe use, and two ordinary ones. No maker is named.
+     */
+    val flexSchedule: ScheduleState = run {
+        val items = listOf(
+            DraftItem(key = "1", name = "Replace engine oil and filter", normal = Interval(5_000, 6), severe = null, own = true, service = "oil", e85 = Interval(2_500, 3), useE85 = true),
+            DraftItem(key = "2", name = "Rotate tires", normal = Interval(5_000, 6), severe = null, own = true, service = "rotation"),
+            DraftItem(key = "3", name = "Replace engine air filter", normal = Interval(30_000, 36), severe = null, own = true, service = "engine-air"),
+            DraftItem(key = "4", name = "Replace rear differential oil · towing or heavy loads", normal = Interval(30_000, 36), severe = null, own = true, service = "rear-diff", severeOnly = true),
+        )
+        ScheduleState(
+            vehicle = truck,
+            items = items,
+            templateKeys = items.associate { it.key to null },
+            logs = emptyMap(),
+            defaultRule = DueRule.WHICHEVER_FIRST,
+            missing = emptyList(),
+            odometer = truckOdometer,
+            notLogged = 0,
+        )
+    }
+
     val milestones: MilestonesState = run {
         val done = truckEntries.flatMap { e -> e.itemIds.map { JobDone(it.toString(), e.date, e.odometer, e.odometer, e.id) } }
         val list = Milestones.generate(tracked, Milestones.startFor(done, truckOdometer), truckOdometer)

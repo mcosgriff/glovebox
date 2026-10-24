@@ -17,7 +17,9 @@ import kotlinx.serialization.json.put
  * tracking the typical item it doubles ([ScheduleImport.doubles]).
  *
  * The file has both intervals of an item that has a severe one, but not which is in use, a snooze,
- * or when anything was last done: those belong to the vehicle, not the schedule.
+ * or when anything was last done: those belong to the vehicle, not the schedule. Nor an item's E85
+ * interval or whether it is on: the format has no field for one (only a flex-fuel maker's list, in
+ * [KnownSchedules], gives one), so an item that has one is written with its ordinary interval.
  */
 object ScheduleExport {
     /** [unit] is what the vehicle counts in, and so what the file is written in: `everyMiles` or `everyKm`. */

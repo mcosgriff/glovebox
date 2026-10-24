@@ -21,14 +21,14 @@ Downloaded on 2026-10-22 and read on 2026-10-23.
 - **Oil.** The FFV log draws an oil change in every box, so every 2,500 miles or 3 months, and has no
   oil change among its special operating conditions (it has two, dusty roads and towing, where the
   gasoline log has four). The boxes at the odd 2,500s hold only that oil change and the floor mat,
-  fluid level and wiper checks, which are in the table as printed. So the oil change is the ordinary
-  job (`oil`) in every box, and its reminder is every 2,500 / 3, with no severe interval.
-- **Left out: the E85 note** (the owner's ruling of 2026-10-23, #33). The guide's introduction says that
-  the change every 2,500 / 3 is for a truck run on E85 more than half the time, and that otherwise the
-  normal schedule of every 5,000 / 6 applies. Only that note says so; the log itself draws the change
-  in every box. The note is left out, as the gasoline guide's note on replacing the oil at 5,000 miles
-  if 0W-20 wasn't used is, and the table and the reminder stay as the log prints them. An owner who
-  runs on E85 less than half the time can change the reminder.
+  fluid level and wiper checks, which are in the table as printed. So the table has the ordinary job
+  (`oil`) in every box.
+- **E85: the "Runs mostly on E85" switch** (the owner's ruling of 2026-10-23, #33). The guide's introduction
+  says that the change every 2,500 / 3 is for a truck run on E85 more than half the time, and that otherwise the normal schedule of every 5,000 / 6 applies. So the oil reminder is every
+  5,000 / 6, and the list's `e85` gives it every 2,500 / 3, which is what it counts by while the owner has
+  switched "Runs mostly on E85" on (off until they do; nothing is assumed). The E85 interval is held to the
+  log as any interval is; the 5,000 / 6 falls on it, at every second box with its months. Neither has a
+  severe interval: Normal / Severe still governs only the special-condition jobs below.
 - **Engine and powertrain.** The Sequoia had one engine, the 5.7L V8. This list's `engine` block is
   5.7L with `"powertrain": "flex-fuel"`, so it is matched only for a Sequoia on record as flex-fuel
   (vPIC's E85 fuel, or the owner's pick); the gasoline truck's list is `toyota-sequoia-2016-gas`. A

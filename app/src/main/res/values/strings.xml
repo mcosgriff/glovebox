@@ -1323,6 +1323,9 @@
     <string name="schedule_start_typical">Start from a typical schedule</string>
     <string name="schedule_how_driven">HOW DO YOU DRIVE IT?</string>
     <string name="schedule_mixed">Some items are on their severe interval and some aren\'t. Picking one here sets them all.</string>
+    <string name="schedule_e85">Runs mostly on E85</string>
+    <string name="schedule_e85_detail">E85 more than half the time. The maker\'s guide then gives some jobs a shorter interval.</string>
+    <string name="schedule_e85_mixed">Some items are on their E85 interval and some aren\'t. Switching here sets them all.</string>
     <!-- %1$s is known_started_from. -->
     <string name="schedule_started_from">%1$s Items added or edited since are yours.</string>
     <string name="schedule_tracked">%1$s OF %2$s TRACKED</string>
@@ -1349,6 +1352,7 @@
     <string name="schedule_known_added">Added as items of your own, ticked. You can edit or untick any of them afterwards.</string>
     <string name="schedule_severe_only_short">Only for severe use</string>
     <string name="schedule_severe_use">severe use %1$s</string>
+    <string name="schedule_e85_use">mostly E85 %1$s</string>
     <string name="schedule_doubles">These typical items are the same jobs. Ticked ones are taken off the list, so each job is there once. One with a service logged against it stays, unticked, so its history keeps its link.</string>
     <string name="schedule_replace">Replace “%1$s”</string>
     <plurals name="schedule_add_reminders">
@@ -1379,6 +1383,7 @@
     <string name="setup_severe_only_off">Only for severe use. Off while you\'re on normal use.</string>
     <string name="setup_severe_only">Only for severe use.</string>
     <string name="setup_severe_tag">SEVERE</string>
+    <string name="setup_e85_tag">E85</string>
     <string name="edit_item">Edit %1$s</string>
     <string name="use_normal">Normal</string>
     <string name="use_normal_detail">Commuting, highway</string>
@@ -1404,6 +1409,8 @@
     <string name="item_severe_interval">Severe-use interval</string>
     <string name="item_severe_typical">Typical: %1$s when towing, off-road or in dust</string>
     <string name="item_severe_for">For towing, off-road or dusty driving</string>
+    <string name="item_e85_interval">E85 interval</string>
+    <string name="item_e85_for">For a vehicle that runs mostly on E85</string>
     <string name="item_first_at">FIRST TIME AT (OPTIONAL)</string>
     <string name="item_first_error">Enter whole %1$s above zero, or leave it blank.</string>
     <string name="item_first_note">For a job whose first time isn\'t one interval in, such as coolant first at 100,000 and then every 50,000. Until it has been logged once it is due at this reading; after that the interval counts from the last time. Leave blank otherwise.</string>

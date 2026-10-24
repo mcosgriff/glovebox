@@ -222,6 +222,10 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   wherever statuses are worked out** (`toTracked(rule, swap)`).
 - Severe-only jobs (#136): `toTracked` returns null for them while `useSevere` is off. **One Normal / Severe
   switch, not one per condition** (the user's choice). The editor can't make one.
+- E85 (#33): a flex-fuel list's `e85` intervals are counted by while **"Runs mostly on E85"** is on, a separate
+  switch shown only for items that have one, off by default; Normal / Severe is not folded into it (the
+  owner's choice). **Take an item's interval through `ActiveInterval`** (`activeInterval()`), never from
+  `useSevere` alone. Import and export files don't carry it.
 - **Use `ItemStatus.counting`, not `lastDone != null`, to decide whether a reminder has something to count
   from.** A job the vehicle hasn't reached counts down to its first mileage, by distance only; it is not "Not
   logged yet".

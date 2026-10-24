@@ -140,9 +140,25 @@ comes from vPIC only where the decode says it plainly (a strong hybrid, a plug-i
 E85 fuel), or from the owner on "Is this your vehicle?". **A blank is never taken for petrol**, so a list
 marked `gas` is only matched for a vehicle the owner said is petrol; otherwise setup asks "Which engine
 does it have?" with each list's `label` ("2.5L hybrid"), and the pick is written to the vehicle if it had
-no powertrain on record. A flex-fuel guide's extra oil change for a truck run mostly on E85 is only a note,
-so it is left out and recorded on the list's page, as the note on changing oil early after the wrong grade
-is (the owner's ruling of 2026-10-23, #33).
+no powertrain on record. A flex-fuel guide's shorter oil change for a truck run mostly on E85 is the list's
+`e85` (below), not left out (the owner's ruling of 2026-10-23, #33); the note on changing oil early after the
+wrong grade still is.
+
+**`e85`** gives a flex-fuel guide's intervals for a vehicle run on E85 more than half the time, which Toyota's
+FFV guides print as an oil change every 2,500 miles / 3 months against the normal 5,000 / 6:
+
+```json
+"e85": [ { "name": "Replace engine oil and filter", "everyMiles": 2500, "everyMonths": 3 } ]
+```
+
+Each names one of the list's `intervals`, once, and never one that is `severeOnly`; it takes `everyMiles` (or
+`everyKm`) and `everyMonths` like an interval, and only a list whose `engine.powertrain` is `flex-fuel` may
+have it. The guide's log is drawn for E85 use, so rule 7 holds each E85 interval to the table exactly as it
+holds an interval; the job's ordinary interval then only has to fall on the table (the job at every multiple
+of it, with the table's months there). An item with one counts by it while **"Runs mostly on E85"** is on: a
+switch of its own on setup and the Maintenance schedule, shown only when an item has an E85 interval, off
+until the owner turns it on. It is apart from Normal / Severe, which keeps governing the special-condition
+jobs (the owner's choice). An import or export file never carries an E85 interval.
 
 ## Making a list
 

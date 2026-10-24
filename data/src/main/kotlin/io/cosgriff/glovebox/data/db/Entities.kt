@@ -179,6 +179,14 @@ data class ScheduleItemEntity(
      * [useSevere] is on; on normal use it stays on the list, switched off.
      */
     @ColumnInfo(defaultValue = "0") val severeOnly: Boolean = false,
+    /**
+     * A flex-fuel maker's interval for a vehicle run mostly on E85 (a schedule figure in the vehicle's unit),
+     * from a bundled list; null for every other item. It is the one in force while [useE85] is on (#33).
+     */
+    val e85Miles: Int? = null,
+    val e85Months: Int? = null,
+    /** The owner has said the vehicle runs mostly on E85. Changes nothing on an item without an E85 interval. */
+    @ColumnInfo(defaultValue = "0") val useE85: Boolean = false,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

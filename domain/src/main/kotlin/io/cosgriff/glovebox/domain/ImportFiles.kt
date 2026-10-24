@@ -110,7 +110,7 @@ object FileDistances {
 
     /** A schedule file's items, written in [from], for a vehicle in [to]. */
     fun schedule(items: List<ImportedScheduleItem>, from: DistanceUnit, to: DistanceUnit): List<ImportedScheduleItem> =
-        if (from == to) items else items.map { it.copy(normal = it.normal.into(from, to), severe = it.severe?.into(from, to), firstAt = it.firstAt?.let { at -> scheduled(at, from, to) }) }
+        if (from == to) items else items.map { it.copy(normal = it.normal.into(from, to), severe = it.severe?.into(from, to), e85 = it.e85?.into(from, to), firstAt = it.firstAt?.let { at -> scheduled(at, from, to) }) }
 
     /** A milestone file's table, in mileage order, and how it repeats, written in [from], for a vehicle in [to]. */
     fun milestones(items: List<ImportedMilestone>, repeats: Int?, from: DistanceUnit, to: DistanceUnit): Pair<List<ImportedMilestone>, Int?> {

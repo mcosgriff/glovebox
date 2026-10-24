@@ -134,6 +134,9 @@ data class ScheduleState(
     val startedFrom: String? = null,
 ) {
     val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null || it.severeOnly }.map { it.tracked to it.useSevere }).use
+
+    /** Whether the tracked items with an E85 interval are on it; null when some are and some aren't. */
+    val e85: Boolean? get() = items.filter { it.e85 != null && it.tracked }.map { it.useE85 }.distinct().let { if (it.size > 1) null else it.singleOrNull() ?: false }
 }
 
 /** A vehicle's schedule after setup: what is tracked, at which intervals, and when each was last done. */
@@ -263,6 +266,11 @@ class ScheduleViewModel @Inject constructor(
         entities.values.filter { it.useSevere != severe }.forEach { schedule.update(it.copy(useSevere = severe)) }
     }
 
+    /** "Runs mostly on E85", for every item that has an E85 interval. */
+    fun chooseE85Use(on: Boolean) = viewModelScope.launch {
+        schedule.updateAll(entities.values.filter { (it.e85Miles != null || it.e85Months != null) && it.useE85 != on }.map { it.copy(useE85 = on) })
+    }
+
     /**
      * Adds the typical items the schedule lacks, unticked: the user picks which to track, so a
      * dozen "not logged yet" reminders don't appear at once.
@@ -276,8 +284,10 @@ class ScheduleViewModel @Inject constructor(
         val s = state.value ?: return@launch
         val (list, plan) = s.known ?: return@launch
         val severe = s.use == DrivingUse.SEVERE
+        // On E85 only where the owner has already said so on this schedule; nothing is assumed.
+        val e85 = s.e85 == true
         schedule.applyKnown(
-            added = plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly)) },
+            added = plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly), useE85 = e85) },
             replaced = plan.doubles.map { it.id }.filter { it in stop },
         )
         // The maker's table goes with its schedule, unless the vehicle already has a table of its own.
@@ -316,6 +326,9 @@ class ScheduleViewModel @Inject constructor(
         severeMiles = severe?.miles,
         severeMonths = severe?.months,
         useSevere = useSevere,
+        e85Miles = e85?.miles,
+        e85Months = e85?.months,
+        useE85 = useE85 && e85 != null,
         ruleOverride = rule?.name,
         tracked = tracked,
         firstMiles = firstAt,
@@ -389,7 +402,8 @@ fun ScheduleScreen(
     ScheduleContent(
         state, hasMilestoneTable, onBack, onSetUp, onEnterLastDone, onOpenMilestones,
         onSetTracked = vm::setTracked, onEdit = vm::edit, onAddOwn = vm::addOwn, onAddKnown = { vm.addKnown(it) },
-        onAddMissing = { vm.addMissing() }, onChooseSevereUse = { vm.chooseSevereUse(it) }, onSetAllTracked = vm::setAllTracked,
+        onAddMissing = { vm.addMissing() }, onChooseSevereUse = { vm.chooseSevereUse(it) }, onChooseE85Use = { vm.chooseE85Use(it) },
+        onSetAllTracked = vm::setAllTracked,
         onWriteFile = vm::written, onSaveFile = { vm.saveAsFile(it, state.vehicle.fileStem()) },
     )
 }
@@ -409,6 +423,7 @@ internal fun ScheduleContent(
     onAddKnown: (stop: Set<Long>) -> Unit,
     onAddMissing: () -> Unit,
     onChooseSevereUse: (Boolean) -> Unit,
+    onChooseE85Use: (Boolean) -> Unit,
     onSetAllTracked: (Boolean) -> Unit,
     onWriteFile: () -> WrittenFile,
     onSaveFile: (text: String) -> Unit,
@@ -459,6 +474,7 @@ internal fun ScheduleContent(
                         }
                     }
                 }
+                if (state.items.any { it.e85 != null }) E85Switch(on = state.e85, onPick = onChooseE85Use)
                 state.startedFrom?.let { text ->
                     Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small) {
                         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -620,6 +636,7 @@ private fun KnownRemindersDialog(
                                 stringResource(R.string.schedule_severe_only_short).takeIf { item.severeOnly },
                                 item.normal.text(unit, item.firstAt),
                                 item.severe?.let { stringResource(R.string.schedule_severe_use, it.text(unit)) },
+                                item.e85?.let { stringResource(R.string.schedule_e85_use, it.text(unit)) },
                             ).joinToString(" · "),
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = PlexMono,

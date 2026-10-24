@@ -21,6 +21,22 @@ class ScheduleTest {
     }
 
     @Test
+    fun `the E85 interval wins while it is on, and severe use governs otherwise`() {
+        val normal = Interval(5_000, 6)
+        val severe = Interval(2_500, null)
+        val e85 = Interval(2_500, 3)
+        assertEquals(normal, ActiveInterval.of(normal, severe, useSevere = false))
+        // Part by part: severe use's missing months fall back to the normal ones.
+        assertEquals(Interval(2_500, 6), ActiveInterval.of(normal, severe, useSevere = true))
+        assertEquals(e85, ActiveInterval.of(normal, severe, useSevere = true, e85 = e85, useE85 = true))
+        assertEquals(e85, ActiveInterval.of(normal, null, useSevere = false, e85 = e85, useE85 = true))
+        // Off, it changes nothing; on, an item without one keeps its own.
+        assertEquals(normal, ActiveInterval.of(normal, null, useSevere = false, e85 = e85, useE85 = false))
+        assertEquals(normal, ActiveInterval.of(normal, null, useSevere = false, e85 = null, useE85 = true))
+        assertNull(ActiveInterval.of(null, null, useSevere = true))
+    }
+
+    @Test
     fun `differential fluid is only suggested when the drivetrain has one to service`() {
         fun diff(drivetrain: String?) = ScheduleTemplates.generic(drivetrain, null, DistanceUnit.MILES).firstOrNull { it.key == "diff-fluid" }?.name
         assertEquals(TemplateName.DIFF_AND_TRANSFER, diff("4WD/4-Wheel Drive/4x4"))

@@ -28,6 +28,7 @@ import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.ActiveInterval
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
 import io.cosgriff.glovebox.domain.OdometerReading
@@ -130,16 +131,23 @@ private fun Interval.parts(unit: DistanceUnit, join: Int): String {
  * is put into those here. **Pass the vehicle's swap wherever statuses are worked out.**
  */
 fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?): TrackedItem? {
-    val miles = if (useSevere) severeMiles ?: intervalMiles else intervalMiles
-    val months = if (useSevere) severeMonths ?: intervalMonths else intervalMonths
-    if (miles == null && months == null) return null
+    val interval = activeInterval() ?: return null
     // A job only for severe use isn't a reminder on normal use: it is on the list, switched off.
     if (severeOnly && !useSevere) return null
     val rule = this.rule ?: defaultRule
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
     val zeroAt = -(swap?.offset ?: 0)
-    return TrackedItem(id, name, Interval(miles, months), rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
+    return TrackedItem(id, name, interval, rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
 }
+
+/** The interval the item counts by: its E85 one while that is on, else its severe one while that is on, else its own ([ActiveInterval]). */
+fun ScheduleItemEntity.activeInterval(): Interval? = ActiveInterval.of(
+    normal = savedInterval(intervalMiles, intervalMonths),
+    severe = savedInterval(severeMiles, severeMonths),
+    useSevere = useSevere,
+    e85 = savedInterval(e85Miles, e85Months),
+    useE85 = useE85,
+)
 
 /** Null unless the vehicle has had its instrument cluster replaced. */
 fun VehicleEntity.clusterSwap(): ClusterSwap? {

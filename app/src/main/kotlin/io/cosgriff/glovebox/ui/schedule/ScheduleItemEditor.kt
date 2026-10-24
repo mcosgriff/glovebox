@@ -92,6 +92,9 @@ fun ScheduleItemEditor(
     var normal by remember(item.key) { mutableStateOf(item.normal) }
     var severe by remember(item.key) { mutableStateOf(item.severe) }
     var useSevere by remember(item.key) { mutableStateOf(item.useSevere && item.severe != null) }
+    // A flex-fuel maker's E85 interval, edited in the same boxes while it is on, as the severe one is.
+    var e85 by remember(item.key) { mutableStateOf(item.e85) }
+    var useE85 by remember(item.key) { mutableStateOf(item.showsE85) }
     var rule by remember(item.key) { mutableStateOf(item.rule) }
     var service by remember(item.key) { mutableStateOf(item.service) }
     // A new item starts blank: the interval is the user's to say, not ours to guess.
@@ -113,8 +116,15 @@ fun ScheduleItemEditor(
     /** Keeps what's in the boxes for the interval being edited, when it's usable. */
     fun commitTyped() {
         val t = typed ?: return
-        if (useSevere) severe = t else normal = t
+        when {
+            useE85 -> e85 = t
+            useSevere -> severe = t
+            else -> normal = t
+        }
     }
+
+    /** What the boxes show: the interval in force for these switches. */
+    fun shown(): Interval = if (useE85) e85 ?: normal else if (useSevere) severe ?: normal else normal
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -133,8 +143,10 @@ fun ScheduleItemEditor(
                         onSave(
                             item.copy(
                                 name = name.trim(),
-                                normal = if (useSevere) normal else interval,
-                                severe = if (useSevere) interval else severe,
+                                normal = if (useE85 || useSevere) normal else interval,
+                                severe = if (!useE85 && useSevere) interval else severe,
+                                e85 = if (useE85) interval else e85,
+                                useE85 = useE85,
                                 // A job only for severe use has no second interval to switch to here; whether it is on follows the schedule.
                                 useSevere = if (item.severeOnly) item.useSevere else useSevere,
                                 rule = rule,
@@ -206,7 +218,27 @@ fun ScheduleItemEditor(
                             onCheckedChange = { on ->
                                 commitTyped()
                                 useSevere = on
-                                load(if (on) severe ?: normal else normal)
+                                load(shown())
+                            },
+                        )
+                    }
+                }
+                if (e85 != null) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.item_e85_interval), style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                stringResource(R.string.item_e85_for),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = useE85,
+                            onCheckedChange = { on ->
+                                commitTyped()
+                                useE85 = on
+                                load(shown())
                             },
                         )
                     }
@@ -251,7 +283,7 @@ fun ScheduleItemEditor(
                             normal = template.normal
                             severe = template.severe
                             if (template.severe == null) useSevere = false
-                            load(if (useSevere) template.severe ?: template.normal else template.normal)
+                            load(shown())
                         },
                         modifier = Modifier.heightIn(min = 48.dp),
                     ) { Text(stringResource(R.string.item_reset)) }
