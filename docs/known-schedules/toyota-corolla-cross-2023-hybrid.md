@@ -20,16 +20,22 @@ Read on 2026-10-23. (Toyota's owners site lists no guide for the hybrid; this ad
   only as "Corolla Cross" for 2023, checked 2026-10-23 with `GetModelsForMakeYear`); no drivetrain marks
   on any line; the hybrid battery's cooling filter cleaned every 20,000 / 24 as a reminder; and the
   100,000 "engine/inverter coolant" taken as the engine coolant, by the guide's footnote, with the
-  inverter coolant (first at 150,000, past the end of the log) given no reminder.
+  inverter coolant (first at 150,000, past the end of the log) an `additional` item, never on the table
+  (the owner's ruling of 2026-10-23, #33).
 - Left out, because they aren't jobs for every owner or aren't jobs at a milestone: adding Toyota's EFI
   tank additive (printed at every milestone for Hawaii only), the note that the oil is to be replaced at
   5,000 miles if 0W-16 wasn't used at the last change, and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use), tire rotation 5,000 / 6, cabin and
   engine air filters 30,000 / 36, the hybrid battery's cooling filter 20,000 / 24, spark plugs
-  120,000 / 144, and engine coolant first at 100,000 miles and then every 50,000 / 60 (the guide's "or
-  120 months" for the first change isn't used).
+  120,000 / 144, engine coolant first at 100,000 miles and then every 50,000 / 60 (the guide's "or
+  120 months" for the first change isn't used), the rear differential oil inspection every 30,000 / 36
+  (`rear-diff-check`), and (`additional`) inverter coolant first at 150,000 miles and then every
+  50,000 / 60 (nor is its "180 months").
 - Only for severe use (#136): automatic transmission fluid and rear differential oil every 60,000 / 72
   when towing or carrying heavy loads.
-- The inspections and the drive shaft nut re-torque are in the table only. Brake fluid has no
+- **The rear differential inspection is a reminder**, at the table's own 30,000 / 36. Under the owner's
+  ruling of 2026-10-23 (#33), any vehicle with a differential needs it inspected, so every list whose
+  guide prints the inspection makes it one; logging a change counts as its check.
+- The other inspections and the drive shaft nut re-torque are in the table only. Brake fluid has no
   replacement in the guide's log, so it has no reminder from this list.
 - Not covered: 2024 on are lists of their own. There is no 2022 hybrid.

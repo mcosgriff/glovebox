@@ -40,5 +40,6 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, as listed o
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Other years: 2016–2019 gasoline trucks have lists of their own, one per engine with `"powertrain":
   "gas"` (e.g. [toyota-tundra-2018-2019-5.7](toyota-tundra-2018-2019-5.7.md)), since flex-fuel (FFV) trucks
-  of those years had a guide of their own; no FFV list is shipped yet. Toyota's owners site lists no FFV
+  of those years had a guide of their own; those have lists of their own (e.g.
+  [toyota-tundra-2019-5.7-ffv](toyota-tundra-2019-5.7-ffv.md)). Toyota's owners site lists no FFV
   guide for 2020 or 2021, so this list has no engine block. 2022 on has lists of its own.

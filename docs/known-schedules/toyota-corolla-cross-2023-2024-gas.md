@@ -30,14 +30,19 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   5,000 miles if the recommended oil wasn't used at the last change, and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval on
   dusty roads), tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs
-  120,000 / 144, and engine coolant first at 100,000 miles and then every 50,000 / 60. The guide's "or
-  120 months" for the first coolant change isn't used: it counts from the day the vehicle went into
-  service, which Glovebox doesn't know.
+  120,000 / 144, engine coolant first at 100,000 miles and then every 50,000 / 60, and, for all-wheel
+  drive (in `allWheelDriveOnly`), the rear differential oil and transfer case oil inspections every
+  15,000 / 18 (`rear-diff-check`, `transfer-case-check`). The guide's "or 120 months" for the first
+  coolant change isn't used: it counts from the day the vehicle went into service, which Glovebox
+  doesn't know.
 - Only for severe use (#136): rear differential oil and transfer case oil (AWD) every 15,000 / 18 when
   towing or carrying heavy loads, and automatic transmission fluid every 60,000 / 72 when towing or
   idling for long periods.
-- The inspections, drive belts (first at 60,000, then every 15,000) and the brake booster's vacuum pump
-  (120,000) included, are in the table only. The propeller shaft bolt re-torque has no service line and
+- The two inspections above are reminders under the owner's ruling of 2026-10-23 (#33): any vehicle
+  with a differential needs it inspected, so every list whose guide prints the inspection makes it one,
+  at the table's own interval, and logging a change counts as its check. The other inspections, drive
+  belts (first at 60,000, then every 15,000) and the brake booster's vacuum pump (120,000) included, are
+  in the table only. The propeller shaft bolt re-torque has no service line and
   is in the table only, as on the 4Runner.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered: 2025 on, whose guides have a chart in place of the log

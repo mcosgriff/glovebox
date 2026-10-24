@@ -1061,7 +1061,11 @@
           "service": "oil"
         },
         {
-          "name": "Replace engine coolant / intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Rotate tires",
@@ -1608,10 +1612,15 @@
           "service": "engine-air"
         },
         {
-          "name": "Replace engine coolant / intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
         },
         {
-          "name": "Replace inverter coolant / intercooler coolant (if applicable)"
+          "name": "Replace intercooler coolant (if applicable)"
+        },
+        {
+          "name": "Replace inverter coolant",
+          "service": "inverter-coolant"
         },
         {
           "name": "Rotate tires",
@@ -1694,6 +1703,20 @@
       "name": "Replace engine air filter",
       "everyMiles": 30000,
       "service": "engine-air"
+    },
+    {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
     },
     {
       "name": "Replace spark plugs",

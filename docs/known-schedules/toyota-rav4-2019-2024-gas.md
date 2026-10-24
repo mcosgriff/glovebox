@@ -35,15 +35,19 @@ are their own lists ([2019–2020 hybrid](toyota-rav4-2019-2020-hybrid.md),
   for that part.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, under any of the guide's four
   conditions), tire rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, transfer case oil (AWD)
-  30,000 / 36 (15,000 / 18 for severe use: towing), spark plugs 120,000 / 144, and engine coolant first
-  at 100,000 miles and then every 50,000 / 60. The guide's "or 120 months" for the first coolant change
-  isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
+  30,000 / 36 (15,000 / 18 for severe use: towing), spark plugs 120,000 / 144, engine coolant first at 100,000
+  miles and then every 50,000 / 60, rear differential oil inspection (AWD) 15,000 / 18, and transfer case oil
+  inspection (AWD) first at 15,000 then every 30,000 / 36. The guide's "or 120 months" for the first coolant
+  change isn't used: it counts from the day the vehicle went into service, which Glovebox doesn't know.
 - Only for severe use: rear differential oil (AWD) every 15,000 / 18 when towing; automatic transmission
   fluid every 60,000 / 72 when towing or idling for long periods.
-- Inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper
-  blades, engine coolant, drive belts, rear differential and transfer case oil). Drive belts are first
-  inspected at 60,000, then every 15,000. The propeller shaft bolt re-torque has no line and stays in the
-  table.
+- **The rear differential and transfer case oil inspections (AWD) are reminders**, at the table's own
+  intervals, with the `rear-diff-check` and `transfer-case-check` lines; logging a change counts as its
+  check. By the owner's ruling of 2026-10-23 (#33) any vehicle with a differential needs it inspected, so
+  the 4Runner's rule applies wherever a guide prints the inspection.
+- The other inspections are in the table only, with a check line where Glovebox has one (fluid levels, wiper
+  blades, engine coolant, drive belts). Drive belts are first inspected at 60,000, then every 15,000. The
+  propeller shaft bolt re-torque has no line and stays in the table.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered: 2018 and earlier (the previous generation; `18RAV4` is at the same address but wasn't
   read), and 2025, which has a chart in place of the log and is [its own list](toyota-rav4-2025-gas.md).

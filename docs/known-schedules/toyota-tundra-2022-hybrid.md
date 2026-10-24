@@ -25,22 +25,28 @@ owners-site index lists only the gas guide; the hybrid guide was found at its ow
     (`hybrid-battery-filter`); the inspection is in the table only.
   - Engine and inverter coolant are one line, inspected every 15,000 and replaced at 100,000. The replacement
     is `Replace engine coolant` (`coolant`), first at 100,000 and then every 50,000 / 60, as the guide's
-    footnote gives for the engine coolant. **The inverter coolant has no reminder:** the same footnote puts its
-    first change at 150,000 miles / 180 months, then every 50,000 / 60, which is past the end of the log and
-    printed only in a footnote, so it is neither a table job nor one printed apart from the table, and
-    `additional` holds only the latter (the ruling of 2026-10-23, #33).
+    footnote gives for the engine coolant. The same footnote puts the inverter coolant's first change at
+    150,000 miles / 180 months, then every 50,000 / 60, which is past the end of the log, so it is an
+    `additional` item, "Replace inverter coolant" (`inverter-coolant`), every 50,000 / 60 and first at
+    150,000, never placed on the table (the owner's ruling of 2026-10-23, #33). The 180 months aren't used,
+    for the same reason as the coolant's 120 (below).
   - No brake booster vacuum pump inspection (the gas guide has one at 120,000).
 - Drivetrain is marked on the guide's own lines, so 2WD and 4WD share the list; the jobs it marks "(4WD)"
   (drive shaft boots, front differential oil and transfer case oil) say `(4WD)` and are left out for a truck
   known to be 2WD. The Tundra is a true 4WD truck; the guide has no "AWD" lines.
 - Inspections are in the table, with a `-check` service where Glovebox has one (fluid levels, wiper blades,
-  brakes, engine and inverter coolant, drive belts, differential and transfer case oils). None of them is a
-  reminder.
+  brakes, engine and inverter coolant, drive belts, differential and transfer case oils). Only the
+  differential and transfer case oils are reminders too (below).
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 under any of the four special conditions), tire rotation
   5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 40,000 / 48, the HV battery cooling filter
   clean 20,000 / 24, and engine coolant and intercooler coolant each first at 100,000 miles and then every
   50,000 / 60. The "or 120 months" for the first coolant change isn't used: it counts from the day the truck
   went into service, which Glovebox doesn't know.
+- Also a reminder, from `additional`: inverter coolant first at 150,000 miles and then every 50,000 / 60.
+- Inspections that are reminders too: front differential oil (4WD) and rear differential oil every
+  15,000 / 18, transfer case oil (4WD) every 30,000 / 36. Logging a change of one counts as its check. This
+  is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so the
+  4Runner's rule applies to every list whose guide prints the inspection.
 - Only for severe use (#136): front differential oil (4WD) every 15,000 / 18, rear differential oil every
   30,000 / 36 and automatic transmission fluid every 60,000 / 72 when towing or carrying heavy loads; transfer
   case oil (4WD) every 30,000 / 36 on dusty roads or when towing.

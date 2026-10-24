@@ -1235,7 +1235,11 @@
           "service": "rotation"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect brake linings, drums, pads and discs",
@@ -1869,14 +1873,19 @@
           "service": "engine-air"
         },
         {
-          "name": "Replace engine and intercooler coolant (if applicable)"
+          "name": "Replace engine coolant",
+          "service": "coolant"
+        },
+        {
+          "name": "Replace intercooler coolant (if applicable)"
         },
         {
           "name": "Inspect brake linings, drums, pads and discs",
           "service": "brake-inspect"
         },
         {
-          "name": "Replace inverter and intercooler coolant (if applicable)"
+          "name": "Replace inverter coolant",
+          "service": "inverter-coolant"
         },
         {
           "name": "Inspect hybrid battery cooling intake filter"
@@ -1980,9 +1989,38 @@
       "service": "engine-air"
     },
     {
+      "name": "Replace engine coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 100000,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
+    },
+    {
       "name": "Replace spark plugs",
       "everyMiles": 40000,
       "service": "spark-plugs"
+    },
+    {
+      "name": "Inspect front differential oil",
+      "everyMiles": 15000,
+      "service": "front-diff-check"
+    },
+    {
+      "name": "Inspect rear differential oil",
+      "everyMiles": 15000,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil",
+      "everyMiles": 30000,
+      "service": "transfer-case-check"
     },
     {
       "name": "Replace front differential oil · towing or heavy loads",

@@ -20,7 +20,11 @@ Source: Toyota's Warranty and Maintenance Guide for the 2016 RAV4 Hybrid,
     They look carried over from the gasoline guide (the 2017 and 2018 hybrid guides have neither), but they are
     what the guide prints, so they are kept;
   - says "steering gear box" where 2017 says "steering gear" (the same job, worded the same here).
-- Everything else is as the 2017 page says: `"powertrain": "hybrid"`, the same reminders and severe-use jobs,
-  and **no reminder for the inverter coolant** (the 2016 footnote also puts its first change at 150,000, past
-  the table; the 100,000 job is "Replace engine coolant").
+- Everything else is as the 2017 page says: `"powertrain": "hybrid"`, the same reminders and severe-use jobs
+  (the rear differential oil inspection 30,000 / 36 among them), and the inverter coolant as an `additional`
+  job, first at 150,000 then every 50,000 / 60 (the 2016 footnote also puts its first change past the table;
+  the 100,000 job is "Replace engine coolant").
+- The front differential oil inspection is a reminder too, at the table's own 30,000 / 36
+  (`front-diff-check`); logging a change counts as its check (the owner's ruling of 2026-10-23, #33: any
+  vehicle with a differential needs it inspected).
 - Not covered: 2017 and 2018 (their own lists).

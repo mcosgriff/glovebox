@@ -203,8 +203,10 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   model and works none out; a bundled schedule is a maker's published guide, named.** Only facts are taken, in
   Glovebox's words, for only the years whose guides were read and agree. **An interval has to be the table's
   own** (`KnownSchedules.parse` refuses one that isn't), except a job the guide prints only apart from its table
-  (`additional`, never placed on it). An inspection is a reminder only where the user asked. A
-  special-condition job has no `service`.
+  (`additional`, never placed on it). Of the inspections, only the differential and transfer
+  case oil checks are reminders, wherever a guide prints them (the user's ask). A special-condition job has no
+  `service`, and nor has an "(if applicable)" row, but a row joining a job every vehicle has to an "(if
+  applicable)" one is split (#33).
 - "(4WD)" and "(AWD)" jobs (`fourWheelDriveOnly`, `allWheelDriveOnly`) are left out only for a vehicle **known**
   to be two-wheel drive, `manualExcluded` jobs only for one known to be manual, and `manualOnly` jobs only for
   one known to shift itself. **4WD and AWD are different systems** (`DriveKind`): a guide's "(4WD)" on a model

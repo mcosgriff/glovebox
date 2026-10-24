@@ -1678,6 +1678,20 @@
       "service": "transfer-case"
     },
     {
+      "name": "Inspect rear differential oil (AWD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "firstAtMiles": 15000,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil (AWD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "firstAtMiles": 15000,
+      "service": "transfer-case-check"
+    },
+    {
       "name": "Replace automatic transmission fluid · towing or long idling",
       "everyMiles": 60000,
       "everyMonths": 72,

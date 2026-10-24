@@ -45,14 +45,13 @@ Read on 2026-10-23.
   and bolts (dusty roads or towing), as on the 4Runner.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
 - Not covered:
-  - **2016, 2017 and 2018** (guides found, not written). Each of those years has a second guide for
-    the flexible-fuel (FFV) Sequoia, with a different log: 2,500 miles apart, oil every 5,000, and
-    oil at the odd 2,500s for a truck run mostly on E85. Both versions have the 5.7 L engine, and
-    Glovebox can't yet tell an FFV truck from a gasoline one, so a list for those years would be
-    offered to an FFV truck with the wrong oil interval. They wait until it can. (The gasoline guides
-    also differ from 2019–2022, by a count of job lines: 2016 and 2017 have a propeller shaft
-    lubrication, and 2017 inspects the transmission cooler hoses. 2018's gasoline guide matched by that
-    count but was not compared page by page.)
+  - **2016, 2017 and 2018**: lists of their own, one for the gasoline Sequoia and one for the
+    flexible-fuel (FFV) one each year, since both have the 5.7 L engine:
+    [toyota-sequoia-2016-gas](toyota-sequoia-2016-gas.md), [toyota-sequoia-2017-gas](toyota-sequoia-2017-gas.md),
+    [toyota-sequoia-2018-gas](toyota-sequoia-2018-gas.md),
+    [toyota-sequoia-2016-ffv](toyota-sequoia-2016-ffv.md), [toyota-sequoia-2017-ffv](toyota-sequoia-2017-ffv.md) and
+    [toyota-sequoia-2018-ffv](toyota-sequoia-2018-ffv.md). (2016 and 2017 have a propeller shaft
+    lubrication, and 2017 inspects the transmission cooler hoses.)
   - 2019–2022 FFV: Toyota's owners site lists no FFV guide for these years; that is all that was
     checked.
   - 2023 on: a new generation, not looked at here.

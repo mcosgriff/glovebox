@@ -16,7 +16,8 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   and the spacing of one row's name.
 - **No months at the milestones.** The chart's columns carry only mileages, so the milestones have no
   months. A reminder keeps months only where the guide prints them for that job: the engine oil's
-  footnote gives 12 months (6 under severe use). The other reminders are by distance only.
+  footnote gives 12 months (6 under severe use), and the engine coolant's gives 60 months for every
+  change after the first (below). The other reminders are by distance only.
 - **Gas, not hybrid.** The Corolla Cross Hybrid has a 2.0L engine too and a guide of its own, and NHTSA
   gives both as "Corolla Cross" (`GetModelsForMakeYear` for Toyota, 2025 and 2026, checked 2026-10-23:
   no separate hybrid model). So this list has `engine.powertrain` `gas` and the hybrid lists have
@@ -28,17 +29,24 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
   - re-torque the propeller shaft bolts every 15,000, and at every other milestone on dusty or salted
     roads or when towing;
   - inspect the rear differential oil and the transfer case oil every 15,000, and replace both every
-    15,000 when towing (these were severe-use reminders on the 2022–2024 lists; here they are not);
+    15,000 when towing (reminders on the 2022–2024 lists, the inspections for all-wheel drive and the
+    changes for severe use; here they are not, by the owner's ruling of 2026-10-23, #33, that rows
+    marked "(if applicable)" have no service);
   - inspect the radiator, condenser and intercooler every 15,000;
-  - **replace the engine coolant and intercooler coolant** at 100,000 and 150,000 (its footnote: first at
-    100,000 miles / 120 months, then every 50,000 / 60). The chart prints this as one row marked "(if
-    applicable)", so it is kept whole and table-only, as the coordinator's rule for such rows says; the
-    **engine coolant has no reminder from this list**. The owner may decide later to split such rows.
+  - the intercooler's part of the coolant row (below).
+- **The coolant row is split.** The chart prints "replace the engine coolant and intercooler coolant" as
+  one row marked "(if applicable)", at 100,000 and 150,000 (its footnote: first at 100,000 miles /
+  120 months, then every 50,000 / 60). The mark belongs to the intercooler: every one of these vehicles
+  has engine coolant. So, under the owner's ruling of 2026-10-23 (#33), the row is two jobs in the table:
+  "Replace engine coolant" (`coolant`), a reminder first at 100,000 miles and then every 50,000 miles /
+  60 months, and "Replace intercooler coolant (if applicable)", in the table only. The first change's "120
+  months" counts from the day the vehicle went into service, which Glovebox doesn't know, so the first
+  change is by mileage only.
 - Left out, because they aren't jobs for every owner or aren't jobs at a milestone: adding Toyota's EFI
   tank additive (a row for Hawaii only) and the explanations of each item.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, which is the guide's interval on
   dusty roads or for repeated short trips below freezing), tire rotation 5,000, cabin and engine air
-  filters 30,000, and spark plugs 120,000.
+  filters 30,000, engine coolant first at 100,000 and then every 50,000 / 60, and spark plugs 120,000.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or idling for long
   periods.
 - The brake booster's vacuum pump is replaced at 120,000; Glovebox has no line for it and it is a

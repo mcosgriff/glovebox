@@ -19,7 +19,8 @@ guides from 2025). Read on 2026-10-23.
   150,000, so the table doesn't.
 - **No months on the milestones.** The columns are in miles only, so the milestones have no months. The
   reminders have months only where the guide prints them for that job: the oil footnote's 12 months (6 for
-  severe use). Rotation, the filters and the spark plugs have none.
+  severe use), and the coolant footnotes' 60 months for every change after the first. Rotation, the filters
+  and the spark plugs have none.
 - 2025 and 2026 have the same cells. 2026 renumbers the footnotes and adds a footnote to the refrigerant row
   (below); the script's only other difference was the spacing of a row's name.
 - **One engine**, the 2.0L plug-in hybrid, so no `engine` block and no `powertrain`.
@@ -34,16 +35,23 @@ guides from 2025). Read on 2026-10-23.
   that adopted the ZEV regulation (2025 prints no footnote). That is in a footnote, past the chart's end, and
   for some states only, so it has no reminder.
 - **Rows marked "(if applicable)"** are in the table with no `service`, so they never drive a reminder (the
-  owner's ruling of 2026-10-23, #33, and the coordinator's rule that a combined row stays whole): the
-  radiator, condenser and intercooler; the engine and intercooler coolant (replaced at 100,000 and 150,000);
-  and the inverter and intercooler coolant (replaced at 150,000). **So this list has no coolant reminder**,
-  though the Prime has an engine coolant and an inverter coolant: the mark is on the whole row, and the owner
-  will decide later whether such rows are split.
+  owner's ruling of 2026-10-23, #33): the radiator, condenser and intercooler.
+- **Coolant rows are split** (the owner's ruling of 2026-10-23, #33). The chart's engine and intercooler
+  coolant row (replaced at 100,000 and 150,000) and its inverter and intercooler coolant row (replaced at
+  150,000) are marked "(if applicable)", but the mark belongs to the intercooler: the Prime has an engine
+  coolant and an inverter coolant. So the first row is two table jobs, "Replace engine coolant" (`coolant`)
+  and "Replace intercooler coolant (if applicable)" (table only), and the second is "Replace inverter coolant"
+  (`inverter-coolant`) with the same intercooler row (one intercooler row per milestone). The engine coolant
+  is a reminder first at 100,000 then every 50,000 miles / 60 months, and the inverter coolant first at
+  150,000 then every 50,000 / 60, as the guide's footnotes give them. Their first changes' "120 months" and
+  "180 months" count from the day the car went into service, which Glovebox doesn't know, so the first
+  changes are by mileage only.
 - The brake linings row is I at every column; its footnote says visually every 5,000, and thickness and
   runout every 30,000. The table keeps the chart's one row.
 - Reminders: engine oil every 10,000 miles / 12 months (5,000 / 6 for severe use: dirt or dusty roads, or
   repeated short trips below freezing), tire rotation every 5,000, cabin and engine air filters every
-  30,000, spark plugs every 120,000.
+  30,000, spark plugs every 120,000, engine coolant first at 100,000 then every 50,000 / 60, inverter
+  coolant first at 150,000 then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 when towing or carrying heavy loads.
 - Special-condition rows are named with their condition. The oil row's condition is its footnote's; the
   chassis nuts and bolts are tightened at every column on dusty roads or when towing, so that is one line.

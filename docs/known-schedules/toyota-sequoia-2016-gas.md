@@ -40,15 +40,15 @@ Read on 2026-10-23.
 - Only for severe use: front differential oil (4WD) every 15,000 / 18, rear differential oil every
   30,000 / 36 and automatic transmission fluid every 60,000 / 72 when towing or carrying heavy loads;
   transfer case oil (4WD) every 30,000 / 36 on dusty roads or when towing.
-- Inspections are in the table only, with their service line where there is one (brakes, front and
-  rear differential oil, transfer case oil, drive belts). Drive belts are first inspected at 60,000
-  and then at every 15,000.
+- Inspections that are reminders too: front differential oil (4WD) and rear differential oil every
+  15,000 / 18, transfer case oil (4WD) every 30,000 / 36. Logging a change of one counts as its check.
+  This is the owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected,
+  so the 4Runner's rule applies to every list whose guide prints the inspection. The other inspections
+  are in the table only, with their service line where there is one (brakes, drive belts). Drive belts
+  are first inspected at 60,000 and then at every 15,000.
 - Re-torquing the propeller shaft bolt and tightening the chassis and body nuts and bolts have no
   service line and are in the table only.
 - Brake fluid has no replacement in the guide's log at all, so it has no reminder from this list.
-- Not covered: the 2016 flexible-fuel Sequoia. Its guide's log is 48 boxes 2,500 miles apart: the oil
-  is changed at every 5,000 as an ordinary job, and the boxes at the odd 2,500s also change it; the
-  guide's notes say that is for a truck run on E85 more than half of the time. That condition isn't
-  one of the guide's special operating conditions and can't be stated as a reminder the table holds
-  (the extra change is printed only at the odd 2,500s), so no flexible-fuel list was written. Years
+- Not covered: the 2016 flexible-fuel Sequoia. Its guide's log is 48 boxes 2,500 miles apart, with an oil
+  change in every box; it has a list of its own, [toyota-sequoia-2016-ffv](toyota-sequoia-2016-ffv.md). Years
   before 2016 are outside this issue and were not looked up.

@@ -14,6 +14,7 @@ Source: Toyota's Warranty and Maintenance Guide for the 2018 RAV4 Hybrid,
   5,000 / 6 (`hybrid-battery-filter`), only for severe use. Everything else is as in 2017, apart from a new
   footnote on checking sealed units for leaks, which isn't a job.
 - So the list has a year of its own, with everything the 2017 page says: `"powertrain": "hybrid"`, no drive
-  marks, the same reminders and severe-use jobs, and **no reminder for the inverter coolant** (its footnote puts
-  the first change at 150,000, past the table; the 100,000 job is "Replace engine coolant").
+  marks, the same reminders and severe-use jobs (the rear differential oil inspection 30,000 / 36 among them),
+  and the inverter coolant as an `additional` job, first at 150,000 then every 50,000 / 60 (its footnote puts
+  the first change past the table; the 100,000 job is "Replace engine coolant").
 - Not covered: 2016 and 2017 (their own lists); 2019 on (a new generation).

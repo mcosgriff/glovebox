@@ -1527,6 +1527,18 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect rear differential oil (AWD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "rear-diff-check"
+    },
+    {
+      "name": "Inspect transfer case oil (AWD)",
+      "everyMiles": 15000,
+      "everyMonths": 18,
+      "service": "transfer-case-check"
+    },
+    {
       "name": "Replace automatic transmission fluid · towing or long idling",
       "everyMiles": 60000,
       "everyMonths": 72,

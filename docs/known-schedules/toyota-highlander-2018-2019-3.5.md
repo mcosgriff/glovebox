@@ -38,12 +38,13 @@ Source: Toyota's Warranty and Maintenance Guide for each model year, which Toyot
 - Only for severe use: rear differential oil (AWD) and transfer case oil (AWD) every 15,000 / 18 when
   towing or carrying heavy loads; automatic transmission fluid every 60,000 / 72 when towing or under
   extensive idling. Under ordinary driving the guide only inspects the differential and transfer case.
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): rear differential oil (AWD) and transfer case
+  oil (AWD) every 15,000 / 18. Logging a change of one counts as its check.
 - Table only, with no reminder: the brake booster's vacuum pump at 120,000 (a one-off replacement with no
   service line of its own; `brake-booster` is a different part), the propeller shaft bolt re-torque
-  (AWD; no service line fits, as on the 4Runner), every inspection, and drive belts, which are inspected
-  first at 60,000 and then every 15,000. The rear differential and transfer case inspections carry their
-  service lines, so logging one is linked, but they aren't reminders: on this list nobody has asked for
-  that.
+  (AWD; no service line fits, as on the 4Runner), every other inspection, and drive belts, which are
+  inspected first at 60,000 and then every 15,000.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered here: 2016 and 2017 have lists of their own (their logs differ), and 2014–2015 guides were
   found but not read.

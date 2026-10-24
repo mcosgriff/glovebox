@@ -39,15 +39,16 @@ list of guides (which lists only the petrol Camry's); it was found by its file n
 - **The 100,000-mile coolant line is "Replace engine coolant" (`coolant`).** The guide's footnote says the
   engine coolant is first replaced at 100,000 miles and the inverter coolant first at 150,000 miles (180
   months), both then every 50,000 / 60. So at 100,000 only the engine coolant is due.
-- **The inverter coolant has no reminder.** Its interval is given only in that footnote, and its first time
-  (150,000) is past the table's end, so it can't be the table's own interval (rule 7). It isn't an
-  `additional` job either: those are jobs a guide prints apart from its table, and this one is a footnote
-  to a table line (the coordinator's rule for these lists). The owner should take the inverter coolant from
-  their own guide.
+- **The inverter coolant is an `additional` job.** Its interval is given only in that footnote, and its
+  first time (150,000) is past the table's end, so it can't be the table's own interval (rule 7) and is
+  never placed on the table. Under the owner's ruling of 2026-10-23 (#33) it is an `additional` item,
+  "Replace inverter coolant" (`inverter-coolant`), first at 150,000 miles and then every 50,000 / 60. The
+  footnote's "180 months" for the first change isn't used, for the same reason as the coolant's 120.
 - There is no hybrid battery cooling filter job in this log, so none is in the list.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 for severe use, the guide's interval under any of its
   four conditions), tire rotation 5,000 / 6, cabin air filter 10,000 / 12, engine air filter 30,000 / 36,
-  spark plugs 120,000 / 144, and engine coolant first at 100,000 miles and then every 50,000 / 60.
+  spark plugs 120,000 / 144, engine coolant first at 100,000 miles and then every 50,000 / 60, and
+  (`additional`) inverter coolant first at 150,000 miles and then every 50,000 / 60.
 - Only for severe use (#136): automatic transmission fluid every 60,000 / 72 when towing or carrying heavy
   loads.
 - NHTSA's model list for Toyota (`GetModelsForMakeYear`, 2017, checked 2026-10-23) has only `Camry`, with

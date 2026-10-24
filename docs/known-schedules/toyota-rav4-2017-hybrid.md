@@ -14,23 +14,29 @@ Source: Toyota's Warranty and Maintenance Guide for the 2017 RAV4 Hybrid,
   record is asked which it is.
 - The guide marks no job for one drive, so nothing here is left out for any drivetrain. The rear differential
   oil is inspected every 30,000 and replaced every 60,000 when towing, as printed.
-- **Inverter coolant has no reminder.** The 100,000-mile box says "replace engine/inverter coolant", but its
-  footnote puts the inverter coolant's first change at 150,000 miles (or 180 months) and every 50,000 / 60
-  after, past the end of the table, while the engine coolant is first at 100,000. The 100,000 job is
-  "Replace engine coolant" (`coolant`). A first time past the table can't be held to it (rule 7), and it isn't a
-  job printed apart from the table, so it isn't an `additional` item either (coordinator's rule, 2026-10-23).
-  Check the inverter coolant against your own guide.
+- **Inverter coolant is apart from the table.** The 100,000-mile box says "replace engine/inverter coolant",
+  but its footnote puts the inverter coolant's first change at 150,000 miles (or 180 months) and every 50,000 /
+  60 after, past the end of the table, while the engine coolant is first at 100,000. The 100,000 job is
+  "Replace engine coolant" (`coolant`). The inverter coolant is printed only in the footnote, so it is an
+  `additional` job ("Replace inverter coolant", `inverter-coolant`, first at 150,000 then every 50,000 / 60),
+  never placed on the table (the owner's ruling of 2026-10-23, #33). The "180 months" isn't used: it counts
+  from the in-service date, which Glovebox doesn't know.
 - Left out, because they aren't jobs at a milestone: the 0W-20 oil note, the cabin air filter note and the
   footnotes.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 under any of the guide's four special conditions), tire
   rotation 5,000 / 6, cabin and engine air filters 30,000 / 36, spark plugs 120,000 / 144, engine coolant first
   at 100,000 and then every 50,000 / 60 (the first change's "120 months" counts from the in-service date, which
-  Glovebox doesn't know).
+  Glovebox doesn't know), rear differential oil inspection 30,000 / 36 (`rear-diff-check`). Apart from the
+  table: inverter coolant first at 150,000 then every 50,000 / 60.
+- **The rear differential oil inspection is a reminder**, at the table's own 30,000 / 36; logging a change
+  counts as its check. By the owner's ruling of 2026-10-23 (#33) any vehicle with a differential needs it
+  inspected, so the 4Runner's rule applies wherever a guide prints the inspection.
 - Only for severe use (#136): rear differential oil and automatic transmission fluid every 60,000 / 72 when
   towing or carrying heavy loads.
 - In the table only: the re-torque of the drive shaft bolt (every 15,000, and every 5,000 on dusty roads; there
   is no catalog line for it), the drive belt inspection (first at 60,000, then every 15,000), the engine oil
-  cooler hose inspection and the other inspections. Inspections with a catalog line carry it; none is a reminder.
+  cooler hose inspection and the other inspections. Inspections with a catalog line carry it; apart from the
+  rear differential oil, none is a reminder.
 - The guide says "radiator, condenser and/or intercooler"; the job keeps all three.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
 - Not covered: 2016 and 2018, which differ (their own lists, [2016](toyota-rav4-2016-hybrid.md) and

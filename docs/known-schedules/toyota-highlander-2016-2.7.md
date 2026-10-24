@@ -35,6 +35,10 @@ Read on 2026-10-23.
 - Only for severe use: rear differential oil (AWD) and transfer case oil (AWD) every 15,000 / 18, and front
   differential oil and automatic transmission fluid every 60,000 / 72, all when towing or carrying heavy
   loads.
-- Table only: the propeller shaft bolt re-torque, every inspection (the differential and transfer case
-  ones carry service lines but aren't reminders) and drive belts (first at 60,000, then every 15,000).
+- Inspections that are reminders too (the owner's ruling of 2026-10-23, #33: any vehicle with a differential
+  needs it inspected, as asked for the 4Runner on 2026-10-13): front differential oil every 30,000 / 36,
+  rear differential oil (AWD) and transfer case oil (AWD) every 15,000 / 18. Logging a change of one counts
+  as its check.
+- Table only: the propeller shaft bolt re-torque, every other inspection and drive belts (first at 60,000,
+  then every 15,000).
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.

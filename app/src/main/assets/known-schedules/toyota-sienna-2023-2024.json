@@ -1427,6 +1427,12 @@
       "service": "spark-plugs"
     },
     {
+      "name": "Inspect rear differential oil (AWD)",
+      "everyMiles": 30000,
+      "everyMonths": 36,
+      "service": "rear-diff-check"
+    },
+    {
       "name": "Replace automatic transmission fluid · towing or heavy loads",
       "everyMiles": 60000,
       "everyMonths": 72,
@@ -1439,6 +1445,15 @@
       "everyMonths": 72,
       "severeOnly": true,
       "service": "rear-diff"
+    }
+  ],
+  "additional": [
+    {
+      "name": "Replace inverter coolant",
+      "everyMiles": 50000,
+      "everyMonths": 60,
+      "firstAtMiles": 150000,
+      "service": "inverter-coolant"
     }
   ]
 }

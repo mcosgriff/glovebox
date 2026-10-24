@@ -17,25 +17,35 @@ publishes at
   one; that footnote gives the same conditions in both years.
 - **The chart prints no months for a column**, so the milestones have none. A reminder has months only where
   the guide prints them for that job: the oil (10,000 miles or 12 months, and 5,000 or 6 months on dusty roads
-  or short trips in freezing weather, from its footnote).
+  or short trips in freezing weather, from its footnote), and the engine coolant (60 months for every change
+  after the first, from its footnote; below).
 - **Gas and hybrid.** Toyota prints a separate guide for the hybrid (i-FORCE MAX), which is also 3.4L, so this
   list is marked `"powertrain": "gas"` and the [hybrid](toyota-tundra-2025-2026-hybrid.md) has its own. vPIC
   lists the model as "Tundra" for both.
 - **"(if applicable)" rows** are in the table with no `service` and no reminder (the owner's ruling of
   2026-10-23, #33). The chart drops the log's "(4WD)" and marks these rows "(if applicable)" instead, so they
   aren't marked for four-wheel drive and every truck gets them: drive shaft boots, front differential oil,
-  transfer case oil, "radiator, condenser and intercooler", and the one row "engine coolant / intercooler
-  coolant". **This leaves without a reminder:** the engine and intercooler coolant change (at 100,000 and
-  150,000 in the chart, and first at 100,000 then every 50,000 in its footnote), and, under special conditions,
-  front differential oil (every 15,000 when towing) and transfer case oil (every 30,000 on dusty roads or when
-  towing). Their inspections have no `-check` service either. The 2022–2024 logs, which mark these jobs
-  "(4WD)", are not used to fill this in.
+  transfer case oil, "radiator, condenser and intercooler", and the intercooler coolant. **This leaves
+  without a reminder:** the intercooler coolant change, and, under special conditions, front differential
+  oil (every 15,000 when towing) and transfer case oil (every 30,000 on dusty roads or when towing). Their
+  inspections have no `-check` service either. The 2022–2024 logs, which mark these jobs "(4WD)", are not
+  used to fill this in.
+- **The coolant row.** The chart prints one row, "engine coolant / intercooler coolant (if applicable)",
+  replaced at 100,000 and 150,000, first at 100,000 then every 50,000 in its footnote. It is split into two
+  table jobs (the owner's ruling of 2026-10-23, #33): "Replace engine coolant" (`coolant`) and "Replace
+  intercooler coolant (if applicable)", with no `service`. The "(if applicable)" mark belongs to the
+  intercooler: every Tundra has engine coolant. Engine coolant is a reminder first at 100,000 and then every
+  50,000 miles / 60 months, the months its footnote prints after the first change. The first change's
+  months count from the day the truck went into service, which Glovebox doesn't know, so the first change
+  is by mileage only.
 - Inspections are in the table, with a `-check` service where Glovebox has one and the row isn't "(if
-  applicable)" (fluid levels, wiper blades, brakes, drive belts, rear differential oil). None of them is a
-  reminder.
+  applicable)" (fluid levels, wiper blades, brakes, drive belts, rear differential oil). Only the rear
+  differential oil is a reminder too, every 15,000; logging a change counts as its check. This is the
+  owner's ruling of 2026-10-23 (#33): any vehicle with a differential needs it inspected, so the 4Runner's
+  rule applies to every list whose guide prints the inspection.
 - Reminders: engine oil 10,000 mi / 12 mo (5,000 / 6 under special operating conditions), tire rotation
-  5,000, cabin and engine air filters 30,000, and spark plugs 40,000 (at 40,000, 80,000 and 120,000 in the
-  chart).
+  5,000, cabin and engine air filters 30,000, spark plugs 40,000 (at 40,000, 80,000 and 120,000 in the
+  chart), and engine coolant first at 100,000 and then every 50,000 / 60.
 - Only for severe use (#136): rear differential oil every 30,000 and automatic transmission fluid every 60,000
   when towing or carrying heavy loads.
 - In the table only: the propeller shaft bolt re-torque (every 15,000, or every 5,000 on dusty or salted roads
