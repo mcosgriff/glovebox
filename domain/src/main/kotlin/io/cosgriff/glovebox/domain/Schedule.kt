@@ -100,3 +100,18 @@ object IntervalInput {
     private fun part(text: String): Part? =
         if (text.none { it != ',' && !it.isWhitespace() }) Part(null) else WholeNumber.parse(text, min = 1)?.let(::Part)
 }
+
+/**
+ * The interval a schedule item counts by. Its E85 interval while the owner has said the vehicle runs mostly
+ * on E85 and the item has one (a flex-fuel guide's oil change, #33); otherwise its severe interval while
+ * severe use is on, part by part, falling back to the normal one; otherwise the normal one. Null when the
+ * item has no usable interval. **Every place a reminder is counted from goes through this.**
+ */
+object ActiveInterval {
+    fun of(normal: Interval?, severe: Interval?, useSevere: Boolean, e85: Interval? = null, useE85: Boolean = false): Interval? {
+        if (useE85 && e85 != null) return e85
+        val miles = if (useSevere) severe?.miles ?: normal?.miles else normal?.miles
+        val months = if (useSevere) severe?.months ?: normal?.months else normal?.months
+        return if (miles == null && months == null) null else Interval(miles, months)
+    }
+}

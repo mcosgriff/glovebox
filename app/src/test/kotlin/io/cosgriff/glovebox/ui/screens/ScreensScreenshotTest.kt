@@ -281,7 +281,17 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.schedule, hasMilestoneTable = false,
             onBack = {}, onSetUp = {}, onEnterLastDone = {}, onOpenMilestones = {},
             onSetTracked = { _, _ -> }, onEdit = {}, onAddOwn = {}, onAddKnown = {}, onAddMissing = {},
-            onChooseSevereUse = {}, onSetAllTracked = {}, onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {},
+            onChooseSevereUse = {}, onChooseE85Use = {}, onSetAllTracked = {}, onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {},
+        )
+    }
+
+    @Test
+    fun scheduleE85() = compose.shoot("schedule_e85", shade) {
+        ScheduleContent(
+            Fixtures.flexSchedule, hasMilestoneTable = false,
+            onBack = {}, onSetUp = {}, onEnterLastDone = {}, onOpenMilestones = {},
+            onSetTracked = { _, _ -> }, onEdit = {}, onAddOwn = {}, onAddKnown = {}, onAddMissing = {},
+            onChooseSevereUse = {}, onChooseE85Use = {}, onSetAllTracked = {}, onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {},
         )
     }
 

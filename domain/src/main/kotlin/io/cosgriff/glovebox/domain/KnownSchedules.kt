@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.domain
 
+import kotlinx.serialization.json.JsonElement
+
 
 /**
  * A manufacturer's maintenance schedule that ships with the app for one model: the table as the
@@ -57,6 +59,13 @@ data class KnownScheduleList(
      * on the table**, so nothing holds them to it. None of them is also a job of the table or of [intervals].
      */
     val additional: List<ImportedScheduleItem> = emptyList(),
+    /**
+     * A flex-fuel guide's shorter intervals for a vehicle run mostly on E85, by the [MilestoneImport.nameKey] of
+     * the job among [intervals] they are for. The table is the guide's log, drawn for E85 use, so each of these is
+     * held to it as an interval is; the job's ordinary interval only has to fall on it. Only a list whose
+     * [engine] is flex-fuel has any (the owner's ruling of 2026-10-23, #33).
+     */
+    val e85: Map<String, Interval> = emptyMap(),
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -96,7 +105,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -106,7 +115,13 @@ object KnownSchedules {
         val milestones = o["milestones"]?.let { MilestoneImport.read(it, check) }.orEmpty()
         val tableFailed = check.failed
         val intervals = o["intervals"]?.let { ScheduleImport.read(it, check) }.orEmpty()
-        if (!tableFailed && !check.failed) contradictions(milestones, intervals).forEach { check.fail("intervals", it) }
+        val intervalsFailed = check.failed
+        val e85 = o["e85"]?.let { e85(it, milestones, intervals, held = !intervalsFailed, check) }.orEmpty()
+        if (!intervalsFailed) {
+            // A job with an E85 interval has a table drawn for E85 use; its ordinary interval only has to fall on it.
+            val (fuelled, plain) = intervals.partition { MilestoneImport.nameKey(it.name) in e85 }
+            (contradictions(milestones, plain) + fuelled.mapNotNull { onTable(milestones, it) }).forEach { check.fail("intervals", it) }
+        }
         val additional = o["additional"]?.let { ScheduleImport.read(it, check) }.orEmpty()
         val tableJobs = milestones.flatMap { m -> m.work.map { MilestoneImport.jobKey(it) } }.toSet() +
             intervals.map { MilestoneImport.jobKey(TableJob(it.name, it.service)) }
@@ -126,6 +141,7 @@ object KnownSchedules {
         val manual = jobs("manualOnly")
         (notManual intersect manual).forEach { check.fail("manualOnly", "\"$it\" is also in manualExcluded") }
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
+        if ("e85" in o && engine?.powertrain != Powertrain.FLEX_FUEL) check.fail("e85", "is only for a list whose engine is flex-fuel")
         val aliases = o["modelAliases"]?.let { e ->
             check.array(e, "modelAliases", 1, 5)?.mapIndexedNotNull { i, n -> check.string(n, ImportCheck.at("modelAliases", i), 40) }
         }.orEmpty()
@@ -141,8 +157,60 @@ object KnownSchedules {
                 engine = engine,
                 modelAliases = aliases,
                 additional = additional,
+                e85 = e85,
             ),
         )
+    }
+
+    private val e85Keys = ScheduleImport.intervalKeys + "name"
+
+    /**
+     * The `e85` field: `{ "name", "everyMiles" (or "everyKm"), "everyMonths" }` for jobs among [intervals]. Each
+     * names one of them once, never a job that is only for severe use, and, where [held], is the table's own by
+     * the same check an interval gets ([contradictions]).
+     */
+    private fun e85(e: JsonElement, table: List<ImportedMilestone>, intervals: List<ImportedScheduleItem>, held: Boolean, check: ImportCheck): Map<String, Interval> {
+        val list = check.array(e, "e85", 1, ScheduleImport.MAX_ITEMS) ?: return emptyMap()
+        val jobs = intervals.associateBy { MilestoneImport.nameKey(it.name) }
+        val out = linkedMapOf<String, Interval>()
+        list.forEachIndexed { i, x ->
+            val path = ImportCheck.at("e85", i)
+            val o = check.obj(x, path, e85Keys, required = setOf("name")) ?: return@forEachIndexed
+            val name = o["name"]?.let { check.string(it, "$path.name", MilestoneImport.MAX_NAME) }
+            val interval = ScheduleImport.interval(o, path, check)
+            if (name == null || interval == null) return@forEachIndexed
+            val key = MilestoneImport.nameKey(name)
+            val job = jobs[key]
+            when {
+                job == null -> check.fail("$path.name", "\"$name\" isn't one of the list's intervals")
+                key in out -> check.fail("$path.name", "\"$name\" is already in e85")
+                job.severeOnly -> check.fail("$path.name", "\"$name\" is only for severe use; it has no E85 interval")
+                else -> {
+                    out[key] = interval
+                    if (held) contradictions(table, listOf(job.copy(normal = interval, severe = null))).forEach { check.fail(path, it) }
+                }
+            }
+        }
+        return out
+    }
+
+    /**
+     * For a job with an E85 interval, whose table is the guide's log for E85 use: its ordinary interval has to
+     * fall on that table, the job at every multiple of it (after its first time, if it has one) up to the table's
+     * end, with the table's months there. Null when it does.
+     */
+    private fun onTable(table: List<ImportedMilestone>, item: ImportedScheduleItem): String? {
+        val end = table.maxOfOrNull { it.atMiles } ?: return "there is no table for the intervals to come from"
+        val key = MilestoneImport.jobKey(TableJob(item.name, item.service))
+        val at = table.filter { m -> m.work.any { MilestoneImport.jobKey(it) == key } }.associateBy { it.atMiles }
+        val every = item.normal.miles ?: return if (item.rule == DueRule.TIME_ONLY) null else "\"${item.name}\" has no distance and isn't marked time-only"
+        val due = ((item.firstAt ?: every)..end step every).toList()
+        return when {
+            due.any { it !in at } -> "\"${item.name}\" isn't in the table at every $every"
+            item.firstAt == null && due.any { d -> at.getValue(d).orMonths.let { it != null && item.normal.months != null && it != item.normal.months * (d / every) } } ->
+                "\"${item.name}\" has months that aren't the table's"
+            else -> null
+        }
     }
 
     /**
@@ -217,7 +285,8 @@ object KnownSchedules {
 
     /**
      * [list]'s table and intervals for one vehicle: in [unit], which changes nothing when it is the
-     * list's own, and without the jobs that aren't for its [drivetrain].
+     * list's own, and without the jobs that aren't for its [drivetrain]. Each interval carries its
+     * [KnownScheduleList.e85] interval, if it has one.
      */
     fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedMilestone> =
         FileDistances.milestones(list.milestones, null, list.unit, unit).first
@@ -225,7 +294,7 @@ object KnownSchedules {
             .filter { it.work.isNotEmpty() }
 
     fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedScheduleItem> =
-        FileDistances.schedule(list.intervals + list.additional, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
+        FileDistances.schedule((list.intervals + list.additional).map { it.copy(e85 = list.e85[MilestoneImport.nameKey(it.name)]) }, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
 
     /**
      * What adding [intervals] (already in the vehicle's unit) would do. Each becomes an item of the

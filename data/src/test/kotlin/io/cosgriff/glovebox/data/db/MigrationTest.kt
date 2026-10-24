@@ -175,6 +175,10 @@ class MigrationTest {
             assertEquals(null, vehicle.clusterSwappedOn)
             val item = db.schedule().allFor(1).single()
             assertEquals(false, item.severeOnly)
+            // Nobody said it runs on E85, and no item had an E85 interval.
+            assertEquals(false, item.useE85)
+            assertEquals(null, item.e85Miles)
+            assertEquals(null, item.e85Months)
             assertEquals(null, item.firstMiles)
             assertEquals(null, item.knownList)
             assertEquals(null, item.service)

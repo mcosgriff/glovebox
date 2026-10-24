@@ -100,6 +100,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import io.cosgriff.glovebox.ui.service.answering
+import io.cosgriff.glovebox.ui.service.activeInterval
 import javax.inject.Inject
 
 /** A real, logged service with both intervals, used as the worked example. */
@@ -149,8 +150,9 @@ class ReminderRulesViewModel @Inject constructor(
 
         // The oil change if it qualifies, otherwise the first reminder that does.
         val preview = mine.sortedBy { it.templateKey != Snoozing.OIL_TEMPLATE_KEY }.firstNotNullOfOrNull { item ->
-            val miles = (if (item.useSevere) item.severeMiles ?: item.intervalMiles else item.intervalMiles) ?: return@firstNotNullOfOrNull null
-            val months = (if (item.useSevere) item.severeMonths ?: item.intervalMonths else item.intervalMonths) ?: return@firstNotNullOfOrNull null
+            val counted = item.activeInterval()
+            val miles = counted?.miles ?: return@firstNotNullOfOrNull null
+            val months = counted.months ?: return@firstNotNullOfOrNull null
             val swap = active.firstOrNull { it.id == item.vehicleId }?.clusterSwap()
             val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry(swap, mine.filter { m -> m.vehicleId == item.vehicleId }.answering()) }
             val last = ServiceLog.lastDone(item.id, entries) ?: return@firstNotNullOfOrNull null

@@ -375,6 +375,48 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a flex-fuel list's E85 intervals are held to its table, and only a flex-fuel list has them`() {
+        val flex = """"engine": { "label": "2.0L flex-fuel", "displacementL": 2.0, "powertrain": "flex-fuel" },"""
+        // The table is drawn for E85 use: the oil in every box. On other fuel the guide says every 8,000 / 8.
+        val intervals = """[
+            { "name": "Change the oil", "everyMiles": 8000, "everyMonths": 8, "service": "oil" },
+            { "name": "Swap the tires round", "everyMiles": 8000, "everyMonths": 8, "service": "rotation" },
+            { "name": "Grease the hinges · towing", "everyMiles": 12000, "severeOnly": true }
+        ]"""
+        val table = someTable.replace("""{ "name": "Grease the hinges" }""", """{ "name": "Grease the hinges · towing" }""")
+        fun with(e85: String, engine: String = flex, items: String = intervals) = file(table = table, intervals = items, extra = """$engine "e85": $e85,""")
+        val oil = """[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 4 } ]"""
+
+        val list = (KnownSchedules.parse(with(oil)) as KnownScheduleFile.Ok).list
+        assertEquals(mapOf("change the oil" to Interval(4_000, 4)), list.e85)
+        val reminders = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null).associateBy { it.name }
+        assertEquals(Interval(8_000, 8), reminders.getValue("Change the oil").normal)
+        assertEquals(Interval(4_000, 4), reminders.getValue("Change the oil").e85)
+        assertNull(reminders.getValue("Swap the tires round").e85)
+        // A schedule figure, like the others.
+        assertEquals(Interval(6_400, 4), KnownSchedules.intervalsIn(list, DistanceUnit.KILOMETERS, null).first().e85)
+
+        // Without the E85 interval, the oil every 8,000 isn't the table's.
+        assertTrue(errors(file(table = table, intervals = intervals, extra = flex)).single().contains("isn't every 8000"))
+        // Only a flex-fuel list.
+        assertTrue(errors(with(oil, engine = "")).single().contains("only for a list whose engine is flex-fuel"))
+        assertTrue(errors(with(oil, engine = flex.replace("flex-fuel\" }", "gas\" }"))).single().contains("only for a list whose engine is flex-fuel"))
+        // A job among the intervals, once, never one only for severe use.
+        assertTrue(errors(with("""[ { "name": "Look at the belts", "everyMiles": 4000 } ]""")).any { "isn't one of the list's intervals" in it })
+        assertTrue(errors(with("""[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 4 }, { "name": "change the OIL", "everyMiles": 4000, "everyMonths": 4 } ]""")).single().contains("already in e85"))
+        assertTrue(errors(with("""[ { "name": "Grease the hinges · towing", "everyMiles": 12000 } ]""")).any { "only for severe use" in it })
+        // Held to the table as any interval is.
+        assertTrue(errors(with("""[ { "name": "Change the oil", "everyMiles": 8000, "everyMonths": 8 } ]""")).single().contains("isn't every 8000"))
+        assertTrue(errors(with("""[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 6 } ]""")).single().contains("months that aren't the table's"))
+        assertTrue(errors(with("""[ { "name": "Change the oil", "everyMiles": 4000, "everyMonths": 4, "rule": "time-only" } ]""")).single().contains("rule"))
+        // The ordinary interval still has to fall on the table, with its months.
+        val odd = intervals.replace(""""everyMiles": 8000, "everyMonths": 8, "service": "oil"""", """"everyMiles": 6000, "everyMonths": 6, "service": "oil"""")
+        assertTrue(errors(with(oil, items = odd)).single().contains("isn't in the table at every 6000"))
+        val months = intervals.replace(""""everyMiles": 8000, "everyMonths": 8, "service": "oil"""", """"everyMiles": 8000, "everyMonths": 6, "service": "oil"""")
+        assertTrue(errors(with(oil, items = months)).single().contains("months that aren't the table's"))
+    }
+
+    @Test
     fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
         bundled.forEach { list ->
             val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
