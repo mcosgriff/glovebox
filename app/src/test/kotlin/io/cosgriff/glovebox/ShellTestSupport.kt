@@ -6,6 +6,9 @@ import android.content.Context
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -335,4 +338,36 @@ private class OfflineEngine : HttpClientEngineBase("offline") {
 
     @InternalAPI
     override suspend fun execute(data: HttpRequestData): HttpResponseData = throw IOException("Offline in tests: ${data.url.host}")
+}
+
+/** Taps the node showing [text] once it is on screen, scrolling to it where it sits in a scrolling page. */
+fun ComposeTestRule.tap(text: String, substring: Boolean = false) {
+    waitForText(text, substring)
+    val node = onAllNodes(androidx.compose.ui.test.hasText(text, substring = substring)).onLast()
+    scrollIntoView(node)
+    node.performClick()
+    waitForIdle()
+}
+
+/** Taps the node described as [description] once it is on screen. */
+fun ComposeTestRule.tapDescription(description: String) {
+    waitForDescription(description)
+    val node = onAllNodes(androidx.compose.ui.test.hasContentDescription(description)).onLast()
+    scrollIntoView(node)
+    node.performClick()
+    waitForIdle()
+}
+
+/** The screen's own back arrow. */
+fun ComposeTestRule.back() = tapDescription(string(R.string.back))
+
+/** Waits until nothing on screen shows [text]. */
+fun ComposeTestRule.waitForNoText(text: String, timeoutMs: Long = 10_000) =
+    waitUntil(timeoutMs) { onAllNodes(androidx.compose.ui.test.hasText(text)).fetchSemanticsNodes().isEmpty() }
+
+private fun scrollIntoView(node: androidx.compose.ui.test.SemanticsNodeInteraction) {
+    // Only nodes inside a scrolling page can be scrolled to; the rest are already in view.
+    val inScroller = generateSequence(node.fetchSemanticsNode().parent) { it.parent }
+        .any { it.config.contains(androidx.compose.ui.semantics.SemanticsActions.ScrollBy) }
+    if (inScroller) node.performScrollTo()
 }
