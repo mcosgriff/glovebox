@@ -462,6 +462,9 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
   `pluralStringResource`; other code uses `LocalResources` or `AppText.res` (never
   `LocalContext.current.getString` in a composable). Figures go in already carrying their unit, counts through a
   plural. Names are `<screen>_<what>`. `HardcodedTextTest` fails on text typed into the UI.
+- **A rule that is a fixed pattern in the source goes in `SourceRulesTest`** (`FontFamily.Monospace`,
+  `String.format` and display `Locale.US` in `:app`, `entry<Route>`, `openHelper`, `LocalContext.current.getString`),
+  so the build catches it; judgement calls stay with review.
 - **`:domain` returns no English:** a typed result that `app` words (`…Text.kt` files). Things named by id
   (catalog lines, typical items) are named in `app`. A writer for a whole document stays in `:domain` and is
   handed its words (`ExportWords`). Text from outside is passed through as it comes. **A change to the English
