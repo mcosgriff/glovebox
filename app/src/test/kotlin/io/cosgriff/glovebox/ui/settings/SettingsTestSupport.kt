@@ -155,3 +155,20 @@ fun androidx.compose.ui.test.junit4.ComposeContentTestRule.waitFor(timeoutMs: Lo
 /** Waits, in real time, until something on screen reads [text]. */
 fun androidx.compose.ui.test.junit4.ComposeContentTestRule.waitForText(text: String, substring: Boolean = false, timeoutMs: Long = 10_000) =
     waitFor(timeoutMs) { onAllNodes(androidx.compose.ui.test.hasText(text, substring = substring), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+
+/**
+ * [io.cosgriff.glovebox.ui.screens.ScreenshotApp] with a `FragmentActivity` to draw in, for the screens that ask for
+ * the phone's lock and so need one. The debug manifest has none that isn't Hilt's, so it is registered here.
+ */
+class FragmentHostApp : android.app.Application() {
+    override fun onCreate() {
+        super.onCreate()
+        io.cosgriff.glovebox.ui.AppText.install(this)
+        org.robolectric.Shadows.shadowOf(packageManager).addOrUpdateActivity(
+            android.content.pm.ActivityInfo().apply {
+                name = androidx.fragment.app.FragmentActivity::class.java.name
+                packageName = this@FragmentHostApp.packageName
+            },
+        )
+    }
+}

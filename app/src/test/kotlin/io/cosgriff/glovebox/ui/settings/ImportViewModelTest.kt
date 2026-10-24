@@ -282,6 +282,25 @@ class ImportViewModelTest {
     }
 
     @Test
+    fun `replacing a schedule item changes only what the file describes`() = runTest {
+        val id = g.vehicle()
+        val snooze = LocalDate.of(2026, 12, 1)
+        g.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Rotate tires", intervalMiles = 6_000, intervalMonths = null, tracked = false, snoozedUntilDate = snooze)))
+        val vm = vm()
+        pick(example("interval-schedule.json"))
+        val view = vm.ready().view
+        assertEquals(listOf("Rotate tires"), view.differs.map { it.name })
+
+        val result = vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING)
+        assertEquals(1, result.replaced)
+        val item = g.db.schedule().allFor(id).single { it.name == "Rotate tires" }
+        assertEquals(5_000, item.intervalMiles)
+        assertEquals("rotation", item.service)
+        assertFalse("whether it is tracked is the user's", item.tracked)
+        assertEquals(snooze, item.snoozedUntilDate)
+    }
+
+    @Test
     fun `a schedule in kilometres says it was converted for a vehicle in miles`() = runTest {
         g.vehicle()
         val vm = vm()
