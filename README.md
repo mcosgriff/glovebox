@@ -151,7 +151,7 @@ Glovebox is written with an AI coding assistant, and this says how, so nobody ha
 - **I decide what it does and how it works.** What the app should do, what it must never do (send
   anything but a VIN to NHTSA, guess at a service the owner didn't log, ship a torque value without a
   named source), and the architecture that keeps those promises are my calls. They are written down,
-  with their reasons, in [`CLAUDE.md`](CLAUDE.md), including the ones I reversed after trying them.
+  with their reasons, in [`CLAUDE.md`](CLAUDE.md) and [`docs/rules/`](docs/rules/), including the ones I reversed after trying them.
 - **Claude writes most of the code.** It works from those decisions, one ticket at a time. Every commit
   it had a hand in says so (`Co-Authored-By: Claude`), so the history shows which work is which.
 - **Nothing reaches `main` without me.** Every change is a pull request that I review, try and merge
