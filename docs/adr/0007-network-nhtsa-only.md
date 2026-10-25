@@ -13,4 +13,4 @@ Written down after the decision, not at the time; recorded so they aren't propos
 
 - Every library is checked for network code before it is added. This is why ML Kit is out ([ADR-0008](0008-no-ml-kit.md)).
 - CI and `release.yml` scan the release APK with Exodus Privacy (#217). A tracker fails the build, and so does a permission not listed in `.github/privacy/permissions.txt`. A new permission means updating that list and the Privacy screen together.
-- Data NHTSA only publishes on other hosts (bulk files on `static.nhtsa.gov`, such as service bulletins) can't be fetched by the app (#459).
+- Data NHTSA only publishes on other hosts (bulk files on `static.nhtsa.gov`, such as service bulletins) can't be fetched by the app; see [the NHTSA research note](../research/nhtsa-apis.md) and #459.
