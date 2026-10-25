@@ -1,0 +1,442 @@
+{
+ "make": "Toyota",
+ "model": "Sequoia",
+ "modelAliases": [],
+ "years": [
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11034825",
+   "number": "26TC02",
+   "date": "2026-06-25",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 26TC02 REPROGRAMMING FOR PARKING ASSIST ECU CERTAIN 2023 - 2024 SEQUOIA",
+   "products": [
+    {
+     "model": "SEQUOIA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034825-0001.pdf"
+  },
+  {
+   "id": "11031162",
+   "number": "26TC02",
+   "date": "2026-03-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "SPECIAL SERVICE CAMPAIGN 26TC02 Certain 2023-2024 Model Year Sequoia HV Certain 2022 – 2023 Model Year Tundra & Tundra HV Trailer Back Up Guide Feature Inoperative Frequently Asked Questions",
+   "products": [
+    {
+     "model": "SEQUOIA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11031162-0001.pdf"
+  },
+  {
+   "id": "11031159",
+   "number": "26TC02",
+   "date": "2026-03-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "After calibrating a trailer and using the Trailer Backup Guide feature, subsequent use of this feature may result in a “Trailer not detected” message or a blank multimedia display that prevents the display of features such as the backup camera. The multimedia system returns to normal if the vehicle is turned off and on again with no trailer attached.",
+   "products": [
+    {
+     "model": "SEQUOIA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11031159-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11005093",
+   "number": "T-SB-0012-24 Rev1",
+   "date": "2024-06-12",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "A head unit software update is now available for 2022 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (version 1020 or earlier). This software update provides improved performance and capability for the following: •User Profile configuration and display. •Cloud Navigation and Intelligent Voice Assistant. •Mobile device connectivity. •On-screen display and system settings/configuration. •Security enhancements. A head unit software update is now available for 2022 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 1040). This software update includes the following improvements: •Cloud navigation. •Intelligent assistant voice recognition. •Showing and controlling explicit audio content. •User interface. •Bluetooth®. •Bug fixes. This software update removes the following feature: •Hybrid radio. A head unit software update is now available for 2023 model year Sequoia Hybrid, Tundra, and Tundra Hybrid, vehicles equipped with Toyota Multimedia (version 1040 or earlier). This software update provides improved performance and capability for the following: •User Profile. •Over-the-air (OTA) notifications. •Ability to search during a call. •Bug fixes settings/configuration. •Security enhancements. A head unit software update is now available for 2023 – 2024 Sequoia Hybrid, and 2022 – 2024 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 2050). This software update includes the following improvements: •User interface design. •Intelligent assistant. •Navigation lane guidance. •Phone book search. •Bug fixes. A head unit software update is now available for 2023 – 2024 Sequoia Hybrid, and 2022 – 2024 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 2170). This software update includes the following improvements: •User Profile. •User interface. •Cloud navigation. •Intelligent assistant voice recognition. •Bug fixes.",
+   "products": [
+    {
+     "model": "SEQUOIA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005093-0001.pdf"
+  },
+  {
+   "id": "10252246",
+   "number": "20TD01a",
+   "date": "2024-02-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: 20TD01 Expired on March 31, 2023 TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 20TD01 POTENTIALLY INCORRECT CARPET FLOOR MATS CERTAIN 2012-2019 Sequoia",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10252246-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2018,
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2018,
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10227915",
+   "number": "Z3G_Technical_In",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227915-9999.pdf"
+  },
+  {
+   "id": "10227914",
+   "number": "Z3G_Paint_Repair",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG ? Paint Repair Process",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227914-9999.pdf"
+  },
+  {
+   "id": "10211827",
+   "number": "ZKG_Technical_In",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: Technical Instructions Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211827-9999.pdf"
+  },
+  {
+   "id": "10211826",
+   "number": "ZKG_Paint_Repair",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG - Paint Repair Process Operation Flow Chart",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211826-9999.pdf"
+  },
+  {
+   "id": "10211800",
+   "number": "22TC01 Team Memb",
+   "date": "2022-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: Toyota Over-The- Air (OTA) Pilot Program Team Members SPECIAL SERVICE CAMPAIGN 22TC01",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211800-9999.pdf"
+  },
+  {
+   "id": "10210366",
+   "number": "22TC01 Team Memb",
+   "date": "2022-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: SPECIAL SERVICE CAMPAIGN 22TC01 Over-the-Air (OTA) pilot program. This pilot program would enable you to complete Special Service Campaign 22TC01 for DCM (Data Communication Module) Reprogramming for Safety Connect, which includes your vehicle. With your active telematics account, you are encouraged to complete this campaign using this Over-the-Air (OTA) update by following these steps: 1) To complete this update, each Team Member will use the Toyota/Lexus App installed on their phone. 2) Within a few days of this E-Mail, we will send a notification to your Toyota/Lexus app to schedule and install the update on your vehicle. 3) Click on either the notification on your lock screen or the tile in the app to review the update and then continue in the App to approve the update. 4) The night after you approve the update, the telematics module will perform the update, and you will receive a confirmation notification through the app.",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "ELECTRICAL SYSTEM",
+    "SEAT BELTS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210366-9999.pdf"
+  },
+  {
+   "id": "10204546",
+   "number": "ZKG Important Up",
+   "date": "2021-10-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204546-9999.pdf"
+  },
+  {
+   "id": "10204545",
+   "number": "ZKG Customer Sup",
+   "date": "2021-10-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "RL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204545-9999.pdf"
+  },
+  {
+   "id": "10159700",
+   "number": "K0A_Tundra Sequo",
+   "date": "2019-04-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: Update 4/5/2019: Note added on p. 5. TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0A ENGINE ECU SOFTWARE UPDATE CERTAIN: 2018 TUNDRA 2018 SEQUOIA (Reference the separate Technical Instructions for 2018 Camry and Sienna)",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE AND ENGINE COOLING",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10159700-9999.pdf"
+  },
+  {
+   "id": "10129990",
+   "number": "H0Y_Technical In",
+   "date": "2018-02-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: Technical Instructions for Special Service Campaign H0Y. Center Air Bag Sensor Assembly Software Update. Certain 2018 Sequoia and 2018 Tundra",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10129990-9999.pdf"
+  },
+  {
+   "id": "10129989",
+   "number": "H0Y_Dealer Packa",
+   "date": "2018-02-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Date 02/20/18 ? As of February 20, 2018, Special Service Campaign H0Y is no longer active. ? Because the remedy for J0H addresses both the H0Y condition and the J0H condition, all vehicles involved in Special Service Campaign H0Y (whether H0Y was completed or not) are now included in Safety (Noncompliance) Recall J0H. ? All vehicles involved in the H0Y Special Service Campaign are also involved in the Safety (Noncompliance) Recall J0H. ? All vehicles with H0Y incomplete as of February 20, 2018 have been marked expired in TIS. ? This document should only be used for claim processing information for vehicles that had the H0Y remedy performed on February 20, 2018 or earlier.",
+   "products": [
+    {
+     "model": "SEQUOIA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10129989-9999.pdf"
+  }
+ ]
+}

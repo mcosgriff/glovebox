@@ -679,6 +679,13 @@
     <string name="details_recalls_open">%1$s open</string>
     <string name="details_recalls_do_not_drive">%1$s open · do not drive</string>
     <string name="details_recalls_park_outside">%1$s open · park outside</string>
+    <string name="details_bulletins">Maker\'s bulletins</string>
+    <!-- %1$s is how many, %2$s the date the bundled list is from. -->
+    <plurals name="details_bulletins_count">
+        <item quantity="one">%1$s for this year · as of %2$s</item>
+        <item quantity="other">%1$s for this year · as of %2$s</item>
+    </plurals>
+    <string name="details_bulletins_none">None for this year · as of %1$s</string>
     <string name="details_units">Distance units</string>
     <string name="details_units_detail">%1$s · what the odometer counts in</string>
     <string name="details_readings_detail">Every odometer reading · fix or delete a wrong one</string>
@@ -1553,6 +1560,29 @@
     <string name="recalls_archive_urgent_do_not_drive">Its maker says not to drive the vehicle until it\'s repaired. Archive it only if it doesn\'t apply to this vehicle.</string>
     <string name="recalls_archive_urgent_park_outside">Its maker says to park the vehicle outside, away from buildings, until it\'s repaired. Archive it only if it doesn\'t apply to this vehicle.</string>
     <string name="recalls_archive_anyway">Archive anyway</string>
+    <!-- The maker's bulletins (#459): service campaigns, warranty extensions, over-the-air updates. -->
+    <string name="bulletins_title">Maker\'s bulletins</string>
+    <string name="bulletins_intro">Service campaigns, warranty extensions and over-the-air updates the maker sent its dealers for this year, make and model, as NHTSA lists them. Not every vehicle is included: ask a dealer whether yours is.</string>
+    <!-- %1$s is a date. -->
+    <string name="bulletins_as_of">NHTSA\'s list as of %1$s. It comes with the app and is updated with it, not checked online.</string>
+    <string name="bulletins_none">NHTSA lists none for this year.</string>
+    <string name="bulletins_not_covered">Glovebox has bulletins only for the models it has a maker\'s schedule for.</string>
+    <string name="bulletins_kind_campaign">Service campaign</string>
+    <string name="bulletins_kind_warranty">Warranty extension</string>
+    <string name="bulletins_kind_over_the_air">Over-the-air update</string>
+    <string name="bulletins_by_wording">NHTSA didn\'t say what kind this is; its summary does.</string>
+    <!-- %1$s is the date the maker sent it; %2$s the models it is for, e.g. "2016–2018 TACOMA, 2019 TACOMA HYBRID". -->
+    <string name="bulletins_sent_for">Sent %1$s · for %2$s</string>
+    <!-- When NHTSA gives no date. -->
+    <string name="bulletins_for">For %1$s</string>
+    <!-- %1$s is model years, %2$s NHTSA's name for the model: "2016–2018 TACOMA". -->
+    <string name="bulletins_product">%1$s %2$s</string>
+    <!-- A run of model years, first to last. -->
+    <string name="bulletins_year_run">%1$s–%2$s</string>
+    <string name="bulletins_show_full">Show the full summary</string>
+    <string name="bulletins_show_less">Show less</string>
+    <!-- %1$s is the maker's number for the bulletin, so each button says which it opens. -->
+    <string name="bulletins_open_pdf">Open %1$s (PDF)</string>
     <!-- A label in bold, then NHTSA's text: "Remedy: Dealers will replace…". -->
     <string name="recalls_labelled">%1$s: %2$s</string>
     <string name="recalls_reported">Reported %1$s</string>
@@ -2092,6 +2122,7 @@
     </string-array>
     <string name="privacy_leaving">When you leave the app</string>
     <string-array name="privacy_leaving">
+        <item>A maker\'s bulletin opens from NHTSA\'s server in your browser. The bulletins themselves come with the app; nothing is looked up.</item>
         <item>A manufacturer\'s recall page, a maker\'s manual or guide, Find a dealer, the source code and any link you tap in a PDF open in your browser or maps app. What those do is up to them.</item>
         <item>Opening a document in another app, sharing a document or photo, or saving a file hands a copy to the app you choose.</item>
     </string-array>

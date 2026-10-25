@@ -1,0 +1,906 @@
+{
+ "make": "Toyota",
+ "model": "Tundra",
+ "modelAliases": [],
+ "years": [
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11034824",
+   "number": "26TC02",
+   "date": "2026-06-25",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 26TC02 REPROGRAMMING FOR PARKING ASSIST ECU CERTAIN 2022 - 2024 TUNDRA / TUNDRA HYBRID",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034824-0001.pdf"
+  },
+  {
+   "id": "11031162",
+   "number": "26TC02",
+   "date": "2026-03-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "SPECIAL SERVICE CAMPAIGN 26TC02 Certain 2023-2024 Model Year Sequoia HV Certain 2022 – 2023 Model Year Tundra & Tundra HV Trailer Back Up Guide Feature Inoperative Frequently Asked Questions",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11031162-0001.pdf"
+  },
+  {
+   "id": "11031159",
+   "number": "26TC02",
+   "date": "2026-03-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "After calibrating a trailer and using the Trailer Backup Guide feature, subsequent use of this feature may result in a “Trailer not detected” message or a blank multimedia display that prevents the display of features such as the backup camera. The multimedia system returns to normal if the vehicle is turned off and on again with no trailer attached.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11031159-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11010359",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The supply of Smart Keys available for Toyota vehicles has been temporarily limited to one (1) on select models since October 2022 due to global semiconductor shortages impacting certain microchips. Affected vehicles have been delivered with only one Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010359-0001.pdf"
+  },
+  {
+   "id": "11010358",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles were delivered with only one (1) Smart Key on select models since October 2022 due to a global semiconductor shortage impacting certain microchips. The affected vehicles were delivered with one (1) Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010358-0001.pdf"
+  },
+  {
+   "id": "11005093",
+   "number": "T-SB-0012-24 Rev1",
+   "date": "2024-06-12",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "A head unit software update is now available for 2022 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (version 1020 or earlier). This software update provides improved performance and capability for the following: •User Profile configuration and display. •Cloud Navigation and Intelligent Voice Assistant. •Mobile device connectivity. •On-screen display and system settings/configuration. •Security enhancements. A head unit software update is now available for 2022 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 1040). This software update includes the following improvements: •Cloud navigation. •Intelligent assistant voice recognition. •Showing and controlling explicit audio content. •User interface. •Bluetooth®. •Bug fixes. This software update removes the following feature: •Hybrid radio. A head unit software update is now available for 2023 model year Sequoia Hybrid, Tundra, and Tundra Hybrid, vehicles equipped with Toyota Multimedia (version 1040 or earlier). This software update provides improved performance and capability for the following: •User Profile. •Over-the-air (OTA) notifications. •Ability to search during a call. •Bug fixes settings/configuration. •Security enhancements. A head unit software update is now available for 2023 – 2024 Sequoia Hybrid, and 2022 – 2024 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 2050). This software update includes the following improvements: •User interface design. •Intelligent assistant. •Navigation lane guidance. •Phone book search. •Bug fixes. A head unit software update is now available for 2023 – 2024 Sequoia Hybrid, and 2022 – 2024 model year Tundra and Tundra Hybrid vehicles equipped with Toyota Multimedia (earlier than version 2170). This software update includes the following improvements: •User Profile. •User interface. •Cloud navigation. •Intelligent assistant voice recognition. •Bug fixes.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005093-0001.pdf"
+  },
+  {
+   "id": "11005181",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Second Key Delivery Program Frequently Asked Questions",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005181-0001.pdf"
+  },
+  {
+   "id": "11005180",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005180-0001.pdf"
+  },
+  {
+   "id": "11003628",
+   "number": "23TJ01 Eligibility",
+   "date": "2024-04-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11003628-0001.pdf"
+  },
+  {
+   "id": "11003611",
+   "number": "24TD01_TI_",
+   "date": "2024-04-03",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 24TD01 Premature Tire Wear CERTAIN 2022-2023 Tundra HV TRD Pro vehicles",
+   "products": [
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "SUSPENSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11003611-0001.pdf"
+  },
+  {
+   "id": "10253222",
+   "number": "24TD01_TI_publis",
+   "date": "2024-03-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 24TD01 Premature Tire Wear CERTAIN 2022-2023 Tundra HV TRD Pro vehicles",
+   "products": [
+    {
+     "model": "TUNDRA HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "TIRES",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10253222-9999.pdf"
+  },
+  {
+   "id": "10247816",
+   "number": "23TC06C",
+   "date": "2023-11-16",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 23TC06 Electronic Parking Brake (EPB) DTC C059704 Certain 2022 & 2023 Model Year Tundra",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "PARKING BRAKE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10247816-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10224137",
+   "number": "22TC08 Interoffi",
+   "date": "2022-07-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 22TC08 ENGINE ECU SOFTWARE UPDATE CERTAIN 2022 MODEL YEAR TUNDRA VEHICLES",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10224137-9999.pdf"
+  },
+  {
+   "id": "10211800",
+   "number": "22TC01 Team Memb",
+   "date": "2022-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: Toyota Over-The- Air (OTA) Pilot Program Team Members SPECIAL SERVICE CAMPAIGN 22TC01",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211800-9999.pdf"
+  },
+  {
+   "id": "10210366",
+   "number": "22TC01 Team Memb",
+   "date": "2022-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: SPECIAL SERVICE CAMPAIGN 22TC01 Over-the-Air (OTA) pilot program. This pilot program would enable you to complete Special Service Campaign 22TC01 for DCM (Data Communication Module) Reprogramming for Safety Connect, which includes your vehicle. With your active telematics account, you are encouraged to complete this campaign using this Over-the-Air (OTA) update by following these steps: 1) To complete this update, each Team Member will use the Toyota/Lexus App installed on their phone. 2) Within a few days of this E-Mail, we will send a notification to your Toyota/Lexus app to schedule and install the update on your vehicle. 3) Click on either the notification on your lock screen or the tile in the app to review the update and then continue in the App to approve the update. 4) The night after you approve the update, the telematics module will perform the update, and you will receive a confirmation notification through the app.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "ELECTRICAL SYSTEM",
+    "SEAT BELTS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210366-9999.pdf"
+  },
+  {
+   "id": "10181790",
+   "number": "K0B Tunda Tacoma",
+   "date": "2020-09-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181790-9999.pdf"
+  },
+  {
+   "id": "10181789",
+   "number": "K0B Tunda Tacoma",
+   "date": "2020-09-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "JA: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA ..VEHICLES WITH MODIFICATIONS....",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181789-9999.pdf"
+  },
+  {
+   "id": "10173980",
+   "number": "Non-Toyota-Appro",
+   "date": "2020-03-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SPECIAL SERVICE CAMPAIGN (K0B) Non-Toyota-Approved Modification - Owner Acknowledgment Form",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10173980-9999.pdf"
+  },
+  {
+   "id": "10173978",
+   "number": "K0B - FAQ - Publ",
+   "date": "2020-03-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SPECIAL SERVICE CAMPAIGN K0B Frequently Asked Questions",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10173978-9999.pdf"
+  },
+  {
+   "id": "10168545",
+   "number": "KR3_Dealer Packa",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168545-9999.pdf"
+  },
+  {
+   "id": "10168544",
+   "number": "KR3_Dealer Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168544-9999.pdf"
+  },
+  {
+   "id": "10168543",
+   "number": "KR3_Region Lette",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168543-9999.pdf"
+  },
+  {
+   "id": "10168542",
+   "number": "KR3_Region Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168542-9999.pdf"
+  },
+  {
+   "id": "10161530",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-29",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Job Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA. Update 5/29/2019: Modified Vehicle Labels are now available (p. 40)",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION",
+    "FORWARD COLLISION AVOIDANCE: ADAPTIVE CRUISE CONTROL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161530-9999.pdf"
+  },
+  {
+   "id": "10162241",
+   "number": "K0B-TI-050219",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 - 2019 TACOMA 2018 - 2019 TUNDRA. Update 4/2/2019: Instructions provided for Tacoma Bar Type grill EPT Sealer application. Correction made to the Tundra TRD Pro grill photo. Update 5/2/2019: Instructions updated to confirm proper grill type for vehicle Grade and to identify modified vehicle",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: SENSING SYSTEM: RADAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10162241-9999.pdf"
+  },
+  {
+   "id": "10161510",
+   "number": "K0B Modified Veh",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Job Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161510-9999.pdf"
+  },
+  {
+   "id": "10161509",
+   "number": "K0B_Non-Toyota-A",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Non-Toyota-Approved Modification - Owner Acknowledgment Form: **Non-Toyota-Approved Modification - Owner Acknowledgment Form** Certain 2018 -2019 MY Tacoma and Tundra - Millimeter Radar Wave Sensor. Your vehicle is involved in Special Service Campaign K0B. It is equipped with a Pre-Collision System (PCS) that may automatically apply the brakes if the system detects a potential collision. Due to the mounting of one of the system?s sensors, it is possible for water to enter the sensor. This can lead to PCS deactivation or inadvertent brake activation resulting in brief and limited vehicle slowing. The remedy involves an update to the PCS software and application of sealer to the millimeter wave radar sensor in the front grille. Also, in the rare case that the vehicle is currently exhibiting the condition, dealers will diagnose the sensor and replace it, as necessary, FREE OF CHARGE. However, because your vehicle has non-Toyota-approved modifications as noted below, PCS and Dynamic Radar Cruise Control (DRCC) may not operate as designed regardless if this free remedy is performed. For example: ?PCS may activate even if a collision is not likely. ?PCS may not recognize a vehicle or a pedestrian when a preceding vehicle or pedestrian is ahead.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161509-9999.pdf"
+  },
+  {
+   "id": "10161508",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: ADAPTIVE CRUISE CONTROL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161508-9999.pdf"
+  },
+  {
+   "id": "10161407",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "J0b Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION",
+    "BACK OVER PREVENTION: SENSING SYSTEM: RADAR",
+    "FORWARD COLLISION AVOIDANCE: SENSING SYSTEM: RADAR",
+    "LANE DEPARTURE: SENSING SYSTEM: RADAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161407-9999.pdf"
+  },
+  {
+   "id": "10159703",
+   "number": "K0B_Dealer Daily",
+   "date": "2019-04-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Daily Message: **Modified Vehicle Handling Process UPDATE** Certain 2018 ? 2019 Model Year Tacoma and Tundra Millimeter Wave Radar Sensor Handling Procedure for Modified Vehicles Some vehicles may have modifications not authorized or approved by Toyota that make it impossible to perform the remedy for this Special Service Campaign. Toyota does not recommend installing aftermarket, non-Toyota authorized parts or accessories or Toyota parts not originally intended for the vehicle model and cannot evaluate how those modifications could affect a vehicle's operation. This is especially true for the PCS system, because it uses a camera and radar device that has an adjustment based on the vehicle?s original suspension design. It is best to restore the vehicle to its original condition prior to the remedy being performed. Any cost to do this is the customer?s responsibility. As a result, at this time, if a vehicle has modifications of the type noted below, Toyota does NOT RECOMMEND the remedy be performed with the vehicle in its current modified condition. Toyota cannot determine how modifications not authorized or evaluated by Toyota can affect the alignment of the PCS sensor. Please advise the owner that the vehicle?s special service campaign status will remain open, and the remedy will be performed FREE OF CHARGE when the vehicle is returned to a condition in which the remedy can be made.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "SUSPENSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10159703-9999.pdf"
+  },
+  {
+   "id": "10159700",
+   "number": "K0A_Tundra Sequo",
+   "date": "2019-04-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: Update 4/5/2019: Note added on p. 5. TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0A ENGINE ECU SOFTWARE UPDATE CERTAIN: 2018 TUNDRA 2018 SEQUOIA (Reference the separate Technical Instructions for 2018 Camry and Sienna)",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE AND ENGINE COOLING",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10159700-9999.pdf"
+  },
+  {
+   "id": "10160748",
+   "number": "K0B-MWRS-TI-0328",
+   "date": "2019-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10160748-9999.pdf"
+  },
+  {
+   "id": "10129990",
+   "number": "H0Y_Technical In",
+   "date": "2018-02-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: Technical Instructions for Special Service Campaign H0Y. Center Air Bag Sensor Assembly Software Update. Certain 2018 Sequoia and 2018 Tundra",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10129990-9999.pdf"
+  },
+  {
+   "id": "10129989",
+   "number": "H0Y_Dealer Packa",
+   "date": "2018-02-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Date 02/20/18 ? As of February 20, 2018, Special Service Campaign H0Y is no longer active. ? Because the remedy for J0H addresses both the H0Y condition and the J0H condition, all vehicles involved in Special Service Campaign H0Y (whether H0Y was completed or not) are now included in Safety (Noncompliance) Recall J0H. ? All vehicles involved in the H0Y Special Service Campaign are also involved in the Safety (Noncompliance) Recall J0H. ? All vehicles with H0Y incomplete as of February 20, 2018 have been marked expired in TIS. ? This document should only be used for claim processing information for vehicles that had the H0Y remedy performed on February 20, 2018 or earlier.",
+   "products": [
+    {
+     "model": "TUNDRA",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10129989-9999.pdf"
+  }
+ ]
+}

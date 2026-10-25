@@ -173,7 +173,7 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 - **Import** (the import format and schemas, schedule and history imports, the Carfax PDF, writing import files): `docs/rules/import.md`
 - **Milestones** (the milestones view and the user's own table): `docs/rules/milestones.md`
 - **What it takes, torque and maker's lists** (What it takes, torque values, bundled maker's lists, maker's document links): `docs/rules/takes-and-torque.md`
-- **Recalls** (NHTSA checks, marking recalls done): `docs/rules/recalls.md`
+- **Recalls and maker's bulletins** (NHTSA checks, marking recalls done, the bundled bulletins): `docs/rules/recalls.md`
 - **Documents and photos** (encrypted files, pictures, the in-app PDF viewer, pickers): `docs/rules/documents.md`
 - **Export and backup** (exports, the PDF report, backup, restore): `docs/rules/export-and-backup.md`
 - **Lock, navigation and app shell** (the lock, navigation, shortcuts, the widget, notifications, the welcome, Delete all data, Settings, the Privacy screen, licences): `docs/rules/app-shell.md`

@@ -1,0 +1,1483 @@
+{
+ "make": "Toyota",
+ "model": "4Runner",
+ "modelAliases": [],
+ "years": [
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11038374",
+   "number": "26TD01",
+   "date": "2026-09-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Some of the screws holding the front spoiler to the front bumper can become loose over time and the spoiler can partially detach at the outer edge of the vehicle. In some cases, the front spoiler can rub against other vehicle components during driving and cause an intermittent noise.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2025
+     ]
+    },
+    {
+     "model": "4RUNNER I-FORCE MAX HYBRID",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11038374-0001.pdf"
+  },
+  {
+   "id": "11028719",
+   "number": "26TD01",
+   "date": "2026-01-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 26TD01 Front Spoiler Hardware Certain 2025 Model Year 4Runner and 4Runner HV",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11028719-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    },
+    {
+     "model": "4RUNNER I-FORCE MAX HYBRID",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11010359",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The supply of Smart Keys available for Toyota vehicles has been temporarily limited to one (1) on select models since October 2022 due to global semiconductor shortages impacting certain microchips. Affected vehicles have been delivered with only one Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010359-0001.pdf"
+  },
+  {
+   "id": "11010358",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles were delivered with only one (1) Smart Key on select models since October 2022 due to a global semiconductor shortage impacting certain microchips. The affected vehicles were delivered with one (1) Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010358-0001.pdf"
+  },
+  {
+   "id": "11005181",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Second Key Delivery Program Frequently Asked Questions",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005181-0001.pdf"
+  },
+  {
+   "id": "11005180",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005180-0001.pdf"
+  },
+  {
+   "id": "11003628",
+   "number": "23TJ01 Eligibility",
+   "date": "2024-04-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11003628-0001.pdf"
+  },
+  {
+   "id": "10245488",
+   "number": "K0P_TISdownload_",
+   "date": "2023-10-25",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0P CUSTOMER SUPPORT PROGRAM 19TE12 SAFETY CONNECT SYSTEM ? VEHICLE LOCATION INACCURATE CERTAIN 2013 ? 2019 MODEL YEAR 4RUNNER 2011 ? 2017 MODEL YEAR LAND CRUISER 2013 ? 2017 MODEL YEAR PRIUS 2012 ? 2017 MODEL YEAR PRIUS V 2016 ? 2017 MODEL YEAR MIRAI Updated 010/25/2023",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10245488-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2014,
+      2015,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10230355",
+   "number": "19TE12 Dealer Pa",
+   "date": "2022-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DP: Customer Support Program 19TE12 expired December 1, 2022.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10230355-9999.pdf"
+  },
+  {
+   "id": "10227915",
+   "number": "Z3G_Technical_In",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227915-9999.pdf"
+  },
+  {
+   "id": "10227914",
+   "number": "Z3G_Paint_Repair",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG ? Paint Repair Process",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227914-9999.pdf"
+  },
+  {
+   "id": "10217804",
+   "number": "22TE04 - Takata",
+   "date": "2022-07-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: On July 30, 2018, a settlement of claims for Economic Loss related to Takata airbag inflators was approved for full implementation. The settlement includes Toyota?s agreement to provide a Customer Support Program (?CSP?) for 2002-2019 model year (MY) vehicles originally equipped with certain Takata airbag inflators or repaired under a recall with Takata airbag inflators to provide coverage for repairs of the airbag inflator contained in the airbag module. This CSP letter is to help clarify how to administer this coverage in accordance with the settlement. This is NOT a recall or a campaign, but is provided to reassure owners that Toyota stands behind the reliability of our vehicles.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10217804-9999.pdf"
+  },
+  {
+   "id": "10211827",
+   "number": "ZKG_Technical_In",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: Technical Instructions Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211827-9999.pdf"
+  },
+  {
+   "id": "10211826",
+   "number": "ZKG_Paint_Repair",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG - Paint Repair Process Operation Flow Chart",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211826-9999.pdf"
+  },
+  {
+   "id": "10211800",
+   "number": "22TC01 Team Memb",
+   "date": "2022-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: Toyota Over-The- Air (OTA) Pilot Program Team Members SPECIAL SERVICE CAMPAIGN 22TC01",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211800-9999.pdf"
+  },
+  {
+   "id": "10210366",
+   "number": "22TC01 Team Memb",
+   "date": "2022-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: SPECIAL SERVICE CAMPAIGN 22TC01 Over-the-Air (OTA) pilot program. This pilot program would enable you to complete Special Service Campaign 22TC01 for DCM (Data Communication Module) Reprogramming for Safety Connect, which includes your vehicle. With your active telematics account, you are encouraged to complete this campaign using this Over-the-Air (OTA) update by following these steps: 1) To complete this update, each Team Member will use the Toyota/Lexus App installed on their phone. 2) Within a few days of this E-Mail, we will send a notification to your Toyota/Lexus app to schedule and install the update on your vehicle. 3) Click on either the notification on your lock screen or the tile in the app to review the update and then continue in the App to approve the update. 4) The night after you approve the update, the telematics module will perform the update, and you will receive a confirmation notification through the app.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "ELECTRICAL SYSTEM",
+    "SEAT BELTS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210366-9999.pdf"
+  },
+  {
+   "id": "10204546",
+   "number": "ZKG Important Up",
+   "date": "2021-10-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204546-9999.pdf"
+  },
+  {
+   "id": "10204545",
+   "number": "ZKG Customer Sup",
+   "date": "2021-10-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "RL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204545-9999.pdf"
+  },
+  {
+   "id": "10181769",
+   "number": "ZKG_Dealer_Lette",
+   "date": "2020-09-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181769-9999.pdf"
+  },
+  {
+   "id": "10179783",
+   "number": "K0P_19TE12-TI-Up",
+   "date": "2020-08-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0P CUSTOMER SUPPORT PROGRAM 19TE12 SAFETY CONNECT SYSTEM ? VEHICLE LOCATION INACCURATE",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10179783-9999.pdf"
+  },
+  {
+   "id": "10176500",
+   "number": "ZKG_Technical_In",
+   "date": "2020-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10176500-9999.pdf"
+  },
+  {
+   "id": "10172832",
+   "number": "ZKG_Technical In",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172832-9999.pdf"
+  },
+  {
+   "id": "10172831",
+   "number": "ZKG_Technical_In",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172831-9999.pdf"
+  },
+  {
+   "id": "10172830",
+   "number": "ZKG_Paint_Repair",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Customer Support Program ZKG ? Paint Repair Process OPERATION FLOW CHART",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172830-9999.pdf"
+  },
+  {
+   "id": "10170750",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: Customer Support Program ZKG ? Technical Instructions. December 12, 2019. This document has been updated to clarify that only authorized Toyota dealerships are authorized to confirm if the paint peeling condition is covered by this program. However, after confirming that the paint peeling condition is covered by this program, the authorized Toyota dealership may choose to coordinate to have the repainting repair performed by a non-Toyota repair facility (e.g. third-party collision repair facility, body shop, etc.).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170750-9999.pdf"
+  },
+  {
+   "id": "10170748",
+   "number": "19TE12 - DCM - D",
+   "date": "2019-12-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: December 10, 2019 Vehicle total has decreased by approximately 1,100 vehicles. Vehicles were moved from Customer Support Program 19TE12 and added to Limited Service Campaign K0P. The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12). The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:ELECTRICAL:NAVIGATIONAL SYSTEM(GLOBAL POSITIONING SYSTEM)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170748-9999.pdf"
+  },
+  {
+   "id": "10170743",
+   "number": "K0P_Dealer Packa",
+   "date": "2019-12-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: 12/10/2019 Vehicle total has increased by approximately 1,100 vehicles. Vehicles were moved from Customer Support Program 19TE12 and added to Limited Service Campaign K0P. The Data Communication Module (DCM) in the subject vehicles are equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:ELECTRICAL:NAVIGATIONAL SYSTEM(GLOBAL POSITIONING SYSTEM)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170743-9999.pdf"
+  },
+  {
+   "id": "10170726",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170726-9999.pdf"
+  },
+  {
+   "id": "10170725",
+   "number": "ZKG_Paint Repair",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Repair Process: Customer Support Program ZKG ? Paint Repair Process.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170725-9999.pdf"
+  },
+  {
+   "id": "10170720",
+   "number": "Customer Support",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Daily Message: ***Phase 2 ? Customer Renotification and Repair Phase*** Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint. The repair phase of Customer Support Program ZKG is now available. Refer to the Dealer Letter on TIS for additional information.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170720-9999.pdf"
+  },
+  {
+   "id": "10169324",
+   "number": "19TE12_Dealer Pa",
+   "date": "2019-11-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Opcodes are now available to submit a warranty claim on vehicles still under the New Vehicle Limited Warranty (3yrs/36,000 miles). The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:ELECTRICAL:NAVIGATIONAL SYSTEM(GLOBAL POSITIONING SYSTEM)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169324-9999.pdf"
+  },
+  {
+   "id": "10168545",
+   "number": "KR3_Dealer Packa",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168545-9999.pdf"
+  },
+  {
+   "id": "10168544",
+   "number": "KR3_Dealer Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168544-9999.pdf"
+  },
+  {
+   "id": "10168543",
+   "number": "KR3_Region Lette",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168543-9999.pdf"
+  },
+  {
+   "id": "10168542",
+   "number": "KR3_Region Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168542-9999.pdf"
+  },
+  {
+   "id": "10168528",
+   "number": "19TE12 - DCM - T",
+   "date": "2019-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0P CUSTOMER SUPPORT PROGRAM 19TE12 SAFETY CONNECT SYSTEM ? VEHICLE LOCATION INACCURATE CERTAIN 2013 ? 2019 MODEL YEAR 4RUNNER 2011 ? 2017 MODEL YEAR LAND CRUISER 2013 ? 2017 MODEL YEAR PRIUS 2012 ? 2017 MODEL YEAR PRIUS V 2016 ? 2017 MODEL YEAR MIRAI. Updated 10/17/2019",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168528-9999.pdf"
+  },
+  {
+   "id": "10168527",
+   "number": "19TE12 - DCM - D",
+   "date": "2019-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:ELECTRICAL:NAVIGATIONAL SYSTEM(GLOBAL POSITIONING SYSTEM)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168527-9999.pdf"
+  },
+  {
+   "id": "10168526",
+   "number": "19TE12 - DCM - D",
+   "date": "2019-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Email: The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168526-9999.pdf"
+  },
+  {
+   "id": "10168525",
+   "number": "19TE12 - DCM - R",
+   "date": "2019-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:ELECTRICAL:NAVIGATIONAL SYSTEM(GLOBAL POSITIONING SYSTEM)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168525-9999.pdf"
+  },
+  {
+   "id": "10168524",
+   "number": "19TE12 - DCM - R",
+   "date": "2019-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: The Data Communication Module (DCM) in the subject vehicles is equipped with software to identify the location of the vehicle using the Global Positioning System (GPS) to support features of the Safety Connect system. Due to incorrect programming in the DCM software, after November 2nd, 2019, the GPS coordinates for this system will be calculated incorrectly. This will cause the system to use incorrect vehicle coordinates if one of the system?s features is activated. Note: Toyota has initiated a Limited Service Campaign and a Customer Support Program to resolve this issue related to the Safety Connect system. Both of these programs provide the same free remedy to correct this issue with Safety Connect. Toyota recommends that customers have the free remedy performed before reactivating Safety Connect. Vehicles that had an active Safety Connect subscription on or after 10/1/2017 were included in Limited Service Campaign LSC K0P. Vehicles that did not have an active Safety Connect subscription on or after 10/1/2017 but are affected by this condition are included in this Customer Support Program (19TE12).",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168524-9999.pdf"
+  },
+  {
+   "id": "10166020",
+   "number": "K0P_TI_091319",
+   "date": "2019-09-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: UPDATED 09/13/19 TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN SAFETY CONNECT SYSTEM ? VEHICLE LOCATION INACCURATE CERTAIN 2013 ? 2019 MODEL YEAR 4RUNNER 2011 ? 2017 MODEL YEAR LAND CRUISER 2013 ? 2017 MODEL YEAR PRIUS 2012 ? 2017 MODEL YEAR PRIUS V 2016 ? 2017 MODEL YEAR MIRAI",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10166020-9999.pdf"
+  },
+  {
+   "id": "10166011",
+   "number": "K0P_TI_091219",
+   "date": "2019-09-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN SAFETY CONNECT SYSTEM ? VEHICLE LOCATION INACCURATE CERTAIN 2013 ? 2019 MODEL YEAR 4RUNNER 2011 ? 2017 MODEL YEAR LAND CRUISER 2013 ? 2017 MODEL YEAR PRIUS 2012 ? 2017 MODEL YEAR PRIUS V 2016 ? 2017 MODEL YEAR MIRAI",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10166011-9999.pdf"
+  },
+  {
+   "id": "10164886",
+   "number": "ZKG_Dealer Email",
+   "date": "2019-08-09",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164886-9999.pdf"
+  },
+  {
+   "id": "10164885",
+   "number": "ZKG_Region Email",
+   "date": "2019-08-08",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Region Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota's New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164885-9999.pdf"
+  },
+  {
+   "id": "10131744",
+   "number": "ZG7 Dealer Packa",
+   "date": "2017-03-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Package: Toyota is announcing a Warranty Enhancement Program to extend the warranty coverage for Broken Rear Hatch Glass on Certain 2003-2009 Model Year 4Runner Vehicles.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "SIDE/REAR",
+    "VISIBILITY:GLASS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10131744-9999.pdf"
+  },
+  {
+   "id": "10131743",
+   "number": "ZG7_Dealer Email",
+   "date": "2017-03-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Email: Toyota is announcing a Warranty Enhancement Program to extend the warranty coverage for Broken Rear Hatch Glass on Certain 2003-2009 Model Year 4Runner Vehicles.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "SIDE/REAR",
+    "VISIBILITY:GLASS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10131743-9999.pdf"
+  },
+  {
+   "id": "10131742",
+   "number": "ZG7_Region Email",
+   "date": "2017-03-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Region Email: Toyota is announcing a Warranty Enhancement Program to extend the warranty coverage for Broken Rear Hatch Glass on Certain 2003-2009 Model Year 4Runner Vehicles.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "SIDE/REAR",
+    "VISIBILITY:GLASS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10131742-9999.pdf"
+  },
+  {
+   "id": "10150414",
+   "number": "BST-TI-Smart Sto",
+   "date": "2016-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: In our continuing effort to ensure the best in customer satisfaction, Toyota has converted Limited Service Campaign (LSC) BST into Special Service Campaign (SSC) BST with no expiration date. Toyota will install Smart Stop Technology on the below listed model and model year vehicles. This feature will cut engine power in case of simultaneous application of both the accelerator and brake pedals at certain speeds and in certain driving conditions.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10150414-9999.pdf"
+  },
+  {
+   "id": "10150413",
+   "number": "BST-Dealer Packa",
+   "date": "2016-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: In our continuing effort to ensure the best in customer satisfaction, Toyota has converted Limited Service Campaign (LSC) BST into Special Service Campaign (SSC) BST with no expiration date. Toyota will install Smart Stop Technology on the below listed model and model year vehicles. This feature will cut engine power in case of simultaneous application of both the accelerator and brake pedals at certain speeds and in certain driving conditions.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10150413-9999.pdf"
+  },
+  {
+   "id": "10150412",
+   "number": "BST-Dealer Packa",
+   "date": "2016-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package email: In our continuing effort to ensure the best in customer satisfaction, Toyota has converted Limited Service Campaign (LSC) BST into Special Service Campaign (SSC) BST with no expiration date. Toyota will install Smart Stop Technology on the below listed model and model year vehicles. This feature will cut engine power in case of simultaneous application of both the accelerator and brake pedals at certain speeds and in certain driving conditions.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10150412-9999.pdf"
+  },
+  {
+   "id": "10150411",
+   "number": "BST-Region Lette",
+   "date": "2016-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: In our continuing effort to ensure the best in customer satisfaction, Toyota has converted Limited Service Campaign (LSC) BST into Special Service Campaign (SSC) BST with no expiration date. Toyota will install Smart Stop Technology on the below listed model and model year vehicles. This feature will cut engine power in case of simultaneous application of both the accelerator and brake pedals at certain speeds and in certain driving conditions.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10150411-9999.pdf"
+  },
+  {
+   "id": "10150410",
+   "number": "BST-Region Lette",
+   "date": "2016-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter email: In our continuing effort to ensure the best in customer satisfaction, Toyota has converted Limited Service Campaign (LSC) BST into Special Service Campaign (SSC) BST with no expiration date. Toyota will install Smart Stop Technology on the below listed model and model year vehicles. This feature will cut engine power in case of simultaneous application of both the accelerator and brake pedals at certain speeds and in certain driving conditions.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2016/MC-10150410-9999.pdf"
+  },
+  {
+   "id": "10132752",
+   "number": "BST_Renotificati",
+   "date": "2014-07-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter: Toyota will be sending Limited Service Campaign Notices to remind owners whose vehicles have not yet had Smart Stop Technology installed on their vehicle under LSC BST. Initial notification informing customers of the availability of Smart Stop Technology on certain models was handled by the court appointed administrator Gilardi and Company at the onset of the Class Action Settlement for Economic Loss. In addition to the initial notification, Toyota will be sending notifications to customers informing them of this LSC. These notifications are an integral part of our commitment to meet customer expectations of the Toyota products. We request your assistance in completing the Smart Stop Technology as owners receive the BST and contact your dealership. Please note the follow-up activity may cause an increase in your current campaign owner appointments.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10132752-9999.pdf"
+  },
+  {
+   "id": "10132747",
+   "number": "BST_Renotificati",
+   "date": "2014-07-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: Toyota will be sending Limited Service Campaign Notices to remind owners whose vehicles have not yet had Smart Stop Technology installed on their vehicle under LSC BST. Initial notification informing customers of the availability of Smart Stop Technology on certain models was handled by the court appointed administrator Gilardi and Company at the onset of the Class Action Settlement for Economic Loss. In addition to the initial notification, Toyota will be sending notifications to customers informing them of this LSC. These notifications are an integral part of our commitment to meet customer expectations of the Toyota products.",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10132747-9999.pdf"
+  },
+  {
+   "id": "10133779",
+   "number": "LSC BST Phase 1.",
+   "date": "2014-03-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "On July 24, 2013, the settlement of claims for Economic Loss arising from allegations of unintended acceleration was approved. As part of the settlement Toyota will be launching the third phase of a Limited Service Campaign to install Smart Stop technology on March 31, 2014., for the following models:",
+   "products": [
+    {
+     "model": "4RUNNER",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10133779-9999.pdf"
+  }
+ ]
+}

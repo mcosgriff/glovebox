@@ -1,0 +1,887 @@
+{
+ "make": "Toyota",
+ "model": "Corolla",
+ "modelAliases": [],
+ "years": [
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11027565",
+   "number": "25TC10",
+   "date": "2026-12-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 25TC10 Rear Suspension Member Reduced Corrosion Resistance CERTAIN 2025 Model Year Corolla",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "SUSPENSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11027565-0001.pdf"
+  },
+  {
+   "id": "11027564",
+   "number": "25TC10",
+   "date": "2026-12-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Due to improper paint application, the corrosion resistance of the rear suspension member may be reduced over time.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "SUSPENSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11027564-0001.pdf"
+  },
+  {
+   "id": "11037186",
+   "number": "24TE04",
+   "date": "2026-08-11",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11037186-0001.pdf"
+  },
+  {
+   "id": "11028709",
+   "number": "23TD01",
+   "date": "2026-01-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "23TD01 Expired on December 31, 2025 TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 23TD01 LICENSE PLATE BRACKET CLIPS INTERFERE WITH LOWER GRILLE ASSEMBLY 2023 COROLLA HATCHBACK",
+   "products": [
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11028709-0001.pdf"
+  },
+  {
+   "id": "11028708",
+   "number": "23TD01",
+   "date": "2026-01-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "23TD01 Expired on December 31, 2025 The front license plate bracket provided with the vehicle has clips that potentially interfere with the lower grille assembly. This interference can make it more difficult to install the front license plate bracket",
+   "products": [
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11028708-0001.pdf"
+  },
+  {
+   "id": "11022949",
+   "number": "24TE04",
+   "date": "2025-08-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The specific condition covered by this program is for a small engine coolant leak that can occur from the flow shut-off valve that can allow coolant to drip on other parts of the vehicle. This can cause \"Engine Maintenance Required\" to be displayed on the instrument cluster or cause the A/C not to function normally. Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11022949-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11014215",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC08 TI ver. 2 FUEL TANK FILLER CLAMP AND VAPOR LEAK DETECTION CERTAIN 2023 MODEL YEAR PRIUS PRIME",
+   "products": [
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014215-0001.pdf"
+  },
+  {
+   "id": "11014214",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC08 TI ver. 1 FUEL TANK FILLER CLAMP AND VAPOR LEAK DETECTION CERTAIN 2023-2024 MODEL YEAR Corolla HV CERTAIN 2023 MODEL YEAR PRIUS",
+   "products": [
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014214-0001.pdf"
+  },
+  {
+   "id": "11014213",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In the subject vehicles, the vapor leak detection monitor system may not detect a vapor leak from the fuel filler cap and illuminate the malfunction indicator lamp (MIL).",
+   "products": [
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014213-0001.pdf"
+  },
+  {
+   "id": "11012750",
+   "number": "24TE04",
+   "date": "2024-12-09",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "CUSTOMER SUPPORT PROGRAM 24TE04 Multiple Model & Model Year Toyota Vehicles Coverage for Flow Shut-off Valve Coolant Leak Frequently Asked Questions",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012750-0001.pdf"
+  },
+  {
+   "id": "11012734",
+   "number": "24TE04",
+   "date": "2024-12-05",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "In our continuing efforts to ensure the best in customer satisfaction, Toyota is announcing a Customer Support Program to provide coverage for Flow Shut-off Valve Coolant Leak on multiple Model & Model Year Toyota Vehicles. Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012734-0001.pdf"
+  },
+  {
+   "id": "11012726",
+   "number": "24TE04",
+   "date": "2024-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This Customer Support Program provides coverage as it applies to Flow Shut-off Valve Coolant Leak on Certain 2019-2021 Avalon & Avalon HV, 2018-2021 Camry & Camry HV, Certain 2020-2021 Corolla, Certain 2019-2021 Corolla HB, 2020-2021 Highlander, Certain 2019-2021 RAV4 & RAV4 HV, Certain 2021 RAV4 PHV, Certain 2021 Sienna HV, Certain 2021 Venza vehicles. The specific condition covered by this program is a small engine coolant leak can occur from a specific valve that can allow coolant to drip on other parts of the vehicle. This can cause \"Maintenance Required\" to be displayed on the instrument cluster or cause the A/C not to function normally. If the condition is verified, the vehicle will be repaired with a new Flow Shut-off Valve under the terms of this Customer Support Program",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012726-0001.pdf"
+  },
+  {
+   "id": "11012725",
+   "number": "24TE04",
+   "date": "2024-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Frequently Asked Questions CUSTOMER SUPPORT PROGRAM 24TE04 Multiple Model & Model Year Toyota Vehicles Coverage for Flow Shut-off Valve Coolant Leak",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012725-0001.pdf"
+  },
+  {
+   "id": "11005107",
+   "number": "24TC03",
+   "date": "2024-06-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC03 DATA COMMUNICATON MODULE (DCM) UPDATE CERTAIN 2023 COROLLA, COROLLA CROSS, COROLLA HATCHBACK, COROLLA HV, GR COROLLA, CROWN, HIGHLANDER, HIGHLANDER HV, PRIUS, RAV4, RAV4 PRIME, RAV4 HV, VENZA HV",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2023
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2023
+     ]
+    },
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005107-0001.pdf"
+  },
+  {
+   "id": "11005140",
+   "number": "24TC01",
+   "date": "2024-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC01 BRAKE ACTUATOR ASSEMBLY (SKID CONTROL ECU SOFTWARE UPDATE CERTAIN 2023 MODEL COROLLA",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005140-0001.pdf"
+  },
+  {
+   "id": "11005138",
+   "number": "24TC01",
+   "date": "2024-05-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles are equipped with a straight-type shift lever, including a Brake (B) shift position. If the driver shifts rapidly from Park/Reverse/Neutral directly to the B position and starts driving, the Brake Electronic Control Unit (ECU) may continue to recognize the previous shift position and not the B shift position.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005138-0001.pdf"
+  },
+  {
+   "id": "10241381",
+   "number": "23TC02",
+   "date": "2023-07-27",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 23TC02 BRAKE ECU REPROGRAM CERTAIN 2023 MODEL YEAR COROLLA HV",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241381-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019,
+      2020
+     ]
+    },
+    {
+     "model": "COROLLA HYBRID",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019,
+      2020
+     ]
+    },
+    {
+     "model": "COROLLA HATCHBACK",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10227915",
+   "number": "Z3G_Technical_In",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227915-9999.pdf"
+  },
+  {
+   "id": "10227914",
+   "number": "Z3G_Paint_Repair",
+   "date": "2022-11-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG ? Paint Repair Process",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10227914-9999.pdf"
+  },
+  {
+   "id": "10224135",
+   "number": "22TC07 Technical",
+   "date": "2022-07-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 22TC07 ENGINE ECU SOFTWARE UPDATE CERTAIN 2020 MODEL YEAR COROLLA VEHICLES",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10224135-9999.pdf"
+  },
+  {
+   "id": "10211827",
+   "number": "ZKG_Technical_In",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: Technical Instructions Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211827-9999.pdf"
+  },
+  {
+   "id": "10211826",
+   "number": "ZKG_Paint_Repair",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG - Paint Repair Process Operation Flow Chart",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211826-9999.pdf"
+  },
+  {
+   "id": "10204546",
+   "number": "ZKG Important Up",
+   "date": "2021-10-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204546-9999.pdf"
+  },
+  {
+   "id": "10204545",
+   "number": "ZKG Customer Sup",
+   "date": "2021-10-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "RL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204545-9999.pdf"
+  },
+  {
+   "id": "10181769",
+   "number": "ZKG_Dealer_Lette",
+   "date": "2020-09-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181769-9999.pdf"
+  },
+  {
+   "id": "10176500",
+   "number": "ZKG_Technical_In",
+   "date": "2020-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10176500-9999.pdf"
+  },
+  {
+   "id": "10172832",
+   "number": "ZKG_Technical In",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172832-9999.pdf"
+  },
+  {
+   "id": "10172831",
+   "number": "ZKG_Technical_In",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172831-9999.pdf"
+  },
+  {
+   "id": "10172830",
+   "number": "ZKG_Paint_Repair",
+   "date": "2020-02-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Customer Support Program ZKG ? Paint Repair Process OPERATION FLOW CHART",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172830-9999.pdf"
+  },
+  {
+   "id": "10170750",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: Customer Support Program ZKG ? Technical Instructions. December 12, 2019. This document has been updated to clarify that only authorized Toyota dealerships are authorized to confirm if the paint peeling condition is covered by this program. However, after confirming that the paint peeling condition is covered by this program, the authorized Toyota dealership may choose to coordinate to have the repainting repair performed by a non-Toyota repair facility (e.g. third-party collision repair facility, body shop, etc.).",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170750-9999.pdf"
+  },
+  {
+   "id": "10170726",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170726-9999.pdf"
+  },
+  {
+   "id": "10170725",
+   "number": "ZKG_Paint Repair",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Repair Process: Customer Support Program ZKG ? Paint Repair Process.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170725-9999.pdf"
+  },
+  {
+   "id": "10170720",
+   "number": "Customer Support",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Daily Message: ***Phase 2 ? Customer Renotification and Repair Phase*** Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint. The repair phase of Customer Support Program ZKG is now available. Refer to the Dealer Letter on TIS for additional information.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170720-9999.pdf"
+  },
+  {
+   "id": "10164886",
+   "number": "ZKG_Dealer Email",
+   "date": "2019-08-09",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164886-9999.pdf"
+  },
+  {
+   "id": "10164885",
+   "number": "ZKG_Region Email",
+   "date": "2019-08-08",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Region Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota's New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164885-9999.pdf"
+  }
+ ]
+}

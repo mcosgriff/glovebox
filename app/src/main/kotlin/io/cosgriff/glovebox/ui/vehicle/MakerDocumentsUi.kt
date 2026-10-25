@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.readBundled
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.R
@@ -10,26 +11,17 @@ import io.cosgriff.glovebox.domain.MakerDocumentList
 import io.cosgriff.glovebox.domain.MakerDocuments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Links to the makers' own documents that ship with the app: every file in `assets/maker-documents`,
- * read once. What a file may hold is `MakerDocuments` in `:domain`, where a test reads these same
- * files; here one that doesn't parse is simply left out.
+ * read once.
  */
 @Singleton
 class MakerDocumentCatalog @Inject constructor(@ApplicationContext private val context: Context) {
     private val loaded: List<MakerDocumentList> by lazy {
-        try {
-            context.assets.list(MakerDocuments.ASSET_DIR).orEmpty().sorted().mapNotNull { name ->
-                val text = context.assets.open("${MakerDocuments.ASSET_DIR}/$name").bufferedReader().use { it.readText() }
-                (MakerDocuments.parse(text) as? MakerDocumentFile.Ok)?.list
-            }
-        } catch (_: IOException) {
-            emptyList()
-        }
+        context.readBundled(MakerDocuments.ASSET_DIR) { (MakerDocuments.parse(it) as? MakerDocumentFile.Ok)?.list }
     }
 
     suspend fun lists(): List<MakerDocumentList> = withContext(Dispatchers.IO) { loaded }

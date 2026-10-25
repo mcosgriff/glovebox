@@ -1,0 +1,1350 @@
+{
+ "make": "Toyota",
+ "model": "RAV4",
+ "modelAliases": [
+  "RAV4 Prime (PHEV)"
+ ],
+ "years": [
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11037199",
+   "number": "T-SB-0050-26",
+   "date": "2026-08-19",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "A head unit software update (version 8612G42397) is now available for 2026 model year RAV4 Hybrid, and RAV4 Plug-in Hybrid vehicles via OTA or USB. Vehicle operators can perform this update directly by accepting the on-screen notification advising the software update is available, or by locating the software update from the Settings menu and initiating the available update This is a phased rollout, which means that as time progresses, more vehicles will receive the update notification and ability to update the head unit via OTA. This timing will vary by location and may not display for every vehicle in one location at the same day and time.",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2026
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11037199-0001.pdf"
+  },
+  {
+   "id": "11037196",
+   "number": "26TC03",
+   "date": "2026-08-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "TECHNICAL INSTRUCTIONS FOR EMISSION NONCOMPLIANCE RECALL 26TC03 Certain 2022 – 2025 Model Year RAV4 Incorrect Mass Air Flow Sensor Reading",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11037196-0001.pdf"
+  },
+  {
+   "id": "11037195",
+   "number": "26TC03",
+   "date": "2026-08-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In wet conditions, water contacting the radiator in the subject vehicles after idling for an extended period can create steam that can cause an incorrect engine sensor reading. This can lead to a warning light, a rough-running engine, or a potential engine stall while idling or operating at low speeds.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11037195-0001.pdf"
+  },
+  {
+   "id": "11037186",
+   "number": "24TE04",
+   "date": "2026-08-11",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11037186-0001.pdf"
+  },
+  {
+   "id": "11033412",
+   "number": "22TE09",
+   "date": "2026-05-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Although the HV Floor Under Wire Harness and Rear Traction Motor Cable is covered by Toyota’s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing extended coverage under this Customer Support Program for repairs related to excessive corrosion to the wire harness connections at the Rear Motor Generator. Excessive corrosion can cause AM Radio Static during certain drive cycles, or the vehicle may not start.",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11033412-0001.pdf"
+  },
+  {
+   "id": "11032486",
+   "number": "T-SB-0029-26",
+   "date": "2026-04-24",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "A new head unit software update is available for 2023 – 2024 model year RAV4, RAV4 Hybrid, and RAV4 Prime vehicles equipped with Toyota Multimedia (earlier than version 1861). This software update includes the following improvements: • Usability of CarPlay® exit. • User Profile. • User interface. • Cloud navigation. • Intelligent assistant voice recognition. • Bug fixes.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11032486-0001.pdf"
+  },
+  {
+   "id": "11024098",
+   "number": "25TD01",
+   "date": "2025-09-25",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles are equipped with a rear motor unit and an HV Floor Under Wire that provide high voltage to operate the motor. Mud, water, or road salt could potentially enter the HV Floor Underwire connector housing and could cause corrosion over time. Excessive corrosion could cause AM Radio Static during certain driving cycles, or the vehicle may not start.",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11024098-0001.pdf"
+  },
+  {
+   "id": "11022949",
+   "number": "24TE04",
+   "date": "2025-08-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The specific condition covered by this program is for a small engine coolant leak that can occur from the flow shut-off valve that can allow coolant to drip on other parts of the vehicle. This can cause \"Engine Maintenance Required\" to be displayed on the instrument cluster or cause the A/C not to function normally. Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11022949-0001.pdf"
+  },
+  {
+   "id": "11020666",
+   "number": "21TG01",
+   "date": "2025-06-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "21TG01 Exprired - Replaced with Campaign 23TA13 During a recent investigation of reported battery fires in 2013-2018 RAV4 vehicles with gasoline engines (excluding hybrid models), Toyota discovered that many non-Toyota retailers and others who sell or install replacement batteries were recommending a small size battery for replacement. Toyota specifies a particular size replacement battery for the RAV4 that does not include this small size. The smaller battery may not fit securely with the RAV4’s battery mounting parts, and, in some cases, can move around when the vehicle is driven, causing a short circuit. Using the wrong size battery, or not installing a replacement battery properly, can cause damage to the battery and the vehicle, and it could cause a vehicle fire.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020666-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11019366",
+   "number": "25TC05",
+   "date": "2025-04-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 25TC05 MISSING EMISSION CONTROL INFORMATION LABEL CERTAIN 2024 RAV4 HV",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11019366-0001.pdf"
+  },
+  {
+   "id": "11019365",
+   "number": "25TC05",
+   "date": "2025-04-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Frequently Asked Questions SPECIAL SERVICE CAMPAIGN 25TC05 Certain 2024 Model Year RAV4 HV Missing Emission Control Information Label",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11019365-0001.pdf"
+  },
+  {
+   "id": "11019364",
+   "number": "25TC05",
+   "date": "2025-04-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles may not have had the required Emission Control Information Label applied to the underside of the engine hood.",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11019364-0001.pdf"
+  },
+  {
+   "id": "11012750",
+   "number": "24TE04",
+   "date": "2024-12-09",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "CUSTOMER SUPPORT PROGRAM 24TE04 Multiple Model & Model Year Toyota Vehicles Coverage for Flow Shut-off Valve Coolant Leak Frequently Asked Questions",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012750-0001.pdf"
+  },
+  {
+   "id": "11012734",
+   "number": "24TE04",
+   "date": "2024-12-05",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "In our continuing efforts to ensure the best in customer satisfaction, Toyota is announcing a Customer Support Program to provide coverage for Flow Shut-off Valve Coolant Leak on multiple Model & Model Year Toyota Vehicles. Although the flow shut-off valve is covered by Toyota’s New Vehicle Limited Warranty for 36 months or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to Flow Shut-off Valve Coolant Leak.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012734-0001.pdf"
+  },
+  {
+   "id": "11012726",
+   "number": "24TE04",
+   "date": "2024-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This Customer Support Program provides coverage as it applies to Flow Shut-off Valve Coolant Leak on Certain 2019-2021 Avalon & Avalon HV, 2018-2021 Camry & Camry HV, Certain 2020-2021 Corolla, Certain 2019-2021 Corolla HB, 2020-2021 Highlander, Certain 2019-2021 RAV4 & RAV4 HV, Certain 2021 RAV4 PHV, Certain 2021 Sienna HV, Certain 2021 Venza vehicles. The specific condition covered by this program is a small engine coolant leak can occur from a specific valve that can allow coolant to drip on other parts of the vehicle. This can cause \"Maintenance Required\" to be displayed on the instrument cluster or cause the A/C not to function normally. If the condition is verified, the vehicle will be repaired with a new Flow Shut-off Valve under the terms of this Customer Support Program",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012726-0001.pdf"
+  },
+  {
+   "id": "11012725",
+   "number": "24TE04",
+   "date": "2024-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Frequently Asked Questions CUSTOMER SUPPORT PROGRAM 24TE04 Multiple Model & Model Year Toyota Vehicles Coverage for Flow Shut-off Valve Coolant Leak",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012725-0001.pdf"
+  },
+  {
+   "id": "11010359",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The supply of Smart Keys available for Toyota vehicles has been temporarily limited to one (1) on select models since October 2022 due to global semiconductor shortages impacting certain microchips. Affected vehicles have been delivered with only one Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010359-0001.pdf"
+  },
+  {
+   "id": "11010358",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles were delivered with only one (1) Smart Key on select models since October 2022 due to a global semiconductor shortage impacting certain microchips. The affected vehicles were delivered with one (1) Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010358-0001.pdf"
+  },
+  {
+   "id": "11010100",
+   "number": "22TE09",
+   "date": "2024-09-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 22TE09 HV FLOOR UNDER WIRE HARNESS AND REAR TRACTION MOTOR CABLE CORROSION CERTAIN 2019 –2022 MODEL YEAR RAV4 HYBRID AWD",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010100-0001.pdf"
+  },
+  {
+   "id": "11005129",
+   "number": "21TG01",
+   "date": "2024-06-26",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "During a recent investigation of reported battery fires in 2013-2018 RAV4 vehicles with gasoline engines (excluding hybrid models), Toyota discovered that many non-Toyota retailers and others who sell or install replacement batteries were recommending a small size battery for replacement. Toyota specifies a particular size replacement battery for the RAV4 that does not include this small size. The smaller battery may not fit securely with the RAV4’s battery mounting parts, and, in some cases, can move around when the vehicle is driven, causing a short circuit. Using the wrong size battery, or not installing a replacement battery properly, can cause damage to the battery and the vehicle, and it could cause a vehicle fire.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005129-0001.pdf"
+  },
+  {
+   "id": "11005107",
+   "number": "24TC03",
+   "date": "2024-06-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC03 DATA COMMUNICATON MODULE (DCM) UPDATE CERTAIN 2023 COROLLA, COROLLA CROSS, COROLLA HATCHBACK, COROLLA HV, GR COROLLA, CROWN, HIGHLANDER, HIGHLANDER HV, PRIUS, RAV4, RAV4 PRIME, RAV4 HV, VENZA HV",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005107-0001.pdf"
+  },
+  {
+   "id": "11005181",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Second Key Delivery Program Frequently Asked Questions",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005181-0001.pdf"
+  },
+  {
+   "id": "11005180",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005180-0001.pdf"
+  },
+  {
+   "id": "11003628",
+   "number": "23TJ01 Eligibility",
+   "date": "2024-04-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2022,
+      2023
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11003628-0001.pdf"
+  },
+  {
+   "id": "10252273",
+   "number": "22TE09a",
+   "date": "2024-02-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 22TE09 HV FLOOR UNDER WIRE HARNESS AND REAR TRACTION MOTOR CABLE CORROSION CERTAIN 2021 ? 2022 MODEL YEAR RAV4 PRIME",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "HYBRID PROPULSION SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10252273-9999.pdf"
+  },
+  {
+   "id": "10244134",
+   "number": "22TE09",
+   "date": "2023-08-29",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 22TE09 HV FLOOR UNDER WIRE HARNESS AND REAR TRACTION MOTOR CABLE CORROSION CERTAIN 2019 ?2022 MODEL YEAR RAV4 HYBRID AWD (Amendment)",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "VEHICLE SPEED CONTROL:CABLES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10244134-9999.pdf"
+  },
+  {
+   "id": "10241399",
+   "number": "20TE03",
+   "date": "2023-07-13",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DP: This Customer Support Program provides coverage for a condition involving the front transfer case electro-magnetic clutch in certain 2019 ? 2020 model year RAV4 Adventure and Limited grade AWD vehicles. An abnormal buzz or groan noise from that case can occur with Normal drive mode selected during disconnect/connect timing of the AWD system. This condition typically occurs between 20 and 30 mph when accelerating from a stop, and/or between 20 and 13 mph on deceleration after driving the vehicle for 15 minutes or longer. Although the front transfer case electro-magnetic clutch is covered by Toyota?s New Vehicle Limited Warranty for 5 years or 60,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to abnormal buzz/groan noise from the front transfer case.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241399-9999.pdf"
+  },
+  {
+   "id": "10236193",
+   "number": "22TE05_Region Le",
+   "date": "2023-04-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "RL: The specific condition covered by this program is roof rail water leaks from the roof rail mounting clips due to deterioration of the seal of the roof rail clips. If a water leak has been verified, the vehicle will be inspected and repaired with new roof rail clips. The vehicle will also be inspected for water damage and cleaned and/or repaired accordingly under the terms of this Customer Support Program.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY:ROOF AND PILLARS",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10236193-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10230382",
+   "number": "22TE09 Rav4 HV M",
+   "date": "2022-12-21",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 22TE09 HV FLOOR UNDER WIRE HARNESS AND REAR TRACTION MOTOR CABLE CORROSION CERTAIN 2019 ?2022 MODEL YEAR RAV4 HYBRID AWD",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:WIRING",
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10230382-9999.pdf"
+  },
+  {
+   "id": "10220234",
+   "number": "22TC05 Technical",
+   "date": "2022-08-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 22TC05 Crankcase Case Vent",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2021,
+      2022
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:ENGINE:CRANK/CAMSHAFT POSITION SENSOR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10220234-9999.pdf"
+  },
+  {
+   "id": "10220217",
+   "number": "22TC05 Technical",
+   "date": "2022-08-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 22TC05",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2021,
+      2022
+     ]
+    },
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10220217-9999.pdf"
+  },
+  {
+   "id": "10211826",
+   "number": "ZKG_Paint_Repair",
+   "date": "2022-04-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "CSP: Customer Support Program ZKG - Paint Repair Process Operation Flow Chart",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211826-9999.pdf"
+  },
+  {
+   "id": "10207939",
+   "number": "22TE01 Dealer Da",
+   "date": "2022-01-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DD: Customer Support Program 22TE01 Dealer Letter now available on TIS",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2017,
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "EXTERIOR LIGHTING:HEADLIGHTS:BULBS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10207939-9999.pdf"
+  },
+  {
+   "id": "10204546",
+   "number": "ZKG Important Up",
+   "date": "2021-10-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DL: CUSTOMER SUPPORT PROGRAM ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204546-9999.pdf"
+  },
+  {
+   "id": "10201392",
+   "number": "21TC03 Dealer Da",
+   "date": "2021-07-15",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DD: SPECIAL SERVICE CAMPAIGN 21TC03 (Remedy Notice)",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:DELIVERY:FUEL PUMP"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10201392-9999.pdf"
+  },
+  {
+   "id": "10201344",
+   "number": "21TC03_Fuel Pump",
+   "date": "2021-07-15",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 21TC03 LOW-PRESSURE FUEL PUMP",
+   "products": [
+    {
+     "model": "RAV4 HYBRID",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE",
+    "GASOLINE:DELIVERY:FUEL PUMP"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10201344-9999.pdf"
+  },
+  {
+   "id": "10184546",
+   "number": "Customer Support",
+   "date": "2020-11-11",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "RE: This Customer Support Program provides coverage for a condition involving the front transfer case electro-magnetic clutch in certain 2019 ? 2020 model year RAV4 Adventure and Limited grade AWD vehicles. An abnormal buzz or groan noise from that case can occur with Normal drive mode selected during disconnect/connect timing of the AWD system. This condition typically occurs between 20 and 30 mph when accelerating from a stop, and/or between 20 and 13 mph on deceleration after driving the vehicle for 15 minutes or longer. Although the front transfer case electro-magnetic clutch is covered by Toyota?s New Vehicle Limited Warranty for 5 years or 60,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to abnormal buzz/groan noise from the front transfer case. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement.3",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "POWER TRAIN:TRANSFER CASE (4-WHEEL DRIVE)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10184546-9999.pdf"
+  },
+  {
+   "id": "10184544",
+   "number": "20TE03-Dealer Pa",
+   "date": "2020-11-11",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DP: This Customer Support Program provides coverage for a condition involving the front transfer case electro-magnetic clutch in certain 2019 ? 2020 model year RAV4 Adventure and Limited grade AWD vehicles. An abnormal buzz or groan noise from that case can occur with Normal drive mode selected during disconnect/connect timing of the AWD system. This condition typically occurs between 20 and 30 mph when accelerating from a stop, and/or between 20 and 13 mph on deceleration after driving the vehicle for 15 minutes or longer. Although the front transfer case electro-magnetic clutch is covered by Toyota?s New Vehicle Limited Warranty for 5 years or 60,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to abnormal buzz/groan noise from the front transfer case. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement.3",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "POWER TRAIN:TRANSFER CASE (4-WHEEL DRIVE)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10184544-9999.pdf"
+  },
+  {
+   "id": "10184543",
+   "number": "20TE03-DL-Final",
+   "date": "2020-11-11",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "DL: This Customer Support Program provides coverage for a condition involving the front transfer case electro-magnetic clutch in certain 2019 ? 2020 model year RAV4 Adventure and Limited grade AWD vehicles. An abnormal buzz or groan noise from that case can occur with Normal drive mode selected during disconnect/connect timing of the AWD system. This condition typically occurs between 20 and 30 mph when accelerating from a stop, and/or between 20 and 13 mph on deceleration after driving the vehicle for 15 minutes or longer. Although the front transfer case electro-magnetic clutch is covered by Toyota?s New Vehicle Limited Warranty for 5 years or 60,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to abnormal buzz/groan noise from the front transfer case. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement.3",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "POWER TRAIN:TRANSFER CASE (4-WHEEL DRIVE)"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10184543-9999.pdf"
+  },
+  {
+   "id": "10182959",
+   "number": "20TE05 - RAV4 HV",
+   "date": "2020-10-29",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "FAQ: Frequently Asked Questions for CUSTOMER SUPPORT PROGRAM 20TE05",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10182959-9999.pdf"
+  },
+  {
+   "id": "10182958",
+   "number": "20TE04 - RAV4 HV",
+   "date": "2020-10-29",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "FAQ: Frequently Asked Questions for CUSTOMER SUPPORT PROGRAM 20TE04",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10182958-9999.pdf"
+  },
+  {
+   "id": "10181769",
+   "number": "ZKG_Dealer_Lette",
+   "date": "2020-09-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181769-9999.pdf"
+  },
+  {
+   "id": "10176500",
+   "number": "ZKG_Technical_In",
+   "date": "2020-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10176500-9999.pdf"
+  },
+  {
+   "id": "10170750",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: Customer Support Program ZKG ? Technical Instructions. December 12, 2019. This document has been updated to clarify that only authorized Toyota dealerships are authorized to confirm if the paint peeling condition is covered by this program. However, after confirming that the paint peeling condition is covered by this program, the authorized Toyota dealership may choose to coordinate to have the repainting repair performed by a non-Toyota repair facility (e.g. third-party collision repair facility, body shop, etc.).",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170750-9999.pdf"
+  },
+  {
+   "id": "10170726",
+   "number": "ZKG_Technical In",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS Customer Support Program ZKG Phase 2 ? Customer Renotification and Repair Phase Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170726-9999.pdf"
+  },
+  {
+   "id": "10170725",
+   "number": "ZKG_Paint Repair",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Repair Process: Customer Support Program ZKG ? Paint Repair Process.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170725-9999.pdf"
+  },
+  {
+   "id": "10170720",
+   "number": "Customer Support",
+   "date": "2019-12-04",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Daily Message: ***Phase 2 ? Customer Renotification and Repair Phase*** Repair is Now Available Multiple Models and Model Years Vehicles Painted with Blizzard Pearl (070) or Super White (040) Paint Color Coverage for Peeling of Factory-Applied Paint. The repair phase of Customer Support Program ZKG is now available. Refer to the Dealer Letter on TIS for additional information.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170720-9999.pdf"
+  },
+  {
+   "id": "10169444",
+   "number": "G0X_Technical In",
+   "date": "2019-11-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: This Limited Service Campaign has expired as of November 30, 2019. TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN G0X POWER REAR HATCH MUTIPLEX ECU CERTAIN 2016 MODEL YEAR RAV4 & RAV4 HYBRID",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "STRUCTURE:BODY:HATCHBACK/LIFTGATE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169444-9999.pdf"
+  },
+  {
+   "id": "10169443",
+   "number": "G0X_Dealer Packa",
+   "date": "2019-11-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: This Limited Service Campaign has expired as of November 30, 2019. In the subject vehicles the power function of the back door could become inoperative if there is interference with an object while using the power back door. Toyota has developed a new power back door Electronic Control Unit (ECU) to prevent this condition from occurring.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "STRUCTURE:BODY:DOOR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169443-9999.pdf"
+  },
+  {
+   "id": "10164886",
+   "number": "ZKG_Dealer Email",
+   "date": "2019-08-09",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Dealer Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164886-9999.pdf"
+  },
+  {
+   "id": "10164885",
+   "number": "ZKG_Region Email",
+   "date": "2019-08-08",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Region Email: Phase 1 - Customer Notification Phase Repair Not Yet Available. Toyota has received reports of paint peeling on certain vehicles with the original factory-applied Blizzard Pearl or Super White paint colors. These reports indicate that vehicles with these specific paint colors, applied during the vehicle manufacturing process, may experience paint peeling on exterior metal body panels. Although the original factory paint is covered by Toyota's New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to the condition described above. The following information is provided to inform you and your staff of the program notification schedule and your degree of involvement. BEGINNING NOW: In Phase 1, the currently active phase, Toyota is preparing the repair for this condition and thus, the repair under this program is NOT AVAILABLE. During this phase, dealers should not do any repairs for this condition under this program. Beginning in August 2019, Toyota will send an owner notification letter to all owners informing them that their vehicle is covered under this Customer Support Program. During this phase, owners who have paid for repairs for this condition can seek reimbursement consideration for expenses incurred prior to September 26, 2019. A sample of this owner notification letter has been included for your reference.",
+   "products": [
+    {
+     "model": "RAV4",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164885-9999.pdf"
+  }
+ ]
+}

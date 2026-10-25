@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.domain.VehicleBulletins
+import io.cosgriff.glovebox.ui.bulletins.BulletinCatalog
 import io.cosgriff.glovebox.ui.components.BackToTop
 import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import io.cosgriff.glovebox.ui.service.editableDecimal
@@ -27,6 +29,7 @@ import io.cosgriff.glovebox.ui.service.typedDecimal
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.service.longDate
 import androidx.compose.ui.res.pluralStringResource
 import io.cosgriff.glovebox.ui.service.line
 import io.cosgriff.glovebox.ui.service.label
@@ -41,7 +44,7 @@ import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.domain.TakesItem
 import androidx.compose.ui.platform.LocalResources
 import kotlinx.coroutines.flow.flow
-import io.cosgriff.glovebox.ui.about.openWebPage
+import io.cosgriff.glovebox.ui.components.openWebPage
 import io.cosgriff.glovebox.domain.MakerDocuments
 import io.cosgriff.glovebox.domain.MakerDocumentList
 import androidx.compose.material3.Switch
@@ -214,6 +217,7 @@ class VehicleDetailsViewModel @Inject constructor(
     private val units: UnitDao,
     private val knownTakes: KnownTakesRows,
     makerDocuments: MakerDocumentCatalog,
+    bulletinCatalog: BulletinCatalog,
     settings: SettingsRepository,
     private val nhtsa: NhtsaClient,
 ) : ViewModel() {
@@ -227,6 +231,9 @@ class VehicleDetailsViewModel @Inject constructor(
     val makerDocs: StateFlow<MakerDocumentList?> = combine(vehicles.observe(vehicleId), flow { emit(makerDocuments.lists()) }) { v, lists ->
         v?.let { MakerDocuments.forVehicle(lists, it.year, it.make, it.model) }
     }.screenState(viewModelScope, null)
+
+    /** The maker's free-repair bulletins bundled for this vehicle's year, make and model (#459); null for a model without a list. */
+    val bulletins: StateFlow<VehicleBulletins?> = bulletinCatalog.forVehicle(vehicles.observe(vehicleId)).screenState(viewModelScope, null)
 
     fun fillKnown() = viewModelScope.launch { details.value?.vehicle?.let { knownTakes.fill(it) } }
 
@@ -385,6 +392,8 @@ class VehicleDetailsViewModel @Inject constructor(
 fun VehicleDetailsScreen(
     onBack: () -> Unit,
     onOpenRecalls: (vehicleId: Long) -> Unit,
+    /** The maker's bulletins for the vehicle's year (#459). */
+    onOpenBulletins: (vehicleId: Long) -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
     /** The vehicle has gone to the archive; [undo] brings it back. */
     onArchived: (vehicleName: String, undo: () -> Unit) -> Unit,
@@ -409,6 +418,7 @@ fun VehicleDetailsScreen(
     var editing by rememberSaveable { mutableStateOf<TakesItem?>(null) }
     val known by vm.known.collectAsStateWithLifecycle()
     val makerDocs by vm.makerDocs.collectAsStateWithLifecycle()
+    val bulletins by vm.bulletins.collectAsStateWithLifecycle()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
     var addingVin by rememberSaveable { mutableStateOf(false) }
@@ -542,6 +552,7 @@ fun VehicleDetailsScreen(
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
         onEditCheckIn = { editingCheckIn = true }, onAddVin = { addingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
+        bulletins = bulletins, onOpenBulletins = onOpenBulletins,
     )
 }
 
@@ -579,6 +590,9 @@ internal fun VehicleDetailsContent(
     onSell: () -> Unit,
     onPickPhoto: () -> Unit,
     onRemovePhoto: () -> Unit,
+    /** Null for a model Glovebox has no bulletins for; then there is no row. */
+    bulletins: VehicleBulletins? = null,
+    onOpenBulletins: (vehicleId: Long) -> Unit = {},
 ) {
     val v = details.vehicle
     val swap = v.clusterSwap()
@@ -890,6 +904,18 @@ internal fun VehicleDetailsContent(
                         },
                         onClick = { onOpenRecalls(v.id) },
                     )
+                    bulletins?.let { b ->
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LinkRow(
+                            title = stringResource(R.string.details_bulletins),
+                            detail = if (b.bulletins.isEmpty()) {
+                                stringResource(R.string.details_bulletins_none, b.asOf.format(longDate))
+                            } else {
+                                pluralStringResource(R.plurals.details_bulletins_count, b.bulletins.size, b.bulletins.size.asNumber(), b.asOf.format(longDate))
+                            },
+                            onClick = { onOpenBulletins(v.id) },
+                        )
+                    }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     LinkRow(
                         title = stringResource(R.string.details_units),

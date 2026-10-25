@@ -18,3 +18,7 @@ Rules for NHTSA checks, marking recalls done. Read before changing any of it; re
   the vehicle's recall banner, the garage card's recall chip, Vehicle details' Recalls row) and lead a new recall's
   notification. Archiving a recall that says either asks first. `Notes` isn't kept: the ones seen were
   boilerplate.
+- **Maker's bulletins** (#459, [ADR-0013](../adr/0013-bulletins-are-bundled.md), `docs/bulletins.md`) are bundled,
+  never fetched: only service campaigns, warranty extensions and over-the-air updates, for models with a maker's
+  schedule, matched by year/make/model. One kept for its wording **says so**, and the screen **always shows the
+  date the list is from**. A bulletin's PDF opens from `static.nhtsa.gov` in the browser; no VIN goes anywhere.

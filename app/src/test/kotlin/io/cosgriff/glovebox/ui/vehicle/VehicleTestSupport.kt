@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.bulletins.BulletinCatalog
 import android.app.Application
 import android.os.Looper
 import androidx.core.content.FileProvider
@@ -78,6 +79,7 @@ class VehicleTestGarage : ExternalResource() {
     val archiver = VehicleArchiver(db.vehicles(), db.odometer(), appScope)
     val knownTakes = KnownTakesRows(KnownTakesCatalog(context), db.vehicles())
     val makerDocuments = MakerDocumentCatalog(context)
+    val bulletins = BulletinCatalog(context)
     val photoPicker = VehiclePhotoPicker(vehiclePhotos, appScope)
     val documentPicker = DocumentPicker(context, documentStore, recordPhotos, appScope)
     val readingUndo = MileageReadingUndo(db.odometer(), db.vehicles(), appScope)

@@ -1,0 +1,1075 @@
+{
+ "make": "Toyota",
+ "model": "Tacoma",
+ "modelAliases": [],
+ "years": [
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11026308",
+   "number": "23TE08",
+   "date": "2025-11-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Toyota has received some reports of paint peeling along the exterior door window frames, front inner fenders as can been seen with the hood open, and on the A-pillars on certain Tacoma vehicles with 040 Super White paint color. Although the vehicle paint is covered by Toyota’s New Vehicle Limited Warranty for three years, or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to the conditions described above.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11026308-0001.pdf"
+  },
+  {
+   "id": "11022945",
+   "number": "23TE08",
+   "date": "2025-07-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Customer Support Program 23TE08 Paint Repair Process Job Aid",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11022945-0001.pdf"
+  },
+  {
+   "id": "11022944",
+   "number": "23TE08",
+   "date": "2025-07-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 23TE08 COVERAGE FOR PAINT PEELING ON EXTERIOR DOOR FRAMES, FRONT INNER FENDERS AND A-PILLARS CERTAIN 2016-2022 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11022944-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2024,
+      2025
+     ]
+    },
+    {
+     "model": "TACOMA HYBRID",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11020652",
+   "number": "25TC07",
+   "date": "2025-06-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 25TC07 Blind Spot Monitor System Reprogramming CERTAIN 2024 Model Year Tacoma and Tacoma HV",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2024
+     ]
+    },
+    {
+     "model": "TACOMA HYBRID",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "LANE DEPARTURE: BLIND SPOT DETECTION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020652-0001.pdf"
+  },
+  {
+   "id": "11012740",
+   "number": "24TC06",
+   "date": "2024-12-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC06 Active Grille Shutter Engine Warning Light May Illuminate CERTAIN 2024 TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012740-0001.pdf"
+  },
+  {
+   "id": "11012739",
+   "number": "24TC06",
+   "date": "2024-12-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An incorrectly sized seal can allow water or moisture to enter a connector on the Active Grille Shutter. This can cause the engine warning light to illuminate and/or the Active Grille Shutter to no longer open or close as designed.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11012739-0001.pdf"
+  },
+  {
+   "id": "11011649",
+   "number": "24TC06",
+   "date": "2024-11-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Frequently Asked Questions Certain 2024 Model Year Tacoma Active Grille Shutter Engine Warning Light May Illuminate",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11011649-0001.pdf"
+  },
+  {
+   "id": "11010328",
+   "number": "23TE08",
+   "date": "2024-10-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR CUSTOMER SUPPORT PROGRAM 23TE08 COVERAGE FOR PAINT PEELING ON DOOR FRAMES + FRONT INNER FENDERS CERTAIN 2016-2022 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010328-0001.pdf"
+  },
+  {
+   "id": "11010082",
+   "number": "23TE08",
+   "date": "2024-09-18",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "In our continuing efforts to ensure the best in customer satisfaction, Toyota is announcing a Customer Support Program to provide coverage for paint peeling on door frames and front inner fenders on certain 2016-2022 model year Tacoma vehicles. Toyota has received some reports of paint peeling along the exterior door window frames and front inner fenders under the hood on certain Tacoma vehicles with 040 Super White paint color. Although the vehicle paint is covered by Toyota’s New Vehicle Limited Warranty for three years, or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to the condition described above.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010082-0001.pdf"
+  },
+  {
+   "id": "11010081",
+   "number": "23TE08",
+   "date": "2024-09-18",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Customer Support Program 23TE08 Paint Repair Process",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010081-0001.pdf"
+  },
+  {
+   "id": "11010080",
+   "number": "23TE08",
+   "date": "2024-09-18",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Toyota has received some reports of paint peeling along the exterior door window frames and front inner fenders under the hood on certain Tacoma vehicles with 040 Super White paint color. Although the vehicle paint is covered by Toyota’s New Vehicle Limited Warranty for three years, or 36,000 miles (whichever comes first), we at Toyota care about the customers’ ownership experience. Toyota is providing coverage for repairs related to the condition described above.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010080-0001.pdf"
+  },
+  {
+   "id": "10251759",
+   "number": "21TD02_TIS_Techn",
+   "date": "2024-02-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: 21TD02 Expired on September 23, 2023 TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 21TD02 ADDITIONAL REMOTE KEYLESS ENTRY KEY CERTAIN 2021 MODEL YEAR TACOMA VEHICLES",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:IGNITION:ANTI-THEFT:IMMOBILIZER/PROXIMITY:KEY/SENDER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10251759-9999.pdf"
+  },
+  {
+   "id": "10251757",
+   "number": "K0D_TIS_Technica",
+   "date": "2024-02-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: K0D expired on 10/31/2023. TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10251757-9999.pdf"
+  },
+  {
+   "id": "10251742",
+   "number": "K0D_TIS_Technica",
+   "date": "2024-02-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: K0D expired on 10/31/2023. TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2011 ? 2015 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-10251742-9999.pdf"
+  },
+  {
+   "id": "10238142",
+   "number": "ZKA Letter",
+   "date": "2023-05-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: Toyota has received a number of reports regarding vehicle frame corrosion perforation on certain 2011-2017 model year Tacoma vehicles. These reports have indicated that these vehicles, when operated in specific cold climate areas (Cold Climate States1) with high road salt usage, or exposed to other environmental factors, may exhibit more-than-normal corrosion to the vehicle?s frame. Although perforation of the vehicle?s frame is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to vehicle frame corrosion perforation. A separate program (limited Service Campaign K0D) will include CRC (Corrosion Resistant Compound) application. CRC application will be covered under Limited Service Campaign (LSC K0D) for a period of two years and will only be available for vehicles registered/regularly operated in the Cold Climate States that do not meet vehicle frame replacement criteria.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10238142-9999.pdf"
+  },
+  {
+   "id": "10238141",
+   "number": "Z1A Dealer Lette",
+   "date": "2023-05-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DP: Toyota has received a number of reports regarding vehicle frame corrosion perforation on certain 2011-2017 model year Tacoma vehicles. These reports have indicated that these vehicles, when operated in specific cold climate areas (Cold Climate States1) with high road salt usage, or exposed to other environmental factors, may exhibit more-than-normal corrosion to the vehicle?s frame. Although perforation of the vehicle?s frame is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to vehicle frame corrosion perforation. A separate program (limited Service Campaign K0D) will include CRC (Corrosion Resistant Compound) application. CRC application will be covered under Limited Service Campaign (LSC K0D) for a period of two years and will only be available for vehicles registered/regularly operated in the Cold Climate States that do not meet vehicle frame replacement criteria.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10238141-9999.pdf"
+  },
+  {
+   "id": "10235218",
+   "number": "23TE05",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2015-2020 model year (MY) vehicles that were not previously involved in a Safety Recall or Special Service Campaign related to the low pressure fuel pump. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235218-9999.pdf"
+  },
+  {
+   "id": "10235217",
+   "number": "23TE04",
+   "date": "2023-02-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DL: On December 20, 2022, a settlement of claims for certain low pressure fuel pumps was approved by the federal court. The settlement includes Toyota?s agreement to provide a Customer Support Program for certain 2014-2020 model year (MY) vehicles originally equipped with low pressure fuel pumps repaired under Safety Recall 20TA02, Safety Recall 21TA03, Safety Recall 21TA05 or Special Service Campaign 21TC03. The purpose of this Customer Support Program letter is to help clarify how to administer this coverage in accordance with the settlement.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2017,
+      2018,
+      2019,
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235217-9999.pdf"
+  },
+  {
+   "id": "10211800",
+   "number": "22TC01 Team Memb",
+   "date": "2022-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: Toyota Over-The- Air (OTA) Pilot Program Team Members SPECIAL SERVICE CAMPAIGN 22TC01",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211800-9999.pdf"
+  },
+  {
+   "id": "10210366",
+   "number": "22TC01 Team Memb",
+   "date": "2022-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: SPECIAL SERVICE CAMPAIGN 22TC01 Over-the-Air (OTA) pilot program. This pilot program would enable you to complete Special Service Campaign 22TC01 for DCM (Data Communication Module) Reprogramming for Safety Connect, which includes your vehicle. With your active telematics account, you are encouraged to complete this campaign using this Over-the-Air (OTA) update by following these steps: 1) To complete this update, each Team Member will use the Toyota/Lexus App installed on their phone. 2) Within a few days of this E-Mail, we will send a notification to your Toyota/Lexus app to schedule and install the update on your vehicle. 3) Click on either the notification on your lock screen or the tile in the app to review the update and then continue in the App to approve the update. 4) The night after you approve the update, the telematics module will perform the update, and you will receive a confirmation notification through the app.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "ELECTRICAL SYSTEM",
+    "SEAT BELTS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210366-9999.pdf"
+  },
+  {
+   "id": "10210361",
+   "number": "ZKA-TI-16_17MY P",
+   "date": "2022-03-01",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR WARRANTY ENHANCEMENT PROGRAM ZKA CERTAIN 2016 THROUGH 2017 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:ELECTRICAL:INFOTAINMENT:SOFTWARE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210361-9999.pdf"
+  },
+  {
+   "id": "10204557",
+   "number": "21TD03 - 2016-20",
+   "date": "2021-11-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN 21TD03 CERTAIN 2016 ? 2019 Model Year Double Cab Tacoma CENTER HIGH-MOUNTED STOP LAMP ? WATER LEAK",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10204557-9999.pdf"
+  },
+  {
+   "id": "10198132",
+   "number": "ZKA Dealer Packe",
+   "date": "2021-05-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "DP: Toyota has received a number of reports regarding vehicle frame corrosion perforation on certain 2011-2017 model year Tacoma vehicles. These reports have indicated that these vehicles, when operated in specific cold climate areas (Cold Climate States1) with high road salt usage, or exposed to other environmental factors, may exhibit more-than-normal corrosion to the vehicle?s frame. 1 ? District of Columbia (DC), CT, DE, IL, IN, KY, MA, MD, ME, MI, MN, NH, NJ, NY, OH, PA, RI, VA, VT, WI, and WV. Although perforation of the vehicle?s frame is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to vehicle frame corrosion perforation. A separate program (limited Service Campaign K0D) will include CRC (Corrosion Resistant Compound) application. CRC application will be covered under Limited Service Campaign (LSC K0D) for a period of two years and will only be available for vehicles registered/regularly operated in the Cold Climate States that do not meet vehicle frame replacement criteria.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10198132-9999.pdf"
+  },
+  {
+   "id": "10190445",
+   "number": "K0D-TI-Spray 16-",
+   "date": "2021-03-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10190445-9999.pdf"
+  },
+  {
+   "id": "10181790",
+   "number": "K0B Tunda Tacoma",
+   "date": "2020-09-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181790-9999.pdf"
+  },
+  {
+   "id": "10181789",
+   "number": "K0B Tunda Tacoma",
+   "date": "2020-09-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "JA: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA ..VEHICLES WITH MODIFICATIONS....",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10181789-9999.pdf"
+  },
+  {
+   "id": "10176353",
+   "number": "K0D-TI-Spray 11-",
+   "date": "2020-05-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2011 ? 2015 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:FRAME AND MEMBERS:UNDERBODY SHIELDS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10176353-9999.pdf"
+  },
+  {
+   "id": "10174872",
+   "number": "K0D - Technical",
+   "date": "2020-04-16",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2011 ? 2015 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10174872-9999.pdf"
+  },
+  {
+   "id": "10174871",
+   "number": "K0D - Technical",
+   "date": "2020-04-16",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TI: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10174871-9999.pdf"
+  },
+  {
+   "id": "10173980",
+   "number": "Non-Toyota-Appro",
+   "date": "2020-03-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SPECIAL SERVICE CAMPAIGN (K0B) Non-Toyota-Approved Modification - Owner Acknowledgment Form",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10173980-9999.pdf"
+  },
+  {
+   "id": "10173978",
+   "number": "K0B - FAQ - Publ",
+   "date": "2020-03-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SPECIAL SERVICE CAMPAIGN K0B Frequently Asked Questions",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10173978-9999.pdf"
+  },
+  {
+   "id": "10172867",
+   "number": "Customer_Support",
+   "date": "2020-02-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Customer Support Program 20TE02 Dealer Letter now available on TIS",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10172867-9999.pdf"
+  },
+  {
+   "id": "10171403",
+   "number": "K0D-TI-Spray 16-",
+   "date": "2020-01-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA (2011-2015 model year instructions can be found on TIS)",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10171403-9999.pdf"
+  },
+  {
+   "id": "10171440",
+   "number": "K0D_TI-Spray-Dra",
+   "date": "2020-01-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA (2011-2015 model year instructions can be found on TIS)",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2020/MC-10171440-9999.pdf"
+  },
+  {
+   "id": "10169330",
+   "number": "K0D-TI-Spray-Dra",
+   "date": "2019-11-15",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA (2011-2015 model year instructions can be found on TIS) COLD CLIMATE STATES ONLY",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169330-9999.pdf"
+  },
+  {
+   "id": "10169320",
+   "number": "ZKA_Dealer Packa",
+   "date": "2019-11-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: K0D Estimated Launch Timing has been updated to reflect Cincinnati Region Launch. Warranty Reimbursement Procedure has been updated to reflect K0D Launch and possible outcomes after inspection. Toyota has received reports regarding vehicle frame corrosion perforation on certain 2011-2017 model year Tacoma vehicles. These reports have indicated that these vehicles, when operated in specific cold climate areas (Cold Climate States1) with high road salt usage, or exposed to other environmental factors, may exhibit more-than-normal corrosion to the vehicle?s frame. 1 ? District of Columbia (DC), CT, DE, IL, IN, KY, MA, MD, ME, MI, MN, NH, NJ, NY, OH, PA, RI, VA, VT, WI, and WV. Although perforation of the vehicle?s frame is covered by Toyota?s New Vehicle Limited Warranty for 3 years or 36,000 miles (whichever comes first), we at Toyota care about the customers? ownership experience. Toyota is providing coverage for repairs related to vehicle frame corrosion perforation. A separate program will be announced in the future and will include CRC (Corrosion Resistant Compound) application. Toyota is currently preparing parts and approvals for the CRC application process. CRC application will be covered under a separate Limited Service Campaign (LSC K0D) for a period of two years and will only be available for vehicles registered/regularly operated in the Cold Climate States that do not meet vehicle frame replacement criteria. This Limited Service Campaign has not yet launched at the time of this publication. Toyota expects to launch K0D in phases beginning in the Fall of 2019. The expected schedule can be seen in the chart below.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169320-9999.pdf"
+  },
+  {
+   "id": "10169418",
+   "number": "K0D-TI-Spray-16-",
+   "date": "2019-11-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR LIMITED SERVICE CAMPAIGN K0D FRAME CORROSION RESISTANT COMPOUND (CRC) APPLICATION CERTAIN 2016 ? 2017 MODEL YEAR TACOMA (2011-2015 model year instructions can be found on TIS) COLD CLIMATE STATES ONLY",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169418-9999.pdf"
+  },
+  {
+   "id": "10161530",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-29",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Job Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA. Update 5/29/2019: Modified Vehicle Labels are now available (p. 40)",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION",
+    "FORWARD COLLISION AVOIDANCE: ADAPTIVE CRUISE CONTROL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161530-9999.pdf"
+  },
+  {
+   "id": "10162241",
+   "number": "K0B-TI-050219",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 - 2019 TACOMA 2018 - 2019 TUNDRA. Update 4/2/2019: Instructions provided for Tacoma Bar Type grill EPT Sealer application. Correction made to the Tundra TRD Pro grill photo. Update 5/2/2019: Instructions updated to confirm proper grill type for vehicle Grade and to identify modified vehicle",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: SENSING SYSTEM: RADAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10162241-9999.pdf"
+  },
+  {
+   "id": "10161510",
+   "number": "K0B Modified Veh",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Job Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161510-9999.pdf"
+  },
+  {
+   "id": "10161509",
+   "number": "K0B_Non-Toyota-A",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Non-Toyota-Approved Modification - Owner Acknowledgment Form: **Non-Toyota-Approved Modification - Owner Acknowledgment Form** Certain 2018 -2019 MY Tacoma and Tundra - Millimeter Radar Wave Sensor. Your vehicle is involved in Special Service Campaign K0B. It is equipped with a Pre-Collision System (PCS) that may automatically apply the brakes if the system detects a potential collision. Due to the mounting of one of the system?s sensors, it is possible for water to enter the sensor. This can lead to PCS deactivation or inadvertent brake activation resulting in brief and limited vehicle slowing. The remedy involves an update to the PCS software and application of sealer to the millimeter wave radar sensor in the front grille. Also, in the rare case that the vehicle is currently exhibiting the condition, dealers will diagnose the sensor and replace it, as necessary, FREE OF CHARGE. However, because your vehicle has non-Toyota-approved modifications as noted below, PCS and Dynamic Radar Cruise Control (DRCC) may not operate as designed regardless if this free remedy is performed. For example: ?PCS may activate even if a collision is not likely. ?PCS may not recognize a vehicle or a pedestrian when a preceding vehicle or pedestrian is ahead.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161509-9999.pdf"
+  },
+  {
+   "id": "10161508",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: ADAPTIVE CRUISE CONTROL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161508-9999.pdf"
+  },
+  {
+   "id": "10161407",
+   "number": "K0B_Tunda Tacoma",
+   "date": "2019-05-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "J0b Aid: JOB AID FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION",
+    "BACK OVER PREVENTION: SENSING SYSTEM: RADAR",
+    "FORWARD COLLISION AVOIDANCE: SENSING SYSTEM: RADAR",
+    "LANE DEPARTURE: SENSING SYSTEM: RADAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10161407-9999.pdf"
+  },
+  {
+   "id": "10159703",
+   "number": "K0B_Dealer Daily",
+   "date": "2019-04-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Daily Message: **Modified Vehicle Handling Process UPDATE** Certain 2018 ? 2019 Model Year Tacoma and Tundra Millimeter Wave Radar Sensor Handling Procedure for Modified Vehicles Some vehicles may have modifications not authorized or approved by Toyota that make it impossible to perform the remedy for this Special Service Campaign. Toyota does not recommend installing aftermarket, non-Toyota authorized parts or accessories or Toyota parts not originally intended for the vehicle model and cannot evaluate how those modifications could affect a vehicle's operation. This is especially true for the PCS system, because it uses a camera and radar device that has an adjustment based on the vehicle?s original suspension design. It is best to restore the vehicle to its original condition prior to the remedy being performed. Any cost to do this is the customer?s responsibility. As a result, at this time, if a vehicle has modifications of the type noted below, Toyota does NOT RECOMMEND the remedy be performed with the vehicle in its current modified condition. Toyota cannot determine how modifications not authorized or evaluated by Toyota can affect the alignment of the PCS sensor. Please advise the owner that the vehicle?s special service campaign status will remain open, and the remedy will be performed FREE OF CHARGE when the vehicle is returned to a condition in which the remedy can be made.",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "SUSPENSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10159703-9999.pdf"
+  },
+  {
+   "id": "10160748",
+   "number": "K0B-MWRS-TI-0328",
+   "date": "2019-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN K0B MILLIMETER WAVE RADAR SENSOR CERTAIN: 2018 ? 2019 TACOMA 2018 ? 2019 TUNDRA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10160748-9999.pdf"
+  },
+  {
+   "id": "10149993",
+   "number": "J0N-Technical In",
+   "date": "2018-08-16",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN J0N HVAC BLOWER MOTOR CERTAIN 2016-2017 MODEL TACOMA",
+   "products": [
+    {
+     "model": "TACOMA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "EQUIPMENT:APPLIANCE:AIR CONDITIONER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149993-9999.pdf"
+  }
+ ]
+}

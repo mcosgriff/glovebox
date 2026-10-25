@@ -81,6 +81,7 @@ import io.cosgriff.glovebox.ui.settings.CategoryRulesScreen
 import io.cosgriff.glovebox.ui.history.RecordDetailScreen
 import io.cosgriff.glovebox.ui.photo.PhotoViewerScreen
 import io.cosgriff.glovebox.ui.recalls.RecallsScreen
+import io.cosgriff.glovebox.ui.bulletins.BulletinsScreen
 import io.cosgriff.glovebox.ui.reminders.ReminderRulesScreen
 import io.cosgriff.glovebox.ui.reminders.RemindersScreen
 import io.cosgriff.glovebox.ui.scan.ReadDashScreen
@@ -148,6 +149,7 @@ import kotlin.time.Duration.Companion.milliseconds
 /** One of a record's photos, full screen; [start] is its place in the grid. */
 @Serializable data class PhotoViewerRoute(val recordId: Long, val start: Int) : NavKey
 @Serializable data class RecallsRoute(val vehicleId: Long) : NavKey
+@Serializable data class BulletinsRoute(val vehicleId: Long) : NavKey
 @Serializable data class VehicleDetailsRoute(val vehicleId: Long) : NavKey
 @Serializable data object ArchivedVehiclesRoute : NavKey
 @Serializable data class DeleteVehicleRoute(val vehicleId: Long) : NavKey
@@ -475,6 +477,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 VehicleDetailsScreen(
                     onBack = { nav.pop() },
                     onOpenRecalls = { vehicleId -> nav.push(RecallsRoute(vehicleId)) },
+                    onOpenBulletins = { vehicleId -> nav.push(BulletinsRoute(vehicleId)) },
                     onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
                     onArchived = onArchived,
                     onDelete = { vehicleId -> nav.push(DeleteVehicleRoute(vehicleId)) },
@@ -533,6 +536,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 )
             }
             screen<RecallsRoute> { RecallsScreen(onBack = { nav.pop() }) }
+            screen<BulletinsRoute> { BulletinsScreen(onBack = { nav.pop() }) }
             screen<AddVehicleRoute> {
                 // The scanner hands its VIN back through the results.
                 val scannedVin = results[SCANNED_VIN]
