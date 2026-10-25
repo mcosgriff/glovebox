@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.notify
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.MainActivity
+import io.cosgriff.glovebox.ShortcutActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -47,13 +48,18 @@ class DestinationTest {
     }
 
     @Test
-    fun `the launch intent brings the running app forward with the destination on it`() {
+    fun `the launch intent goes through the activity no other app can start, with the destination on it`() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val intent = Destination.Recalls(3).launchIntent(context)
-        assertEquals(MainActivity::class.java.name, intent.component?.className)
-        val wanted = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        assertEquals(wanted, intent.flags and wanted)
+        assertEquals(ShortcutActivity::class.java.name, intent.component?.className)
+        assertEquals(Intent.FLAG_ACTIVITY_NEW_TASK, intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK)
         assertEquals(Destination.Recalls(3), Destination.from(intent))
+
+        val app = context.appIntent()
+        assertEquals(MainActivity::class.java.name, app.component?.className)
+        val wanted = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        assertEquals(wanted, app.flags and wanted)
+        assertNull(Destination.from(app))
 
         // None opens the app as it was left.
         assertNull(Destination.from((null as Destination?).launchIntent(context)))

@@ -60,6 +60,12 @@ class VehiclePhotoStoreTest {
     }
 
     @Test
+    fun `a photo that was never redrawn, as one from a backup, is loaded shrunk`() = runBlocking {
+        crypto.encryptTo("vehicle-1-big.png", picture(6400, 100).inputStream())
+        assertEquals(PhotoSizing.MAX_EDGE, store.load("vehicle-1-big.png")!!.width)
+    }
+
+    @Test
     fun `a photo picked for a vehicle deleted meanwhile, or one that won't read, changes nothing`() = runBlocking {
         assertFalse(store.set(999, PickedFilesProvider.offer("p.png", picture(40, 30))))
         val id = db.vehicles().add(testVehicle(), firstReading = null)

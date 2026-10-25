@@ -44,6 +44,9 @@ class MainActivityTest {
     /** Past the welcome, with the lock off. */
     private fun returning() = graph.settings { setWelcomeSeen(); setBiometricLock(false) }
 
+    /** What a notification, the widget or a shortcut does: [ShortcutActivity] holds the destination, then opens the app. */
+    private fun tapped(to: Destination) = graph.get<PendingDestination>().set(to)
+
     private fun secure(activity: MainActivity) = activity.window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE != 0
 
     @Test
@@ -78,7 +81,8 @@ class MainActivityTest {
     @Test
     fun `a shortcut used while the welcome showed doesn't follow it`() {
         shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
-        launch(Intent(app, MainActivity::class.java).also(Destination.Backup::putInto))
+        tapped(Destination.Backup)
+        launch()
         compose.waitForText(string(R.string.welcome_add_vehicle))
         compose.onNodeWithText(string(R.string.welcome_add_vehicle)).performClick()
         compose.waitForText(string(R.string.add_vehicle_title))
@@ -112,7 +116,8 @@ class MainActivityTest {
     @Test
     fun `a notification's destination is opened once the screens are up`() {
         returning()
-        launch(Intent(app, MainActivity::class.java).also(Destination.Reminders::putInto))
+        tapped(Destination.Reminders)
+        launch()
         compose.waitForText(string(R.string.reminders_rules))
         assertNull(graph.get<PendingDestination>().destination.value)
     }
@@ -122,21 +127,20 @@ class MainActivityTest {
         returning()
         launch()
         compose.waitForText(string(R.string.garage_title))
-        controller!!.newIntent(Intent(app, MainActivity::class.java).also(Destination.Reminders::putInto))
+        tapped(Destination.Reminders)
+        controller!!.newIntent(Intent(app, MainActivity::class.java))
         compose.waitForText(string(R.string.reminders_rules))
     }
 
     @Test
-    fun `a restored activity doesn't replay the tap it was first opened with`() {
+    fun `a destination another app puts on its intent is ignored`() {
         returning()
-        launch(Intent(app, MainActivity::class.java).also(Destination.Reminders::putInto))
-        compose.waitForText(string(R.string.reminders_rules))
-        graph.get<PendingDestination>().take()
-        val bundle = android.os.Bundle()
-        controller!!.saveInstanceState(bundle).pause().stop().destroy()
-        controller = Robolectric.buildActivity(MainActivity::class.java, Intent(app, MainActivity::class.java).also(Destination.Backup::putInto))
-            .setup(bundle)
+        // MainActivity is exported, as the launcher's; only ShortcutActivity, which isn't, takes a destination.
+        launch(Intent(app, MainActivity::class.java).also(Destination.Backup::putInto))
+        compose.waitForText(string(R.string.garage_title))
+        controller!!.newIntent(Intent(app, MainActivity::class.java).also(Destination.Reminders::putInto))
         compose.waitForIdle()
+        compose.onNodeWithText(string(R.string.reminders_rules)).assertDoesNotExist()
         assertNull(graph.get<PendingDestination>().destination.value)
     }
 

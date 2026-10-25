@@ -7,6 +7,7 @@ import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -15,6 +16,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.security.GeneralSecurityException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -60,6 +62,16 @@ class PhotoCryptoTest {
         assertFalse(crypto.isFileName("../outside.txt"))
         assertFalse(crypto.isFileName(""))
         assertTrue(crypto.isFileName("record-a.jpg"))
+    }
+
+    @Test
+    fun `without a working keystore nothing is encrypted and no key is kept in the clear`() {
+        FakeAndroidKeyStore.uninstall()
+        val crypto = PhotoCrypto(context)
+
+        assertThrows(GeneralSecurityException::class.java) { crypto.encryptTo("record-a.jpg", plain.inputStream()) }
+        assertFalse(File(crypto.photoDir, "record-a.jpg").exists())
+        assertFalse(context.getSharedPreferences("glovebox_photo_keys", Context.MODE_PRIVATE).contains("photo_keyset"))
     }
 
     @Test

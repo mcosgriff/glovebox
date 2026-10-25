@@ -47,6 +47,7 @@ import javax.inject.Singleton
 interface NotifyEntryPoint {
     fun vehicles(): VehicleDao
     fun logs(): VehicleLogs
+    fun pendingDestination(): PendingDestination
     fun settings(): SettingsRepository
     fun noticeLog(): NoticeLogStore
     fun recalls(): RecallRepository

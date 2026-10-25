@@ -8,14 +8,47 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.text.TextPosition
 import io.cosgriff.glovebox.domain.PdfWord
 import java.io.IOException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /**
  * The words of a PDF with where each starts on its page, for `:domain` to read (CarfaxReport). The PDF is
  * read from memory and never written anywhere; PDFBox is told to keep its working data in memory too.
  */
 object PdfWords {
-    /** Null when it isn't a PDF that can be opened (damaged, or encrypted: its decryption isn't bundled). */
-    fun read(context: Context, bytes: ByteArray): List<PdfWord>? = try {
+    /** How long a PDF may take to read; a Carfax report takes well under a second. */
+    private const val TIMEOUT_MILLIS = 20_000L
+
+    /** PDFBox recurses through a document's structure; a deep one needs more than a thread's usual stack. */
+    private const val STACK_BYTES = 16L * 1024 * 1024
+
+    /**
+     * Null when it isn't a PDF that can be opened (damaged, or encrypted: its decryption isn't bundled), or one that
+     * can't be read in time or without running out of stack or memory: PDFBox has looped and overflowed on crafted files.
+     */
+    fun read(context: Context, bytes: ByteArray): List<PdfWord>? = guarded(TIMEOUT_MILLIS) { readNow(context, bytes) }
+
+    /**
+     * [block] on a thread of its own: null if it throws anything, errors included, or isn't done in [timeoutMillis].
+     * A thread that never finishes is left to the daemon it is; nothing waits on it.
+     */
+    internal fun <T : Any> guarded(timeoutMillis: Long, block: () -> T?): T? {
+        val task = FutureTask(block)
+        val thread = Thread(null, task, "pdf-words", STACK_BYTES).apply { isDaemon = true }
+        thread.start()
+        return try {
+            task.get(timeoutMillis, TimeUnit.MILLISECONDS)
+        } catch (_: TimeoutException) {
+            thread.interrupt()
+            null
+        } catch (_: ExecutionException) {
+            null
+        }
+    }
+
+    private fun readNow(context: Context, bytes: ByteArray): List<PdfWord>? = try {
         PDFBoxResourceLoader.init(context.applicationContext)
         PDDocument.load(bytes, "", null, null, MemoryUsageSetting.setupMainMemoryOnly()).use { doc ->
             if (doc.isEncrypted) return null

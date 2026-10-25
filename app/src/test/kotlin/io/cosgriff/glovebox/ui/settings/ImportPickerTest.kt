@@ -117,6 +117,14 @@ class ImportPickerTest {
     }
 
     @Test
+    fun `a PDF that sends the reader too deep, too far or round for ever gives nothing, not a crash`() {
+        assertNull(PdfWords.guarded<String>(1_000) { throw StackOverflowError() })
+        assertNull(PdfWords.guarded<String>(1_000) { throw OutOfMemoryError() })
+        assertNull(PdfWords.guarded(200) { Thread.sleep(60_000); "too late" })
+        assertEquals("read", PdfWords.guarded(1_000) { "read" })
+    }
+
+    @Test
     fun `asked to, a report is filed with the vehicle's documents once the import is written`() = runTest {
         val id = g.vehicle()
         val vm = ImportViewModel(

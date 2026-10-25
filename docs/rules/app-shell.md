@@ -13,6 +13,10 @@ Rules for the lock, navigation, shortcuts, the widget, notifications, the welcom
   `entry<Route>`** (it draws the page colour and hands the route to ViewModels). A route without fields is a
   `data object`. Results go back through the host's `results`. State that must survive a restart goes in
   `rememberSaveable` or a `SavedStateHandle`.
+- **Notifications, the widget and shortcuts open `ShortcutActivity` (`launchIntent`), which isn't exported**; it
+  puts their `Destination` in `PendingDestination` and opens `MainActivity` with nothing on its intent.
+  `MainActivity` is exported, as the launcher's, so **it never reads a destination from its intent**: any app can
+  start it.
 - A notification or shortcut's `Destination` waits in `PendingDestination` until unlock. **Collect that flow;
   don't key an effect on it.** `DestinationViewModel.take` looks up before clearing.
 - Launcher shortcuts (#235): static and generic, **no per-vehicle dynamic or pinned shortcuts**. They open

@@ -106,8 +106,6 @@ class MainActivity : FragmentActivity() {
             return
         }
         enableEdgeToEdge()
-        // Only a fresh launch carries a new tap; a restored activity would replay an old one.
-        if (savedInstanceState == null) pendingDestination.set(Destination.from(intent))
         photoPicker.attach(launchPhotoPicker)
         recordPhotoPicker.attach(launchRecordPhotoPicker) { takeRecordPhoto.launch(it) }
         exportSaver.attach(launchExportSave)
@@ -169,12 +167,6 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
-    }
-
-    /** A notification or launcher shortcut tapped while the app is already open. */
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        pendingDestination.set(Destination.from(intent))
     }
 
     override fun onDestroy() {

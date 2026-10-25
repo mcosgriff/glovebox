@@ -8,6 +8,7 @@ import android.net.Uri
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.PhotoSizing
+import io.cosgriff.glovebox.domain.RecordPhotos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -40,9 +41,16 @@ class VehiclePhotoStore(
         crypto.delete(old)
     }
 
-    /** Decrypted in memory only; null if the file is missing or can't be read. */
+    /**
+     * Decrypted in memory only; null if the file is missing or can't be read. Shrunk to about [PhotoSizing.MAX_EDGE]
+     * while it is decoded: a photo from a backup was never redrawn, and a huge one would run the garage out of memory.
+     */
     suspend fun load(fileName: String): Bitmap? = withContext(Dispatchers.IO) {
-        crypto.decryptBytes(fileName)?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+        val bytes = crypto.decryptBytes(fileName) ?: return@withContext null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        val options = BitmapFactory.Options().apply { inSampleSize = RecordPhotos.sampleSize(bounds.outWidth, bounds.outHeight, PhotoSizing.MAX_EDGE) }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
     }
 
     private companion object {
