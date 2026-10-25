@@ -2,6 +2,7 @@ package io.cosgriff.glovebox
 
 import android.content.Intent
 import io.cosgriff.glovebox.notify.Destination
+import io.cosgriff.glovebox.notify.PendingDestination
 import io.cosgriff.glovebox.notify.ShortcutTask
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,19 +25,30 @@ class ShortcutActivityTest {
         return activity to shadowOf(activity).nextStartedActivity
     }
 
+    private val pending get() = ShellTestApp.graph.get<PendingDestination>()
+
     @Test
     fun `a shortcut hands its task to the app and closes, drawing nothing`() {
         val (activity, started) = open(Intent().also(Destination.Shortcut(ShortcutTask.UPDATE_MILEAGE)::putInto))
+        assertEquals(Destination.Shortcut(ShortcutTask.UPDATE_MILEAGE), pending.destination.value)
         assertEquals(MainActivity::class.java.name, started.component?.className)
-        assertEquals(Destination.Shortcut(ShortcutTask.UPDATE_MILEAGE), Destination.from(started))
+        // MainActivity takes it from PendingDestination, never from an intent another app could send too.
+        assertNull(Destination.from(started))
         assertTrue(activity.isFinishing)
     }
 
     @Test
-    fun `anything but a shortcut's own task opens the app as an ordinary launch`() {
+    fun `a notification's or the widget's destination is handed over the same way`() {
         val (activity, started) = open(Intent().also(Destination.Recalls(3)::putInto))
+        assertEquals(Destination.Recalls(3), pending.destination.value)
         assertEquals(MainActivity::class.java.name, started.component?.className)
-        assertNull(Destination.from(started))
         assertTrue(activity.isFinishing)
+    }
+
+    @Test
+    fun `an intent without one opens the app as it was left`() {
+        val (_, started) = open(Intent())
+        assertNull(pending.destination.value)
+        assertEquals(MainActivity::class.java.name, started.component?.className)
     }
 }

@@ -86,6 +86,8 @@ android {
     // Gradle's default 512 MB test heap ran out under `build`, where Robolectric screen tests share the
     // machine with every other module: they died of OutOfMemoryError or timed out waiting on a busy JVM.
     testOptions.unitTests.all { it.maxHeapSize = "2g" }
+    // :data's fake Android Keystore: PhotoCrypto refuses to work without one, as on a phone whose Keystore fails.
+    sourceSets { named("test") { kotlin.directories.add("${rootDir}/data/src/testShared/kotlin") } }
 
     lint {
         abortOnError = true

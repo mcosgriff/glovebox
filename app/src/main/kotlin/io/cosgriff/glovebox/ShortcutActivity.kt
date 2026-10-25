@@ -1,13 +1,17 @@
 package io.cosgriff.glovebox
 
-import io.cosgriff.glovebox.notify.launchIntent
 import android.app.Activity
 import android.os.Bundle
+import dagger.hilt.android.EntryPointAccessors
 import io.cosgriff.glovebox.notify.Destination
+import io.cosgriff.glovebox.notify.NotifyEntryPoint
+import io.cosgriff.glovebox.notify.appIntent
 
 /**
- * Where the launcher shortcuts point (#235, `res/xml/shortcuts.xml`). It hands the shortcut to
- * [MainActivity] the way a notification does and closes, drawing nothing.
+ * Where the launcher shortcuts, the notifications and the widget point (#235, `res/xml/shortcuts.xml`,
+ * `launchIntent`). It hands their destination to [MainActivity] through `PendingDestination` and closes,
+ * drawing nothing. It isn't exported, so no other app can start it: [MainActivity] is, as the launcher's,
+ * and takes no destination from its intent, so another app can't choose the screen the user lands on.
  *
  * Android starts a static shortcut with `FLAG_ACTIVITY_CLEAR_TASK`, which pointed at [MainActivity] would
  * end the running app and lose whatever was half done in it. This activity has a task of its own (an empty
@@ -16,9 +20,8 @@ import io.cosgriff.glovebox.notify.Destination
 class ShortcutActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Only a shortcut's own task is passed on; anything else opens the app as an ordinary launch.
-        val shortcut = Destination.from(intent) as? Destination.Shortcut
-        startActivity(shortcut.launchIntent(this))
+        EntryPointAccessors.fromApplication(applicationContext, NotifyEntryPoint::class.java).pendingDestination().set(Destination.from(intent))
+        startActivity(appIntent())
         finish()
     }
 }

@@ -33,6 +33,8 @@ class DeleteAllViewModelTest {
     @get:Rule(order = 1) val main = MainDispatcherRule()
 
     @Before fun keyStore() {
+        // In place of the one ScreenshotApp installs: this one shows which keys are left.
+        io.cosgriff.glovebox.data.FakeAndroidKeyStore.uninstall()
         FakeKeyStore.entries.clear()
         FakeKeyStore.entries += setOf("glovebox_db_kek", "glovebox_photo_kek")
         Security.insertProviderAt(FakeKeyStore.Provider, 1)

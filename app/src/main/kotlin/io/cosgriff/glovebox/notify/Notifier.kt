@@ -17,6 +17,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.cosgriff.glovebox.MainActivity
+import io.cosgriff.glovebox.ShortcutActivity
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.Notice
 import javax.inject.Inject
@@ -86,12 +87,20 @@ sealed interface Destination {
 
 /**
  * Opens Glovebox at this destination, or as it was left when there is none; the lock comes first either way.
- * The running app is brought forward rather than a second `MainActivity` started, which `MainActivity`'s
+ * It goes through [ShortcutActivity], which isn't exported, so only this app's own notifications, widget and
+ * shortcuts can name a destination. `MainActivity` is exported, as the launcher's, and reads none from its intent.
+ */
+fun Destination?.launchIntent(context: Context): Intent = Intent(context, ShortcutActivity::class.java).apply {
+    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    this@launchIntent?.putInto(this)
+}
+
+/**
+ * The running app brought forward rather than a second `MainActivity` started, which `MainActivity`'s
  * "a launcher intent that isn't the task's root finishes at once" check relies on.
  */
-fun Destination?.launchIntent(context: Context): Intent = Intent(context, MainActivity::class.java).apply {
+fun Context.appIntent(): Intent = Intent(this, MainActivity::class.java).apply {
     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-    this@launchIntent?.putInto(this)
 }
 
 /** What a launcher shortcut does. [kind] is the extra `res/xml/shortcuts.xml` sets, so it never changes. */

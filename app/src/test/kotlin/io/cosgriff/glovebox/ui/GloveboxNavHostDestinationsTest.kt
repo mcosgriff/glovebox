@@ -44,12 +44,13 @@ class GloveboxNavHostDestinationsTest {
     }
 
     private fun open(to: Destination?) {
-        val intent = Intent(app, MainActivity::class.java).also { to?.putInto(it) }
-        controller = Robolectric.buildActivity(MainActivity::class.java, intent).setup()
+        to?.let(graph.get<PendingDestination>()::set)
+        controller = Robolectric.buildActivity(MainActivity::class.java, Intent(app, MainActivity::class.java)).setup()
     }
 
     private fun arrive(to: Destination) {
-        controller!!.newIntent(Intent(app, MainActivity::class.java).also(to::putInto))
+        graph.get<PendingDestination>().set(to)
+        controller!!.newIntent(Intent(app, MainActivity::class.java))
     }
 
     private fun gone() = compose.waitUntil(10_000) { graph.get<PendingDestination>().destination.value == null }

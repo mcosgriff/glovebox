@@ -22,7 +22,13 @@ android {
     }
 
     // MigrationTest reads every exported schema, and runs on the JVM (Robolectric), so it is part of `build`.
-    sourceSets { named("test") { assets.directories.add("$projectDir/schemas") } }
+    // The fake Android Keystore is shared with :app's tests, which need PhotoCrypto to work as on a phone.
+    sourceSets {
+        named("test") {
+            assets.directories.add("$projectDir/schemas")
+            kotlin.directories.add("$projectDir/src/testShared/kotlin")
+        }
+    }
     testOptions.unitTests.isIncludeAndroidResources = true
 
     // As in :app: no warnings are kept, and version news is left to Dependabot.

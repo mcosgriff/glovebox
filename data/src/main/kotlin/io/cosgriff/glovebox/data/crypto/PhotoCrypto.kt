@@ -5,11 +5,14 @@ import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.StreamingAead
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
+import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient
 import com.google.crypto.tink.streamingaead.StreamingAeadConfig
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.io.OutputStream
+import java.security.GeneralSecurityException
+import java.security.ProviderException
 
 /**
  * Encrypts receipt, parts and vehicle photos at rest with Tink streaming AEAD.
@@ -19,13 +22,22 @@ class PhotoCrypto(private val context: Context) {
 
     private val aead: StreamingAead by lazy {
         StreamingAeadConfig.register()
-        AndroidKeysetManager.Builder()
+        // Tink makes a new keyset in the clear when the Keystore can't make its key, and reads one without it
+        // when the Keystore fails. Both are refused: the master key is made and tried first, so a failure
+        // stops before any keyset is written, and the keyset is used only while the Keystore protects it.
+        // Failing here leaves the lazy unset, so the next use tries again.
+        try {
+            AndroidKeystoreKmsClient.getOrGenerateNewAeadKey(MASTER_KEY_URI)
+        } catch (e: ProviderException) {
+            throw GeneralSecurityException("the Android Keystore can't protect the photo key", e)
+        }
+        val manager = AndroidKeysetManager.Builder()
             .withSharedPref(context, KEYSET_NAME, PREFS_NAME)
             .withKeyTemplate(KeyTemplates.get("AES256_GCM_HKDF_4KB"))
             .withMasterKeyUri(MASTER_KEY_URI)
             .build()
-            .keysetHandle
-            .getPrimitive(RegistryConfiguration.get(), StreamingAead::class.java)
+        if (!manager.isUsingKeystore) throw GeneralSecurityException("the Android Keystore can't protect the photo key")
+        manager.keysetHandle.getPrimitive(RegistryConfiguration.get(), StreamingAead::class.java)
     }
 
     val photoDir: File get() = File(context.filesDir, "photos").apply { mkdirs() }
@@ -38,6 +50,8 @@ class PhotoCrypto(private val context: Context) {
 
     /** Encrypts to [target], which may sit outside [photoDir] for now; it must end up there under [fileName] to be readable. */
     fun encryptTo(target: File, fileName: String, source: InputStream) {
+        // The key first, so a keystore failure leaves no empty file behind.
+        val aead = aead
         target.outputStream().use { raw ->
             aead.newEncryptingStream(raw, fileName.toByteArray()).use { enc -> source.copyTo(enc) }
         }

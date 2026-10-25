@@ -21,7 +21,8 @@ Rules for the import format and schemas, schedule and history imports, the Carfa
   `CatalogText.kt`, `strings.xml` and `LineWords`.** Records match on date and odometer. **Readings that look
   mistyped are left out unless the user ticks them** (a shop's typo once added 60,000 miles). "Not in the
   future" is against the `today` passed to `ImportFormat.parse`.
-- Carfax report PDF (#160): read in memory with PDFBox, never written to disk. **Only service visits are
+- Carfax report PDF (#160): read in memory with PDFBox, never written to disk, **on a thread of its own with a
+  time limit and every error caught** (`PdfWords.guarded`): a crafted PDF has looped or overflowed PDFBox. **Only service visits are
   taken**, and a comment becomes a catalog line only where the wording is plain; pads on an unnamed axle are
   never front or rear. A visit with no mileage is refused, never guessed. Ligatures are repaired only into known
   words, and **a misnamed letter is learnt from the whole report** (two different known words), never from one.

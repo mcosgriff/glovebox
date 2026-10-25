@@ -77,6 +77,8 @@ class ShellTestApp : Application(), GeneratedComponentManager<Any> {
     override fun onCreate() {
         super.onCreate()
         AppText.install(this)
+        // PhotoCrypto works only behind an Android Keystore, which Robolectric hasn't got.
+        io.cosgriff.glovebox.data.FakeAndroidKeyStore.install()
         graph = ShellGraph(this)
     }
 
@@ -180,6 +182,7 @@ class ShellGraph(private val app: Application) {
 
         override fun vehicles() = db.vehicles()
         override fun logs() = get<VehicleLogs>()
+        override fun pendingDestination() = get<io.cosgriff.glovebox.notify.PendingDestination>()
         override fun settings() = get<SettingsRepository>()
         override fun noticeLog() = get<io.cosgriff.glovebox.data.settings.NoticeLogStore>()
         override fun recalls() = get<io.cosgriff.glovebox.data.nhtsa.RecallRepository>()
