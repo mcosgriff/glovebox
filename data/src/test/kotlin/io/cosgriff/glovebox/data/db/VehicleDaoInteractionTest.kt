@@ -55,6 +55,30 @@ class VehicleDaoInteractionTest {
     }
 
     @Test
+    fun `a VIN looked up again fills only what is empty, and never what the owner has since typed`() = runBlocking {
+        // A blank left by an older version counts as empty.
+        val id = vehicles.add(testVehicle().copy(engine = "4.0L 6-cyl", tpms = "Indirect", fuel = " "), firstReading = null)
+
+        vehicles.fillFromVin(
+            id, bodyClass = "Sport Utility Vehicle (SUV)", engine = "3.5L 6-cyl", fuel = "Gasoline",
+            transmission = "5-speed Automatic", engineCode = "1GR-FE", tpms = "Direct", series = "GRN280L/GRN285L",
+        )
+        // A second answer finds nothing empty to fill.
+        vehicles.fillFromVin(id, bodyClass = "Pickup", engine = null, fuel = null, transmission = null, engineCode = "2GR-FKS", tpms = null, series = null)
+
+        val v = row(id)
+        assertEquals("4.0L 6-cyl", v.engine)
+        assertEquals("Indirect", v.tpms)
+        assertEquals("Sport Utility Vehicle (SUV)", v.bodyClass)
+        // The drivetrain is the owner's pick, never filled from a lookup.
+        assertNull(v.drivetrain)
+        assertEquals("Gasoline", v.fuel)
+        assertEquals("5-speed Automatic", v.transmission)
+        assertEquals("1GR-FE", v.engineCode)
+        assertEquals("GRN280L/GRN285L", v.series)
+    }
+
+    @Test
     fun `one-column writes change that column and leave a recall check that landed meanwhile alone`() = runBlocking {
         val id = add()
         val stale = row(id)

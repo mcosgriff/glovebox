@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.DecodedField
+import io.cosgriff.glovebox.ui.garage.FakeNhtsa
+import io.cosgriff.glovebox.ui.garage.truckDecode
 import android.content.ClipboardManager
 import android.content.Intent
 import androidx.compose.ui.test.SemanticsMatcher
@@ -52,6 +55,7 @@ class VehicleDetailsScreenTest {
     private val compose = createComposeRule()
     @get:Rule val rules: RuleChain = RuleChain.outerRule(g).around(compose)
 
+    private val nhtsa = FakeNhtsa().apply { decode = truckDecode }
     private val opened = mutableListOf<String>()
     private val archived = mutableListOf<Pair<String, () -> Unit>>()
 
@@ -59,6 +63,7 @@ class VehicleDetailsScreenTest {
         VehicleDetailsViewModel(
         routeHandle(VehicleDetailsRoute(id)), g.db.vehicles(), g.db.schedule(), g.db.recalls(), g.db.service(), g.db.odometer(),
         g.db.torque(), g.db.documents(), g.vehiclePhotos, g.photoPicker, g.archiver, g.db.units(), g.knownTakes, g.makerDocuments, g.settings,
+        nhtsa.client,
         )
     }
 
@@ -90,6 +95,64 @@ class VehicleDetailsScreenTest {
     private fun field(label: String) = compose.onNode(hasSetTextAction() and hasText(label))
     private fun longClickLabelled(label: String) = SemanticsMatcher("long-clicks to $label") { it.config.getOrElseNullable(SemanticsActions.OnLongClick) { null }?.label == label }
     private fun tap(label: String) = compose.onNode(hasText(label) and hasClickAction()).performScrollTo().click()
+
+    @Test
+    fun `looking the VIN up again offers only what is missing, sends only the VIN, and fills it when confirmed`() {
+        // The truck has its engine, drive, transmission and body already; vPIC's engine reads differently and is left alone.
+        val id = g.add(VehicleFixtures.truck)
+        show(id)
+        tap(g.string(R.string.details_vin_lookup))
+        compose.awaitThat { compose.onAllNodes(hasText(g.string(R.string.details_vin_lookup_add))).fetchSemanticsNodes().isNotEmpty() }
+        val asked = nhtsa.asked.single { "DecodeVinValues" in it.encodedPath }
+        assertTrue(asked.encodedPath.endsWith("/${VehicleFixtures.truck.vin}"))
+        // No year goes with it: vPIC answers with whatever year it is sent, which would hide a VIN that is someone else's.
+        assertEquals(setOf("format"), asked.parameters.names())
+        compose.onNodeWithText("1GR-XX").assertExists()
+        compose.onNodeWithText("XYZ100L").assertExists()
+
+        text(R.string.details_vin_lookup_add).click()
+        compose.awaitThat { g.vehicle(id)?.engineCode == "1GR-XX" }
+        val v = g.vehicle(id)!!
+        assertEquals("4.0L V6", v.engine)
+        assertEquals("Gasoline", v.fuel)
+        assertEquals("Direct", v.tpms)
+        assertEquals("XYZ100L", v.series)
+    }
+
+    @Test
+    fun `a VIN that decodes as another make or year fills nothing`() {
+        val id = g.add(VehicleFixtures.truck.copy(fuel = null))
+        val vm = show(id)
+        for (other in listOf(truckDecode + ("Make" to "FORD"), truckDecode + ("ModelYear" to "2018"))) {
+            nhtsa.decode = other
+            vm.lookUpVin()
+            compose.awaitThat { vm.vinLookup.value is VinLookup.NotThisVehicle }
+            vm.closeVinLookup()
+        }
+        assertEquals(VehicleFixtures.truck.copy(id = id, fuel = null), g.vehicle(id))
+    }
+
+    @Test
+    fun `the drivetrain is never offered by a lookup, since it is the owner's pick`() {
+        val id = g.add(VehicleFixtures.truck.copy(drivetrain = null))
+        val vm = show(id)
+        vm.lookUpVin()
+        compose.awaitThat { vm.vinLookup.value is VinLookup.Found }
+        assertFalse(DecodedField.DRIVE in (vm.vinLookup.value as VinLookup.Found).additions)
+    }
+
+    @Test
+    fun `NHTSA out of reach changes nothing, and a decode with nothing new says so`() {
+        nhtsa.decode = null
+        val id = g.add(VehicleFixtures.truck.copy(fuel = "Gasoline", engineCode = "1GR-XX", tpms = "Direct", series = "XYZ100L"))
+        val vm = show(id)
+        vm.lookUpVin()
+        compose.awaitThat { vm.vinLookup.value == VinLookup.Failed }
+
+        nhtsa.decode = truckDecode
+        vm.lookUpVin()
+        compose.awaitThat { vm.vinLookup.value == VinLookup.Found(emptyMap()) }
+    }
 
     @Test
     fun `the nickname is saved as it is typed, cleaned`() {

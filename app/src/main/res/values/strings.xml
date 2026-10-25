@@ -120,6 +120,9 @@
     <string name="powertrain_flex_fuel">Flex-fuel</string>
     <string name="powertrain_electric">Electric</string>
     <string name="add_vehicle_transmission">Transmission</string>
+    <string name="add_vehicle_engine_code">Engine code</string>
+    <string name="add_vehicle_tpms">Tire pressure sensors</string>
+    <string name="add_vehicle_series">Chassis code</string>
     <string name="add_vehicle_recalls_checking">Checking…</string>
     <string name="add_vehicle_recalls_failed">Couldn\'t check</string>
     <string name="add_vehicle_recalls_none">None found</string>
@@ -648,6 +651,16 @@
     <string name="details_entered_by_you">Entered by you</string>
     <string name="details_source_trim_confirmed">Source: NHTSA vPIC, decoded from the VIN · trim confirmed by you</string>
     <string name="details_source">Source: NHTSA vPIC, decoded from the VIN</string>
+    <string name="details_vin_lookup">Look up details from the VIN</string>
+    <string name="details_vin_lookup_note">Fills in only what is empty here. Only the VIN is sent to NHTSA.</string>
+    <string name="details_vin_lookup_title">From NHTSA</string>
+    <string name="details_vin_lookup_asking">Asking NHTSA…</string>
+    <string name="details_vin_lookup_failed">Couldn\'t reach NHTSA. Check your connection and try again.</string>
+    <string name="details_vin_lookup_other">NHTSA reads this VIN as a %1$s, not this vehicle, so nothing was added. Check the VIN.</string>
+    <string name="details_vin_lookup_unidentified">NHTSA couldn\'t identify this VIN, so nothing was added. Check the VIN.</string>
+    <string name="details_vin_lookup_nothing">NHTSA has nothing to add: everything it knows is already here.</string>
+    <string name="details_vin_lookup_found">NHTSA has these, and they\'re empty here. Nothing already saved is changed.</string>
+    <string name="details_vin_lookup_add">Add these</string>
     <string name="details_section_takes">WHAT IT TAKES</string>
     <string name="details_part_numbers">Part numbers</string>
     <string name="details_copy_parts">Copy the part numbers</string>

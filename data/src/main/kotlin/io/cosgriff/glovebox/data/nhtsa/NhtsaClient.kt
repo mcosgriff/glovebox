@@ -41,6 +41,10 @@ data class DecodedVehicle(
     val transmission: String?,
     val gvwr: String?,
     val plant: String?,
+    /** Tire pressure monitoring: "Direct" or "Indirect". */
+    val tpms: String? = null,
+    /** The maker's chassis code ("GRN280L/GRN285L"), as service manuals and parts catalogues name the vehicle. */
+    val series: String? = null,
     /** vPIC "0" means a clean decode; anything else is a partial decode or a warning. */
     val errorCode: String?,
     val errorText: String?,
@@ -51,6 +55,10 @@ data class DecodedVehicle(
  */
 class NhtsaClient(private val http: HttpClient) {
 
+    /**
+     * The VIN alone. vPIC suggests sending `modelyear` too, but it answers with whatever year it is sent, so a year
+     * would hide a VIN that belongs to another vehicle (#462).
+     */
     suspend fun decodeVin(vin: String): DecodedVehicle {
         val body: JsonObject = http.get("$VPIC/vehicles/DecodeVinValues/$vin") {
             parameter("format", "json")
@@ -79,6 +87,8 @@ class NhtsaClient(private val http: HttpClient) {
             transmission = listOfNotNull(speeds?.let { "$it-speed" }, style).joinToString(" ").ifEmpty { null },
             gvwr = r.text("GVWR"),
             plant = listOfNotNull(r.text("PlantCity"), r.text("PlantCountry")).joinToString(", ").ifEmpty { null },
+            tpms = r.text("TPMS"),
+            series = r.text("Series"),
             errorCode = r.text("ErrorCode"),
             errorText = r.text("ErrorText"),
         )

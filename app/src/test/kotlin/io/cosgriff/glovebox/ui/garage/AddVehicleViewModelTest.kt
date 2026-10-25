@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.DecodedField
 import io.cosgriff.glovebox.domain.DecodeQuality
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.Powertrain
@@ -65,8 +66,11 @@ class AddVehicleViewModelTest {
                 DecodedField.BODY to "Sport Utility Vehicle (SUV)",
                 DecodedField.DRIVE to "4WD/4-Wheel Drive/4x4",
                 DecodedField.ENGINE to "4.0L 6-cyl",
+                DecodedField.ENGINE_CODE to "1GR-XX",
                 DecodedField.FUEL to "Gasoline",
                 DecodedField.TRANSMISSION to "5-speed Automatic",
+                DecodedField.TPMS to "Direct",
+                DecodedField.SERIES to "XYZ100L",
             ),
             vm.fields,
         )
@@ -149,6 +153,8 @@ class AddVehicleViewModelTest {
         assertEquals("", vm.trim)
         assertEquals(Powertrain.HYBRID, vm.powertrain)
         vm.onTrimChange("SR5 Premium")
+        vm.correct(DecodedField.ENGINE_CODE, "1GR-YY")
+        vm.correct(DecodedField.TPMS, "")
         vm.onOdometerChange("61,250")
         waitFor("the recall lookup") { vm.recalls is RecallLookup.Found }
 
@@ -162,6 +168,10 @@ class AddVehicleViewModelTest {
         assertTrue(v.trimConfirmed)
         assertEquals(Powertrain.HYBRID.name, v.powertrain)
         assertEquals("4.0L 6-cyl", v.engine)
+        // Corrected on the confirm step, and cleared there.
+        assertEquals("1GR-YY", v.engineCode)
+        assertNull(v.tpms)
+        assertEquals("XYZ100L", v.series)
         assertEquals(DistanceUnit.KILOMETERS.name, v.distanceUnit)
         assertEquals(listOf(61_250), db.odometer().readingsFor(saved!!).map { it.odometer })
         assertEquals(listOf("26V700000"), db.recalls().recallsFor(saved!!).map { it.campaign })

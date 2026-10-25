@@ -103,7 +103,7 @@ class BackupWriterTest {
         val manifest = Json.parseToJsonElement(String(entries.first().bytes)).jsonObject
         assertEquals(BackupEntryKind.MANIFEST, entries.first().kind)
         assertEquals("2026-05-04", manifest["createdOn"]!!.jsonPrimitive.content)
-        assertEquals(32, manifest["schemaVersion"]!!.jsonPrimitive.int)
+        assertEquals(33, manifest["schemaVersion"]!!.jsonPrimitive.int)
         val counts = manifest["counts"]!!.jsonObject
         assertEquals(listOf(1, 2, 2, 1), listOf("vehicles", "records", "photos", "documents").map { counts[it]!!.jsonPrimitive.int })
 

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.DecodedField
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -124,7 +125,11 @@ class AddVehicleScreenTest {
         decode()
         compose.onNodeWithText(vin).assertExists()
         compose.onNodeWithText(VehicleText.title(2019, "TOYOTA", "4Runner", trim = null)!!).assertExists()
-        text("4.0L 6-cyl · 1GR-XX · ${str(R.string.add_vehicle_horsepower, "270")}").assertExists()
+        text("4.0L 6-cyl · ${str(R.string.add_vehicle_horsepower, "270")}").assertExists()
+        // The engine code, the tire pressure sensors and the chassis code are rows of their own, kept and correctable.
+        text("1GR-XX").assertExists()
+        text("Direct").assertExists()
+        text("XYZ100L").assertExists()
         text("Class 1D").assertExists()
         text("Testville, Nowhere").assertExists()
         compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText(str(R.string.add_vehicle_recalls_found, "2")).fetchSemanticsNodes().isNotEmpty() }

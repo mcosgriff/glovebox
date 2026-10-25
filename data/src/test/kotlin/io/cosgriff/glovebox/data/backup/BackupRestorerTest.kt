@@ -90,7 +90,7 @@ class BackupRestorerTest {
     private suspend fun targetState() = Triple(target.vehicles().all(), target.service().recordsFor(target.vehicles().all().first().id), crypto.photoDir.list()!!.sorted())
 
     /** A file written the way BackupWriter writes one, with whatever entries a test needs. */
-    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 32): File {
+    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 33): File {
         val file = File(context.cacheDir, "crafted.glovebox")
         file.outputStream().use { out ->
             BackupEntryWriter(BackupOutputStream(out, password, quick)).use { w ->
@@ -123,7 +123,7 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 32, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 33, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         assertEquals(source.service().recordsFor(id), target.service().recordsFor(id))

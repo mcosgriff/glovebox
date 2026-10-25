@@ -50,6 +50,30 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET vin = :vin WHERE id = :id")
     suspend fun setVin(id: Long, vin: String)
 
+    /**
+     * The VIN looked up again (#462): each column is filled only while it is empty (null or blank), in the one
+     * statement, so nothing the owner typed or corrected is replaced, not even an edit saved while the lookup was
+     * out. The drivetrain isn't here: it is the owner's pick, never filled for them.
+     */
+    @Query(
+        """UPDATE vehicles SET bodyClass = COALESCE(NULLIF(TRIM(bodyClass), ''), :bodyClass),
+            engine = COALESCE(NULLIF(TRIM(engine), ''), :engine), fuel = COALESCE(NULLIF(TRIM(fuel), ''), :fuel),
+            transmission = COALESCE(NULLIF(TRIM(transmission), ''), :transmission),
+            engineCode = COALESCE(NULLIF(TRIM(engineCode), ''), :engineCode), tpms = COALESCE(NULLIF(TRIM(tpms), ''), :tpms),
+            series = COALESCE(NULLIF(TRIM(series), ''), :series)
+            WHERE id = :id""",
+    )
+    suspend fun fillFromVin(
+        id: Long,
+        bodyClass: String?,
+        engine: String?,
+        fuel: String?,
+        transmission: String?,
+        engineCode: String?,
+        tpms: String?,
+        series: String?,
+    )
+
     // Single-column writes, so an edit never puts back a stale copy of the rest of the row.
     @Query("UPDATE vehicles SET nickname = :nickname WHERE id = :id")
     suspend fun setNickname(id: Long, nickname: String?)

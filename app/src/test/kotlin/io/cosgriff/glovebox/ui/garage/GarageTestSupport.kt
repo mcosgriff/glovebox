@@ -190,6 +190,8 @@ val truckDecode: Map<String, String> = mapOf(
     "GVWR" to "Class 1D",
     "PlantCity" to "Testville",
     "PlantCountry" to "Nowhere",
+    "TPMS" to "Direct",
+    "Series" to "XYZ100L",
     "ErrorCode" to "0",
 )
 

@@ -33,6 +33,12 @@ data class VehicleEntity(
     val drivetrain: String? = null,
     val transmission: String? = null,
     val bodyClass: String? = null,
+    /** vPIC's `EngineModel`, the maker's engine code ("1GR-FE"). */
+    val engineCode: String? = null,
+    /** vPIC's `TPMS`: how the tire pressure sensors work, "Direct" or "Indirect". */
+    val tpms: String? = null,
+    /** vPIC's `Series`: the maker's chassis code ("GRN280L/GRN285L"), as service manuals and parts catalogues use it. */
+    val series: String? = null,
     val nickname: String? = null,
     /** As typed, in capitals (`LicensePlates.clean`). Kept on the phone only. */
     val plate: String? = null,

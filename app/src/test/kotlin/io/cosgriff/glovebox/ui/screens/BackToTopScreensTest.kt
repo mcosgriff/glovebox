@@ -96,7 +96,7 @@ class BackToTopScreensTest {
             nickname = Fixtures.truck.nickname.orEmpty(), noticePrefs = NoticePrefs(), onNicknameChange = {},
             onBack = {}, onOpenRecalls = {}, onOpenSchedule = {}, onDelete = {}, onOpenTorqueSpecs = {}, onOpenMoreTakes = {},
             onOpenReadings = {}, onOpenImport = {}, onOpenDocuments = {}, onClearHistory = {},
-            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onAddVin = {}, onSetOffset = {}, onChangeUnit = {},
+            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onAddVin = {}, onLookUpVin = {}, onSetOffset = {}, onChangeUnit = {},
             onSell = {}, onPickPhoto = {}, onRemovePhoto = {},
         )
     }

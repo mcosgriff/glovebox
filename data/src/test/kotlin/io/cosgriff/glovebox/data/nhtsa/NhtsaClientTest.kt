@@ -59,6 +59,17 @@ class NhtsaClientTest {
     }
 
     @Test
+    fun `a decode keeps the engine code, the tire pressure sensors and the chassis code`() = runBlocking {
+        nhtsa.answer = { json(decodeAnswer("ModelYear" to "2019", "EngineModel" to "1GR-FE", "TPMS" to "Direct", "Series" to "GRN280L/GRN285L")) }
+
+        val decoded = nhtsa.client.decodeVin(vin)
+
+        assertEquals("1GR-FE", decoded.engineModel)
+        assertEquals("Direct", decoded.tpms)
+        assertEquals("GRN280L/GRN285L", decoded.series)
+    }
+
+    @Test
     fun `a partial decode leaves what vPIC didn't say empty`() = runBlocking {
         nhtsa.answer = { json(decodeAnswer("ModelYear" to "", "DisplacementL" to "about two", "TransmissionStyle" to "Manual/Standard", "PlantCountry" to "MEXICO", "ErrorCode" to "6")) }
 
