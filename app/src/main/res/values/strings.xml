@@ -157,7 +157,7 @@
     <string name="add_vehicle_gvwr">GVWR</string>
     <string name="add_vehicle_built_in">Built in</string>
     <string name="add_vehicle_recalls">Recalls (NHTSA)</string>
-    <string name="add_vehicle_source">Source: NHTSA vPIC decoder · tap the vehicle, or any of the first five values, to correct it</string>
+    <string name="add_vehicle_source">Source: NHTSA vPIC decoder · tap the vehicle, or any of the first eight values, to correct it</string>
     <string name="add_vehicle_unit_note">What the odometer counts in. Readings and intervals for this vehicle are typed and shown in it. It can be changed later in Vehicle details.</string>
     <string name="add_vehicle_trim_confirm">Trim — please confirm</string>
     <string name="add_vehicle_trim">Trim</string>
