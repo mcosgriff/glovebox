@@ -86,6 +86,8 @@ and there is no baseline: fix a warning, or suppress that one case with a commen
 
 ## Decisions — don't change without asking
 
+Each has an ADR in `docs/adr/` with its reasons and the options turned down; read it before proposing a change.
+
 - **Encryption:** DB passphrase is random, wrapped by an AES-GCM Android Keystore key with
   `setUserAuthenticationRequired(false)` and NOT `setUnlockedDeviceRequired`, because WorkManager must open
   the DB while the phone is locked for reminders and recall checks. Biometrics gate the UI only.

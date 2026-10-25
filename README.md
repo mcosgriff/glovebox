@@ -57,6 +57,16 @@ README itself), and Obtainium then installs and updates it from GitHub Releases.
 `https://github.com/mcosgriff/glovebox` in Obtainium by hand, or download the APK from the
 [latest release](https://github.com/mcosgriff/glovebox/releases/latest). Android 10 or later, 64-bit ARM.
 
+## Moving to a new phone
+
+Your data's encryption keys can't leave the phone they were made on, and Android's own backup is turned
+off, so **Glovebox's backup file is the only way to keep your data** through a new phone or a reset.
+
+- Make one in **Settings → Encrypted backup**. Android asks where to save it (a folder, USB drive or a
+  cloud app you pick); Glovebox never uploads it. Turn on the monthly reminder there too.
+- On the new phone, install Glovebox and choose **Restore from a backup** on the welcome screen.
+- **A forgotten backup password can't be recovered.** Keep it in your password manager.
+
 ## Verify your download
 
 Every release APK is signed with the same key. Its SHA-256 certificate fingerprint is:
@@ -115,6 +125,9 @@ with `--bundle`.
 2. Run on a device or emulator with the `app` run configuration.
 3. Run the fast tests anytime: `./gradlew :domain:test`
 4. Upgrade the Android Gradle Plugin with Tools → AGP Upgrade Assistant.
+
+Tests, dependency changes and pull requests: [`CONTRIBUTING.md`](CONTRIBUTING.md). Why the app is built
+the way it is: [`docs/adr/`](docs/adr/).
 
 ## Releasing (maintainers)
 
