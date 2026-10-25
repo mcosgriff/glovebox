@@ -14,6 +14,12 @@ data class RecallNotice(
     val consequence: String?,
     val remedy: String?,
     val reportedOn: LocalDate?,
+    /** The maker says not to drive the vehicle until it is repaired (NHTSA's `parkIt`, #461). */
+    val doNotDrive: Boolean = false,
+    /** The maker says to park it outside, away from buildings, until it is repaired (`parkOutSide`): a fire risk. */
+    val parkOutside: Boolean = false,
+    /** The fix is a software update sent over the air (`overTheAirUpdate`). */
+    val overTheAir: Boolean = false,
 )
 
 /**
@@ -44,8 +50,11 @@ data class RecallChanges(
     val withdrawn: List<Long>,
 )
 
-/** Open recalls for a banner or chip; [only] names the component when there is exactly one. */
-data class OpenRecalls(val count: Int, val only: String?)
+/**
+ * Open recalls for a banner or chip; [only] names the component when there is exactly one. [doNotDrive] and
+ * [parkOutside] are true when any open recall says so; false never means the vehicle is safe.
+ */
+data class OpenRecalls(val count: Int, val only: String?, val doNotDrive: Boolean = false, val parkOutside: Boolean = false)
 
 /** Where a make's owners look a VIN up. [name] is the make as people write it. */
 data class ManufacturerSite(val name: String, val recallUrl: String)
@@ -118,7 +127,12 @@ object Recalls {
 
     fun open(recalls: List<StoredRecall>): OpenRecalls {
         val open = sorted(recalls).filter { it.open }
-        return OpenRecalls(open.size, open.singleOrNull()?.let { componentLabel(it.notice.component) })
+        return OpenRecalls(
+            open.size,
+            open.singleOrNull()?.let { componentLabel(it.notice.component) },
+            doNotDrive = open.any { it.notice.doNotDrive },
+            parkOutside = open.any { it.notice.parkOutside },
+        )
     }
 
     // Only pages checked to exist; any other make gets NHTSA's lookup instead of a guessed address.

@@ -96,6 +96,9 @@ class RecallRepository(
                     consequence = n.consequence,
                     remedy = n.remedy,
                     reportedOn = n.reportedOn,
+                    doNotDrive = n.doNotDrive,
+                    parkOutside = n.parkOutside,
+                    overTheAir = n.overTheAir,
                 )
             },
             withdrawn = changes.withdrawn,
@@ -105,7 +108,7 @@ class RecallRepository(
     }
 }
 
-fun RecallEntity.toNotice() = RecallNotice(campaign, component, summary, consequence, remedy, reportedOn)
+fun RecallEntity.toNotice() = RecallNotice(campaign, component, summary, consequence, remedy, reportedOn, doNotDrive, parkOutside, overTheAir)
 
 fun RecallEntity.toStored() = StoredRecall(id, toNotice(), done = completedOn != null, archived = archivedOn != null)
 
@@ -118,4 +121,7 @@ private fun RecallNotice.toEntity(vehicleId: Long, firstSeenOn: LocalDate) = Rec
     remedy = remedy,
     reportedOn = reportedOn,
     firstSeenOn = firstSeenOn,
+    doNotDrive = doNotDrive,
+    parkOutside = parkOutside,
+    overTheAir = overTheAir,
 )

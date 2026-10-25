@@ -76,7 +76,7 @@ class BackupRestorerTest {
             listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Oil change", catalogId = "oil_change")),
         )
         source.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = photo("receipt-a.jpg", "the receipt"))))
-        source.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "99V000000", component = "Made-up", summary = "Made-up", firstSeenOn = day, completedOn = day, serviceRecordId = record)))
+        source.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "99V000000", component = "Made-up", summary = "Made-up", firstSeenOn = day, completedOn = day, serviceRecordId = record, doNotDrive = true, parkOutside = true, overTheAir = true)))
         source.recalls().setNames(id, listOf("4RUNNER MADE-UP"))
         return File(context.cacheDir, "backup.glovebox").also { f ->
             f.outputStream().use { BackupWriter(source, crypto, settings).write(it, password, day) }
@@ -91,7 +91,7 @@ class BackupRestorerTest {
     private suspend fun targetState() = Triple(target.vehicles().all(), target.service().recordsFor(target.vehicles().all().first().id), crypto.photoDir.list()!!.sorted())
 
     /** A file written the way BackupWriter writes one, with whatever entries a test needs. */
-    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 34): File {
+    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 35): File {
         val file = File(context.cacheDir, "crafted.glovebox")
         file.outputStream().use { out ->
             BackupEntryWriter(BackupOutputStream(out, password, quick)).use { w ->
@@ -124,7 +124,7 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 34, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 35, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         assertEquals(source.service().recordsFor(id), target.service().recordsFor(id))

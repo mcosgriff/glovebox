@@ -276,11 +276,14 @@ private fun AttentionChip(a: Attention) {
 @Composable
 private fun RecallChip(open: OpenRecalls) {
     val scheme = MaterialTheme.colorScheme
-    val (text, container, content) = when (open.count) {
-        0 -> Triple(stringResource(R.string.no_open_recalls), scheme.tertiaryContainer, scheme.onTertiaryContainer)
+    // What the maker says to do comes before the count (#461); not driving it covers parking outside too.
+    val (text, container, content) = when {
+        open.doNotDrive -> Triple(stringResource(R.string.garage_recall_do_not_drive), scheme.errorContainer, scheme.error)
+        open.parkOutside -> Triple(stringResource(R.string.garage_recall_park_outside), scheme.errorContainer, scheme.error)
+        open.count == 0 -> Triple(stringResource(R.string.no_open_recalls), scheme.tertiaryContainer, scheme.onTertiaryContainer)
         else -> Triple(pluralStringResource(R.plurals.open_recalls, open.count, open.count.asNumber()), scheme.primaryContainer, scheme.onPrimaryContainer)
     }
-    Pill(text, container, content, bold = false)
+    Pill(text, container, content, bold = open.doNotDrive || open.parkOutside)
 }
 
 @Composable

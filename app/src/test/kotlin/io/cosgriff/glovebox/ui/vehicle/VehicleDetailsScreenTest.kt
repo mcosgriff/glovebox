@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.test.onAllNodesWithText
+import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.ui.components.DecodedField
 import io.cosgriff.glovebox.ui.garage.FakeNhtsa
 import io.cosgriff.glovebox.ui.garage.truckDecode
@@ -369,6 +371,16 @@ class VehicleDetailsScreenTest {
 
         archived.single().second()
         compose.awaitThat { g.db.vehicles().byId(id)?.archivedOn == null && g.db.odometer().readingsFor(id).size == 1 }
+    }
+
+    @Test
+    fun `the recalls row says when an open recall says not to drive`() {
+        val id = g.add(VehicleFixtures.wagon.copy(recallsCheckedOn = LocalDate.now()))
+        runBlocking {
+            g.db.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "26V000000", component = "SEAT BELTS", summary = "Made up.", firstSeenOn = LocalDate.now(), doNotDrive = true)))
+        }
+        show(id)
+        compose.awaitThat { compose.onAllNodesWithText(g.string(R.string.details_recalls_do_not_drive, "1")).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test

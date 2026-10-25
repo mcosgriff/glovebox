@@ -15,6 +15,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -154,9 +156,16 @@ class NhtsaClient(private val http: HttpClient) {
                 consequence = o.text("Consequence"),
                 remedy = o.text("Remedy"),
                 reportedOn = Recalls.parseReportDate(o.text("ReportReceivedDate")),
+                // Not in NHTSA's documentation, only in its answers (#461). A flag that is missing or isn't
+                // plainly true counts as false; nothing ever says a vehicle is safe to drive.
+                doNotDrive = o.flag("parkIt"),
+                parkOutside = o.flag("parkOutSide"),
+                overTheAir = o.flag("overTheAirUpdate"),
             )
         }
     }
+
+    private fun JsonObject.flag(key: String) = (this[key] as? JsonPrimitive)?.takeUnless { it.isString }?.booleanOrNull == true
 
     /** A field's text, or null when NHTSA left it out or blank. */
     private fun JsonObject.text(key: String) = this[key]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }

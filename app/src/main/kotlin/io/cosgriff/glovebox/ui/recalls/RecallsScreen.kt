@@ -58,8 +58,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -295,6 +297,8 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
     val context = LocalContext.current
     var tab by rememberSaveable { mutableStateOf(RecallTab.ALL) }
     var marking by rememberSaveable { mutableStateOf<Long?>(null) }
+    // A recall that says not to drive, or to park outside, is archived only once the owner confirms (#461).
+    var archiving by rememberSaveable { mutableStateOf<Long?>(null) }
     val site = Recalls.manufacturerSite(v.make)
 
     if (vm.nameChoice != NameChoice.Closed) {
@@ -313,6 +317,23 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 vm.markDone(recall, it)
             },
             onDismiss = { marking = null },
+        )
+    }
+
+    state.recalls.firstOrNull { it.id == archiving }?.let { recall ->
+        AlertDialog(
+            onDismissRequest = { archiving = null },
+            title = { Text(stringResource(R.string.recalls_archive_urgent_title)) },
+            text = {
+                Text(stringResource(if (recall.doNotDrive) R.string.recalls_archive_urgent_do_not_drive else R.string.recalls_archive_urgent_park_outside))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    archiving = null
+                    vm.archive(recall)
+                }) { Text(stringResource(R.string.recalls_archive_anyway)) }
+            },
+            dismissButton = { TextButton(onClick = { archiving = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
@@ -376,7 +397,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 RecallCard(
                     recall = recall,
                     onToggle = { if (recall.completedOn == null) marking = recall.id else vm.markOpen(recall) },
-                    onArchive = { vm.archive(recall) },
+                    onArchive = { if (recall.doNotDrive || recall.parkOutside) archiving = recall.id else vm.archive(recall) },
                     onUnarchive = { vm.unarchive(recall) },
                     onFindDealer = { context.findDealer(state.makeName, site?.recallUrl ?: Recalls.NHTSA_LOOKUP_URL) },
                     modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
@@ -553,6 +574,11 @@ private fun RecallCard(
                 }
             }
             Text(recallComponent(recall.component), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            // What the maker says to do until it's repaired (#461); moot once it's done or doesn't apply.
+            if (!done && !archived) {
+                if (recall.doNotDrive) RecallWarning(stringResource(R.string.recalls_do_not_drive))
+                if (recall.parkOutside) RecallWarning(stringResource(R.string.recalls_park_outside))
+            }
             Text(
                 recall.summary.ifEmpty { stringResource(R.string.recalls_no_summary) },
                 style = MaterialTheme.typography.bodyMedium,
@@ -564,6 +590,9 @@ private fun RecallCard(
             if (expanded) recall.consequence?.let { Labelled(stringResource(R.string.recalls_risk), it) }
             recall.remedy?.let {
                 Labelled(stringResource(R.string.recalls_remedy), it, maxLines = if (expanded) Int.MAX_VALUE else 3, onClipped = { if (!expanded) clipped = true })
+            }
+            if (recall.overTheAir) {
+                Text(stringResource(R.string.recalls_over_the_air), style = MaterialTheme.typography.bodySmall, color = body)
             }
             Text(
                 listOfNotNull(
@@ -621,6 +650,21 @@ private fun RecallCard(
                 )
             }
         }
+    }
+}
+
+/** "Do not drive" or "Park outside" until it's repaired: red, the most urgent things a recall can say. */
+@Composable
+private fun RecallWarning(text: String) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.errorContainer)
+            .border(1.5.dp, scheme.error, MaterialTheme.shapes.small).padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(20.dp), tint = scheme.error)
+        Text(text, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = scheme.onSurface)
     }
 }
 

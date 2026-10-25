@@ -158,8 +158,17 @@ sealed interface Notice {
     /** Documents coming up to, or reaching, their expiry date. Not a reminder: nothing is logged against them. */
     data class DocumentsExpiring(override val vehicleId: Long, override val vehicleName: String, val papers: List<ExpiringPaper>) : Notice
 
-    /** Recalls NHTSA lists that weren't on file before; [components] are their short names. */
-    data class NewRecalls(override val vehicleId: Long, override val vehicleName: String, val components: List<String>) : Notice
+    /**
+     * Recalls NHTSA lists that weren't on file before; [components] are their short names. [doNotDrive] and
+     * [parkOutside] when any of them says so (#461).
+     */
+    data class NewRecalls(
+        override val vehicleId: Long,
+        override val vehicleName: String,
+        val components: List<String>,
+        val doNotDrive: Boolean = false,
+        val parkOutside: Boolean = false,
+    ) : Notice
 }
 
 data class NoticeDecision(val notices: List<Notice>, val log: NoticeLog)

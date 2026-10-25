@@ -85,10 +85,30 @@ class ScreensScreenshotTest(private val shade: Shade) {
         GarageContent(Garage(emptyList()), archived = 0, onAddVehicle = {}, onOpenVehicle = {}, onSeeReminders = {}, onOpenArchive = {}, onRestore = {})
     }
 
+    /** The truck's open recall says not to drive it, the hatch's to park outside (#461). */
+    @Test
+    fun garageDoNotDrive() = compose.shoot("garage_do_not_drive", shade) {
+        val (truck, hatch) = Fixtures.garage.vehicles
+        GarageContent(
+            Garage(listOf(truck.copy(recalls = OpenRecalls(1, "Fuel pump", doNotDrive = true)), hatch.copy(recalls = OpenRecalls(1, null, parkOutside = true)))),
+            archived = 1, onAddVehicle = {}, onOpenVehicle = {}, onSeeReminders = {}, onOpenArchive = {}, onRestore = {},
+        )
+    }
+
     @Test
     fun vehicleHome() = compose.shoot("vehicle_home", shade) {
         VehicleHomeContent(
             Fixtures.vehicleHome, OpenRecalls(1, "Fuel pump"),
+            onBack = {}, onLogService = {}, onLogItem = { _, _ -> }, onOpenRules = {}, onOpenRecalls = {}, onOpenDetails = {},
+            onEnterLastDone = {}, onUpdateMileage = {},
+        )
+    }
+
+    /** An open recall whose maker says not to drive it, or to park it outside (#461). */
+    @Test
+    fun vehicleHomeDoNotDrive() = compose.shoot("vehicle_home_do_not_drive", shade) {
+        VehicleHomeContent(
+            Fixtures.vehicleHome, OpenRecalls(2, null, doNotDrive = true, parkOutside = true),
             onBack = {}, onLogService = {}, onLogItem = { _, _ -> }, onOpenRules = {}, onOpenRecalls = {}, onOpenDetails = {},
             onEnterLastDone = {}, onUpdateMileage = {},
         )

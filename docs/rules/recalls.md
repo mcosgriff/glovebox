@@ -12,3 +12,9 @@ Rules for NHTSA checks, marking recalls done. Read before changing any of it; re
   which sends only year and make; `RecallNames.offered` lists those beginning with the model). **None is ever
   ticked for them.** A check asks under the model and each ticked name, and **counts as failed unless every name
   answers**, since a list missing one name's recalls would withdraw them.
+- NHTSA's undocumented `parkIt`, `parkOutSide` and `overTheAirUpdate` (#461) are kept on each recall and follow
+  NHTSA when it changes them. **Only a plain `true` counts; missing or odd is false, and nothing ever says a
+  vehicle is safe to drive.** "Do not drive" and "Park outside" show, in red, only on an open recall (the card,
+  the vehicle's recall banner, the garage card's recall chip, Vehicle details' Recalls row) and lead a new recall's
+  notification. Archiving a recall that says either asks first. `Notes` isn't kept: the ones seen were
+  boilerplate.

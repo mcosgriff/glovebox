@@ -336,6 +336,10 @@ data class RecallEntity(
     val completedOn: LocalDate? = null,
     val serviceRecordId: Long? = null,
     val archivedOn: LocalDate? = null,
+    /** NHTSA's `parkIt`, `parkOutSide` and `overTheAirUpdate` (#461); see [io.cosgriff.glovebox.domain.RecallNotice]. */
+    @ColumnInfo(defaultValue = "0") val doNotDrive: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val parkOutside: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val overTheAir: Boolean = false,
 )
 
 /**

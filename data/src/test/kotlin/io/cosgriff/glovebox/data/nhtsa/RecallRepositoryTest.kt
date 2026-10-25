@@ -161,6 +161,21 @@ class RecallRepositoryTest {
     }
 
     @Test
+    fun `do not drive, park outside and an over-the-air fix are kept, and follow NHTSA when it changes them`() = runBlocking {
+        val id = vehicle()
+        answer(recallJson("99V000001", parkIt = true, overTheAirUpdate = true), recallJson("99V000002"))
+        repository.refresh(id, today.minusDays(30))
+        val first = db.recalls().recallsFor(id).associate { it.campaign to it.toNotice() }
+        assertEquals(Triple(true, false, true), first.getValue("99V000001").let { Triple(it.doNotDrive, it.parkOutside, it.overTheAir) })
+        assertEquals(Triple(false, false, false), first.getValue("99V000002").let { Triple(it.doNotDrive, it.parkOutside, it.overTheAir) })
+
+        answer(recallJson("99V000001", parkOutSide = true), recallJson("99V000002"))
+        repository.refresh(id, today)
+        val after = db.recalls().recallsFor(id).single { it.campaign == "99V000001" }.toNotice()
+        assertEquals(Triple(false, true, false), Triple(after.doNotDrive, after.parkOutside, after.overTheAir))
+    }
+
+    @Test
     fun `a campaign NHTSA drops goes only while it is open`() = runBlocking {
         val id = vehicle()
         answer(recallJson("99V000001"), recallJson("99V000002"))

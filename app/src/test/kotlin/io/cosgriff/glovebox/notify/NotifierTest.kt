@@ -135,6 +135,19 @@ class NotifierTest {
     }
 
     @Test
+    fun `a new recall that says not to drive, or to park outside, says so before its name`() {
+        notifier.post(Notice.NewRecalls(5, "GTI", listOf("Airbags", "Brakes"), doNotDrive = true, parkOutside = true))
+        assertEquals(
+            listOf(app.getString(R.string.notify_recalls_do_not_drive), app.getString(R.string.notify_recalls_park_outside), "Airbags, Brakes")
+                .joinToString("\n"),
+            posted.single().text(),
+        )
+
+        notifier.post(Notice.NewRecalls(5, "GTI", listOf("Brakes"), parkOutside = true))
+        assertEquals(app.getString(R.string.notify_recalls_park_outside) + "\nBrakes", posted.single().text())
+    }
+
+    @Test
     fun `each vehicle has its own notification of each kind`() {
         notifier.post(Notice.MileageCheckIn(1, "Tacoma"))
         notifier.post(Notice.MileageCheckIn(2, "Civic"))

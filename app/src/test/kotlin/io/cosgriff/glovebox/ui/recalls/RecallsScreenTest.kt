@@ -120,6 +120,20 @@ class RecallsScreenTest {
     }
 
     @Test
+    fun `an open recall says do not drive or park outside, a done one doesn't, and an over-the-air fix is said either way`() {
+        val truck = h.addTruck(checkedOn = LocalDate.now())
+        h.insert(
+            h.recall(truck, "26V100000").copy(doNotDrive = true, parkOutside = true),
+            h.recall(truck, "26V200000", done = LocalDate.now()).copy(doNotDrive = true, parkOutside = true, overTheAir = true),
+        )
+        show(truck)
+        shows(str(R.string.recalls_over_the_air))
+        compose.onAllNodesWithText(str(R.string.recalls_do_not_drive)).assertCountEquals(1)
+        compose.onAllNodesWithText(str(R.string.recalls_park_outside)).assertCountEquals(1)
+        compose.onAllNodesWithText(str(R.string.recalls_over_the_air)).assertCountEquals(1)
+    }
+
+    @Test
     fun `a vehicle without a model can't be checked, and says so`() {
         val truck = h.addTruck(checkedOn = null, year = 0)
         show(truck)
@@ -165,6 +179,22 @@ class RecallsScreenTest {
         compose.onNodeWithText(str(R.string.recalls_move_back)).performClick()
         compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.all { it.archivedOn == null } }
         shows(str(R.string.recalls_none_archived))
+    }
+
+    @Test
+    fun `archiving a recall that says not to drive asks first, and Cancel leaves it open`() {
+        val truck = h.addTruck()
+        h.insert(h.recall(truck, "26V100000").copy(doNotDrive = true))
+        show(truck)
+        compose.onNodeWithText(str(R.string.recalls_archive)).performClick()
+        shows(str(R.string.recalls_archive_urgent_title))
+        compose.onNodeWithText(str(R.string.cancel)).performClick()
+        compose.waitForIdle()
+        assertNull(runBlocking { h.db.recalls().recallsFor(truck) }.single().archivedOn)
+
+        compose.onNodeWithText(str(R.string.recalls_archive)).performClick()
+        compose.onNodeWithText(str(R.string.recalls_archive_anyway)).performClick()
+        compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.single().archivedOn != null }
     }
 
     @Test
