@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.27.0](https://github.com/mcosgriff/glovebox/compare/v0.26.0...v0.27.0) (2026-10-25)
+
+
+### Features
+
+* **bulletins:** bundle the maker's free-repair bulletins for models with a schedule ([#473](https://github.com/mcosgriff/glovebox/issues/473)) ([b7e0af5](https://github.com/mcosgriff/glovebox/commit/b7e0af5e333b1c431c1b83dcb770ebce23269822)), closes [#459](https://github.com/mcosgriff/glovebox/issues/459)
+* **recalls:** say when a recall's maker says not to drive, or to park outside ([#472](https://github.com/mcosgriff/glovebox/issues/472)) ([304384a](https://github.com/mcosgriff/glovebox/commit/304384a7c33a1cdee66ae1daa608dd51f18a5ee7))
+* **vehicles:** keep the engine code, TPMS and chassis code, and look a saved VIN up again ([#466](https://github.com/mcosgriff/glovebox/issues/466)) ([3ec9f47](https://github.com/mcosgriff/glovebox/commit/3ec9f476ac0f03b4312f98e2b65a9181a9bc1990)), closes [#462](https://github.com/mcosgriff/glovebox/issues/462)
+
+
+### Bug Fixes
+
+* **recalls:** check recalls under the other model names NHTSA files them under ([#470](https://github.com/mcosgriff/glovebox/issues/470)) ([3d8c297](https://github.com/mcosgriff/glovebox/commit/3d8c29798e4376c8515edd8c50d3d0335b5e51a7)), closes [#460](https://github.com/mcosgriff/glovebox/issues/460)
+* **vehicles:** the decode's source note counts the eight values that can be corrected ([#467](https://github.com/mcosgriff/glovebox/issues/467)) ([d660ce6](https://github.com/mcosgriff/glovebox/commit/d660ce6e62bb6af4a35284bf921ada04d86f8f97))
+
 ## [0.26.0](https://github.com/mcosgriff/glovebox/compare/v0.25.0...v0.26.0) (2026-10-25)
 
 
