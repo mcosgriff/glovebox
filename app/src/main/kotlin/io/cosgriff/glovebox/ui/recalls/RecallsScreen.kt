@@ -58,6 +58,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -553,6 +554,11 @@ private fun RecallCard(
                 }
             }
             Text(recallComponent(recall.component), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            // What the maker says to do until it's repaired (#461); moot once it's done or doesn't apply.
+            if (!done && !archived) {
+                if (recall.doNotDrive) RecallWarning(stringResource(R.string.recalls_do_not_drive))
+                if (recall.parkOutside) RecallWarning(stringResource(R.string.recalls_park_outside))
+            }
             Text(
                 recall.summary.ifEmpty { stringResource(R.string.recalls_no_summary) },
                 style = MaterialTheme.typography.bodyMedium,
@@ -564,6 +570,9 @@ private fun RecallCard(
             if (expanded) recall.consequence?.let { Labelled(stringResource(R.string.recalls_risk), it) }
             recall.remedy?.let {
                 Labelled(stringResource(R.string.recalls_remedy), it, maxLines = if (expanded) Int.MAX_VALUE else 3, onClipped = { if (!expanded) clipped = true })
+            }
+            if (recall.overTheAir) {
+                Text(stringResource(R.string.recalls_over_the_air), style = MaterialTheme.typography.bodySmall, color = body)
             }
             Text(
                 listOfNotNull(
@@ -621,6 +630,21 @@ private fun RecallCard(
                 )
             }
         }
+    }
+}
+
+/** "Do not drive" or "Park outside" until it's repaired: red, the most urgent things a recall can say. */
+@Composable
+private fun RecallWarning(text: String) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(scheme.errorContainer)
+            .border(1.5.dp, scheme.error, MaterialTheme.shapes.small).padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(20.dp), tint = scheme.error)
+        Text(text, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = scheme.onSurface)
     }
 }
 

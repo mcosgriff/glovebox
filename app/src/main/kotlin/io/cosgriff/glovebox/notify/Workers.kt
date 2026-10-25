@@ -127,7 +127,13 @@ class RecallCheckWorker(context: Context, params: WorkerParameters) : CoroutineW
                 is RecallRefresh.Checked ->
                     if (!firstCheck && settings.notices.recalls && result.added.isNotEmpty()) {
                         deps.notifier().post(
-                            Notice.NewRecalls(v.id, v.shortName(), result.added.map { recallComponent(it.component) }),
+                            Notice.NewRecalls(
+                                v.id,
+                                v.shortName(),
+                                result.added.map { recallComponent(it.component) },
+                                doNotDrive = result.added.any { it.doNotDrive },
+                                parkOutside = result.added.any { it.parkOutside },
+                            ),
                         )
                     }
                 RecallRefresh.Failed -> failed = true

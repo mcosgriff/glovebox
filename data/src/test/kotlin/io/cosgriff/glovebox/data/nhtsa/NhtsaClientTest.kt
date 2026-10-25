@@ -161,6 +161,27 @@ class NhtsaClientTest {
     }
 
     @Test
+    fun `do not drive, park outside and an over-the-air fix are read from NHTSA's flags`() = runBlocking {
+        nhtsa.answer = {
+            json(
+                """{"results":[
+                {"NHTSACampaignNumber":"99V000003","parkIt":true,"parkOutSide":false,"overTheAirUpdate":true},
+                {"NHTSACampaignNumber":"99V000004","parkIt":false,"parkOutSide":true,"overTheAirUpdate":false}]}""",
+            )
+        }
+        val recalls = nhtsa.client.recalls(2019, "Toyota", "4Runner")
+        assertEquals(listOf(true to false, false to true), recalls.map { it.doNotDrive to it.parkOutside })
+        assertEquals(listOf(true, false), recalls.map { it.overTheAir })
+    }
+
+    @Test
+    fun `a flag that isn't plainly true is false, never a reason to say the vehicle is safe`() = runBlocking {
+        nhtsa.answer = { json("""{"results":[{"NHTSACampaignNumber":"99V000005","parkIt":"yes","parkOutSide":null,"overTheAirUpdate":1}]}""") }
+        val recall = nhtsa.client.recalls(2019, "Toyota", "4Runner").single()
+        assertEquals(listOf(false, false, false), listOf(recall.doNotDrive, recall.parkOutside, recall.overTheAir))
+    }
+
+    @Test
     fun `NHTSA's 400 with an empty list means no recalls, not a failure`() = runBlocking {
         nhtsa.answer = { json("""{"Count":0,"Message":"Results returned successfully","results":[]}""", HttpStatusCode.BadRequest) }
         assertEquals(emptyList<RecallNotice>(), nhtsa.client.recalls(2019, "Toyota", "4Runner"))

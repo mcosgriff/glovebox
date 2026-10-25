@@ -1539,6 +1539,10 @@
     <string name="recalls_no_summary">NHTSA gave no summary for this recall.</string>
     <string name="recalls_risk">Risk</string>
     <string name="recalls_remedy">Remedy</string>
+    <!-- What the maker says to do until a recall is repaired, and how it's fixed (#461). -->
+    <string name="recalls_do_not_drive">Do not drive until it\'s repaired</string>
+    <string name="recalls_park_outside">Park outside, away from buildings, until it\'s repaired</string>
+    <string name="recalls_over_the_air">Fixed by a software update sent over the air.</string>
     <!-- A label in bold, then NHTSA's text: "Remedy: Dealers will replace…". -->
     <string name="recalls_labelled">%1$s: %2$s</string>
     <string name="recalls_reported">Reported %1$s</string>
@@ -1844,6 +1848,9 @@
         <item quantity="other">%1$s: %2$s new recalls</item>
     </plurals>
     <string name="notify_and_more">%1$s and more</string>
+    <!-- A new recall whose maker says not to drive, or to park outside (#461); first lines of the notification. -->
+    <string name="notify_recalls_do_not_drive">Do not drive it until it\'s repaired.</string>
+    <string name="notify_recalls_park_outside">Park it outside, away from buildings, until it\'s repaired.</string>
     <!-- A document running out (#283). %1$s is the vehicle. -->
     <string name="notify_expiry_title">%1$s: paperwork to renew</string>
     <!-- One line per document: %1$s is its type ("Registration"), %2$s the date it gave. -->

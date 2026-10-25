@@ -197,9 +197,14 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
             is Notice.NewRecalls -> Shown(
                 Channel.RECALLS,
                 res.getQuantityString(R.plurals.notify_recalls_title, notice.components.size, notice.vehicleName, notice.components.size.asNumber()),
-                notice.components.distinct().let { all ->
-                    all.take(3).joinToString(", ").let { if (all.size > 3) res.getString(R.string.notify_and_more, it) else it }
-                },
+                listOfNotNull(
+                    // What to do now comes before what the recalls are about.
+                    res.getString(R.string.notify_recalls_do_not_drive).takeIf { notice.doNotDrive },
+                    res.getString(R.string.notify_recalls_park_outside).takeIf { notice.parkOutside },
+                    notice.components.distinct().let { all ->
+                        all.take(3).joinToString(", ").let { if (all.size > 3) res.getString(R.string.notify_and_more, it) else it }
+                    },
+                ).joinToString("\n"),
                 Destination.Recalls(notice.vehicleId),
             )
         }

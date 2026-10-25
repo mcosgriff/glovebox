@@ -33,8 +33,15 @@ fun MockRequestHandleScope.json(body: String, status: HttpStatusCode = HttpStatu
     respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
 
 /** A recall as NHTSA's recallsByVehicle lists it; every figure made up. */
-fun recallJson(campaign: String, summary: String = "Made-up summary for $campaign", component: String = "MADE-UP COMPONENT") = """
-    {"Manufacturer":"Made-up","NHTSACampaignNumber":"$campaign","parkIt":false,"parkOutSide":false,"overTheAirUpdate":false,
+fun recallJson(
+    campaign: String,
+    summary: String = "Made-up summary for $campaign",
+    component: String = "MADE-UP COMPONENT",
+    parkIt: Boolean = false,
+    parkOutSide: Boolean = false,
+    overTheAirUpdate: Boolean = false,
+) = """
+    {"Manufacturer":"Made-up","NHTSACampaignNumber":"$campaign","parkIt":$parkIt,"parkOutSide":$parkOutSide,"overTheAirUpdate":$overTheAirUpdate,
      "ReportReceivedDate":"04/05/2026","Component":"$component","Summary":"$summary","Consequence":"Made-up consequence",
      "Remedy":"Made-up remedy","Notes":"","ModelYear":"2019","Make":"TOYOTA","Model":"4RUNNER"}
 """.trimIndent()

@@ -146,6 +146,27 @@ class RecallsTest {
     }
 
     @Test
+    fun `do not drive and park outside are raised only by a recall still open`() {
+        val stored = listOf(
+            StoredRecall(1, fuelPump.copy(doNotDrive = true), done = true),
+            StoredRecall(2, steering.copy(parkOutside = true), done = false, archived = true),
+            StoredRecall(3, labels, done = false),
+        )
+        assertEquals(OpenRecalls(1, Recalls.componentLabel(labels.component)), Recalls.open(stored))
+
+        val open = stored.map { it.copy(done = false, archived = false) }
+        assertEquals(OpenRecalls(3, null, doNotDrive = true, parkOutside = true), Recalls.open(open))
+    }
+
+    @Test
+    fun `a flag NHTSA changes on a stored recall is an update, and the done mark stays`() {
+        val stored = listOf(StoredRecall(1, fuelPump, done = true))
+        val changes = Recalls.merge(stored, listOf(fuelPump.copy(doNotDrive = true)))
+        assertEquals(listOf(1L to fuelPump.copy(doNotDrive = true)), changes.updated)
+        assertEquals(emptyList<Long>(), changes.withdrawn)
+    }
+
+    @Test
     fun `an archived recall isn't open, and sits between open and done`() {
         val stored = listOf(
             StoredRecall(1, fuelPump, done = true),

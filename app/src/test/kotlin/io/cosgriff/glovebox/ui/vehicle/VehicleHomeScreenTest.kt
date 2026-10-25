@@ -196,6 +196,23 @@ class VehicleHomeScreenTest {
     }
 
     @Test
+    fun `an open recall that says not to drive or to park outside says so on the vehicle's page`() {
+        val id = g.add(VehicleFixtures.wagon)
+        runBlocking {
+            g.db.recalls().insertAll(
+                listOf(
+                    RecallEntity(vehicleId = id, campaign = "26V000000", component = "SEAT BELTS", summary = "Made up.", firstSeenOn = today, doNotDrive = true),
+                    RecallEntity(vehicleId = id, campaign = "26V000001", component = "WIRING", summary = "Made up.", firstSeenOn = today, parkOutside = true),
+                ),
+            )
+        }
+        show(id, until = g.string(R.string.home_none_tracked))
+        val banner = hasText(g.string(R.string.recalls_do_not_drive)) and hasClickAction()
+        compose.awaitThat { compose.onAllNodes(banner).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasText(g.string(R.string.recalls_park_outside)) and hasClickAction()).assertExists()
+    }
+
+    @Test
     fun `a recall list that was never fetched is asked for once, and a refused check changes nothing`() {
         val id = g.add(VehicleFixtures.wagon.copy(recallsCheckedOn = null))
         show(id, until = g.string(R.string.home_none_tracked))

@@ -406,19 +406,21 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
 @Composable
 private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
+    // Red when a recall says not to drive or to park outside (#461), the most urgent things a recall can say.
+    val urgent = open.doNotDrive || open.parkOutside
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        color = scheme.primaryContainer,
+        color = if (urgent) scheme.errorContainer else scheme.primaryContainer,
         shape = MaterialTheme.shapes.small,
-        border = BorderStroke(1.5.dp, scheme.primary),
+        border = BorderStroke(1.5.dp, if (urgent) scheme.error else scheme.primary),
     ) {
         Row(
             Modifier.heightIn(min = 48.dp).padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(22.dp), tint = statusColors().overdue)
+            Icon(Icons.Outlined.WarningAmber, contentDescription = null, modifier = Modifier.size(22.dp), tint = if (urgent) scheme.error else statusColors().overdue)
             Column(Modifier.weight(1f)) {
                 Text(
                     listOfNotNull(pluralStringResource(R.plurals.open_recalls, open.count, open.count.asNumber()), open.only).joinToString(" · "),
@@ -426,10 +428,12 @@ private fun RecallBanner(open: OpenRecalls, onClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = scheme.onSurface,
                 )
+                if (open.doNotDrive) Text(stringResource(R.string.recalls_do_not_drive), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = scheme.onSurface)
+                if (open.parkOutside) Text(stringResource(R.string.recalls_park_outside), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = scheme.onSurface)
                 // Not "at a $makeName dealer": NHTSA also lists recalled aftermarket parts for the model.
                 Text(stringResource(R.string.home_recalls_free), style = MaterialTheme.typography.bodySmall, color = statusColors().soon)
             }
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = statusColors().overdue)
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = if (urgent) scheme.error else statusColors().overdue)
         }
     }
 }

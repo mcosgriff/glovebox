@@ -32,7 +32,7 @@ class Converters {
         CatalogRuleEntity::class,
         RecallNameEntity::class,
     ],
-    version = 34,
+    version = 35,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -68,6 +68,7 @@ class Converters {
         AutoMigration(from = 31, to = 32), // documents.expiresOn
         AutoMigration(from = 32, to = 33), // vehicles.engineCode, tpms, series
         AutoMigration(from = 33, to = 34), // recall_names
+        AutoMigration(from = 34, to = 35), // recalls.doNotDrive, parkOutside, overTheAir
     ],
 )
 @ColumnTypeConverters(Converters::class)

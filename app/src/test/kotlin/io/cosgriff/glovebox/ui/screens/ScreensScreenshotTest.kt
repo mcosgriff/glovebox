@@ -94,6 +94,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** An open recall whose maker says not to drive it, or to park it outside (#461). */
+    @Test
+    fun vehicleHomeDoNotDrive() = compose.shoot("vehicle_home_do_not_drive", shade) {
+        VehicleHomeContent(
+            Fixtures.vehicleHome, OpenRecalls(2, null, doNotDrive = true, parkOutside = true),
+            onBack = {}, onLogService = {}, onLogItem = { _, _ -> }, onOpenRules = {}, onOpenRecalls = {}, onOpenDetails = {},
+            onEnterLastDone = {}, onUpdateMileage = {},
+        )
+    }
+
     @Test
     fun updateMileageSheet() = compose.shootScreen("update_mileage", shade) {
         UpdateMileageSheet(
