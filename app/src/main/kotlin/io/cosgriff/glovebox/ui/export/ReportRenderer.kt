@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.PathParser
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withClip
 import androidx.core.graphics.withSave
 import androidx.core.graphics.withTranslation
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -203,10 +204,12 @@ class ReportRenderer(private val fonts: ReportFonts) {
             c.textTop(caption, RIGHT - small.measureText(caption), y + 6f, small)
             y += 24f + 10f
             m.dueNext.forEach { row ->
-                val name = paint(14f, fonts.sansSemibold)
+                // A long name wraps to a second line, and the row grows to hold it, before it is cut short.
+                val name = layout(row.name, paint(14f, fonts.sansSemibold), DUE_NAME - 18f, maxLines = 2)
+                val rowH = maxOf(20f, name.height.toFloat())
                 c.groupSquare(RectF(LEFT, y + 5f, LEFT + 10f, y + 15f), row.category)
-                c.textMiddle(TextUtils.ellipsize(row.name, name, 196f - 18f, TextUtils.TruncateAt.END).toString(), LEFT + 18f, y + 10f, name)
-                val barLeft = LEFT + 196f + 14f
+                c.withTranslation(LEFT + 18f, y + 10f - name.getLineBottom(0) / 2f) { name.draw(this) }
+                val barLeft = LEFT + DUE_NAME + 14f
                 val barRight = RIGHT - 160f - 14f
                 c.drawRoundRect(RectF(barLeft, y + 5f, barRight, y + 15f), 5f, 5f, fill(LINE_SOFT))
                 val share = row.used.coerceIn(0.02, 1.0).toFloat()
@@ -217,7 +220,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
                 val state = s(dueState(row.state))
                 val statePaint = paint(12f, if (urgent) fonts.sansBold else fonts.sans)
                 c.textMiddle(state, RIGHT - statePaint.measureText(state), y + 10f, statePaint)
-                y += 20f + 10f
+                y += rowH + 10f
             }
             y += 16f
         }
@@ -393,26 +396,27 @@ class ReportRenderer(private val fonts: ReportFonts) {
     }
 
     private fun whoCard(c: Canvas, diy: Int, shop: Int, x: Float, y: Float, w: Float, height: Float?): Float {
-        val h = 14f + 20f + 10f + 40f + 14f
+        val total = diy + shop
+        val barH = if (total == 0) 0f else 14f + 10f
+        val h = 14f + 20f + 10f + barH + 38f + 14f
         if (height == null) return h
         card(c, x, y, w, height)
         c.textTop(s(R.string.report_who_title), x + 16f, y + 14f, paint(15f, fonts.sansBold))
-        val total = diy + shop
-        // At most ten squares; with more work than that they stand for shares, and the words give the counts.
-        val squares = minOf(total, MAX_SQUARES)
-        val filled = if (total == 0) 0 else (diy.toFloat() / total * squares).roundToInt()
-        val top = y + 14f + 20f + 10f + 9f
-        repeat(squares) { i ->
-            val sx = x + 16f + i * 26f
-            val r = RectF(sx + 1f, top + 1f, sx + 21f, top + 21f)
-            c.drawRoundRect(r, 5f, 5f, fill(if (i < filled) INK2 else Color.WHITE))
-            c.drawRoundRect(r, 5f, 5f, stroke(INK2, 2f))
+        // One bar across the card, the owner's share filled and the shop's outlined; the words give the counts.
+        val top = y + 14f + 20f + 10f
+        if (total > 0) {
+            val bar = RectF(x + 17f, top + 1f, x + w - 17f, top + 13f)
+            c.drawRoundRect(bar, 6f, 6f, fill(Color.WHITE))
+            if (diy > 0) {
+                c.withClip(bar.left, bar.top, bar.left + bar.width() * diy / total, bar.bottom) { drawRoundRect(bar, 6f, 6f, fill(INK2)) }
+            }
+            c.drawRoundRect(bar, 6f, 6f, stroke(INK2, 2f))
         }
-        val tx = x + 16f + (if (squares > 0) squares * 26f + 12f else 0f)
         val bold = paint(13f, fonts.sansBold)
         val body = paint(13f, fonts.sans)
         listOf(diy to s(R.string.report_who_diy), shop to s(R.string.report_who_shop)).forEachIndexed { i, (n, text) ->
-            val ly = y + 14f + 20f + 10f + 2f + i * 19f
+            val tx = x + 16f
+            val ly = top + barH + i * 19f
             val count = n.asNumber()
             c.textTop(count, tx, ly, bold)
             c.textTop(" $text", tx + bold.measureText(count), ly, body)
@@ -832,11 +836,13 @@ class ReportRenderer(private val fonts: ReportFonts) {
         return p
     }
 
-    private fun layout(text: String, p: TextPaint, width: Float, spacing: Float = 1f): StaticLayout =
+    private fun layout(text: String, p: TextPaint, width: Float, spacing: Float = 1f, maxLines: Int = Int.MAX_VALUE): StaticLayout =
         StaticLayout.Builder.obtain(text, 0, text.length, p, width.toInt().coerceAtLeast(1))
             .setAlignment(Layout.Alignment.ALIGN_NORMAL)
             .setLineSpacing(0f, spacing)
             .setIncludePad(false)
+            .setMaxLines(maxLines)
+            .setEllipsize(TextUtils.TruncateAt.END)
             .build()
 
     private fun paint(size: Float, typeface: Typeface, color: Int = INK) = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -904,7 +910,8 @@ class ReportRenderer(private val fonts: ReportFonts) {
         /** Three-quarters of an inch. */
         private const val PHOTO_MARGIN = 72f
         private const val MAX_RECALLS = 4
-        private const val MAX_SQUARES = 10
+        /** The width of a "What's due next" name, its square included. */
+        private const val DUE_NAME = 300f
         private const val MAX_POINTS = 24
 
         /** Below this span an axis is labelled in whole figures, not thousands. */

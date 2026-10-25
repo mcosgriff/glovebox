@@ -177,6 +177,17 @@ class ReportRendererTest {
     }
 
     @Test
+    fun `a long name in what's due next wraps onto a second line instead of being cut short`() {
+        val long = "Change brake fluid (at 3 years, then every 2 years)"
+        val renamed = SampleReport.items.map { if (it.id == 3L) it.copy(name = long) else it }
+        val statuses = VehicleReminders.statuses(renamed, SampleReport.entries, emptyList(), today, LeadTime(1_500))
+        val v = vehicle().copy(report = ReportFacts(statuses, SampleReport.categories, SampleReport.entries.map { OdometerReading(it.date, it.odometer) }))
+        val first = write(doc(v)).first()
+        assertTrue(first.toString(), first.joinToString(" ").replace(Regex("\\s+"), " ").contains(long))
+        assertFalse(first.toString(), first.any { it.contains("…") })
+    }
+
+    @Test
     fun `a table that runs past the page repeats its header on the next`() {
         val papers = (1..60).map { ExportPaper("Receipt", "Made-up paper $it", LocalDate.of(2026, 1, 1)) }
         val pages = write(doc(vehicle().copy(documents = papers)))
