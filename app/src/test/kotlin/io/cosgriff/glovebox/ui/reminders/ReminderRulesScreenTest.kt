@@ -44,6 +44,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
+import io.cosgriff.glovebox.data.log.VehicleLogs
 
 /** Reminder rules over a real database and the app's settings, through its ViewModel. */
 @RunWith(RobolectricTestRunner::class)
@@ -67,7 +68,7 @@ class ReminderRulesScreenTest {
 
     private fun open(): ReminderRulesViewModel {
         vm = world.viewModel(ReminderRulesViewModel::class) {
-            ReminderRulesViewModel(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings)
+            ReminderRulesViewModel(VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings), world.db.schedule(), world.settings)
         }
         return vm
     }
@@ -129,6 +130,20 @@ class ReminderRulesScreenTest {
         assertEquals("Change oil · ${ScheduleFixtures.hatch().shortName()}", rules.preview!!.title)
         assertEquals(41_000, rules.preview!!.odometer)
         assertEquals(setOf("Inspect brakes · ${truck.shortName()}", "Change oil · ${ScheduleFixtures.hatch().shortName()}"), rules.items.map { it.label }.toSet())
+    }
+
+    @Test
+    fun `after a cluster replacement the example counts in the new dash and reads back as the old one showed`() {
+        // The old cluster read 40,500 when it came out 20 days ago; the new one started at 100.
+        val swapped = ScheduleFixtures.hatch().copy(clusterSwappedOn = today.minusDays(20), clusterStartReading = 100, odometerOffset = 40_400)
+        oilChange(daysAgo = 30, now = 600, vehicle = swapped)
+        open()
+        world.keep(vm.rules)
+        eventually { vm.rules.value != null }
+        val preview = vm.rules.value!!.preview!!
+        assertEquals(40_000 - 40_400, preview.last.odometer)
+        assertEquals(40_000, preview.lastRead.odometer)
+        assertEquals(600, preview.odometer)
     }
 
     @Test

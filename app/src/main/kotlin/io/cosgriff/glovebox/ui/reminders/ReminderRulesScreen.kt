@@ -72,10 +72,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.DecidedBy
 import io.cosgriff.glovebox.domain.DueRule
@@ -92,14 +90,10 @@ import io.cosgriff.glovebox.domain.Snoozing
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.ruleLabel
-import io.cosgriff.glovebox.data.log.clusterSwap
-import io.cosgriff.glovebox.data.log.toEntry
-import io.cosgriff.glovebox.data.log.toReadings
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.data.log.answering
 import io.cosgriff.glovebox.data.log.activeInterval
 import javax.inject.Inject
 
@@ -130,44 +124,34 @@ data class ReminderRules(
 
 @HiltViewModel
 class ReminderRulesViewModel @Inject constructor(
-    vehicles: VehicleDao,
+    logs: VehicleLogs,
     private val schedule: ScheduleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
     private val settings: SettingsRepository,
 ) : ViewModel() {
     /** Null while loading. */
-    val rules: StateFlow<ReminderRules?> = combine(
-        vehicles.observeActive(),
-        schedule.observeAllTracked(),
-        service.observeAllRecords(),
-        odometer.observeAll(),
-        settings.settings,
-    ) { active, items, records, readings, s ->
-        val several = active.size > 1
-        val names = active.associate { it.id to it.shortName() }
-        val mine = items.filter { it.vehicleId in names }
+    val rules: StateFlow<ReminderRules?> = combine(logs.observeGarage(), settings.settings) { garage, s ->
+        val several = garage.size > 1
+        val names = garage.associate { it.vehicle.id to it.vehicle.shortName() }
+        val logOf = garage.associateBy { it.vehicle.id }
+        // In name order across the garage, as one list.
+        val mine = garage.flatMap { log -> log.items.filter { it.tracked } }.sortedBy { it.name }
 
         // The oil change if it qualifies, otherwise the first reminder that does.
         val preview = mine.sortedBy { it.templateKey != Snoozing.OIL_TEMPLATE_KEY }.firstNotNullOfOrNull { item ->
             val counted = item.activeInterval()
             val miles = counted?.miles ?: return@firstNotNullOfOrNull null
             val months = counted.months ?: return@firstNotNullOfOrNull null
-            val swap = active.firstOrNull { it.id == item.vehicleId }?.clusterSwap()
-            val entries = records.filter { it.record.vehicleId == item.vehicleId }.map { it.toEntry(swap, mine.filter { m -> m.vehicleId == item.vehicleId }.answering()) }
-            val last = ServiceLog.lastDone(item.id, entries) ?: return@firstNotNullOfOrNull null
-            val all = ServiceLog.readings(
-                entries,
-                readings.filter { it.vehicleId == item.vehicleId }.toReadings(swap),
-            )
+            val log = logOf.getValue(item.vehicleId)
+            val last = ServiceLog.lastDone(item.id, log.entries) ?: return@firstNotNullOfOrNull null
+            val all = ServiceLog.readings(log.entries, log.updates)
             PreviewSource(
                 title = if (several) "${item.name} · ${names[item.vehicleId]}" else item.name,
                 interval = Interval(miles, months),
                 last = last,
-                lastRead = swap.asReadOn(last),
+                lastRead = log.swap.asReadOn(last),
                 odometer = all.maxOf { it.odometer },
                 milesPerDay = ReminderEngine.milesPerDay(all),
-                unit = active.firstOrNull { it.id == item.vehicleId }?.unit ?: s.distanceUnit,
+                unit = log.vehicle.unit,
             )
         }
 
