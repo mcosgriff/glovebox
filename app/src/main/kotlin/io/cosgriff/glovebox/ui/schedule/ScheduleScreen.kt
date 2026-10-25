@@ -256,7 +256,7 @@ class ScheduleViewModel @Inject constructor(
 
     /** Normal or severe for every item that has a severe interval. */
     fun chooseSevereUse(severe: Boolean) = viewModelScope.launch {
-        entities.values.filter { it.useSevere != severe }.forEach { schedule.update(it.copy(useSevere = severe)) }
+        schedule.updateAll(entities.values.filter { it.useSevere != severe }.map { it.copy(useSevere = severe) })
     }
 
     /** "Runs mostly on E85", for every item that has an E85 interval. */
