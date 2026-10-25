@@ -15,6 +15,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.domain.DocumentProblem
@@ -38,6 +39,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import io.cosgriff.glovebox.ui.service.longDate
 
 /** A vehicle's documents: listed, named, deleted for good, and added through the picker the activity owns. */
 @RunWith(RobolectricTestRunner::class)
@@ -106,6 +109,48 @@ class DocumentsScreenTest {
         val row = runBlocking { g.db.documents().byId(doc) }!!
         assertEquals(DocumentType.REGISTRATION.name, row.type)
         assertNull(row.date)
+    }
+
+    private fun paper(vehicle: Long, type: DocumentType, expiresOn: LocalDate?) = runBlocking {
+        g.db.documents().insert(
+            DocumentEntity(vehicleId = vehicle, type = type.name, name = type.label, fileName = "d-${type.name}.pdf", format = "PDF", sizeBytes = 900, addedOn = LocalDate.now(), expiresOn = expiresOn),
+        )
+    }
+
+    @Test
+    fun `an expiry date can be given in the future, and cleared`() {
+        val id = g.add(VehicleFixtures.wagon)
+        val doc = paper(id, DocumentType.REGISTRATION, null)
+        val day = LocalDate.now().plusDays(40)
+        show(id, until = DocumentType.REGISTRATION.label)
+        menu(DocumentType.REGISTRATION.label)
+        item(R.string.documents_edit_details)
+        compose.onNode(hasText(g.string(R.string.documents_expires_on)) and hasClickAction()).click()
+        compose.onNode(hasContentDescription("Switch to text input mode")).click()
+        compose.onNode(hasSetTextAction() and hasText("Date", substring = true)).performTextReplacement(day.format(DateTimeFormatter.ofPattern("MMddyyyy")))
+        compose.onNode(hasText(g.string(R.string.ok)) and hasClickAction()).click()
+        compose.onNode(hasText(g.string(R.string.save)) and hasClickAction()).click()
+        compose.awaitThat { g.db.documents().byId(doc)?.expiresOn == day }
+        compose.awaitThat { compose.onAllNodes(hasText(g.string(R.string.documents_expires, day.format(longDate)))).fetchSemanticsNodes().isNotEmpty() }
+
+        menu(DocumentType.REGISTRATION.label)
+        item(R.string.documents_edit_details)
+        compose.onNode(hasText(g.string(R.string.clear)) and hasClickAction()).click()
+        compose.onNode(hasText(g.string(R.string.save)) and hasClickAction()).click()
+        compose.awaitThat { g.db.documents().byId(doc)?.expiresOn == null }
+    }
+
+    @Test
+    fun `a document's expiry reads as later, soon or expired`() {
+        val id = g.add(VehicleFixtures.wagon)
+        val today = LocalDate.now()
+        paper(id, DocumentType.REGISTRATION, today.plusDays(90))
+        paper(id, DocumentType.INSURANCE, today.plusDays(10))
+        paper(id, DocumentType.WARRANTY, today.minusDays(5))
+        show(id, until = DocumentType.WARRANTY.label)
+        compose.onNodeWithText(g.string(R.string.documents_expires, today.plusDays(90).format(longDate)), useUnmergedTree = true).assertExists()
+        compose.onNodeWithText(g.string(R.string.documents_expires, today.plusDays(10).format(longDate)), useUnmergedTree = true).assertExists()
+        compose.onNodeWithText(g.string(R.string.documents_expired, today.minusDays(5).format(longDate)), useUnmergedTree = true).assertExists()
     }
 
     @Test

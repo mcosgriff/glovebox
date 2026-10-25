@@ -9,6 +9,10 @@ import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.ShellTestApp
 import io.cosgriff.glovebox.domain.Notice
+import java.time.LocalDate
+import io.cosgriff.glovebox.domain.PaperStage
+import io.cosgriff.glovebox.domain.ExpiringPaper
+import io.cosgriff.glovebox.domain.DocumentType
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -43,14 +47,15 @@ class NotifierTest {
     fun `there is a channel for each kind, named and described, so each can be silenced in Android's settings`() {
         val channels = Notifier.Channel.entries.map { system.getNotificationChannel(it.id) }
         assertEquals(
-            listOf(R.string.channel_due, R.string.channel_overdue, R.string.channel_recalls, R.string.channel_mileage, R.string.channel_backup).map(app::getString),
+            listOf(R.string.channel_due, R.string.channel_overdue, R.string.channel_recalls, R.string.channel_mileage, R.string.channel_backup, R.string.channel_documents)
+                .map(app::getString),
             channels.map { it.name.toString() },
         )
         assertEquals(app.getString(R.string.channel_recalls_about), channels[2].description)
         assertEquals(NotificationManager.IMPORTANCE_HIGH, channels[2].importance)
         // Making them again on the next launch changes nothing.
         notifier.createChannels()
-        assertEquals(5, system.notificationChannels.size)
+        assertEquals(6, system.notificationChannels.size)
     }
 
     @Test
@@ -68,6 +73,24 @@ class NotifierTest {
         assertFalse(notifier.allowed)
         notifier.post(Notice.Overdue(1, "Tacoma", listOf("Oil change")))
         assertTrue(posted.isEmpty())
+    }
+
+    @Test
+    fun `documents running out name the type and the date, open the vehicle's documents, and show only the kind when locked`() {
+        val day = LocalDate.of(2027, 3, 3)
+        notifier.post(
+            Notice.DocumentsExpiring(
+                4,
+                "Tacoma",
+                listOf(ExpiringPaper(DocumentType.REGISTRATION, day, PaperStage.SOON), ExpiringPaper(DocumentType.INSURANCE, day, PaperStage.TODAY)),
+            ),
+        )
+        val shown = posted.single()
+        assertEquals(app.getString(R.string.notify_expiry_title, "Tacoma"), shown.title())
+        assertEquals("Registration expires Mar 3, 2027\nInsurance card expires today", shown.text())
+        assertEquals(Notifier.Channel.DOCUMENTS.id, shown.channelId)
+        assertEquals(Destination.Documents(4), shown.destination())
+        assertEquals(app.getString(R.string.channel_documents_hidden), shown.publicVersion.extras.getCharSequence(Notification.EXTRA_TEXT).toString())
     }
 
     @Test

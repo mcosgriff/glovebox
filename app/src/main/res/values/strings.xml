@@ -357,6 +357,10 @@
     <string name="documents_name">Name</string>
     <string name="documents_give_name">Give it a name</string>
     <string name="documents_date">Date on it (optional)</string>
+    <string name="documents_expires_on">Expires on (optional)</string>
+    <!-- On a document's card. %1$s is the date the owner gave. -->
+    <string name="documents_expires">Expires %1$s</string>
+    <string name="documents_expired">Expired %1$s</string>
     <string name="documents_dont_keep">Don\'t keep it</string>
     <string name="documents_none_yet">None yet</string>
     <plurals name="documents_summary">
@@ -1820,6 +1824,12 @@
         <item quantity="other">%1$s: %2$s new recalls</item>
     </plurals>
     <string name="notify_and_more">%1$s and more</string>
+    <!-- A document running out (#283). %1$s is the vehicle. -->
+    <string name="notify_expiry_title">%1$s: paperwork to renew</string>
+    <!-- One line per document: %1$s is its type ("Registration"), %2$s the date it gave. -->
+    <string name="notify_expiry_soon">%1$s expires %2$s</string>
+    <string name="notify_expiry_today">%1$s expires today</string>
+    <string name="notify_expiry_expired">%1$s expired %2$s</string>
     <string name="channel_due">Service coming due</string>
     <string name="channel_due_about">When a service enters the lead time you set</string>
     <string name="channel_due_hidden">A service is coming due</string>
@@ -1835,6 +1845,9 @@
     <string name="channel_backup">Backup reminder</string>
     <string name="channel_backup_about">When your last backup is more than a month old</string>
     <string name="channel_backup_hidden">Time to back up</string>
+    <string name="channel_documents">Documents running out</string>
+    <string name="channel_documents_about">30 days before a document\'s expiry date, and on the day</string>
+    <string name="channel_documents_hidden">A document is running out</string>
 
     <!-- Navigation and snackbars (GloveboxNavHost) -->
     <string name="settings_title">Settings</string>
@@ -1913,6 +1926,7 @@
     <string name="notifications_recalls_checked">Checked %1$s for each vehicle</string>
     <string name="notifications_recalls_off">Automatic recall checks are off in Settings</string>
     <string name="notifications_mileage_note">A quick prompt to update the odometer</string>
+    <string name="notifications_documents_note">A registration, policy or other document with an expiry date, 30 days before and on the day</string>
     <string name="notifications_mileage_time">Check-in time</string>
     <string name="notifications_mileage_time_with">Same as reminders · %1$s</string>
     <string name="notifications_mileage_time_same">Same as reminders</string>
@@ -2270,6 +2284,7 @@
     <string name="export_type">Type</string>
     <string name="export_name">Name</string>
     <string name="export_date">Date</string>
+    <string name="export_expires">Expires</string>
     <string name="export_service_records">Service records</string>
     <string name="export_no_records">No service records in this period.</string>
     <string name="export_done_by">Done by %1$s</string>

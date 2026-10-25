@@ -233,11 +233,17 @@ class ExportTest {
 
     @Test
     fun `documents on file are listed by name only, and can be left out`() {
-        val papers = listOf(ExportPaper("Title", "Title | 2019", LocalDate.of(2019, 6, 1)), ExportPaper("Other", "Window sticker", null))
+        val papers = listOf(
+            ExportPaper("Title", "Title | 2019", LocalDate.of(2019, 6, 1)),
+            ExportPaper("Other", "Window sticker", null),
+            ExportPaper("Registration", "Registration", null, expiresOn = LocalDate.of(2027, 3, 3)),
+        )
         val md = text.markdown(Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assert("## Documents on file" in md) { md }
-        assert("| Title | Title \\| 2019 | Jun 1, 2019 |" in md) { md }
-        assert("| Other | Window sticker |  |" in md) { md }
+        assert("| Type | Name | Date | Expires |" in md) { md }
+        assert("| Title | Title \\| 2019 | Jun 1, 2019 |  |" in md) { md }
+        assert("| Other | Window sticker |  |  |" in md) { md }
+        assert("| Registration | Registration |  | Mar 3, 2027 |" in md) { md }
         assert(text.phrase(ExportPhrase.DOCUMENTS_NOTE) in md)
         assert(md.indexOf("## Documents on file") < md.indexOf("## Service records"))
         val without = Exports.document(listOf(truck.copy(documents = papers)), ExportOptions(format = ExportFormat.MARKDOWN, documents = false), today)

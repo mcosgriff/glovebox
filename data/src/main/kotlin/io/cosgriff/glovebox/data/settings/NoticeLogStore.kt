@@ -29,6 +29,7 @@ class NoticeLogStore(private val context: Context) {
             dueAnnounced = under(DUE) { it as? String },
             overdueNudged = under(OVERDUE) { (it as? Long)?.let(LocalDate::ofEpochDay) },
             mileageAsked = under(MILEAGE) { (it as? Long)?.let(LocalDate::ofEpochDay) },
+            expiryAnnounced = under(EXPIRY) { it as? String },
         )
     }
 
@@ -39,13 +40,14 @@ class NoticeLogStore(private val context: Context) {
     suspend fun write(log: NoticeLog, runs: Set<NoticeRun> = NoticeRun.entries.toSet()) {
         context.noticeLog.edit { p ->
             val prefixes = buildList {
-                if (NoticeRun.SERVICES in runs) addAll(listOf(DUE, OVERDUE))
+                if (NoticeRun.SERVICES in runs) addAll(listOf(DUE, OVERDUE, EXPIRY))
                 if (NoticeRun.MILEAGE in runs) add(MILEAGE)
             }
             p.asMap().keys.filter { key -> prefixes.any { key.name.startsWith(it) } }.forEach { p.remove(it) }
             if (NoticeRun.SERVICES in runs) {
                 log.dueAnnounced.forEach { (id, cycle) -> p[stringPreferencesKey("$DUE$id")] = cycle }
                 log.overdueNudged.forEach { (id, day) -> p[longPreferencesKey("$OVERDUE$id")] = day.toEpochDay() }
+                log.expiryAnnounced.forEach { (id, key) -> p[stringPreferencesKey("$EXPIRY$id")] = key }
             }
             if (NoticeRun.MILEAGE in runs) log.mileageAsked.forEach { (id, day) -> p[longPreferencesKey("$MILEAGE$id")] = day.toEpochDay() }
         }
@@ -55,5 +57,8 @@ class NoticeLogStore(private val context: Context) {
         const val DUE = "due:"
         const val OVERDUE = "overdue:"
         const val MILEAGE = "mileage:"
+
+        /** Keyed by document id, not vehicle. */
+        const val EXPIRY = "expiry:"
     }
 }

@@ -53,6 +53,7 @@ object AppExportWords : ExportWords {
             ExportPhrase.TYPE -> R.string.export_type
             ExportPhrase.NAME -> R.string.export_name
             ExportPhrase.DATE -> R.string.export_date
+            ExportPhrase.EXPIRES -> R.string.export_expires
             ExportPhrase.SERVICE_RECORDS -> R.string.export_service_records
             ExportPhrase.NO_RECORDS -> R.string.export_no_records
             ExportPhrase.DONE_BY -> R.string.export_done_by

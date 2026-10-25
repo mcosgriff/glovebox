@@ -85,7 +85,10 @@ import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.photo.DocumentStore
+import io.cosgriff.glovebox.domain.DocumentExpiry
 import io.cosgriff.glovebox.domain.DocumentFormat
+import io.cosgriff.glovebox.domain.ExpiryState
+import io.cosgriff.glovebox.ui.theme.statusColors
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.StoredDocument
 import io.cosgriff.glovebox.domain.VehicleDocuments
@@ -100,8 +103,11 @@ import java.io.File
 import java.time.LocalDate
 import javax.inject.Inject
 
-/** One vehicle's documents, sorted for the list, with the rows they came from. */
-data class DocumentsData(val vehicle: VehicleEntity, val documents: List<Pair<StoredDocument, DocumentEntity>>) {
+/**
+ * One vehicle's documents, sorted for the list, with the rows they came from. [watched] are the ones whose
+ * expiry counts ([DocumentExpiry.watched]); a retired one still shows its date, without the colour.
+ */
+data class DocumentsData(val vehicle: VehicleEntity, val documents: List<Pair<StoredDocument, DocumentEntity>>, val watched: Set<Long> = emptySet()) {
     val totalBytes: Long get() = documents.sumOf { it.first.sizeBytes }
 }
 
@@ -119,7 +125,8 @@ class DocumentsViewModel @Inject constructor(
     val data: StateFlow<DocumentsData?> = combine(vehicles.observe(vehicleId), documents.observe(vehicleId)) { vehicle, rows ->
         vehicle ?: return@combine null
         val byId = rows.associateBy { it.id }
-        DocumentsData(vehicle, VehicleDocuments.sorted(rows.map { it.toStored() }).map { it to byId.getValue(it.id) })
+        val stored = rows.map { it.toStored() }
+        DocumentsData(vehicle, VehicleDocuments.sorted(stored).map { it to byId.getValue(it.id) }, DocumentExpiry.watched(stored))
     }.screenState(viewModelScope, null)
 
     /** A document just added to this vehicle, to ask for its details. */
@@ -136,7 +143,8 @@ class DocumentsViewModel @Inject constructor(
 
     fun clearProblem() = picker.clearProblem()
 
-    fun describe(id: Long, type: DocumentType, name: String, date: LocalDate?) = viewModelScope.launch { documents.describe(id, type.name, name, date) }
+    fun describe(id: Long, type: DocumentType, name: String, date: LocalDate?, expiresOn: LocalDate?) =
+        viewModelScope.launch { documents.describe(id, type.name, name, date, expiresOn) }
 
     fun delete(document: DocumentEntity) = viewModelScope.launch { store.delete(document) }
 
@@ -151,6 +159,7 @@ fun DocumentEntity.toStored() = StoredDocument(
     date = date,
     format = VehicleDocuments.format(format),
     sizeBytes = sizeBytes,
+    expiresOn = expiresOn,
 )
 
 /** A vehicle's paperwork: a history report, the title, the registration. Opened from Vehicle details. */
@@ -167,6 +176,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
     var isNew by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf<Long?>(null) }
     var failed by remember { mutableStateOf<Int?>(null) }
+    val today = remember { LocalDate.now() }
 
     // A document that has just been added opens its details, so it can be named.
     LaunchedEffect(added) {
@@ -194,8 +204,8 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         DetailsDialog(
             document = doc,
             isNew = isNew,
-            onSave = { type, name, date ->
-                vm.describe(id, type, name, date)
+            onSave = { type, name, date, expiresOn ->
+                vm.describe(id, type, name, date, expiresOn)
                 editing = null
             },
             onDismiss = { editing = null },
@@ -239,6 +249,8 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
         items(d.documents, key = { it.first.id }) { (doc, row) ->
             DocumentCard(
                 document = doc,
+                watched = doc.id in d.watched,
+                today = today,
                 onView = { onView(doc.id) },
                 onOpenElsewhere = { open(row, share = false) },
                 onShare = { open(row, share = true) },
@@ -268,7 +280,7 @@ fun DocumentsScreen(onBack: () -> Unit, onView: (Long) -> Unit, vm: DocumentsVie
 }
 
 @Composable
-private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenElsewhere: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
+private fun DocumentCard(document: StoredDocument, watched: Boolean, today: LocalDate, onView: () -> Unit, onOpenElsewhere: () -> Unit, onShare: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier) {
     val scheme = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
     BorderedCard(modifier) {
@@ -295,6 +307,7 @@ private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenEls
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
+                document.expiresOn?.let { Expiry(it, watched, today) }
             }
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.more_for, document.name)) }
@@ -308,6 +321,26 @@ private fun DocumentCard(document: StoredDocument, onView: () -> Unit, onOpenEls
             }
         }
     }
+}
+
+/**
+ * "Expires Mar 3, 2027", marked from [DocumentExpiry.LEAD_DAYS] out and in the danger colour once past. Only a
+ * [watched] document is marked: last year's registration, retired by this year's, isn't news.
+ */
+@Composable
+private fun Expiry(expiresOn: LocalDate, watched: Boolean, today: LocalDate) {
+    val state = DocumentExpiry.state(expiresOn, today)
+    val date = expiresOn.format(longDate)
+    Text(
+        stringResource(if (state == ExpiryState.PAST) R.string.documents_expired else R.string.documents_expires, date),
+        style = MaterialTheme.typography.bodySmall,
+        fontWeight = if (watched && state != ExpiryState.LATER) FontWeight.SemiBold else null,
+        color = when {
+            !watched || state == ExpiryState.LATER -> MaterialTheme.colorScheme.onSurfaceVariant
+            state == ExpiryState.SOON -> statusColors().soon
+            else -> MaterialTheme.colorScheme.error
+        },
+    )
 }
 
 /**
@@ -353,21 +386,23 @@ private fun AddButton(working: Boolean, onChoose: () -> Unit, onTake: () -> Unit
     }
 }
 
-/** Type, name and date. A new document's dialog can also take it back off ([onDiscard]). */
+/** Type, name, date and expiry. A new document's dialog can also take it back off ([onDiscard]). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DetailsDialog(
     document: StoredDocument,
     isNew: Boolean,
-    onSave: (DocumentType, String, LocalDate?) -> Unit,
+    onSave: (DocumentType, String, LocalDate?, LocalDate?) -> Unit,
     onDismiss: () -> Unit,
     onDiscard: () -> Unit,
 ) {
     var type by rememberSaveable(document.id) { mutableStateOf(document.type) }
     var name by rememberSaveable(document.id) { mutableStateOf(document.name) }
     var date by rememberSaveable(document.id) { mutableStateOf(document.date) }
+    var expiresOn by rememberSaveable(document.id) { mutableStateOf(document.expiresOn) }
     var typeOpen by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
+    var pickingExpiry by remember { mutableStateOf(false) }
     val clean = VehicleDocuments.cleanName(name)
     if (picking) {
         DatePickerSheet(
@@ -377,6 +412,17 @@ private fun DetailsDialog(
                 picking = false
             },
             onDismiss = { picking = false },
+        )
+    }
+    if (pickingExpiry) {
+        DatePickerSheet(
+            initial = expiresOn ?: LocalDate.now(),
+            onPick = {
+                expiresOn = it
+                pickingExpiry = false
+            },
+            onDismiss = { pickingExpiry = false },
+            allowFuture = true,
         )
     }
     AlertDialog(
@@ -427,9 +473,19 @@ private fun DetailsDialog(
                     }
                     if (date != null) TextButton(onClick = { date = null }) { Text(stringResource(R.string.clear)) }
                 }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
+                        Modifier.weight(1f).heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = stringResource(R.string.choose_date)) { pickingExpiry = true },
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(stringResource(R.string.documents_expires_on), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(expiresOn?.format(longDate) ?: stringResource(R.string.none), style = MaterialTheme.typography.bodyLarge)
+                    }
+                    if (expiresOn != null) TextButton(onClick = { expiresOn = null }) { Text(stringResource(R.string.clear)) }
+                }
             }
         },
-        confirmButton = { TextButton(onClick = { clean?.let { onSave(type, it, date) } }, enabled = clean != null) { Text(stringResource(R.string.save)) } },
+        confirmButton = { TextButton(onClick = { clean?.let { onSave(type, it, date, expiresOn) } }, enabled = clean != null) { Text(stringResource(R.string.save)) } },
         dismissButton = {
             if (isNew) {
                 DangerTextButton(onClick = onDiscard) { Text(stringResource(R.string.documents_dont_keep)) }

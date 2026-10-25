@@ -82,6 +82,7 @@ class SettingsRepository(private val context: Context) {
         val notifyOverdue = booleanPreferencesKey("notify_overdue")
         val notifyRecalls = booleanPreferencesKey("notify_recalls")
         val notifyMileage = booleanPreferencesKey("notify_mileage")
+        val notifyDocuments = booleanPreferencesKey("notify_documents")
         val notifyHour = intPreferencesKey("notify_hour")
         val notifyMinute = intPreferencesKey("notify_minute")
         val mileageEveryDays = intPreferencesKey("mileage_every_days")
@@ -116,7 +117,7 @@ class SettingsRepository(private val context: Context) {
         fun string(key: Preferences.Key<String>) = typed(key) { it as? String }
         mapOf(
             string(theme), bool(biometric), int(lockAfter), bool(hideRecents), string(rule), int(leadMiles), int(leadDays),
-            string(torque), string(distance), bool(notifyDue), bool(notifyOverdue), bool(notifyRecalls), bool(notifyMileage),
+            string(torque), string(distance), bool(notifyDue), bool(notifyOverdue), bool(notifyRecalls), bool(notifyMileage), bool(notifyDocuments),
             int(notifyHour), int(notifyMinute), int(mileageEveryDays), int(mileageHour), int(mileageMinute), string(recallCadence),
             bool(welcomeSeen), long(lastBackup), bool(backupReminder), long(backupReminded), bool(scannerDetails), bool(homeWidget),
         )
@@ -160,6 +161,7 @@ class SettingsRepository(private val context: Context) {
                 overdue = p[Keys.notifyOverdue] ?: d.notices.overdue,
                 recalls = p[Keys.notifyRecalls] ?: d.notices.recalls,
                 mileage = p[Keys.notifyMileage] ?: d.notices.mileage,
+                documents = p[Keys.notifyDocuments] ?: d.notices.documents,
                 hour = (p[Keys.notifyHour] ?: d.notices.hour).coerceIn(0, 23),
                 minute = (p[Keys.notifyMinute] ?: d.notices.minute).coerceIn(0, 59),
                 mileageEveryDays = (p[Keys.mileageEveryDays] ?: p[Keys.mileageCadence]?.let(MileageCheckIns::legacy))
@@ -203,6 +205,7 @@ class SettingsRepository(private val context: Context) {
         it[Keys.notifyOverdue] = prefs.overdue
         it[Keys.notifyRecalls] = prefs.recalls
         it[Keys.notifyMileage] = prefs.mileage
+        it[Keys.notifyDocuments] = prefs.documents
         it[Keys.notifyHour] = prefs.hour
         it[Keys.notifyMinute] = prefs.minute
         it[Keys.mileageEveryDays] = prefs.mileageEveryDays

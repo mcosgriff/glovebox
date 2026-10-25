@@ -155,7 +155,7 @@ object SampleReport {
         records = records,
         schedule = items.map { ExportScheduleLine(it.name, every.getValue(it.id), ServiceLog.lastDone(it.id, entries), it.id) },
         recalls = listOf(ExportRecall("19V-670", "Suspension", LocalDate.of(2026, 1, 3)), ExportRecall("20V-012", "Fuel pump", null)),
-        documents = listOf(ExportPaper("Title", "Made-up title", null)),
+        documents = listOf(ExportPaper("Title", "Made-up title", null), ExportPaper("Registration", "Made-up registration", null, expiresOn = LocalDate.of(2027, 3, 3))),
         specs = "4WD · 4.0L V6",
         report = ReportFacts(VehicleReminders.statuses(items, entries, emptyList(), today, LeadTime(1_500)), categories, entries.map { OdometerReading(it.date, it.odometer) }),
     )

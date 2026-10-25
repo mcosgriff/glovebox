@@ -26,6 +26,10 @@ Rules for the lock, navigation, shortcuts, the widget, notifications, the welcom
   out**: rows and wording are the garage list's. Nothing on it acts.
 - Notifications: `NoticeRules` decides what is said; `NoticeLogStore` is updated even when notifications are off,
   so turning them on releases no backlog. Workers skip sold vehicles. The lock-screen version says only the kind.
+  A document's expiry (#283) is a kind of its own (channel `documents`, its own switch, off with the welcome's
+  "notifications off"): said once 30 days out and once on the day, per date (`NoticeLog.expiryAnnounced`, keyed
+  by document id), and opens that vehicle's Documents. **A new channel goes last in `Notifier.Channel`**: its
+  place makes the notifications' ids.
 - The welcome shows only with the flag unset and no vehicles; the flag is not backed up.
 - Delete all data: typed DELETE, then the screen lock. **Anything new the app stores on disk has to be added to
   `DataWipe.erase`.** `DataWipe.finishInterrupted` runs before Hilt and completes a wipe the process didn't

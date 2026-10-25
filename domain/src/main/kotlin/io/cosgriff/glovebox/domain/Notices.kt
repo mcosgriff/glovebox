@@ -75,6 +75,8 @@ data class NoticePrefs(
     val overdue: Boolean = true,
     val recalls: Boolean = true,
     val mileage: Boolean = true,
+    /** Documents running out (#283). */
+    val documents: Boolean = true,
     /** Time of day for the daily check, 24-hour. */
     val hour: Int = 8,
     val minute: Int = 0,
@@ -88,7 +90,7 @@ data class NoticePrefs(
     val mileageMinute: Int = 0,
 ) {
     /** True when the daily check has anything to do. */
-    val wantsDailyCheck: Boolean get() = serviceDue || overdue || mileage
+    val wantsDailyCheck: Boolean get() = serviceDue || overdue || mileage || documents
 
     /** True when the mileage check-in runs on its own, at a time that isn't the daily check's. */
     val mileageApart: Boolean get() = mileageHour != null && (mileageHour != hour || mileageMinute != minute)
@@ -108,6 +110,8 @@ data class NoticeLog(
     val dueAnnounced: Map<Long, String> = emptyMap(),
     val overdueNudged: Map<Long, LocalDate> = emptyMap(),
     val mileageAsked: Map<Long, LocalDate> = emptyMap(),
+    /** A document to the expiry and stage it was last announced for (see [NoticeRules.paperKey]). */
+    val expiryAnnounced: Map<Long, String> = emptyMap(),
 )
 
 /** One vehicle as the daily check sees it. Archived vehicles are never passed in. */
@@ -119,7 +123,24 @@ data class NoticeVehicle(
     /** The newest odometer reading of any kind; null if there has never been one. */
     val lastReadingOn: LocalDate?,
     val checkIn: VehicleCheckIn = VehicleCheckIn.Default,
+    /** Its documents, dated or not; only the ones [DocumentExpiry.watched] picks are looked at. */
+    val documents: List<StoredDocument> = emptyList(),
 )
+
+/** Which announcement of a document's expiry this is. */
+enum class PaperStage {
+    /** [DocumentExpiry.LEAD_DAYS] out or nearer. */
+    SOON,
+
+    /** The day itself. */
+    TODAY,
+
+    /** The day has gone, and the check didn't run on it (the phone was off). */
+    EXPIRED,
+}
+
+/** One document running out, by its type: the wording names only the kind and the date. */
+data class ExpiringPaper(val type: DocumentType, val expiresOn: LocalDate, val stage: PaperStage)
 
 sealed interface Notice {
     val vehicleId: Long
@@ -133,6 +154,9 @@ sealed interface Notice {
 
     /** Time for a fresh odometer reading. */
     data class MileageCheckIn(override val vehicleId: Long, override val vehicleName: String) : Notice
+
+    /** Documents coming up to, or reaching, their expiry date. Not a reminder: nothing is logged against them. */
+    data class DocumentsExpiring(override val vehicleId: Long, override val vehicleName: String, val papers: List<ExpiringPaper>) : Notice
 
     /** Recalls NHTSA lists that weren't on file before; [components] are their short names. */
     data class NewRecalls(override val vehicleId: Long, override val vehicleName: String, val components: List<String>) : Notice
@@ -159,6 +183,8 @@ object NoticeRules {
      * - A mileage check-in is asked for when the newest reading is older than the vehicle's cadence
      *   (its own, or the default), at most once per cadence, and only for vehicles with reminders to
      *   keep honest. A vehicle with it off is never asked.
+     * - A document with an expiry is announced once [DocumentExpiry.LEAD_DAYS] out and once on the day,
+     *   per date, and only the newest of each type ([DocumentExpiry.watched]). It goes with the services part.
      *
      * The log is updated for everything that is due, even when its switch is off, so turning a
      * switch on later doesn't release a backlog. Only the parts in `runs` are looked at.
@@ -175,9 +201,11 @@ object NoticeRules {
         val dueAnnounced = mutableMapOf<Long, String>()
         val overdueNudged = mutableMapOf<Long, LocalDate>()
         val mileageAsked = mutableMapOf<Long, LocalDate>()
+        val expiryAnnounced = mutableMapOf<Long, String>()
 
         for (v in vehicles) {
             if (NoticeRun.SERVICES in runs) services(v, log, prefs, today, notices, dueAnnounced, overdueNudged)
+            if (NoticeRun.SERVICES in runs) papers(v, log, prefs, today, notices, expiryAnnounced)
             if (NoticeRun.MILEAGE in runs) mileage(v, log, prefs, today, notices, mileageAsked)
         }
         // Entries for reminders and vehicles that are no longer due, or gone, are dropped.
@@ -187,6 +215,7 @@ object NoticeRules {
                 dueAnnounced = if (NoticeRun.SERVICES in runs) dueAnnounced else log.dueAnnounced,
                 overdueNudged = if (NoticeRun.SERVICES in runs) overdueNudged else log.overdueNudged,
                 mileageAsked = if (NoticeRun.MILEAGE in runs) mileageAsked else log.mileageAsked,
+                expiryAnnounced = if (NoticeRun.SERVICES in runs) expiryAnnounced else log.expiryAnnounced,
             ),
         )
     }
@@ -213,6 +242,36 @@ object NoticeRules {
         // Still inside its lead-time announcement for this cycle, so it isn't announced again if the state flips back.
         overdue.forEach { s -> log.dueAnnounced[s.item.id]?.let { dueAnnounced[s.item.id] = it } }
         if (prefs.overdue && toNudge.isNotEmpty()) notices += Notice.Overdue(v.id, v.name, toNudge.map { it.item.name })
+    }
+
+    /** Identifies one announcement of a document: a changed date is a new one. The day and a late "expired" are the same one. */
+    fun paperKey(expiresOn: LocalDate, stage: PaperStage): String =
+        "${expiresOn.toEpochDay()}:${if (stage == PaperStage.SOON) "soon" else "day"}"
+
+    /**
+     * What is said of a document today, if anything: once from [DocumentExpiry.LEAD_DAYS] out, once on the day.
+     * A day the check missed is said late, up to [DocumentExpiry.LEAD_DAYS] after; older than that it isn't news.
+     */
+    private fun stage(expiresOn: LocalDate, today: LocalDate): PaperStage? = when {
+        today == expiresOn -> PaperStage.TODAY
+        today.isAfter(expiresOn) -> PaperStage.EXPIRED.takeIf { ChronoUnit.DAYS.between(expiresOn, today) < DocumentExpiry.LEAD_DAYS }
+        DocumentExpiry.state(expiresOn, today) == ExpiryState.SOON -> PaperStage.SOON
+        else -> null
+    }
+
+    private fun papers(v: NoticeVehicle, log: NoticeLog, prefs: NoticePrefs, today: LocalDate, notices: MutableList<Notice>, expiryAnnounced: MutableMap<Long, String>) {
+        val watched = DocumentExpiry.watched(v.documents)
+        // A retired document keeps what was said of it, so it isn't said again if its replacement is deleted.
+        v.documents.filter { it.id !in watched }.forEach { d -> log.expiryAnnounced[d.id]?.let { expiryAnnounced[d.id] = it } }
+        val news = mutableListOf<ExpiringPaper>()
+        for (d in v.documents.filter { it.id in watched }) {
+            val expiresOn = d.expiresOn ?: continue
+            val stage = stage(expiresOn, today) ?: continue
+            val key = paperKey(expiresOn, stage)
+            expiryAnnounced[d.id] = key
+            if (log.expiryAnnounced[d.id] != key) news += ExpiringPaper(d.type, expiresOn, stage)
+        }
+        if (prefs.documents && news.isNotEmpty()) notices += Notice.DocumentsExpiring(v.id, v.name, news)
     }
 
     private fun mileage(v: NoticeVehicle, log: NoticeLog, prefs: NoticePrefs, today: LocalDate, notices: MutableList<Notice>, mileageAsked: MutableMap<Long, LocalDate>) {

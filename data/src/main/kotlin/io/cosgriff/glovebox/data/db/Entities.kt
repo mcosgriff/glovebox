@@ -275,6 +275,8 @@ data class DocumentEntity(
     /** Size before encryption. */
     val sizeBytes: Long,
     val addedOn: LocalDate,
+    /** When it runs out, if the owner gave a date (#283): a registration, a policy, a warranty. */
+    val expiresOn: LocalDate? = null,
 )
 
 @Entity(

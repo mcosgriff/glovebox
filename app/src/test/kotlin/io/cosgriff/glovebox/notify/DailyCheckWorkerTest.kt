@@ -10,6 +10,7 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.ShellTestApp
+import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.NoticeRun
@@ -138,5 +139,36 @@ class DailyCheckWorkerTest {
         run()
         assertTrue(posted.isEmpty())
         assertNull(runBlocking { graph.get<SettingsRepository>().settings.first().backupRemindedOn })
+    }
+
+    private fun registration(vehicle: Long, expiresOn: LocalDate) = runBlocking {
+        graph.db.documents().insert(
+            DocumentEntity(vehicleId = vehicle, type = "REGISTRATION", name = "Registration", fileName = "document-r.pdf", format = "PDF", sizeBytes = 10, addedOn = today, expiresOn = expiresOn),
+        )
+    }
+
+    @Test
+    fun `a registration running out is announced once, and opens that vehicle's documents`() {
+        val vehicle = graph.addVehicle(reading = null)
+        val doc = registration(vehicle, today.plusDays(10))
+        run()
+        val shown = posted.single()
+        assertEquals(app.getString(R.string.notify_expiry_title, "2019 4Runner"), shown.extras.getCharSequence(Notification.EXTRA_TITLE).toString())
+        assertEquals(Destination.Documents(vehicle), Destination.from(shadowOf(shown.contentIntent).savedIntent))
+        assertTrue(log().expiryAnnounced.containsKey(doc))
+
+        system.cancelAll()
+        run()
+        assertTrue(posted.isEmpty())
+    }
+
+    @Test
+    fun `a sold vehicle's documents aren't announced`() {
+        val vehicle = graph.addVehicle(reading = null)
+        val doc = registration(vehicle, today)
+        runBlocking { graph.db.vehicles().setArchived(vehicle, today.minusDays(3)) }
+        run()
+        assertTrue(titles().toString(), posted.isEmpty())
+        assertNull(log().expiryAnnounced[doc])
     }
 }

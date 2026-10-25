@@ -231,7 +231,7 @@ class ExportViewModel @Inject constructor(
             soldOn = v.archivedOn,
             clusterSwap = swap,
             whatItTakes = v.whatItTakes().wordedLines(),
-            documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date) },
+            documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date, it.expiresOn) },
             records = records.map { r ->
                 ExportRecord(
                     date = r.record.date,

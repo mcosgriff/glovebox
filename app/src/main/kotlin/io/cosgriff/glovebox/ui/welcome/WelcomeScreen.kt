@@ -90,7 +90,7 @@ class FirstRun @Inject constructor(private val settings: SettingsRepository, pri
         if (!choice.notifications) {
             // Everything off; each kind can be turned on again under Settings, Notifications.
             val current = settings.settings.first().notices
-            settings.setNotices(current.copy(serviceDue = false, overdue = false, recalls = false, mileage = false))
+            settings.setNotices(current.copy(serviceDue = false, overdue = false, recalls = false, mileage = false, documents = false))
             settings.setBackupReminder(false)
         }
         settings.setWelcomeSeen()

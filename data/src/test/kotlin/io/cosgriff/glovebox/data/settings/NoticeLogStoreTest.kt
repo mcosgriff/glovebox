@@ -30,6 +30,7 @@ class NoticeLogStoreTest {
         dueAnnounced = mapOf(1L to "oil@60000", 2L to "tires@55000"),
         overdueNudged = mapOf(1L to day),
         mileageAsked = mapOf(7L to day.minusDays(14)),
+        expiryAnnounced = mapOf(40L to "20760:soon"),
     )
 
     @Test

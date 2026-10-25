@@ -181,6 +181,7 @@ class ShellGraph(private val app: Application) {
         }
 
         override fun vehicles() = db.vehicles()
+        override fun documents() = db.documents()
         override fun logs() = get<VehicleLogs>()
         override fun pendingDestination() = get<io.cosgriff.glovebox.notify.PendingDestination>()
         override fun settings() = get<SettingsRepository>()

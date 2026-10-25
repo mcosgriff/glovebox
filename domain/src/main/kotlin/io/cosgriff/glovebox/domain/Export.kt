@@ -61,7 +61,7 @@ data class ExportScheduleLine(val name: String, val every: String, val lastDone:
 data class ExportRecall(val campaign: String, val component: String, val completedOn: LocalDate?, val archivedOn: LocalDate? = null)
 
 /** One of the vehicle's documents as an export lists it. [type] is the type's label. */
-data class ExportPaper(val type: String, val name: String, val date: LocalDate?)
+data class ExportPaper(val type: String, val name: String, val date: LocalDate?, val expiresOn: LocalDate? = null)
 
 data class ExportVehicle(
     /** "2019 Toyota 4Runner SR5" */
@@ -160,7 +160,7 @@ enum class ExportPhrase {
     RECALL_NOTE, LAST_DONE_NOTE, IMPORTED_NOTE, SCHEDULE_NOTE, TAKES_NOTE, DOCUMENTS_NOTE,
     SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
     INSTRUMENT_CLUSTER, SOLD, PERIOD, RECORDS, EXPORTED_ON,
-    WHAT_IT_TAKES, DOCUMENTS_ON_FILE, TYPE, NAME, DATE, SERVICE_RECORDS, NO_RECORDS, DONE_BY, DONE_BY_LABELLED, COST,
+    WHAT_IT_TAKES, DOCUMENTS_ON_FILE, TYPE, NAME, DATE, EXPIRES, SERVICE_RECORDS, NO_RECORDS, DONE_BY, DONE_BY_LABELLED, COST,
     MAINTENANCE_SCHEDULE, ITEM, EVERY, LAST_DONE, RECALLS, CAMPAIGN, COMPONENT, STATUS, PHOTO_UNREADABLE, PAGE,
 }
 
@@ -218,6 +218,8 @@ class ExportText(private val words: ExportWords) {
 
     fun paperDate(paper: ExportPaper): String = paper.date?.let { date(it) } ?: ""
 
+    fun paperExpiry(paper: ExportPaper): String = paper.expiresOn?.let { date(it) } ?: ""
+
     /** A visit's heading: the first record's date, and the reading when every record gives the same one. */
     fun visitHeading(visit: List<ExportRecord>, unit: DistanceUnit): String =
         listOfNotNull(date(visit.first().date), Visits.readings(visit.map { it.odometer }).singleOrNull()?.let { distance(it, unit) }).joinToString(" · ")
@@ -259,8 +261,8 @@ class ExportText(private val words: ExportWords) {
 
             if (v.documents.isNotEmpty()) {
                 append("\n## ${phrase(ExportPhrase.DOCUMENTS_ON_FILE)}\n\n")
-                append("| ${phrase(ExportPhrase.TYPE)} | ${phrase(ExportPhrase.NAME)} | ${phrase(ExportPhrase.DATE)} |\n|---|---|---|\n")
-                v.documents.forEach { append("| ${cell(it.type)} | ${cell(it.name)} | ${paperDate(it)} |\n") }
+                append("| ${phrase(ExportPhrase.TYPE)} | ${phrase(ExportPhrase.NAME)} | ${phrase(ExportPhrase.DATE)} | ${phrase(ExportPhrase.EXPIRES)} |\n|---|---|---|---|\n")
+                v.documents.forEach { append("| ${cell(it.type)} | ${cell(it.name)} | ${paperDate(it)} | ${paperExpiry(it)} |\n") }
                 append("\n${phrase(ExportPhrase.DOCUMENTS_NOTE)}\n")
             }
 
