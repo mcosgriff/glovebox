@@ -25,14 +25,17 @@ concurrency:
   group: dependencies-${{ github.ref }}
   cancel-in-progress: true
 
+# Two jobs, so the PR's build code never runs with a token that can write (a Dependabot PR's run gets the
+# permissions a job asks for):
+#   graph   runs Gradle (read-only token) and uploads the dependency graph as an artifact;
+#   submit  runs no Gradle and sends that graph to GitHub.
 jobs:
-  submit:
+  graph:
     runs-on: ubuntu-latest
-    permissions:
-      # Submitting a dependency snapshot is a write to the repository's dependency graph.
-      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
@@ -41,9 +44,21 @@ jobs:
 
       - uses: gradle/actions/dependency-submission@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
+          dependency-graph: generate-and-upload
           # :app's release classpath, and :data's and :domain's, which it takes in.
           dependency-graph-include-configurations: '^(releaseRuntimeClasspath|runtimeClasspath)$'
           dependency-graph-include-projects: '^:(app|data|domain)$'
+
+  submit:
+    needs: graph
+    runs-on: ubuntu-latest
+    permissions:
+      # Submitting a dependency snapshot is a write to the repository's dependency graph.
+      contents: write
+    steps:
+      - uses: gradle/actions/dependency-submission@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          dependency-graph: download-and-submit
 
   review:
     if: github.event_name != 'push'
