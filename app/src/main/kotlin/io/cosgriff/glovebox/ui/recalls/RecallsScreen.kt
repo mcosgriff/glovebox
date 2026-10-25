@@ -61,6 +61,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -296,6 +297,8 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
     val context = LocalContext.current
     var tab by rememberSaveable { mutableStateOf(RecallTab.ALL) }
     var marking by rememberSaveable { mutableStateOf<Long?>(null) }
+    // A recall that says not to drive, or to park outside, is archived only once the owner confirms (#461).
+    var archiving by rememberSaveable { mutableStateOf<Long?>(null) }
     val site = Recalls.manufacturerSite(v.make)
 
     if (vm.nameChoice != NameChoice.Closed) {
@@ -314,6 +317,23 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 vm.markDone(recall, it)
             },
             onDismiss = { marking = null },
+        )
+    }
+
+    state.recalls.firstOrNull { it.id == archiving }?.let { recall ->
+        AlertDialog(
+            onDismissRequest = { archiving = null },
+            title = { Text(stringResource(R.string.recalls_archive_urgent_title)) },
+            text = {
+                Text(stringResource(if (recall.doNotDrive) R.string.recalls_archive_urgent_do_not_drive else R.string.recalls_archive_urgent_park_outside))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    archiving = null
+                    vm.archive(recall)
+                }) { Text(stringResource(R.string.recalls_archive_anyway)) }
+            },
+            dismissButton = { TextButton(onClick = { archiving = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 
@@ -377,7 +397,7 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 RecallCard(
                     recall = recall,
                     onToggle = { if (recall.completedOn == null) marking = recall.id else vm.markOpen(recall) },
-                    onArchive = { vm.archive(recall) },
+                    onArchive = { if (recall.doNotDrive || recall.parkOutside) archiving = recall.id else vm.archive(recall) },
                     onUnarchive = { vm.unarchive(recall) },
                     onFindDealer = { context.findDealer(state.makeName, site?.recallUrl ?: Recalls.NHTSA_LOOKUP_URL) },
                     modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),

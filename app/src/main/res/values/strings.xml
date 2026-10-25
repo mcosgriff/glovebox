@@ -200,6 +200,9 @@
         <item quantity="other">%1$s open recalls</item>
     </plurals>
     <string name="no_open_recalls">No open recalls</string>
+    <!-- The garage card's recall chip when an open recall's maker says not to drive, or to park outside (#461). -->
+    <string name="garage_recall_do_not_drive">Recall: do not drive</string>
+    <string name="garage_recall_park_outside">Recall: park outside</string>
     <!-- %1$s is a service, such as Oil &amp; filter. -->
     <string name="item_overdue">%1$s overdue</string>
     <string name="item_due_soon">%1$s due soon</string>
@@ -674,6 +677,8 @@
     <string name="details_recalls">Recalls</string>
     <string name="details_recalls_not_checked">Not checked yet</string>
     <string name="details_recalls_open">%1$s open</string>
+    <string name="details_recalls_do_not_drive">%1$s open · do not drive</string>
+    <string name="details_recalls_park_outside">%1$s open · park outside</string>
     <string name="details_units">Distance units</string>
     <string name="details_units_detail">%1$s · what the odometer counts in</string>
     <string name="details_readings_detail">Every odometer reading · fix or delete a wrong one</string>
@@ -1543,6 +1548,11 @@
     <string name="recalls_do_not_drive">Do not drive until it\'s repaired</string>
     <string name="recalls_park_outside">Park outside, away from buildings, until it\'s repaired</string>
     <string name="recalls_over_the_air">Fixed by a software update sent over the air.</string>
+    <!-- Archiving a recall that says not to drive, or to park outside, asks first (#461). -->
+    <string name="recalls_archive_urgent_title">Archive this recall?</string>
+    <string name="recalls_archive_urgent_do_not_drive">Its maker says not to drive the vehicle until it\'s repaired. Archive it only if it doesn\'t apply to this vehicle.</string>
+    <string name="recalls_archive_urgent_park_outside">Its maker says to park the vehicle outside, away from buildings, until it\'s repaired. Archive it only if it doesn\'t apply to this vehicle.</string>
+    <string name="recalls_archive_anyway">Archive anyway</string>
     <!-- A label in bold, then NHTSA's text: "Remedy: Dealers will replace…". -->
     <string name="recalls_labelled">%1$s: %2$s</string>
     <string name="recalls_reported">Reported %1$s</string>

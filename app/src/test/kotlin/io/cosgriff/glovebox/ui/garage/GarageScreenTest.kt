@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.garage
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
@@ -94,6 +97,19 @@ class GarageScreenTest {
         content(Garage(listOf(quiet)), archived = 0)
         compose.onNodeWithText(context.getString(R.string.no_open_recalls)).assertExists()
         compose.onNodeWithText(context.getString(R.string.garage_no_mileage)).assertExists()
+    }
+
+    @Test
+    fun `a vehicle with an open recall that says not to drive, or to park outside, says so on its card`() {
+        val stop = GarageVehicle(Fixtures.hatch, odometer = null, comingUp = Fixtures.hatchComingUp, oil = null, recalls = OpenRecalls(2, null, doNotDrive = true, parkOutside = true))
+        var recalls by mutableStateOf(stop.recalls)
+        compose.setContent { GloveboxTheme { GarageContent(Garage(listOf(stop.copy(recalls = recalls))), 0, {}, {}, {}, {}, {}) } }
+        // Not driving it is the one to act on; it covers parking outside too.
+        compose.onNodeWithText(context.getString(R.string.garage_recall_do_not_drive)).assertExists()
+        compose.onNodeWithText(context.getString(R.string.garage_recall_park_outside)).assertDoesNotExist()
+
+        recalls = OpenRecalls(1, null, parkOutside = true)
+        compose.onNodeWithText(context.getString(R.string.garage_recall_park_outside)).assertExists()
     }
 
     private fun viewModel() = GarageViewModel(

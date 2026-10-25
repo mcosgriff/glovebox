@@ -182,6 +182,22 @@ class RecallsScreenTest {
     }
 
     @Test
+    fun `archiving a recall that says not to drive asks first, and Cancel leaves it open`() {
+        val truck = h.addTruck()
+        h.insert(h.recall(truck, "26V100000").copy(doNotDrive = true))
+        show(truck)
+        compose.onNodeWithText(str(R.string.recalls_archive)).performClick()
+        shows(str(R.string.recalls_archive_urgent_title))
+        compose.onNodeWithText(str(R.string.cancel)).performClick()
+        compose.waitForIdle()
+        assertNull(runBlocking { h.db.recalls().recallsFor(truck) }.single().archivedOn)
+
+        compose.onNodeWithText(str(R.string.recalls_archive)).performClick()
+        compose.onNodeWithText(str(R.string.recalls_archive_anyway)).performClick()
+        compose.waitUntil(TIMEOUT) { runBlocking { h.db.recalls().recallsFor(truck) }.single().archivedOn != null }
+    }
+
+    @Test
     fun `a recall's risk is only in the full notice`() {
         val truck = h.addTruck()
         h.insert(h.recall(truck, "26V100000", consequence = "A made-up risk."))

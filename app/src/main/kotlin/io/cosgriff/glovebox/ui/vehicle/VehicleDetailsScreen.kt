@@ -878,11 +878,14 @@ internal fun VehicleDetailsContent(
                         detail = when {
                             open == null -> stringResource(R.string.details_recalls_not_checked)
                             open.count == 0 -> stringResource(R.string.no_open_recalls)
+                            open.doNotDrive -> stringResource(R.string.details_recalls_do_not_drive, open.count.asNumber())
+                            open.parkOutside -> stringResource(R.string.details_recalls_park_outside, open.count.asNumber())
                             else -> stringResource(R.string.details_recalls_open, open.count.asNumber())
                         },
                         detailColor = when {
                             open == null -> MaterialTheme.colorScheme.onSurfaceVariant
                             open.count == 0 -> statusColors().ok
+                            open.doNotDrive || open.parkOutside -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.onPrimaryContainer
                         },
                         onClick = { onOpenRecalls(v.id) },

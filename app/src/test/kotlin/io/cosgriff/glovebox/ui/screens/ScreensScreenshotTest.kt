@@ -85,6 +85,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
         GarageContent(Garage(emptyList()), archived = 0, onAddVehicle = {}, onOpenVehicle = {}, onSeeReminders = {}, onOpenArchive = {}, onRestore = {})
     }
 
+    /** The truck's open recall says not to drive it, the hatch's to park outside (#461). */
+    @Test
+    fun garageDoNotDrive() = compose.shoot("garage_do_not_drive", shade) {
+        val (truck, hatch) = Fixtures.garage.vehicles
+        GarageContent(
+            Garage(listOf(truck.copy(recalls = OpenRecalls(1, "Fuel pump", doNotDrive = true)), hatch.copy(recalls = OpenRecalls(1, null, parkOutside = true)))),
+            archived = 1, onAddVehicle = {}, onOpenVehicle = {}, onSeeReminders = {}, onOpenArchive = {}, onRestore = {},
+        )
+    }
+
     @Test
     fun vehicleHome() = compose.shoot("vehicle_home", shade) {
         VehicleHomeContent(
