@@ -22,6 +22,11 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   An engine that isn't on record matches no per-engine list; only setup asks which engine. A list's
   `engine.powertrain` (#33's rulings) tells a hybrid or flex-fuel model from its petrol twin of one size;
   `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**.
+- **Taking up a schedule is one transaction** (#429): setup's save and "Use the maker's schedule" go through
+  `ScheduleWriter.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
+  engine and powertrain, and adds the maker's table (read from the vehicle as it is) unless the vehicle has one.
+  The caller builds the item rows from the owner's picks. A process that dies part-way must leave the vehicle as
+  it was, never a maker's schedule without its table.
 - A vehicle set up earlier is offered "Use the maker's schedule"; there is no replace of the user's own items.
   **A replaced typical item is deleted** (the user found an unticked twin confusing) unless a service was logged
   against it, when it stays untracked. That is the one place a typical item is deleted.

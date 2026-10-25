@@ -31,3 +31,11 @@ _Avoid_: corrected mileage, adjusted reading
 **Actual mileage**:
 The distance the vehicle has really covered, whatever any cluster reads. A maker's manual counts in actual mileage.
 _Avoid_: true mileage, real odometer
+
+**Maker's schedule**:
+A vehicle maker's published maintenance guide for a model, which comes with Glovebox and is named as the maker's. Once taken up, its items become the owner's own and its table becomes the vehicle's milestones.
+_Avoid_: known schedule, OEM schedule, factory schedule
+
+**Typical list**:
+The usual maintenance items a vehicle starts from when no maker's schedule covers it. Labelled as typical, never as the maker's.
+_Avoid_: default schedule, generic template
