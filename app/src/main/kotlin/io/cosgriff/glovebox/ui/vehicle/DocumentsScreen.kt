@@ -422,7 +422,7 @@ private fun DetailsDialog(
                 pickingExpiry = false
             },
             onDismiss = { pickingExpiry = false },
-            future = true,
+            allowFuture = true,
         )
     }
     AlertDialog(

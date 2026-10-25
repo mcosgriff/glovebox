@@ -155,10 +155,10 @@ sealed interface Notice {
     /** Time for a fresh odometer reading. */
     data class MileageCheckIn(override val vehicleId: Long, override val vehicleName: String) : Notice
 
-    /** Recalls NHTSA lists that weren't on file before; [components] are their short names. */
     /** Documents coming up to, or reaching, their expiry date. Not a reminder: nothing is logged against them. */
     data class DocumentsExpiring(override val vehicleId: Long, override val vehicleName: String, val papers: List<ExpiringPaper>) : Notice
 
+    /** Recalls NHTSA lists that weren't on file before; [components] are their short names. */
     data class NewRecalls(override val vehicleId: Long, override val vehicleName: String, val components: List<String>) : Notice
 }
 
@@ -261,6 +261,8 @@ object NoticeRules {
 
     private fun papers(v: NoticeVehicle, log: NoticeLog, prefs: NoticePrefs, today: LocalDate, notices: MutableList<Notice>, expiryAnnounced: MutableMap<Long, String>) {
         val watched = DocumentExpiry.watched(v.documents)
+        // A retired document keeps what was said of it, so it isn't said again if its replacement is deleted.
+        v.documents.filter { it.id !in watched }.forEach { d -> log.expiryAnnounced[d.id]?.let { expiryAnnounced[d.id] = it } }
         val news = mutableListOf<ExpiringPaper>()
         for (d in v.documents.filter { it.id in watched }) {
             val expiresOn = d.expiresOn ?: continue

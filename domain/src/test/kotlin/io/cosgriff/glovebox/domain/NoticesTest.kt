@@ -287,4 +287,12 @@ class NoticesTest {
         assertTrue(daily(v, off.log).notices.isEmpty())
         assertTrue(NoticePrefs(serviceDue = false, overdue = false, mileage = false).wantsDailyCheck)
     }
+
+    @Test
+    fun `a retired document that counts again, its replacement deleted, isn't announced twice`() {
+        val lastYear = paper(50, DocumentType.REGISTRATION, today.plusDays(5))
+        val first = daily(papers(lastYear))
+        val replaced = daily(papers(lastYear, paper(51, DocumentType.REGISTRATION, today.plusYears(1))), first.log)
+        assertTrue(daily(papers(lastYear), replaced.log).notices.isEmpty())
+    }
 }
