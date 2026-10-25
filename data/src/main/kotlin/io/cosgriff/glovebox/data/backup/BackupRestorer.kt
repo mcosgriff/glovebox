@@ -115,8 +115,10 @@ class BackupRestorer(
         val wanted = db.documents().allEncryptedFiles().toSet()
         val staged = staging.listFiles().orEmpty()
         if (staged.any { it.name in wanted }) {
-            // The old photos belonged to the data that was replaced.
-            crypto.photoDir.listFiles()?.forEach { it.delete() }
+            // The old photos belonged to the data that was replaced. One the database points at stays: if the
+            // restore died before the database was replaced, these are this phone's own, and a backup made on
+            // this phone stages its copies of them under the same names.
+            crypto.photoDir.listFiles()?.filter { it.name !in wanted }?.forEach { it.delete() }
             staged.filter { it.name in wanted }.forEach { f ->
                 val target = File(crypto.photoDir, f.name)
                 if (!f.renameTo(target)) {
@@ -160,6 +162,9 @@ class BackupRestorer(
                         }
                     }
                 }
+                // A file name in a row is later opened and deleted in the photos folder; a path there could reach
+                // the keys or the database. Asked inside the transaction, so a bad one replaces nothing.
+                if (!db.documents().allEncryptedFiles().all(crypto::isFileName)) throw BackupException(BackupException.Reason.DAMAGED)
             }
         }
     }

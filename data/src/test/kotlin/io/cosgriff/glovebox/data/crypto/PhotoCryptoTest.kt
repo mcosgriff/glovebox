@@ -50,6 +50,19 @@ class PhotoCryptoTest {
     }
 
     @Test
+    fun `a name that is a path reaches nothing outside the photos`() {
+        val crypto = PhotoCrypto(context)
+        val outside = File(context.filesDir, "outside.txt").apply { writeText("not a photo") }
+
+        crypto.delete("../outside.txt")
+        assertTrue(outside.exists())
+        assertNull(crypto.decryptBytes("../outside.txt"))
+        assertFalse(crypto.isFileName("../outside.txt"))
+        assertFalse(crypto.isFileName(""))
+        assertTrue(crypto.isFileName("record-a.jpg"))
+    }
+
+    @Test
     fun `a file is bound to its name, so two can't be swapped`() {
         val crypto = PhotoCrypto(context)
         crypto.encryptTo("record-a.jpg", plain.inputStream())

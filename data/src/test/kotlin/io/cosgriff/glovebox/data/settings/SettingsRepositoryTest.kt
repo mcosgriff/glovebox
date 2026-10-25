@@ -129,7 +129,19 @@ class SettingsRepositoryTest {
         assertFalse(s.welcomeSeen)
         assertNull(s.lastBackupOn)
         assertNull(s.backupRemindedOn)
-        assertEquals(5L, repo.raw()["some_long"])
+        // A setting this version doesn't know is left out.
+        assertNull(repo.raw()["some_long"])
+    }
+
+    @Test
+    fun `a setting restored with the wrong type is left out instead of breaking every launch`() = runBlocking {
+        repo.restore(mapOf("lead_miles" to "x", "theme" to 3, "notify_recalls" to 1, "last_backup_on" to "y", "lead_days" to 10))
+
+        val s = now()
+        assertEquals(Settings().lead.miles, s.lead.miles)
+        assertEquals(10, s.lead.days)
+        assertEquals(ThemeMode.SYSTEM, s.theme)
+        assertEquals(Settings().notices.recalls, s.notices.recalls)
     }
 
     @Test

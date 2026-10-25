@@ -7,6 +7,7 @@ import com.google.crypto.tink.StreamingAead
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import com.google.crypto.tink.streamingaead.StreamingAeadConfig
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -33,7 +34,7 @@ class PhotoCrypto(private val context: Context) {
     val restoreDir: File get() = File(context.filesDir, "photos-restore")
 
     /** Associated data binds each ciphertext to its file name so files can't be swapped. */
-    fun encryptTo(fileName: String, source: InputStream) = encryptTo(File(photoDir, fileName), fileName, source)
+    fun encryptTo(fileName: String, source: InputStream) = encryptTo(file(fileName), fileName, source)
 
     /** Encrypts to [target], which may sit outside [photoDir] for now; it must end up there under [fileName] to be readable. */
     fun encryptTo(target: File, fileName: String, source: InputStream) {
@@ -44,10 +45,21 @@ class PhotoCrypto(private val context: Context) {
 
     /** Deletes these encrypted files; one already gone is no matter. */
     fun delete(fileNames: Iterable<String>) {
-        fileNames.forEach { File(photoDir, it).delete() }
+        fileNames.filter(::isFileName).forEach { File(photoDir, it).delete() }
     }
 
     fun delete(fileName: String) = delete(listOf(fileName))
+
+    /**
+     * True for a plain file name, which is all a row may hold. A path could reach outside [photoDir], to the keys
+     * or the database, so one is never opened or deleted.
+     */
+    fun isFileName(name: String) = name.isNotEmpty() && name != "." && name != ".." && File(name).name == name
+
+    private fun file(name: String): File {
+        if (!isFileName(name)) throw FileNotFoundException(name)
+        return File(photoDir, name)
+    }
 
     /** The file decrypted in memory; null when it is missing or can't be read or decrypted. */
     fun decryptBytes(fileName: String): ByteArray? = try {
@@ -59,7 +71,7 @@ class PhotoCrypto(private val context: Context) {
     }
 
     fun decrypt(fileName: String, sink: OutputStream) {
-        File(photoDir, fileName).inputStream().use { raw ->
+        file(fileName).inputStream().use { raw ->
             aead.newDecryptingStream(raw, fileName.toByteArray()).use { dec -> dec.copyTo(sink) }
         }
     }
