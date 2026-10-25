@@ -124,6 +124,28 @@ class BackupFormatTest {
     }
 
     @Test
+    fun `a file asking for more key-derivation memory than a phone can spare is refused`() {
+        val file = seal(noise(10))
+        // Memory field (4 bytes at offset 10) set to 256 MiB.
+        val hungry = file.copyOf().also { it[10] = 0; it[11] = 0x04; it[12] = 0; it[13] = 0 }
+        assertEquals(BackupException.Reason.DAMAGED, reasonOf { open(hungry) })
+    }
+
+    @Test
+    fun `an entry claiming to be bigger than any backup holds is damage, not a crash`() {
+        val out = ByteArrayOutputStream()
+        BackupOutputStream(out, password, quick).use { s ->
+            val d = java.io.DataOutputStream(s)
+            d.writeByte(BackupEntryKind.PHOTO.code); d.writeUTF("record-a.jpg"); d.writeInt(Int.MAX_VALUE)
+            d.writeByte(0)
+            d.flush()
+        }
+        BackupEntryReader(BackupInputStream(ByteArrayInputStream(out.toByteArray()), password)).use { r ->
+            assertEquals(BackupException.Reason.DAMAGED, reasonOf { r.next() })
+        }
+    }
+
+    @Test
     fun `a version 1 file written today stays readable`() {
         // The format's promise to older backups: this exact layout keeps opening. If VERSION goes up,
         // add a reader for the new layout and keep this test passing unchanged.

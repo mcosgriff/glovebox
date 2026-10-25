@@ -2,6 +2,8 @@ package io.cosgriff.glovebox.data.settings
 
 import io.cosgriff.glovebox.domain.enumOrNull
 import android.content.Context
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -105,6 +107,21 @@ class SettingsRepository(private val context: Context) {
     // The widget is one of them: it shows the garage without unlocking.
     private val keptOnRestore = setOf(Keys.biometric.name, Keys.lockAfter.name, Keys.hideRecents.name, Keys.homeWidget.name)
 
+    /** Every setting this version knows, by name, each putting back a value only of its own type. */
+    private val restorable: Map<String, (MutablePreferences, Any) -> Unit> = with(Keys) {
+        fun <T : Any> typed(key: Preferences.Key<T>, cast: (Any) -> T?) = key.name to { p: MutablePreferences, v: Any -> cast(v)?.let { p[key] = it }; Unit }
+        fun bool(key: Preferences.Key<Boolean>) = typed(key) { it as? Boolean }
+        fun int(key: Preferences.Key<Int>) = typed(key) { it as? Int }
+        fun long(key: Preferences.Key<Long>) = typed(key) { it as? Long }
+        fun string(key: Preferences.Key<String>) = typed(key) { it as? String }
+        mapOf(
+            string(theme), bool(biometric), int(lockAfter), bool(hideRecents), string(rule), int(leadMiles), int(leadDays),
+            string(torque), string(distance), bool(notifyDue), bool(notifyOverdue), bool(notifyRecalls), bool(notifyMileage),
+            int(notifyHour), int(notifyMinute), int(mileageEveryDays), int(mileageHour), int(mileageMinute), string(recallCadence),
+            bool(welcomeSeen), long(lastBackup), bool(backupReminder), long(backupReminded), bool(scannerDetails), bool(homeWidget),
+        )
+    }
+
     /**
      * Puts back settings read from a backup: name to value, as [raw] wrote them. Security settings
      * and anything this version doesn't know are left alone.
@@ -118,12 +135,8 @@ class SettingsRepository(private val context: Context) {
                     (value as? String)?.let(MileageCheckIns::legacy)?.let { p[Keys.mileageEveryDays] = it }
                     continue
                 }
-                when (value) {
-                    is Boolean -> p[booleanPreferencesKey(name)] = value
-                    is Int -> p[intPreferencesKey(name)] = value
-                    is Long -> p[longPreferencesKey(name)] = value
-                    is String -> p[stringPreferencesKey(name)] = value
-                }
+                // Only as the type this version reads it as: one stored as another would throw on every read.
+                restorable[name]?.invoke(p, value)
             }
         }
     }

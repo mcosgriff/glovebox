@@ -208,6 +208,22 @@ class BackupRestorerTest {
     }
 
     @Test
+    fun `a row naming a file outside the photos is damage`() = runBlocking {
+        fillTarget()
+        val before = targetState()
+        val rows = listOf(
+            "vehicles" to """[{"id":7,"year":2013,"make":"Volkswagen","model":"GTI","createdOn":19000,"odometerOffset":0,"photoFile":"../../no_backup/db.key"}]""",
+            "photos" to """[{"id":1,"recordId":1,"fileName":"../../shared_prefs/glovebox_photo_keys.xml"}]""",
+            "documents" to """[{"id":1,"vehicleId":7,"type":"OTHER","name":"Made-up","fileName":"../photos-restore/x","format":"PDF","sizeBytes":1,"addedOn":19000}]""",
+        )
+        for ((table, body) in rows) {
+            assertEquals(table, BackupException.Reason.DAMAGED, reasonOf(craft(Triple(BackupEntryKind.TABLE, table, body))))
+        }
+        assertEquals(before, targetState())
+        assertFalse(crypto.restoreDir.exists())
+    }
+
+    @Test
     fun `a table that isn't a list of rows is damage`() = runBlocking {
         fillTarget()
         val before = targetState()
@@ -281,6 +297,21 @@ class BackupRestorerTest {
         restorer.finishInterrupted()
 
         assertEquals(listOf("vehicle-b.jpg"), crypto.photoDir.list()!!.toList())
+        assertFalse(crypto.restoreDir.exists())
+    }
+
+    @Test
+    fun `a restore cut off before the database was replaced leaves this phone's photos alone`() = runBlocking {
+        // A backup made earlier on this phone shares file names with the photos still here.
+        target.vehicles().add(testVehicle(photoFile = photo("vehicle-a.jpg", "this phone's photo")), firstReading = null)
+        target.vehicles().add(testVehicle(make = "Volkswagen", model = "GTI", photoFile = photo("vehicle-c.jpg", "added since the backup")), firstReading = null)
+        crypto.restoreDir.mkdirs()
+        crypto.encryptTo(File(crypto.restoreDir, "vehicle-a.jpg"), "vehicle-a.jpg", "this phone's photo".toByteArray().inputStream())
+
+        restorer.finishInterrupted()
+
+        assertEquals(listOf("vehicle-a.jpg", "vehicle-c.jpg"), crypto.photoDir.list()!!.sorted())
+        assertArrayEquals("added since the backup".toByteArray(), crypto.decryptBytes("vehicle-c.jpg"))
         assertFalse(crypto.restoreDir.exists())
     }
 

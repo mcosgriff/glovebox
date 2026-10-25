@@ -44,8 +44,8 @@ All integers are big-endian.
 `key = Argon2id(password as UTF-8, salt, memory, passes, lanes)`, 32 bytes.
 
 New backups use 64 MiB, 3 passes, 1 lane. The values are in the header, so they can be raised
-later without breaking older files. A reader refuses more than 1 GiB, 16 passes or 8 lanes, so a
-hostile file can't make the phone do unbounded work before the password has even been checked.
+later without breaking older files. A reader refuses more than 128 MiB, 16 passes or 8 lanes, so a
+hostile file can't make the phone run out of memory before the password has even been checked.
 
 ### Blocks
 
@@ -86,6 +86,7 @@ The decrypted stream is a list of entries, then a single `0` byte.
 | 4 photo | file name in the photo folder | The photo as plain JPEG bytes, or a document as plain PDF or JPEG bytes |
 
 A reader skips kinds it doesn't know, so a later app can add kinds without a new format version.
+It refuses an entry longer than 32 MiB (a document is at most 20 MB) as damage.
 
 Manifest:
 

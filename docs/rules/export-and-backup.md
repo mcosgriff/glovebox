@@ -16,4 +16,9 @@ Rules for exports, the PDF report, backup, restore. Read before changing any of 
   stored. The last-backup date is recorded only after Android has really written the file.
 - **Restore is all or nothing:** read and authenticate everything first, replace every table in one
   transaction, then move the staged files in. `finishInterrupted` completes that on launch and **must run before
-  the orphan sweep.** App-lock settings are never restored. Replacing data is confirmed by typing REPLACE.
+  the orphan sweep.** It never deletes a file the database points at, since the restore may have died before the
+  database was replaced. App-lock settings are never restored. Replacing data is confirmed by typing REPLACE.
+- **Nothing in a backup is trusted further than its own checks**, even with the right password: a file name in a row
+  must be a plain name (`PhotoCrypto.isFileName`, checked inside the restore's transaction and again on every open
+  and delete), a setting comes back only if this version knows it and only as its own type, and the reader's
+  limits (`BackupFormat.MAX_…`) keep a hostile file from running the phone out of memory.

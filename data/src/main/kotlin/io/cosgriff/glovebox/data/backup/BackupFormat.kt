@@ -78,10 +78,14 @@ object BackupFormat {
     /** Plaintext per chunk. Small enough to hold in memory, large enough that the framing costs nothing. */
     const val CHUNK_BYTES = 64 * 1024
 
-    // What a reader will accept from a file, so a hostile one can't make the phone allocate gigabytes.
-    const val MAX_MEMORY_KIB = 1024 * 1024
+    // What a reader will accept from a file, so a hostile one can't make the phone run out of memory. The memory
+    // is read before the password is proven; twice what backups use, and well inside an app's heap.
+    const val MAX_MEMORY_KIB = 128 * 1024
     const val MAX_ITERATIONS = 16
     const val MAX_PARALLELISM = 8
+
+    /** The largest entry a reader takes: a document is at most 20 MB, and a table's rows far less. */
+    const val MAX_ENTRY_BYTES = 32 * 1024 * 1024
 }
 
 /**
@@ -359,7 +363,7 @@ class BackupEntryReader(input: InputStream) : AutoCloseable {
             try {
                 val name = data.readUTF()
                 val length = data.readInt()
-                if (length < 0) throw BackupException(BackupException.Reason.DAMAGED)
+                if (length !in 0..BackupFormat.MAX_ENTRY_BYTES) throw BackupException(BackupException.Reason.DAMAGED)
                 val bytes = ByteArray(length).also { data.readFully(it) }
                 BackupEntryKind.of(code)?.let { return BackupEntry(it, name, bytes) }
             } catch (e: EOFException) {
