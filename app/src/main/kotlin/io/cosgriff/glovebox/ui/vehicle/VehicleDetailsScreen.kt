@@ -137,7 +137,12 @@ import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.toStored
+import io.cosgriff.glovebox.domain.VinRefresh
+import io.cosgriff.glovebox.ui.components.DecodedField
+import io.cosgriff.glovebox.ui.components.savedFields
+import io.cosgriff.glovebox.ui.components.storedFields
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.ClusterSwap
@@ -177,6 +182,19 @@ data class VehicleDetails(
     val documentBytes: Long = 0,
 )
 
+/** Looking the saved VIN up again (#462). */
+sealed interface VinLookup {
+    data object Idle : VinLookup
+    data object Asking : VinLookup
+    data object Failed : VinLookup
+
+    /** NHTSA decodes the VIN as another year or make; [title] is what it says, null if it couldn't say. */
+    data class NotThisVehicle(val title: String?) : VinLookup
+
+    /** What NHTSA has that is empty here; nothing else is ever offered. */
+    data class Found(val additions: Map<DecodedField, String>) : VinLookup
+}
+
 /** The user-entered rows under "What it takes". */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -197,6 +215,7 @@ class VehicleDetailsViewModel @Inject constructor(
     private val knownTakes: KnownTakesRows,
     makerDocuments: MakerDocumentCatalog,
     settings: SettingsRepository,
+    private val nhtsa: NhtsaClient,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
 
@@ -307,6 +326,50 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** For a vehicle added without one. The details the user entered are kept as they are. */
     fun setVin(vin: String) = viewModelScope.launch { vehicles.setVin(vehicleId, vin) }
+
+    private val _vinLookup = MutableStateFlow<VinLookup>(VinLookup.Idle)
+    val vinLookup: StateFlow<VinLookup> = _vinLookup
+
+    /** Only the VIN is sent. The drivetrain is never offered: it is the owner's pick (docs/rules/vehicles.md). */
+    fun lookUpVin() {
+        val v = details.value?.vehicle ?: return
+        val vin = v.vin ?: return
+        _vinLookup.value = VinLookup.Asking
+        viewModelScope.launch {
+            _vinLookup.value = runCatching { nhtsa.decodeVin(vin) }.fold(
+                onSuccess = { d ->
+                    if (VinRefresh.sameVehicle(v.year, v.make, d.year, d.make)) {
+                        VinLookup.Found(VinRefresh.additions(v.savedFields(), d.storedFields() - DecodedField.DRIVE))
+                    } else {
+                        VinLookup.NotThisVehicle(d.year?.let { VehicleText.title(it, d.make.orEmpty(), d.model.orEmpty(), trim = null) })
+                    }
+                },
+                onFailure = { VinLookup.Failed },
+            )
+        }
+    }
+
+    /** Fills only what is still empty, so an edit made while the dialog was open stands. */
+    fun fillFromVin() {
+        val found = (_vinLookup.value as? VinLookup.Found)?.additions ?: return
+        _vinLookup.value = VinLookup.Idle
+        viewModelScope.launch {
+            vehicles.fillFromVin(
+                vehicleId,
+                bodyClass = found[DecodedField.BODY],
+                engine = found[DecodedField.ENGINE],
+                fuel = found[DecodedField.FUEL],
+                transmission = found[DecodedField.TRANSMISSION],
+                engineCode = found[DecodedField.ENGINE_CODE],
+                tpms = found[DecodedField.TPMS],
+                series = found[DecodedField.SERIES],
+            )
+        }
+    }
+
+    fun closeVinLookup() {
+        _vinLookup.value = VinLookup.Idle
+    }
 
     /** [onArchived] gets the Undo, which still works after this screen has closed. */
     fun markAsSold(sale: Sale, onArchived: (undo: () -> Unit) -> Unit) = viewModelScope.launch {
@@ -422,6 +485,11 @@ fun VehicleDetailsScreen(
         }
     }
 
+    when (val lookup = vm.vinLookup.collectAsStateWithLifecycle().value) {
+        VinLookup.Idle -> Unit
+        else -> VinLookupDialog(lookup, onAdd = vm::fillFromVin, onDismiss = vm::closeVinLookup)
+    }
+
     if (addingVin) {
         VinDialog(
             onSave = {
@@ -472,7 +540,7 @@ fun VehicleDetailsScreen(
         onOpenTorqueSpecs = onOpenTorqueSpecs, onOpenMoreTakes = onOpenMoreTakes, onOpenReadings = onOpenReadings,
         onOpenImport = onOpenImport, onOpenDocuments = onOpenDocuments, onClearHistory = onClearHistory,
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
-        onEditCheckIn = { editingCheckIn = true }, onAddVin = { addingVin = true }, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
+        onEditCheckIn = { editingCheckIn = true }, onAddVin = { addingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
     )
 }
@@ -504,6 +572,8 @@ internal fun VehicleDetailsContent(
     onEditPlate: () -> Unit,
     onEditCheckIn: () -> Unit,
     onAddVin: () -> Unit,
+    /** Look the saved VIN up again, to fill what is empty. */
+    onLookUpVin: () -> Unit,
     onSetOffset: () -> Unit,
     onChangeUnit: () -> Unit,
     onSell: () -> Unit,
@@ -597,8 +667,11 @@ internal fun VehicleDetailsContent(
                             v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
                             v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
                             v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
+                            v.engineCode?.let { Triple(stringResource(R.string.add_vehicle_engine_code), it, false) },
                             Powertrains.of(v.powertrain)?.let { Triple(stringResource(R.string.add_vehicle_powertrain), stringResource(it.label()), false) },
                             v.bodyClass?.let { Triple(stringResource(R.string.details_body), it, false) },
+                            v.series?.let { Triple(stringResource(R.string.add_vehicle_series), it, false) },
+                            v.tpms?.let { Triple(stringResource(R.string.add_vehicle_tpms), it, false) },
                         )
                         val copyVinLabel = stringResource(R.string.details_copy_vin)
                         rows.forEach { (label, value, mono) ->
@@ -631,6 +704,29 @@ internal fun VehicleDetailsContent(
                                     fontFamily = if (mono) PlexMono else null,
                                     textAlign = TextAlign.End,
                                 )
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                        if (v.vin != null) {
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onLookUpVin),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                                    Text(
+                                        stringResource(R.string.details_vin_lookup),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text(
+                                        stringResource(R.string.details_vin_lookup_note),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Chevron()
                             }
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
@@ -1247,3 +1343,48 @@ private val VehicleSpecEntry.Pressure.word: Int
         VehicleSpecEntry.Pressure.PSI -> R.string.unit_psi
         VehicleSpecEntry.Pressure.KPA -> R.string.unit_kpa
     }
+
+/** What looking the VIN up again found, and the one way to use it: fill what is empty. */
+@Composable
+private fun VinLookupDialog(lookup: VinLookup, onAdd: () -> Unit, onDismiss: () -> Unit) {
+    val additions = (lookup as? VinLookup.Found)?.additions.orEmpty()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.details_vin_lookup_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                when (lookup) {
+                    VinLookup.Asking -> Text(stringResource(R.string.details_vin_lookup_asking))
+                    VinLookup.Failed -> Text(stringResource(R.string.details_vin_lookup_failed))
+                    is VinLookup.NotThisVehicle -> Text(
+                        lookup.title?.let { stringResource(R.string.details_vin_lookup_other, it) } ?: stringResource(R.string.details_vin_lookup_unidentified),
+                    )
+                    is VinLookup.Found -> if (additions.isEmpty()) {
+                        Text(stringResource(R.string.details_vin_lookup_nothing))
+                    } else {
+                        Text(stringResource(R.string.details_vin_lookup_found))
+                        additions.forEach { (field, value) ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text(stringResource(field.label), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(value, Modifier.weight(1f), fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
+                            }
+                        }
+                    }
+                    VinLookup.Idle -> Unit
+                }
+            }
+        },
+        confirmButton = {
+            if (additions.isNotEmpty()) {
+                TextButton(onClick = onAdd) { Text(stringResource(R.string.details_vin_lookup_add)) }
+            } else if (lookup != VinLookup.Asking) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
+            }
+        },
+        dismissButton = if (additions.isNotEmpty() || lookup == VinLookup.Asking) {
+            { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
+        } else {
+            null
+        },
+    )
+}

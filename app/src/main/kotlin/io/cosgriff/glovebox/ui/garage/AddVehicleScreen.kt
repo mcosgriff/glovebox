@@ -9,7 +9,6 @@ import io.cosgriff.glovebox.ui.components.OdometerField
 import io.cosgriff.glovebox.ui.components.ScreenHeader
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.service.asNumber
-import androidx.annotation.StringRes
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.symbolWord
@@ -78,6 +77,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.DecodedVehicle
+import io.cosgriff.glovebox.ui.components.DecodedField
+import io.cosgriff.glovebox.ui.components.storedFields
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.DecodeQuality
@@ -95,15 +96,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
-
-/** A decoded value the user can correct before the vehicle is saved. */
-enum class DecodedField(@StringRes val label: Int) {
-    BODY(R.string.add_vehicle_body_class),
-    DRIVE(R.string.add_vehicle_drive_type),
-    ENGINE(R.string.add_vehicle_engine),
-    FUEL(R.string.add_vehicle_fuel),
-    TRANSMISSION(R.string.add_vehicle_transmission),
-}
 
 @HiltViewModel
 class AddVehicleViewModel @Inject constructor(
@@ -194,15 +186,7 @@ class AddVehicleViewModel @Inject constructor(
         year = d.year
         make = d.make.orEmpty()
         model = d.model.orEmpty()
-        fields = buildMap {
-            d.bodyClass?.let { put(DecodedField.BODY, it) }
-            d.driveType?.let { put(DecodedField.DRIVE, it) }
-            // Stored as the vehicle's engine, in the form vPIC's figures are usually written; data, not wording.
-            listOfNotNull(d.displacementL?.let { "${it}L" }, d.cylinders?.let { "$it-cyl" }).joinToString(" ").ifEmpty { null }
-                ?.let { put(DecodedField.ENGINE, it) }
-            d.fuel?.let { put(DecodedField.FUEL, it) }
-            d.transmission?.let { put(DecodedField.TRANSMISSION, it) }
-        }
+        fields = d.storedFields()
         powertrain = Powertrains.fromVpic(d.electrification, d.fuel, d.fuelSecondary)
         trimChoices = VinDecode.trimChoices(d.trim)
         // More than one candidate is left for the user to choose between.
@@ -276,6 +260,9 @@ class AddVehicleViewModel @Inject constructor(
                     drivetrain = fields[DecodedField.DRIVE],
                     transmission = fields[DecodedField.TRANSMISSION],
                     bodyClass = fields[DecodedField.BODY],
+                    engineCode = fields[DecodedField.ENGINE_CODE],
+                    tpms = fields[DecodedField.TPMS],
+                    series = fields[DecodedField.SERIES],
                     createdOn = today,
                     distanceUnit = unit.name,
                 ),
@@ -551,9 +538,9 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
             RowsCard {
                 DecodedField.entries.forEach { field ->
                     val value = vm.fields[field]
-                    // The engine's model code and power are vPIC's own and aren't kept, so they aren't editable.
+                    // The engine's power is vPIC's own and isn't kept, so it isn't editable.
                     val shown = if (field == DecodedField.ENGINE) {
-                        listOfNotNull(value, d.engineModel, d.horsepower?.let { stringResource(R.string.add_vehicle_horsepower, it) }).joinToString(" · ").ifEmpty { null }
+                        listOfNotNull(value, d.horsepower?.let { stringResource(R.string.add_vehicle_horsepower, it) }).joinToString(" · ").ifEmpty { null }
                     } else {
                         value
                     }
