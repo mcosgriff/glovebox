@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.ui.ScheduleSetupRoute
@@ -43,7 +44,7 @@ class ScheduleSetupScreenTest {
     private fun show(vehicle: VehicleEntity): Long {
         val id = world.vehicle(vehicle)
         vm = world.viewModel(ScheduleSetupViewModel::class) {
-            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.db.schedule(), world.settings, world.catalog, world.db.milestones())
+            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.catalog, ScheduleWriter(world.db))
         }
         compose.show { ScheduleSetupScreen(onDone = { done++ }, onEnterLastDone = { lastDone = it }, vm = vm) }
         compose.until { vm.items != null }

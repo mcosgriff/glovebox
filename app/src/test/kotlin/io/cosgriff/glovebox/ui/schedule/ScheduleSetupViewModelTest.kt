@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
@@ -28,7 +29,7 @@ class ScheduleSetupViewModelTest {
     private fun setup(vehicle: VehicleEntity): Pair<Long, ScheduleSetupViewModel> {
         val id = world.vehicle(vehicle)
         val vm = world.viewModel(ScheduleSetupViewModel::class) {
-            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.db.schedule(), world.settings, world.catalog, world.db.milestones())
+            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.catalog, ScheduleWriter(world.db))
         }
         eventually { vm.items != null }
         return id to vm

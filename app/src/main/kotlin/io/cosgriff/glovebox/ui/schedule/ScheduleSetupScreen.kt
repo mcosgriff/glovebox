@@ -3,7 +3,6 @@ package io.cosgriff.glovebox.ui.schedule
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.rule
-import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -15,10 +14,10 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.db.MilestoneDao
+import io.cosgriff.glovebox.data.db.ScheduleWriter
+import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
-import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
@@ -74,7 +73,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -179,10 +177,9 @@ private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null &
 class ScheduleSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
-    private val schedule: ScheduleDao,
     settings: SettingsRepository,
     private val catalog: KnownScheduleCatalog,
-    private val milestones: MilestoneDao,
+    private val writer: ScheduleWriter,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<ScheduleSetupRoute>().vehicleId
 
@@ -197,8 +194,7 @@ class ScheduleSetupViewModel @Inject constructor(
     var engineChoices by mutableStateOf<List<KnownScheduleList>>(emptyList())
         private set
 
-    private var chosenEngine: String? = null
-    private var chosenPowertrain: Powertrain? = null
+    private var chosenEngine: KnownEngine? = null
 
     var vehicle by mutableStateOf<VehicleEntity?>(null)
         private set
@@ -261,8 +257,7 @@ class ScheduleSetupViewModel @Inject constructor(
     fun chooseEngine(list: KnownScheduleList) {
         val v = vehicle ?: return
         known = list
-        chosenEngine = list.engine?.label
-        chosenPowertrain = list.engine?.powertrain
+        chosenEngine = list.engine
         engineChoices = emptyList()
         severeUse = false
         e85Use = false
@@ -323,18 +318,8 @@ class ScheduleSetupViewModel @Inject constructor(
     /** Unticked items are kept as untracked rows so they can be switched on later. */
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
-        schedule.insertAll(list.map { it.toEntity(vehicleId) })
-        chosenEngine?.let { vehicles.setEngineIfBlank(vehicleId, it) }
-        chosenPowertrain?.let { vehicles.setPowertrainIfBlank(vehicleId, it.name) }
-        // The maker's table goes with its schedule: it is what the Milestones screen then shows.
-        known?.let { list ->
-            val unit = vehicle?.unit ?: DistanceUnit.MILES
-            milestones.addKnown(
-                vehicleId,
-                list.id,
-                KnownSchedules.milestonesIn(list, unit, vehicle?.drivetrain, vehicle?.transmission).map { it.toRows(vehicleId) },
-            )
-        }
+        // One write: the items, the engine chosen, and the maker's table, which goes with its schedule.
+        writer.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine)
         onDone(vehicleId)
     }
 }

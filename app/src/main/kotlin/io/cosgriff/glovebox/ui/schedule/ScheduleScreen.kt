@@ -8,7 +8,7 @@ import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.rule
-import io.cosgriff.glovebox.data.db.toRows
+import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -143,6 +143,7 @@ class ScheduleViewModel @Inject constructor(
     private val schedule: ScheduleDao,
     private val actions: RecordActions,
     private val milestones: MilestoneDao,
+    private val writer: ScheduleWriter,
     private val saver: ExportSaver,
     catalog: KnownScheduleCatalog,
 ) : ViewModel() {
@@ -255,7 +256,7 @@ class ScheduleViewModel @Inject constructor(
 
     /** Normal or severe for every item that has a severe interval. */
     fun chooseSevereUse(severe: Boolean) = viewModelScope.launch {
-        entities.values.filter { it.useSevere != severe }.forEach { schedule.update(it.copy(useSevere = severe)) }
+        schedule.updateAll(entities.values.filter { it.useSevere != severe }.map { it.copy(useSevere = severe) })
     }
 
     /** "Runs mostly on E85", for every item that has an E85 interval. */
@@ -278,15 +279,12 @@ class ScheduleViewModel @Inject constructor(
         val severe = s.use == DrivingUse.SEVERE
         // On E85 only where the owner has already said so on this schedule; nothing is assumed.
         val e85 = s.e85 == true
-        schedule.applyKnown(
-            added = plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly), useE85 = e85) },
-            replaced = plan.doubles.map { it.id }.filter { it in stop },
-        )
-        // The maker's table goes with its schedule, unless the vehicle already has a table of its own.
-        milestones.addKnown(
+        // One write: the items, the doubles stopped, and the maker's table unless the vehicle has one of its own.
+        writer.adopt(
             vehicleId,
-            list.id,
-            KnownSchedules.milestonesIn(list, s.vehicle.unit, s.vehicle.drivetrain, s.vehicle.transmission).map { it.toRows(vehicleId) },
+            plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly), useE85 = e85) },
+            list,
+            replaced = plan.doubles.map { it.id }.filter { it in stop },
         )
     }
 
