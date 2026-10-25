@@ -118,6 +118,12 @@ class FakeNhtsa {
     /** The recall rows NHTSA lists; each row's fields as NHTSA names them. Null: NHTSA can't be reached. */
     var recalls: List<Map<String, String>>? = emptyList()
 
+    /** The model names NHTSA files the make's recalls under, for any year. Null: NHTSA can't be reached. */
+    var recallModels: List<String>? = emptyList()
+
+    /** How long each answer takes, to catch a request made while another is still out. */
+    var slowness: Long = 0
+
     val asked: MutableList<Url> = Collections.synchronizedList(mutableListOf())
 
     val client: NhtsaClient = NhtsaClient(HttpClient(Engine()) { install(JsonBodies) })
@@ -134,6 +140,7 @@ class FakeNhtsa {
                 // NHTSA's way of saying "none": a 400 with an empty list.
                 return (if (r.isEmpty()) HttpStatusCode.BadRequest else HttpStatusCode.OK) to json("results", r)
             }
+            "products/vehicle/models" in path -> recallModels?.let { m -> json("results", m.map { mapOf("model" to it) }) }
             else -> error("Nothing else is ever asked of NHTSA: $url")
         }
         return (body ?: throw IOException("offline")).let { HttpStatusCode.OK to it }
@@ -150,6 +157,7 @@ class FakeNhtsa {
         @OptIn(InternalAPI::class)
         override suspend fun execute(data: HttpRequestData): HttpResponseData {
             asked += data.url
+            kotlinx.coroutines.delay(slowness)
             val (status, body) = answer(data.url)
             return HttpResponseData(
                 status,

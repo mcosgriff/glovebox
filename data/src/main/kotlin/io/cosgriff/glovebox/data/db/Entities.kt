@@ -339,6 +339,17 @@ data class RecallEntity(
 )
 
 /**
+ * A model name the owner ticked as theirs among those NHTSA files recalls under (#460), e.g. "F-250 SD" for a
+ * vehicle saved as "F-250". Recalls are checked under the vehicle's model and each of these.
+ */
+@Entity(
+    tableName = "recall_names",
+    primaryKeys = ["vehicleId", "name"],
+    foreignKeys = [ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE)],
+)
+data class RecallNameEntity(val vehicleId: Long, val name: String)
+
+/**
  * One point of the user's own milestone table, imported from a file: [atMiles] miles really covered,
  * with the work due there in `milestone_jobs`. Information for the Milestones screen only; nothing
  * about reminders reads these tables, and whether a job was done is derived from the service log.

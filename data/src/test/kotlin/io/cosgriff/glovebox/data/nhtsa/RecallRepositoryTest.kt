@@ -50,6 +50,59 @@ class RecallRepositoryTest {
         checkedOn?.let { db.vehicles().setRecallsChecked(id, it) }
     }
 
+    /** NHTSA's answer for each model name; a name missing from [byModel] can't be reached. */
+    private fun answerByModel(byModel: Map<String, List<String>>) {
+        nhtsa.answer = { request ->
+            val recalls = byModel[request.url.parameters["model"]] ?: throw IOException("offline")
+            json(recallsJson(*recalls.toTypedArray()))
+        }
+    }
+
+    @Test
+    fun `recalls are checked under every name the owner ticked, as well as the model, and kept together`() = runBlocking {
+        val id = db.vehicles().add(testVehicle(make = "Ford", model = "F-250"), firstReading = null)
+        db.recalls().setNames(id, listOf("F-250 SD"))
+        answerByModel(mapOf("F-250" to listOf(recallJson("99V000001")), "F-250 SD" to listOf(recallJson("99V000002"), recallJson("99V000001"))))
+
+        repository.refresh(id, today)
+
+        assertEquals(listOf("99V000001", "99V000002"), db.recalls().recallsFor(id).map { it.campaign }.sorted())
+        assertEquals(listOf("F-250", "F-250 SD"), nhtsa.requests.map { it.url.parameters["model"] })
+        // Still only the year, make and model, for each name.
+        assertTrue(nhtsa.requests.all { it.url.parameters.names() == setOf("make", "model", "modelYear") })
+    }
+
+    @Test
+    fun `when one name can't be checked the stored list is left alone, so nothing filed under it is lost`() = runBlocking {
+        val id = db.vehicles().add(testVehicle(make = "Ford", model = "F-250"), firstReading = null)
+        db.recalls().setNames(id, listOf("F-250 SD"))
+        answerByModel(mapOf("F-250" to listOf(recallJson("99V000001")), "F-250 SD" to listOf(recallJson("99V000002"))))
+        repository.refresh(id, today)
+
+        answerByModel(mapOf("F-250" to listOf(recallJson("99V000001"))))
+        val result = repository.refresh(id, today.plusDays(8))
+
+        assertEquals(RecallRefresh.Failed, result)
+        assertEquals(listOf("99V000001", "99V000002"), db.recalls().recallsFor(id).map { it.campaign }.sorted())
+        assertEquals(today, db.vehicles().byId(id)!!.recallsCheckedOn)
+    }
+
+    @Test
+    fun `unticking a name drops its open recalls at the next check, and keeps the ones marked done`() = runBlocking {
+        val id = db.vehicles().add(testVehicle(make = "Ford", model = "F-250"), firstReading = null)
+        db.recalls().setNames(id, listOf("F-250 SD"))
+        answerByModel(mapOf("F-250" to emptyList(), "F-250 SD" to listOf(recallJson("99V000002"), recallJson("99V000003"))))
+        repository.refresh(id, today)
+        val done = db.recalls().recallsFor(id).single { it.campaign == "99V000003" }
+        db.recalls().setDone(done.id, today, null)
+
+        db.recalls().setNames(id, emptyList())
+        repository.refresh(id, today)
+
+        assertEquals(listOf("99V000003"), db.recalls().recallsFor(id).map { it.campaign })
+        assertEquals(emptyList<String>(), db.recalls().namesFor(id))
+    }
+
     @Test
     fun `a check stores what NHTSA lists and when it answered`() = runBlocking {
         val id = vehicle()
