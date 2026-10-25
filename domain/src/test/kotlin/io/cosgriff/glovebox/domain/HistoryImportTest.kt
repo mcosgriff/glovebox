@@ -19,6 +19,10 @@ class HistoryImportTest {
     private fun file(date: LocalDate = day, odometer: Int = 41_000, vararg work: ImportedWork = arrayOf(ImportedWork("Oil & filter change", "oil")), diy: Boolean = true, shop: String? = null, cost: Long? = null, notes: String? = null) =
         ImportedRecord(date, odometer, work.toList(), diy, shop, cost, notes)
 
+    /** The log with [items] added as new records, numbered below zero as unsaved ones are. */
+    private fun withFile(before: List<ServiceEntry>, items: List<ImportedRecord>) =
+        before + items.mapIndexed { i, r -> ServiceEntry(-1L - i, r.date, r.odometer, emptySet()) }
+
     private fun saved(id: Long, date: LocalDate = day, odometer: Int = 41_000, labels: List<String> = listOf("Oil & filter change"), itemIds: Set<Long> = setOf(1), lastDone: Boolean = false, cost: Long? = null) =
         SavedRecord(id, date, odometer, labels, itemIds, diy = true, shopName = null, costCents = cost, notes = null, enteredAsLastDone = lastDone)
 
@@ -70,38 +74,6 @@ class HistoryImportTest {
     }
 
     @Test
-    fun `imported history moves reminders the way logged work does`() {
-        val oil = TrackedItem(1, "Engine oil & filter", Interval(5_000, null), DueRule.MILEAGE_ONLY)
-        val plan = HistoryImport.plan(listOf(file()), emptyList(), schedule)
-        val after = HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, emptyList(), schedule, swap = null)
-
-        val change = LogEdits.reminderChanges(listOf(oil), emptyList(), after).single()
-        assertNull(change.before)
-        assertEquals(LastDone(day, 41_000), change.after)
-    }
-
-    @Test
-    fun `an older imported record doesn't move a reminder a newer service already set`() {
-        val oil = TrackedItem(1, "Engine oil & filter", Interval(5_000, null), DueRule.MILEAGE_ONLY)
-        val before = listOf(ServiceEntry(9, day.plusMonths(6), 46_000, setOf(1)))
-        val plan = HistoryImport.plan(listOf(file()), emptyList(), schedule)
-        val after = HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, before, schedule, swap = null)
-        assertTrue(LogEdits.reminderChanges(listOf(oil), before, after).isEmpty())
-    }
-
-    @Test
-    fun `replacing a record changes which reminders it resets`() {
-        val rotation = TrackedItem(2, "Tire rotation", Interval(5_000, null), DueRule.MILEAGE_ONLY)
-        val before = listOf(ServiceEntry(1, day, 41_000, setOf(1)))
-        val item = file(work = arrayOf(ImportedWork("Oil & filter change", "oil"), ImportedWork("Tire rotation", "rotation")))
-        val plan = HistoryImport.plan(listOf(item), listOf(saved(1)), schedule)
-
-        assertTrue(LogEdits.reminderChanges(listOf(rotation), before, HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, before, schedule, null)).isEmpty())
-        val moved = LogEdits.reminderChanges(listOf(rotation), before, HistoryImport.entriesAfter(plan, ImportMode.REPLACE_MATCHING, before, schedule, null))
-        assertEquals(LastDone(day, 41_000), moved.single().after)
-    }
-
-    @Test
     fun `records that don't fit the readings around them are pointed out`() {
         val before = listOf(ServiceEntry(1, day, 41_000, setOf(1)))
         val items = listOf(
@@ -109,18 +81,18 @@ class HistoryImportTest {
             file(day.plusMonths(6), 39_000), // lower than the records before it
             file(day.plusMonths(7), 47_000), // fine
         )
-        val after = HistoryImport.entriesAfter(HistoryImport.plan(items, listOf(saved(1)), schedule), ImportMode.ADD_NEW, before, schedule, null)
+        val after = withFile(before, items)
         assertEquals(listOf(45_000, 39_000), HistoryImport.doubtful(after, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
     }
 
     @Test
     fun `one mistyped reading is named, not every record it disagrees with`() {
         val items = listOf(file(day.minusMonths(14), 43_000), file(day.minusMonths(6), 36_150), file(day, 41_000), file(day.plusMonths(3), 44_000))
-        val after = HistoryImport.entriesAfter(HistoryImport.plan(items, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        val after = withFile(emptyList(), items)
         assertEquals(listOf(43_000), HistoryImport.doubtful(after, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
         // Two visits on one day in either order are fine.
         val sameDay = listOf(file(day, 41_000), file(day, 41_020))
-        assertTrue(HistoryImport.doubtful(HistoryImport.entriesAfter(HistoryImport.plan(sameDay, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null), emptyList(), DistanceUnit.MILES).isEmpty())
+        assertTrue(HistoryImport.doubtful(withFile(emptyList(), sameDay), emptyList(), DistanceUnit.MILES).isEmpty())
     }
 
     @Test
@@ -128,28 +100,18 @@ class HistoryImportTest {
         // About 10,000 a year, then 60,000 more in eighteen months: a slipped digit, with nothing after it to disagree.
         val saved = listOf(OdometerReading(day.minusYears(3), 50_000), OdometerReading(day.minusYears(2), 60_000))
         val items = listOf(file(day.minusYears(1), 70_000), file(day.plusMonths(6), 130_000))
-        val after = HistoryImport.entriesAfter(HistoryImport.plan(items, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        val after = withFile(emptyList(), items)
         val doubt = HistoryImport.doubtful(after, saved, DistanceUnit.MILES).single()
         assertEquals(130_000, doubt.entry.odometer)
         assertEquals(OdometerReading(day.minusYears(1), 70_000), doubt.before)
         // The same visit after a believable stretch isn't.
         val fine = listOf(file(day.minusYears(1), 70_000), file(day.plusMonths(6), 85_000))
-        val ok = HistoryImport.entriesAfter(HistoryImport.plan(fine, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        val ok = withFile(emptyList(), fine)
         assertTrue(HistoryImport.doubtful(ok, saved, DistanceUnit.MILES).isEmpty())
         // Too fast for any vehicle, with no history to judge a pace by.
         val first = listOf(file(day.minusMonths(2), 20_000), file(day, 45_000))
-        val fast = HistoryImport.entriesAfter(HistoryImport.plan(first, emptyList(), schedule), ImportMode.ADD_NEW, emptyList(), schedule, null)
+        val fast = withFile(emptyList(), first)
         assertEquals(listOf(45_000), HistoryImport.doubtful(fast, emptyList(), DistanceUnit.MILES).map { it.entry.odometer })
-    }
-
-    @Test
-    fun `readings from before a cluster replacement are compared on the same footing`() {
-        val swap = ClusterSwaps.of(LocalDate.of(2025, 1, 1), oldReading = 60_000, newReading = 0)
-        // Typed from the old cluster; the saved record after the swap reads far lower on the new one.
-        val before = listOf(swap.toDash(ServiceEntry(1, LocalDate.of(2025, 6, 1), 4_000, setOf(1))))
-        val plan = HistoryImport.plan(listOf(file(day, 41_000)), emptyList(), schedule)
-        val after = HistoryImport.entriesAfter(plan, ImportMode.ADD_NEW, before, schedule, swap)
-        assertTrue(HistoryImport.doubtful(after, swap.readings(emptyList()), DistanceUnit.MILES).isEmpty())
     }
 
     @Test

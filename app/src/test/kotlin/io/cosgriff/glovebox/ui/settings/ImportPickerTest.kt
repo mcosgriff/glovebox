@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.net.Uri
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -128,7 +129,7 @@ class ImportPickerTest {
     fun `asked to, a report is filed with the vehicle's documents once the import is written`() = runTest {
         val id = g.vehicle()
         val vm = ImportViewModel(
-            g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), g.db.odometer(), g.db.milestones(),
+            g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
             g.db.catalogRules(), g.actions, picker, g.documents, routeHandle(ImportRoute(id)),
         )
         picker.onPicked(file(carfax()))

@@ -26,11 +26,11 @@ import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.CatalogRuleDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.db.toRule
+import io.cosgriff.glovebox.data.log.VehicleLog
+import io.cosgriff.glovebox.data.log.VehicleLogs
+import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.CustomGroup
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.domain.SavedLine
@@ -65,23 +65,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Surface
 import androidx.compose.ui.text.font.FontWeight
 import io.cosgriff.glovebox.data.db.MilestoneDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
-import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.TableJob
-import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.service.RecordActions
-import io.cosgriff.glovebox.data.log.answering
-import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.log.toEntry
-import io.cosgriff.glovebox.data.log.toTracked
 import io.cosgriff.glovebox.ui.service.unit
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -95,22 +85,14 @@ internal fun List<ServiceRecordWithItems>.savedLines(recallRecords: Set<Long>): 
 /** The records these recalls' "mark done" added. */
 internal fun List<RecallEntity>.recordIds(): Set<Long> = mapNotNull { it.serviceRecordId }.toSet()
 
-data class SortCustomState(val vehicle: VehicleEntity, val records: List<ServiceRecordWithItems>, val groups: List<CustomGroup>)
+/** [jobs] are the user's own milestone table's, which the lines filed may come to count for. */
+data class SortCustomState(val log: VehicleLog, val groups: List<CustomGroup>, val jobs: List<TableJob>)
 
 /**
  * What saving would do: [lines] filed, the [reminders] that move as a result, and the jobs of the user's own
  * milestone table ([tableJobs]) those lines would now count for.
  */
 data class SortPreview(val lines: Int, val reminders: List<ReminderChange>, val tableJobs: List<String>, val unit: DistanceUnit)
-
-/** What the preview needs that isn't on screen, read once. */
-private class PreviewInputs(
-    val tracked: List<TrackedItem>,
-    val answering: Map<String, Set<Long>>,
-    val swap: ClusterSwap?,
-    val jobs: List<TableJob>,
-    val unit: DistanceUnit,
-)
 
 /** Every catalog line, by category, to pick from. Only the catalog's: a Custom line is filed under one of those. */
 internal val catalogChoices: List<LineChoice> by lazy {
@@ -120,13 +102,10 @@ internal val catalogChoices: List<LineChoice> by lazy {
 @HiltViewModel
 class SortCustomViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    service: ServiceDao,
+    logs: VehicleLogs,
     recalls: RecallDao,
     rules: CatalogRuleDao,
-    schedule: ScheduleDao,
     milestones: MilestoneDao,
-    settings: SettingsRepository,
     private val actions: RecordActions,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<SortCustomRoute>().vehicleId
@@ -147,41 +126,27 @@ class SortCustomViewModel @Inject constructor(
 
     /** Null while loading, and if the vehicle is gone. Groups go as their lines are filed. */
     val state: StateFlow<SortCustomState?> =
-        combine(vehicles.observe(vehicleId), service.observeRecords(vehicleId), recalls.observe(vehicleId), rules.observeAll()) { v, records, recallRows, ruleRows ->
-            v?.let { SortCustomState(it, records, CustomLines.groups(records.savedLines(recallRows.recordIds()), ruleRows.map { r -> r.toRule() })) }
+        combine(logs.observe(vehicleId), recalls.observe(vehicleId), rules.observeAll(), milestones.observe(vehicleId)) { log, recallRows, ruleRows, table ->
+            log?.let {
+                SortCustomState(
+                    it,
+                    CustomLines.groups(it.records.savedLines(recallRows.recordIds()), ruleRows.map { r -> r.toRule() }),
+                    table.flatMap { m -> m.jobs.map { j -> TableJob(j.name, j.service) } },
+                )
+            }
         }.screenState(viewModelScope, null)
 
-    private var inputs by mutableStateOf<PreviewInputs?>(null)
-
-    init {
-        viewModelScope.launch {
-            val vehicle = vehicles.byId(vehicleId) ?: return@launch
-            val items = schedule.allFor(vehicleId)
-            val rule = settings.settings.first().defaultRule
-            val swap = vehicle.clusterSwap()
-            inputs = PreviewInputs(
-                tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(rule, swap) },
-                answering = items.answering(),
-                swap = swap,
-                jobs = milestones.tableFor(vehicleId).flatMap { m -> m.jobs.map { TableJob(it.name, it.service) } },
-                unit = vehicle.unit,
-            )
-        }
-    }
-
-    /** What saving would do as the picks stand; null until the schedule has been read. Reminders come only from the log. */
-    fun preview(state: SortCustomState): SortPreview? {
-        val i = inputs ?: return null
+    /** What saving would do as the picks stand. Reminders come only from the log. */
+    fun preview(state: SortCustomState): SortPreview {
         val lines = CustomLines.assignments(state.groups, chosen).toMap()
-        val before = state.records.map { it.toEntry(i.swap, i.answering) }
-        val after = state.records.map { r ->
-            r.copy(items = r.items.map { item -> lines[item.id]?.let { item.copy(catalogId = it) } ?: item }).toEntry(i.swap, i.answering)
+        val after = state.log.records.map { r ->
+            r.toDraft().copy(lines = r.items.map { item -> item.scheduleItemId to (lines[item.id] ?: item.catalogId) })
         }
         return SortPreview(
             lines = lines.size,
-            reminders = LogEdits.reminderChanges(i.tracked, before, after),
-            tableJobs = CustomLines.tableJobs(state.groups, chosen, i.jobs).map { it.name },
-            unit = i.unit,
+            reminders = state.log.whatIf(after).changes,
+            tableJobs = CustomLines.tableJobs(state.groups, chosen, state.jobs).map { it.name },
+            unit = state.log.vehicle.unit,
         )
     }
 

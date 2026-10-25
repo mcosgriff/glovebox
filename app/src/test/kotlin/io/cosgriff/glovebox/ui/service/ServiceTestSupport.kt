@@ -22,6 +22,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
 import androidx.savedstate.serialization.encodeToSavedState
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.photo.RecordPhotoPicker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,7 @@ internal class ServiceTestDb {
     val photos = RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents())
 
     val settings = SettingsRepository(context)
+    val logs = VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings)
 
     /** Runs its work at once on the caller's thread, so a test sees it done when the call returns. */
     val appScope = CoroutineScope(Dispatchers.Unconfined)

@@ -69,7 +69,7 @@ class RecordDetailScreenTest {
         compose.waitUntil(5_000) { compose.onAllNodes(hasText(text)).fetchSemanticsNodes().isEmpty() }
 
     private fun detail(recordId: Long) = t.owned(
-        RecordDetailViewModel(routeHandle(RecordDetailRoute(recordId)), t.db.vehicles(), t.db.schedule(), t.db.service(), t.settings, t.actions, t.picker),
+        RecordDetailViewModel(routeHandle(RecordDetailRoute(recordId)), t.db.service(), t.logs, t.actions, t.picker),
     )
 
     /**
@@ -119,6 +119,17 @@ class RecordDetailScreenTest {
 
         compose.onNodeWithText(string(R.string.edit)).performClick()
         assertEquals(listOf(car to newer), edits)
+    }
+
+    @Test
+    fun `what a delete would move follows the schedule as it changes`() = runBlocking<Unit> {
+        val (car, _, newer) = oilTwice()
+        val vm = detail(newer)
+        show(vm)
+        compose.settle("the delete's impact") { vm.detail.value?.deleteImpact?.size == 1 }
+
+        t.db.schedule().update(t.db.schedule().allFor(car).single().copy(tracked = false))
+        compose.settle("an untracked item to move nothing") { vm.detail.value?.deleteImpact?.isEmpty() == true }
     }
 
     @Test
