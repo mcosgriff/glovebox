@@ -124,6 +124,27 @@ class NhtsaClientTest {
     }
 
     @Test
+    fun `the model names NHTSA files recalls under are asked for by year and make only, each once`() = runBlocking {
+        nhtsa.answer = {
+            json(
+                """{"count":4,"message":"Results returned successfully","results":[
+                {"modelYear":"2019","make":"FORD","model":"F-250 SD"},{"modelYear":"2019","make":"FORD","model":"F-250 SD"},
+                {"modelYear":"2019","make":"FORD","model":" TRANSIT VAN "},{"modelYear":"2019","make":"FORD"}]}""",
+            )
+        }
+
+        assertEquals(listOf("F-250 SD", "TRANSIT VAN"), nhtsa.client.recallModels(2019, "Ford"))
+
+        val url = nhtsa.requests.single().url
+        assertEquals("api.nhtsa.gov", url.host)
+        assertEquals("/products/vehicle/models", url.encodedPath)
+        assertEquals(setOf("modelYear", "make", "issueType"), url.parameters.names())
+        assertEquals("2019", url.parameters["modelYear"])
+        assertEquals("Ford", url.parameters["make"])
+        assertEquals("r", url.parameters["issueType"])
+    }
+
+    @Test
     fun `recalls are asked for by year, make and model, and read into notices`() = runBlocking {
         nhtsa.answer = { json(recallsJson(recallJson("99V000001", summary = " Made-up summary "))) }
 

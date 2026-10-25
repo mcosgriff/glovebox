@@ -2,6 +2,16 @@ package io.cosgriff.glovebox.ui.recalls
 
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import io.cosgriff.glovebox.ui.components.GloveboxSheet
+import io.cosgriff.glovebox.ui.components.CheckRow
+import io.cosgriff.glovebox.ui.components.ValueRow
+import io.cosgriff.glovebox.ui.components.RowsCard
+import io.cosgriff.glovebox.ui.components.SheetActions
+import io.cosgriff.glovebox.domain.RecallNames
+import androidx.compose.ui.semantics.heading
+import androidx.compose.foundation.verticalScroll
 import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.RecallView
@@ -117,6 +127,8 @@ data class RecallsState(
     val odometer: Int?,
     /** The vehicle's service records, for "Add to the visit on …" when a recall is marked done. */
     val records: List<ServiceRecordWithItems> = emptyList(),
+    /** Other model names the owner ticked; recalls are checked under these as well as the model (#460). */
+    val names: List<String> = emptyList(),
 ) {
     /** The visits, or records on their own, a recall done on [date] can join (#307); none is chosen for the user. */
     fun visitsOn(date: LocalDate): List<VisitRow> {
@@ -138,6 +150,16 @@ data class RecallsState(
     val open: Int get() = recalls.count { it.toStored().open }
     val canCheck: Boolean get() = Recalls.canCheck(vehicle.year, vehicle.make, vehicle.model)
     val makeName: String get() = Recalls.makeName(vehicle.make)
+}
+
+/** Picking the other names a vehicle's recalls are filed under (#460). */
+sealed interface NameChoice {
+    data object Closed : NameChoice
+    data object Loading : NameChoice
+    data object Failed : NameChoice
+
+    /** NHTSA's names that begin with the model, and any already ticked. */
+    data class Ready(val offered: List<String>) : NameChoice
 }
 
 /**
@@ -164,7 +186,8 @@ class RecallsViewModel @Inject constructor(
         recalls.observe(vehicleId),
         service.observeRecords(vehicleId),
         odometer.observe(vehicleId),
-    ) { vehicle, list, records, readings ->
+        recalls.observeNames(vehicleId),
+    ) { vehicle, list, records, readings, names ->
         if (vehicle == null) return@combine null
         val byId = list.associateBy { it.id }
         RecallsState(
@@ -172,6 +195,7 @@ class RecallsViewModel @Inject constructor(
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
             odometer = vehicle.highestReading(records, readings),
             records = records,
+            names = names,
         )
     }.screenState(viewModelScope, null)
 
@@ -189,10 +213,47 @@ class RecallsViewModel @Inject constructor(
 
     fun refresh() = check { repository.refresh(vehicleId) }
 
+    var nameChoice by mutableStateOf<NameChoice>(NameChoice.Closed)
+        private set
+
+    /** Asks NHTSA for its names for the model; only the year and make are sent. */
+    fun chooseNames() {
+        nameChoice = NameChoice.Loading
+        viewModelScope.launch {
+            nameChoice = try {
+                NameChoice.Ready(repository.offeredNames(vehicleId))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                NameChoice.Failed
+            }
+        }
+    }
+
+    fun closeNames() {
+        nameChoice = NameChoice.Closed
+    }
+
+    /**
+     * Keeps [names] as the vehicle's and checks again, so their recalls show (or unticked ones' go) at once. A check
+     * already out asked under the old names, so this one waits for it rather than being taken for it.
+     */
+    fun saveNames(names: List<String>) {
+        nameChoice = NameChoice.Closed
+        viewModelScope.launch {
+            recalls.setNames(vehicleId, names)
+            checking?.join()
+            refresh()
+        }
+    }
+
+    /** The check under way, so names saved meanwhile can wait for it and check again. */
+    private var checking: Job? = null
+
     private fun check(ask: suspend () -> RecallRefresh?) {
         if (refreshing) return
         refreshing = true
-        viewModelScope.launch {
+        checking = viewModelScope.launch {
             failed = ask() == RecallRefresh.Failed
             refreshing = false
         }
@@ -236,6 +297,10 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
     var marking by rememberSaveable { mutableStateOf<Long?>(null) }
     val site = Recalls.manufacturerSite(v.make)
 
+    if (vm.nameChoice != NameChoice.Closed) {
+        RecallNamesSheet(vm.nameChoice, model = v.model, chosen = state.names, onSave = vm::saveNames, onRetry = vm::chooseNames, onDismiss = vm::closeNames)
+    }
+
     state.recalls.firstOrNull { it.id == marking }?.let { recall ->
         MarkDoneSheet(
             recall = recall,
@@ -268,6 +333,18 @@ fun RecallsScreen(onBack: () -> Unit, vm: RecallsViewModel = hiltViewModel()) {
                 onLookup = { context.openInBrowser(site?.recallUrl ?: Recalls.NHTSA_LOOKUP_URL) },
                 modifier = Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp),
             )
+        }
+
+        if (state.canCheck) {
+            item {
+                RowsCard(Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp)) {
+                    ValueRow(
+                        stringResource(R.string.recalls_names_row),
+                        RecallNames.checkedUnder(v.model, state.names).joinToString(", "),
+                        onClick = vm::chooseNames,
+                    )
+                }
+            }
         }
 
         if (state.recalls.isNotEmpty()) {
@@ -586,5 +663,51 @@ private fun Context.findDealer(makeName: String, fallbackUrl: String) {
         startActivity(Intent(Intent.ACTION_VIEW, ("geo:0,0?q=" + Uri.encode(getString(R.string.recalls_dealer_search, makeName))).toUri()))
     } catch (_: ActivityNotFoundException) {
         openInBrowser(fallbackUrl)
+    }
+}
+
+/** The model and the other names it is filed under; the owner ticks the ones that are this vehicle. */
+@Composable
+internal fun RecallNamesSheet(
+    choice: NameChoice,
+    model: String,
+    chosen: List<String>,
+    onSave: (List<String>) -> Unit,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var ticked by rememberSaveable { mutableStateOf(chosen) }
+    GloveboxSheet(onDismiss = onDismiss) {
+        Column(
+            Modifier.verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                stringResource(R.string.recalls_names_title),
+                Modifier.semantics { heading() },
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(stringResource(R.string.recalls_names_about), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            CheckRow(model, checked = true, enabled = false, detail = stringResource(R.string.recalls_names_always)) {}
+            when (choice) {
+                NameChoice.Loading -> Text(stringResource(R.string.recalls_names_loading), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                NameChoice.Failed -> {
+                    Text(stringResource(R.string.recalls_names_failed), color = MaterialTheme.colorScheme.error)
+                    TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                }
+                is NameChoice.Ready -> if (choice.offered.isEmpty()) {
+                    Text(stringResource(R.string.recalls_names_none, model), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    choice.offered.forEach { name ->
+                        CheckRow(name, checked = name in ticked) { on -> ticked = if (on) ticked + name else ticked - name }
+                    }
+                }
+                NameChoice.Closed -> Unit
+            }
+            SheetActions(onCancel = onDismiss, onConfirm = { onSave(ticked) }, enabled = choice is NameChoice.Ready) {
+                Text(stringResource(R.string.save), maxLines = 1)
+            }
+        }
     }
 }

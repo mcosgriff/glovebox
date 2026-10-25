@@ -115,6 +115,19 @@ class NhtsaClient(private val http: HttpClient) {
     }
 
     /**
+     * The model names NHTSA files the make's recalls under for that year (#460), which can differ from vPIC's
+     * ("F-250 SD" for vPIC's "F-250"). Only the year and make are sent. Throws if NHTSA can't be reached.
+     */
+    suspend fun recallModels(year: Int, make: String): List<String> {
+        val body: JsonObject = http.get("$RECALLS/products/vehicle/models") {
+            parameter("modelYear", year)
+            parameter("make", make)
+            parameter("issueType", "r")
+        }.body()
+        return body["results"]?.jsonArray.orEmpty().mapNotNull { it.jsonObject.text("model") }.distinct()
+    }
+
+    /**
      * Recalls by year/make/model. NHTSA's public API can't confirm whether a specific VIN was repaired.
      * Throws if NHTSA can't be reached or answers with anything but a list.
      */

@@ -1506,6 +1506,13 @@
     <string name="recalls_note">Recall list from NHTSA by year, make and model. NHTSA can\'t say whether the repair was already done on this VIN: confirm that with %1$s, then mark it here. Marking one done can add it to Service history. One that doesn\'t apply to your vehicle can be archived, and moved back if it turns out it does.</string>
     <string name="recalls_cant_check">Recalls can\'t be checked</string>
     <string name="recalls_checking_nhtsa">Checking NHTSA…</string>
+    <string name="recalls_names_row">Checked under</string>
+    <string name="recalls_names_title">Model names NHTSA uses</string>
+    <string name="recalls_names_about">NHTSA files some recalls under a name other than the one the VIN decodes to, such as F-250 SD for an F-250 Super Duty, and checks each name on its own. Tick the names that are this vehicle. Only the year and make are sent to get the list.</string>
+    <string name="recalls_names_always">Always checked</string>
+    <string name="recalls_names_loading">Getting NHTSA\'s names…</string>
+    <string name="recalls_names_failed">Couldn\'t reach NHTSA. Check your connection and try again.</string>
+    <string name="recalls_names_none">NHTSA lists no other names beginning with %1$s.</string>
     <!-- After a large 0. -->
     <string name="recalls_all_clear">open recalls — all clear</string>
     <plurals name="recalls_need_attention">
@@ -2047,6 +2054,7 @@
         <item>Decoding a VIN sends that VIN.</item>
         <item>Adding a vehicle without a VIN asks for NHTSA\'s list of makes, then for the models of the make and year you pick.</item>
         <item>Checking for recalls sends the year, make and model. It does not send the VIN.</item>
+        <item>Getting the other model names NHTSA files recalls under sends the year and make. Recalls are then checked under each name you tick, the same way.</item>
         <item>Like any website, NHTSA can see the internet address the request came from.</item>
         <item>Nothing else is sent: no mileage, records, photos, documents, names, license plate or location.</item>
     </string-array>

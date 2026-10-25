@@ -56,6 +56,7 @@ class MigrationTest {
     private val order = listOf(
         "vehicles", "odometer_readings", "schedule_items", "service_records", "service_record_items",
         "photos", "torque_specs", "recalls", "milestones", "milestone_jobs", "documents", "catalog_rules",
+        "recall_names",
     )
 
     private data class Column(val name: String, val type: String)

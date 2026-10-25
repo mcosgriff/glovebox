@@ -506,6 +506,26 @@ interface RecallDao {
         updateAll(updated)
         delete(withdrawn)
     }
+
+    /** The other model names the owner ticked for the vehicle's recalls (#460). */
+    @Query("SELECT name FROM recall_names WHERE vehicleId = :vehicleId ORDER BY name")
+    suspend fun namesFor(vehicleId: Long): List<String>
+
+    @Query("SELECT name FROM recall_names WHERE vehicleId = :vehicleId ORDER BY name")
+    fun observeNames(vehicleId: Long): Flow<List<String>>
+
+    @Query("DELETE FROM recall_names WHERE vehicleId = :vehicleId")
+    suspend fun clearNames(vehicleId: Long)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertNames(names: List<RecallNameEntity>)
+
+    /** Replaces the vehicle's ticked names with [names]. */
+    @Transaction
+    suspend fun setNames(vehicleId: Long, names: List<String>) {
+        clearNames(vehicleId)
+        insertNames(names.map { RecallNameEntity(vehicleId, it) })
+    }
 }
 
 @Dao

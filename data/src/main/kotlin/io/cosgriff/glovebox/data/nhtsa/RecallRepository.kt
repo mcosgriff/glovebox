@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.RecallNames
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.StoredRecall
@@ -34,7 +35,7 @@ class RecallRepository(
     // Two refreshes of one vehicle at once would both try to add the same campaigns.
     private val lock = Mutex()
 
-    /** Asks NHTSA now. Only the year, make and model are sent. */
+    /** Asks NHTSA now. Only the year, make and model are sent, once for each name the recalls are checked under. */
     suspend fun refresh(vehicleId: Long, today: LocalDate = LocalDate.now()): RecallRefresh =
         lock.withLock { fetchAndStore(vehicleId, today, onlyIfStale = false) } ?: RecallRefresh.CannotCheck
 
@@ -50,6 +51,15 @@ class RecallRepository(
         vehicles.active().forEach { refreshIfStale(it.id, today) }
     }
 
+    /**
+     * The other names NHTSA files the vehicle's recalls under, with the ones already ticked (#460). Only the year
+     * and make are sent. Throws if NHTSA can't be reached.
+     */
+    suspend fun offeredNames(vehicleId: Long): List<String> {
+        val v = vehicles.byId(vehicleId) ?: return emptyList()
+        return RecallNames.offered(v.model, nhtsa.recallModels(v.year, v.make), recalls.namesFor(vehicleId).toSet())
+    }
+
     /** Merges an already fetched list, e.g. the one shown while adding the vehicle. Returns how many were new. */
     suspend fun store(vehicleId: Long, fetched: List<RecallNotice>, today: LocalDate = LocalDate.now()): Int =
         lock.withLock { merge(vehicleId, fetched, today).size }
@@ -62,8 +72,9 @@ class RecallRepository(
             val days = settings.settings.first().recallCadence.days ?: return null
             if (!Recalls.isStale(v.recallsCheckedOn, today, days)) return null
         }
+        // Every name has to answer: a list missing one name's recalls would withdraw them (#460).
         val fetched = try {
-            nhtsa.recalls(v.year, v.make, v.model)
+            RecallNames.checkedUnder(v.model, recalls.namesFor(vehicleId)).flatMap { nhtsa.recalls(v.year, v.make, it) }
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {

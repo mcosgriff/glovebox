@@ -102,6 +102,52 @@ class RecallsViewModelTest {
     }
 
     @Test
+    fun `NHTSA's other names for the model are offered, and ticking one saves it and checks again under it`() {
+        val truck = h.addTruck()
+        h.nhtsa.recallModels = listOf("4RUNNER", "4RUNNER LIMITED MADE-UP", "TACOMA")
+        val vm = h.viewModel(truck)
+        waitFor("the check on the way in") { !vm.refreshing }
+
+        vm.chooseNames()
+        waitFor("NHTSA's names") { vm.nameChoice is NameChoice.Ready }
+        assertEquals(NameChoice.Ready(listOf("4RUNNER LIMITED MADE-UP")), vm.nameChoice)
+        // Only the year and make were sent for them.
+        val asked = h.nhtsa.asked.single { "products/vehicle/models" in it.encodedPath }
+        assertEquals(setOf("modelYear", "make", "issueType"), asked.parameters.names())
+
+        h.nhtsa.recalls = listOf(recallRow("26V900000"))
+        vm.saveNames(listOf("4RUNNER LIMITED MADE-UP"))
+        waitFor("the check under the new name") { h.nhtsa.asked.any { it.parameters["model"] == "4RUNNER LIMITED MADE-UP" } && !vm.refreshing }
+        assertEquals(NameChoice.Closed, vm.nameChoice)
+        assertEquals(listOf("4RUNNER LIMITED MADE-UP"), runBlocking { db.recalls().namesFor(truck) })
+        assertEquals(listOf("4RUNNER LIMITED MADE-UP"), runBlocking { vm.state.awaitMatching { it?.names?.isNotEmpty() == true } }!!.names)
+        assertEquals(listOf("26V900000"), runBlocking { db.recalls().recallsFor(truck) }.map { it.campaign })
+    }
+
+    @Test
+    fun `names saved while a check is still out are checked once it is done`() {
+        val truck = h.addTruck(checkedOn = h.today.minusDays(8))
+        h.nhtsa.slowness = 300
+        val vm = h.viewModel(truck)
+        // The check on the way in has asked NHTSA, under the model alone, and is waiting for the answer.
+        waitFor("the check on the way in") { h.nhtsa.asked.isNotEmpty() }
+
+        vm.saveNames(listOf("4RUNNER LIMITED MADE-UP"))
+        waitFor("a check under the new name") { h.nhtsa.asked.any { it.parameters["model"] == "4RUNNER LIMITED MADE-UP" } }
+    }
+
+    @Test
+    fun `NHTSA's names out of reach says so and changes nothing`() {
+        val truck = h.addTruck()
+        runBlocking { db.recalls().setNames(truck, listOf("4RUNNER LIMITED MADE-UP")) }
+        h.nhtsa.recallModels = null
+        val vm = h.viewModel(truck)
+        vm.chooseNames()
+        waitFor("the failed load") { vm.nameChoice == NameChoice.Failed }
+        assertEquals(listOf("4RUNNER LIMITED MADE-UP"), runBlocking { db.recalls().namesFor(truck) })
+    }
+
+    @Test
     fun `a vehicle that no longer exists shows nothing`() = runBlocking {
         val vm = h.viewModel(404)
         waitFor("the stale check") { !vm.refreshing }

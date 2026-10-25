@@ -68,7 +68,7 @@ class BackupRestorerTest {
 
     private fun photo(name: String, text: String = "made-up $name") = name.also { crypto.encryptTo(it, text.toByteArray().inputStream()) }
 
-    /** A backup of [source] holding a 4Runner with a photographed record and a recall marked done. */
+    /** A backup of [source] holding a 4Runner with a photographed record, a recall marked done and a recall name ticked. */
     private suspend fun backupOfSource(): File {
         val id = source.vehicles().add(testVehicle(photoFile = photo("vehicle-a.jpg")), firstReading = 60_000)
         val record = source.service().insertWithItems(
@@ -77,6 +77,7 @@ class BackupRestorerTest {
         )
         source.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = photo("receipt-a.jpg", "the receipt"))))
         source.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "99V000000", component = "Made-up", summary = "Made-up", firstSeenOn = day, completedOn = day, serviceRecordId = record)))
+        source.recalls().setNames(id, listOf("4RUNNER MADE-UP"))
         return File(context.cacheDir, "backup.glovebox").also { f ->
             f.outputStream().use { BackupWriter(source, crypto, settings).write(it, password, day) }
         }
@@ -90,7 +91,7 @@ class BackupRestorerTest {
     private suspend fun targetState() = Triple(target.vehicles().all(), target.service().recordsFor(target.vehicles().all().first().id), crypto.photoDir.list()!!.sorted())
 
     /** A file written the way BackupWriter writes one, with whatever entries a test needs. */
-    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 33): File {
+    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 34): File {
         val file = File(context.cacheDir, "crafted.glovebox")
         file.outputStream().use { out ->
             BackupEntryWriter(BackupOutputStream(out, password, quick)).use { w ->
@@ -123,11 +124,12 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 33, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 34, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         assertEquals(source.service().recordsFor(id), target.service().recordsFor(id))
         assertEquals(source.recalls().recallsFor(id), target.recalls().recallsFor(id))
+        assertEquals(listOf("4RUNNER MADE-UP"), target.recalls().namesFor(id))
         assertEquals(listOf(60_000), target.odometer().readingsFor(id).map { it.odometer })
 
         // The replaced data's photo is gone; the backup's are in place and readable.

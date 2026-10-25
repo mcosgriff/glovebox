@@ -19,6 +19,8 @@ import io.cosgriff.glovebox.ui.history.HistoryContent
 import io.cosgriff.glovebox.ui.history.HistoryView
 import io.cosgriff.glovebox.ui.history.RecordDetailContent
 import io.cosgriff.glovebox.ui.recalls.MarkDoneSheet
+import io.cosgriff.glovebox.ui.recalls.NameChoice
+import io.cosgriff.glovebox.ui.recalls.RecallNamesSheet
 import io.cosgriff.glovebox.ui.reminders.RemindersContent
 import io.cosgriff.glovebox.ui.schedule.MilestonesContent
 import io.cosgriff.glovebox.ui.schedule.ScheduleContent
@@ -114,6 +116,15 @@ class ScreensScreenshotTest(private val shade: Shade) {
         MarkDoneSheet(
             Fixtures.recall, odometer = null, unit = DistanceUnit.MILES, makeName = "Toyota",
             visitsOn = { Fixtures.markDoneVisits }, onConfirm = {}, onDismiss = {}, today = Fixtures.TODAY,
+        )
+    }
+
+    @Test
+    fun recallNames() = compose.shootScreen("recall_names", shade) {
+        // Made-up names, as NHTSA would list them for a model.
+        RecallNamesSheet(
+            NameChoice.Ready(listOf("4RUNNER LIMITED MADE-UP", "4RUNNER TRAIL MADE-UP")), model = Fixtures.truck.model,
+            chosen = listOf("4RUNNER TRAIL MADE-UP"), onSave = {}, onRetry = {}, onDismiss = {},
         )
     }
 
