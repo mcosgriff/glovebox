@@ -36,9 +36,13 @@ class DocumentDaoTest {
         documents.insert(document(other, "b"))
 
         assertEquals(listOf("a"), documents.observe(v).first().map { it.name })
-        documents.describe(id, "TITLE", "Title", day.minusDays(400))
+        documents.describe(id, "REGISTRATION", "Registration", day.minusDays(400), day.plusDays(20))
         val described = documents.observeOne(id).first()!!
-        assertEquals(Triple("TITLE", "Title", day.minusDays(400)), Triple(described.type, described.name, described.date))
+        assertEquals(Triple("REGISTRATION", "Registration", day.minusDays(400)), Triple(described.type, described.name, described.date))
+        assertEquals(day.plusDays(20), described.expiresOn)
+        // An expiry is cleared as it is given.
+        documents.describe(id, "REGISTRATION", "Registration", null, null)
+        assertNull(documents.observeOne(id).first()!!.expiresOn)
         assertEquals(setOf("document-a.pdf", "document-b.pdf"), documents.allFiles().toSet())
 
         documents.delete(id)

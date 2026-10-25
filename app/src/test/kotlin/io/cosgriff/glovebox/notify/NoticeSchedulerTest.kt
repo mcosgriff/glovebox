@@ -61,7 +61,7 @@ class NoticeSchedulerTest {
     @Test
     fun `with every daily notice off, neither daily job is kept`() {
         scheduler.sync(NoticePrefs(mileageHour = 18), RecallCadence.NEVER)
-        scheduler.sync(NoticePrefs(serviceDue = false, overdue = false, mileage = false, mileageHour = 18), RecallCadence.NEVER)
+        scheduler.sync(NoticePrefs(serviceDue = false, overdue = false, mileage = false, documents = false, mileageHour = 18), RecallCadence.NEVER)
         assertEquals(null, waiting("daily-check"))
         assertEquals(null, waiting("mileage-check-in"))
     }

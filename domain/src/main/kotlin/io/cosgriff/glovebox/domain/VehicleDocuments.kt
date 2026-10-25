@@ -37,6 +37,8 @@ data class StoredDocument(
     val date: LocalDate?,
     val format: DocumentFormat,
     val sizeBytes: Long,
+    /** When it runs out, if the owner gave a date (#283). */
+    val expiresOn: LocalDate? = null,
 )
 
 /**

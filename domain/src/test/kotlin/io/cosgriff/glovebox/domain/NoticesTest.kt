@@ -214,4 +214,77 @@ class NoticesTest {
     @Test
     fun `labels read naturally`() {
     }
+
+    // Documents running out (#283). The vehicle has no reminders, so only its papers speak.
+    private fun paper(id: Long, type: DocumentType, expiresOn: LocalDate) =
+        StoredDocument(id, type, "Paper $id", null, DocumentFormat.PDF, 1_000, expiresOn)
+
+    private fun papers(vararg documents: StoredDocument) = NoticeVehicle(7, "2019 4Runner", emptyList(), today, documents = documents.toList())
+
+    @Test
+    fun `a document 30 days from running out is announced once`() {
+        val registration = paper(40, DocumentType.REGISTRATION, today.plusDays(30))
+        val first = daily(papers(registration))
+        assertEquals(
+            listOf(Notice.DocumentsExpiring(7, "2019 4Runner", listOf(ExpiringPaper(DocumentType.REGISTRATION, today.plusDays(30), PaperStage.SOON)))),
+            first.notices,
+        )
+        val tomorrow = today.plusDays(1)
+        assertTrue(daily(papers(registration), first.log, on = tomorrow).notices.isEmpty())
+        assertTrue(daily(papers(paper(40, DocumentType.REGISTRATION, today.plusDays(31)))).notices.isEmpty())
+    }
+
+    @Test
+    fun `the day itself is announced again, once`() {
+        val insurance = paper(41, DocumentType.INSURANCE, today.plusDays(30))
+        val soon = daily(papers(insurance))
+        val day = today.plusDays(30)
+        val onTheDay = daily(papers(insurance), soon.log, on = day)
+        assertEquals(listOf(ExpiringPaper(DocumentType.INSURANCE, day, PaperStage.TODAY)), (onTheDay.notices.single() as Notice.DocumentsExpiring).papers)
+        assertTrue(daily(papers(insurance), onTheDay.log, on = day.plusDays(1)).notices.isEmpty())
+    }
+
+    @Test
+    fun `a day the check missed is announced late as expired, but an old paper isn't news`() {
+        val title = paper(42, DocumentType.WARRANTY, today.minusDays(3))
+        assertEquals(listOf(ExpiringPaper(DocumentType.WARRANTY, today.minusDays(3), PaperStage.EXPIRED)), (daily(papers(title)).notices.single() as Notice.DocumentsExpiring).papers)
+        assertTrue(daily(papers(paper(42, DocumentType.WARRANTY, today.minusDays(DocumentExpiry.LEAD_DAYS)))).notices.isEmpty())
+    }
+
+    @Test
+    fun `last year's registration is retired by this year's`() {
+        val lastYear = paper(43, DocumentType.REGISTRATION, today)
+        val thisYear = paper(44, DocumentType.REGISTRATION, today.plusYears(1))
+        val d = daily(papers(lastYear, thisYear))
+        assertTrue(d.notices.isEmpty())
+        assertTrue(d.log.expiryAnnounced.isEmpty())
+    }
+
+    @Test
+    fun `each Other document counts on its own`() {
+        val lease = paper(45, DocumentType.OTHER, today.plusDays(10))
+        val permit = paper(46, DocumentType.OTHER, today.plusYears(1))
+        val parking = paper(47, DocumentType.OTHER, today)
+        val d = daily(papers(lease, permit, parking))
+        assertEquals(
+            setOf(ExpiringPaper(DocumentType.OTHER, today.plusDays(10), PaperStage.SOON), ExpiringPaper(DocumentType.OTHER, today, PaperStage.TODAY)),
+            (d.notices.single() as Notice.DocumentsExpiring).papers.toSet(),
+        )
+    }
+
+    @Test
+    fun `a changed date announces again`() {
+        val first = daily(papers(paper(48, DocumentType.INSURANCE, today.plusDays(20))))
+        val moved = daily(papers(paper(48, DocumentType.INSURANCE, today.plusDays(25))), first.log)
+        assertEquals(listOf(ExpiringPaper(DocumentType.INSURANCE, today.plusDays(25), PaperStage.SOON)), (moved.notices.single() as Notice.DocumentsExpiring).papers)
+    }
+
+    @Test
+    fun `with its switch off nothing is said but the log is kept`() {
+        val v = papers(paper(49, DocumentType.REGISTRATION, today.plusDays(5)))
+        val off = daily(v, prefs = NoticePrefs(documents = false))
+        assertTrue(off.notices.isEmpty())
+        assertTrue(daily(v, off.log).notices.isEmpty())
+        assertTrue(NoticePrefs(serviceDue = false, overdue = false, mileage = false).wantsDailyCheck)
+    }
 }

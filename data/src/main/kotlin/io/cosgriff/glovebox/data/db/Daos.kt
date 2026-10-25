@@ -601,8 +601,8 @@ interface DocumentDao {
 
     @Insert suspend fun insert(document: DocumentEntity): Long
 
-    @Query("UPDATE documents SET type = :type, name = :name, date = :date WHERE id = :id")
-    suspend fun describe(id: Long, type: String, name: String, date: LocalDate?)
+    @Query("UPDATE documents SET type = :type, name = :name, date = :date, expiresOn = :expiresOn WHERE id = :id")
+    suspend fun describe(id: Long, type: String, name: String, date: LocalDate?, expiresOn: LocalDate?)
 
     @Query("DELETE FROM documents WHERE id = :id")
     suspend fun delete(id: Long)

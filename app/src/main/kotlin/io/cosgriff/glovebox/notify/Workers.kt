@@ -20,7 +20,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.ui.vehicle.toStored
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -46,6 +48,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 interface NotifyEntryPoint {
     fun vehicles(): VehicleDao
+    fun documents(): DocumentDao
     fun logs(): VehicleLogs
     fun pendingDestination(): PendingDestination
     fun settings(): SettingsRepository
@@ -58,7 +61,7 @@ interface NotifyEntryPoint {
 private fun Context.notify(): NotifyEntryPoint = EntryPointAccessors.fromApplication(applicationContext, NotifyEntryPoint::class.java)
 
 /**
- * The daily check: services coming due, overdue nudges and the mileage check-in. It opens the
+ * The daily check: services coming due, overdue nudges, documents running out and the mileage check-in. It opens the
  * encrypted database on its own, which works with the phone locked because the database key isn't
  * tied to the user unlocking (see CLAUDE.md). Nothing here uses the network. When the mileage
  * check-in has a time of its own it is a second job of this worker, with [RUNS] saying which part.
@@ -79,6 +82,7 @@ class DailyCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
                 statuses = log.statusesAsRead(today),
                 lastReadingOn = ServiceLog.readings(log.entries, log.updates).maxOfOrNull { it.date },
                 checkIn = VehicleCheckIn.of(v.mileageCheckInDays),
+                documents = deps.documents().documentsFor(v.id).map { it.toStored() },
             )
         }
         val decision = NoticeRules.daily(vehicles, deps.noticeLog().read(), settings.notices, today, runs)
@@ -230,6 +234,7 @@ class DestinationViewModel @Inject constructor(private val holder: PendingDestin
             is Destination.Shortcut -> Arrival(to, vehicles.active().map { it.id })
             is Destination.Recalls -> Arrival(to).takeIf { inGarage(to.vehicleId) }
             is Destination.UpdateMileage -> Arrival(to).takeIf { inGarage(to.vehicleId) }
+            is Destination.Documents -> Arrival(to).takeIf { inGarage(to.vehicleId) }
             is Destination.VehicleHome -> Arrival(to).takeIf { inGarage(to.vehicleId) }
         }
         return arrival.takeIf { holder.clear(to) }

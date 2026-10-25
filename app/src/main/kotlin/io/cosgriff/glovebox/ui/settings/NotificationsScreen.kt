@@ -228,6 +228,8 @@ fun NotificationsScreen(onBack: () -> Unit, onOpenRules: () -> Unit, vm: Notific
                     HorizontalDivider(color = scheme.outlineVariant)
                     SwitchRow(stringResource(R.string.channel_mileage), stringResource(R.string.notifications_mileage_note), prefs.mileage) { vm.change(prefs.copy(mileage = it)) }
                     HorizontalDivider(color = scheme.outlineVariant)
+                    SwitchRow(stringResource(R.string.channel_documents), stringResource(R.string.notifications_documents_note), prefs.documents) { vm.change(prefs.copy(documents = it)) }
+                    HorizontalDivider(color = scheme.outlineVariant)
                     SwitchRow(stringResource(R.string.notifications_widget), stringResource(R.string.notifications_widget_note), settings.homeWidget, onChange = vm::setHomeWidget)
                     if (settings.homeWidget) AddWidget()
                 }

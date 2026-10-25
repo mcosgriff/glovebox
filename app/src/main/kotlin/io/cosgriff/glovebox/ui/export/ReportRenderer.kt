@@ -486,11 +486,15 @@ class ReportRenderer(private val fonts: ReportFonts) {
             section(words.phrase(ExportPhrase.WHAT_IT_TAKES), null, v.whatItTakes.map { (label, line) -> tableRow(listOf(label, line), listOf(0.3f, 0.7f)) }, small(words.phrase(ExportPhrase.TAKES_NOTE)))
         }
         if (v.documents.isNotEmpty()) {
-            val fractions = listOf(0.3f, 0.45f, 0.25f)
+            val fractions = listOf(0.25f, 0.35f, 0.2f, 0.2f)
             section(
                 words.phrase(ExportPhrase.DOCUMENTS_ON_FILE),
-                tableRow(listOf(words.phrase(ExportPhrase.TYPE), words.phrase(ExportPhrase.NAME), words.phrase(ExportPhrase.DATE)), fractions, header = true),
-                v.documents.map { tableRow(listOf(it.type, it.name, words.paperDate(it)), fractions) },
+                tableRow(
+                    listOf(words.phrase(ExportPhrase.TYPE), words.phrase(ExportPhrase.NAME), words.phrase(ExportPhrase.DATE), words.phrase(ExportPhrase.EXPIRES)),
+                    fractions,
+                    header = true,
+                ),
+                v.documents.map { tableRow(listOf(it.type, it.name, words.paperDate(it), words.paperExpiry(it)), fractions) },
                 small(words.phrase(ExportPhrase.DOCUMENTS_NOTE)),
             )
         }

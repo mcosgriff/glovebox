@@ -57,6 +57,7 @@ object EnglishExportWords : ExportWords {
         ExportPhrase.EXPORTED_ON to "Exported from Glovebox on %1\$s",
         ExportPhrase.WHAT_IT_TAKES to "What it takes",
         ExportPhrase.DOCUMENTS_ON_FILE to "Documents on file",
+        ExportPhrase.EXPIRES to "Expires",
         ExportPhrase.TYPE to "Type",
         ExportPhrase.NAME to "Name",
         ExportPhrase.DATE to "Date",

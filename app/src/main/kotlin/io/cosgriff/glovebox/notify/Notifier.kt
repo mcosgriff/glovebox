@@ -20,6 +20,9 @@ import io.cosgriff.glovebox.MainActivity
 import io.cosgriff.glovebox.ShortcutActivity
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.Notice
+import io.cosgriff.glovebox.domain.PaperStage
+import io.cosgriff.glovebox.ui.service.label
+import io.cosgriff.glovebox.ui.service.longDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,6 +34,9 @@ sealed interface Destination {
 
     /** The vehicle's home with the Update mileage sheet open. */
     data class UpdateMileage(val vehicleId: Long) : Destination
+
+    /** The vehicle's Documents screen, where a document running out is (#283). */
+    data class Documents(val vehicleId: Long) : Destination
 
     /** The vehicle's home. Not from a notification: where a row of the home-screen widget leads (#238). */
     data class VehicleHome(val vehicleId: Long) : Destination
@@ -52,6 +58,7 @@ sealed interface Destination {
             Reminders -> "reminders"
             is Recalls -> "recalls"
             is UpdateMileage -> "mileage"
+            is Documents -> "documents"
             is VehicleHome -> "vehicle"
             Backup -> "backup"
             AddVehicle -> "add"
@@ -61,6 +68,7 @@ sealed interface Destination {
             Reminders, Backup, AddVehicle, is Shortcut -> 0L
             is Recalls -> vehicleId
             is UpdateMileage -> vehicleId
+            is Documents -> vehicleId
             is VehicleHome -> vehicleId
         })
     }
@@ -76,6 +84,7 @@ sealed interface Destination {
                 "reminders" -> Reminders
                 "recalls" -> Recalls(vehicle)
                 "mileage" -> UpdateMileage(vehicle)
+                "documents" -> Documents(vehicle)
                 "vehicle" -> VehicleHome(vehicle)
                 "backup" -> Backup
                 "add" -> AddVehicle
@@ -173,6 +182,18 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
                 res.getString(R.string.notify_mileage_body),
                 Destination.UpdateMileage(notice.vehicleId),
             )
+            is Notice.DocumentsExpiring -> Shown(
+                Channel.DOCUMENTS,
+                res.getString(R.string.notify_expiry_title, notice.vehicleName),
+                notice.papers.joinToString("\n") { paper ->
+                    when (paper.stage) {
+                        PaperStage.SOON -> res.getString(R.string.notify_expiry_soon, paper.type.label, paper.expiresOn.format(longDate))
+                        PaperStage.TODAY -> res.getString(R.string.notify_expiry_today, paper.type.label)
+                        PaperStage.EXPIRED -> res.getString(R.string.notify_expiry_expired, paper.type.label, paper.expiresOn.format(longDate))
+                    }
+                },
+                Destination.Documents(notice.vehicleId),
+            )
             is Notice.NewRecalls -> Shown(
                 Channel.RECALLS,
                 res.getQuantityString(R.plurals.notify_recalls_title, notice.components.size, notice.vehicleName, notice.components.size.asNumber()),
@@ -221,5 +242,8 @@ class Notifier @Inject constructor(@ApplicationContext private val context: Cont
         RECALLS("recalls", R.string.channel_recalls, R.string.channel_recalls_about, R.string.channel_recalls_hidden, NotificationManager.IMPORTANCE_HIGH),
         MILEAGE("mileage", R.string.channel_mileage, R.string.channel_mileage_about, R.string.channel_mileage_hidden, NotificationManager.IMPORTANCE_LOW),
         BACKUP("backup", R.string.channel_backup, R.string.channel_backup_about, R.string.channel_backup_hidden, NotificationManager.IMPORTANCE_LOW),
+
+        // Last: a channel's place makes its notifications' ids.
+        DOCUMENTS("documents", R.string.channel_documents, R.string.channel_documents_about, R.string.channel_documents_hidden, NotificationManager.IMPORTANCE_DEFAULT),
     }
 }
