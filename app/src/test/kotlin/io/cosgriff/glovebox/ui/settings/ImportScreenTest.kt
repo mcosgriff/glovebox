@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.net.Uri
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -42,7 +43,7 @@ class ImportScreenTest {
 
 
     private fun vm(route: ImportRoute = ImportRoute()) = ImportViewModel(
-        g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), g.db.odometer(), g.db.milestones(),
+        g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
         g.db.catalogRules(), g.actions, picker, g.documents, routeHandle(route),
     )
 

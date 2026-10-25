@@ -13,6 +13,7 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.LeadTime
+import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ScheduleRef
@@ -43,6 +44,8 @@ class VehicleLog(
     val lead: LeadTime,
     /** The rule an item without its own counts by. */
     val defaultRule: DueRule,
+    /** Which of [items] answer to which catalog line ([answering]), built once for every record. */
+    val answering: Map<String, Set<Long>> = items.answering(),
 ) {
     /** The highest reading on record, as the dash shows it. */
     val odometer: Int? get() = VehicleReminders.currentOdometer(entries, updates)
@@ -57,6 +60,17 @@ class VehicleLog(
         statuses(today).map { s -> s.copy(lastDone = s.lastDone?.let { swap.asReadOn(it) }) }
 
     val inputs: ReminderInputs get() = ReminderInputs(tracked, entries, updates, lead)
+
+    /**
+     * How reminders would move if the vehicle's records were [records] instead (#430): a delete, an edit, re-filed
+     * lines or a file's records. [records] are the whole log after the change, readings as typed; what comes back is
+     * in dash terms. A sold vehicle moves no reminders.
+     */
+    fun whatIf(records: List<DraftRecord>): WhatIf {
+        val after = records.map { it.toEntry(swap, answering) }
+        val moving = if (vehicle.archivedOn != null) emptyList() else tracked
+        return WhatIf(LogEdits.reminderChanges(moving, entries, after), after)
+    }
 }
 
 /** [items] may be every schedule item or only the tracked ones: only tracked items get a reminder either way. */
@@ -78,6 +92,7 @@ fun VehicleEntity.log(
         tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap) },
         lead = settings.leadFor(DistanceUnit.of(distanceUnit)),
         defaultRule = settings.defaultRule,
+        answering = links,
     )
 }
 
@@ -124,8 +139,11 @@ val NoLinks: Map<String, Set<Long>> = emptyMap()
  * [answering] is the vehicle's own ([answering] above): a line counts for the item it was saved
  * against and for every item that answers to the catalog line it was picked from.
  */
-fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
-    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
+fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry = toDraft().toEntry(swap, answering)
+
+/** As [ServiceRecordWithItems.toEntry]. */
+fun DraftRecord.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
+    swap.toDash(ServiceEntry(id, date, odometer, ServiceLinks.itemIds(lines, answering)))
 
 /** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
 fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =

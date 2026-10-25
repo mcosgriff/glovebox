@@ -26,7 +26,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -43,7 +42,6 @@ import io.cosgriff.glovebox.domain.ImportedRecord
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
 import io.cosgriff.glovebox.domain.TableJob
-import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.SavedRecord
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.format
@@ -56,13 +54,9 @@ import io.cosgriff.glovebox.domain.TorqueImport
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.log.toEntry
-import io.cosgriff.glovebox.data.log.toReadings
 import io.cosgriff.glovebox.ui.service.toSaved
-import io.cosgriff.glovebox.data.log.toTracked
 import io.cosgriff.glovebox.ui.ImportRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -74,8 +68,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.cosgriff.glovebox.data.log.answering
 import io.cosgriff.glovebox.data.log.toRef
+import io.cosgriff.glovebox.data.log.VehicleLogs
+import io.cosgriff.glovebox.data.log.afterImport
+import io.cosgriff.glovebox.data.log.newIndexOf
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleDocuments
@@ -162,7 +158,7 @@ class ImportViewModel @Inject constructor(
     private val torque: TorqueDao,
     private val schedule: ScheduleDao,
     private val service: ServiceDao,
-    private val odometer: OdometerDao,
+    private val logs: VehicleLogs,
     private val milestones: MilestoneDao,
     private val catalogRules: CatalogRuleDao,
     private val actions: RecordActions,
@@ -205,7 +201,7 @@ class ImportViewModel @Inject constructor(
             is ImportFile.Invalid -> ImportPreview.Invalid(file)
             else -> when {
                 vehicle == null -> ImportPreview.NeedsVehicle
-                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, s, keep)
+                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, keep)
                 // A sold vehicle gets no reminders and isn't being worked on.
                 vehicle.archivedOn != null -> ImportPreview.Refused(AppText.res.getString(R.string.import_sold_only_history))
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
@@ -381,18 +377,19 @@ class ImportViewModel @Inject constructor(
         return AppText.res.getQuantityString(R.plurals.import_guesses, guesses.size, guesses.size.asNumber(), list)
     }
 
-    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, s: Settings, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
+    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
         val unit = vehicle.unit
         // The user's rules file the lines the file leaves unsaid, and on a Carfax report (a PDF) win over the
         // wording Glovebox recognised, before anything is compared, so the plan and the write see the same lines.
         val byRules = CatalogRules.file(file.items, catalogRules.all().map { it.toRule() }, overWording = picker.picked.value?.pdf != null)
         // The file says which unit its readings are in; they are saved as this vehicle's dash would have shown them.
         val all = FileDistances.history(byRules.items, file.unit, unit)
-        val swap = vehicle.clusterSwap()
-        val records = service.recordsFor(vehicle.id)
+        // Gone since it was chosen: as good as none chosen.
+        val log = logs.load(vehicle.id) ?: return ImportPreview.NeedsVehicle
+        val swap = log.swap
+        val records = log.records
         val byId = records.associateBy { it.record.id }
-        val rows = schedule.allFor(vehicle.id)
-        val refs = rows.map { it.toRef() }
+        val refs = log.items.map { it.toRef() }
         val saved = records.map { r ->
             SavedRecord(
                 id = r.record.id,
@@ -407,27 +404,19 @@ class ImportViewModel @Inject constructor(
                 enteredAsLastDone = r.record.enteredAsLastDone,
             )
         }
-        val before = records.map { it.toEntry(swap, rows.answering()) }
         // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
         // the odometer is the highest reading on record, so one wrong one would put every mileage reminder out.
         val whole = HistoryImport.plan(all, saved, refs)
-        val doubts = HistoryImport.doubtful(
-            HistoryImport.entriesAfter(whole, ImportMode.ADD_NEW, before, refs, swap),
-            odometer.readingsFor(vehicle.id).toReadings(swap),
-            unit,
-        ).map { d -> whole.new[(-1L - d.entry.id).toInt()] to d }
+        val doubts = HistoryImport.doubtful(log.whatIf(log.afterImport(whole, ImportMode.ADD_NEW)).entries, log.updates, unit).map { d -> whole.new[checkNotNull(newIndexOf(d.entry.id))] to d }
         val leftOut = doubts.map { (r, _) -> r.date to r.odometer }.filter { it !in keep }.toSet()
         val items = all.filter { (it.date to it.odometer) !in leftOut }
         val plan = HistoryImport.plan(items, saved, refs)
-        // A sold vehicle has no reminders to move.
-        val tracked = if (vehicle.archivedOn != null) emptyList() else rows.filter { it.tracked }.mapNotNull { it.toTracked(s.defaultRule, swap) }
-        fun after(mode: ImportMode) = HistoryImport.entriesAfter(plan, mode, before, refs, swap)
         val view = plan.toView(
             ImportKind.SERVICE_HISTORY, PlanNoun.RECORD, R.string.import_caution_history,
             name = { it.title(unit) }, describe = { it.describe() }, describeSaved = { it.describe() },
             note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules), guessesNote(CustomLines.guessesFor(items, refs)))
                 .joinToString(" ").ifEmpty { null },
-            moves = ImportMode.entries.associateWith { mode -> LogEdits.reminderChanges(tracked, before, after(mode)).map { it.text(unit) } },
+            moves = ImportMode.entries.associateWith { mode -> log.whatIf(log.afterImport(plan, mode)).changes.map { it.text(unit) } },
             doubts = doubts.map { (r, d) ->
                 DoubtLine(
                     key = r.date to r.odometer,

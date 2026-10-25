@@ -141,9 +141,13 @@ object HistoryImport {
         return ResolvedWork(line.label, line.service, target?.id)
     }
 
+    /** [record]'s lines as they would be saved: each one's (`scheduleItemId`, `catalogId`). */
+    fun lines(record: ImportedRecord, schedule: List<ScheduleRef>): List<Pair<Long?, String?>> =
+        record.work.map { resolve(it, schedule).scheduleItemId to it.service }
+
     /** Every schedule item [record] would count for once imported. */
     fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
-        ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
+        ServiceLinks.itemIds(lines(record, schedule), ServiceLinks.answering(schedule))
 
     private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 
@@ -165,22 +169,6 @@ object HistoryImport {
             blank = { i, e -> e.enteredAsLastDone && itemIds(i, schedule).containsAll(e.itemIds) },
         )
 
-    /** The log as it would stand after the import, for working out which reminders move. Dash terms in, dash terms out. */
-    fun entriesAfter(
-        plan: ImportPlan<ImportedRecord, SavedRecord>,
-        mode: ImportMode,
-        before: List<ServiceEntry>,
-        schedule: List<ScheduleRef>,
-        swap: ClusterSwap?,
-    ): List<ServiceEntry> {
-        fun ids(r: ImportedRecord) = itemIds(r, schedule)
-        val replaced = plan.replaced(mode).associate { (item, saved) -> saved.id to ids(item) }
-        val kept = before.map { e -> replaced[e.id]?.let { e.copy(itemIds = it) } ?: e }
-        // Ids below zero: not saved yet, and never equal to a real record's.
-        val added = plan.new.mapIndexed { i, r -> swap.toDash(ServiceEntry(-1L - i, r.date, r.odometer, ids(r))) }
-        return kept + added
-    }
-
     /**
      * A record from the file whose reading looks wrong. [before] is the reading it jumps far ahead
      * of; null when it doesn't fit the readings around it at all.
@@ -188,7 +176,7 @@ object HistoryImport {
     data class Doubt(val entry: ServiceEntry, val before: OdometerReading? = null)
 
     /**
-     * New records whose odometer looks mistyped once the import is in: worth asking about before
+     * New records (ids below zero) whose odometer looks mistyped once the import is in: worth asking about before
      * they go in, never refused. A report copies whatever the shop typed, and the vehicle's odometer
      * is the highest reading on record, so one slipped digit would put every mileage reminder out.
      * [after] and [updates] are in dash terms, and [unit] is the vehicle's.

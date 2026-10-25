@@ -56,8 +56,7 @@ class SortCustomScreenTest {
 
     private fun sorter(car: Long) = t.owned(
         SortCustomViewModel(
-            routeHandle(SortCustomRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.db.catalogRules(), t.db.schedule(),
-            t.db.milestones(), t.settings, t.actions,
+            routeHandle(SortCustomRoute(car)), t.logs, t.db.recalls(), t.db.catalogRules(), t.db.milestones(), t.actions,
         ),
     )
 

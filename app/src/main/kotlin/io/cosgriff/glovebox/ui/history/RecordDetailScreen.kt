@@ -62,11 +62,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.data.log.VehicleLogs
+import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
@@ -80,15 +79,11 @@ import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.data.log.toEntry
-import io.cosgriff.glovebox.data.log.toTracked
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.data.log.answering
 import javax.inject.Inject
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -140,10 +135,8 @@ data class VisitRow(val id: Long, val work: String, val about: String)
 @HiltViewModel
 class RecordDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
     private val service: ServiceDao,
-    settings: SettingsRepository,
+    logs: VehicleLogs,
     private val actions: RecordActions,
     private val photoPicker: RecordPhotoPicker,
 ) : ViewModel() {
@@ -157,31 +150,27 @@ class RecordDetailViewModel @Inject constructor(
 
     private val recordId = savedStateHandle.route<RecordDetailRoute>().recordId
 
-    /** Null while loading and after the record is deleted. The vehicle's other records are watched for its visit. */
+    /** Null while loading and after the record is deleted. The vehicle's log is watched, for its visit and what a delete moves. */
     val detail: StateFlow<RecordDetail?> = service.observeRecord(recordId).flatMapLatest { r ->
-        if (r == null) flowOf(null) else service.observeRecords(r.record.vehicleId).map { r to it }
+        if (r == null) flowOf(null) else logs.observe(r.record.vehicleId).map { log -> log?.let { r to it } }
     }.mapLatest { pair ->
-        val (r, all) = pair ?: return@mapLatest null
-        val vehicle = vehicles.observe(r.record.vehicleId).first()
-        val items = schedule.allFor(r.record.vehicleId)
-        val tracked = items
-            .filter { it.tracked }
-            .mapNotNull { it.toTracked(settings.settings.first().defaultRule, vehicle?.clusterSwap()) }
-            .associateBy { it.id }
-        val swap = vehicle?.clusterSwap()
-        val unit = vehicle?.unit ?: DistanceUnit.MILES
-        val entries = all.map { it.toEntry(swap, items.answering()) }
+        val (r, log) = pair ?: return@mapLatest null
+        val vehicle = log.vehicle
+        val all = log.records
+        val tracked = log.tracked.associateBy { it.id }
+        val unit = vehicle.unit
+        val entries = log.entries
         val visits = all.map { it.record.toVisit() }
         val me = r.record.toVisit()
         val byId = all.associateBy { it.record.id }
         fun rows(of: List<VisitRecord>) = of.mapNotNull { byId[it.id]?.visitRow(unit) }
-        val entry = r.toEntry(swap, items.answering())
+        val entry = r.toEntry(log.swap, log.answering)
 
         RecordDetail(
             record = r,
-            vehicleName = vehicle?.let { it.shortName() }.orEmpty(),
+            vehicleName = vehicle.shortName(),
             unit = unit,
-            readOnly = vehicle?.archivedOn != null,
+            readOnly = vehicle.archivedOn != null,
             lines = r.items.map { item ->
                 val reminder = item.scheduleItemId?.let(tracked::get)
                 val latest = reminder != null && LogEdits.isLatestFor(reminder.id, entry, entries)
@@ -196,8 +185,7 @@ class RecordDetailViewModel @Inject constructor(
                     current = latest,
                 )
             },
-            deleteImpact = LogEdits.reminderChanges(tracked.values.toList(), entries, entries.filter { it.id != entry.id })
-                .map { it.text(unit) },
+            deleteImpact = log.whatIf(all.filter { it.record.id != recordId }.map { it.toDraft() }).changes.map { it.text(unit) },
             visit = rows(Visits.others(me, visits)),
             offers = rows(Visits.offers(me, visits)),
             choices = rows(Visits.choices(me, visits)),

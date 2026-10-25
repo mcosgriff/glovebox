@@ -1,8 +1,10 @@
 package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.data.log.toRef
-import io.cosgriff.glovebox.data.log.answering
 import io.cosgriff.glovebox.data.log.VehicleLogs
+import io.cosgriff.glovebox.data.log.VehicleLog
+import io.cosgriff.glovebox.data.log.DraftRecord
+import io.cosgriff.glovebox.data.log.toDraft
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.domain.ReminderPresentation
@@ -115,10 +117,8 @@ import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceCatalog
-import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
-import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.NamedLine
 import io.cosgriff.glovebox.domain.CatalogRules
@@ -151,28 +151,27 @@ data class LogServiceData(
     val vehicleName: String,
     val categories: List<WorkCategory>,
     val due: List<DueSuggestion>,
-    val tracked: List<TrackedItem>,
-    /** The whole log, including the record being edited. */
-    val entries: List<ServiceEntry>,
+    /** The vehicle's whole log, including the record being edited, for previewing what an edit moves. */
+    val log: VehicleLog,
     /** Readings to sanity-check the odometer against; excludes the record being edited. */
     val readings: List<OdometerReading>,
     val lastOdometer: Int?,
-    /**
-     * Set when the cluster was replaced. [entries], [readings] and [lastOdometer] are in dash terms; what
-     * is typed belongs to whichever cluster was in on the form's date, and is saved as typed.
-     */
-    val swap: ClusterSwap?,
-    /** What the vehicle's odometer counts in; the reading is typed and saved in it. */
-    val unit: DistanceUnit,
-    /** Which schedule items answer to which catalog line, for previewing what an edit moves. */
-    val answering: Map<String, Set<Long>>,
     /** What the user wrote on Vehicle details, for the hints beside the lines. */
     val specs: WhatItTakes,
     /** The record being edited; null when logging a new one. */
     val original: ServiceRecordWithItems?,
     /** The user's category rules (#310): a custom item worded as one is offered that rule's line first. */
     val rules: List<CatalogRule> = emptyList(),
-)
+) {
+    /**
+     * Set when the cluster was replaced. [readings] and [lastOdometer] are in dash terms; what is typed belongs
+     * to whichever cluster was in on the form's date, and is saved as typed.
+     */
+    val swap: ClusterSwap? get() = log.swap
+
+    /** What the vehicle's odometer counts in; the reading is typed and saved in it. */
+    val unit: DistanceUnit get() = log.vehicle.unit
+}
 
 /**
  * What is on the Log service form, apart from the photos the picker holds: plain Compose state, so the
@@ -230,14 +229,9 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         get() {
             val d = data ?: return emptyList()
             val original = d.original ?: return emptyList()
-            val edited = ServiceEntry(
-                id = original.record.id,
-                date = date,
-                odometer = d.swap.toDash(odometer ?: original.record.odometer, date),
-                // As it would be saved: against one item, and counting for every item that answers to the line.
-                itemIds = ServiceLinks.itemIds(selectedOptions.map { it.scheduleItemId to it.id.takeIf { id -> id in d.answering } }, d.answering),
-            )
-            return LogEdits.reminderChanges(d.tracked, d.entries, d.entries.filter { it.id != edited.id } + edited)
+            // As it would be saved: each line against one item, and counting for every item that answers to it.
+            val edited = DraftRecord(original.record.id, date, odometer ?: original.record.odometer, selectedOptions.map { it.scheduleItemId to it.id })
+            return d.log.whatIf(d.log.records.map { if (it.record.id == edited.id) edited else it.toDraft() }).changes
         }
 
     /** Photos the record being edited already has, less any taken off on this form. */
@@ -334,7 +328,6 @@ class LogServiceViewModel @Inject constructor(
             val records = log.records
             form.shops = service.observeShops().first().map { ShopUse(it.name, it.date, it.id) }
             val original = records.firstOrNull { editing && it.record.id == route.recordId }
-            val swap = log.swap
             val entries = log.entries
             val others = entries.filter { it.id != original?.record?.id }
             val updates = log.updates
@@ -346,7 +339,6 @@ class LogServiceViewModel @Inject constructor(
             val own = ServiceLinks.own(items.map { it.toRef() })
             val optionFor: Map<Long?, WorkOption> = options.flatMap { o -> own[o.id].orEmpty().map { id -> id to o } }.toMap() +
                 options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
-            val tracked = log.tracked
 
             val due = if (editing) {
                 emptyList()
@@ -392,13 +384,9 @@ class LogServiceViewModel @Inject constructor(
                 vehicleName = vehicle.shortName(),
                 categories = categories,
                 due = due,
-                tracked = tracked,
-                entries = entries,
+                log = log,
                 readings = ServiceLog.readings(others, updates),
                 lastOdometer = VehicleReminders.currentOdometer(others, updates),
-                swap = swap,
-                unit = vehicle.unit,
-                answering = items.answering(),
                 specs = vehicle.whatItTakes(),
                 original = original,
                 rules = catalogRules.all().map { it.toRule() },
@@ -632,7 +620,7 @@ internal fun LogServiceContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        val intervals = remember(data) { data.tracked.associate { it.id to it.interval } }
+                        val intervals = remember(data) { data.log.tracked.associate { it.id to it.interval } }
                         data.categories.first { it.id == form.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,

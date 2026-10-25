@@ -7,6 +7,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   records, readings and settings, put together one way in dash terms. A screen, the widget or a worker doesn't
   gather those rows and call `log()` itself. Milestones is the one exception: it goes by actual mileage, with
   no swap, and builds its own on the same functions.
+- **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the records as they
+  would stand (`DraftRecord`s, readings as typed, new ones numbered below zero) and gives the changes and the
+  entries after, in dash terms. A delete, an edit, re-filed lines and an import's file all go through it; a
+  screen doesn't rebuild the before and after itself. A sold vehicle moves no reminders.
 - **A write that takes more than one step is one transaction** (#419): it goes in `ServiceLogWriter` (`:data`),
   which writes rows only. `RecordActions` calls it and keeps the events, focus, Undo and photo files. A process
   that dies part-way must leave the log as it was, never a record without its photos or a recall's record with

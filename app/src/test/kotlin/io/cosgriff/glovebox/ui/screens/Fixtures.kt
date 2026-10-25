@@ -32,6 +32,7 @@ import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OpenRecalls
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ReminderInputs
+import io.cosgriff.glovebox.data.log.VehicleLog
 import io.cosgriff.glovebox.domain.SavedLine
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ScheduleRef
@@ -454,13 +455,12 @@ object Fixtures {
                 vehicleName = "2019 Blue truck",
                 categories = categories,
                 due = listOf(DueSuggestion(oil.id, oil.label, overdue = true)),
-                tracked = tracked,
-                entries = truckEntries,
+                log = VehicleLog(
+                    vehicle = truck, items = emptyList(), records = truckRecords, swap = null, entries = truckEntries, updates = truckReadings,
+                    tracked = tracked, lead = settings.leadFor(unit), defaultRule = settings.defaultRule, answering = ServiceLinks.answering(refs),
+                ),
                 readings = ServiceLog.readings(truckEntries, truckReadings),
                 lastOdometer = truckOdometer,
-                swap = null,
-                unit = unit,
-                answering = ServiceLinks.answering(refs),
                 specs = truck.whatItTakes(),
                 original = null,
             )
