@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.26.0](https://github.com/mcosgriff/glovebox/compare/v0.25.0...v0.26.0) (2026-10-25)
+
+
+### Features
+
+* **documents:** expiry dates, with a notification before they run out ([#427](https://github.com/mcosgriff/glovebox/issues/427)) ([211d7e0](https://github.com/mcosgriff/glovebox/commit/211d7e0fadf4bbad99fa90a9bda6a3222fcd99af))
+
+
+### Bug Fixes
+
+* close the low findings of the security review ([#426](https://github.com/mcosgriff/glovebox/issues/426)) ([8a725d4](https://github.com/mcosgriff/glovebox/commit/8a725d4dda36d23748db8a2b8386471fa71657b8))
+* **data:** don't trust a backup's contents further than its own checks ([#424](https://github.com/mcosgriff/glovebox/issues/424)) ([a5e5237](https://github.com/mcosgriff/glovebox/commit/a5e52373c646d9300f18391bbc1e1200a8a8856f))
+* **data:** write each multi-step service-log change in one transaction ([#421](https://github.com/mcosgriff/glovebox/issues/421)) ([c16af3e](https://github.com/mcosgriff/glovebox/commit/c16af3e0138dac0a7a106aebd830e639260d3448)), closes [#419](https://github.com/mcosgriff/glovebox/issues/419)
+* **export:** keep page one of the PDF report from cutting text short ([#428](https://github.com/mcosgriff/glovebox/issues/428)) ([4a9af5a](https://github.com/mcosgriff/glovebox/commit/4a9af5ace5e1a2676f8debec36c612695a69d00e))
+* **schedule:** take up a maker's schedule in one transaction ([#432](https://github.com/mcosgriff/glovebox/issues/432)) ([208e733](https://github.com/mcosgriff/glovebox/commit/208e733b37fd34c73a9cf6fb8def9ce828accea6))
+
+
+### Code Refactoring
+
+* **log:** ask the vehicle log which reminders a change would move ([#430](https://github.com/mcosgriff/glovebox/issues/430)) ([#433](https://github.com/mcosgriff/glovebox/issues/433)) ([515966c](https://github.com/mcosgriff/glovebox/commit/515966c7a75a7dfd932df830782c54e3d49f771f))
+* read a vehicle's log through VehicleLogs in :data ([#423](https://github.com/mcosgriff/glovebox/issues/423)) ([1cc317e](https://github.com/mcosgriff/glovebox/commit/1cc317edc7f6c50d0ab7485f724f7129721e8ba8)), closes [#420](https://github.com/mcosgriff/glovebox/issues/420)
+* **rules:** read the rule preview through VehicleLogs ([#431](https://github.com/mcosgriff/glovebox/issues/431)) ([#457](https://github.com/mcosgriff/glovebox/issues/457)) ([dd4e4b3](https://github.com/mcosgriff/glovebox/commit/dd4e4b3d725e0e9a8778695d9682b7266b43230c))
+
 ## [0.25.0](https://github.com/mcosgriff/glovebox/compare/v0.24.0...v0.25.0) (2026-10-24)
 
 
