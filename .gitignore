@@ -19,3 +19,7 @@ gradle/verification-keyring.gpg
 
 # The Android Developer Console's ownership snippet, put there only while registration-apk.sh builds (#267).
 app/src/main/assets/adi-registration.properties
+
+# Python caches from the helper scripts
+__pycache__/
+.pytest_cache/

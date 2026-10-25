@@ -1,0 +1,323 @@
+{
+ "make": "Toyota",
+ "model": "Prius Prime (PHEV)",
+ "modelAliases": [],
+ "years": [
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026,
+  2027
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11038372",
+   "number": "26TC01",
+   "date": "2026-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 26TC01 POWER DISTRIBUTION BOX CERTAIN 2024 – 2025 MODEL YEAR PRIUS 2024 MODEL YEAR PRIUS PHV",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2024
+     ]
+    },
+    {
+     "model": "PRIUS PLUG-IN HYBRID",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11038372-0001.pdf"
+  },
+  {
+   "id": "11038370",
+   "number": "26TC01",
+   "date": "2026-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An electrical connection for the rear window defogger may not have been installed correctly during vehicle assembly. Overtime, this can cause the rear window defogger to become inoperable, which could reduce visibility through the rear window when moisture or condensation is present",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2024
+     ]
+    },
+    {
+     "model": "PRIUS PLUG-IN HYBRID",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11038370-0001.pdf"
+  },
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    },
+    {
+     "model": "PRIUS PLUG-IN HYBRID",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11014215",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC08 TI ver. 2 FUEL TANK FILLER CLAMP AND VAPOR LEAK DETECTION CERTAIN 2023 MODEL YEAR PRIUS PRIME",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014215-0001.pdf"
+  },
+  {
+   "id": "11014214",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC08 TI ver. 1 FUEL TANK FILLER CLAMP AND VAPOR LEAK DETECTION CERTAIN 2023-2024 MODEL YEAR Corolla HV CERTAIN 2023 MODEL YEAR PRIUS",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014214-0001.pdf"
+  },
+  {
+   "id": "11014213",
+   "number": "24TC08",
+   "date": "2025-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In the subject vehicles, the vapor leak detection monitor system may not detect a vapor leak from the fuel filler cap and illuminate the malfunction indicator lamp (MIL).",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014213-0001.pdf"
+  },
+  {
+   "id": "11010359",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The supply of Smart Keys available for Toyota vehicles has been temporarily limited to one (1) on select models since October 2022 due to global semiconductor shortages impacting certain microchips. Affected vehicles have been delivered with only one Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010359-0001.pdf"
+  },
+  {
+   "id": "11010358",
+   "number": "23TJ01",
+   "date": "2024-10-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The subject vehicles were delivered with only one (1) Smart Key on select models since October 2022 due to a global semiconductor shortage impacting certain microchips. The affected vehicles were delivered with one (1) Smart Key and a second mechanical key.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11010358-0001.pdf"
+  },
+  {
+   "id": "11005181",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Second Key Delivery Program Frequently Asked Questions",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005181-0001.pdf"
+  },
+  {
+   "id": "11005180",
+   "number": "23TJ01",
+   "date": "2024-05-31",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005180-0001.pdf"
+  },
+  {
+   "id": "11003628",
+   "number": "23TJ01 Eligibility",
+   "date": "2024-04-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The table describes the phases currently planned for the Second Key Delivery Program and the estimated timing of announcement. This table will be updated during each phase launch and as more details become available.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11003628-0001.pdf"
+  },
+  {
+   "id": "10211800",
+   "number": "22TC01 Team Memb",
+   "date": "2022-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: Toyota Over-The- Air (OTA) Pilot Program Team Members SPECIAL SERVICE CAMPAIGN 22TC01",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10211800-9999.pdf"
+  },
+  {
+   "id": "10210366",
+   "number": "22TC01 Team Memb",
+   "date": "2022-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SSC: SPECIAL SERVICE CAMPAIGN 22TC01 Over-the-Air (OTA) pilot program. This pilot program would enable you to complete Special Service Campaign 22TC01 for DCM (Data Communication Module) Reprogramming for Safety Connect, which includes your vehicle. With your active telematics account, you are encouraged to complete this campaign using this Over-the-Air (OTA) update by following these steps: 1) To complete this update, each Team Member will use the Toyota/Lexus App installed on their phone. 2) Within a few days of this E-Mail, we will send a notification to your Toyota/Lexus app to schedule and install the update on your vehicle. 3) Click on either the notification on your lock screen or the tile in the app to review the update and then continue in the App to approve the update. 4) The night after you approve the update, the telematics module will perform the update, and you will receive a confirmation notification through the app.",
+   "products": [
+    {
+     "model": "PRIUS PRIME",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS",
+    "ELECTRICAL SYSTEM",
+    "SEAT BELTS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2022/MC-10210366-9999.pdf"
+  }
+ ]
+}

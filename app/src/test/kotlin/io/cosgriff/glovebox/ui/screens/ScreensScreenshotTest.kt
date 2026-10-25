@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.ui.bulletins.BulletinsContent
 import io.cosgriff.glovebox.ui.settings.ImportContent
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import io.cosgriff.glovebox.domain.CatalogRule
@@ -312,6 +313,11 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun checkIn() = compose.shootScreen("check_in", shade) {
         CheckInDialog(VehicleCheckIn.Default, default = 14, onSave = {}, onDismiss = {})
+    }
+
+    @Test
+    fun bulletins() = compose.shoot("bulletins", shade) {
+        BulletinsContent(Fixtures.bulletins, onBack = {}, onOpenPdf = {})
     }
 
     @Test

@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import androidx.compose.ui.test.assertCountEquals
+import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.domain.Bulletins
 import androidx.compose.ui.test.onAllNodesWithText
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.ui.components.DecodedField
@@ -64,7 +67,7 @@ class VehicleDetailsScreenTest {
     private fun viewModel(id: Long) = g.viewModel {
         VehicleDetailsViewModel(
         routeHandle(VehicleDetailsRoute(id)), g.db.vehicles(), g.db.schedule(), g.db.recalls(), g.db.service(), g.db.odometer(),
-        g.db.torque(), g.db.documents(), g.vehiclePhotos, g.photoPicker, g.archiver, g.db.units(), g.knownTakes, g.makerDocuments, g.settings,
+        g.db.torque(), g.db.documents(), g.vehiclePhotos, g.photoPicker, g.archiver, g.db.units(), g.knownTakes, g.makerDocuments, g.bulletins, g.settings,
         nhtsa.client,
         )
     }
@@ -76,6 +79,7 @@ class VehicleDetailsScreenTest {
                 VehicleDetailsScreen(
                     onBack = { opened += "back" },
                     onOpenRecalls = { opened += "recalls $it" },
+                    onOpenBulletins = { opened += "bulletins $it" },
                     onOpenSchedule = { opened += "schedule $it" },
                     onArchived = { name, undo -> archived += name to undo },
                     onDelete = { opened += "delete $it" },
@@ -381,6 +385,23 @@ class VehicleDetailsScreenTest {
         }
         show(id)
         compose.awaitThat { compose.onAllNodesWithText(g.string(R.string.details_recalls_do_not_drive, "1")).fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    @Test
+    fun `a model with bundled bulletins has a row that counts its year's and opens them, and others have none`() {
+        val truck = g.add(VehicleFixtures.truck)
+        show(truck)
+        val expected = Bulletins.forVehicle(runBlocking { g.bulletins.lists() }, VehicleFixtures.truck.year, VehicleFixtures.truck.make, VehicleFixtures.truck.model)!!
+        val count = expected.bulletins.size
+        tap(g.context.resources.getQuantityString(R.plurals.details_bulletins_count, count, count.toString(), expected.asOf.format(longDate)))
+        assertEquals(listOf("bulletins $truck"), opened)
+    }
+
+    @Test
+    fun `a model without bundled bulletins has no bulletins row`() {
+        val id = g.add(VehicleFixtures.wagon)
+        show(id)
+        compose.onAllNodesWithText(g.string(R.string.details_bulletins)).assertCountEquals(0)
     }
 
     @Test

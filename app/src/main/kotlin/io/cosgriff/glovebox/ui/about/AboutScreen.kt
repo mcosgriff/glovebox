@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.about
 
+import io.cosgriff.glovebox.ui.components.openWebPage
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.components.ValueRow
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -24,9 +25,7 @@ import androidx.lifecycle.ViewModel
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.runtime.getValue
 import io.cosgriff.glovebox.ui.theme.PlexMono
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,18 +51,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import io.cosgriff.glovebox.ui.components.SectionLabel
 
 const val SOURCE_URL = "https://github.com/mcosgriff/glovebox"
-
-/** Opens a web page in the browser. Returns false if the phone has nothing that can. */
-fun Context.openWebPage(url: String): Boolean = try {
-    startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-    true
-} catch (_: ActivityNotFoundException) {
-    false
-}
 
 /** The installed version, as Android reports it. */
 private fun Context.versionName(): String =

@@ -1,5 +1,10 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.ui.bulletins.BulletinsState
+import io.cosgriff.glovebox.domain.VehicleBulletins
+import io.cosgriff.glovebox.domain.BulletinProduct
+import io.cosgriff.glovebox.domain.BulletinKind
+import io.cosgriff.glovebox.domain.Bulletin
 import io.cosgriff.glovebox.ui.settings.ImportPreview
 import io.cosgriff.glovebox.ui.settings.PlanView
 import io.cosgriff.glovebox.ui.settings.PlanLine
@@ -369,6 +374,33 @@ object Fixtures {
             doubts = listOf(DoubtLine(LocalDate.of(2025, 11, 2) to 95_800, "Nov 2, 2025 · 95,800 mi", "35,000 mi above the reading before it", included = false)),
         ),
     ) { _, _ -> }
+
+    /** Made-up bulletins: invented numbers, summaries and links, one of each kind and one found by its wording. */
+    val bulletins = BulletinsState(
+        "2019 Blue truck",
+        VehicleBulletins(
+            LocalDate.of(2026, 10, 24),
+            listOf(
+                Bulletin(
+                    "90000003", "ZZ-26-01", LocalDate.of(2026, 3, 2), BulletinKind.WARRANTY_EXTENSION, byWording = false,
+                    summary = "A made-up warranty extension covering the made-up water pump for 10 years or 150,000 miles.",
+                    products = listOf(BulletinProduct("4RUNNER", listOf(2017, 2018, 2019, 2021))), components = listOf("ENGINE"),
+                    pdf = "https://static.nhtsa.gov/odi/tsbs/2026/MC-90000003-0001.pdf",
+                ),
+                Bulletin(
+                    "90000002", "ZZ-25-07", LocalDate.of(2025, 8, 14), BulletinKind.OVER_THE_AIR, byWording = false,
+                    summary = "A made-up software update for the made-up infotainment unit, sent over the air.",
+                    products = listOf(BulletinProduct("4RUNNER", listOf(2019))), components = listOf("ELECTRICAL"), pdf = null,
+                ),
+                Bulletin(
+                    "90000001", "ZZ1", LocalDate.of(2018, 5, 9), BulletinKind.SERVICE_CAMPAIGN, byWording = true,
+                    summary = "Technical instructions for made-up limited service campaign ZZ1: replace the made-up bracket.",
+                    products = listOf(BulletinProduct("4RUNNER", listOf(2018, 2019))), components = listOf("STRUCTURE"),
+                    pdf = "https://static.nhtsa.gov/odi/tsbs/2018/MC-90000001-9999.pdf",
+                ),
+            ),
+        ),
+    )
 
     val vehicleDetails = VehicleDetails(
         vehicle = truck,

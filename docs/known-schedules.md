@@ -169,6 +169,8 @@ jobs (the owner's choice). An import or export file never carries an E85 interva
    each job per page is only a pointer: every difference it reports is looked at on the page.
 4. Record on the list's own page, `docs/known-schedules/<id>.md` (the `id` of its JSON file), which
    documents were read, what differed, and which years are not covered and why. Add it to the index below.
+5. Bundle its bulletins: add the model's NHTSA spellings to `scripts/bulletins.py` and refresh them
+   ([docs/bulletins.md](bulletins.md#adding-a-vehicle)). `BulletinsTest` fails until the model has a file.
 
 ## The lists
 

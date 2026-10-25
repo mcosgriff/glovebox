@@ -1,0 +1,110 @@
+{
+ "make": "Toyota",
+ "model": "Corolla Cross",
+ "modelAliases": [],
+ "years": [
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-24",
+ "bulletins": [
+  {
+   "id": "11020657",
+   "number": "T-SB-0058-23 Rev1",
+   "date": "2025-06-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The air conditioning dye injection tool kit has been developed to aid in identifying the location of air conditioning refrigerant leaks. The procedures outlined in this Service Bulletin aid in locating, inspecting, and repairing refrigerant leaks.",
+   "products": [
+    {
+     "model": "COROLLA CROSS",
+     "years": [
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11020657-0001.pdf"
+  },
+  {
+   "id": "11019357",
+   "number": "25TC03",
+   "date": "2025-04-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Frequently Asked Questions SPECIAL SERVICE CAMPAIGN 25TC03 Certain 2023 Model Year Corolla Cross Certain 2023 Model Year Corolla Cross HV Certain 2023 Model Year bZ4x Certain 2021-2023 Model Year Sienna HV TSS 3.0 Forward Recognition Camera Software Update",
+   "products": [
+    {
+     "model": "COROLLA CROSS",
+     "years": [
+      2023
+     ]
+    },
+    {
+     "model": "COROLLA CROSS HYBRID",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: WARNINGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11019357-0001.pdf"
+  },
+  {
+   "id": "11019356",
+   "number": "25TC03",
+   "date": "2025-04-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Included vehicles are equipped with Toyota Safety Sense (TSS) 3.0, which includes the Pre-Collision System (PCS), which uses the forward recognition camera. In rare cases, a software programming issue can damage the forward recognition camera. This will result in the Pre-Collision System not working the next time the car is started.",
+   "products": [
+    {
+     "model": "COROLLA CROSS",
+     "years": [
+      2023
+     ]
+    },
+    {
+     "model": "COROLLA CROSS HYBRID",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: WARNINGS"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11019356-0001.pdf"
+  },
+  {
+   "id": "11005107",
+   "number": "24TC03",
+   "date": "2024-06-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN 24TC03 DATA COMMUNICATON MODULE (DCM) UPDATE CERTAIN 2023 COROLLA, COROLLA CROSS, COROLLA HATCHBACK, COROLLA HV, GR COROLLA, CROWN, HIGHLANDER, HIGHLANDER HV, PRIUS, RAV4, RAV4 PRIME, RAV4 HV, VENZA HV",
+   "products": [
+    {
+     "model": "COROLLA CROSS",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11005107-0001.pdf"
+  }
+ ]
+}
