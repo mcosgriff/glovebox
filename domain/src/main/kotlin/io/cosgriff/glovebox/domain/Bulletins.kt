@@ -7,6 +7,10 @@ import kotlinx.serialization.json.booleanOrNull
 import java.net.URI
 import java.net.URISyntaxException
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.time.format.ResolverStyle
+import java.util.Locale
 
 /** The free-repair kinds of maker's bulletin Glovebox bundles (#459); `app` names each. */
 enum class BulletinKind { SERVICE_CAMPAIGN, WARRANTY_EXTENSION, OVER_THE_AIR }
@@ -36,7 +40,10 @@ data class Bulletin(
     val components: List<String>,
     /** The bulletin itself on NHTSA's server, where one answered when the list was made; opened in the browser. */
     val pdf: String?,
-)
+) {
+    /** When the program ended, where the summary says so (#474, [Bulletins.endedOn]); read once, as the bulletin is made. */
+    val endedOn: LocalDate? = Bulletins.endedOn(summary)
+}
 
 /** One model's bundled bulletins for the model [years] its maker's schedules cover, as NHTSA's files stood on [asOf]. */
 data class BulletinList(
@@ -144,6 +151,38 @@ object Bulletins {
             matched.maxOf { it.asOf },
             matched.flatMap { it.bulletins }.filter { b -> b.products.any { year in it.years } }.distinctBy { it.id },
         )
+    }
+
+    // Strict: "February 30" is no date, rather than the last of the month.
+    private val monthNameDate = DateTimeFormatter.ofPattern("MMMM d, uuuu", Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT)
+    private val slashDate = DateTimeFormatter.ofPattern("M/d/uuuu", Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT)
+
+    /** "December 1, 2022" or "2/7/2025", month first, as Toyota writes them; each in its own group, read by its own formatter. */
+    private const val DATE =
+        """(?:(?<monthName>(?:January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4})|(?<slash>\d{1,2}/\d{1,2}/\d{4}))"""
+
+    /**
+     * The ways a summary says its program ended. This list and the tests in `BulletinsTest` are the one record of
+     * them; a bundled summary that says "expired" another way fails there.
+     */
+    private val endings = listOf(
+        // "expired December 1, 2022", "Expired on …", "has expired as of …"
+        Regex("""\b(?i:expired)(?: (?i:on|as of))? $DATE"""),
+        // "As of February 20, 2018, Special Service Campaign H0Y is no longer active", within the one sentence
+        Regex("""\b(?i:as of) $DATE,[^.]{0,80}? is no longer active"""),
+    )
+
+    /**
+     * When the program ended, if [summary] says so with a date (#474): NHTSA has no field for it, so this is read from
+     * the maker's own words, and only from a plain statement ([endings]). A date that doesn't exist is no end.
+     */
+    fun endedOn(summary: String): LocalDate? {
+        val groups = endings.firstNotNullOfOrNull { it.find(summary) }?.groups ?: return null
+        return try {
+            groups["monthName"]?.let { LocalDate.parse(it.value, monthNameDate) } ?: groups["slash"]?.let { LocalDate.parse(it.value, slashDate) }
+        } catch (_: DateTimeParseException) {
+            null
+        }
     }
 
     /** Model years as runs, for the app to word: 2016, 2017, 2018, 2020 are 2016..2018 and 2020..2020. */

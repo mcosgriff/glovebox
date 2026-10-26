@@ -375,7 +375,7 @@ object Fixtures {
         ),
     ) { _, _ -> }
 
-    /** Made-up bulletins: invented numbers, summaries and links, one of each kind and one found by its wording. */
+    /** Made-up bulletins: invented numbers, summaries and links, one of each kind, one found by its wording, and one whose summary says it ended. */
     val bulletins = BulletinsState(
         "2019 Blue truck",
         VehicleBulletins(
@@ -394,7 +394,7 @@ object Fixtures {
                 ),
                 Bulletin(
                     "90000001", "ZZ1", LocalDate.of(2018, 5, 9), BulletinKind.SERVICE_CAMPAIGN, byWording = true,
-                    summary = "Technical instructions for made-up limited service campaign ZZ1: replace the made-up bracket.",
+                    summary = "Technical instructions: made-up limited service campaign ZZ1 expired on March 31, 2019. Replace the made-up bracket.",
                     products = listOf(BulletinProduct("4RUNNER", listOf(2018, 2019))), components = listOf("STRUCTURE"),
                     pdf = "https://static.nhtsa.gov/odi/tsbs/2018/MC-90000001-9999.pdf",
                 ),

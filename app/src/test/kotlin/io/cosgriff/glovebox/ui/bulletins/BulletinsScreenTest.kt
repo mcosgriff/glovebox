@@ -44,6 +44,13 @@ class BulletinsScreenTest {
     }
 
     @Test
+    fun `a bulletin whose summary says its program ended says so on its card, and the screen says programs end`() {
+        show(Fixtures.bulletins)
+        compose.onAllNodesWithText(app.getString(R.string.bulletins_ended, LocalDate.of(2019, 3, 31).format(longDate))).assertCountEquals(1)
+        compose.onNodeWithText(app.getString(R.string.bulletins_end_note)).assertExists()
+    }
+
+    @Test
     fun `a bulletin's PDF opens from NHTSA, and one without a link offers none`() {
         show(Fixtures.bulletins)
         compose.onAllNodesWithText(app.getString(R.string.bulletins_open_pdf, "ZZ-25-07")).assertCountEquals(0)
