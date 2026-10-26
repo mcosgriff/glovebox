@@ -8,6 +8,8 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.time.format.ResolverStyle
 import java.util.Locale
 
 /** The free-repair kinds of maker's bulletin Glovebox bundles (#459); `app` names each. */
@@ -148,8 +150,9 @@ object Bulletins {
         )
     }
 
-    private val written = DateTimeFormatter.ofPattern("MMMM d, uuuu", Locale.ENGLISH)
-    private val numeric = DateTimeFormatter.ofPattern("M/d/uuuu", Locale.ENGLISH)
+    // Strict: "February 30" is no date, not March 1.
+    private val written = DateTimeFormatter.ofPattern("MMMM d, uuuu", Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT)
+    private val numeric = DateTimeFormatter.ofPattern("M/d/uuuu", Locale.ENGLISH).withResolverStyle(ResolverStyle.STRICT)
 
     /** "December 1, 2022" or "2/7/2025", month first, as Toyota writes them. */
     private const val DATE =
@@ -163,11 +166,15 @@ object Bulletins {
 
     /**
      * When the program ended, if [summary] says so with a date (#474): NHTSA has no field for it, so this is read from
-     * the maker's own words, and only from a plain statement.
+     * the maker's own words, and only from a plain statement. A date that doesn't exist is no end.
      */
     fun endedOn(summary: String): LocalDate? {
         val date = (expired.find(summary) ?: noLongerActive.find(summary))?.groupValues?.get(1) ?: return null
-        return LocalDate.parse(date, if ('/' in date) numeric else written)
+        return try {
+            LocalDate.parse(date, if ('/' in date) numeric else written)
+        } catch (_: DateTimeParseException) {
+            null
+        }
     }
 
     /** Model years as runs, for the app to word: 2016, 2017, 2018, 2020 are 2016..2018 and 2020..2020. */

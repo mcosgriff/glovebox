@@ -148,7 +148,7 @@ private fun BulletinCard(b: Bulletin, onOpenPdf: (String) -> Unit, modifier: Mod
                 Pill(stringResource(b.kind.labelRes), container = scheme.surfaceVariant, content = scheme.onSurfaceVariant, small = true)
             }
             // Read from the maker's words (Bulletins.endedOn): the free repair may no longer be on offer.
-            remember(b.id) { Bulletins.endedOn(b.summary) }?.let { ended ->
+            remember(b.summary) { Bulletins.endedOn(b.summary) }?.let { ended ->
                 Text(stringResource(R.string.bulletins_ended, ended.format(longDate)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
             }
             if (b.byWording) {

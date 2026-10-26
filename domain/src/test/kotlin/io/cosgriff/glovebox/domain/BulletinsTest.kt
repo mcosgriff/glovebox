@@ -158,6 +158,12 @@ class BulletinsTest {
     }
 
     @Test
+    fun `a date that doesn't exist is no end, rather than a guess or a crash`() {
+        assertNull(Bulletins.endedOn("TI: 26TD03 expired on 13/45/2023."))
+        assertNull(Bulletins.endedOn("Campaign 26TD04 expired February 30, 2024."))
+    }
+
+    @Test
     fun `every bundled summary that says its program expired is read as ended`() {
         // A refresh that brings a new way of saying it fails here, rather than showing an ended program as running.
         val says = Regex("""\bexpired\b|\bno longer active\b""", RegexOption.IGNORE_CASE)
