@@ -38,4 +38,14 @@ class TorqueAndVinTest {
         assertFalse(Vin.isPlausible("1M8GDM9AXKP0427889"))
         assertFalse(Vin.isPlausible("1m8-gdm9a"))
     }
+
+    @Test
+    fun `a VIN can be saved when it looks like one and isn't the one already saved`() {
+        assertTrue(Vin.canSave("1M8GDM9AXKP042788", saved = null))
+        assertTrue(Vin.canSave("1M8GDM9AXKP042788", saved = "1M8GDM9A1KP042788")) // a correction
+        assertTrue(Vin.canSave("1M8GDM9A1KP042788", saved = "1M8GDM9AXKP042788")) // a wrong check digit only warns
+        assertFalse(Vin.canSave("1M8GDM9AXKP042788", saved = "1M8GDM9AXKP042788")) // unchanged
+        assertFalse(Vin.canSave("", saved = "1M8GDM9AXKP042788")) // a VIN is corrected, never cleared
+        assertFalse(Vin.canSave("AB12", saved = null))
+    }
 }
