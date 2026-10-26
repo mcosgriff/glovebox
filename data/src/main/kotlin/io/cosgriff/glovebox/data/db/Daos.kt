@@ -46,7 +46,7 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET archivedOn = :date WHERE id = :id")
     suspend fun setArchived(id: Long, date: LocalDate?)
 
-    /** For a vehicle added without one. */
+    /** Added to a vehicle that had none, or a saved one corrected (#468): the VIN alone, nothing decoded from it. */
     @Query("UPDATE vehicles SET vin = :vin WHERE id = :id")
     suspend fun setVin(id: Long, vin: String)
 

@@ -55,9 +55,6 @@ import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectTapGestures
 import android.widget.Toast
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.data.db.UnitDao
@@ -118,7 +115,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -421,7 +417,7 @@ fun VehicleDetailsScreen(
     val bulletins by vm.bulletins.collectAsStateWithLifecycle()
     var selling by rememberSaveable { mutableStateOf(false) }
     var exporting by rememberSaveable { mutableStateOf(false) }
-    var addingVin by rememberSaveable { mutableStateOf(false) }
+    var editingVin by rememberSaveable { mutableStateOf(false) }
     var editingPlate by rememberSaveable { mutableStateOf(false) }
     var editingCheckIn by rememberSaveable { mutableStateOf(false) }
     val noticePrefs by vm.noticePrefs.collectAsStateWithLifecycle()
@@ -500,13 +496,14 @@ fun VehicleDetailsScreen(
         else -> VinLookupDialog(lookup, onAdd = vm::fillFromVin, onDismiss = vm::closeVinLookup)
     }
 
-    if (addingVin) {
+    if (editingVin) {
         VinDialog(
+            saved = v.vin,
             onSave = {
                 vm.setVin(it)
-                addingVin = false
+                editingVin = false
             },
-            onDismiss = { addingVin = false },
+            onDismiss = { editingVin = false },
         )
     }
     val name = v.nicknameOrModel()
@@ -550,7 +547,7 @@ fun VehicleDetailsScreen(
         onOpenTorqueSpecs = onOpenTorqueSpecs, onOpenMoreTakes = onOpenMoreTakes, onOpenReadings = onOpenReadings,
         onOpenImport = onOpenImport, onOpenDocuments = onOpenDocuments, onClearHistory = onClearHistory,
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
-        onEditCheckIn = { editingCheckIn = true }, onAddVin = { addingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
+        onEditCheckIn = { editingCheckIn = true }, onEditVin = { editingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
         bulletins = bulletins, onOpenBulletins = onOpenBulletins,
     )
@@ -582,7 +579,8 @@ internal fun VehicleDetailsContent(
     onFillKnown: () -> Unit,
     onEditPlate: () -> Unit,
     onEditCheckIn: () -> Unit,
-    onAddVin: () -> Unit,
+    /** Add the VIN, or correct the one saved. */
+    onEditVin: () -> Unit,
     /** Look the saved VIN up again, to fill what is empty. */
     onLookUpVin: () -> Unit,
     onSetOffset: () -> Unit,
@@ -656,56 +654,48 @@ internal fun VehicleDetailsContent(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(if (v.enteredByHand) R.string.details_section_vehicle else R.string.details_section_from_vin))
                     RowsCard {
-                        if (v.vin == null) {
-                            Row(
-                                Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onAddVin),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Text(stringResource(R.string.details_vin), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(
-                                    stringResource(R.string.add),
-                                    Modifier.weight(1f),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.End,
-                                )
-                                Chevron()
-                            }
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        // A tap adds the VIN or corrects it (#468). It is the one value worth having elsewhere (an
+                        // insurer's or a parts site's form), so a long press copies it; it is the one row in mono.
+                        val vinLabel = stringResource(R.string.details_vin)
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .combinedClickable(
+                                    role = Role.Button,
+                                    onClick = onEditVin,
+                                    onLongClickLabel = v.vin?.let { stringResource(R.string.details_copy_vin) },
+                                    onLongClick = v.vin?.let { vin -> { copyText(context, vinLabel, vin, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(vinLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                v.vin ?: stringResource(R.string.add),
+                                Modifier.weight(1f).padding(vertical = 8.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = if (v.vin != null) PlexMono else null,
+                                color = if (v.vin == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.End,
+                            )
+                            Chevron()
                         }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         val rows = listOfNotNull(
-                            v.vin?.let { Triple(stringResource(R.string.details_vin), it, true) },
-                            Triple(stringResource(R.string.details_vehicle), VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle), false),
-                            v.drivetrain?.let { Triple(stringResource(R.string.details_drivetrain), it, false) },
-                            v.transmission?.let { Triple(stringResource(R.string.add_vehicle_transmission), it, false) },
-                            v.engine?.let { Triple(stringResource(R.string.add_vehicle_engine), it, false) },
-                            v.engineCode?.let { Triple(stringResource(R.string.add_vehicle_engine_code), it, false) },
-                            Powertrains.of(v.powertrain)?.let { Triple(stringResource(R.string.add_vehicle_powertrain), stringResource(it.label()), false) },
-                            v.bodyClass?.let { Triple(stringResource(R.string.details_body), it, false) },
-                            v.series?.let { Triple(stringResource(R.string.add_vehicle_series), it, false) },
-                            v.tpms?.let { Triple(stringResource(R.string.add_vehicle_tpms), it, false) },
+                            stringResource(R.string.details_vehicle) to (VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle)),
+                            v.drivetrain?.let { stringResource(R.string.details_drivetrain) to it },
+                            v.transmission?.let { stringResource(R.string.add_vehicle_transmission) to it },
+                            v.engine?.let { stringResource(R.string.add_vehicle_engine) to it },
+                            v.engineCode?.let { stringResource(R.string.add_vehicle_engine_code) to it },
+                            Powertrains.of(v.powertrain)?.let { stringResource(R.string.add_vehicle_powertrain) to stringResource(it.label()) },
+                            v.bodyClass?.let { stringResource(R.string.details_body) to it },
+                            v.series?.let { stringResource(R.string.add_vehicle_series) to it },
+                            v.tpms?.let { stringResource(R.string.add_vehicle_tpms) to it },
                         )
-                        val copyVinLabel = stringResource(R.string.details_copy_vin)
-                        rows.forEach { (label, value, mono) ->
-                            // The VIN is the one value worth having elsewhere (an insurer's or a parts site's form): a long
-                            // press copies it. It is the one row in mono.
-                            val copy = if (mono) ({ copyText(context, label, value, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) }) else null
+                        rows.forEach { (label, value) ->
                             Row(
-                                Modifier.fillMaxWidth()
-                                    .then(
-                                        if (copy == null) {
-                                            Modifier
-                                        } else {
-                                            Modifier
-                                                .pointerInput(value) { detectTapGestures(onLongPress = { copy() }) }
-                                                .semantics { onLongClick(label = copyVinLabel) { copy(); true } }
-                                        },
-                                    )
-                                    // 48dp: the VIN row is a touch target (a long press copies it), and the rest match it.
-                                    .heightIn(min = 48.dp)
-                                    .padding(vertical = 11.dp),
+                                // 48dp, to match the VIN row above.
+                                Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 11.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
@@ -715,7 +705,6 @@ internal fun VehicleDetailsContent(
                                     Modifier.weight(1f),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
-                                    fontFamily = if (mono) PlexMono else null,
                                     textAlign = TextAlign.End,
                                 )
                             }
@@ -1093,13 +1082,17 @@ private fun LinkRow(title: String, detail: String, detailColor: Color = Material
     }
 }
 
+/**
+ * Adds a VIN, or corrects the [saved] one (#468). Only the VIN is written: nothing is decoded from it, and nothing is
+ * sent. It can't be cleared, and a wrong check digit only warns ([Vin.canSave]).
+ */
 @Composable
-private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
-    var text by rememberSaveable { mutableStateOf("") }
+private fun VinDialog(saved: String?, onSave: (String) -> Unit, onDismiss: () -> Unit) {
+    var text by rememberSaveable { mutableStateOf(saved.orEmpty()) }
     val plausible = Vin.isPlausible(text)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.details_add_vin)) },
+        title = { Text(stringResource(if (saved == null) R.string.details_add_vin else R.string.details_change_vin)) },
         text = {
             OutlinedTextField(
                 value = text,
@@ -1120,7 +1113,7 @@ private fun VinDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
             )
         },
-        confirmButton = { TextButton(onClick = { onSave(text) }, enabled = plausible) { Text(stringResource(R.string.save)) } },
+        confirmButton = { TextButton(onClick = { onSave(text) }, enabled = Vin.canSave(text, saved)) { Text(stringResource(R.string.save)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

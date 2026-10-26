@@ -22,6 +22,12 @@ object Vin {
      */
     fun isPlausible(vin: String): Boolean = vin.length in 5..17 && vin.all { it in 'A'..'Z' || it in '0'..'9' }
 
+    /**
+     * Whether Vehicle details may save [typed] over [saved] (#468): a VIN is added or corrected, never cleared,
+     * and a wrong check digit only warns, as it does when one is added later.
+     */
+    fun canSave(typed: String, saved: String?): Boolean = isPlausible(typed) && typed != saved
+
     fun hasValidCheckDigit(vin: String): Boolean {
         if (!isWellFormed(vin)) return false
         val sum = vin.indices.sumOf { i -> transliteration.getValue(vin[i]) * weights[i] }
