@@ -166,10 +166,10 @@ class BulletinsTest {
     @Test
     fun `every bundled summary that says its program expired is read as ended`() {
         // A refresh that brings a new way of saying it fails here, rather than showing an ended program as running.
-        val says = Regex("""\bexpired\b|\bno longer active\b""", RegexOption.IGNORE_CASE)
-        val missed = bundled.flatMap { list -> list.bulletins.filter { says.containsMatchIn(it.summary) && Bulletins.endedOn(it.summary) == null }.map { "${list.model} ${it.number}" } }
+        val saysEnded = Regex("""\bexpired\b|\bno longer active\b""", RegexOption.IGNORE_CASE)
+        val missed = bundled.flatMap { list -> list.bulletins.filter { saysEnded.containsMatchIn(it.summary) && it.endedOn == null }.map { "${list.model} ${it.number}" } }
         assertEquals(emptyList<String>(), missed)
         // The lists as of 2026-10-24 have 17; a refresh may add to them.
-        assertTrue(bundled.sumOf { list -> list.bulletins.count { Bulletins.endedOn(it.summary) != null } } >= 17)
+        assertTrue(bundled.sumOf { list -> list.bulletins.count { it.endedOn != null } } >= 17)
     }
 }

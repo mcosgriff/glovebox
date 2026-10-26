@@ -22,7 +22,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -147,8 +146,8 @@ private fun BulletinCard(b: Bulletin, onOpenPdf: (String) -> Unit, modifier: Mod
                 // Neutral: a bulletin is something to ask a dealer about, not something overdue.
                 Pill(stringResource(b.kind.labelRes), container = scheme.surfaceVariant, content = scheme.onSurfaceVariant, small = true)
             }
-            // Read from the maker's words (Bulletins.endedOn): the free repair may no longer be on offer.
-            remember(b.summary) { Bulletins.endedOn(b.summary) }?.let { ended ->
+            // Read from the maker's words (Bulletin.endedOn): the free repair may no longer be on offer.
+            b.endedOn?.let { ended ->
                 Text(stringResource(R.string.bulletins_ended, ended.format(longDate)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
             }
             if (b.byWording) {
