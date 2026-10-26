@@ -23,6 +23,9 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
 - Vehicle details' fields are written one column at a time (`VehicleDao.setNickname` etc.), **never with a
   whole-row `@Update`**, which could undo a recall check that landed meanwhile. Rows with nowhere to go are left
   out, not shown dead.
+- A saved VIN can be corrected from Vehicle details (#468), in the dialog that adds one, with `setVin`. **It changes
+  the VIN alone:** nothing is decoded or rewritten, and nothing is sent; the lookup above is the owner's next tap, if
+  they want it. It is never cleared, and a wrong check digit only warns, as when one is added (`Vin.canSave`).
 - The VIN is copied (long press) with `copyText`, marked sensitive. A licence plate is kept on the phone and
   never sent.
 - Archiving is only `vehicles.archivedOn`; nothing is deleted. Screens that list the garage read

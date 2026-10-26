@@ -710,6 +710,7 @@
     <string name="details_add_photo">Add a photo of your %1$s</string>
     <string name="details_photo_note">Stored encrypted on this phone</string>
     <string name="details_add_vin">Add the VIN</string>
+    <string name="details_change_vin">Change the VIN</string>
     <string name="details_vin_or_serial">VIN or serial number</string>
     <string name="details_vin_check_digit">The check digit doesn\'t match. That\'s normal for some imports; otherwise re-check it.</string>
     <plurals name="details_vin_older">
