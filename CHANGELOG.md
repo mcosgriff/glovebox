@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.28.0](https://github.com/mcosgriff/glovebox/compare/v0.27.0...v0.28.0) (2026-10-26)
+
+
+### Features
+
+* **bulletins:** say when a program's summary says it ended ([#480](https://github.com/mcosgriff/glovebox/issues/480)) ([55ecbf4](https://github.com/mcosgriff/glovebox/commit/55ecbf4619dfa81ac1bf0630e65f9eac9021c80c))
+* **vehicle:** correct a saved VIN from Vehicle details ([#478](https://github.com/mcosgriff/glovebox/issues/478)) ([f4ec5be](https://github.com/mcosgriff/glovebox/commit/f4ec5be5e76cccecfea14ba4eec22ad69b0fd859))
+
+
+### Bug Fixes
+
+* **lists:** match a plug-in typed without vPIC's "(PHEV)" tag ([#476](https://github.com/mcosgriff/glovebox/issues/476)) ([89ede6a](https://github.com/mcosgriff/glovebox/commit/89ede6a552d90cb600bd133be251a508e13fbe37))
+
 ## [0.27.0](https://github.com/mcosgriff/glovebox/compare/v0.26.0...v0.27.0) (2026-10-25)
 
 
