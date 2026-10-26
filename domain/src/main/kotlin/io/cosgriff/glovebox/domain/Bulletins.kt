@@ -7,6 +7,8 @@ import kotlinx.serialization.json.booleanOrNull
 import java.net.URI
 import java.net.URISyntaxException
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /** The free-repair kinds of maker's bulletin Glovebox bundles (#459); `app` names each. */
 enum class BulletinKind { SERVICE_CAMPAIGN, WARRANTY_EXTENSION, OVER_THE_AIR }
@@ -144,6 +146,28 @@ object Bulletins {
             matched.maxOf { it.asOf },
             matched.flatMap { it.bulletins }.filter { b -> b.products.any { year in it.years } }.distinctBy { it.id },
         )
+    }
+
+    private val written = DateTimeFormatter.ofPattern("MMMM d, uuuu", Locale.ENGLISH)
+    private val numeric = DateTimeFormatter.ofPattern("M/d/uuuu", Locale.ENGLISH)
+
+    /** "December 1, 2022" or "2/7/2025", month first, as Toyota writes them. */
+    private const val DATE =
+        """((?:January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}|\d{1,2}/\d{1,2}/\d{4})"""
+
+    /** "expired December 1, 2022", "Expired on …", "has expired as of …". */
+    private val expired = Regex("""\b(?i:expired)(?: (?i:on|as of))? $DATE""")
+
+    /** "As of February 20, 2018, Special Service Campaign H0Y is no longer active", within the one sentence. */
+    private val noLongerActive = Regex("""\b(?i:as of) $DATE,[^.]{0,80}? is no longer active""")
+
+    /**
+     * When the program ended, if [summary] says so with a date (#474): NHTSA has no field for it, so this is read from
+     * the maker's own words, and only from a plain statement.
+     */
+    fun endedOn(summary: String): LocalDate? {
+        val date = (expired.find(summary) ?: noLongerActive.find(summary))?.groupValues?.get(1) ?: return null
+        return LocalDate.parse(date, if ('/' in date) numeric else written)
     }
 
     /** Model years as runs, for the app to word: 2016, 2017, 2018, 2020 are 2016..2018 and 2020..2020. */

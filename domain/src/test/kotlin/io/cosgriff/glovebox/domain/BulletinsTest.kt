@@ -122,4 +122,48 @@ class BulletinsTest {
         val gti = Bulletins.forVehicle(bundled, 2011, "VOLKSWAGEN", "GTI")!!
         assertTrue(gti.bulletins.any { it.number == "VWP-18-07" && it.kind == BulletinKind.WARRANTY_EXTENSION })
     }
+
+    @Test
+    fun `a summary that says its program expired on a date has ended then`() {
+        assertEquals(LocalDate.of(2022, 12, 1), Bulletins.endedOn("DP: Customer Support Program 26TE01 expired December 1, 2022."))
+    }
+
+    @Test
+    fun `the maker's other ways of saying a program expired are read, with either kind of date`() {
+        assertEquals(LocalDate.of(2019, 10, 31), Bulletins.endedOn("Dealer Package: Limited Service Campaign 26TD01 Expired on October 31, 2019 In the involved vehicles…"))
+        assertEquals(LocalDate.of(2019, 11, 30), Bulletins.endedOn("Technical Instructions: This Limited Service Campaign has expired as of November 30, 2019."))
+        assertEquals(LocalDate.of(2025, 2, 7), Bulletins.endedOn("26TD02 expired on 2/7/2025 A seam near the made-up part…"))
+        assertEquals(LocalDate.of(2023, 10, 31), Bulletins.endedOn("TI: 26TD03 expired on 10/31/2023."))
+    }
+
+    @Test
+    fun `a campaign no longer active as of a date has ended then`() {
+        assertEquals(
+            LocalDate.of(2018, 2, 20),
+            Bulletins.endedOn("Dealer Package: Date 02/20/18 ? As of February 20, 2018, Special Service Campaign Z0Z is no longer active. ? Because…"),
+        )
+    }
+
+    @Test
+    fun `nothing else is read as an end`() {
+        // A campaign made permanent: the one summary on file with "expiration" in it.
+        assertNull(Bulletins.endedOn("Toyota converted Limited Service Campaign (LSC) Z0Z into Special Service Campaign (SSC) Z0Z with no expiration date."))
+        // A term counted from each vehicle's first use, which Glovebox doesn't know.
+        assertNull(Bulletins.endedOn("Coverage is for 10 years or 150,000 miles from the date of first use, whichever comes first."))
+        // Expired, but no date to say when.
+        assertNull(Bulletins.endedOn("All vehicles with Z0Z incomplete have been marked expired in TIS."))
+        // A part that no longer works is not a program that ended.
+        assertNull(Bulletins.endedOn("As of March 1, 2024, the made-up shutter may no longer open or close as designed."))
+        assertNull(Bulletins.endedOn("A made-up summary."))
+    }
+
+    @Test
+    fun `every bundled summary that says its program expired is read as ended`() {
+        // A refresh that brings a new way of saying it fails here, rather than showing an ended program as running.
+        val says = Regex("""\bexpired\b|\bno longer active\b""", RegexOption.IGNORE_CASE)
+        val missed = bundled.flatMap { list -> list.bulletins.filter { says.containsMatchIn(it.summary) && Bulletins.endedOn(it.summary) == null }.map { "${list.model} ${it.number}" } }
+        assertEquals(emptyList<String>(), missed)
+        // The lists as of 2026-10-24 have 17; a refresh may add to them.
+        assertTrue(bundled.sumOf { list -> list.bulletins.count { Bulletins.endedOn(it.summary) != null } } >= 17)
+    }
 }
