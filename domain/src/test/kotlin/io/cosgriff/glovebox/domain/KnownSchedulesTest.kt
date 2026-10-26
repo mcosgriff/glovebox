@@ -83,9 +83,9 @@ class KnownSchedulesTest {
         assertEquals("toyota-rav4-prime-2021-2024", KnownSchedules.match(bundled, 2022, "Toyota", "rav4 prime")?.id)
         val hybrid = (KnownSchedules.parse(file(model = "Roadster (HEV)")) as KnownScheduleFile.Ok).list
         assertEquals("made-up", KnownSchedules.match(listOf(hybrid), 2003, "Acme", "Roadster")?.id)
-        // A bracket that names the model (Honda's "VT750 (Shadow Aero 750)") is part of it.
-        val named = (KnownSchedules.parse(file(model = "VT750 (Shadow Aero 750)")) as KnownScheduleFile.Ok).list
-        assertNull(KnownSchedules.match(listOf(named), 2003, "Acme", "VT750"))
+        // A bracket that names the model (as Honda's "VT750 (Shadow Aero 750)" does) is part of it.
+        val named = (KnownSchedules.parse(file(model = "Roadster (Spyder)")) as KnownScheduleFile.Ok).list
+        assertNull(KnownSchedules.match(listOf(named), 2003, "Acme", "Roadster"))
     }
 
     @Test

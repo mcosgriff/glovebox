@@ -90,8 +90,8 @@ object KnownSpecs {
     }
 
     /**
-     * The list for a vehicle, or null: the make and model as NHTSA or the user spelled them, ignoring
-     * case and space, and the model year in the list's range. No match means no offer; nothing is
+     * The list for a vehicle, or null: the make and model as NHTSA or the user spelled them
+     * ([KnownLists.same]), and the model year in the list's range. No match means no offer; nothing is
      * guessed from a near miss, because a torque value for the wrong model is worse than none.
      */
     fun match(lists: List<KnownSpecList>, year: Int, make: String, model: String): KnownSpecList? =
