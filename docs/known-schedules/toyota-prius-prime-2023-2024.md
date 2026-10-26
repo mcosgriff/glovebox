@@ -21,8 +21,8 @@ Read on 2026-10-23.
   a plug-in hybrid, so it needs no `powertrain` either.
 - **Model name.** NHTSA's model list for Toyota (`GetModelsForMakeYear`, sent only the make and year, checked
   2026-10-23) gives the car as `Prius Prime (PHEV)` in 2023 and 2024 and never as `Prius Prime`, so that is
-  the list's `model`. No other spelling was seen, so it has no `modelAliases`. A Prime whose model was typed
-  by hand as "Prius Prime" isn't matched.
+  the list's `model`. No other spelling was seen, so it has no `modelAliases`. A Prime
+  whose model was typed by hand as "Prius Prime" is matched too: the trailing "(PHEV)" is ignored (#475).
 - The Prime's guide is its own: it has none of the Prius's AWD lines, rear differential or hybrid battery
   intake filter, and adds the air conditioner refrigerant at 80,000. No line is marked for a drivetrain (the
   Prime is front-wheel drive only), and the gearbox is the hybrid's automatic only.

@@ -30,8 +30,8 @@ class KnownSchedulesTest {
         { "name": "Swap the tires round", "everyMiles": 8000, "everyMonths": 8, "service": "rotation" }
     ]"""
 
-    private fun file(table: String = someTable, intervals: String = someIntervals, extra: String = "") = """
-        { "id": "made-up", "title": "Made-up Roadster", "make": "Acme", "model": "Roadster", "years": { "from": 2001, "to": 2005 },
+    private fun file(table: String = someTable, intervals: String = someIntervals, extra: String = "", model: String = "Roadster") = """
+        { "id": "made-up", "title": "Made-up Roadster", "make": "Acme", "model": "$model", "years": { "from": 2001, "to": 2005 },
           "source": { "name": "Acme service booklet", "url": "https://example.test/booklet", "retrieved": "2026-01-02", "note": "A made-up booklet.", "basis": "Made up for the tests." },
           $extra "milestones": $table, "intervals": $intervals }
     """.trimIndent()
@@ -75,6 +75,17 @@ class KnownSchedulesTest {
         assertNull(KnownSchedules.match(listOf(list), 2003, "Acme", "Super"))
         assertTrue(errors(file(extra = "\"modelAliases\": [\"roadster\"],")).single().contains("repeats the model"))
         assertTrue(errors(file(extra = "\"modelAliases\": [],")).isNotEmpty())
+    }
+
+    @Test
+    fun `a plug-in typed without NHTSA's (PHEV) still finds its list, and other brackets still count`() {
+        assertEquals("toyota-prius-prime-2023-2024", KnownSchedules.match(bundled, 2023, "Toyota", "Prius Prime")?.id)
+        assertEquals("toyota-rav4-prime-2021-2024", KnownSchedules.match(bundled, 2022, "Toyota", "rav4 prime")?.id)
+        val hybrid = (KnownSchedules.parse(file(model = "Roadster (HEV)")) as KnownScheduleFile.Ok).list
+        assertEquals("made-up", KnownSchedules.match(listOf(hybrid), 2003, "Acme", "Roadster")?.id)
+        // A bracket that names the model (Honda's "VT750 (Shadow Aero 750)") is part of it.
+        val named = (KnownSchedules.parse(file(model = "VT750 (Shadow Aero 750)")) as KnownScheduleFile.Ok).list
+        assertNull(KnownSchedules.match(listOf(named), 2003, "Acme", "VT750"))
     }
 
     @Test

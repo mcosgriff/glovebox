@@ -133,6 +133,10 @@ by the model as decoded or picked. **An alias has to be seen in vPIC's own model
 which is sent only the make and year) for a year the list covers, and the list's page says where. Never a
 near miss or a related model ("Golf" is not the GTI).
 
+Models are matched ignoring case, spaces and a trailing `(PHEV)` or `(HEV)`: vPIC tags some plug-ins and
+hybrids that way (`Prius Prime (PHEV)`) and an owner typing the name leaves it off (#475). Any other bracket is
+part of the name (Honda's `VT750 (Shadow Aero 750)`). A spelling that differs only by the tag needs no alias.
+
 **A hybrid, plug-in or flex-fuel model and its petrol twin of the same size** are told apart by
 `"powertrain"` in the `engine` block: `gas`, `hybrid`, `plug-in`, `flex-fuel` or `electric`. Set it only
 where two lists of one size differ by it; a list without it is for every powertrain. A vehicle's powertrain

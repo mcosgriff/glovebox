@@ -75,7 +75,15 @@ internal object KnownLists {
     }
 
     /** A make or model as NHTSA or the user spelled it, ignoring case and space. */
-    fun same(a: String, b: String) = a.filterNot(Char::isWhitespace).equals(b.filterNot(Char::isWhitespace), ignoreCase = true)
+    fun same(a: String, b: String) = bare(a).equals(bare(b), ignoreCase = true)
+
+    /**
+     * vPIC tags some plug-ins and hybrids "(PHEV)" or "(HEV)" ("Prius Prime (PHEV)"), which an owner typing the name
+     * leaves off (#475). Only those tags: other brackets name the model (Honda's "VT750 (Shadow Aero 750)").
+     */
+    private val powertrainTag = Regex("""\((PHEV|HEV)\)$""", RegexOption.IGNORE_CASE)
+
+    private fun bare(name: String) = name.filterNot(Char::isWhitespace).replace(powertrainTag, "")
 
     /** An `engine` block: the engine a list is for, where the model had several in those years. */
     fun engine(e: JsonElement, check: ImportCheck): KnownEngine? =
