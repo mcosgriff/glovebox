@@ -106,6 +106,13 @@ class BulletinsTest {
     }
 
     @Test
+    fun `a plug-in typed without NHTSA's (PHEV) gets the bulletins for its own model`() {
+        val prime = read(file(bulletin(id = "1", products = """[{ "model": "ROADSTER PRIME", "years": [2020] }]"""), model = "Roadster Prime (PHEV)"))
+        assertEquals(listOf("1"), Bulletins.forVehicle(listOf(prime), 2020, "Acme", "Roadster Prime")!!.bulletins.map { it.id })
+        assertTrue(Bulletins.forVehicle(bundled, 2023, "Toyota", "RAV4 Prime")!!.bulletins.all { b -> b.products.any { it.model == "RAV4 PRIME" } })
+    }
+
+    @Test
     fun `runs of model years are found for the app to word`() {
         assertEquals(listOf(2016..2018, 2020..2020), Bulletins.yearRuns(listOf(2020, 2016, 2017, 2018, 2017)))
     }

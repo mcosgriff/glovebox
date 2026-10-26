@@ -22,7 +22,7 @@ Read on 2026-10-23.
 - **Model name.** NHTSA's model list for Toyota (`GetModelsForMakeYear`, sent only the make and year, checked
   2026-10-23) gives the car as `Prius Prime (PHEV)` in every year from 2017 to 2022 and never as `Prius
   Prime`, so that is the list's `model`. No other spelling was seen, so it has no `modelAliases`. A Prime
-  whose model was typed by hand as "Prius Prime" isn't matched.
+  whose model was typed by hand as "Prius Prime" is matched too: the trailing "(PHEV)" is ignored (#475).
 - The Prime's guide has the same jobs at the same milestones as the front-wheel-drive Prius of its year. It is
   its own model in NHTSA's list, so it has its own list.
 - No line is marked for a drivetrain (the Prime was front-wheel drive only). The gearbox is the hybrid's
