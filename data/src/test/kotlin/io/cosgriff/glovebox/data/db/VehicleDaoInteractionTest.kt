@@ -99,6 +99,19 @@ class VehicleDaoInteractionTest {
     }
 
     @Test
+    fun `correcting a saved VIN changes the VIN alone, never what was decoded from the old one`() = runBlocking {
+        val id = vehicles.add(
+            testVehicle(vin = "1M8GDM9A1KP042788").copy(trim = "SR5", engine = "4.0L 6-cyl", drivetrain = "4WD", bodyClass = "Sport Utility Vehicle (SUV)"),
+            firstReading = null,
+        )
+        val before = row(id)
+
+        vehicles.setVin(id, "1M8GDM9AXKP042788")
+
+        assertEquals(before.copy(vin = "1M8GDM9AXKP042788"), row(id))
+    }
+
+    @Test
     fun `the engine and powertrain are filled in only where none is on record`() = runBlocking {
         val id = add()
         vehicles.setEngineIfBlank(id, "4.0L V6")
