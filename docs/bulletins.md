@@ -20,10 +20,10 @@ when a model with a schedule has none.
 
 ## Ended programs
 
-NHTSA's file has no end date. A card says its program ended only where the summary says so with a date ("expired
-December 1, 2022", "Expired on …", "has expired as of …", "As of …, … is no longer active"), read in the app by
-`Bulletins.endedOn` (#474). A summary that says "expired" some other way fails `BulletinsTest`, so a refresh that
-brings a new phrasing has to teach the reader it first.
+NHTSA's file has no end date. A card says its program ended only where the summary says so with a date, read in
+the app by `Bulletins.endedOn` (#474); the wordings it reads are its `endings`, with their tests in `BulletinsTest`.
+A bundled summary that says "expired" another way fails `BulletinsTest`, so a refresh that brings a new wording has
+to teach the reader it first.
 
 ## Refreshing
 
