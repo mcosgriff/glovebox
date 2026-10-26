@@ -18,6 +18,13 @@ when a model with a schedule has none.
 - The PDF link is the first of NHTSA's undocumented paths that answers when the script runs
   (`/odi/tsbs/<year added or year sent>/MC-<id>-0001.pdf` or `-9999.pdf`), or none.
 
+## Ended programs
+
+NHTSA's file has no end date. A card says its program ended only where the summary says so with a date ("expired
+December 1, 2022", "Expired on …", "has expired as of …", "As of …, … is no longer active"), read in the app by
+`Bulletins.endedOn` (#474). A summary that says "expired" some other way fails `BulletinsTest`, so a refresh that
+brings a new phrasing has to teach the reader it first.
+
 ## Refreshing
 
 By hand, when wanted; the screen shows the date NHTSA's files were current to.

@@ -22,3 +22,7 @@ Rules for NHTSA checks, marking recalls done. Read before changing any of it; re
   never fetched: only service campaigns, warranty extensions and over-the-air updates, for models with a maker's
   schedule, matched by year/make/model. One kept for its wording **says so**, and the screen **always shows the
   date the list is from**. A bulletin's PDF opens from `static.nhtsa.gov` in the browser; no VIN goes anywhere.
+- An ended program (#474): NHTSA has no end date, so a card says a program ended **only where its own summary says
+  so with a date** (`Bulletins.endedOn`), and says it is the summary's word. Nothing is worked out: a term from first
+  use is the dealer's to say, and an expiry notice speaks for its own card, not the program's other documents. The
+  screen's note says programs end. `BulletinsTest` fails a refresh whose summary says "expired" in a way not read.

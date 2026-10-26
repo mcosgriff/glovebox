@@ -1572,6 +1572,10 @@
     <string name="bulletins_kind_warranty">Warranty extension</string>
     <string name="bulletins_kind_over_the_air">Over-the-air update</string>
     <string name="bulletins_by_wording">NHTSA didn\'t say what kind this is; its summary does.</string>
+    <!-- %1$s is the date the summary gives (#474). NHTSA has no end date; the maker's words do. -->
+    <string name="bulletins_ended">Its summary says this ended %1$s.</string>
+    <!-- Under the intro: an expiry notice reaches only its own card, and some programs run for a term from each vehicle's first use. -->
+    <string name="bulletins_end_note">Many programs have an end date or a mileage limit. The bulletin or a dealer can tell you whether one still applies.</string>
     <!-- %1$s is the date the maker sent it; %2$s the models it is for, e.g. "2016–2018 TACOMA, 2019 TACOMA HYBRID". -->
     <string name="bulletins_sent_for">Sent %1$s · for %2$s</string>
     <!-- When NHTSA gives no date. -->

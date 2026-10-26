@@ -22,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -90,6 +91,7 @@ internal fun BulletinsContent(state: BulletinsState, onBack: () -> Unit, onOpenP
             Column(Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // These are the maker's notes to its dealers; whether a given VIN is included is the dealer's to say.
                 Text(stringResource(R.string.bulletins_intro), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.bulletins_end_note), style = MaterialTheme.typography.bodyMedium)
                 list?.let {
                     Text(
                         stringResource(R.string.bulletins_as_of, it.asOf.format(longDate)),
@@ -144,6 +146,10 @@ private fun BulletinCard(b: Bulletin, onOpenPdf: (String) -> Unit, modifier: Mod
                 )
                 // Neutral: a bulletin is something to ask a dealer about, not something overdue.
                 Pill(stringResource(b.kind.labelRes), container = scheme.surfaceVariant, content = scheme.onSurfaceVariant, small = true)
+            }
+            // Read from the maker's words (Bulletins.endedOn): the free repair may no longer be on offer.
+            remember(b.id) { Bulletins.endedOn(b.summary) }?.let { ended ->
+                Text(stringResource(R.string.bulletins_ended, ended.format(longDate)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
             }
             if (b.byWording) {
                 Text(stringResource(R.string.bulletins_by_wording), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
