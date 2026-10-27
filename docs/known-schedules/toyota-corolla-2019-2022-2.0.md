@@ -59,5 +59,6 @@ Source: Toyota's Warranty and Maintenance Guides, read on 2026-10-23:
   blades, brakes, engine coolant, drive belts). The drive belts are inspected first at 60,000 and then
   every 15,000.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
-- Not covered: the 2019 sedan (the previous generation; #192), and 2023 on, which are lists of their own
+- Not covered: the 2019 sedan (the previous generation, 1.8L only:
+  [toyota-corolla-2017-2019](toyota-corolla-2017-2019.md)), and 2023 on, which are lists of their own
   ([2023–2024](toyota-corolla-2023-2024-2.0.md), [2025](toyota-corolla-2025-2.0.md)).

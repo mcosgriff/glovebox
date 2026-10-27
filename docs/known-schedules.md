@@ -212,6 +212,8 @@ One page per list, named by its `id`:
 - [Toyota Camry, 2025](known-schedules/toyota-camry-2025.md) (`toyota-camry-2025`)
 - [Toyota Camry, 2026](known-schedules/toyota-camry-2026.md) (`toyota-camry-2026`)
 - [Toyota Camry, 2027](known-schedules/toyota-camry-2027.md) (`toyota-camry-2027`)
+- [Toyota Corolla 1.8L, 2016](known-schedules/toyota-corolla-2016.md) (`toyota-corolla-2016`)
+- [Toyota Corolla 1.8L, 2017–2019](known-schedules/toyota-corolla-2017-2019.md) (`toyota-corolla-2017-2019`)
 - [Toyota Corolla 1.8L (gas), 2020–2022](known-schedules/toyota-corolla-2020-2022-1.8.md) (`toyota-corolla-2020-2022-1.8`)
 - [Toyota Corolla 2.0L, 2019–2022](known-schedules/toyota-corolla-2019-2022-2.0.md) (`toyota-corolla-2019-2022-2.0`)
 - [Toyota Corolla 2.0L, 2023–2024](known-schedules/toyota-corolla-2023-2024-2.0.md) (`toyota-corolla-2023-2024-2.0`)

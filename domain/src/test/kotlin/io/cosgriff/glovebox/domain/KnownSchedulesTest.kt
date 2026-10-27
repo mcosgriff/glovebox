@@ -124,6 +124,26 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `an E170 Corolla gets its own list, a 2019 two-litre keeps the newer one, and the Valvematic pump reminds no one`() {
+        assertEquals("toyota-corolla-2017-2019", KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", "1.8L 4-cyl")?.id)
+        assertEquals("toyota-corolla-2019-2022-2.0", KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", "2.0L 4-cyl")?.id)
+        assertNull(KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", null))
+        assertEquals(
+            listOf("toyota-corolla-2017-2019", "toyota-corolla-2019-2022-2.0"),
+            KnownSchedules.engineChoices(bundled, 2019, "Toyota", "Corolla", null).map { it.id }.sorted(),
+        )
+        assertEquals("toyota-corolla-2016", KnownSchedules.match(bundled, 2016, "Toyota", "Corolla", "1.8L 4-cyl")?.id)
+        assertNull(KnownSchedules.match(bundled, 2015, "Toyota", "Corolla", "1.8L 4-cyl"))
+        listOf("toyota-corolla-2016", "toyota-corolla-2017-2019").forEach { id ->
+            val list = bundled.single { it.id == id }
+            val pump = list.milestones.flatMap { m -> m.work.filter { "vacuum pump" in it.name }.map { m.atMiles to it } }
+            assertEquals(id, listOf(120000), pump.map { it.first })
+            assertEquals(id, "Replace brake booster vacuum pump (Valvematic engine)", pump.single().second.name)
+            assertNull(id, pump.single().second.service)
+        }
+    }
+
+    @Test
     fun `a hybrid and its petrol twin of one size are told apart by powertrain, and asked about when it isn't known`() {
         fun engineList(id: String, engine: String) = (KnownSchedules.parse(file(extra = "\"engine\": $engine,").replace("\"id\": \"made-up\"", "\"id\": \"$id\"")) as KnownScheduleFile.Ok).list
         val gas = engineList("gas", """{ "label": "2.5L 4-cylinder", "displacementL": 2.5, "powertrain": "gas" }""")
