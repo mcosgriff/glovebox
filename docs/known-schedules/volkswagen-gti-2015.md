@@ -33,7 +33,6 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
     washer nozzle check and the service sticker, and gives the dust and pollen filter every 40,000 miles or
     2 years (at 40,000, 80,000 and 120,000), so it has a list of its own,
     [volkswagen-gti-2016](volkswagen-gti-2016.md), found by vPIC's "Golf GTI" too.
-  - **2017.** No card was found, and the 2016 and 2018 cards differ, so it isn't inferred from either.
-  - **2018 on.** 2020–2021 have a list, [volkswagen-gti-2020-2021](volkswagen-gti-2020-2021.md). 2018 and
-    2019 print the panoramic sunroof both in the grid and among the additional items, and 2019's revisions
-    disagree on which DSG row is the GTI's; that page says what is waiting on.
+  - **2017 to 2019** have a list each: [volkswagen-gti-2017](volkswagen-gti-2017.md) (from Volkswagen's
+    reissue), [volkswagen-gti-2018](volkswagen-gti-2018.md) and [volkswagen-gti-2019](volkswagen-gti-2019.md).
+    2020–2021 have [volkswagen-gti-2020-2021](volkswagen-gti-2020-2021.md).

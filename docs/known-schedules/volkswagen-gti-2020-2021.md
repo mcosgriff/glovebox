@@ -58,16 +58,8 @@ cards from the time; no reissue was needed.
   2016 to 2021 and no "GTI"; 2014 and 2015 have "GTI". The list is for "GTI", like the others, with
   `modelAliases` "Golf GTI".
 - **Not covered:**
-  - **2018.** Its cards print the panoramic sunroof both ways: the Extended service checks its function,
-    and the additional items give it a service of its own (clean and grease the rails, or for colorless
-    grease only a function check) after 40,000 miles or 3 years, then every 40,000 or 2 years. A list
-    can't hold one job in the grid and apart from it, and the card doesn't settle whether they are one
-    job. Its revisions also differ on the sunroof rows. The 2018 card also has spark plugs at 40,000
-    miles or 4 years for the 2.0L and a hood latch row that "does not apply to … Golf", so it would be a
-    list of its own in any case.
-  - **2019.** The same panoramic sunroof rows as 2018. And the DSG rows disagree between revisions: the
-    first (8/7/2019) gives the 7-speed DSG to the Golf R only, which leaves a DSG GTI with the 6-speed
-    row (40,000 miles); the later two name the Golf GTI on the 7-speed row (80,000) and still keep a
-    6-speed row that names no model. The cards don't say which gearbox a 2019 GTI has.
-  - **2017.** No card was found, and the 2016 and 2018 cards differ, so it isn't inferred from either.
+  - **2017, 2018 and 2019** have lists of their own ([2017](volkswagen-gti-2017.md),
+    [2018](volkswagen-gti-2018.md), [2019](volkswagen-gti-2019.md)). 2018 and 2019 differ from 2020 in
+    their sunroof rows (the panoramic sunroof is both a grid row and an additional item), their spark
+    plugs (2018) and their DSG rows.
   - **2022 on** is the next generation (Mk8), not part of this issue.

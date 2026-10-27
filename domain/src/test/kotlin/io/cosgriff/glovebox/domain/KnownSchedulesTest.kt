@@ -542,6 +542,42 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `the 2017 to 2019 GTI lists are each their own year's card`() {
+        fun list(year: Int) = KnownSchedules.match(bundled, year, "Volkswagen", "Golf GTI")!!
+        assertEquals("volkswagen-gti-2016", list(2016).id)
+        assertEquals("volkswagen-gti-2017", list(2017).id)
+        assertEquals("volkswagen-gti-2018", list(2018).id)
+        assertEquals("volkswagen-gti-2019", list(2019).id)
+        assertEquals("volkswagen-gti-2020-2021", list(2020).id)
+        fun additional(year: Int) = list(year).additional.associateBy { it.name }
+
+        // 2017: the reissue's grid ends at 100,000 with no months, and gives the GTI no spark plug or DSG interval.
+        assertEquals((10_000..100_000 step 10_000).toList(), list(2017).milestones.map { it.atMiles })
+        assertTrue(list(2017).milestones.all { it.orMonths == null })
+        assertEquals(setOf("engine-air", "brake-fluid", "cabin-air"), list(2017).additional.mapNotNull { it.service }.toSet())
+        assertTrue(list(2017).manualExcluded.isEmpty())
+
+        // 2018: spark plugs for the 2.0L every 40,000 or 4 years; the 6-speed DSG every 40,000.
+        val y18 = list(2018).additional.associateBy { it.service }
+        assertEquals(Interval(40_000, 48), y18.getValue("spark-plugs").normal)
+        assertEquals(Interval(40_000, null), y18.getValue("trans-fluid").normal)
+        // 2019, newest revision: the GTI is named on the 80,000-mile plug and 7-speed DSG rows.
+        val y19 = list(2019).additional.associateBy { it.service }
+        assertEquals(Interval(80_000, 72), y19.getValue("spark-plugs").normal)
+        assertEquals(Interval(80_000, null), y19.getValue("trans-fluid").normal)
+
+        for (year in 2018..2019) {
+            assertEquals((10_000..120_000 step 10_000).toList(), list(year).milestones.map { it.atMiles })
+            assertEquals((1..12).map { it * 12 }, list(year).milestones.map { it.orMonths })
+            // The panoramic sunroof: a function check in the grid, and its own service apart from it.
+            assertEquals(listOf(40_000, 80_000, 120_000), list(year).milestones.filter { m -> m.work.any { it.name == "Check panoramic sunroof function (if fitted)" } }.map { it.atMiles })
+            val sunroof = additional(year).getValue("Service panoramic sunroof rails (if fitted)")
+            assertEquals(Interval(40_000, 24) to 40_000, sunroof.normal to sunroof.firstAt)
+            assertEquals(null, sunroof.service)
+        }
+    }
+
+    @Test
     fun `a car known to have a manual gearbox doesn't get the dual-clutch fluid change`() {
         val list = KnownSchedules.match(bundled, 2011, "Volkswagen", "GTI")!!
         fun dsg(transmission: String?) =
