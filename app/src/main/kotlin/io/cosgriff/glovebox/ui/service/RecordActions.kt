@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.RecallEntity
+import io.cosgriff.glovebox.data.db.RecordRows
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -112,10 +113,7 @@ class RecordActions @Inject constructor(
      * An import of service history, in one transaction. Like [addLastDone] it announces nothing: the
      * Import page shows its own result. [replaced] records keep their id, photos and recall links.
      */
-    suspend fun applyImport(
-        added: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>,
-        replaced: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>,
-    ) = service.applyImport(added, replaced)
+    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) = service.applyImport(added, replaced)
 
     /** Points History at [vehicleId], for a screen that sends the user there. */
     fun showIn(vehicleId: Long) {

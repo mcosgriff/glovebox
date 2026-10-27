@@ -317,9 +317,9 @@ interface ServiceDao {
      * and any recall they were the work for; nothing is deleted.
      */
     @Transaction
-    suspend fun applyImport(added: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>, replaced: List<Pair<ServiceRecordEntity, List<ServiceRecordItemEntity>>>) {
-        added.forEach { (record, items) -> insertWithItems(record, items) }
-        replaced.forEach { (record, items) -> replaceWithItems(record, items) }
+    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) {
+        added.forEach { (record, items, jobs) -> insertWithItems(record, items, jobs) }
+        replaced.forEach { (record, items, jobs) -> replaceWithItems(record, items, jobs) }
     }
 
     @Insert suspend fun insertPhotos(photos: List<PhotoEntity>)
@@ -640,6 +640,9 @@ interface MilestoneDao {
 
 /** A row's id and one whole-number column of it. */
 data class IdValue(val id: Long, val value: Int?)
+
+/** A record with its lines and jobs, to be written together; [items] point at [jobs] by `jobId` as [ServiceDao.insertWithItems] says. */
+data class RecordRows(val record: ServiceRecordEntity, val items: List<ServiceRecordItemEntity>, val jobs: List<ServiceRecordJobEntity> = emptyList())
 
 /** A shop as one record names it. */
 data class ShopRow(val name: String, val date: LocalDate, val id: Long)

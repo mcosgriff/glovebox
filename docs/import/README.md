@@ -31,9 +31,10 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
 ```
 
 - `glovebox` is always `"import"`.
-- `version` is the format version, a whole number. This document describes version `1`. A file with
-  a higher version than the app knows is refused as made for a newer version. A version-1 file will
-  always stay readable.
+- `version` is the format version, a whole number. Each kind has versions of its own: every kind
+  has version `1`, and `service-history` also has version `2`, which adds priced jobs. A file with a
+  higher version than the app knows for its kind is refused as made for a newer version. A
+  version-1 file will always stay readable, exactly as it is read today.
 - `kind` says what `items` holds. One kind per file.
 - These are the only fields beside `items`, except where a kind adds one of its own
   (`milestone-schedule` has `repeatsEveryMiles`). A kind's own field in another kind's file is an
@@ -184,7 +185,8 @@ record, and the PDF / Markdown export and the backup are for it.
 ## `service-history`
 
 [`schema/service-history.schema.json`](schema/service-history.schema.json) ·
-[`examples/service-history.json`](examples/service-history.json) · in kilometres: [`examples/service-history-km.json`](examples/service-history-km.json) · up to 1000 records
+[`examples/service-history.json`](examples/service-history.json) · in kilometres: [`examples/service-history-km.json`](examples/service-history-km.json) ·
+with prices (version 2): [`examples/service-history-priced.json`](examples/service-history-priced.json) · up to 1000 records
 
 Maintenance that was done before you kept it in Glovebox: a dealer printout typed up, a spreadsheet,
 another app's export. One record per visit.
@@ -252,9 +254,11 @@ count for a reminder. The values, by the category History files them under:
   odometer. Two records in one file can't share both (one visit is one record; this, and the date
   not being in the future, are the rules the schema can't state).
 - **Same or different:** the work lines (in any order, ignoring capitals), who did it, the cost and
-  the notes.
-- **Replace matching** replaces those four things. Photos on your record stay, and so does a recall
-  it was the work for.
+  the notes, and in a version-2 record with `jobs`, the jobs (their wording, prices and lines).
+- **Replace matching** replaces those things. Photos on your record stay, and so does a recall
+  it was the work for. A record from the file with no `jobs` (every version-1 record) says nothing
+  about prices: if its lines are the ones your record has, your record keeps its prices on them; if
+  its lines are different, the prices go with the lines they were for.
 - **Readings that don't fit:** an odometer only goes up, so a record whose reading breaks the run
   of the others (lower than earlier ones, or higher than later ones) is pointed out in the preview.
   It doesn't stop the import: check the date and the odometer, in the file or on the vehicle.
@@ -263,7 +267,53 @@ count for a reminder. The values, by the category History files them under:
 - **Mileage:** imported readings count towards the vehicle's odometer and driving pace like any
   other. If the instrument cluster was replaced and you have set an odometer offset, write each
   reading as the dash showed it on that day; Glovebox converts.
-- No photos or receipts in version 1.
+- No photos or receipts.
+
+### Labor and parts: version 2
+
+A version-2 file is written exactly as a version-1 file, with `"version": 2`, and a record may also
+list `jobs`: its work the way a shop's invoice prices it. A job is one labor and one parts price for
+one or more lines, such as "Remove & Replace Spark Plugs and Ignition Coils" covering the spark plugs
+and the ignition coils. Glovebox never splits a job's price between its lines.
+
+```json
+{
+  "date": "2024-06-14",
+  "odometer": 45200,
+  "jobs": [
+    {
+      "wording": "Remove & Replace Spark Plugs and Ignition Coils",
+      "labor": "180.00",
+      "parts": "212.40",
+      "work": [
+        { "label": "Spark plugs", "service": "spark-plugs" },
+        { "label": "Ignition coils", "service": "ignition-coils" }
+      ]
+    }
+  ],
+  "work": [ { "label": "Tire rotation", "service": "rotation" } ],
+  "doneBy": { "type": "shop", "name": "Corner Garage" },
+  "cost": "431.90"
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `work` | this, `jobs`, or both | Lines with no price of their own, as in version 1 |
+| `jobs` | this, `work`, or both | 1 to 30 jobs. `work` and `jobs` together hold 1 to 30 lines |
+| `jobs[].work` | yes | 1 to 30 lines, written as the record's `work` lines are |
+| `jobs[].wording` | no | The shop's name for the job, up to 120 characters. Left out, the job is named by its lines |
+| `jobs[].labor` | no | Labor for the whole job: dollars as text, as `cost` is. `"0.00"` is a price; leave it out if the invoice gives none |
+| `jobs[].parts` | no | Parts for the whole job, the same way |
+
+- A job needs a price, wording of its own, or more than one line. A line with none of them is
+  just a line, and goes in `work`.
+- **`cost` is the invoice's grand total, as printed.** It is never worked out from the jobs. What
+  is left over (tax, shop supplies, fees) shows as "Tax and fees"; when the total is less than the
+  line prices, the record says so without naming a cause. There is no field for tax or fees.
+- A line in a job counts for reminders exactly as a line in `work` does.
+- That a record can't have more than 30 lines in `work` and `jobs` together is the rule the schema
+  can't state.
 
 ## `interval-schedule`
 

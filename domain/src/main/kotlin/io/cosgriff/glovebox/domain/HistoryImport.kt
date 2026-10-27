@@ -6,8 +6,20 @@ import java.time.LocalDate
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 
-/** One line of work on an imported record. [service] is a [CatalogItem] id; null for anything else. */
-data class ImportedWork(val label: String, val service: String? = null)
+/**
+ * One line of work on an imported record. [service] is a [CatalogItem] id; null for anything else. [job] is the
+ * index of the record's job this line is part of (#481); null for a line with no price.
+ */
+data class ImportedWork(val label: String, val service: String? = null, val job: Int? = null)
+
+/** A job from a version-2 file (#481): one labor and one parts price for its lines, never split between them. */
+data class ImportedJob(val wording: String? = null, val laborCents: Long? = null, val partsCents: Long? = null)
+
+/**
+ * A job as an import compares it with a saved one: its wording, its prices and its lines' labels, in no order and
+ * ignoring capitals.
+ */
+data class JobSummary(val wording: String?, val laborCents: Long?, val partsCents: Long?, val labels: List<String>)
 
 /** One visit from a `service-history` import file, already checked. */
 data class ImportedRecord(
@@ -19,7 +31,12 @@ data class ImportedRecord(
     val shopName: String? = null,
     val costCents: Long? = null,
     val notes: String? = null,
-)
+    /** Its priced jobs, which its [work] lines point at by index; only a version-2 file has any. */
+    val jobs: List<ImportedJob> = emptyList(),
+) {
+    val jobSummaries: List<JobSummary>
+        get() = jobs.mapIndexed { i, j -> JobSummary(j.wording, j.laborCents, j.partsCents, work.filter { it.job == i }.map { it.label }) }
+}
 
 /** A saved record, as far as an import needs to know it. */
 data class SavedRecord(
@@ -35,6 +52,7 @@ data class SavedRecord(
     val notes: String?,
     /** A bare "last done" (a date and a mileage for one reminder), which knows less than any real record. */
     val enteredAsLastDone: Boolean,
+    val jobs: List<JobSummary> = emptyList(),
 )
 
 /** An imported line with what it is filed under and which reminder, if any, it resets. */
@@ -48,6 +66,8 @@ object HistoryImport {
     const val MAX_SHOP = 60
     const val MAX_NOTES = 1_000
     const val MAX_ODOMETER = 9_999_999
+    const val MAX_JOBS = 30
+    const val MAX_WORDING = 120
 
     /** What `service` may be: every line the Log service screen offers. */
     val services: Map<String, CatalogItem> = ServiceCatalog.categories.flatMap { it.items }.associateBy { it.id }
@@ -55,28 +75,74 @@ object HistoryImport {
     val ODOMETER = DistanceField("odometer", "odometerKm", MAX_ODOMETER, MAX_ODOMETER)
 
     private val itemKeys = setOf("date", "work", "doneBy", "cost", "notes") + ODOMETER.names
+    private val jobKeys = setOf("wording", "labor", "parts", "work")
     private val date = Regex("""\d{4}-\d{2}-\d{2}""")
 
-    fun read(items: JsonElement, check: ImportCheck, today: LocalDate): List<ImportedRecord> {
+    /**
+     * A file's records, read by the rules of its [version]. Version 2 adds `jobs` (#481); **a version-1 file is read
+     * exactly as it always was**, and `jobs` in one is an unknown field.
+     */
+    fun read(items: JsonElement, check: ImportCheck, today: LocalDate, version: Int = 1): List<ImportedRecord> {
         val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
         val seen = Repeats<Pair<LocalDate, Int>>()
+        val priced = version >= 2
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)
-            val o = check.obj(e, path, itemKeys, required = setOf("date", "work", "doneBy")) ?: return@mapIndexedNotNull null
+            val o = if (priced) {
+                check.obj(e, path, itemKeys + "jobs", required = setOf("date", "doneBy"))
+            } else {
+                check.obj(e, path, itemKeys, required = setOf("date", "work", "doneBy"))
+            } ?: return@mapIndexedNotNull null
             val on = o["date"]?.let { date(it, "$path.date", check, today) }
             // Miles as `odometer`, or kilometres as `odometerKm`. The limit is the seven digits a dash shows, in either.
             if (!check.has(o, ODOMETER)) check.fail(path, "needs \"${ODOMETER.miles}\" (miles) or \"${ODOMETER.km}\"")
             val odometer = check.distance(o, path, ODOMETER)
-            val work = o["work"]?.let { work(it, "$path.work", check) }
+            if (priced && "work" !in o && "jobs" !in o) check.fail(path, "needs \"work\", \"jobs\" or both")
+            val loose = o["work"]?.let { work(it, "$path.work", check) }
+            val jobs = if (priced) o["jobs"]?.let { jobs(it, "$path.jobs", check) } else null
             val doneBy = o["doneBy"]?.let { doneBy(it, "$path.doneBy", check) }
             val cost = o["cost"]?.let { cost(it, "$path.cost", check) }
             val notes = o["notes"]?.let { check.text(it, "$path.notes", MAX_NOTES) }
-            if (on == null || odometer == null || work == null || doneBy == null) return@mapIndexedNotNull null
+            // Unpriced lines first, then each job's, in the file's order; every line knows its job by index.
+            val work = if ("work" in o && loose == null || "jobs" in o && jobs == null) {
+                null
+            } else {
+                (loose.orEmpty() + jobs.orEmpty().flatMapIndexed { j, (_, lines) -> lines.map { it.copy(job = j) } })
+                    .takeIf { it.isNotEmpty() }
+            }
+            if (work != null && work.size > MAX_WORK) {
+                check.fail(path, "has ${work.size} lines of work, in \"work\" and \"jobs\" together; the most allowed is $MAX_WORK")
+            }
+            if (on == null || odometer == null || work == null || work.size > MAX_WORK || doneBy == null) return@mapIndexedNotNull null
             seen.seen(on to odometer, i)?.let { first ->
                 check.fail(path, "has the same date and odometer as items[$first]; put the work of one visit in one record")
             }
-            ImportedRecord(on, odometer, work, doneBy.first, doneBy.second, cost, notes)
+            ImportedRecord(on, odometer, work, doneBy.first, doneBy.second, cost, notes, jobs.orEmpty().map { it.first })
         }
+    }
+
+    /** A record's jobs, each with its own lines. A job has to say something a line alone can't: a price, wording of its own or several lines. */
+    private fun jobs(e: JsonElement, path: String, check: ImportCheck): List<Pair<ImportedJob, List<ImportedWork>>>? {
+        val list = check.array(e, path, 1, MAX_JOBS) ?: return null
+        var ok = true
+        val jobs = list.mapIndexedNotNull { i, element ->
+            val at = ImportCheck.at(path, i)
+            val o = check.obj(element, at, jobKeys, required = setOf("work")) ?: return@mapIndexedNotNull null.also { ok = false }
+            val wording = o["wording"]?.let { check.string(it, "$at.wording", MAX_WORDING) }
+            val labor = o["labor"]?.let { money(it, "$at.labor", check) }
+            val parts = o["parts"]?.let { money(it, "$at.parts", check) }
+            val lines = o["work"]?.let { work(it, "$at.work", check) }
+            if (lines != null && lines.size < 2 && o.keys.none { it in setOf("wording", "labor", "parts") }) {
+                check.fail(at, "needs \"labor\", \"parts\", \"wording\" or more than one line of work; a line with none of them goes in the record's \"work\"")
+                ok = false
+            }
+            if (lines == null || ("wording" in o && wording == null) || ("labor" in o && labor == null) || ("parts" in o && parts == null)) {
+                ok = false
+                return@mapIndexedNotNull null
+            }
+            ImportedJob(wording, labor, parts) to lines
+        }
+        return jobs.takeIf { ok }
     }
 
     private fun date(e: JsonElement, path: String, check: ImportCheck, today: LocalDate): LocalDate? {
@@ -123,6 +189,13 @@ object HistoryImport {
             ?: null.also { check.fail(path, "must be dollars as text in quotes, with at most two decimals: \"62.50\"") }
     }
 
+    /** A job's labor or parts, written as [cost] is. Zero is a price ("0.00" labor under warranty), not "not entered". */
+    private fun money(e: JsonElement, path: String, check: ImportCheck): Long? {
+        val text = (e as? JsonPrimitive)?.takeIf { it.isString }?.content
+        return text?.takeIf { Regex("""\d{1,9}(\.\d{1,2})?""").matches(it) }?.let(Money::parseCents)
+            ?: null.also { check.fail(path, "must be dollars as text in quotes, with at most two decimals: \"180.00\"") }
+    }
+
     /**
      * What an imported line is filed under and which reminder it resets. A line with a `service`
      * is saved against the item ticking it on Log service would be: the typical item that service
@@ -151,6 +224,22 @@ object HistoryImport {
 
     private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 
+    private fun jobs(jobs: List<JobSummary>): List<String> =
+        jobs.map { listOf(it.wording?.let(Names::key), it.laborCents, it.partsCents, labels(it.labels)).toString() }.sorted()
+
+    /**
+     * Which of a saved record's jobs each of a file record's lines stays in, when the file says nothing about prices
+     * (no `jobs`, as in every version-1 file): the file can't take away what it doesn't mention. Only when its lines
+     * are the saved record's, by label ignoring capitals; each line takes the job of the first saved line with its
+     * label not yet taken. Null when the lines differ, and then the saved jobs go with the lines they priced.
+     * [saved] is each saved line's label and job.
+     */
+    fun <J> keptJobs(record: ImportedRecord, saved: List<Pair<String, J?>>): List<J?>? {
+        if (record.jobs.isNotEmpty() || labels(record.work.map { it.label }) != labels(saved.map { it.first })) return null
+        val left = saved.groupBy({ Names.key(it.first) }, { it.second }).mapValues { ArrayDeque(it.value) }
+        return record.work.map { left.getValue(Names.key(it.label)).removeFirst() }
+    }
+
     /**
      * The file against the vehicle's log. A record matches a saved one with the same date and
      * odometer. A saved one that is only a bare "last done" is filled in whatever the mode, as long
@@ -163,8 +252,10 @@ object HistoryImport {
             key = { it.date to it.odometer },
             existingKey = { it.date to it.odometer },
             same = { i, e ->
+                // A file with no jobs says nothing about prices, so the saved ones are no difference (see keptJobs).
                 !e.enteredAsLastDone && labels(i.work.map { it.label }) == labels(e.labels) &&
-                    i.diy == e.diy && i.shopName == e.shopName && i.costCents == e.costCents && i.notes == e.notes
+                    i.diy == e.diy && i.shopName == e.shopName && i.costCents == e.costCents && i.notes == e.notes &&
+                    (i.jobs.isEmpty() || jobs(i.jobSummaries) == jobs(e.jobs))
             },
             blank = { i, e -> e.enteredAsLastDone && itemIds(i, schedule).containsAll(e.itemIds) },
         )

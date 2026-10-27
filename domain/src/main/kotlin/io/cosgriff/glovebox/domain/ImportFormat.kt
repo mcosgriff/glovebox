@@ -15,9 +15,13 @@ import java.time.LocalDate
  * specified in `docs/import/README.md` and the JSON Schemas beside it: change those, this code
  * and the example files together, and never change how a version-1 file is read.
  */
-/** The kinds of import file; `app` names them. */
-enum class ImportKind(val id: String) {
-    SERVICE_HISTORY("service-history"),
+/**
+ * The kinds of import file; `app` names them. [version] is the newest format version of that kind this app reads;
+ * it reads every version from 1 up to it, each exactly as that version is specified.
+ */
+enum class ImportKind(val id: String, val version: Int = 1) {
+    /** Version 2 adds a record's priced jobs (#481). */
+    SERVICE_HISTORY("service-history", 2),
     INTERVAL_SCHEDULE("interval-schedule"),
     MILESTONE_SCHEDULE("milestone-schedule"),
     TORQUE_SPECS("torque-specs"),
@@ -47,6 +51,7 @@ sealed interface ImportFile {
 }
 
 object ImportFormat {
+    /** The version a file the app writes says it is. No kind the app writes has a version beyond 1. */
     const val VERSION = 1
 
     /** Checked before a file is read at all. */
@@ -85,15 +90,18 @@ object ImportFormat {
         envelope["\$schema"]?.let { check.string(it, "\$schema", max = 300) }
         envelope["glovebox"]?.let { if (check.string(it, "glovebox", max = 20) != "import") check.fail("glovebox", "must be \"import\"") }
         val version = envelope["version"]?.let { check.int(it, "version", 1, Int.MAX_VALUE) }
-        if (version != null && version > VERSION) {
+        // Each kind has versions of its own; a kind this app doesn't know is judged by the newest of any.
+        val newest = ImportKind.entries.firstOrNull { it.id == named }?.version ?: ImportKind.entries.maxOf { it.version }
+        if (version != null && version > newest) {
             // Nothing else in a newer file can be judged by this version's rules.
-            return ImportFile.Invalid(listOf(ImportError("version", "this file is for a newer version of Glovebox (format $version; this app reads $VERSION)")))
+            val reads = if (newest == 1) "1" else "1 to $newest"
+            return ImportFile.Invalid(listOf(ImportError("version", "this file is for a newer version of Glovebox (format $version; this app reads $reads)")))
         }
         val kind = envelope["kind"]?.let { e ->
             val id = check.string(e, "kind", max = 40) ?: return@let null
             ImportKind.entries.firstOrNull { it.id == id } ?: null.also { check.fail("kind", "must be one of ${ImportKind.entries.joinToString { it.id }}") }
         }
-        if (kind == null || check.failed) return check.invalid()
+        if (kind == null || version == null || check.failed) return check.invalid()
 
         return when (kind) {
             ImportKind.TORQUE_SPECS -> {
@@ -105,7 +113,7 @@ object ImportFormat {
                 if (check.failed) check.invalid() else ImportFile.IntervalSchedule(items, check.unit)
             }
             ImportKind.SERVICE_HISTORY -> {
-                val items = HistoryImport.read(envelope.getValue("items"), check, today)
+                val items = HistoryImport.read(envelope.getValue("items"), check, today, version)
                 if (check.failed) check.invalid() else ImportFile.ServiceHistory(items, check.unit)
             }
             ImportKind.MILESTONE_SCHEDULE -> {

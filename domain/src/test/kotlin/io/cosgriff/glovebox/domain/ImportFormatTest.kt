@@ -99,7 +99,19 @@ class ImportFormatTest {
     @Test
     fun `a file for a newer version is refused as such`() {
         val file = ImportFormat.parse("""{ "glovebox": "import", "version": 7, "kind": "something-new", "items": [], "extra": true }""")
-        assertEquals(listOf("version: this file is for a newer version of Glovebox (format 7; this app reads 1)"), errors(file).takeLast(1))
+        assertEquals(listOf("version: this file is for a newer version of Glovebox (format 7; this app reads 1 to 2)"), errors(file).takeLast(1))
+    }
+
+    @Test
+    fun `each kind has versions of its own`() {
+        assertEquals(
+            listOf("version: this file is for a newer version of Glovebox (format 2; this app reads 1)"),
+            errors(ImportFormat.parse("""{ "glovebox": "import", "version": 2, "kind": "torque-specs", "items": [ { "name": "A", "category": "other" } ] }""")),
+        )
+        assertEquals(
+            listOf("version: this file is for a newer version of Glovebox (format 3; this app reads 1 to 2)"),
+            errors(ImportFormat.parse("""{ "glovebox": "import", "version": 3, "kind": "service-history", "items": [] }""")),
+        )
     }
 
     @Test
@@ -159,6 +171,10 @@ class ImportFormatTest {
         assertEquals(HistoryImport.MAX_ODOMETER, int("\$defs", "record", "properties", "odometer", "maximum"))
         assertEquals(HistoryImport.MAX_WORK, int("\$defs", "record", "properties", "work", "maxItems"))
         assertEquals(HistoryImport.MAX_ITEMS, int("properties", "items", "maxItems"))
+        assertEquals(HistoryImport.MAX_JOBS, int("\$defs", "record2", "properties", "jobs", "maxItems"))
+        assertEquals(HistoryImport.MAX_WORK, int("\$defs", "job", "properties", "work", "maxItems"))
+        assertEquals(HistoryImport.MAX_WORDING, int("\$defs", "job", "properties", "wording", "maxLength"))
+        assertEquals(ImportKind.SERVICE_HISTORY.version, at("properties", "version", "enum").jsonArray.maxOf { it.jsonPrimitive.content.toInt() })
     }
 
     private fun history(items: String) =
@@ -185,6 +201,71 @@ class ImportFormatTest {
         assertEquals(41_000L, items[1].costCents)
         assertEquals(null, items[1].shopName)
         assertTrue(items[2].diy)
+    }
+
+    private fun history2(items: String) =
+        ImportFormat.parse("""{ "glovebox": "import", "version": 2, "kind": "service-history", "items": $items }""", LocalDate.of(2026, 10, 12))
+
+    @Test
+    fun `the priced history example is accepted by the schema and by the app`() {
+        val file = File(docs, "examples/service-history-priced.json")
+        assertTrue(schemaAccepts("service-history", file))
+        val items = (ImportFormat.parse(file.readText(), LocalDate.of(2026, 10, 12)) as ImportFile.ServiceHistory).items
+        assertEquals(
+            ImportedRecord(
+                date = LocalDate.of(2024, 6, 14),
+                odometer = 45_200,
+                // Lines with no price first, then each job's, every one knowing its job.
+                work = listOf(
+                    ImportedWork("Tire rotation", "rotation"),
+                    ImportedWork("Spark plugs", "spark-plugs", job = 0),
+                    ImportedWork("Ignition coils", "ignition-coils", job = 0),
+                    ImportedWork("Oil & filter change", "oil", job = 1),
+                ),
+                diy = false,
+                shopName = "Corner Garage",
+                costCents = 49_731,
+                notes = "Rotation free with the oil change",
+                jobs = listOf(ImportedJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ImportedJob(null, 3_995, 2_850)),
+            ),
+            items[0],
+        )
+        // A version-2 record may be written just as a version-1 one is.
+        assertEquals(emptyList<ImportedJob>(), items[1].jobs)
+    }
+
+    @Test
+    fun `a version-1 file is read as it always was, and has no jobs`() {
+        val v1 = File(docs, "examples/service-history.json").readText()
+        val as2 = v1.replace("\"version\": 1", "\"version\": 2")
+        assertEquals(ImportFormat.parse(v1), ImportFormat.parse(as2))
+        assertEquals(
+            listOf("items[0].jobs: isn't a field Glovebox knows; remove it or check the spelling"),
+            errors(history("""[ { "date": "2024-03-01", "odometer": 41000, "work": [ { "label": "Oil" } ], "jobs": [ { "labor": "1", "work": [ { "label": "A" } ] } ], "doneBy": { "type": "diy" } } ]""")),
+        )
+    }
+
+    @Test
+    fun `a job says what a line alone can't, and a record keeps to thirty lines in all`() {
+        fun one(jobs: String, extra: String = "") = history2("""[ { "date": "2024-03-01", "odometer": 41000, "jobs": $jobs, $extra "doneBy": { "type": "shop" } } ]""")
+        assertEquals(
+            listOf("items[0].jobs[0]: needs \"labor\", \"parts\", \"wording\" or more than one line of work; a line with none of them goes in the record's \"work\""),
+            errors(one("""[ { "work": [ { "label": "Oil" } ] } ]""")),
+        )
+        // Two lines priced as one job need nothing else; zero is a price, not "not entered".
+        assertEquals(listOf(ImportedJob()), (one("""[ { "work": [ { "label": "A" }, { "label": "B" } ] } ]""") as ImportFile.ServiceHistory).items.single().jobs)
+        assertEquals(listOf(ImportedJob(laborCents = 0)), (one("""[ { "labor": "0", "work": [ { "label": "A" } ] } ]""") as ImportFile.ServiceHistory).items.single().jobs)
+        assertEquals(
+            listOf("items[0].jobs[0].parts: must be dollars as text in quotes, with at most two decimals: \"180.00\""),
+            errors(one("""[ { "parts": 12.5, "work": [ { "label": "A" } ] } ]""")),
+        )
+        assertEquals(listOf("items[0]: needs \"work\", \"jobs\" or both"), errors(history2("""[ { "date": "2024-03-01", "odometer": 41000, "doneBy": { "type": "diy" } } ]""")))
+        val twenty = (1..20).joinToString { """{ "label": "Line $it" }""" }
+        val eleven = (1..11).joinToString { """{ "label": "Job line $it" }""" }
+        assertEquals(
+            listOf("items[0]: has 31 lines of work, in \"work\" and \"jobs\" together; the most allowed is 30"),
+            errors(one("""[ { "wording": "Eleven things", "work": [ $eleven ] } ]""", """"work": [ $twenty ],""")),
+        )
     }
 
     @Test

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
+  "glovebox": "import",
+  "version": 2,
+  "kind": "service-history",
+  "items": [
+    {
+      "date": "2024-06-14",
+      "odometer": 45200,
+      "jobs": [
+        {
+          "wording": "Remove & Replace Spark Plugs and Ignition Coils",
+          "labor": "180.00",
+          "parts": "212.40",
+          "work": [
+            {
+              "label": "Spark plugs",
+              "service": "spark-plugs"
+            },
+            {
+              "label": "Ignition coils",
+              "service": "ignition-coils"
+            }
+          ]
+        },
+        {
+          "labor": "39.95",
+          "parts": "28.50",
+          "work": [
+            {
+              "label": "Oil & filter change",
+              "service": "oil"
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "label": "Tire rotation",
+          "service": "rotation"
+        }
+      ],
+      "doneBy": {
+        "type": "shop",
+        "name": "Corner Garage"
+      },
+      "cost": "497.31",
+      "notes": "Rotation free with the oil change"
+    },
+    {
+      "date": "2024-03-01",
+      "odometer": 41000,
+      "work": [
+        {
+          "label": "Cabin air filter",
+          "service": "cabin-air"
+        }
+      ],
+      "doneBy": {
+        "type": "diy"
+      },
+      "cost": "18.99"
+    }
+  ]
+}
