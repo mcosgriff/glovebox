@@ -6,7 +6,7 @@ the main [README](../README.md#screenshots). They are still the reference for th
 
 Exported from the Claude design canvas: https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
-- `screens/*.png` — renders at 390 dp wide, 2× scale (phone screens; tall ones show the full scroll).
+- `screens/*.png` — renders at 390 dp wide, 2× scale (phone screens, each at its canvas frame's height; where a screen scrolls past its frame, the source has the rest).
   Fonts fell back to system fonts in the export; the design uses IBM Plex Sans / Mono.
 - `source/*.dc.html` — the exact source of each screen. Inline `style` attributes hold the real colors,
   sizes and spacing; copy text is literal. `{{name}}` holes and the `renderVals()` script at the bottom
