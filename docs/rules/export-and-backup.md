@@ -14,7 +14,11 @@ Rules for exports, the PDF report, backup, restore. Read before changing any of 
 - Job prices (#481) are costs: "Costs and notes" off takes them out and leaves a job's wording. The Markdown puts a
   job's labor and parts beside it, its lines under it, and the record's labor, parts and gap ("worked out", no cause
   named) after the cost, from `ExportRecord.breakdown`; nothing about prices shows for a record with none. The PDF
-  report doesn't show prices yet: page 2 needs a design pass first.
+  report has no board for prices, so page 2 takes them with no new layout (the owner's choice): "Labor $x" and
+  "Parts $y" join a priced record's meta line after the cost (each only when some job has it entered; the line
+  wraps when it runs past the log), and a priced job of one line puts its total on that line's chip
+  (`ExportRecord.lineTotal`). A job of several lines puts its price on no chip, since it is never split. No gap on
+  the report.
 - Backup format: `docs/backup-format.md` and `BackupFormat.kt`. **Change the two together, and never change how a
   version-1 file is read.** Tables are read generically, so new columns need nothing. The password is never
   stored. The last-backup date is recorded only after Android has really written the file.

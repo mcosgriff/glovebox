@@ -535,7 +535,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
         val workW = width - workX
         val parts = entry.map { r ->
             val chips = chips(r, workW)
-            val meta = meta(r, entry, unit)
+            val meta = meta(r, entry, unit, workW)
             val notes = r.notes?.let { layout(it, paint(12f, fonts.sans, INK2), workW) }
             val imported = if (r.imported) layout(words.phrase(ExportPhrase.IMPORTED_NOTE), paint(11f, fonts.sans, MUTED), workW) else null
             Triple(chips, meta, listOfNotNull(notes, imported))
@@ -543,7 +543,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
         val visit = if (entry.size > 1) layout(words.phrase(ExportPhrase.VISIT, words.records(entry.size)), paint(12f, fonts.sansSemibold, INK2), workW) else null
         val total = words.visitTotal(entry)?.let { layout(words.phrase(ExportPhrase.VISIT_TOTAL, words.money(it)), paint(12f, fonts.sansSemibold), workW) }
         val workH = (visit?.let { it.height + 6f } ?: 0f) +
-            parts.sumOf { (chips, _, extra) -> (chips.height + 6f + 16f + extra.sumOf { it.height + 4.0 }).toDouble() }.toFloat() +
+            parts.sumOf { (chips, meta, extra) -> (chips.height + 6f + meta.height + extra.sumOf { it.height + 4.0 }).toDouble() }.toFloat() +
             (parts.size - 1) * 10f + (total?.let { it.height + 6f } ?: 0f)
         val h = 10f + maxOf(36f, workH) + 10f
         return Block(h) { x, y ->
@@ -562,13 +562,8 @@ class ReportRenderer(private val fonts: ReportFonts) {
                 if (i > 0) wy += 10f
                 with(chips) { draw(x + workX, wy) }
                 wy += chips.height + 6f
-                var mx = x + workX
-                meta.forEach { part ->
-                    val p = paint(12f, fonts.sans, INK2)
-                    textTop(part, mx, wy, p)
-                    mx += p.measureText(part) + 14f
-                }
-                wy += 16f
+                with(meta) { draw(x + workX, wy) }
+                wy += meta.height
                 extra.forEach { l ->
                     wy += 4f
                     withTranslation(x + workX, wy) { l.draw(this) }
@@ -583,47 +578,79 @@ class ReportRenderer(private val fonts: ReportFonts) {
         }
     }
 
-    /** A record's lines as tags, each with its group's colour square, wrapped to [width]. */
+    /**
+     * A record's lines as tags, each with its group's colour square, wrapped to [width]. A line priced as a job of
+     * its own carries that job's labor and parts together after its name (#481); a job of several lines puts its
+     * price on none of them, since a price is never split between lines.
+     */
     private fun chips(r: ExportRecord, width: Float): Block {
         val p = paint(13f, fonts.sans)
+        val priceP = paint(12f, fonts.mono, INK2)
         val chipH = 23f
-        val placed = mutableListOf<Triple<Float, Float, Pair<String, ServiceGroup>>>()
+        class Chip(val x: Float, val y: Float, val text: String, val price: String?, val category: ServiceGroup, val w: Float)
+        val placed = mutableListOf<Chip>()
         var cx = 0f
         var cy = 0f
         r.items.forEachIndexed { i, item ->
             val category = r.categories.getOrNull(i) ?: ServiceGroup.OTHER
-            val text = TextUtils.ellipsize(item, p, width - 30f, TextUtils.TruncateAt.END).toString()
-            val w = 8f + 8f + 6f + p.measureText(text) + 8f
+            val price = r.lineTotal(i)?.let { words.money(it) }
+            val priceW = price?.let { priceP.measureText(it) + 6f } ?: 0f
+            val text = TextUtils.ellipsize(item, p, width - 30f - priceW, TextUtils.TruncateAt.END).toString()
+            val w = 8f + 8f + 6f + p.measureText(text) + priceW + 8f
             if (cx > 0f && cx + w > width) {
                 cx = 0f
                 cy += chipH + 6f
             }
-            placed += Triple(cx, cy, text to category)
+            placed += Chip(cx, cy, text, price, category, w)
             cx += w + 6f
         }
         val h = if (placed.isEmpty()) 0f else cy + chipH
         return Block(h) { x, y ->
-            placed.forEach { (px, py, item) ->
-                val (text, category) = item
-                val w = 8f + 8f + 6f + p.measureText(text) + 8f
-                drawRoundRect(RectF(x + px, y + py, x + px + w, y + py + chipH), 6f, 6f, fill(GROUND))
-                groupSquare(RectF(x + px + 8f, y + py + 7.5f, x + px + 16f, y + py + 15.5f), category)
-                textMiddle(text, x + px + 22f, y + py + chipH / 2f, p)
+            placed.forEach { chip ->
+                val left = x + chip.x
+                val top = y + chip.y
+                drawRoundRect(RectF(left, top, left + chip.w, top + chipH), 6f, 6f, fill(GROUND))
+                groupSquare(RectF(left + 8f, top + 7.5f, left + 16f, top + 15.5f), chip.category)
+                textMiddle(chip.text, left + 22f, top + chipH / 2f, p)
+                chip.price?.let { textMiddle(it, left + 22f + p.measureText(chip.text) + 6f, top + chipH / 2f, priceP) }
             }
         }
     }
 
-    /** Who did the work, its cost and its photos; in a visit, the record's own date and reading where they differ. */
-    private fun meta(r: ExportRecord, entry: List<ExportRecord>, unit: DistanceUnit): List<String> = listOfNotNull(
-        when {
-            r.enteredAsLastDone -> s(R.string.report_last_done_only)
-            r.diy -> s(R.string.report_who_owner)
-            else -> r.doneBy
-        },
-        if (entry.size > 1) words.visitOwn(r, entry, unit) else null,
-        r.costCents?.let { words.money(it) },
-        photoCount(r.photoFiles.size),
-    )
+    /**
+     * Who did the work, its cost, the labor and parts on its lines when any are entered (#481), and its photos; in a
+     * visit, the record's own date and reading where they differ. One line, wrapped to [width] when it runs over.
+     */
+    private fun meta(r: ExportRecord, entry: List<ExportRecord>, unit: DistanceUnit, width: Float): Block {
+        val b = r.breakdown
+        val parts = listOfNotNull(
+            when {
+                r.enteredAsLastDone -> s(R.string.report_last_done_only)
+                r.diy -> s(R.string.report_who_owner)
+                else -> r.doneBy
+            },
+            if (entry.size > 1) words.visitOwn(r, entry, unit) else null,
+            r.costCents?.let { words.money(it) },
+            // Each only when some job has it: a labor never entered isn't a labor of $0.00.
+            b?.takeIf { r.jobs.any { it.laborCents != null } }?.let { words.phrase(ExportPhrase.JOB_LABOR, words.money(it.laborCents)) },
+            b?.takeIf { r.jobs.any { it.partsCents != null } }?.let { words.phrase(ExportPhrase.JOB_PARTS, words.money(it.partsCents)) },
+            photoCount(r.photoFiles.size),
+        )
+        val p = paint(12f, fonts.sans, INK2)
+        val placed = mutableListOf<Triple<Float, Float, String>>()
+        var mx = 0f
+        var my = 0f
+        parts.forEach { part ->
+            val w = p.measureText(part)
+            if (mx > 0f && mx + w > width) {
+                mx = 0f
+                my += 16f
+            }
+            placed += Triple(mx, my, part)
+            mx += w + 14f
+        }
+        return Block(my + 16f) { x, y -> placed.forEach { (px, py, part) -> textTop(part, x + px, y + py, p) } }
+    }
 
     private fun monthlyBlock(m: ReportModel): Block {
         val mo = m.monthly!!

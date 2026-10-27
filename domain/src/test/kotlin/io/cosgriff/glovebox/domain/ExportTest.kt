@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.domain
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -196,6 +197,17 @@ class ExportTest {
         assertTrue(records(priced.copy(costCents = 40_000)).contains("Parts on lines: $240.90 · Less than the line prices (worked out): $60.85\n"))
         assertTrue(records(priced.copy(costCents = 46_085)).contains("Parts on lines: $240.90\n"))
         assertTrue(records(priced.copy(costCents = null)).contains("Done by: Corner Garage\n\nLabor on lines: $219.95 · Parts on lines: $240.90\n"))
+    }
+
+    @Test
+    fun `only a priced job of one line gives that line a price of its own`() {
+        // Plugs and coils share one job, so neither gets its price; the rotation has none; the oil change is alone.
+        assertEquals(listOf(null, null, null, 6_845L), priced.items.indices.map(priced::lineTotal))
+        val laborOnly = priced.copy(jobs = listOf(priced.jobs[0], ExportJob(null, 3_995, null)))
+        assertEquals(3_995L, laborOnly.lineTotal(3))
+        val unpriced = priced.copy(jobs = listOf(priced.jobs[0], ExportJob("Oil & filter change", null, null)))
+        assertNull(unpriced.lineTotal(3))
+        assertNull(priced.copy(jobs = emptyList(), jobOf = emptyList()).lineTotal(3))
     }
 
     @Test
