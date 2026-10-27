@@ -67,8 +67,7 @@ Read on 2026-10-23.
   30,000s (footnote). The chart has no coolant or cabin air filter inspection, unlike the 2024 log. Brake
   fluid has no replacement in the chart, so it has no reminder from this list.
 - Not covered here: 2024 (a log, with a list of its own:
-  [toyota-grand-highlander-2024-2.5-hybrid](toyota-grand-highlander-2024-2.5-hybrid.md)); 2026 (the 2026
-  chart marks the drive belt and vacuum pump rows "(if applicable)" where 2025 marks them the turbo's, so not
-  every row's engine is printed and, by the owner's ruling, that guide isn't split; its special-condition
-  charts also mark every column, as the 2026 gas chart does); 2027 on (no maintenance guide found on
-  2026-10-22).
+  [toyota-grand-highlander-2024-2.5-hybrid](toyota-grand-highlander-2024-2.5-hybrid.md)); 2026 (a list of its
+  own, [toyota-grand-highlander-2026-2.5-hybrid](toyota-grand-highlander-2026-2.5-hybrid.md), made once the
+  owner ruled on 2026-10-25 that its "(if applicable)" drive belt and vacuum pump rows go in both hybrid
+  lists); 2027 on (no maintenance guide found on 2026-10-22).

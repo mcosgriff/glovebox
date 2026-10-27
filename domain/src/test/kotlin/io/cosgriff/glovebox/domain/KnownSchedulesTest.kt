@@ -124,6 +124,26 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `an E170 Corolla gets its own list, a 2019 two-litre keeps the newer one, and the Valvematic pump reminds no one`() {
+        assertEquals("toyota-corolla-2017-2019", KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", "1.8L 4-cyl")?.id)
+        assertEquals("toyota-corolla-2019-2022-2.0", KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", "2.0L 4-cyl")?.id)
+        assertNull(KnownSchedules.match(bundled, 2019, "Toyota", "Corolla", null))
+        assertEquals(
+            listOf("toyota-corolla-2017-2019", "toyota-corolla-2019-2022-2.0"),
+            KnownSchedules.engineChoices(bundled, 2019, "Toyota", "Corolla", null).map { it.id }.sorted(),
+        )
+        assertEquals("toyota-corolla-2016", KnownSchedules.match(bundled, 2016, "Toyota", "Corolla", "1.8L 4-cyl")?.id)
+        assertNull(KnownSchedules.match(bundled, 2015, "Toyota", "Corolla", "1.8L 4-cyl"))
+        listOf("toyota-corolla-2016", "toyota-corolla-2017-2019").forEach { id ->
+            val list = bundled.single { it.id == id }
+            val pump = list.milestones.flatMap { m -> m.work.filter { "vacuum pump" in it.name }.map { m.atMiles to it } }
+            assertEquals(id, listOf(120000), pump.map { it.first })
+            assertEquals(id, "Replace brake booster vacuum pump (Valvematic engine)", pump.single().second.name)
+            assertNull(id, pump.single().second.service)
+        }
+    }
+
+    @Test
     fun `a hybrid and its petrol twin of one size are told apart by powertrain, and asked about when it isn't known`() {
         fun engineList(id: String, engine: String) = (KnownSchedules.parse(file(extra = "\"engine\": $engine,").replace("\"id\": \"made-up\"", "\"id\": \"$id\"")) as KnownScheduleFile.Ok).list
         val gas = engineList("gas", """{ "label": "2.5L 4-cylinder", "displacementL": 2.5, "powertrain": "gas" }""")
@@ -554,6 +574,36 @@ class KnownSchedulesTest {
         assertEquals(Interval(60_000, 72), by.getValue("engine-air").normal)
         assertEquals(Interval(40_000, null), by.getValue("trans-fluid").normal)
         assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, by.getValue("brake-fluid").let { it.normal to it.rule })
+    }
+
+    @Test
+    fun `each Mk5 GTI year has a list of its own, from Volkswagen's reissue`() {
+        (2006..2009).forEach { year ->
+            val list = KnownSchedules.match(bundled, year, "Volkswagen", "GTI")!!
+            assertEquals("volkswagen-gti-$year", list.id)
+            assertEquals(year..year, list.years)
+        }
+        assertNull(KnownSchedules.match(bundled, 2005, "Volkswagen", "GTI"))
+        fun list(year: Int) = KnownSchedules.match(bundled, year, "Volkswagen", "GTI")!!
+        fun oil(year: Int) = list(year).intervals.single { it.service == "oil" }.normal
+        // 2006–2008: the "every 5,000 miles" oil change is the GTI's (the owner's ruling, #145), so the table is in 5,000s.
+        (2006..2008).forEach { year ->
+            assertEquals(Interval(5_000, null), oil(year))
+            assertTrue(list(year).milestones.all { m -> m.work.any { it.service == "oil" } })
+            assertEquals(5_000, list(year).milestones.first().atMiles)
+        }
+        // 2009: every 10,000, each heading "or 1 year after last service", which gives no months.
+        assertEquals(Interval(10_000, null), oil(2009))
+        assertTrue(list(2009).milestones.all { it.orMonths == null })
+        // 2008's brake fluid rows and time table disagree (3 years, 2 years): no months, so no reminder.
+        assertTrue(list(2008).milestones.any { m -> m.work.any { it.service == "brake-fluid" } })
+        assertTrue((list(2008).intervals + list(2008).additional).none { it.service == "brake-fluid" })
+        // 2009's timing belt is "(if applicable)": in the table, with no service and no reminder.
+        val belt = list(2009).milestones.single { it.atMiles == 110_000 }.work.single { "timing belt" in it.name }
+        assertNull(belt.service)
+        assertTrue((list(2009).intervals + list(2009).additional).none { it.service == "timing-belt" })
+        // The time-dependent items are reminders apart from the table, by time alone.
+        assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, list(2009).additional.single { it.service == "brake-fluid" }.let { it.normal to it.rule })
     }
 
     @Test

@@ -9,6 +9,7 @@ import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import io.cosgriff.glovebox.data.inMemoryDatabase
 import io.cosgriff.glovebox.data.resetDataStores
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -68,12 +69,13 @@ class BackupRestorerTest {
 
     private fun photo(name: String, text: String = "made-up $name") = name.also { crypto.encryptTo(it, text.toByteArray().inputStream()) }
 
-    /** A backup of [source] holding a 4Runner with a photographed record, a recall marked done and a recall name ticked. */
+    /** A backup of [source] holding a 4Runner with a photographed, priced record, a recall marked done and a recall name ticked. */
     private suspend fun backupOfSource(): File {
         val id = source.vehicles().add(testVehicle(photoFile = photo("vehicle-a.jpg")), firstReading = 60_000)
         val record = source.service().insertWithItems(
             ServiceRecordEntity(vehicleId = id, date = day, odometer = 60_000, diy = false, shopName = "Made-up Motors", costCents = 8_950),
-            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Oil change", catalogId = "oil_change")),
+            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Oil change", catalogId = "oil_change", jobId = 1)),
+            listOf(ServiceRecordJobEntity(id = 1, recordId = 0, wording = "Made-up oil service", laborCents = 3_000, partsCents = 4_500)),
         )
         source.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = photo("receipt-a.jpg", "the receipt"))))
         source.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "99V000000", component = "Made-up", summary = "Made-up", firstSeenOn = day, completedOn = day, serviceRecordId = record, doNotDrive = true, parkOutside = true, overTheAir = true)))
@@ -91,7 +93,7 @@ class BackupRestorerTest {
     private suspend fun targetState() = Triple(target.vehicles().all(), target.service().recordsFor(target.vehicles().all().first().id), crypto.photoDir.list()!!.sorted())
 
     /** A file written the way BackupWriter writes one, with whatever entries a test needs. */
-    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 36): File {
+    private fun craft(vararg entries: Triple<BackupEntryKind, String, String>, schemaVersion: Int = 37): File {
         val file = File(context.cacheDir, "crafted.glovebox")
         file.outputStream().use { out ->
             BackupEntryWriter(BackupOutputStream(out, password, quick)).use { w ->
@@ -124,10 +126,13 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 36, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 37, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         assertEquals(source.service().recordsFor(id), target.service().recordsFor(id))
+        // The job and its line still point at each other.
+        val restoredRecord = target.service().recordsFor(id).single()
+        assertEquals(restoredRecord.jobs.single().id, restoredRecord.items.single().jobId)
         assertEquals(source.recalls().recallsFor(id), target.recalls().recallsFor(id))
         assertEquals(listOf("4RUNNER MADE-UP"), target.recalls().namesFor(id))
         assertEquals(listOf(60_000), target.odometer().readingsFor(id).map { it.odometer })

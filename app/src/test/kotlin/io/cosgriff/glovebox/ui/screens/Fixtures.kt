@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.data.db.CatalogRuleEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -273,6 +274,35 @@ object Fixtures {
         )
     }
 
+    /**
+     * A shop visit priced per job (#481), made-up figures: plugs and coils priced as one job, the oil change on its
+     * own, the rotation unpriced. The total is above the line prices, so the rest is tax and fees.
+     */
+    val recordPriced: RecordDetail = run {
+        val r = ServiceRecordWithItems(
+            ServiceRecordEntity(105, truck.id, truckRecords[0].record.date, 62_400, diy = false, shopName = "Main Street Auto", costCents = 84_340),
+            listOf(
+                ServiceRecordItemEntity(1050, 105, null, "Spark plugs", catalogId = "spark-plugs", jobId = 1),
+                ServiceRecordItemEntity(1051, 105, null, "Ignition coils", catalogId = "ignition-coils", jobId = 1),
+                ServiceRecordItemEntity(1052, 105, null, "Oil & filter change", catalogId = "oil", jobId = 2),
+                ServiceRecordItemEntity(1053, 105, null, "Tire rotation", catalogId = "rotation"),
+            ),
+            emptyList(),
+            listOf(
+                ServiceRecordJobEntity(1, 105, "Replace spark plugs and ignition coils", laborCents = 30_000, partsCents = 42_000, position = 0),
+                ServiceRecordJobEntity(2, 105, null, laborCents = 3_000, partsCents = 4_500, position = 1),
+            ),
+        )
+        RecordDetail(
+            record = r,
+            vehicleName = "2019 Blue truck",
+            unit = unit,
+            readOnly = false,
+            lines = r.items.map { WorkLine(it.label, ServiceCatalog.categoryOf(it.catalogId)?.label, null, current = false) },
+            deleteImpact = emptyList(),
+        )
+    }
+
     /** A recall fixed at the shop the day the cabin filter was changed: a made-up campaign. */
     private val recallRecord = ServiceRecordWithItems(
         ServiceRecordEntity(104, truck.id, truckRecords[0].record.date, 62_100, diy = false, shopName = "Main Street Auto"),
@@ -502,5 +532,22 @@ object Fixtures {
             categoryId = categories.first { c -> c.options.any { it.id == oil.id } }.id
             toggle(oil.id)
         }
+    }
+
+    /**
+     * The same, logged from a shop's itemized invoice (#481), made-up figures: plugs and coils priced together as
+     * one job, the oil change on its own, and the rotation not priced.
+     */
+    fun logServicePriced(): LogServiceForm = logService().apply {
+        listOf("spark-plugs", "ignition-coils", "rotation").forEach(::toggle)
+        diy = false
+        shopName = "Main Street Auto"
+        costText = "843.40"
+        val byLine = jobs.associateBy { it.lines.single() }
+        join(byLine.getValue("ignition-coils").id, byLine.getValue("spark-plugs").id)
+        setLabor(byLine.getValue("spark-plugs").id, "300.00")
+        setParts(byLine.getValue("spark-plugs").id, "420.00")
+        setLabor(byLine.getValue("oil").id, "30.00")
+        setParts(byLine.getValue("oil").id, "45.00")
     }
 }

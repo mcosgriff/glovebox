@@ -1,0 +1,713 @@
+{
+  "id": "volkswagen-gti-2009",
+  "title": "2009 GTI",
+  "make": "Volkswagen",
+  "model": "GTI",
+  "years": {
+    "from": 2009,
+    "to": 2009
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/903cda69-6bfe-4c4b-bb47-0444c41d5ce2",
+    "retrieved": "2026-10-26",
+    "note": "From Volkswagen's June 2024 reissue of its 2009 USA maintenance schedule, in Glovebox's wording; no card from the time was found. Check it against the booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for the model year, as Volkswagen publishes it for owners, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "manualExcluded": [
+    "Change DSG transmission fluid and filter (DSG only)"
+  ],
+  "milestones": [
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if applicable)"
+        },
+        {
+          "name": "Check and clean sunroof drains (if applicable)"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Check windshield washer system and fluid level; top up"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Test drive and final check"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Replace air filter element and clean housing (if applicable)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if applicable)"
+        },
+        {
+          "name": "Check and clean sunroof drains (if applicable)"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check windshield and headlight washer systems and fluid level; top up"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Test drive and final check"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Replace timing belt (if applicable)"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check second battery (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if applicable)"
+        },
+        {
+          "name": "Check and clean sunroof drains (if applicable)"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check windshield and headlight washer systems and fluid level; top up"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Test drive and final check"
+        }
+      ]
+    },
+    {
+      "atMiles": 130000,
+      "work": [
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check headlight washer nozzles (if applicable)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if applicable)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer nozzles"
+        },
+        {
+          "name": "Check wiper blades"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 10000,
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires front to rear",
+      "everyMiles": 10000,
+      "service": "rotation"
+    },
+    {
+      "name": "Change DSG transmission fluid and filter (DSG only)",
+      "everyMiles": 40000,
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "spark-plugs"
+    }
+  ],
+  "additional": [
+    {
+      "name": "Change brake fluid (at 3 years, then every 2 years)",
+      "everyMonths": 24,
+      "rule": "time-only",
+      "service": "brake-fluid"
+    },
+    {
+      "name": "Replace air filter element and clean housing (every 6 years)",
+      "everyMonths": 72,
+      "rule": "time-only",
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace tire mobility kit sealant bottle (every 4 years)",
+      "everyMonths": 48,
+      "rule": "time-only"
+    }
+  ]
+}

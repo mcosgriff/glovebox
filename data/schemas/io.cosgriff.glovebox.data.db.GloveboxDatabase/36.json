@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "db71f6c1d093d6e8f26c857e6b383441",
+    "identityHash": "38fc17ca4f635ce26608aecd4167f742",
     "entities": [
       {
         "tableName": "vehicles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `vin` TEXT, `enteredByHand` INTEGER NOT NULL DEFAULT 0, `year` INTEGER NOT NULL, `make` TEXT NOT NULL, `model` TEXT NOT NULL, `trim` TEXT, `trimConfirmed` INTEGER NOT NULL DEFAULT 0, `engine` TEXT, `fuel` TEXT, `powertrain` TEXT, `drivetrain` TEXT, `transmission` TEXT, `bodyClass` TEXT, `bodyStyle` TEXT, `engineCode` TEXT, `tpms` TEXT, `series` TEXT, `nickname` TEXT, `plate` TEXT, `plateRegion` TEXT, `oilSpec` TEXT, `oilFilter` TEXT, `oilApproval` TEXT, `oilCapacity` REAL, `oilCapacityUnit` TEXT, `tireSize` TEXT, `tireSizeRear` TEXT, `wiperBlades` TEXT, `wiperDriverIn` INTEGER, `wiperPassengerIn` INTEGER, `wiperRearIn` INTEGER, `tirePressureFront` INTEGER, `tirePressureRear` INTEGER, `tirePressureSpare` INTEGER, `tirePressureUnit` TEXT, `transmissionFluid` TEXT, `differentialOil` TEXT, `transferCaseOil` TEXT, `coolantType` TEXT, `brakeFluid` TEXT, `engineAirFilter` TEXT, `cabinAirFilter` TEXT, `sparkPlug` TEXT, `sparkPlugGap` TEXT, `batteryGroup` TEXT, `batteryCca` INTEGER, `bulbLow` TEXT, `bulbHigh` TEXT, `bulbFog` TEXT, `photoFile` TEXT, `odometerOffset` INTEGER NOT NULL, `clusterSwappedOn` INTEGER, `clusterStartReading` INTEGER, `archivedOn` INTEGER, `createdOn` INTEGER NOT NULL, `recallsCheckedOn` INTEGER, `milestonesRepeatEveryMiles` INTEGER, `milestonesKnownList` TEXT, `distanceUnit` TEXT NOT NULL DEFAULT 'MILES', `takesKnownList` TEXT, `takesToCheck` TEXT, `mileageCheckInDays` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `vin` TEXT, `enteredByHand` INTEGER NOT NULL DEFAULT 0, `year` INTEGER NOT NULL, `make` TEXT NOT NULL, `model` TEXT NOT NULL, `trim` TEXT, `trimConfirmed` INTEGER NOT NULL DEFAULT 0, `engine` TEXT, `fuel` TEXT, `powertrain` TEXT, `drivetrain` TEXT, `transmission` TEXT, `bodyClass` TEXT, `engineCode` TEXT, `tpms` TEXT, `series` TEXT, `nickname` TEXT, `plate` TEXT, `plateRegion` TEXT, `oilSpec` TEXT, `oilFilter` TEXT, `oilApproval` TEXT, `oilCapacity` REAL, `oilCapacityUnit` TEXT, `tireSize` TEXT, `tireSizeRear` TEXT, `wiperBlades` TEXT, `wiperDriverIn` INTEGER, `wiperPassengerIn` INTEGER, `wiperRearIn` INTEGER, `tirePressureFront` INTEGER, `tirePressureRear` INTEGER, `tirePressureSpare` INTEGER, `tirePressureUnit` TEXT, `transmissionFluid` TEXT, `differentialOil` TEXT, `transferCaseOil` TEXT, `coolantType` TEXT, `brakeFluid` TEXT, `engineAirFilter` TEXT, `cabinAirFilter` TEXT, `sparkPlug` TEXT, `sparkPlugGap` TEXT, `batteryGroup` TEXT, `batteryCca` INTEGER, `bulbLow` TEXT, `bulbHigh` TEXT, `bulbFog` TEXT, `photoFile` TEXT, `odometerOffset` INTEGER NOT NULL, `clusterSwappedOn` INTEGER, `clusterStartReading` INTEGER, `archivedOn` INTEGER, `createdOn` INTEGER NOT NULL, `recallsCheckedOn` INTEGER, `milestonesRepeatEveryMiles` INTEGER, `milestonesKnownList` TEXT, `distanceUnit` TEXT NOT NULL DEFAULT 'MILES', `takesKnownList` TEXT, `takesToCheck` TEXT, `mileageCheckInDays` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -84,11 +84,6 @@
           {
             "fieldPath": "bodyClass",
             "columnName": "bodyClass",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "bodyStyle",
-            "columnName": "bodyStyle",
             "affinity": "TEXT"
           },
           {
@@ -650,7 +645,7 @@
       },
       {
         "tableName": "service_record_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordId` INTEGER NOT NULL, `scheduleItemId` INTEGER, `label` TEXT NOT NULL, `catalogId` TEXT, FOREIGN KEY(`recordId`) REFERENCES `service_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`scheduleItemId`) REFERENCES `schedule_items`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordId` INTEGER NOT NULL, `scheduleItemId` INTEGER, `label` TEXT NOT NULL, `catalogId` TEXT, `jobId` INTEGER, FOREIGN KEY(`recordId`) REFERENCES `service_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`scheduleItemId`) REFERENCES `schedule_items`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`jobId`) REFERENCES `service_record_jobs`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -679,6 +674,11 @@
             "fieldPath": "catalogId",
             "columnName": "catalogId",
             "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "jobId",
+            "columnName": "jobId",
+            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
@@ -705,6 +705,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_service_record_items_scheduleItemId` ON `${TABLE_NAME}` (`scheduleItemId`)"
+          },
+          {
+            "name": "index_service_record_items_jobId",
+            "unique": false,
+            "columnNames": [
+              "jobId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_service_record_items_jobId` ON `${TABLE_NAME}` (`jobId`)"
           }
         ],
         "foreignKeys": [
@@ -725,6 +734,86 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "scheduleItemId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "service_record_jobs",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "jobId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "service_record_jobs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordId` INTEGER NOT NULL, `wording` TEXT, `laborCents` INTEGER, `partsCents` INTEGER, `position` INTEGER NOT NULL, FOREIGN KEY(`recordId`) REFERENCES `service_records`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordId",
+            "columnName": "recordId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wording",
+            "columnName": "wording",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "laborCents",
+            "columnName": "laborCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "partsCents",
+            "columnName": "partsCents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_service_record_jobs_recordId",
+            "unique": false,
+            "columnNames": [
+              "recordId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_service_record_jobs_recordId` ON `${TABLE_NAME}` (`recordId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "service_records",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "recordId"
             ],
             "referencedColumns": [
               "id"
@@ -1330,7 +1419,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db71f6c1d093d6e8f26c857e6b383441')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '38fc17ca4f635ce26608aecd4167f742')"
     ]
   }
 }

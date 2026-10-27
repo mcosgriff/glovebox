@@ -52,4 +52,5 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
   2.5L automatic's fluid. Its three "if applicable" rows that the 2012 and 2014 GTI cards don't have
   (Haldex clutch oil, timing belt, tire pressure sensors) are left out too, on the evidence of those cards.
 - Left out of every year: the dealer's service sticker.
-- Not covered: the Mk5 (2009 and earlier) and the Mk7 (2015 on), which have cards of their own.
+- Not covered: the Mk5 (2006–2009, a list per year from Volkswagen's reissues; see
+  [2009](volkswagen-gti-2009.md#the-mk5-lists)) and the Mk7 (2015 on), which have cards of their own.

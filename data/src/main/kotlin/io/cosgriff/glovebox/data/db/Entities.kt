@@ -231,14 +231,34 @@ data class ServiceRecordEntity(
     val visitId: Long? = null,
 )
 
+/**
+ * A job as the shop priced it (#481): one labor and one parts figure for one or more of a record's lines, never
+ * split between them. Null is "not entered", not zero. The record's own cost is never worked out from these.
+ */
+@Entity(
+    tableName = "service_record_jobs",
+    foreignKeys = [ForeignKey(ServiceRecordEntity::class, ["id"], ["recordId"], onDelete = CASCADE)],
+    indices = [Index("recordId")],
+)
+data class ServiceRecordJobEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val recordId: Long,
+    /** The shop's name for the job, as typed or read; null names it by its lines. */
+    val wording: String? = null,
+    val laborCents: Long? = null,
+    val partsCents: Long? = null,
+    val position: Int = 0,
+)
+
 /** One line of work on a record. [scheduleItemId] links it to the reminder it resets, if any. */
 @Entity(
     tableName = "service_record_items",
     foreignKeys = [
         ForeignKey(ServiceRecordEntity::class, ["id"], ["recordId"], onDelete = CASCADE),
         ForeignKey(ScheduleItemEntity::class, ["id"], ["scheduleItemId"], onDelete = ForeignKey.SET_NULL),
+        ForeignKey(ServiceRecordJobEntity::class, ["id"], ["jobId"], onDelete = ForeignKey.SET_NULL),
     ],
-    indices = [Index("recordId"), Index("scheduleItemId")],
+    indices = [Index("recordId"), Index("scheduleItemId"), Index("jobId")],
 )
 data class ServiceRecordItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -247,6 +267,8 @@ data class ServiceRecordItemEntity(
     val label: String,
     /** CatalogItem.id this line was picked from; null for custom lines and the user's own schedule items. */
     val catalogId: String? = null,
+    /** The priced job this line is part of (#481); null for a line with no price. */
+    val jobId: Long? = null,
 )
 
 @Entity(
@@ -417,4 +439,6 @@ data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val items: List<ServiceRecordItemEntity>,
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val photos: List<PhotoEntity>,
+    /** Its priced jobs (#481), each line pointing at its own by `jobId`; empty when nothing was priced. */
+    @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val jobs: List<ServiceRecordJobEntity> = emptyList(),
 )

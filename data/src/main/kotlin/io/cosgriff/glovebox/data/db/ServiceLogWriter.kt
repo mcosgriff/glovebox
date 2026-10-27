@@ -34,15 +34,26 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         db.useWriterConnection { it.immediateTransaction { block() } }
 
     /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
-    suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, photoFiles: List<String> = emptyList()): Long = transaction {
-        val id = service.insertWithItems(record, items)
+    suspend fun add(
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        photoFiles: List<String> = emptyList(),
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
+    ): Long = transaction {
+        val id = service.insertWithItems(record, items, jobs)
         service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
         id
     }
 
     /** [removedPhotoIds] lose their rows; their files are the caller's to keep for Undo or delete. */
-    suspend fun replace(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, addedPhotos: List<String>, removedPhotoIds: Set<Long>) = transaction {
-        service.replaceWithItems(record, items)
+    suspend fun replace(
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        addedPhotos: List<String>,
+        removedPhotoIds: Set<Long>,
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
+    ) = transaction {
+        service.replaceWithItems(record, items, jobs)
         service.deletePhotos(removedPhotoIds.toList())
         service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
     }
@@ -50,7 +61,7 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     /** [previous] back as it was, photos included. False if its vehicle has gone. */
     suspend fun revertEdit(previous: ServiceRecordWithItems): Boolean = transaction {
         if (vehicles.byId(previous.record.vehicleId) == null) return@transaction false
-        service.replaceWithItems(previous.record, previous.items)
+        service.replaceWithItems(previous.record, previous.items, previous.jobs)
         service.clearPhotos(previous.record.id)
         service.insertPhotos(previous.photos.map { it.copy(id = 0) })
         true
@@ -122,7 +133,7 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
 
     private suspend fun restoreRows(record: ServiceRecordWithItems): Long? {
         if (vehicles.byId(record.record.vehicleId) == null) return null
-        val id = service.insertWithItems(record.record, record.items.map { it.copy(id = 0) })
+        val id = service.insertWithItems(record.record, record.items.map { it.copy(id = 0) }, record.jobs)
         // The files were left alone when the record went, for exactly this.
         service.insertPhotos(record.photos.map { it.copy(id = 0, recordId = id) })
         return id
