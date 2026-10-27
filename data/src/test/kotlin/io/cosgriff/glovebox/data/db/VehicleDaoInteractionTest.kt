@@ -118,7 +118,10 @@ class VehicleDaoInteractionTest {
         vehicles.setEngineIfBlank(id, "2.7L I4")
         vehicles.setPowertrainIfBlank(id, "HYBRID")
         vehicles.setPowertrainIfBlank(id, "GAS")
+        vehicles.setBodyStyleIfBlank(id, "SEDAN")
+        vehicles.setBodyStyleIfBlank(id, "HATCHBACK")
         assertEquals("4.0L V6" to "HYBRID", row(id).engine to row(id).powertrain)
+        assertEquals("SEDAN", row(id).bodyStyle)
 
         val blank = vehicles.add(testVehicle().copy(engine = "  "), firstReading = null)
         vehicles.setEngineIfBlank(blank, "4.0L V6")
@@ -200,7 +203,7 @@ class VehicleDaoInteractionTest {
     fun `a vehicle with every column filled reads back whole through every query`() = runBlocking {
         val full = VehicleEntity(
             vin = "1M8GDM9AXKP042788", enteredByHand = true, year = 2019, make = "Toyota", model = "4Runner", trim = "SR5", trimConfirmed = true,
-            engine = "4.0L V6", fuel = "Gasoline", powertrain = "GAS", drivetrain = "4WD", transmission = "5-speed Automatic", bodyClass = "SUV",
+            engine = "4.0L V6", fuel = "Gasoline", powertrain = "GAS", drivetrain = "4WD", transmission = "5-speed Automatic", bodyClass = "SUV", bodyStyle = "SEDAN",
             nickname = "Made-up", plate = "MADE UP", plateRegion = "CO", oilSpec = "0W-20", oilFilter = "MADE-UP-1", oilApproval = "API SP",
             oilCapacity = 6.2, oilCapacityUnit = "QUARTS", tireSize = "265/70R17", tireSizeRear = "275/70R17", wiperBlades = "Made-up",
             wiperDriverIn = 22, wiperPassengerIn = 20, wiperRearIn = 14, tirePressureFront = 32, tirePressureRear = 35, tirePressureSpare = 60,

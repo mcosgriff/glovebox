@@ -60,7 +60,7 @@ class KnownSchedulesTest {
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
             (listOf(list.model) + list.modelAliases).forEach { model ->
-                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain)?.id) }
+                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body)?.id) }
             }
         }
     }
@@ -144,6 +144,71 @@ class KnownSchedulesTest {
         // A list without a powertrain is for every powertrain, as the ones that ship are.
         assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", null, null, Powertrain.HYBRID)?.id)
         assertTrue(errors(file(extra = "\"engine\": { \"label\": \"2.5L\", \"displacementL\": 2.5, \"powertrain\": \"steam\" },")).single().contains("must be one of"))
+    }
+
+    @Test
+    fun `a sedan and a hatchback of one engine are told apart by body, and asked about when it isn't known`() {
+        fun bodyList(id: String, body: String) = (
+            KnownSchedules.parse(file(extra = "\"engine\": { \"label\": \"1.6L\", \"displacementL\": 1.6 }, \"body\": \"$body\",").replace("\"id\": \"made-up\"", "\"id\": \"$id\""))
+                as KnownScheduleFile.Ok
+            ).list
+        val sedan = bodyList("sedan", "sedan")
+        val hatch = bodyList("hatch", "hatchback")
+        assertEquals(BodyStyle.HATCHBACK, hatch.body)
+        val lists = listOf(sedan, hatch)
+        fun match(engine: String?, body: BodyStyle?) = KnownSchedules.match(lists, 2003, "Acme", "Roadster", engine, null, null, body)?.id
+        fun choices(engine: String?, body: BodyStyle?) = KnownSchedules.engineChoices(lists, 2003, "Acme", "Roadster", engine, null, null, body).map { it.id }
+        assertEquals("sedan", match("1.6L 4-cyl", BodyStyle.SEDAN))
+        assertEquals("hatch", match("1.6L 4-cyl", BodyStyle.HATCHBACK))
+        assertEquals(emptyList<String>(), choices("1.6L 4-cyl", BodyStyle.SEDAN))
+        // A blank body matches neither; the owner is asked, between the two.
+        assertNull(match("1.6L 4-cyl", null))
+        assertEquals(listOf("sedan", "hatch"), choices("1.6L 4-cyl", null))
+        assertEquals(listOf("hatch"), choices(null, BodyStyle.HATCHBACK))
+        // An engine neither is for rules both out, whatever the body.
+        assertEquals(emptyList<String>(), choices("2.8L V6", null))
+        // A list for every engine and one body is offered by its body alone.
+        val anyEngine = (KnownSchedules.parse(file(extra = "\"body\": \"sedan\",")) as KnownScheduleFile.Ok).list
+        assertNull(KnownSchedules.match(listOf(anyEngine), 2003, "Acme", "Roadster"))
+        assertEquals(listOf("made-up"), KnownSchedules.engineChoices(listOf(anyEngine), 2003, "Acme", "Roadster").map { it.id })
+        assertEquals("made-up", KnownSchedules.match(listOf(anyEngine), 2003, "Acme", "Roadster", body = BodyStyle.SEDAN)?.id)
+        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(listOf(anyEngine), 2003, "Acme", "Roadster", body = BodyStyle.HATCHBACK))
+        // A list without a body is for every body, as the ones that ship mostly are.
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", body = BodyStyle.HATCHBACK)?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster")?.id)
+        assertTrue(errors(file(extra = "\"body\": \"coupe\",")).single().contains("must be one of"))
+    }
+
+    @Test
+    fun `the 2026 Corolla gas lists go by body, and the earlier Corollas don't`() {
+        fun match(year: Int, engine: String?, body: BodyStyle?) = KnownSchedules.match(bundled, year, "Toyota", "Corolla", engine, "Gasoline", null, body)?.id
+        assertEquals("toyota-corolla-2026-sedan", match(2026, "2.0L 4-cyl", BodyStyle.SEDAN))
+        assertEquals("toyota-corolla-2026-hatchback", match(2026, "2.0L 4-cyl", BodyStyle.HATCHBACK))
+        assertNull(match(2026, "2.0L 4-cyl", null))
+        assertEquals(
+            listOf("toyota-corolla-2026-hatchback", "toyota-corolla-2026-sedan"),
+            KnownSchedules.engineChoices(bundled, 2026, "Toyota", "Corolla", "2.0L 4-cyl", "Gasoline").map { it.id }.sorted(),
+        )
+        // The lists before 2026 name no body, so they match as they did, whatever is on record.
+        listOf(null, BodyStyle.SEDAN, BodyStyle.HATCHBACK).forEach { body ->
+            assertEquals("toyota-corolla-2025-2.0", match(2025, "2.0L 4-cyl", body))
+            assertEquals("toyota-corolla-2023-2024-2.0", match(2024, "2.0L 4-cyl", body))
+            assertEquals("toyota-corolla-2019-2022-2.0", match(2021, "2.0L 4-cyl", body))
+        }
+        assertEquals(listOf("toyota-corolla-2026-hatchback", "toyota-corolla-2026-sedan"), bundled.filter { it.body != null }.map { it.id }.sorted())
+    }
+
+    @Test
+    fun `a body is taken from vPIC only where it says so plainly`() {
+        assertEquals(BodyStyle.SEDAN, BodyStyles.fromVpic("Sedan/Saloon"))
+        assertEquals(BodyStyle.HATCHBACK, BodyStyles.fromVpic("Hatchback/Liftback/Notchback"))
+        assertNull(BodyStyles.fromVpic(null))
+        assertNull(BodyStyles.fromVpic(""))
+        assertNull(BodyStyles.fromVpic("Coupe"))
+        assertNull(BodyStyles.fromVpic("Sport Utility Vehicle (SUV)/Multi-Purpose Vehicle (MPV)"))
+        assertEquals(BodyStyle.HATCHBACK, BodyStyles.of("HATCHBACK"))
+        assertNull(BodyStyles.of(null))
+        assertNull(BodyStyles.of("COUPE"))
     }
 
     @Test

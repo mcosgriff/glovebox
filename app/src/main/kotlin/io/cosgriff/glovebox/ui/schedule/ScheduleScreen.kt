@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.ui.export.SaveAsImportFile
 import io.cosgriff.glovebox.domain.KnownIntervalPlan
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.BodyStyles
 import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.rememberScrollState
@@ -202,7 +203,7 @@ class ScheduleViewModel @Inject constructor(
             odometer = log.odometer,
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain))
+            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle))
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )

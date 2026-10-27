@@ -88,6 +88,8 @@ import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.domain.VinDecode
 import io.cosgriff.glovebox.domain.Powertrain
+import io.cosgriff.glovebox.domain.BodyStyle
+import io.cosgriff.glovebox.domain.BodyStyles
 import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.label
@@ -134,6 +136,8 @@ class AddVehicleViewModel @Inject constructor(
         private set
     /** Only what vPIC says plainly ([Powertrains.fromVpic]), then the owner's pick; null is "not known". */
     var powertrain by mutableStateOf<Powertrain?>(null)
+    /** Only what vPIC says plainly ([BodyStyles.fromVpic]), then the owner's pick; null is "not known". */
+    var bodyStyle by mutableStateOf<BodyStyle?>(null)
     var trim by mutableStateOf("")
         private set
     var trimChoices by mutableStateOf(emptyList<String>())
@@ -188,6 +192,7 @@ class AddVehicleViewModel @Inject constructor(
         model = d.model.orEmpty()
         fields = d.storedFields()
         powertrain = Powertrains.fromVpic(d.electrification, d.fuel, d.fuelSecondary)
+        bodyStyle = BodyStyles.fromVpic(d.bodyClass)
         trimChoices = VinDecode.trimChoices(d.trim)
         // More than one candidate is left for the user to choose between.
         trim = trimChoices.singleOrNull().orEmpty()
@@ -260,6 +265,7 @@ class AddVehicleViewModel @Inject constructor(
                     drivetrain = fields[DecodedField.DRIVE],
                     transmission = fields[DecodedField.TRANSMISSION],
                     bodyClass = fields[DecodedField.BODY],
+                    bodyStyle = bodyStyle?.name,
                     engineCode = fields[DecodedField.ENGINE_CODE],
                     tpms = fields[DecodedField.TPMS],
                     series = fields[DecodedField.SERIES],
@@ -446,6 +452,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
     var editing by rememberSaveable { mutableStateOf<DecodedField?>(null) }
     var editingVehicle by rememberSaveable { mutableStateOf(false) }
     var editingPowertrain by rememberSaveable { mutableStateOf(false) }
+    var editingBodyStyle by rememberSaveable { mutableStateOf(false) }
     val identified = vm.year != null && vm.make.isNotBlank() && vm.model.isNotBlank()
 
     if (editing == DecodedField.DRIVE) {
@@ -477,6 +484,17 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
             onPick = { vm.powertrain = it },
             onDismiss = { editingPowertrain = false },
             note = stringResource(R.string.add_vehicle_powertrain_note),
+        )
+    }
+    if (editingBodyStyle) {
+        ChoiceDialog(
+            title = stringResource(R.string.add_vehicle_body_style),
+            options = BodyStyle.entries + null,
+            selected = vm.bodyStyle,
+            label = { stringResource(it?.label() ?: R.string.add_vehicle_body_style_unsure) },
+            onPick = { vm.bodyStyle = it },
+            onDismiss = { editingBodyStyle = false },
+            note = stringResource(R.string.add_vehicle_body_style_note),
         )
     }
     if (editingVehicle) {
@@ -553,6 +571,14 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     stringResource(powertrain?.label() ?: R.string.add),
                     muted = powertrain == null,
                     onClick = { editingPowertrain = true },
+                )
+                HorizontalDivider(color = scheme.outlineVariant)
+                val bodyStyle = vm.bodyStyle
+                FieldRow(
+                    stringResource(R.string.add_vehicle_body_style),
+                    stringResource(bodyStyle?.label() ?: R.string.add),
+                    muted = bodyStyle == null,
+                    onClick = { editingBodyStyle = true },
                 )
                 HorizontalDivider(color = scheme.outlineVariant)
                 d.gvwr?.let {

@@ -93,6 +93,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET powertrain = :powertrain WHERE id = :id AND powertrain IS NULL")
     suspend fun setPowertrainIfBlank(id: Long, powertrain: String)
 
+    /** Fills in the body style for a vehicle that has none on record, as [setPowertrainIfBlank] does the powertrain. */
+    @Query("UPDATE vehicles SET bodyStyle = :bodyStyle WHERE id = :id AND bodyStyle IS NULL")
+    suspend fun setBodyStyleIfBlank(id: Long, bodyStyle: String)
+
     @Query(
         "UPDATE vehicles SET oilSpec = :grade, oilApproval = :approval, oilCapacity = :capacity, oilCapacityUnit = :unit, " +
             "oilFilter = :filter WHERE id = :id",

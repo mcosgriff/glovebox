@@ -21,7 +21,10 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   sold as AWD goes in `allWheelDriveOnly`, named "(AWD)".
   An engine that isn't on record matches no per-engine list; only setup asks which engine. A list's
   `engine.powertrain` (#33's rulings) tells a hybrid or flex-fuel model from its petrol twin of one size;
-  `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**.
+  `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**. A list's
+  `body` (#185) tells a sedan from a hatchback of one engine where their guides differ and NHTSA names both the
+  same; `vehicles.bodyStyle` is set from vPIC's `BodyClass` only where it is plainly one of them, or picked on
+  "Is this your vehicle?", and a blank matches no list that names a body: setup asks.
 - **Taking up a schedule is one transaction** (#429): setup's save and "Use the maker's schedule" go through
   `ScheduleWriter.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
   engine and powertrain, and adds the maker's table (read from the vehicle as it is) unless the vehicle has one.

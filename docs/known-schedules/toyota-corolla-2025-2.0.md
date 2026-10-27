@@ -55,6 +55,7 @@ hatchback's,
   special operating conditions differ (seen on its PDF page 40: the dusty-road inspections at every 5,000,
   the engine oil replaced at every 5,000, the engine air filter replaced at 30,000, and an automatic
   transmission fluid inspection at 30,000, none of which the sedan has). NHTSA gives both as "Corolla" with
-  the same 2.0L engine, so no list can tell a 2026 sedan from a 2026 hatchback, and none is made for 2026.
+  the same 2.0L engine, so this list can't take 2026 in. 2026 has a list per body, matched on the body style
+  (#185): [sedan](toyota-corolla-2026-sedan.md) and [hatchback](toyota-corolla-2026-hatchback.md).
   2019–2024 are lists of their own ([2019–2022](toyota-corolla-2019-2022-2.0.md),
   [2023–2024](toyota-corolla-2023-2024-2.0.md)).

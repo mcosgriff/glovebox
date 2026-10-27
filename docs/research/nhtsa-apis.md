@@ -35,7 +35,7 @@ All in `data/src/main/kotlin/io/cosgriff/glovebox/data/nhtsa/NhtsaClient.kt`.
 |---|---|---|---|
 | vPIC `GET /api/vehicles/DecodeVinValues/{vin}?format=json` (`decodeVin`) | VIN (no `modelyear`) | `ModelYear`, `Make`, `Model` | `VehicleEntity.year/make/model` (correctable on "Is this your vehicle?") |
 | | | `Trim` | `VinDecode.trimChoices` → `trim` (user picks when vPIC lists several) |
-| | | `BodyClass` | `bodyClass` |
+| | | `BodyClass` | `bodyClass`; `BodyStyles.fromVpic` → `bodyStyle` (sedan or hatchback, for lists that differ by body; never guessed from anything else) |
 | | | `DriveType` | `drivetrain` → `Drivetrains.kind` (4WD/AWD/2WD) for `fourWheelDriveOnly` / `allWheelDriveOnly` jobs |
 | | | `DisplacementL`, `EngineCylinders` | `engine` ("4.0L 6-cyl") → `Engines.displacementL` matches per-engine lists |
 | | | `FuelTypePrimary` | `fuel` |

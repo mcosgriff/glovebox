@@ -148,6 +148,15 @@ no powertrain on record. A flex-fuel guide's shorter oil change for a truck run 
 `e85` (below), not left out (the owner's ruling of 2026-10-23, #33); the note on changing oil early after the
 wrong grade still is.
 
+**A sedan and a hatchback of one engine whose guides differ** are told apart by `"body"`, at the top level of
+the list: `sedan` or `hatchback` (#185, the owner's ruling of 2026-10-25). Set it only where two lists of one
+model, years and engine differ by it and NHTSA gives both the same model name, as for the 2026 Corolla; a list
+without it is for every body. A vehicle's body style comes from vPIC's `BodyClass` only where it is plainly one
+of the two ("Sedan/Saloon", "Hatchback/Liftback/Notchback"), or from the owner on "Is this your vehicle?"
+(`vehicles.bodyStyle`). **A blank body matches no list that names one and is never guessed**: setup then asks
+"Which one is it?", offering each list's engine `label` with its body ("2.0L 4-cylinder, Hatchback"), and the
+pick is written to the vehicle if it had no body style on record.
+
 **`e85`** gives a flex-fuel guide's intervals for a vehicle run on E85 more than half the time, which Toyota's
 FFV guides print as an oil change every 2,500 miles / 3 months against the normal 5,000 / 6:
 
@@ -223,10 +232,12 @@ One page per list, named by its `id`:
 - [Toyota Corolla Cross Hybrid, 2025](known-schedules/toyota-corolla-cross-2025-hybrid.md) (`toyota-corolla-cross-2025-hybrid`)
 - [Toyota Corolla Cross Hybrid, 2026](known-schedules/toyota-corolla-cross-2026-hybrid.md) (`toyota-corolla-cross-2026-hybrid`)
 - [Toyota Corolla Cross, 2022](known-schedules/toyota-corolla-cross-2022.md) (`toyota-corolla-cross-2022`)
+- [Toyota Corolla hatchback, 2026](known-schedules/toyota-corolla-2026-hatchback.md) (`toyota-corolla-2026-hatchback`)
 - [Toyota Corolla Hybrid, 2020](known-schedules/toyota-corolla-2020-hybrid.md) (`toyota-corolla-2020-hybrid`)
 - [Toyota Corolla Hybrid, 2021–2022](known-schedules/toyota-corolla-2021-2022-hybrid.md) (`toyota-corolla-2021-2022-hybrid`)
 - [Toyota Corolla Hybrid, 2023–2024](known-schedules/toyota-corolla-2023-2024-hybrid.md) (`toyota-corolla-2023-2024-hybrid`)
 - [Toyota Corolla Hybrid, 2025–2026](known-schedules/toyota-corolla-2025-2026-hybrid.md) (`toyota-corolla-2025-2026-hybrid`)
+- [Toyota Corolla sedan (gas), 2026](known-schedules/toyota-corolla-2026-sedan.md) (`toyota-corolla-2026-sedan`)
 - [Toyota Grand Highlander 2.4L, 2024](known-schedules/toyota-grand-highlander-2024-2.4.md) (`toyota-grand-highlander-2024-2.4`)
 - [Toyota Grand Highlander 2.4L, 2025](known-schedules/toyota-grand-highlander-2025-2.4.md) (`toyota-grand-highlander-2025-2.4`)
 - [Toyota Grand Highlander 2.4L, 2026](known-schedules/toyota-grand-highlander-2026-2.4.md) (`toyota-grand-highlander-2026-2.4`)

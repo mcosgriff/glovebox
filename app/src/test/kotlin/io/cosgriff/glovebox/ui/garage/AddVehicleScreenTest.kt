@@ -22,6 +22,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.screens.Fixtures
@@ -230,6 +231,18 @@ class AddVehicleScreenTest {
         compose.onNodeWithText(str(R.string.powertrain_hybrid)).performClick()
         compose.waitForIdle()
         assertEquals(Powertrain.HYBRID, vm.powertrain)
+    }
+
+    @Test
+    fun `the body style is NHTSA's only where it says so plainly, then what the owner picks`() {
+        val vm = show()
+        decode()
+        assertEquals(null, vm.bodyStyle)
+        text(str(R.string.add_vehicle_body_style)).performClick()
+        compose.onNodeWithText(str(R.string.add_vehicle_body_style_note)).assertExists()
+        compose.onNodeWithText(str(R.string.body_style_hatchback)).performClick()
+        compose.waitForIdle()
+        assertEquals(BodyStyle.HATCHBACK, vm.bodyStyle)
     }
 
     @Test

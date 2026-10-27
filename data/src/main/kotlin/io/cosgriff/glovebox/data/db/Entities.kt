@@ -33,6 +33,11 @@ data class VehicleEntity(
     val drivetrain: String? = null,
     val transmission: String? = null,
     val bodyClass: String? = null,
+    /**
+     * A `BodyStyle` name ("HATCHBACK"): from a plain vPIC `BodyClass`, or the owner's pick. Null is not known, never
+     * guessed. Only a maker's schedule that differs by body reads it (#185).
+     */
+    val bodyStyle: String? = null,
     /** vPIC's `EngineModel`, the maker's engine code ("1GR-FE"). */
     val engineCode: String? = null,
     /** vPIC's `TPMS`: how the tire pressure sensors work, "Direct" or "Indirect". */

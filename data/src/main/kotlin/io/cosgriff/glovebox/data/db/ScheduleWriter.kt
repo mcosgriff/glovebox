@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.data.db
 
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
@@ -28,7 +29,8 @@ class ScheduleWriter @Inject constructor(private val db: GloveboxDatabase) {
      * Takes up a schedule: [items] as the caller built them, and, for a maker's schedule ([makers]), its table as
      * the vehicle's milestones. Null [makers] is the typical list, which has no table. [replaced] are typical
      * items that are the same jobs as [items] ([ScheduleDao.applyKnown]). [engine] is the one the owner chose
-     * among the maker's lists, written with its powertrain only where the vehicle has none on record.
+     * among the maker's lists, written with its powertrain only where the vehicle has none on record; [body] is the
+     * body of the list they chose, written the same way.
      */
     suspend fun adopt(
         vehicleId: Long,
@@ -36,12 +38,14 @@ class ScheduleWriter @Inject constructor(private val db: GloveboxDatabase) {
         makers: KnownScheduleList? = null,
         replaced: List<Long> = emptyList(),
         engine: KnownEngine? = null,
+        body: BodyStyle? = null,
     ) = transaction {
         schedule.applyKnown(items, replaced)
         engine?.let {
             vehicles.setEngineIfBlank(vehicleId, it.label)
             it.powertrain?.let { p -> vehicles.setPowertrainIfBlank(vehicleId, p.name) }
         }
+        body?.let { vehicles.setBodyStyleIfBlank(vehicleId, it.name) }
         val vehicle = vehicles.byId(vehicleId) ?: return@transaction
         makers?.let {
             val table = KnownSchedules.milestonesIn(it, DistanceUnit.of(vehicle.distanceUnit), vehicle.drivetrain, vehicle.transmission)
