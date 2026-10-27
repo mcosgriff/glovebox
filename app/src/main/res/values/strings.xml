@@ -119,6 +119,11 @@
     <string name="powertrain_plug_in">Plug-in hybrid</string>
     <string name="powertrain_flex_fuel">Flex-fuel</string>
     <string name="powertrain_electric">Electric</string>
+    <string name="add_vehicle_body_style">Body style</string>
+    <string name="add_vehicle_body_style_unsure">Something else, or not sure</string>
+    <string name="add_vehicle_body_style_note">Only matters where the maker\'s schedule differs, as it does for some sedans and hatchbacks of one model. NHTSA\'s answer is filled in only where it says so plainly.</string>
+    <string name="body_style_sedan">Sedan</string>
+    <string name="body_style_hatchback">Hatchback</string>
     <string name="add_vehicle_transmission">Transmission</string>
     <string name="add_vehicle_engine_code">Engine code</string>
     <string name="add_vehicle_tpms">Tire pressure sensors</string>
@@ -1472,6 +1477,10 @@
     <string name="setup_typical_note">These are common intervals, not the manufacturer\'s. Check your owner\'s manual and edit anything that differs.</string>
     <string name="setup_engine_title">Which engine does it have?</string>
     <string name="setup_engine_body">The %1$s has a schedule for each of these, and this vehicle\'s engine isn\'t on record. Pick yours to start from the maker\'s schedule in place of the typical one below.</string>
+    <string name="setup_variant_title">Which one is it?</string>
+    <string name="setup_variant_body">The %1$s has a schedule for each of these, and this vehicle\'s engine or body style isn\'t on record. Pick yours to start from the maker\'s schedule in place of the typical one below.</string>
+    <!-- One of the maker's schedules to pick from: %1$s is its engine ("2.0L 4-cylinder"), %2$s its body style ("Hatchback"). -->
+    <string name="setup_choice_with_body">%1$s, %2$s</string>
     <string name="setup_engine_neither">Neither, or I\'m not sure</string>
     <string name="setup_selected">%1$s OF %2$s SELECTED</string>
     <plurals name="setup_track">

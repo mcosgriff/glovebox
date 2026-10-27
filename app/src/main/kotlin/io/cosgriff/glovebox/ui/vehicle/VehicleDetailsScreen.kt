@@ -151,6 +151,7 @@ import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleSummary
 import io.cosgriff.glovebox.domain.VehicleText
+import io.cosgriff.glovebox.domain.BodyStyles
 import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.domain.Vin
@@ -689,6 +690,7 @@ internal fun VehicleDetailsContent(
                             v.engineCode?.let { stringResource(R.string.add_vehicle_engine_code) to it },
                             Powertrains.of(v.powertrain)?.let { stringResource(R.string.add_vehicle_powertrain) to stringResource(it.label()) },
                             v.bodyClass?.let { stringResource(R.string.details_body) to it },
+                            BodyStyles.of(v.bodyStyle)?.let { stringResource(R.string.add_vehicle_body_style) to stringResource(it.label()) },
                             v.series?.let { stringResource(R.string.add_vehicle_series) to it },
                             v.tpms?.let { stringResource(R.string.add_vehicle_tpms) to it },
                         )

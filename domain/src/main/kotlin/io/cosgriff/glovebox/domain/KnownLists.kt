@@ -117,21 +117,37 @@ internal object KnownLists {
      * Of [candidates] (the lists for one make, model and year), the one for the vehicle's [engine] text,
      * [fuel] and [powertrain]: an engine's own list when the size on record is its size (and the fuel and
      * powertrain, where it says them), otherwise one for every engine. **An engine or powertrain that isn't
-     * known matches no list that names one.**
+     * known matches no list that names one.** [fits] is anything else a list may name about the vehicle (its
+     * body): true where it agrees, false where it doesn't, null where the vehicle has nothing on record to tell
+     * by; only a list it is true for is matched.
      */
-    fun <T> forEngine(candidates: List<T>, engineOf: (T) -> KnownEngine?, engine: String?, fuel: String?, powertrain: Powertrain? = null): T? {
+    fun <T> forEngine(
+        candidates: List<T>, engineOf: (T) -> KnownEngine?, engine: String?, fuel: String?, powertrain: Powertrain? = null,
+        fits: (T) -> Boolean? = { true },
+    ): T? {
         val litres = Engines.displacementL(engine)
-        return candidates.firstOrNull { c ->
+        val fitting = candidates.filter { fits(it) == true }
+        return fitting.firstOrNull { c ->
             engineOf(c)?.let { e -> litres != null && sameSize(e, litres) && fuelFits(e, fuel) == true && powertrainFits(e, powertrain) == true } == true
-        } ?: candidates.firstOrNull { engineOf(it) == null }
+        } ?: fitting.firstOrNull { engineOf(it) == null }
     }
 
-    /** The engines' lists among [candidates] that what is on record doesn't rule out, for the owner to pick from. */
-    fun <T> engineChoices(candidates: List<T>, engineOf: (T) -> KnownEngine?, engine: String?, fuel: String?, powertrain: Powertrain? = null): List<T> {
-        if (forEngine(candidates, engineOf, engine, fuel, powertrain) != null) return emptyList()
+    /**
+     * The lists among [candidates] that what is on record doesn't rule out, for the owner to pick from: each engine's,
+     * and any [fits] can't tell about (a body-style list for a vehicle whose body isn't on record).
+     */
+    fun <T> engineChoices(
+        candidates: List<T>, engineOf: (T) -> KnownEngine?, engine: String?, fuel: String?, powertrain: Powertrain? = null,
+        fits: (T) -> Boolean? = { true },
+    ): List<T> {
+        if (forEngine(candidates, engineOf, engine, fuel, powertrain, fits) != null) return emptyList()
         val litres = Engines.displacementL(engine)
         return candidates.filter { c ->
-            engineOf(c)?.let { e -> (litres == null || sameSize(e, litres)) && fuelFits(e, fuel) != false && powertrainFits(e, powertrain) != false } == true
+            // A list for every engine that fits would have been matched above, so one left here is one fits can't tell.
+            fits(c) != false && (
+                engineOf(c)?.let { e -> (litres == null || sameSize(e, litres)) && fuelFits(e, fuel) != false && powertrainFits(e, powertrain) != false }
+                    ?: true
+                )
         }
     }
 }

@@ -66,6 +66,12 @@ data class KnownScheduleList(
      * [engine] is flex-fuel has any (the owner's ruling of 2026-10-23, #33).
      */
     val e85: Map<String, Interval> = emptyMap(),
+    /**
+     * Null for a list that is for every body. Set only where the maker's guides for one engine differ by body
+     * and NHTSA names both the same (the 2026 Corolla sedan and hatchback, #185). A vehicle whose body isn't on
+     * record matches no list that names one; the owner is asked instead.
+     */
+    val body: BodyStyle? = null,
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -105,7 +111,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85")
+    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -146,6 +152,11 @@ object KnownSchedules {
             check.array(e, "modelAliases", 1, 5)?.mapIndexedNotNull { i, n -> check.string(n, ImportCheck.at("modelAliases", i), 40) }
         }.orEmpty()
         if (header != null && aliases.any { KnownLists.same(it, header.model) }) check.fail("modelAliases", "repeats the model")
+        val body = o["body"]?.let { check.string(it, "body", 20) }?.let { name ->
+            BodyStyles.fromFile(name).also {
+                if (it == null) check.fail("body", "must be one of ${BodyStyle.entries.joinToString { b -> b.fileName }}")
+            }
+        }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
@@ -158,6 +169,7 @@ object KnownSchedules {
                 modelAliases = aliases,
                 additional = additional,
                 e85 = e85,
+                body = body,
             ),
         )
     }
@@ -246,24 +258,31 @@ object KnownSchedules {
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
      * give that engine's size, [fuel] its fuel where the list says one, and [powertrain] its powertrain
-     * where the list says one: **an engine or powertrain that isn't known matches no list that needs it**,
-     * and the owner is asked instead ([engineChoices]).
+     * where the list says one, and [body] its body where the list says one: **an engine, powertrain or body
+     * that isn't known matches no list that needs it**, and the owner is asked instead ([engineChoices]).
      */
     fun match(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null,
-    ): KnownScheduleList? = KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain)
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+    ): KnownScheduleList? =
+        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
      * its fuel, isn't on record: every engine's list for the model and year that what is on record
      * doesn't rule out. Empty when nothing is offered for the model, or the vehicle has an engine none
-     * of them is for. The pick is the owner's; nothing here chooses for them.
+     * of them is for. A list that names a body is offered when the vehicle's body isn't on record. The pick is
+     * the owner's; nothing here chooses for them.
      */
     fun engineChoices(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null,
-    ): List<KnownScheduleList> = KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain)
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+    ): List<KnownScheduleList> =
+        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
+
+    /** Null is "can't tell": the list names a body and none is on record. */
+    private fun bodyFits(list: KnownScheduleList, body: BodyStyle?): Boolean? =
+        if (list.body == null) true else body?.let { it == list.body }
 
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one

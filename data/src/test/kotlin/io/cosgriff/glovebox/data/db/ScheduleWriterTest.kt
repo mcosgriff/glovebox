@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.inMemoryDatabase
 import io.cosgriff.glovebox.data.testVehicle
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.ImportedScheduleItem
@@ -130,17 +131,19 @@ class ScheduleWriterTest {
     @Test
     fun `the engine chosen is written only where the vehicle has none`() = runBlocking {
         val blank = db.vehicles().insert(testVehicle())
-        val known = db.vehicles().insert(testVehicle().copy(engine = "4.0L V6", powertrain = Powertrain.GAS.name))
+        val known = db.vehicles().insert(testVehicle().copy(engine = "4.0L V6", powertrain = Powertrain.GAS.name, bodyStyle = BodyStyle.SEDAN.name))
         val engine = KnownEngine("2.4L I4 hybrid", 2.4, powertrain = Powertrain.HYBRID)
 
-        writer.adopt(blank, items(blank), list, engine = engine)
-        writer.adopt(known, items(known), list, engine = engine)
+        writer.adopt(blank, items(blank), list, engine = engine, body = BodyStyle.HATCHBACK)
+        writer.adopt(known, items(known), list, engine = engine, body = BodyStyle.HATCHBACK)
 
         val filled = db.vehicles().byId(blank)!!
         assertEquals("2.4L I4 hybrid", filled.engine)
         assertEquals(Powertrain.HYBRID.name, filled.powertrain)
+        assertEquals(BodyStyle.HATCHBACK.name, filled.bodyStyle)
         val kept = db.vehicles().byId(known)!!
         assertEquals("4.0L V6", kept.engine)
         assertEquals(Powertrain.GAS.name, kept.powertrain)
+        assertEquals(BodyStyle.SEDAN.name, kept.bodyStyle)
     }
 }

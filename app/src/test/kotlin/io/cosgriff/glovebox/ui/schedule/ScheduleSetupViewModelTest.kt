@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.ui.ScheduleSetupRoute
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
@@ -94,6 +95,31 @@ class ScheduleSetupViewModelTest {
         assertEquals("3.5L V6", vehicle.engine)
         // The Tacoma list names no powertrain, so none is written.
         assertNull(vehicle.powertrain)
+    }
+
+    @Test
+    fun `with the body not on record the owner is asked, and the answer is written to the vehicle`() {
+        val (id, vm) = setup(VehicleEntity(vin = null, year = 2026, make = "Toyota", model = "Corolla", engine = "2.0L 4-cyl", createdOn = ScheduleFixtures.ADDED))
+        assertNull(vm.known)
+        assertEquals(setOf(BodyStyle.SEDAN, BodyStyle.HATCHBACK), vm.engineChoices.map { it.body }.toSet())
+
+        val hatch = vm.engineChoices.first { it.body == BodyStyle.HATCHBACK }
+        vm.chooseEngine(hatch)
+        assertEquals(hatch, vm.known)
+        vm.saved()
+        val vehicle = runBlocking { world.db.vehicles().byId(id) }!!
+        assertEquals(BodyStyle.HATCHBACK.name, vehicle.bodyStyle)
+        // The engine on record stays as it was.
+        assertEquals("2.0L 4-cyl", vehicle.engine)
+    }
+
+    @Test
+    fun `a body on record picks its own list`() {
+        val (_, vm) = setup(
+            VehicleEntity(vin = null, year = 2026, make = "Toyota", model = "Corolla", engine = "2.0L 4-cyl", bodyStyle = BodyStyle.SEDAN.name, createdOn = ScheduleFixtures.ADDED),
+        )
+        assertEquals("toyota-corolla-2026-sedan", vm.known?.id)
+        assertEquals(emptyList<Any>(), vm.engineChoices)
     }
 
     @Test

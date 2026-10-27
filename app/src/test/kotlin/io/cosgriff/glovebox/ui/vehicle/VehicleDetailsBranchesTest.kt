@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.domain.MakerDocument
 import io.cosgriff.glovebox.domain.MakerDocumentKind
 import io.cosgriff.glovebox.domain.MakerDocumentList
 import io.cosgriff.glovebox.domain.NoticePrefs
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import io.cosgriff.glovebox.ui.settings.checkInLabel
@@ -101,6 +102,19 @@ class VehicleDetailsBranchesTest {
         show(VehicleFixtures.truck)
         text("2019 Toyota 4Runner SR5").assertExists()
         text(string(R.string.unknown_vehicle)).assertDoesNotExist()
+    }
+
+    @Test
+    fun `the body style is shown when one is on record, and its row is left out otherwise`() {
+        show(VehicleFixtures.truck.copy(bodyStyle = BodyStyle.SEDAN.name))
+        text(string(R.string.add_vehicle_body_style)).assertExists()
+        text(string(R.string.body_style_sedan)).assertExists()
+
+        show(VehicleFixtures.truck.copy(bodyStyle = null))
+        text(string(R.string.add_vehicle_body_style)).assertDoesNotExist()
+
+        show(VehicleFixtures.truck.copy(bodyStyle = "COUPE"))
+        text(string(R.string.add_vehicle_body_style)).assertDoesNotExist()
     }
 
     @Test

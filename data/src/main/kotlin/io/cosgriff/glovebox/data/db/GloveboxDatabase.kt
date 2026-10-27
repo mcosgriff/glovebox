@@ -33,7 +33,7 @@ class Converters {
         CatalogRuleEntity::class,
         RecallNameEntity::class,
     ],
-    version = 36,
+    version = 37,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -71,6 +71,7 @@ class Converters {
         AutoMigration(from = 33, to = 34), // recall_names
         AutoMigration(from = 34, to = 35), // recalls.doNotDrive, parkOutside, overTheAir
         AutoMigration(from = 35, to = 36), // service_record_jobs, service_record_items.jobId
+        AutoMigration(from = 36, to = 37), // vehicles.bodyStyle
     ],
 )
 @ColumnTypeConverters(Converters::class)

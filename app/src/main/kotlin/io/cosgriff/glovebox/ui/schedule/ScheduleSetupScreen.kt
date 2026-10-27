@@ -8,6 +8,7 @@ import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
 import io.cosgriff.glovebox.ui.components.FilledCard
 import io.cosgriff.glovebox.ui.components.SectionLabel
+import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -18,6 +19,8 @@ import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.BodyStyle
+import io.cosgriff.glovebox.domain.BodyStyles
 import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
@@ -190,11 +193,15 @@ class ScheduleSetupViewModel @Inject constructor(
     var known by mutableStateOf<KnownScheduleList?>(null)
         private set
 
-    /** The maker's schedules for this model and year, one per engine, when the vehicle's engine isn't on record. */
+    /**
+     * The maker's schedules for this model and year, one per engine (or body), when the vehicle's engine (or body)
+     * isn't on record.
+     */
     var engineChoices by mutableStateOf<List<KnownScheduleList>>(emptyList())
         private set
 
     private var chosenEngine: KnownEngine? = null
+    private var chosenBody: BodyStyle? = null
 
     var vehicle by mutableStateOf<VehicleEntity?>(null)
         private set
@@ -227,10 +234,10 @@ class ScheduleSetupViewModel @Inject constructor(
             vehicle = v
             val unit = v?.unit ?: DistanceUnit.MILES
             val lists = catalog.lists()
-            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel, Powertrains.of(it.powertrain)) }
+            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel, Powertrains.of(it.powertrain), BodyStyles.of(it.bodyStyle)) }
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
-            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel, Powertrains.of(v.powertrain))
+            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel, Powertrains.of(v.powertrain), BodyStyles.of(v.bodyStyle))
             items = if (list != null) {
                 knownItems(list, v)
             } else {
@@ -251,13 +258,14 @@ class ScheduleSetupViewModel @Inject constructor(
 
     /**
      * The owner says which of [engineChoices] is their engine. The schedule becomes that list's, and
-     * the engine (and the powertrain, where the list names one) is written to the vehicle when it is
-     * saved, if it has none on record.
+     * the engine (and the powertrain and body, where the list names them) is written to the vehicle when
+     * it is saved, if it has none on record.
      */
     fun chooseEngine(list: KnownScheduleList) {
         val v = vehicle ?: return
         known = list
         chosenEngine = list.engine
+        chosenBody = list.body
         engineChoices = emptyList()
         severeUse = false
         e85Use = false
@@ -319,7 +327,7 @@ class ScheduleSetupViewModel @Inject constructor(
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
         // One write: the items, the engine chosen, and the maker's table, which goes with its schedule.
-        writer.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine)
+        writer.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
         onDone(vehicleId)
     }
 }
@@ -387,14 +395,16 @@ fun ScheduleSetupScreen(
                 Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.small) {
                     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         val source = vm.engineChoices.first().source.name
-                        Text(stringResource(R.string.setup_engine_title), style = MaterialTheme.typography.titleSmall)
+                        // Where a choice is by body, the question is about more than the engine.
+                        val byBody = vm.engineChoices.any { it.body != null }
+                        Text(stringResource(if (byBody) R.string.setup_variant_title else R.string.setup_engine_title), style = MaterialTheme.typography.titleSmall)
                         Text(
-                            stringResource(R.string.setup_engine_body, source),
+                            stringResource(if (byBody) R.string.setup_variant_body else R.string.setup_engine_body, source),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         vm.engineChoices.forEach { list ->
-                            InkOutlinedButton(onClick = { vm.chooseEngine(list) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), quiet = true) { Text(list.engine?.label ?: list.title) }
+                            InkOutlinedButton(onClick = { vm.chooseEngine(list) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), quiet = true) { Text(list.choiceLabel()) }
                         }
                         TextButton(onClick = vm::declineEngines, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.setup_engine_neither)) }
                     }
@@ -582,3 +592,14 @@ internal fun E85Switch(on: Boolean?, onPick: (on: Boolean) -> Unit) {
 
 private fun VehicleEntity?.displayName(): String =
     if (this == null) AppText.res.getString(R.string.setup_vehicle) else listOfNotNull(shortName(), engine?.takeIf { it.isNotBlank() }).joinToString(" ")
+
+/** A maker's schedule as one of setup's choices: its engine, and its body where it names one. */
+@Composable
+private fun KnownScheduleList.choiceLabel(): String {
+    val engine = engine?.label
+    val body = body?.let { stringResource(it.label()) }
+    return when {
+        engine != null && body != null -> stringResource(R.string.setup_choice_with_body, engine, body)
+        else -> engine ?: body ?: title
+    }
+}

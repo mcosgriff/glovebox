@@ -3,6 +3,7 @@ package io.cosgriff.glovebox.ui.garage
 import io.cosgriff.glovebox.ui.components.DecodedField
 import io.cosgriff.glovebox.domain.DecodeQuality
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.ui.screens.Fixtures
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
@@ -76,6 +77,8 @@ class AddVehicleViewModelTest {
         )
         // Petrol is never assumed from vPIC's plain "Gasoline".
         assertNull(vm.powertrain)
+        // An SUV is neither body a maker's schedule is told apart by.
+        assertNull(vm.bodyStyle)
         // A single trim is filled in, but it is vPIC's, not the owner's.
         assertEquals("SR5", vm.trim)
         assertFalse(vm.trimConfirmed)
@@ -142,7 +145,9 @@ class AddVehicleViewModelTest {
 
     @Test
     fun `saving keeps the corrections, the unit, the first reading and the recalls already found`() = runBlocking {
-        nhtsa.decode = truckDecode + mapOf("Trim" to "SR5/SR5 Premium", "ElectrificationLevel" to "Strong HEV (Hybrid Electric Vehicle)")
+        nhtsa.decode = truckDecode + mapOf(
+            "Trim" to "SR5/SR5 Premium", "ElectrificationLevel" to "Strong HEV (Hybrid Electric Vehicle)", "BodyClass" to "Hatchback/Liftback/Notchback",
+        )
         nhtsa.recalls = listOf(recallRow("26V700000"))
         val vm = viewModel(unit = DistanceUnit.KILOMETERS)
         waitFor("the settings unit") { vm.unit == DistanceUnit.KILOMETERS }
@@ -152,6 +157,7 @@ class AddVehicleViewModelTest {
         assertEquals(listOf("SR5", "SR5 Premium"), vm.trimChoices)
         assertEquals("", vm.trim)
         assertEquals(Powertrain.HYBRID, vm.powertrain)
+        assertEquals(BodyStyle.HATCHBACK, vm.bodyStyle)
         vm.onTrimChange("SR5 Premium")
         vm.correct(DecodedField.ENGINE_CODE, "1GR-YY")
         vm.correct(DecodedField.TPMS, "")
@@ -167,6 +173,7 @@ class AddVehicleViewModelTest {
         assertEquals("SR5 Premium", v.trim)
         assertTrue(v.trimConfirmed)
         assertEquals(Powertrain.HYBRID.name, v.powertrain)
+        assertEquals(BodyStyle.HATCHBACK.name, v.bodyStyle)
         assertEquals("4.0L 6-cyl", v.engine)
         // Corrected on the confirm step, and cleared there.
         assertEquals("1GR-YY", v.engineCode)
