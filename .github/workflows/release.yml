@@ -17,9 +17,46 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    # Only ever build a release from a version tag.
+  # The tests are CI's (ci.yml), not this workflow's: the tag's commit is the one CI ran on main, so the
+  # release waits for that run instead of repeating it after approval. This job is outside the `release`
+  # environment, so a red CI stops the release before anyone is asked to approve it. release-please.yml
+  # starts this workflow as the release PR merges, while CI on the same commit is still running, so it
+  # waits for CI to finish. A failed or cancelled CI run: re-run it, then re-run this workflow.
+  ci-green:
+    # Only ever build a release from a version tag (`build` needs this job, so it is skipped too).
     if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      actions: read  # read ci.yml's runs
+    steps:
+      - name: Wait for CI to pass on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          started=$(date +%s)
+          while :; do
+            runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$SHA" \
+              --json status,conclusion,url)
+            if [ "$(jq 'any(.[]; .conclusion == "success")' <<<"$runs")" = true ]; then
+              echo "CI passed on $SHA: $(jq -r '.[] | select(.conclusion == "success") | .url' <<<"$runs" | head -1)"
+              exit 0
+            fi
+            if [ "$(jq 'length > 0 and all(.[]; .status == "completed")' <<<"$runs")" = true ]; then
+              echo "::error::CI did not pass on $SHA. Re-run it, then re-run this workflow."
+              jq -r '.[] | "\(.conclusion): \(.url)"' <<<"$runs"
+              exit 1
+            fi
+            if [ "$(jq 'length' <<<"$runs")" = 0 ] && [ $(( $(date +%s) - started )) -gt 600 ]; then
+              echo "::error::No CI run for $SHA after 10 minutes. Run ci.yml on this commit, then re-run this workflow."
+              exit 1
+            fi
+            sleep 30
+          done
+
+  build:
+    needs: ci-green
     runs-on: ubuntu-latest
     permissions:
       contents: write      # create the GitHub Release
@@ -42,11 +79,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           cache-disabled: true
-
-      # The same unit tests as CI, migration tests included. The Android plugin makes unit tests for the
-      # debug build only, so there is no testReleaseUnitTest; the release build is checked by being built.
-      - name: Unit tests
-        run: ./gradlew :domain:test testDebugUnitTest
 
       - name: Decode signing keystore
         run: printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
