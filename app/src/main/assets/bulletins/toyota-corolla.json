@@ -3,6 +3,9 @@
  "model": "Corolla",
  "modelAliases": [],
  "years": [
+  2016,
+  2017,
+  2018,
   2019,
   2020,
   2021,
@@ -163,6 +166,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019,
       2020,
       2021,
@@ -501,6 +507,7 @@
     {
      "model": "COROLLA",
      "years": [
+      2018,
       2019,
       2020
      ]
@@ -530,6 +537,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -550,6 +560,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -590,6 +603,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -611,6 +627,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -631,6 +650,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -651,6 +673,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -671,6 +696,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -692,6 +720,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -713,6 +744,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -733,6 +767,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -753,6 +790,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -773,6 +813,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -794,6 +837,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -814,6 +860,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -834,6 +883,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -842,6 +894,90 @@
     "STRUCTURE"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10170720-9999.pdf"
+  },
+  {
+   "id": "10168545",
+   "number": "KR3_Dealer Packa",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Package: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168545-9999.pdf"
+  },
+  {
+   "id": "10168544",
+   "number": "KR3_Dealer Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168544-9999.pdf"
+  },
+  {
+   "id": "10168543",
+   "number": "KR3_Region Lette",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Letter: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168543-9999.pdf"
+  },
+  {
+   "id": "10168542",
+   "number": "KR3_Region Email",
+   "date": "2019-10-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: Toyota will be sending Safety Recall/Special Service Campaign Follow-Up Notices to owners whose vehicles have not yet had the following Safety Recall/Special Service Campaign repairs completed. Please note the following information for Regional and PD associates.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10168542-9999.pdf"
   },
   {
    "id": "10164886",
@@ -854,6 +990,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -874,6 +1013,9 @@
     {
      "model": "COROLLA",
      "years": [
+      2016,
+      2017,
+      2018,
       2019
      ]
     }
@@ -882,6 +1024,311 @@
     "STRUCTURE:BODY"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10164885-9999.pdf"
+  },
+  {
+   "id": "10145750",
+   "number": "JSD_Technical In",
+   "date": "2018-09-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: Updated 09-17-18 TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN JSD CONTINUOUSLY VARIABLE TRANSAXLE SOFTWARE UPDATE CERTAIN 2014-2017 TOYOTA Corolla CERTAIN 2017 TOYOTA Corolla iM CERTAIN 2016 SCION iM",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145750-9999.pdf"
+  },
+  {
+   "id": "10145735",
+   "number": "JSD-Technical In",
+   "date": "2018-08-21",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN JSD CONTINUOUSLY VARIABLE TRANSAXLE SOFTWARE UPDATE CERTAIN 2014-2017 TOYOTA Corolla CERTAIN 2017 TOYOTA Corolla iM CERTAIN 2016 SCION iM. UPDATE 8-21-2018",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145735-9999.pdf"
+  },
+  {
+   "id": "10149998",
+   "number": "JSD-Technical In",
+   "date": "2018-08-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN JSD CONTINUOUSLY VARIABLE TRANSAXLE SOFTWARE UPDATE CERTAIN 2014-2017 TOYOTA Corolla CERTAIN 2017 TOYOTA Corolla iM CERTAIN 2016 SCION iM UPDATE 8-20-2018",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149998-9999.pdf"
+  },
+  {
+   "id": "10149984",
+   "number": "JSD-Dealer Lette",
+   "date": "2018-08-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter: August 13, 2018. ? A section has been added which clarifies the process for obtaining DSPM approval for out-of-warranty CVT assembly replacement. ? Clarification has been added to the parts ordering process for CVT assembly replacement to highlight that the CVT assembly parts ordering process is applicable regardless of warranty coverage. ? The descriptions for OpCodes JSD021 and JSD020 have been clarified. Toyota previously announced Special Service Campaign J0D, which involved performing a software update to the CVT control software to address the condition described below. Following the completion of the software update in Special Service Campaign J0D, Toyota dealers received reports from some customers stating that the vehicle experienced harsh shifting and/or abnormal engine RPM between shifts. These issues occurred close to the completion date of the campaign and/or within relatively low mileage from the completion of the campaign remedy, prompting Toyota to suspend Special Service Campaign J0D. Toyota has now identified the cause of these issues and has developed a new remedy. Special Service Campaign JSD, which replaces Special Service Campaign J0D, applies this new remedy. Owners of all vehicles previously involved in Special Service Campaign J0D, including those who have previously completed Special Service Campaign J0D, are requested to visit an authorized Toyota dealer to have Special Service Campaign JSD performed.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "POWER TRAIN",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149984-9999.pdf"
+  },
+  {
+   "id": "10145733",
+   "number": "JSD-Region Email",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: Attached Region Letter has been updated. ? The descriptions for OpCodes JSD005, JSD006 JSD007, and JSD008 have been updated. Toyota previously announced Special Service Campaign J0D, which involved performing a software update to the CVT control software to address the condition described below. Following the completion of the software update in Special Service Campaign J0D, Toyota dealers received reports from some customers stating that the vehicle experienced harsh shifting and/or abnormal engine RPM between shifts. These issues occurred close to the completion date of the campaign and/or within relatively low mileage from the completion of the campaign remedy, prompting Toyota to suspend Special Service Campaign J0D. Toyota has now identified the cause of these issues and has developed a new remedy. Special Service Campaign JSD, which replaces Special Service Campaign J0D, applies this new remedy. Owners of all vehicles previously involved in Special Service Campaign J0D, including those who have previously completed Special Service Campaign J0D, are requested to visit an authorized Toyota dealer to have Special Service Campaign JSD performed.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145733-9999.pdf"
+  },
+  {
+   "id": "10145732",
+   "number": "JSD-Dealer Lette",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter: Toyota previously announced Special Service Campaign J0D, which involved performing a software update to the CVT control software to address the condition described below. Following the completion of the software update in Special Service Campaign J0D, Toyota dealers received reports from some customers stating that the vehicle experienced harsh shifting and/or abnormal engine RPM between shifts. These issues occurred close to the completion date of the campaign and/or within relatively low mileage from the completion of the campaign remedy, prompting Toyota to suspend Special Service Campaign J0D. Toyota has now identified the cause of these issues and has developed a new remedy. Special Service Campaign JSD, which replaces Special Service Campaign J0D, applies this new remedy. Owners of all vehicles previously involved in Special Service Campaign J0D, including those who have previously completed Special Service Campaign J0D, are requested to visit an authorized Toyota dealer to have Special Service Campaign JSD performed.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145732-9999.pdf"
+  },
+  {
+   "id": "10145731",
+   "number": "JSD-Dealer Email",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Email: Toyota previously announced Special Service Campaign J0D, which involved performing a software update to the CVT control software to address the condition described below. Following the completion of the software update in Special Service Campaign J0D, Toyota dealers received reports from some customers stating that the vehicle experienced harsh shifting and/or abnormal engine RPM between shifts. These issues occurred close to the completion date of the campaign and/or within relatively low mileage from the completion of the campaign remedy, prompting Toyota to suspend Special Service Campaign J0D. Toyota has now identified the cause of these issues and has developed a new remedy. Special Service Campaign JSD, which replaces Special Service Campaign J0D, applies this new remedy. Owners of all vehicles previously involved in Special Service Campaign J0D, including those who have previously completed Special Service Campaign J0D, are requested to visit an authorized Toyota dealer to have Special Service Campaign JSD performed.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145731-9999.pdf"
+  },
+  {
+   "id": "10145729",
+   "number": "JSD-Region Email",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Region Email: Toyota previously announced Special Service Campaign J0D, which involved performing a software update to the CVT control software to address the condition described below. Following the completion of the software update in Special Service Campaign J0D, Toyota dealers received reports from some customers stating that the vehicle experienced harsh shifting and/or abnormal engine RPM between shifts. These issues occurred close to the completion date of the campaign and/or within relatively low mileage from the completion of the campaign remedy, prompting Toyota to suspend Special Service Campaign J0D. Toyota has now identified the cause of these issues and has developed a new remedy. Special Service Campaign JSD, which replaces Special Service Campaign J0D, applies this new remedy. Owners of all vehicles previously involved in Special Service Campaign J0D, including those who have previously completed Special Service Campaign J0D, are requested to visit an authorized Toyota dealer to have Special Service Campaign JSD performed.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145729-9999.pdf"
+  },
+  {
+   "id": "10145728",
+   "number": "JSD-Technical In",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: See Special Service Campaign JSD for Current Information. TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN J0D CONTINUOUSLY VARIABLE TRANSAXLE SOFTWARE UPDATE CERTAIN 2014-2017 TOYOTA Corolla CERTAIN 2017 TOYOTA Corolla iM CERTAIN 2016 SCION iM",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145728-9999.pdf"
+  },
+  {
+   "id": "10145727",
+   "number": "JSD-Dealer Daily",
+   "date": "2018-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Daily Message: Special Service Campaign JSD ? Remedy Notice Certain 2014 ? 2017 Model Year Toyota Corolla Vehicles Certain 2017 Model Year Toyota Corolla iM Vehicles Certain 2016 Model Year Scion iM Vehicles Continuously Variable Transaxle (CVT) Software Update ? Special Service Campaign JSD Dealer Letter and Technical Instructions now available on TIS.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10145727-9999.pdf"
+  },
+  {
+   "id": "10141568",
+   "number": "J0D_Dealer Daily",
+   "date": "2018-05-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Daily Message: **UPDATED FAQ AVAILABLE ON TIS** - The FAQ for Special Service Campaign J0D has been updated. Please refer to the J0D Dealer Letter on TIS for the updated FAQ. The updated FAQ is also attached to this Dealer Daily Message for your reference. o The updated FAQ will assist dealership personnel in answering questions customers may have about the status of Special Service Campaign J0D.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10141568-9999.pdf"
+  },
+  {
+   "id": "10141507",
+   "number": "J0D_Dealer Lette",
+   "date": "2018-05-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter: May 7, 2018 The condition has been clarified. Special Service Campaign J0D is SUSPENDED. An Electronic Control Unit (ECU) in the subject vehicles has improper programming that could lead a component in the Continuously Variable Transmission (CVT) to unnecessarily cycle and experience abnormal wear. If this component becomes damaged, the Malfunction Indicator Lamp (MIL) may illuminate in the instrument cluster and the vehicle could experience a reduction of speed. After reaching a pre-determined gear ratio, the vehicle can be operated up to approximately 37 mph.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10141507-9999.pdf"
+  },
+  {
+   "id": "10152131",
+   "number": "J0D Dealer Daily",
+   "date": "2015-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Daily Message: Special Service Campaign J0D ? Remedy Notice Certain 2014 ? 2017 Model Year Toyota Corolla Vehicles Certain 2017 Model Year Toyota Corolla iM Vehicles Certain 2016 Model Year Scion iM Vehicles. Continuously Variable Transaxle (CVT) Software Update Special Service Campaign J0D Dealer Letter and Technical Instructions now available on TIS. Refer to the Dealer Letter and Technical Instructions on TIS for additional information.",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2015/MC-10152131-9999.pdf"
+  },
+  {
+   "id": "10152130",
+   "number": "J0D Technical In",
+   "date": "2015-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Technical Instructions: TECHNICAL INSTRUCTIONS FOR SPECIAL SERVICE CAMPAIGN J0D CONTINUOUSLY VARIABLE TRANSAXLE SOFTWARE UPDATE CERTAIN 2014-2017 TOYOTA Corolla, CERTAIN 2017 TOYOTA Corolla iM, CERTAIN 2016 SCION iM",
+   "products": [
+    {
+     "model": "COROLLA",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2015/MC-10152130-9999.pdf"
   }
  ]
 }

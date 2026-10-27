@@ -13,6 +13,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
@@ -83,8 +84,13 @@ class RecordActions @Inject constructor(
     }
 
     /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
-    suspend fun add(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, photoFiles: List<String> = emptyList()) {
-        val id = writer.add(record, items, photoFiles)
+    suspend fun add(
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        photoFiles: List<String> = emptyList(),
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
+    ) {
+        val id = writer.add(record, items, photoFiles, jobs)
         _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
@@ -126,8 +132,9 @@ class RecordActions @Inject constructor(
         items: List<ServiceRecordItemEntity>,
         addedPhotos: List<String> = emptyList(),
         removedPhotoIds: Set<Long> = emptySet(),
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
     ) {
-        writer.replace(record, items, addedPhotos, removedPhotoIds)
+        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
         _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
     }

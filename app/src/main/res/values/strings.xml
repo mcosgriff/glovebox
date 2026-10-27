@@ -1013,6 +1013,55 @@
     <string name="log_cost_error">Enter the cost as an amount like 45.99, or leave it empty.</string>
     <string name="log_photos_full">That\'s the most a record holds (%1$s).</string>
     <string name="log_photos_note">Photos are stored encrypted with the record. The copy in your gallery, if there is one, isn\'t touched.</string>
+
+    <!-- Labor and parts per job (#481): Log service, Edit service and the service record. -->
+    <plurals name="prices_work_section">
+        <item quantity="one">WORK AND PRICES · %1$s LINE</item>
+        <item quantity="other">WORK AND PRICES · %1$s LINES</item>
+    </plurals>
+    <string name="prices_optional">Prices are optional</string>
+    <string name="prices_add">Add labor and parts</string>
+    <string name="prices_add_hint">For an itemized invoice</string>
+    <string name="prices_labor">Labor</string>
+    <string name="prices_parts">Parts</string>
+    <!-- A job with no wording of its own is named by its lines: "Spark plugs + Ignition coils". -->
+    <string name="prices_lines_joined">%1$s + %2$s</string>
+    <!-- What TalkBack says for a price field: "Labor, Front CV axle". -->
+    <string name="prices_field_for">%1$s, %2$s</string>
+    <string name="prices_together">Priced together with…</string>
+    <!-- What TalkBack says for "Priced together with…" under one job: "Front CV axle, priced together with…". -->
+    <string name="prices_together_for">%1$s, priced together with…</string>
+    <string name="prices_together_note">One labor and one parts price for both. Not split between them.</string>
+    <string name="prices_separately">Price separately</string>
+    <string name="prices_error">Enter each price as an amount like 45.99, or leave it empty.</string>
+    <string name="log_missing_prices">valid labor and parts prices</string>
+    <string name="prices_cost_section">COST</string>
+    <string name="prices_total_shop">The grand total from the invoice, as printed.</string>
+    <string name="prices_total_diy">What you spent on parts and supplies.</string>
+    <!-- %1$s is what the line prices add up to, in dollars. The total is never filled in for the user. -->
+    <string name="prices_total_missing">Line prices add up to %1$s. Type the invoice total if you have it.</string>
+    <string name="prices_labor_on_lines">Labor on lines</string>
+    <string name="prices_parts_on_lines">Parts on lines</string>
+    <string name="prices_tax_and_fees">Tax and fees</string>
+    <!-- No cause is named: a discount and a mistyped price look the same. -->
+    <string name="prices_less_than_lines">Less than the line prices</string>
+    <string name="prices_worked_out">worked out</string>
+    <string name="prices_over_note">Total minus line prices: tax, shop supplies and other fees. Worked out, not typed.</string>
+    <string name="prices_under_note">The total is less than the line prices add up to. Worked out, not typed.</string>
+    <!-- %1$s and %2$s are amounts in dollars, under a priced job on the service record. -->
+    <string name="prices_labor_amount">Labor %1$s</string>
+    <string name="prices_parts_amount">Parts %1$s</string>
+    <string name="prices_breakdown_section">COST BREAKDOWN</string>
+    <!-- A share of the total cost on the breakdown bar. -->
+    <string name="prices_share">%1$s%%</string>
+    <string name="prices_record_over_note">Tax and fees is the total minus the line prices.</string>
+    <!-- %1$s is how much less, in dollars. -->
+    <string name="prices_record_under_note">The total is %1$s less than the line prices add up to. Worked out, not typed.</string>
+    <!-- %1$s names the lines with no price, joined with list_and. -->
+    <plurals name="prices_unpriced">
+        <item quantity="one">%1$s has no price listed.</item>
+        <item quantity="other">%1$s have no price listed.</item>
+    </plurals>
     <string name="log_tab_open">open</string>
     <plurals name="log_tab_ticked">
         <item quantity="one">%1$s ticked</item>

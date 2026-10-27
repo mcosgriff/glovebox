@@ -96,6 +96,10 @@ private val accessibility = RoborazziATFAccessibilityCheckOptions(
             // A control that is switched off is greyed out on purpose, and WCAG's contrast rule (1.4.3) leaves
             // inactive controls out; the sheets' Save button is one until there is something to save.
             allowed(TextContrastCheck::class.java, "a disabled control") { !it.isEnabled || it.parentView?.isEnabled == false },
+            // A filled text field: the check guesses the text colour from the field's pixels, and a 1dp outline round
+            // a few thin figures outnumbers them, so it measures the outline (#B9B6AE, 2:1) instead of the text
+            // (onSurface on surface, 17:1). Seen first on Log service's price fields (#481).
+            allowed(TextContrastCheck::class.java, "a filled text field") { it.isEditable == true },
         ),
     ),
     failureLevel = RoborazziATFAccessibilityChecker.CheckLevel.Warning,

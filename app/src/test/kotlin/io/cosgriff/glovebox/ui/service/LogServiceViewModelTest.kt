@@ -175,6 +175,54 @@ class LogServiceViewModelTest {
     }
 
     @Test
+    fun `jobs are saved with their prices, an edit opens on them, and an unpriced line alone has no job`() = runBlocking {
+        val (car, _, _) = truck()
+        val vm = loaded(LogServiceRoute(car))
+        val form = vm.form
+        form.odometerText = "53,000"
+        form.toggle("oil")
+        form.toggle("rotation")
+        form.addCustom("Wiper fluid")
+        form.diy = false
+        form.costText = "120.00"
+        // Made-up figures: the oil change and the rotation priced as one job, the fluid not at all.
+        val byLine = form.jobs.associateBy { it.lines.single() }
+        form.join(byLine.getValue("rotation").id, byLine.getValue("oil").id)
+        form.setLabor(byLine.getValue("oil").id, "40")
+        form.setParts(byLine.getValue("oil").id, "12.3.4")
+        assertFalse(form.pricesValid)
+        var done = false
+        vm.save { done = true }
+        Thread.sleep(100)
+        assertFalse(done)
+
+        form.setParts(byLine.getValue("oil").id, "55.50")
+        assertEquals(2_450L, form.breakdown!!.gapCents)
+        vm.save { done = true }
+        awaitUntil("the save") { done }
+
+        val saved = t.db.service().recordsFor(car).maxBy { it.record.date }
+        val job = saved.jobs.single()
+        assertEquals(4_000L, job.laborCents)
+        assertEquals(5_550L, job.partsCents)
+        assertNull(job.wording)
+        // The total stays as typed; it is never worked out from the prices.
+        assertEquals(12_000L, saved.record.costCents)
+        assertEquals(
+            mapOf("oil" to job.id, "rotation" to job.id, null to null),
+            saved.items.associate { it.catalogId to it.jobId },
+        )
+
+        val edit = loaded(LogServiceRoute(car, recordId = saved.record.id))
+        awaitUntil("the edit to load") { edit.form.data != null }
+        assertTrue(edit.form.pricesShown)
+        assertEquals(
+            listOf(listOf("oil", "rotation") to ("40.00" to "55.50"), listOf(customKey("Wiper fluid")) to ("" to "")),
+            edit.form.jobs.map { it.lines to (it.labor to it.parts) },
+        )
+    }
+
+    @Test
     fun `an edit opens on the record as saved, keeps its wording and flags, and offers no due chips`() = runBlocking {
         val (car, oil, _) = truck()
         val id = t.db.service().insertWithItems(

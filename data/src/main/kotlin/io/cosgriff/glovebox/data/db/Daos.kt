@@ -254,23 +254,36 @@ interface ServiceDao {
 
     @Insert suspend fun insertRecord(record: ServiceRecordEntity): Long
     @Insert suspend fun insertItems(items: List<ServiceRecordItemEntity>)
+    @Insert suspend fun insertJob(job: ServiceRecordJobEntity): Long
     @Update suspend fun updateRecord(record: ServiceRecordEntity)
     @Query("DELETE FROM service_record_items WHERE recordId = :recordId")
     suspend fun clearItems(recordId: Long)
+    @Query("DELETE FROM service_record_jobs WHERE recordId = :recordId")
+    suspend fun clearJobs(recordId: Long)
 
+    /**
+     * [jobs] keep the ids [items] point at them by (`jobId`) only to match them up: each is written under a new
+     * id, and its lines follow it. A line pointing at no job given has no price.
+     */
     @Transaction
-    suspend fun insertWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>): Long {
+    suspend fun insertWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity> = emptyList()): Long {
         val id = insertRecord(record)
-        insertItems(items.map { it.copy(recordId = id) })
+        insertItemsAndJobs(id, items, jobs)
         return id
     }
 
-    /** Edit = replace the record and its items atomically. Reminders recompute from the log. */
+    /** Edit = replace the record, its items and its jobs atomically. Reminders recompute from the log. */
     @Transaction
-    suspend fun replaceWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>) {
+    suspend fun replaceWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity> = emptyList()) {
         updateRecord(record)
         clearItems(record.id)
-        insertItems(items.map { it.copy(id = 0, recordId = record.id) })
+        clearJobs(record.id)
+        insertItemsAndJobs(record.id, items.map { it.copy(id = 0) }, jobs)
+    }
+
+    private suspend fun insertItemsAndJobs(recordId: Long, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity>) {
+        val ids = jobs.associate { it.id to insertJob(it.copy(id = 0, recordId = recordId)) }
+        insertItems(items.map { it.copy(recordId = recordId, jobId = it.jobId?.let(ids::get)) })
     }
 
     @Delete suspend fun deleteRecord(record: ServiceRecordEntity)

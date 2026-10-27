@@ -5,6 +5,10 @@
   "Golf GTI"
  ],
  "years": [
+  2006,
+  2007,
+  2008,
+  2009,
   2010,
   2011,
   2012,
@@ -15,7 +19,7 @@
   2020,
   2021
  ],
- "asOf": "2026-10-24",
+ "asOf": "2026-10-25",
  "bulletins": [
   {
    "id": "11034611",
@@ -91,6 +95,7 @@
     {
      "model": "GTI",
      "years": [
+      2009,
       2010,
       2011,
       2012,
@@ -290,6 +295,8 @@
     {
      "model": "GTI",
      "years": [
+      2008,
+      2009,
       2010,
       2011
      ]
@@ -335,6 +342,8 @@
     {
      "model": "GTI",
      "years": [
+      2008,
+      2009,
       2010,
       2011,
       2012,
@@ -360,6 +369,8 @@
     {
      "model": "GTI",
      "years": [
+      2008,
+      2009,
       2010,
       2011,
       2012,
@@ -385,6 +396,8 @@
     {
      "model": "GTI",
      "years": [
+      2008,
+      2009,
       2010,
       2011,
       2012
@@ -462,6 +475,8 @@
     {
      "model": "GTI",
      "years": [
+      2008,
+      2009,
       2010,
       2011,
       2012
@@ -472,6 +487,29 @@
     "ENGINE"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149887-9999.pdf"
+  },
+  {
+   "id": "10122882",
+   "number": "VWP-17-03",
+   "date": "2017-02-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of a limited warranty extension for the ABS control module for certain 2009 - 2010 Volkswagen vehicles repaired by Safety Recall 45F2.",
+   "products": [
+    {
+     "model": "GTI",
+     "years": [
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+    "HYDRAULIC:ANTILOCK/TRACTION CONTROL/ELECTRONIC LIMITED SLIP:CONTROL UNIT/MODULE",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10122882-9999.pdf"
   },
   {
    "id": "10128136",
@@ -545,6 +583,48 @@
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2015/MC-10123600-9999.pdf"
   },
   {
+   "id": "10124393",
+   "number": "Campaign Circula",
+   "date": "2014-05-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action: The F16 position fuse could fail prematurely due to possible degradation of the fuse?s coating material. If this happens, it could cause a partial loss (but not a complete failure) of vehicle lighting, including the loss of DRL illumination on one side of the vehicle, which in turn could render the vehicle less visible to other motorists and pedestrians during daylight hours. The corrective action taken was to Replace the existing F16 position fuse with a new, optimized hard-coated fuse. This document informs how to install the new fuse and how to make a claim for the work provided",
+   "products": [
+    {
+     "model": "GTI",
+     "years": [
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10124393-9999.pdf"
+  },
+  {
+   "id": "10157406",
+   "number": "Customer Letter",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkswagen Note (Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, Volkswagen is informing customers of the decision to extend the customers Emissions Control Systems Warranty for the intake manifold and fuel injectors under specific conditions to 10 years or 120,000 miles, whichever occurs first.",
+   "products": [
+    {
+     "model": "GTI",
+     "years": [
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
+  },
+  {
    "id": "10240650",
    "number": "Action20T8a",
    "date": "2013-06-05",
@@ -555,6 +635,7 @@
     {
      "model": "GTI",
      "years": [
+      2009,
       2010,
       2011,
       2012
@@ -577,6 +658,7 @@
     {
      "model": "GTI",
      "years": [
+      2009,
       2010,
       2011,
       2012
@@ -587,6 +669,29 @@
     "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
+  },
+  {
+   "id": "10032745",
+   "number": "LT-06-08-09",
+   "date": "2009-12-01",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "VOLKSWAGEN SERVICE CAMPAIGN: SEE DOCUMENT SEARCH BUTTON FOR OWNER LETTER. WARRANTY EXTENSION FOR CENTER HIGH MOUNTED STOPLIGHT LIGHT EMITTING DIODES (LEDS). CSC LETTER WAS RECEIVED. *PE",
+   "products": [
+    {
+     "model": "GTI",
+     "years": [
+      2006,
+      2007,
+      2008,
+      2009
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
   }
  ]
 }

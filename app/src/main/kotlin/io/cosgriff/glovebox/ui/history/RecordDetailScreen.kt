@@ -67,6 +67,9 @@ import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.LastDone
+import io.cosgriff.glovebox.domain.CostBreakdown
+import io.cosgriff.glovebox.domain.JobPrice
+import io.cosgriff.glovebox.domain.JobPrices
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.ServiceCatalog
@@ -126,7 +129,39 @@ data class RecordDetail(
     val offers: List<VisitRow> = emptyList(),
     /** What "Same visit as…" lists: the vehicle's other records not in its visit, the same day first. */
     val choices: List<VisitRow> = emptyList(),
-)
+) {
+    /** [lines] under the jobs they were priced in (#481), in the record's order; a line with no job stands alone. */
+    val work: List<WorkJob> get() = workOf(record, lines)
+
+    /** Null while nothing is priced: then the record shows no breakdown at all. */
+    val breakdown: CostBreakdown? get() = JobPrices.breakdown(record.jobs.map { JobPrice(it.laborCents, it.partsCents) }, record.record.costCents)
+
+    /** The lines in no priced job, for the breakdown's caption. */
+    val unpriced: List<String> get() = work.filter { !it.priced }.flatMap { j -> j.lines.map { it.label } }
+}
+
+/**
+ * A job as the record shows it: [heading] is the shop's wording, null for a line on its own (or a job whose
+ * wording is just its line's name). [priced] when it has labor or parts.
+ */
+data class WorkJob(val heading: String?, val laborCents: Long?, val partsCents: Long?, val lines: List<WorkLine>) {
+    val priced: Boolean get() = JobPrice(laborCents, partsCents).priced
+    val totalCents: Long? get() = JobPrice(laborCents, partsCents).totalCents
+}
+
+/** [lines] are [record]'s items worded, one for one. */
+internal fun workOf(record: ServiceRecordWithItems, lines: List<WorkLine>): List<WorkJob> {
+    val jobs = record.jobs.associateBy { it.id }
+    val items = record.items.zip(lines)
+    val placed = mutableSetOf<Long>()
+    return items.mapNotNull { (item, line) ->
+        val job = item.jobId?.let(jobs::get) ?: return@mapNotNull WorkJob(null, null, null, listOf(line))
+        if (!placed.add(job.id)) return@mapNotNull null
+        val own = items.filter { it.first.jobId == job.id }.map { it.second }
+        val heading = job.wording?.takeIf { own.size > 1 || it != own.single().label }
+        WorkJob(heading, job.laborCents, job.partsCents, own)
+    }
+}
 
 /** Another record, as the visit section and "Same visit as…" show it. [work] and [about] are worded. */
 data class VisitRow(val id: Long, val work: String, val about: String)
@@ -385,29 +420,15 @@ internal fun RecordDetailContent(
                 SectionLabel(pluralStringResource(R.plurals.record_work_done, n, n.asNumber()))
                 FilledCard {
                     Column(Modifier.padding(horizontal = 16.dp)) {
-                        detail.lines.forEachIndexed { i, line ->
+                        detail.work.forEachIndexed { i, job ->
                             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                                    Text(
-                                        line.category ?: stringResource(R.string.log_custom),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                                line.reminderNote?.let {
-                                    Text(
-                                        it,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = if (line.current) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
+                            WorkJobRow(job)
                         }
                     }
                 }
             }
+
+            detail.breakdown?.let { CostBreakdownCard(it, detail.unpriced) }
 
             record.notes?.let { notes ->
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
