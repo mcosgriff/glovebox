@@ -79,4 +79,44 @@ class SpendingTest {
         val vehicle = ExportVehicle("2019 Toyota 4Runner", null, null, unit = DistanceUnit.MILES, odometer = 10_000, soldOn = null, records = records, schedule = emptyList(), recalls = emptyList())
         assertEquals(vehicle.totalCents, Spending.summary(records, today, { it.date }, { it.costCents })!!.totalCents)
     }
+
+    private fun split(vararg records: List<JobPrice>) = Spending.split(records.toList()) { it }
+
+    @Test
+    fun `no jobs or no priced jobs make no split`() {
+        assertNull(split())
+        assertNull(split(emptyList(), emptyList()))
+        assertNull(split(listOf(JobPrice(null, null)), emptyList()))
+    }
+
+    @Test
+    fun `the split counts only the records with a price, of all of them`() {
+        val s = split(
+            listOf(JobPrice(30_000, 42_000), JobPrice(3_000, null)),
+            emptyList(),
+            listOf(JobPrice(null, null)),
+            listOf(JobPrice(12_000, 8_000)),
+        )!!
+        assertEquals(SpendingSplit(laborCents = 45_000, partsCents = 50_000, priced = 2, records = 4), s)
+    }
+
+    @Test
+    fun `labor that no record entered is left out, not zero`() {
+        assertEquals(SpendingSplit(laborCents = null, partsCents = 6_500, priced = 2, records = 3), split(listOf(JobPrice(null, 4_000)), listOf(JobPrice(null, 2_500)), emptyList()))
+    }
+
+    @Test
+    fun `parts that no record entered are left out, not zero`() {
+        assertEquals(SpendingSplit(laborCents = 9_000, partsCents = null, priced = 1, records = 2), split(listOf(JobPrice(9_000, null)), emptyList()))
+    }
+
+    @Test
+    fun `a zero typed is a price`() {
+        assertEquals(SpendingSplit(laborCents = 0, partsCents = 1_500, priced = 1, records = 1), split(listOf(JobPrice(0, 1_500))))
+    }
+
+    @Test
+    fun `every record priced`() {
+        assertEquals(SpendingSplit(laborCents = 5_000, partsCents = 7_000, priced = 2, records = 2), split(listOf(JobPrice(2_000, 3_000)), listOf(JobPrice(3_000, 4_000))))
+    }
 }

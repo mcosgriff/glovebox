@@ -16,6 +16,7 @@ import androidx.lifecycle.SavedStateHandle
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import androidx.compose.ui.test.performScrollTo
 import io.cosgriff.glovebox.ui.garage.GarageOverview
 import io.cosgriff.glovebox.ui.service.monthYear
@@ -126,6 +127,25 @@ class HistoryScreenTest {
         compose.onNodeWithText(string(R.string.history_search_show_all)).performClick()
         compose.waitForText("Oil and filter")
         assertEquals("", vm.search)
+    }
+
+    @Test
+    fun `labor and parts show under the spending line from the priced records, and go with it while a filter is on`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Oil and filter", "oil")), costCents = 5_000)
+        t.db.service().insertWithItems(
+            ServiceRecordEntity(vehicleId = car, date = today.minusDays(20), odometer = 41_000, diy = false, shopName = "Made-up Tire", costCents = 3_000),
+            listOf(line("Tires rotated", "rotation").copy(jobId = 1)),
+            listOf(ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 2_500)),
+        )
+        show(tab())
+
+        // Parts no record entered are left out, not shown as nothing spent.
+        val split = plural(R.plurals.history_spending_split_labor, 2, 1.asNumber(), 2.asNumber(), Money.format(2_500))
+        compose.waitForText(split)
+
+        compose.onNodeWithText(io.cosgriff.glovebox.ui.service.catalogCategoryLabel("tires")).performClick()
+        compose.waitForNoText(split)
     }
 
     @Test

@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.stateDescription
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistoryOrdering
 import io.cosgriff.glovebox.domain.HistorySort
+import io.cosgriff.glovebox.domain.JobPrice
 import io.cosgriff.glovebox.domain.Spending
 import io.cosgriff.glovebox.domain.HistorySearch
 import io.cosgriff.glovebox.domain.SearchableRecord
@@ -47,6 +48,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import io.cosgriff.glovebox.domain.SpendingSplit
 import io.cosgriff.glovebox.domain.SpendingSummary
 import io.cosgriff.glovebox.ui.service.monthYear
 import java.time.LocalDate
@@ -349,6 +351,8 @@ internal fun HistoryContent(
     val timeline = view == HistoryView.TIMELINE && state.records.isNotEmpty()
     // The spending line is the list's; the timeline shows time, not money.
     val spending = if (filter == null && !searching && !timeline) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
+    // Labor and parts under it (#485), over the same records, and only while it shows.
+    val split = spending?.let { Spending.split(state.records) { r -> r.jobs.map { JobPrice(it.laborCents, it.partsCents) } } }
 
     // A new order starts at the top. Without this the list would hold on to the record that was first and
     // follow it to wherever it now sorts; coming back from a record keeps the place, since that is a new composition.
@@ -398,6 +402,7 @@ internal fun HistoryContent(
                     }
                 }
                 spending?.let { SpendingLine(it) }
+                split?.let { SpendingSplitLine(it) }
                 val custom = state.customLines
                 if (!archived && custom.lines > 0 && onSortCustom != null) {
                     TextButton(onClick = onSortCustom, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
@@ -538,6 +543,25 @@ private fun SpendingLine(s: SpendingSummary) {
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+/**
+ * "Line prices on 3 of 12 records: labor $420.00, parts $610.00" (#485). Worded as its own figures, not a share of
+ * the total above; labor or parts no record entered is left out rather than shown as $0.00.
+ */
+@Composable
+private fun SpendingSplitLine(s: SpendingSplit) {
+    val priced = s.priced.asNumber()
+    val records = s.records.asNumber()
+    val labor = s.laborCents
+    val parts = s.partsCents
+    val text = when {
+        labor != null && parts != null -> pluralStringResource(R.plurals.history_spending_split, s.records, priced, records, Money.format(labor), Money.format(parts))
+        labor != null -> pluralStringResource(R.plurals.history_spending_split_labor, s.records, priced, records, Money.format(labor))
+        parts != null -> pluralStringResource(R.plurals.history_spending_split_parts, s.records, priced, records, Money.format(parts))
+        else -> return
+    }
+    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
