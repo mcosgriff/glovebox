@@ -67,6 +67,16 @@ class LineGuessTest {
 
     /** No guess: two jobs, wording that doesn't say what was done, close calls, and a check passed off as the work. */
     @Test
+    fun `one shop service can guess more than one line`() {
+        assertEquals(listOf("spark-plugs", "ignition-coils"), LineGuess.guesses("Remove & Replace Spark Plugs and Ignition Coils"))
+        assertEquals(listOf("water-pump", "thermostat"), LineGuess.guesses("Water pump and thermostat replaced"))
+        assertEquals(listOf("oil"), LineGuess.guesses("Oil and filter change"))
+        assertEquals(emptyList<String>(), LineGuess.guesses("Vehicle health report"))
+        // "Water pump checked" must never reset the pump, split or not.
+        assertEquals(listOf("wipers"), LineGuess.guesses("Water pump checked and wipers replaced"))
+    }
+
+    @Test
     fun `wording that isn't clearly one line gets no guess`() {
         listOf(
             "Water pump and thermostat replaced",

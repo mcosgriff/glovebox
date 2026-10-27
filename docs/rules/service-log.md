@@ -1,6 +1,6 @@
 # Service log
 
-Rules for Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits. Read before changing any of it; review holds a diff to every line here.
+Rules for Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits, reading invoices. Read before changing any of it; review holds a diff to every line here.
 
 - **All service-log writes go through `RecordActions`**, which drives the snackbar and its Undo.
 - **A vehicle's reminders are read through `VehicleLogs`** (#420, `:data`): the vehicle, all its schedule items,
@@ -66,4 +66,18 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   overwritten by, the prices.** The gap ("Tax and fees", or "Less than the line prices", naming no cause) is worked
   out on every read (`JobPrices`), never stored, and nothing about it shows while nothing is priced. A line alone
   and unpriced has no job row. Changing prices or jobs moves no reminder.
+- Reading an invoice (#483, `InvoiceReader`, `:domain`; the screens are #484): **it only fills the form.** No
+  per-shop templates: services come from a heading, a table whose header names labor and parts, a line carrying a
+  subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when
+  a sum the invoice prints agrees** (parts rows, a service's subtotal, every service's labor, parts, fees and sublet
+  against the totals block, the totals block or the subtotals against the grand total); otherwise it is left out,
+  never guessed or worked out from the others. **Jobs come only from the services, up to the totals**: recommended,
+  declined or deferred work and an inspection report's priced items are text offered for notes, never a job. A VIN
+  must pass its check digit; on a line labelled VIN, at most two look-alikes (S/5, B/8, Z/2, G/6) are folded, and
+  only when exactly one way passes. The odometer follows Read dash's range from the last reading on or before the
+  invoice's date; out below in, or more than 1,000 past it, leaves both out. A date after today is left out. Wording
+  goes through the user's rules, then `LineGuess.guesses` (a service may guess more than one line), only offered.
+  `:domain` returns a typed trace of every decision; `app` words it. The honest figure is the unseen set in
+  `InvoiceUnseenTest`. **Never commit a real invoice**: real ones go in the git-ignored
+  `domain/src/test/private-invoices/` (`PrivateInvoicesTest`).
 - Clear service history deletes imported records only by default, or all; typed DELETE, no Undo.
