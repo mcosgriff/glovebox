@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.29.0](https://github.com/mcosgriff/glovebox/compare/v0.28.0...v0.29.0) (2026-10-27)
+
+
+### Features
+
+* **export:** job prices in the Markdown export ([#481](https://github.com/mcosgriff/glovebox/issues/481)) ([#495](https://github.com/mcosgriff/glovebox/issues/495)) ([17bb9ee](https://github.com/mcosgriff/glovebox/commit/17bb9ee4e764cf3f851f65d7188b1871c7120c11))
+* **export:** job prices on the PDF report ([#481](https://github.com/mcosgriff/glovebox/issues/481)) ([#498](https://github.com/mcosgriff/glovebox/issues/498)) ([73bbaa0](https://github.com/mcosgriff/glovebox/commit/73bbaa0a54a0242724a46120ad145ee88a752a66))
+* **history:** labor and parts under the spending line ([#485](https://github.com/mcosgriff/glovebox/issues/485)) ([#499](https://github.com/mcosgriff/glovebox/issues/499)) ([5feb216](https://github.com/mcosgriff/glovebox/commit/5feb2166b81ede486ba24aa551e06fe039646425))
+* **import:** service history version 2 carries job prices ([#481](https://github.com/mcosgriff/glovebox/issues/481)) ([#494](https://github.com/mcosgriff/glovebox/issues/494)) ([ceb84e4](https://github.com/mcosgriff/glovebox/commit/ceb84e4ba80022674ea88d78853ebd6fc5785fd0))
+* **schedule:** 2026 Corolla sedan and hatchback lists, matched on body style ([#493](https://github.com/mcosgriff/glovebox/issues/493)) ([cec83a3](https://github.com/mcosgriff/glovebox/commit/cec83a38169325fdd52f1523ea05a1f357ea8e6a))
+* **schedule:** 2026 Grand Highlander hybrid and Hybrid MAX lists ([#199](https://github.com/mcosgriff/glovebox/issues/199)) ([#487](https://github.com/mcosgriff/glovebox/issues/487)) ([07b906f](https://github.com/mcosgriff/glovebox/commit/07b906f015d0aaa40b3e68e3d224af164ff40dc7))
+* **schedule:** Corolla 1.8L maintenance schedule, 2016–2019 (E170) ([#488](https://github.com/mcosgriff/glovebox/issues/488)) ([1d5cd78](https://github.com/mcosgriff/glovebox/commit/1d5cd78b060ba5bbca6129d028cce01607555e53)), closes [#192](https://github.com/mcosgriff/glovebox/issues/192)
+* **schedule:** GTI maintenance schedules, 2017, 2018 and 2019 ([#492](https://github.com/mcosgriff/glovebox/issues/492)) ([f7b742d](https://github.com/mcosgriff/glovebox/commit/f7b742d230c3b6412d8b3efd5233d65c49ec15ca)), closes [#143](https://github.com/mcosgriff/glovebox/issues/143)
+* **schedule:** Mk5 GTI lists, 2006–2009, from VW's reissues ([#490](https://github.com/mcosgriff/glovebox/issues/490)) ([6bc5670](https://github.com/mcosgriff/glovebox/commit/6bc5670da394094130954b98950550b03e7a955f)), closes [#145](https://github.com/mcosgriff/glovebox/issues/145)
+* **service-log:** invoice parser and trace in :domain ([#483](https://github.com/mcosgriff/glovebox/issues/483)) ([#497](https://github.com/mcosgriff/glovebox/issues/497)) ([abcb73c](https://github.com/mcosgriff/glovebox/commit/abcb73ce0c57d2489cfff4d6e2145b331228ddfe))
+* **service:** labor and parts prices per job ([#481](https://github.com/mcosgriff/glovebox/issues/481)) ([#491](https://github.com/mcosgriff/glovebox/issues/491)) ([7e9a73d](https://github.com/mcosgriff/glovebox/commit/7e9a73daae0d24d1cacbfe1d14bd249c0670024e))
+
+
+### Code Refactoring
+
+* **vehicles:** one row composable for vehicle details ([#479](https://github.com/mcosgriff/glovebox/issues/479)) ([#496](https://github.com/mcosgriff/glovebox/issues/496)) ([28f0e24](https://github.com/mcosgriff/glovebox/commit/28f0e24077cdcfb08e5aed8ed0ace23d858ae745))
+
 ## [0.28.0](https://github.com/mcosgriff/glovebox/compare/v0.27.0...v0.28.0) (2026-10-26)
 
 
