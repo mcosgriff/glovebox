@@ -59,6 +59,12 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 6e · History — timeline view | `screens/Timeline.png` | `source/Timeline.dc.html` |
 | PDF report · page 1 (infographic) — 816×1056 Letter | `screens/ReportPage1.png` | `source/ReportPage1.dc.html` |
 | PDF report · page 2 (service log) — 816×1056 Letter | `screens/ReportPage2.png` | `source/ReportPage2.dc.html` |
+| Prices A · Log service — shop, 2 of 3 lines priced (recommended layout) | `screens/PricesLog.png` · `screens/PricesLogDark.png` | `source/PricesLog.dc.html` |
+| Prices A · Log service — DIY, nothing priced | `screens/PricesLogDiy.png` · `screens/PricesLogDiyDark.png` | `source/PricesLogDiy.dc.html` → imports `PricesLog` |
+| Prices A · Edit service — filled | `screens/PricesEdit.png` · `screens/PricesEditDark.png` | `source/PricesEdit.dc.html` → imports `PricesLog` |
+| Prices · Service record — with line prices | `screens/PricesRecord.png` · `screens/PricesRecordDark.png` | `source/PricesRecord.dc.html` |
+| Prices · Service record — no line prices | `screens/PricesRecordPlain.png` · `screens/PricesRecordPlainDark.png` | `source/PricesRecordPlain.dc.html` → imports `PricesRecord` |
+| Prices B · Log service — price sheet per line (alternative, not chosen) | `screens/PricesLogB.png` · `screens/PricesLogBDark.png` | `source/PricesLogB.dc.html` |
 
 ## PDF report
 
@@ -66,4 +72,10 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 = 8.5×11 in). In the app, render them with Android's `PdfDocument` on a 612×792 pt Letter page (design px × 0.75 = pt). Category colors
 (oil `#eb6834`, tires `#2a78d6`, brakes `#eda100`, fluids & 4WD `#1baf7a`, other `#8A8E94`) were
 checked for colorblind separation; every color also has a text label, so the report reads in grayscale.
+
+## Labor & parts per line
+
+Spec: `specs/line-prices.md`. Screens: `screens/Prices*.png` (light) and `screens/Prices*Dark.png`.
+`PricesLog.dc.html` and `PricesRecord.dc.html` hold the real markup; the other `Prices*.dc.html` files
+only import them with a different `variant` / `theme`.
 

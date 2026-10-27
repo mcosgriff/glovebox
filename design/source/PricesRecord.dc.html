@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Service record with line prices</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="History.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="flex: 1; font-size: 20px; font-weight: 600">Service record</div>
+    <a href="PricesEdit.dc.html" style="height: 48px; padding: 0 16px; margin-right: 12px; border-radius: 12px; border: 1.5px solid {{t.field}}; box-sizing: border-box; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: {{t.ink}}; text-decoration: none">Edit</a>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 8px 20px 24px 20px">
+    <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; box-shadow: {{t.shadow}}; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+      <div style="font-size: 13px; color: {{t.muted}}">2019 Blue truck · Main Street Auto · sample data</div>
+      <div style="font-size: 26px; font-weight: 700; line-height: 1.1">Mar 3, 2026</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: {{t.muted}}">Odometer</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600">64,912 mi</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: {{t.muted}}">Total cost</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600">$305.48</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK DONE · 3 ITEMS</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{lines}}" as="l" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-bottom: {{l.border}}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
+              <span style="display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 15px; font-weight: 600">{{l.name}}</span>
+                <span style="font-size: 12px; color: {{t.muted}}">{{l.cat}}</span>
+              </span>
+              <sc-if value="{{l.priced}}" hint-placeholder-val="{{ false }}">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">{{l.sub}}</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{l.priced}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 16px; font-size: 13px; color: {{t.sub}}">
+                <span>Labor <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: {{t.ink}}">{{l.labor}}</span></span>
+                <span>Parts <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: {{t.ink}}">{{l.parts}}</span></span>
+              </div>
+            </sc-if>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: {{t.ok}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+              <span>{{l.next}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{priced}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">COST BREAKDOWN</div>
+        <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <div role="img" aria-label="Of $305.48: labor $149.00, parts $135.15, tax and fees $21.33" style="display: flex; gap: 2px; height: 14px">
+            <span style="height: 14px; border-radius: 4px 0 0 4px; width: {{laborPct}}; background: {{t.labor}}"></span>
+            <span style="height: 14px; width: {{partsPct}}; background: {{t.parts}}"></span>
+            <span style="height: 14px; border-radius: 0 4px 4px 0; box-sizing: border-box; flex: 1; border: 1.5px dashed {{t.taxLine}}; background: {{t.taxFill}}"></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px">
+              <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{t.labor}}"></span>
+              <span style="flex: 1">Labor</span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{laborShare}}</span>
+              <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$149.00</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px">
+              <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{t.parts}}"></span>
+              <span style="flex: 1">Parts</span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{partsShare}}</span>
+              <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$135.15</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px">
+              <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; box-sizing: border-box; border: 1.5px dashed {{t.taxLine}}; background: {{t.taxFill}}"></span>
+              <span style="flex: 1; display: flex; align-items: center; gap: 8px">Tax and fees
+                <span style="padding: 2px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; color: {{t.muted}}">worked out</span>
+              </span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{taxShare}}</span>
+              <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">$21.33</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; padding-top: 8px; border-top: 1px solid {{t.divider}}">
+              <span style="width: 10px"></span>
+              <span style="flex: 1; font-weight: 700">Total cost</span>
+              <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600">$305.48</span>
+            </div>
+          </div>
+          <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Tax and fees is the total minus the line prices. Tire rotation has no price listed.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECEIPTS &amp; PHOTOS</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <div aria-label="Invoice photo" style="height: 96px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.photo}}; display: flex; align-items: flex-end; padding: 8px; box-sizing: border-box; font-size: 12px; font-weight: 600; color: {{t.sub}}">Invoice</div>
+        <div style="height: 96px; border-radius: 12px; border: 1.5px dashed {{t.field}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: {{t.sub}}">+ Add</div>
+      </div>
+    </div>
+
+    <a href="DeleteRecord.dc.html" style="height: 52px; border-radius: 12px; border: 1.5px solid {{t.danger}}; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: {{t.danger}}; text-decoration: none">Delete record</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["priced","plain"],"default":"priced"},"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+renderVals() {
+var dark = (this.props.theme || 'light') === 'dark';
+var priced = (this.props.variant || 'priced') === 'priced';
+var t = dark ? {
+bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
+field: '#4A4F55', ok: '#5EEAD4', danger: '#F97066', shadow: 'none',
+labor: '#C4C1BA', parts: '#F08A4B', taxLine: '#8A8E94', taxFill: 'transparent',
+photo: 'repeating-linear-gradient(135deg, #24282D 0px, #24282D 10px, #1C1F23 10px, #1C1F23 20px)'
+} : {
+bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
+field: '#B9B6AE', ok: '#0F766E', danger: '#B42318', shadow: '0 1px 2px rgba(23,25,28,0.06), 0 8px 24px rgba(23,25,28,0.06)',
+labor: '#3A3E44', parts: '#C2410C', taxLine: '#8A8E94', taxFill: 'transparent',
+photo: 'repeating-linear-gradient(135deg, #FFFFFF 0px, #FFFFFF 10px, #F1EFEA 10px, #F1EFEA 20px)'
+};
+// Sample data — not real records.
+var L = [
+['Oil & filter change', 'Oil & engine', 29.00, 48.75, 'Next due 74,912 mi or Mar 2027'],
+['Front brake pads', 'Brakes', 120.00, 86.40, 'Brake inspection next at 79,912 mi'],
+['Tire rotation', 'Tires & wheels', null, null, 'Next due 69,912 mi']
+];
+var fmt = function (n) { return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+var total = 305.48, labor = 149.00, parts = 135.15, tax = 21.33;
+var pct = function (n) { return (n / total * 100).toFixed(1) + '%'; };
+return {
+t: t, priced: priced,
+lines: L.map(function (l, i) {
+var p = priced && (l[2] !== null || l[3] !== null);
+return { name: l[0], cat: l[1], priced: p, labor: p ? fmt(l[2]) : '', parts: p ? fmt(l[3]) : '', sub: p ? fmt(l[2] + l[3]) : '',
+next: l[4], border: i === L.length - 1 ? '0' : '1px solid ' + t.divider };
+}),
+laborPct: 'calc(' + pct(labor) + ' - 2px)', partsPct: 'calc(' + pct(parts) + ' - 2px)',
+laborShare: Math.round(labor / total * 100) + '%', partsShare: Math.round(parts / total * 100) + '%', taxShare: Math.round(tax / total * 100) + '%'
+};
+}
+}
+</script>
+</body>
+</html>
