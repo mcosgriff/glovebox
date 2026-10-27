@@ -2393,6 +2393,17 @@
     <string name="export_last_done_note">Entered by the owner as when this was last done; not logged at the time.</string>
     <string name="export_visit">One visit · %1$s</string>
     <string name="export_visit_total">Visit total: %1$s</string>
+    <!-- A job's labor and parts on its line of a Markdown export (#481): "Labor $180.00" -->
+    <string name="export_job_labor">Labor %1$s</string>
+    <string name="export_job_parts">Parts %1$s</string>
+    <!-- A job with no wording of its own, named by its lines: "Spark plugs + Ignition coils" -->
+    <string name="export_lines_joined">%1$s + %2$s</string>
+    <string name="export_labor_on_lines">Labor on lines</string>
+    <string name="export_parts_on_lines">Parts on lines</string>
+    <!-- The record's total less its line prices, worked out and never typed. -->
+    <string name="export_tax_and_fees">Tax and fees (worked out)</string>
+    <!-- The total falls short of the line prices; no cause is named. -->
+    <string name="export_less_than_lines">Less than the line prices (worked out)</string>
     <string name="export_imported_note">Imported by the owner from a file; not logged in Glovebox at the time.</string>
     <string name="export_schedule_note">Intervals are the ones the owner set in Glovebox, not the manufacturer\'s schedule.</string>
     <string name="export_takes_note">Entered by the owner from their manuals and the parts they use; Glovebox hasn\'t checked them against the vehicle.</string>

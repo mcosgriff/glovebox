@@ -11,6 +11,10 @@ Rules for exports, the PDF report, backup, restore. Read before changing any of 
   **The sheet's preview is the same drawing into a bitmap; never write a PDF to preview one.** It is always light,
   on white paper, in the light `groupColor`s. "Maintenance current" follows the
   garage's rule (never with a job still to log), and nothing is guessed for a job never logged.
+- Job prices (#481) are costs: "Costs and notes" off takes them out and leaves a job's wording. The Markdown puts a
+  job's labor and parts beside it, its lines under it, and the record's labor, parts and gap ("worked out", no cause
+  named) after the cost, from `ExportRecord.breakdown`; nothing about prices shows for a record with none. The PDF
+  report doesn't show prices yet: page 2 needs a design pass first.
 - Backup format: `docs/backup-format.md` and `BackupFormat.kt`. **Change the two together, and never change how a
   version-1 file is read.** Tables are read generically, so new columns need nothing. The password is never
   stored. The last-backup date is recorded only after Android has really written the file.

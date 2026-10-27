@@ -167,6 +167,62 @@ class ExportTest {
         assertEquals(listOf(1), doc.vehicles.single().entries.map { it.size })
     }
 
+    // Made-up shop invoice: plugs and coils priced as one job, the oil change priced alone, the rotation free.
+    private val priced = ExportRecord(
+        LocalDate.of(2026, 6, 14), 64_000, listOf("Spark plugs", "Tire rotation", "Ignition coils", "Oil & filter change"), "Corner Garage", 49_731, null,
+        jobs = listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
+        jobOf = listOf(0, null, 0, 1),
+    )
+
+    private fun records(vararg r: ExportRecord, options: ExportOptions = ExportOptions(format = ExportFormat.MARKDOWN)) =
+        text.markdown(Exports.document(listOf(truck.copy(records = r.toList())), options, today)).substringAfter("## Service records\n\n").substringBefore("## Maintenance schedule")
+
+    @Test
+    fun `a job's prices go beside it, its lines under it, and the gap to the total is worked out`() {
+        assertEquals(
+            "### Jun 14, 2026 · 64,000 mi\n\n" +
+                "- Remove & Replace Spark Plugs and Ignition Coils · Labor $180.00 · Parts $212.40\n  - Spark plugs\n  - Ignition coils\n" +
+                "- Tire rotation\n" +
+                // Its wording is its one line's name, so it is just the line.
+                "- Oil & filter change · Labor $39.95 · Parts $28.50\n\n" +
+                "Done by: Corner Garage · Cost: $497.31\n\n" +
+                "Labor on lines: $219.95 · Parts on lines: $240.90 · Tax and fees (worked out): $36.46\n\n",
+            records(priced),
+        )
+    }
+
+    @Test
+    fun `a total below the line prices names no cause, and with no total there is no gap`() {
+        assertTrue(records(priced.copy(costCents = 40_000)).contains("Parts on lines: $240.90 · Less than the line prices (worked out): $60.85\n"))
+        assertTrue(records(priced.copy(costCents = 46_085)).contains("Parts on lines: $240.90\n"))
+        assertTrue(records(priced.copy(costCents = null)).contains("Done by: Corner Garage\n\nLabor on lines: $219.95 · Parts on lines: $240.90\n"))
+    }
+
+    @Test
+    fun `a job with no wording is named by its lines, and one that says nothing is just its lines`() {
+        val joined = priced.copy(jobs = listOf(ExportJob(null, 18_000, null)), jobOf = listOf(0, null, 0, null))
+        assertTrue(records(joined).contains("- Spark plugs + Ignition coils · Labor $180.00\n- Tire rotation\n- Oil & filter change\n\n"))
+        val bare = joined.copy(jobs = listOf(ExportJob(null, null, null)))
+        assertTrue(records(bare).startsWith("### Jun 14, 2026 · 64,000 mi\n\n- Spark plugs\n- Ignition coils\n- Tire rotation\n- Oil & filter change\n\nDone by: Corner Garage · Cost: $497.31\n\n"))
+    }
+
+    @Test
+    fun `switching costs off takes the prices and leaves the shop's wording`() {
+        val md = records(priced, options = ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false))
+        assertEquals(
+            "### Jun 14, 2026 · 64,000 mi\n\n" +
+                "- Remove & Replace Spark Plugs and Ignition Coils\n  - Spark plugs\n  - Ignition coils\n- Tire rotation\n- Oil & filter change\n\n" +
+                "Done by: Corner Garage\n\n",
+            md,
+        )
+    }
+
+    @Test
+    fun `a priced record in a visit has its prices under its own lines`() {
+        val md = records(priced.copy(visitId = 2), wipers.copy(date = priced.date, odometer = priced.odometer, visitId = 2))
+        assertTrue(md.contains("- Oil & filter change · Labor $39.95 · Parts $28.50\n\nLabor on lines: $219.95 · Parts on lines: $240.90 · Tax and fees (worked out): $36.46\n\n**Done by: DIY**"))
+    }
+
     @Test
     fun `an imported record says so`() {
         val imported = oil.copy(imported = true)
