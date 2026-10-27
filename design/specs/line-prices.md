@@ -2,9 +2,10 @@
 
 Design: `design/screens/Prices*.png` (light + `*Dark.png`), source `design/source/PricesLog.dc.html`
 and `design/source/PricesRecord.dc.html`. Layout **A** is the chosen one; `PricesLogB` is the rejected
-alternative, kept for reference only. The renders still show prices on single lines; the job card with
-more than one line (below) is the one change still to draw. Only the new sections are built from these
-renders: the category picker and the header stay as the app has them now.
+alternative, kept for reference only. The sources show jobs; the PNGs are still the first pass (see
+`design/README.md`). Only the new sections are built from these boards: the category picker and the header
+stay as the app has them now. More boards: `PricesCombine` (the "Priced together with…" menu open),
+`PricesLogUnder` and `PricesRecordUnder` (total below the line prices).
 
 ## Data
 
@@ -46,9 +47,12 @@ renders: the category picker and the header stay as the app has them now.
   screen is unchanged.
 - **Work and prices · N lines** lists every ticked line from all tabs (name + category), each as its own job
   until the user combines them.
-- **Combining:** a line can be put with another into one job ("Priced together with…"), which then takes one
-  Labor and one Parts and lists its lines under its wording. Splitting a job back gives each line its own,
-  unpriced. (Still to draw.)
+- **Combining:** under each one-line job, a "Priced together with…" text button (48dp) opens a menu of the
+  other jobs, captioned "One labor and one parts price for both. Not split between them." Picking one moves
+  the line into that job, which keeps its own prices. A job of several lines shows its wording, its lines
+  under it (a 2dp rule on the left), one Labor and one Parts, and "Price separately", which gives each line
+  a job of its own, unpriced. A job with no wording of its own is named by its lines ("Spark plugs +
+  Ignition coils").
 - Price fields are hidden while no job has a price: one row "+ Add labor and parts / For an itemized
   invoice". Once any price exists they stay visible (Edit opens expanded).
 - Each priced job shows its total (labor + parts) on the right.

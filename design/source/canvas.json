@@ -365,8 +365,8 @@
       "x": 0,
       "y": 0,
       "w": 390,
-      "h": 1640,
-      "title": "A · Log service — shop, 2 of 3 lines priced",
+      "h": 1900,
+      "title": "A · Log service — shop, one job covers two lines",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
@@ -385,7 +385,7 @@
       "x": 940,
       "y": 0,
       "w": 390,
-      "h": 1710,
+      "h": 1960,
       "title": "A · Edit service — filled",
       "page": "prices",
       "is_interactive": true,
@@ -395,8 +395,8 @@
       "x": 1410,
       "y": 0,
       "w": 390,
-      "h": 1050,
-      "title": "Service record — with line prices",
+      "h": 1250,
+      "title": "Service record — with job prices",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
@@ -405,8 +405,8 @@
       "x": 1880,
       "y": 0,
       "w": 390,
-      "h": 760,
-      "title": "Service record — no line prices",
+      "h": 900,
+      "title": "Service record — no prices",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
@@ -416,24 +416,24 @@
       "y": 0,
       "w": 390,
       "h": 844,
-      "title": "B · Log service — price sheet per line",
+      "title": "B · Log service — price sheet per line (reference only)",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
     },
     "PricesLogDark.dc.html": {
       "x": 0,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
-      "h": 1640,
-      "title": "A · Log service — shop, 2 of 3 lines priced (dark)",
+      "h": 1900,
+      "title": "A · Log service — shop, one job covers two lines (dark)",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
     },
     "PricesLogDiyDark.dc.html": {
       "x": 470,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
       "h": 1110,
       "title": "A · Log service — DIY, nothing priced (dark)",
@@ -443,9 +443,9 @@
     },
     "PricesEditDark.dc.html": {
       "x": 940,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
-      "h": 1710,
+      "h": 1960,
       "title": "A · Edit service — filled (dark)",
       "page": "prices",
       "is_interactive": true,
@@ -453,30 +453,90 @@
     },
     "PricesRecordDark.dc.html": {
       "x": 1410,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
-      "h": 1050,
-      "title": "Service record — with line prices (dark)",
+      "h": 1250,
+      "title": "Service record — with job prices (dark)",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
     },
     "PricesRecordPlainDark.dc.html": {
       "x": 1880,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
-      "h": 760,
-      "title": "Service record — no line prices (dark)",
+      "h": 900,
+      "title": "Service record — no prices (dark)",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
     },
     "PricesLogBDark.dc.html": {
       "x": 2350,
-      "y": 2060,
+      "y": 2700,
       "w": 390,
       "h": 844,
-      "title": "B · Log service — price sheet per line (dark)",
+      "title": "B · Log service — price sheet per line (reference only, dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesCombine.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 2150,
+      "title": "A · Priced together with… (menu open)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesCombineDark.dc.html": {
+      "x": 2820,
+      "y": 2700,
+      "w": 390,
+      "h": 2150,
+      "title": "A · Priced together with… (menu open) (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogUnder.dc.html": {
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — total below the line prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogUnderDark.dc.html": {
+      "x": 3290,
+      "y": 2700,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — total below the line prices (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordUnder.dc.html": {
+      "x": 3760,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — total below the line prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordUnderDark.dc.html": {
+      "x": 3760,
+      "y": 2700,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — total below the line prices (dark)",
       "page": "prices",
       "is_interactive": true,
       "radius": 28
@@ -526,17 +586,17 @@
     "pricestitle": {
       "x": 0,
       "y": -280,
-      "text": "Labor & parts per line — light",
+      "text": "Labor & parts per job — light",
       "kind": "title1",
-      "maxW": 2740,
+      "maxW": 4150,
       "page": "prices"
     },
     "pricesdark": {
       "x": 0,
-      "y": 1780,
-      "text": "Labor & parts per line — dark",
+      "y": 2420,
+      "text": "Labor & parts per job — dark",
       "kind": "title1",
-      "maxW": 2740,
+      "maxW": 4150,
       "page": "prices"
     }
   },
@@ -592,7 +652,13 @@
     "PricesEditDark.dc.html",
     "PricesRecordDark.dc.html",
     "PricesRecordPlainDark.dc.html",
-    "PricesLogBDark.dc.html"
+    "PricesLogBDark.dc.html",
+    "PricesCombine.dc.html",
+    "PricesCombineDark.dc.html",
+    "PricesLogUnder.dc.html",
+    "PricesLogUnderDark.dc.html",
+    "PricesRecordUnder.dc.html",
+    "PricesRecordUnderDark.dc.html"
   ],
   "pages": [
     {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Log service with line prices</title>
+<title>Log service with job prices</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -21,7 +21,7 @@ body{margin:0}
     </a>
     <div style="flex: 1; display: flex; flex-direction: column">
       <span style="font-size: 20px; font-weight: 600">{{title}}</span>
-      <span style="font-size: 12px; color: {{t.muted}}">2019 Blue truck · sample data</span>
+      <span style="font-size: 12px; color: {{t.muted}}">2011 hatchback · sample data</span>
     </div>
   </div>
 
@@ -30,11 +30,11 @@ body{margin:0}
     <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
       <div style="display: flex; flex-direction: column; gap: 6px">
         <label for="pd" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Date</label>
-        <input id="pd" value="Mar 3, 2026" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+        <input id="pd" value="Jan 7, 2026" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
       </div>
       <div style="display: flex; flex-direction: column; gap: 6px">
         <label for="po" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Odometer (mi)</label>
-        <input id="po" value="64,912" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+        <input id="po" value="129,565" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
       </div>
     </div>
 
@@ -82,34 +82,61 @@ body{margin:0}
         </sc-if>
       </div>
       <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
-        <sc-for list="{{lines}}" as="l" hint-placeholder-count="3">
+        <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
           <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: 1px solid {{t.divider}}">
             <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
               <span style="display: flex; flex-direction: column; gap: 1px">
-                <span style="font-size: 15px; font-weight: 600">{{l.name}}</span>
-                <span style="font-size: 12px; color: {{t.muted}}">{{l.cat}}</span>
+                <span style="font-size: 15px; font-weight: 600">{{j.heading}}</span>
+                <sc-if value="{{j.single}}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size: 12px; color: {{t.muted}}">{{j.cat}}</span>
+                </sc-if>
               </span>
-              <sc-if value="{{l.hasSub}}" hint-placeholder-val="{{ false }}">
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{l.sub}}</span>
+              <sc-if value="{{j.hasSub}}" hint-placeholder-val="{{ false }}">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{j.sub}}</span>
               </sc-if>
             </div>
+            <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px; border-left: 2px solid {{t.line}}">
+                <sc-for list="{{j.lines}}" as="ln" hint-placeholder-count="2">
+                  <span style="display: flex; justify-content: space-between; gap: 10px; font-size: 14px">
+                    <span>{{ln.name}}</span>
+                    <span style="font-size: 12px; color: {{t.muted}}">{{ln.cat}}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </sc-if>
             <sc-if value="{{itemize}}" hint-placeholder-val="{{ true }}">
               <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
                 <div style="display: flex; flex-direction: column; gap: 4px">
-                  <label for="{{l.laborId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Labor</label>
+                  <label for="{{j.laborId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Labor</label>
                   <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
                     <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
-                    <input id="{{l.laborId}}" value="{{l.labor}}" onChange="{{l.onLabor}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                    <input id="{{j.laborId}}" value="{{j.labor}}" onChange="{{j.onLabor}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
                   </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px">
-                  <label for="{{l.partsId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</label>
+                  <label for="{{j.partsId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</label>
                   <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
                     <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
-                    <input id="{{l.partsId}}" value="{{l.parts}}" onChange="{{l.onParts}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                    <input id="{{j.partsId}}" value="{{j.parts}}" onChange="{{j.onParts}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
                   </div>
                 </div>
               </div>
+              <sc-if value="{{j.canJoin}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{j.toggleMenu}}" aria-expanded="{{j.menuOpen}}" style="align-self: flex-start; min-height: 48px; margin: -6px 0 -10px 0; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">Priced together with…</button>
+              </sc-if>
+              <sc-if value="{{j.menuOpen}}" hint-placeholder-val="{{ false }}">
+                <div role="menu" aria-label="Price together with" style="display: flex; flex-direction: column; border: 1px solid {{t.line}}; border-radius: 12px; background: {{t.bg}}; padding: 4px 12px; margin-top: 8px">
+                  <span style="font-size: 12px; color: {{t.muted}}; padding: 8px 0 4px 0">One labor and one parts price for both. Not split between them.</span>
+                  <sc-for list="{{j.targets}}" as="tg" hint-placeholder-count="2">
+                    <button role="menuitem" onClick="{{tg.pick}}" style="min-height: 48px; border: 0; border-top: 1px solid {{t.divider}}; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; color: {{t.ink}}">{{tg.label}}</button>
+                  </sc-for>
+                  <button role="menuitem" onClick="{{j.toggleMenu}}" style="min-height: 48px; border: 0; border-top: 1px solid {{t.divider}}; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.sub}}">Cancel</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{j.split}}" style="align-self: flex-start; min-height: 48px; margin: -6px 0 -10px 0; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">Price separately</button>
+              </sc-if>
             </sc-if>
           </div>
         </sc-for>
@@ -177,29 +204,61 @@ body{margin:0}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["shop","diy","edit"],"default":"shop"},"$preview":{"width":390,"height":1600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["shop","diy","edit","combine","under"],"default":"shop"},"$preview":{"width":390,"height":1900}}'>
 class Component extends DCLogic {
 constructor(props) {
 super(props);
 var v = props.variant || 'shop';
 var diy = v === 'diy';
+// Sample data, made up. A price belongs to a job; a job holds one or more lines.
 this.state = {
-tab: diy ? 'oil' : 'brakes',
+tab: diy ? 'oil' : 'oil',
 who: diy ? 'diy' : 'shop',
 itemize: !diy,
-total: diy ? '' : '305.48',
-lines: [
-{ id: 'oil', name: 'Oil & filter change', cat: 'Oil & engine', tab: 'oil', on: true, labor: diy ? '' : '29.00', parts: diy ? '' : '48.75' },
-{ id: 'fpads', name: 'Front brake pads', cat: 'Brakes', tab: diy ? 'oil' : 'brakes', on: !diy, labor: diy ? '' : '120.00', parts: diy ? '' : '86.40' },
-{ id: 'rot', name: 'Tire rotation', cat: 'Tires & wheels', tab: 'tires', on: !diy, labor: '', parts: '' },
-{ id: 'rpads', name: 'Rear brake pads', cat: 'Brakes', tab: diy ? 'oil' : 'brakes', on: false, labor: '', parts: '' },
-{ id: 'bfluid', name: 'Brake fluid flush', cat: 'Brakes', tab: diy ? 'oil' : 'brakes', on: false, labor: '', parts: '' },
-{ id: 'airf', name: 'Engine air filter', cat: 'Oil & engine', tab: 'oil', on: diy, labor: '', parts: '' }
-]
+total: diy ? '' : (v === 'under' ? '1425.00' : '1598.40'),
+menuFor: v === 'combine' ? 'jdiag' : null,
+lines: diy ? [
+{ id: 'oil', name: 'Oil & filter change', cat: 'Oil & engine', tab: 'oil', on: true, job: 'joil' },
+{ id: 'airf', name: 'Engine air filter', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jairf' },
+{ id: 'plugs', name: 'Spark plugs', cat: 'Oil & engine', tab: 'oil', on: false, job: 'jplugs' }
+] : [
+{ id: 'plugs', name: 'Spark plugs', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jign' },
+{ id: 'coils', name: 'Ignition coils', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jign' },
+{ id: 'cv', name: 'Front CV axle', cat: 'Driveline', tab: 'drive', on: true, job: 'jcv' },
+{ id: 'diag', name: 'Engine diagnosis', cat: 'Other', tab: 'other', on: true, job: 'jdiag' },
+{ id: 'oil', name: 'Oil & filter change', cat: 'Oil & engine', tab: 'oil', on: false, job: 'joil' },
+{ id: 'rpads', name: 'Rear brake pads', cat: 'Brakes', tab: 'brakes', on: false, job: 'jrpads' }
+],
+jobs: diy ? {
+joil: { wording: '', labor: '', parts: '' }, jairf: { wording: '', labor: '', parts: '' }, jplugs: { wording: '', labor: '', parts: '' }
+} : {
+jign: { wording: 'Replace spark plugs and ignition coils', labor: '300.00', parts: '420.00' },
+jcv: { wording: '', labor: '290.00', parts: '260.00' },
+jdiag: { wording: '', labor: '180.00', parts: '' },
+joil: { wording: '', labor: '', parts: '' }, jrpads: { wording: '', labor: '', parts: '' }
+}
 };
 }
 setLine(id, key, val) {
-this.setState({ lines: this.state.lines.map(function (l) { return l.id === id ? Object.assign({}, l, (function () { var o = {}; o[key] = val; return o; })()) : l; }) });
+this.setState({ lines: this.state.lines.map(function (l) { if (l.id !== id) return l; var o = Object.assign({}, l); o[key] = val; return o; }) });
+}
+setJob(id, key, val) {
+var jobs = Object.assign({}, this.state.jobs); jobs[id] = Object.assign({}, jobs[id]); jobs[id][key] = val;
+this.setState({ jobs: jobs });
+}
+join(from, into) {
+// The joining job's lines move in; the job they join keeps its own prices.
+this.setState({ menuFor: null, lines: this.state.lines.map(function (l) { return l.job === from ? Object.assign({}, l, { job: into }) : l; }) });
+}
+split(id) {
+// Each line gets a job of its own, unpriced.
+var jobs = Object.assign({}, this.state.jobs);
+var lines = this.state.lines.map(function (l) {
+if (l.job !== id) return l;
+var nid = 'j-' + l.id; jobs[nid] = { wording: '', labor: '', parts: '' };
+return Object.assign({}, l, { job: nid });
+});
+this.setState({ jobs: jobs, lines: lines });
 }
 renderVals() {
 var self = this, s = this.state;
@@ -215,8 +274,8 @@ field: '#B9B6AE', seg: '#E9E7E0', segOn: '#FFFFFF', accent: '#C2410C', onAccent:
 danger: '#B42318', calcBg: '#F4F3EF'
 };
 var money = function (str) { var n = parseFloat(String(str || '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
-var fmt = function (n) { var neg = n < 0; var x = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); return (neg ? '−$' : '$') + x; };
-var TABS = [['oil', 'Oil & engine'], ['tires', 'Tires'], ['brakes', 'Brakes'], ['fluids', 'Fluids']];
+var fmt = function (n) { return '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+var TABS = [['oil', 'Oil & engine'], ['drive', 'Driveline'], ['brakes', 'Brakes'], ['other', 'Other']];
 var on = s.lines.filter(function (l) { return l.on; });
 var tabs = TABS.map(function (tb) {
 var a = tb[0] === s.tab;
@@ -228,35 +287,52 @@ pick: function () { self.setState({ tab: tb[0] }); } };
 var tabItems = s.lines.filter(function (l) { return l.tab === s.tab; }).map(function (l) {
 return { name: l.name, on: l.on, toggle: function () { self.setLine(l.id, 'on', !l.on); } };
 });
+var order = [];
+on.forEach(function (l) { if (order.indexOf(l.job) < 0) order.push(l.job); });
+var label = function (id) {
+var ls = on.filter(function (l) { return l.job === id; });
+return s.jobs[id].wording || ls.map(function (l) { return l.name; }).join(' + ');
+};
 var laborSum = 0, partsSum = 0, anyPrice = false;
-var lines = on.map(function (l) {
-var lb = money(l.labor), pt = money(l.parts);
+var jobs = order.map(function (id) {
+var jb = s.jobs[id];
+var ls = on.filter(function (l) { return l.job === id; });
+var lb = money(jb.labor), pt = money(jb.parts);
 var has = lb !== null || pt !== null;
 if (lb !== null) { laborSum += lb; anyPrice = true; }
 if (pt !== null) { partsSum += pt; anyPrice = true; }
+var multi = ls.length > 1;
 return {
-name: l.name, cat: l.cat, labor: l.labor, parts: l.parts,
-laborId: 'lab-' + l.id, partsId: 'par-' + l.id,
+heading: label(id), single: !multi, multi: multi, cat: ls[0].cat,
+lines: ls.map(function (l) { return { name: l.name, cat: l.cat }; }),
+labor: jb.labor, parts: jb.parts, laborId: 'lab-' + id, partsId: 'par-' + id,
 hasSub: has && s.itemize, sub: fmt((lb || 0) + (pt || 0)),
-onLabor: function (e) { self.setLine(l.id, 'labor', e.target.value); },
-onParts: function (e) { self.setLine(l.id, 'parts', e.target.value); }
+onLabor: function (e) { self.setJob(id, 'labor', e.target.value); },
+onParts: function (e) { self.setJob(id, 'parts', e.target.value); },
+canJoin: !multi && order.length > 1,
+menuOpen: s.menuFor === id,
+toggleMenu: function () { self.setState({ menuFor: s.menuFor === id ? null : id }); },
+targets: order.filter(function (o) { return o !== id; }).map(function (o) {
+return { label: label(o), pick: function () { self.join(id, o); } };
+}),
+split: function () { self.split(id); }
 };
 });
 var total = money(s.total);
-var lineSum = laborSum + partsSum;
-var gap = total !== null ? Math.round((total - lineSum) * 100) / 100 : null;
+var jobSum = laborSum + partsSum;
+var gap = total !== null ? Math.round((total - jobSum) * 100) / 100 : null;
 var showBreakdown = s.itemize && anyPrice;
 var showGap = showBreakdown && gap !== null && gap !== 0;
 var diy = s.who === 'diy';
 var totalHelp = total === null && showBreakdown
-? 'Line prices add up to ' + fmt(lineSum) + '. Type the invoice total if you have it.'
+? 'Line prices add up to ' + fmt(jobSum) + '. Type the invoice total if you have it.'
 : (diy ? 'What you spent on parts and supplies.' : 'The grand total from the invoice, as printed.');
 return {
 t: t,
 title: variant === 'edit' ? 'Edit service' : 'Log service',
 saveLabel: variant === 'edit' ? 'Save changes' : 'Save service',
 isEdit: variant === 'edit',
-tabs: tabs, tabItems: tabItems, lines: lines,
+tabs: tabs, tabItems: tabItems, jobs: jobs,
 workLabel: 'WORK AND PRICES · ' + on.length + (on.length === 1 ? ' LINE' : ' LINES'),
 showOptional: s.itemize,
 itemize: s.itemize, collapsed: !s.itemize,
@@ -271,10 +347,10 @@ onTotal: function (e) { self.setState({ total: e.target.value }); },
 totalHelp: totalHelp,
 showBreakdown: showBreakdown, showGap: showGap,
 laborSum: fmt(laborSum), partsSum: fmt(partsSum),
-gapLabel: gap !== null && gap < 0 ? 'Discounts' : 'Tax and fees',
-gap: gap !== null ? fmt(Math.abs(gap)) : '',
+gapLabel: gap !== null && gap < 0 ? 'Less than the line prices' : 'Tax and fees',
+gap: gap !== null ? fmt(gap) : '',
 gapHelp: gap !== null && gap < 0
-? 'Total is below the line prices — usually a discount or coupon. Nothing to fix.'
+? 'The total is less than the line prices add up to. Worked out, not typed.'
 : 'Total minus line prices: tax, shop supplies and other fees. Worked out, not typed.'
 };
 }
