@@ -62,11 +62,11 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | Prices A · Log service — shop, one job covers two lines (chosen layout) | `screens/PricesLog.png` · `screens/PricesLogDark.png` | `source/PricesLog.dc.html` |
 | Prices A · Log service — DIY, nothing priced | `screens/PricesLogDiy.png` · `screens/PricesLogDiyDark.png` | `source/PricesLogDiy.dc.html` → imports `PricesLog` |
 | Prices A · Edit service — filled | `screens/PricesEdit.png` · `screens/PricesEditDark.png` | `source/PricesEdit.dc.html` → imports `PricesLog` |
-| Prices A · "Priced together with…" menu open | none yet | `source/PricesCombine.dc.html` (+ `Dark`) → imports `PricesLog` |
-| Prices A · Log service — total below the line prices | none yet | `source/PricesLogUnder.dc.html` (+ `Dark`) → imports `PricesLog` |
+| Prices A · "Priced together with…" menu open | `screens/PricesCombine.png` · `screens/PricesCombineDark.png` | `source/PricesCombine.dc.html` (+ `Dark`) → imports `PricesLog` |
+| Prices A · Log service — total below the line prices | `screens/PricesLogUnder.png` · `screens/PricesLogUnderDark.png` | `source/PricesLogUnder.dc.html` (+ `Dark`) → imports `PricesLog` |
 | Prices · Service record — with job prices | `screens/PricesRecord.png` · `screens/PricesRecordDark.png` | `source/PricesRecord.dc.html` |
 | Prices · Service record — no prices | `screens/PricesRecordPlain.png` · `screens/PricesRecordPlainDark.png` | `source/PricesRecordPlain.dc.html` → imports `PricesRecord` |
-| Prices · Service record — total below the line prices | none yet | `source/PricesRecordUnder.dc.html` (+ `Dark`) → imports `PricesRecord` |
+| Prices · Service record — total below the line prices | `screens/PricesRecordUnder.png` · `screens/PricesRecordUnderDark.png` | `source/PricesRecordUnder.dc.html` (+ `Dark`) → imports `PricesRecord` |
 | Prices B · Log service — price sheet per line (alternative, not chosen) | `screens/PricesLogB.png` · `screens/PricesLogBDark.png` | `source/PricesLogB.dc.html` |
 
 ## PDF report
@@ -81,6 +81,5 @@ checked for colorblind separation; every color also has a text label, so the rep
 Spec: `specs/line-prices.md`. `PricesLog.dc.html` and `PricesRecord.dc.html` hold the real markup; the
 other `Prices*.dc.html` files only import them with a different `variant` / `theme`.
 
-**The `Prices*` PNGs show the first pass** (prices on single lines, $305.48 sample) except `PricesLogB`;
-the sources are the jobs version (canvas version 36). Read the sources until the renders are exported again.
+All `Prices*` PNGs match the current sources (jobs version). Renders use fallback fonts; the app uses IBM Plex Sans / Mono.
 
