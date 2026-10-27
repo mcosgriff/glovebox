@@ -59,6 +59,9 @@ class AboutScreenTest {
         val messages = mutableListOf<String>()
         val screenVm = vm()
         compose.show { AboutScreen(onBack = {}, onOpenPrivacy = {}, onOpenLicences = {}, onMessage = { messages += it }, vm = screenVm) }
+        // The bundled lists load in the background and push the Source row down when they arrive. One arriving
+        // between the scroll and the click made the click miss, so wait for all three first.
+        compose.waitFor { listOf(screenVm.lists, screenVm.takes, screenVm.schedules).all { it.value.isNotEmpty() } }
         compose.onNodeWithText(text(R.string.about_source)).performScrollTo().performClick()
         val opened = shadowOf(app).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, opened.action)
