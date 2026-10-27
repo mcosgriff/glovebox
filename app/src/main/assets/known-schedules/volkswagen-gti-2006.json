@@ -1,0 +1,789 @@
+{
+  "id": "volkswagen-gti-2006",
+  "title": "2006 GTI",
+  "make": "Volkswagen",
+  "model": "GTI",
+  "years": {
+    "from": 2006,
+    "to": 2006
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/12fc5fd7-9a91-4f05-adaa-bf311ecb9267",
+    "retrieved": "2026-10-26",
+    "note": "From Volkswagen's July 2022 reissue of its 2006 USA maintenance schedule, in Glovebox's wording; no card from the time was found. Check it against the booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for the model year, as Volkswagen publishes it for owners, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "manualExcluded": [
+    "Change DSG transmission fluid and filter (DSG only)",
+    "Check DSG transmission fluid (DSG only)",
+    "Check automatic shift lock and park/neutral switch (automatic only)",
+    "Check automatic transmission fluid and final drive (automatic only)",
+    "Check automatic transmission for leaks (automatic only)"
+  ],
+  "manualOnly": [
+    "Check manual gearbox oil level and for leaks (manual only)"
+  ],
+  "milestones": [
+    {
+      "atMiles": 5000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    },
+    {
+      "atMiles": 15000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check DSG transmission fluid (DSG only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    },
+    {
+      "atMiles": 25000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    },
+    {
+      "atMiles": 35000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check automatic transmission fluid and final drive (automatic only)"
+        },
+        {
+          "name": "Check DSG transmission fluid (DSG only)"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Check underbody for damage"
+        },
+        {
+          "name": "Check ribbed belt; adjust if needed"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        },
+        {
+          "name": "Check and clean sunroof front drains (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 45000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 55000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Check timing belt condition"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check DSG transmission fluid (DSG only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 65000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    },
+    {
+      "atMiles": 75000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Check timing belt condition"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check automatic transmission fluid and final drive (automatic only)"
+        },
+        {
+          "name": "Check DSG transmission fluid (DSG only)"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Check underbody for damage"
+        },
+        {
+          "name": "Check ribbed belt; adjust if needed"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        },
+        {
+          "name": "Check and clean sunroof front drains (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 85000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    },
+    {
+      "atMiles": 95000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check brake system for leaks and damage, pad thickness and fluid level",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Check timing belt condition"
+        },
+        {
+          "name": "Check tire pressure sensors and their batteries (where applicable)"
+        },
+        {
+          "name": "Check tires, spare included: condition, tread depth and pressure"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check DSG transmission fluid (DSG only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check windshield washer fluid; top up"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 5000,
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires front to rear",
+      "everyMiles": 10000,
+      "service": "rotation"
+    },
+    {
+      "name": "Change DSG transmission fluid and filter (DSG only)",
+      "everyMiles": 40000,
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Replace air filter element and clean housing",
+      "everyMiles": 40000,
+      "everyMonths": 72,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "spark-plugs"
+    }
+  ],
+  "additional": [
+    {
+      "name": "Change brake fluid (every 2 years)",
+      "everyMonths": 24,
+      "rule": "time-only",
+      "service": "brake-fluid"
+    },
+    {
+      "name": "Replace tire mobility kit sealant bottle (every 4 years)",
+      "everyMonths": 48,
+      "rule": "time-only"
+    }
+  ]
+}
