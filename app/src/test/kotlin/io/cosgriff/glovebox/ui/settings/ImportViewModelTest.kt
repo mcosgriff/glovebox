@@ -220,6 +220,39 @@ class ImportViewModelTest {
     }
 
     @Test
+    fun `a version-2 file brings its jobs in with their prices`() = runTest {
+        val id = g.vehicle()
+        val vm = vm()
+        pick(example("service-history-priced.json"))
+        assertEquals(2, vm.importAndWait(vm.ready(), ImportMode.ADD_NEW).added)
+        val june = g.db.service().recordsFor(id).single { it.record.date == LocalDate.of(2024, 6, 14) }
+        assertEquals(49_731L, june.record.costCents)
+        val plugs = june.jobs.single { it.wording == "Remove & Replace Spark Plugs and Ignition Coils" }
+        assertEquals(18_000L to 21_240L, plugs.laborCents to plugs.partsCents)
+        assertEquals(listOf("Spark plugs", "Ignition coils"), june.items.filter { it.jobId == plugs.id }.map { it.label })
+        assertEquals(null, june.items.single { it.label == "Tire rotation" }.jobId)
+        assertEquals(listOf(0, 1), june.jobs.sortedBy { it.position }.map { it.position })
+    }
+
+    @Test
+    fun `replacing from a file with no jobs keeps the prices on the same lines`() = runTest {
+        val id = g.vehicle()
+        val recordId = g.db.service().insertWithItems(
+            io.cosgriff.glovebox.data.db.ServiceRecordEntity(vehicleId = id, date = LocalDate.of(2023, 4, 2), odometer = 31_800, diy = false, shopName = "Somewhere"),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Cabin air filter", jobId = 1)),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobEntity(id = 1, recordId = 0, partsCents = 1_899)),
+        )
+        val vm = vm()
+        pick(example("service-history.json"))
+        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING).replaced)
+        val record = g.db.service().recordsFor(id).single { it.record.id == recordId }
+        assertTrue(record.record.diy)
+        val job = record.jobs.single()
+        assertEquals(1_899L, job.partsCents)
+        assertEquals(job.id, record.items.single().jobId)
+    }
+
+    @Test
     fun `a reading that looks mistyped is left out unless the user ticks it`() = runTest {
         val id = g.vehicle(firstReading = 30_000)
         g.db.odometer().insert(OdometerReadingEntity(vehicleId = id, date = LocalDate.of(2025, 6, 1), odometer = 52_000))

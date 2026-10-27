@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.PhotoEntity
+import io.cosgriff.glovebox.data.db.RecordRows
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.nhtsa.toNotice
@@ -342,8 +343,8 @@ class RecordActionsTest {
         val id = t.record(car, odometer = 40_000, lines = listOf(line("Old wording")))
         val old = service.record(id)!!.record
         actions.applyImport(
-            added = listOf(ServiceRecordEntity(vehicleId = car, date = day.minusDays(30), odometer = 39_000, diy = true, imported = true) to listOf(line("Tires rotated", "rotation"))),
-            replaced = listOf(old.copy(notes = "From the file") to listOf(line("New wording"))),
+            added = listOf(RecordRows(ServiceRecordEntity(vehicleId = car, date = day.minusDays(30), odometer = 39_000, diy = true, imported = true), listOf(line("Tires rotated", "rotation")))),
+            replaced = listOf(RecordRows(old.copy(notes = "From the file"), listOf(line("New wording")))),
         )
         val all = service.recordsFor(car)
         assertEquals(2, all.size)

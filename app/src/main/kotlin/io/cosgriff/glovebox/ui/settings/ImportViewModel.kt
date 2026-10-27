@@ -30,6 +30,9 @@ import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.RecordRows
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -39,6 +42,7 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
 import io.cosgriff.glovebox.domain.ImportedRecord
+import io.cosgriff.glovebox.domain.JobSummary
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
 import io.cosgriff.glovebox.domain.TableJob
@@ -402,6 +406,7 @@ class ImportViewModel @Inject constructor(
                 costCents = r.record.costCents,
                 notes = r.record.notes,
                 enteredAsLastDone = r.record.enteredAsLastDone,
+                jobs = r.jobs.map { j -> JobSummary(j.wording, j.laborCents, j.partsCents, r.items.filter { it.jobId == j.id }.map { it.label }) },
             )
         }
         // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
@@ -435,12 +440,24 @@ class ImportViewModel @Inject constructor(
             },
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            fun lines(r: ImportedRecord) = r.work.map { line ->
-                val w = HistoryImport.resolve(line, refs)
-                ServiceRecordItemEntity(recordId = 0, scheduleItemId = w.scheduleItemId, label = w.label, catalogId = w.catalogId)
+            // The file's jobs are numbered from 1 for their lines to point at; the write gives them ids of their own.
+            // A file that says nothing about prices leaves a replaced record's jobs on the same lines.
+            fun rows(record: ServiceRecordEntity, r: ImportedRecord, mine: ServiceRecordWithItems? = null): RecordRows {
+                val kept = mine?.let { m -> HistoryImport.keptJobs(r, m.items.map { it.label to it.jobId }) }
+                val lines = r.work.mapIndexed { i, line ->
+                    val w = HistoryImport.resolve(line, refs)
+                    val job = if (kept != null) kept[i] else line.job?.let { it + 1L }
+                    ServiceRecordItemEntity(recordId = 0, scheduleItemId = w.scheduleItemId, label = w.label, catalogId = w.catalogId, jobId = job)
+                }
+                val jobs = if (kept != null && mine != null) {
+                    mine.jobs
+                } else {
+                    r.jobs.mapIndexed { i, j -> ServiceRecordJobEntity(id = i + 1L, recordId = 0, wording = j.wording, laborCents = j.laborCents, partsCents = j.partsCents, position = i) }
+                }
+                return RecordRows(record, lines, jobs)
             }
             val added = plan.new.map { r ->
-                ServiceRecordEntity(
+                rows(ServiceRecordEntity(
                     vehicleId = vehicle.id,
                     date = r.date,
                     odometer = r.odometer,
@@ -449,18 +466,20 @@ class ImportViewModel @Inject constructor(
                     costCents = r.costCents,
                     notes = r.notes,
                     imported = true,
-                ) to lines(r)
+                ), r)
             }
             // Same record, same id: its photos and any recall it was the work for stay with it.
             val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
-                byId[mine.id]?.record?.copy(
+                val saved = byId[mine.id] ?: return@mapNotNull null
+                val record = saved.record.copy(
                     diy = item.diy,
                     shopName = item.shopName,
                     costCents = item.costCents,
                     notes = item.notes,
                     enteredAsLastDone = false,
                     imported = true,
-                )?.let { it to lines(item) }
+                )
+                rows(record, item, saved)
             }
             actions.applyImport(added, replaced)
             finish(view, vehicle.id, mode)

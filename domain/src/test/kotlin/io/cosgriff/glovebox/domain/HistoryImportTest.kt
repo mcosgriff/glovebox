@@ -58,6 +58,34 @@ class HistoryImportTest {
     }
 
     @Test
+    fun `jobs are part of the work, but a file with none says nothing about the saved ones`() {
+        val priced = file(work = arrayOf(ImportedWork("Spark plugs", job = 0), ImportedWork("Ignition coils", job = 0))).copy(jobs = listOf(ImportedJob("Plugs and coils", 18_000, 21_240)))
+        val labels = listOf("ignition COILS", "Spark plugs")
+        val savedJob = JobSummary("plugs and coils", 18_000, 21_240, listOf("Ignition coils", "spark plugs"))
+        fun plan(item: ImportedRecord, jobs: List<JobSummary>) = HistoryImport.plan(listOf(item), listOf(saved(1, labels = labels).copy(jobs = jobs)), schedule)
+        // The same jobs, whatever the order and capitals.
+        assertEquals(1, plan(priced, listOf(savedJob)).same.size)
+        assertEquals(1, plan(priced, listOf(savedJob.copy(partsCents = 21_241))).differs.size)
+        assertEquals(1, plan(priced, emptyList()).differs.size)
+        // Without jobs the file can't say the prices are different.
+        val unpriced = file(work = arrayOf(ImportedWork("Spark plugs"), ImportedWork("Ignition coils")))
+        assertEquals(1, plan(unpriced, listOf(savedJob)).same.size)
+    }
+
+    @Test
+    fun `a file with no jobs leaves the saved jobs on the same lines`() {
+        val item = file(work = arrayOf(ImportedWork("ignition coils"), ImportedWork("Spark plugs"), ImportedWork("Tire rotation")))
+        val saved = listOf("Spark plugs" to 7L, "Tire rotation" to null, "Ignition coils" to 7L)
+        assertEquals(listOf(7L, 7L, null), HistoryImport.keptJobs(item, saved))
+        // The same label twice takes the saved lines' jobs in turn.
+        val twice = file(work = arrayOf(ImportedWork("Wiper blade"), ImportedWork("Wiper blade")))
+        assertEquals(listOf(3L, null), HistoryImport.keptJobs(twice, listOf("Wiper blade" to 3L, "wiper blade" to null)))
+        // Other lines, or jobs of the file's own, and the saved jobs go with the lines they priced.
+        assertNull(HistoryImport.keptJobs(file(), saved))
+        assertNull(HistoryImport.keptJobs(item.copy(jobs = listOf(ImportedJob(laborCents = 1))), saved))
+    }
+
+    @Test
     fun `a bare last done is filled in by a record that resets the same reminder`() {
         val plan = HistoryImport.plan(listOf(file(shop = "Corner Garage", diy = false)), listOf(saved(1, labels = listOf("Engine oil & filter"), lastDone = true)), schedule)
         assertEquals(listOf(1L), plan.fills.map { it.second.id })

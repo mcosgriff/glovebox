@@ -17,6 +17,10 @@ Rules for the import format and schemas, schedule and history imports, the Carfa
   overwrite first. The picked file is read into memory (2 MB cap) and never written to disk.
 - Schedule import: a typical item is never matched or replaced; the only thing an import may change on one is to
   stop tracking it, unticked by default.
+- Versions are per kind (`ImportKind.version`); only `service-history` has a version 2, which adds priced jobs
+  (#481). One schema holds both versions (`if` on `version`), so the version-1 record stays as it was. **A file with
+  no `jobs` says nothing about prices:** it never makes a saved record "different", and replacing from it keeps the
+  saved jobs on the same lines (`HistoryImport.keptJobs`). The writers still write version 1.
 - History import: **adding a catalog item means adding it to `service-history.schema.json`, the README table,
   `CatalogText.kt`, `strings.xml` and `LineWords`.** Records match on date and odometer. **Readings that look
   mistyped are left out unless the user ticks them** (a shop's typo once added 60,000 miles). "Not in the
