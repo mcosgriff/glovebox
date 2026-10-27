@@ -492,6 +492,36 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `each Mk5 GTI year has a list of its own, from Volkswagen's reissue`() {
+        (2006..2009).forEach { year ->
+            val list = KnownSchedules.match(bundled, year, "Volkswagen", "GTI")!!
+            assertEquals("volkswagen-gti-$year", list.id)
+            assertEquals(year..year, list.years)
+        }
+        assertNull(KnownSchedules.match(bundled, 2005, "Volkswagen", "GTI"))
+        fun list(year: Int) = KnownSchedules.match(bundled, year, "Volkswagen", "GTI")!!
+        fun oil(year: Int) = list(year).intervals.single { it.service == "oil" }.normal
+        // 2006–2008: the "every 5,000 miles" oil change is the GTI's (the owner's ruling, #145), so the table is in 5,000s.
+        (2006..2008).forEach { year ->
+            assertEquals(Interval(5_000, null), oil(year))
+            assertTrue(list(year).milestones.all { m -> m.work.any { it.service == "oil" } })
+            assertEquals(5_000, list(year).milestones.first().atMiles)
+        }
+        // 2009: every 10,000, each heading "or 1 year after last service", which gives no months.
+        assertEquals(Interval(10_000, null), oil(2009))
+        assertTrue(list(2009).milestones.all { it.orMonths == null })
+        // 2008's brake fluid rows and time table disagree (3 years, 2 years): no months, so no reminder.
+        assertTrue(list(2008).milestones.any { m -> m.work.any { it.service == "brake-fluid" } })
+        assertTrue((list(2008).intervals + list(2008).additional).none { it.service == "brake-fluid" })
+        // 2009's timing belt is "(if applicable)": in the table, with no service and no reminder.
+        val belt = list(2009).milestones.single { it.atMiles == 110_000 }.work.single { "timing belt" in it.name }
+        assertNull(belt.service)
+        assertTrue((list(2009).intervals + list(2009).additional).none { it.service == "timing-belt" })
+        // The time-dependent items are reminders apart from the table, by time alone.
+        assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, list(2009).additional.single { it.service == "brake-fluid" }.let { it.normal to it.rule })
+    }
+
+    @Test
     fun `a car known to have a manual gearbox doesn't get the dual-clutch fluid change`() {
         val list = KnownSchedules.match(bundled, 2011, "Volkswagen", "GTI")!!
         fun dsg(transmission: String?) =

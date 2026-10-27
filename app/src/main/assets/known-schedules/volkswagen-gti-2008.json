@@ -1,0 +1,1148 @@
+{
+  "id": "volkswagen-gti-2008",
+  "title": "2008 GTI",
+  "make": "Volkswagen",
+  "model": "GTI",
+  "years": {
+    "from": 2008,
+    "to": 2008
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/50a00bd3-879d-46a4-a440-3d66a3906ae7",
+    "retrieved": "2026-10-26",
+    "note": "From Volkswagen's July 2022 reissue of its 2008 USA maintenance schedule, in Glovebox's wording; no card from the time was found. Check it against the booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for the model year, as Volkswagen publishes it for owners, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "manualExcluded": [
+    "Change DSG transmission fluid and filter (DSG only)",
+    "Check automatic final drive oil level and for leaks (automatic only)",
+    "Check automatic shift lock and park/neutral switch (automatic only)",
+    "Check automatic transmission fluid (automatic only)",
+    "Check automatic transmission for leaks (automatic only)"
+  ],
+  "manualOnly": [
+    "Check manual gearbox oil level and for leaks (manual only)"
+  ],
+  "milestones": [
+    {
+      "atMiles": 5000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Set service interval display to 10,000 miles (where applicable)"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 15000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 25000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 35000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition and tension; adjust if needed"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Replace brake fluid (by time alone; the guide's two figures differ)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check automatic transmission fluid (automatic only)"
+        },
+        {
+          "name": "Check automatic final drive oil level and for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check underbody for damage"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        },
+        {
+          "name": "Check interior lights and power outlets"
+        },
+        {
+          "name": "Check and clean sunroof front drains (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 45000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 55000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 65000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 75000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition and tension; adjust if needed"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Replace brake fluid (by time alone; the guide's two figures differ)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check automatic transmission fluid (automatic only)"
+        },
+        {
+          "name": "Check automatic final drive oil level and for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check underbody for damage"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        },
+        {
+          "name": "Check interior lights and power outlets"
+        },
+        {
+          "name": "Check and clean sunroof front drains (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 85000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 95000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 105000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Replace timing belt and tensioner roller",
+          "service": "timing-belt"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 115000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Check brake system for leaks and damage, and fluid level"
+        },
+        {
+          "name": "Check brake pad thickness",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Reset service interval display (where applicable)"
+        },
+        {
+          "name": "Check ribbed belt condition and tension; adjust if needed"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check windshield and headlight washer fluid; top up"
+        },
+        {
+          "name": "Check wiper blades"
+        },
+        {
+          "name": "Check automatic shift lock and park/neutral switch (automatic only)"
+        },
+        {
+          "name": "Replace brake fluid (by time alone; the guide's two figures differ)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Check engine for leaks"
+        },
+        {
+          "name": "Replace dust and pollen filter (where applicable)"
+        },
+        {
+          "name": "Check coolant level; top up"
+        },
+        {
+          "name": "Check automatic transmission for leaks (automatic only)"
+        },
+        {
+          "name": "Check automatic transmission fluid (automatic only)"
+        },
+        {
+          "name": "Check automatic final drive oil level and for leaks (automatic only)"
+        },
+        {
+          "name": "Check manual gearbox oil level and for leaks (manual only)"
+        },
+        {
+          "name": "Change DSG transmission fluid and filter (DSG only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check tire tread depth and pressure"
+        },
+        {
+          "name": "Check condition and pressure of all tires and the spare"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check drive shaft boots"
+        },
+        {
+          "name": "Check fault memory (on-board diagnosis)"
+        },
+        {
+          "name": "Lubricate door checks"
+        },
+        {
+          "name": "Check exterior lights, front and rear"
+        },
+        {
+          "name": "Check exhaust system for damage and leaks"
+        },
+        {
+          "name": "Clean and lubricate sunroof frame"
+        },
+        {
+          "name": "Road test: kickdown, brakes, steering, heating, air conditioning, electrics"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ball joint dust seals and tie rods"
+        },
+        {
+          "name": "Check underbody for damage"
+        },
+        {
+          "name": "Check 12V starter and auxiliary battery (where applicable)"
+        },
+        {
+          "name": "Check interior lights and power outlets"
+        },
+        {
+          "name": "Check and clean sunroof front drains (where applicable)"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 5000,
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires front to rear",
+      "everyMiles": 10000,
+      "service": "rotation"
+    },
+    {
+      "name": "Change DSG transmission fluid and filter (DSG only)",
+      "everyMiles": 40000,
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Replace air filter element and clean housing",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 60000,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Replace timing belt and tensioner roller",
+      "everyMiles": 110000,
+      "service": "timing-belt"
+    }
+  ],
+  "additional": [
+    {
+      "name": "Replace tire mobility kit sealant bottle (every 4 years)",
+      "everyMonths": 48,
+      "rule": "time-only"
+    }
+  ]
+}
