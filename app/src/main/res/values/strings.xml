@@ -1201,6 +1201,22 @@
     </plurals>
     <!-- The spending line, then how many records it counted. -->
     <string name="history_spending_partial">%1$s · %2$s</string>
+    <!-- Under the spending line (#485): labor and parts from the records that have line prices, which is not a split of
+         the total above. %1$s how many records have prices, %2$s how many there are, %3$s labor and %4$s parts as amounts. -->
+    <plurals name="history_spending_split">
+        <item quantity="one">Line prices on %1$s of %2$s record: labor %3$s, parts %4$s</item>
+        <item quantity="other">Line prices on %1$s of %2$s records: labor %3$s, parts %4$s</item>
+    </plurals>
+    <!-- As above when no record entered parts: %3$s is labor. -->
+    <plurals name="history_spending_split_labor">
+        <item quantity="one">Line prices on %1$s of %2$s record: labor %3$s</item>
+        <item quantity="other">Line prices on %1$s of %2$s records: labor %3$s</item>
+    </plurals>
+    <!-- As above when no record entered labor: %3$s is parts. -->
+    <plurals name="history_spending_split_parts">
+        <item quantity="one">Line prices on %1$s of %2$s record: parts %3$s</item>
+        <item quantity="other">Line prices on %1$s of %2$s records: parts %3$s</item>
+    </plurals>
     <!-- The switch between History's two views. -->
     <string name="history_view_list">List</string>
     <string name="history_view_timeline">Timeline</string>

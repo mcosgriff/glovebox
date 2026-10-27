@@ -293,6 +293,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** Records with line prices: labor and parts under the spending line, over the records that have them (#485). */
+    @Test
+    fun historyPriced() = compose.shoot("history_priced", shade) {
+        HistoryContent(
+            Fixtures.historyPriced, chosenFilter = null, order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            onSortCustom = {}, view = HistoryView.LIST,
+        )
+    }
+
     @Test
     fun historyVisit() = compose.shoot("history_visit", shade) {
         HistoryContent(

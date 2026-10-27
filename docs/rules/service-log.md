@@ -31,6 +31,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
 - History's spending line (#285) counts records with a cost and is **hidden while a filter or search is on**,
   since a cost covers all a record's lines. Search (#284) and the sort order live in saved state; nothing is
   stored.
+- Under it, labor and parts (#485, `Spending.split`) **over only the records with a priced job, saying how many of
+  how many records that is** ("Line prices on 2 of 3 records: …"), worded so it can't be read as a split of the
+  total above. It covers the same records as the spending line and shows only while that line does; it is absent
+  while nothing is priced, and labor or parts that no record entered is left out, never shown as $0.00.
 - History's timeline (`HistoryTimeline`, board 6e) is the same records, filter and search as the list, always
   newest first; the List / Timeline choice is saved state. Its "Coming up" is **only `ComingUp.next`**, from the
   Reminders tab's statuses (never a never-logged job), with a date only where vehicle home gives one

@@ -363,6 +363,18 @@ object Fixtures {
         next = truckComingUp.next,
     )
 
+    /**
+     * History with line prices (#485) on two of the three records, made-up figures: the cabin filter priced in full,
+     * the oil change and rotation with labor alone. The brake check has none.
+     */
+    val historyPriced: HistoryState = history.copy(
+        records = listOf(
+            truckRecords[0].copy(jobs = listOf(ServiceRecordJobEntity(1, 103, null, laborCents = 1_500, partsCents = 2_850, position = 0))),
+            truckRecords[1],
+            truckRecords[2].copy(jobs = listOf(ServiceRecordJobEntity(2, 101, "Oil change and tire rotation", laborCents = 4_000, partsCents = null, position = 0))),
+        ),
+    )
+
     /** History with the imported cabin filter and the recall's record linked as one visit. */
     val historyWithVisit: HistoryState = history.copy(
         records = listOf(
