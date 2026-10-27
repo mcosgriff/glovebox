@@ -32,6 +32,7 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
   2016 and no "GTI"; 2014 and 2015 have "GTI". The list is for "GTI", like the others, with
   `modelAliases` "Golf GTI", so a 2016 decoded by VIN finds it.
 - **Not covered:**
-  - **2017.** No card was found, and the 2016 and 2018 cards differ in layout and jobs, so it isn't
-    inferred from either.
-  - **2018 and 2019:** see [the 2020–2021 list's page](volkswagen-gti-2020-2021.md).
+  - **2017** has [its own list](volkswagen-gti-2017.md), from Volkswagen's reissue; that page compares
+    the 2016 reissue with this card.
+  - **2018** and **2019** have lists of their own ([2018](volkswagen-gti-2018.md),
+    [2019](volkswagen-gti-2019.md)).
