@@ -103,12 +103,12 @@ class BackupWriterTest {
         val manifest = Json.parseToJsonElement(String(entries.first().bytes)).jsonObject
         assertEquals(BackupEntryKind.MANIFEST, entries.first().kind)
         assertEquals("2026-05-04", manifest["createdOn"]!!.jsonPrimitive.content)
-        assertEquals(35, manifest["schemaVersion"]!!.jsonPrimitive.int)
+        assertEquals(36, manifest["schemaVersion"]!!.jsonPrimitive.int)
         val counts = manifest["counts"]!!.jsonObject
         assertEquals(listOf(1, 2, 2, 1), listOf("vehicles", "records", "photos", "documents").map { counts[it]!!.jsonPrimitive.int })
 
         val tables = entries.filter { it.kind == BackupEntryKind.TABLE }.associate { it.name to Json.parseToJsonElement(String(it.bytes)).jsonArray }
-        assertTrue(tables.keys.containsAll(listOf("vehicles", "service_records", "service_record_items", "photos", "documents", "odometer_readings")))
+        assertTrue(tables.keys.containsAll(listOf("vehicles", "service_records", "service_record_items", "service_record_jobs", "photos", "documents", "odometer_readings")))
         assertFalse(tables.keys.any { it.startsWith("sqlite_") || it == "room_master_table" || it == "android_metadata" })
         assertEquals("Made-up Motors", tables.getValue("service_records").first().jsonObject["shopName"]!!.jsonPrimitive.content)
 

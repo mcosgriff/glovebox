@@ -23,6 +23,7 @@ class Converters {
         ScheduleItemEntity::class,
         ServiceRecordEntity::class,
         ServiceRecordItemEntity::class,
+        ServiceRecordJobEntity::class,
         PhotoEntity::class,
         TorqueSpecEntity::class,
         RecallEntity::class,
@@ -32,7 +33,7 @@ class Converters {
         CatalogRuleEntity::class,
         RecallNameEntity::class,
     ],
-    version = 35,
+    version = 36,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -69,6 +70,7 @@ class Converters {
         AutoMigration(from = 32, to = 33), // vehicles.engineCode, tpms, series
         AutoMigration(from = 33, to = 34), // recall_names
         AutoMigration(from = 34, to = 35), // recalls.doNotDrive, parkOutside, overTheAir
+        AutoMigration(from = 35, to = 36), // service_record_jobs, service_record_items.jobId
     ],
 )
 @ColumnTypeConverters(Converters::class)

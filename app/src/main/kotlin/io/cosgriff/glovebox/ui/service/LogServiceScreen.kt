@@ -106,6 +106,12 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.domain.CostBreakdown
+import io.cosgriff.glovebox.domain.JobDraft
+import io.cosgriff.glovebox.domain.JobGroups
+import io.cosgriff.glovebox.domain.JobPrice
+import io.cosgriff.glovebox.domain.JobPrices
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.domain.DueState
 import io.cosgriff.glovebox.domain.LogEdits
@@ -142,6 +148,11 @@ import java.time.LocalDate
 import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.ShopUse
 import javax.inject.Inject
+
+private const val CUSTOM_KEY = "custom:"
+
+/** The form's key for a custom line, beside the catalog's line ids. */
+internal fun customKey(label: String): String = CUSTOM_KEY + label
 
 /** A tracked reminder that's due, offered as a one-tap chip. [optionId] is the tick box it sets. */
 data class DueSuggestion(val optionId: String, val name: String, val overdue: Boolean)
@@ -273,9 +284,65 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         customItems = customItems - label
     }
 
+    /**
+     * The ticked lines as Work and prices lists them, by the form's own keys: a line's id, or [customKey] for a
+     * custom one. Ticked lines in the catalog's order, then the custom ones.
+     */
+    internal val lineKeys: List<String> get() = (selectedOptions.map { it.id } + customItems.map(::customKey)).distinct()
+
+    /** The jobs as last changed here; [jobs] is what the form shows, kept in line with the ticked lines. */
+    internal var storedJobs by mutableStateOf(emptyList<JobDraft<String>>())
+
+    /** Every ticked line in exactly one job (#481): its own until the user prices it together with another. */
+    val jobs: List<JobDraft<String>> get() = JobGroups.sync(storedJobs, lineKeys)
+
+    /** "+ Add labor and parts" tapped. Once any job has a price the fields stay out whatever this says. */
+    var pricesOpen by mutableStateOf(false)
+
+    val pricesShown: Boolean get() = pricesOpen || jobs.any { price(it).priced }
+
+    fun setLabor(id: Int, text: String) {
+        storedJobs = jobs.map { if (it.id == id) it.copy(labor = text) else it }
+    }
+
+    fun setParts(id: Int, text: String) {
+        storedJobs = jobs.map { if (it.id == id) it.copy(parts = text) else it }
+    }
+
+    /** "Priced together with…": the one-line job [from] goes into [into], which keeps its prices. */
+    fun join(from: Int, into: Int) {
+        storedJobs = JobGroups.join(jobs, from, into)
+    }
+
+    /** "Price separately": each of the job's lines its own job again, unpriced. */
+    fun split(id: Int) {
+        storedJobs = JobGroups.split(jobs, id)
+    }
+
+    /** A job's prices as typed; one that isn't an amount counts as not entered, and [pricesValid] says so. */
+    fun price(job: JobDraft<String>): JobPrice = JobPrice(cents(job.labor), cents(job.parts))
+
+    val pricesValid: Boolean get() = jobs.all { j -> listOf(j.labor, j.parts).all { it.isBlank() || cents(it) != null } }
+
+    val costCents: Long? get() = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) }
+
+    /** Null while nothing is priced. Worked out from what is typed; nothing is filled in from it. */
+    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map(::price), costCents)
+
+    /** What a line is called on the form: as it will be saved. */
+    fun lineName(key: String): String =
+        selectedOptions.firstOrNull { it.id == key }?.let(::labelOf) ?: key.removePrefix(CUSTOM_KEY)
+
+    /** Which category a line came from; null for a custom line. */
+    fun lineCategory(key: String): String? =
+        data?.categories?.firstOrNull { c -> c.id != ServiceCatalog.YOUR_ITEMS && c.options.any { it.id == key } }?.label
+            ?: data?.categories?.firstOrNull { c -> c.options.any { it.id == key } }?.label
+
+    private fun cents(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedDecimal()) }
+
     /** Whether the form can be saved; if not, from now on it says what is wrong. */
     fun check(): Boolean {
-        if (odometer == null || itemCount == 0 || !costValid || dateInFuture) {
+        if (odometer == null || itemCount == 0 || !costValid || !pricesValid || dateInFuture) {
             showErrors = true
             return false
         }
@@ -375,6 +442,20 @@ class LogServiceViewModel @Inject constructor(
                 form.selected = ticked
                 form.customItems = custom
                 form.keptLabels = kept
+                // Each line under the job it was priced in, by the key the form knows it by.
+                val keyOf = original.items.associate { item ->
+                    val option = options.firstOrNull { it.id == item.catalogId } ?: item.scheduleItemId?.let(optionFor::get)
+                    item.id to (option?.id ?: customKey(item.label))
+                }
+                form.storedJobs = original.jobs.sortedBy { it.position }.mapIndexed { i, job ->
+                    JobDraft(
+                        id = i + 1,
+                        lines = original.items.filter { it.jobId == job.id }.mapNotNull { keyOf[it.id] }.distinct(),
+                        wording = job.wording,
+                        labor = job.laborCents?.let(::editableCost).orEmpty(),
+                        parts = job.partsCents?.let(::editableCost).orEmpty(),
+                    )
+                }.filter { it.lines.isNotEmpty() }
             }
 
             if (!editing) optionFor[route.scheduleItemId]?.let { form.selected = setOf(it.id) }
@@ -411,7 +492,7 @@ class LogServiceViewModel @Inject constructor(
                     odometer = odo,
                     diy = diy,
                     shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
-                    costCents = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) },
+                    costCents = costCents,
                     notes = notes.trim().takeIf { it.isNotEmpty() },
                     // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
                     enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
@@ -420,16 +501,29 @@ class LogServiceViewModel @Inject constructor(
                     // An edit leaves the record in whatever visit it was linked into.
                     visitId = d.original?.record?.visitId,
                 )
+                // A job is kept when it says something: a price, more than one line, or the shop's own wording.
+                // A line alone and unpriced is a line as it always was.
+                val kept = jobs.filter { price(it).priced || it.lines.size > 1 || it.wording != null }
+                val jobRows = kept.mapIndexed { i, j ->
+                    val p = price(j)
+                    ServiceRecordJobEntity(id = j.id.toLong(), recordId = 0, wording = j.wording, laborCents = p.laborCents, partsCents = p.partsCents, position = i)
+                }
+                val jobOf = kept.flatMap { j -> j.lines.map { it to j.id.toLong() } }.toMap()
                 val items = selectedOptions.map {
                     ServiceRecordItemEntity(
                         recordId = 0,
                         scheduleItemId = it.scheduleItemId,
                         label = labelOf(it),
                         catalogId = it.id.takeIf { id -> id in catalogIds },
+                        jobId = jobOf[it.id],
                     )
-                } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it) }
+                } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it, jobId = jobOf[customKey(it)]) }
                 val added = photoPicker.takeDraft(photoKey)
-                if (d.original != null) actions.replace(d.original, record, items, added, removedPhotoIds) else actions.add(record, items, added)
+                if (d.original != null) {
+                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows)
+                } else {
+                    actions.add(record, items, added, jobRows)
+                }
                 onDone()
             }
         }
@@ -721,7 +815,11 @@ internal fun LogServiceContent(
                 }
             }
 
-            CostAndPhotos(form, newPhotos, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
+            WorkAndPrices(form)
+
+            CostCard(form)
+
+            Photos(form, newPhotos, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_notes_label))
@@ -742,6 +840,7 @@ internal fun LogServiceContent(
                 stringResource(R.string.log_missing_odometer).takeIf { form.odometer == null },
                 stringResource(R.string.log_missing_item).takeIf { form.itemCount == 0 },
                 stringResource(R.string.log_missing_cost).takeIf { !form.costValid },
+                stringResource(R.string.log_missing_prices).takeIf { !form.pricesValid },
             )
             if (form.showErrors && missing.isNotEmpty()) {
                 Text(
@@ -804,21 +903,21 @@ internal fun LogServiceContent(
 
 /** The small label above a field, as the canvas draws them. */
 @Composable
-private fun FieldLabel(text: String) {
+internal fun FieldLabel(text: String) {
     Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 /** Canvas: fields are white (or the dark surface) boxes on the page colour. */
 @Composable
-private fun fieldColors() = OutlinedTextFieldDefaults.colors(
+internal fun fieldColors() = OutlinedTextFieldDefaults.colors(
     focusedContainerColor = MaterialTheme.colorScheme.surface,
     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
     errorContainerColor = MaterialTheme.colorScheme.surface,
 )
 
-/** Design: "Total cost" beside "Receipt / photo" on 5 · Log service, with the attached photos under them. */
+/** "Receipt / photo" on 5 · Log service, with the attached photos under it. The total cost is in [CostCard]. */
 @Composable
-private fun CostAndPhotos(
+private fun Photos(
     form: LogServiceForm,
     newPhotos: List<String>,
     problem: String?,
@@ -829,58 +928,37 @@ private fun CostAndPhotos(
     val scheme = MaterialTheme.colorScheme
     val count = form.keptPhotos.size + newPhotos.size
     val photoRoom = RecordPhotos.room(count)
-    val costLabel = stringResource(R.string.log_cost_optional)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel(stringResource(R.string.log_total_cost))
-                OutlinedTextField(
-                    value = form.costText,
-                    onValueChange = { form.costText = it },
-                    placeholder = { Text(stringResource(R.string.log_cost_placeholder), fontFamily = PlexMono) },
-                    prefix = { Text(stringResource(R.string.log_cost_prefix), fontFamily = PlexMono) },
-                    singleLine = true,
-                    isError = !form.costValid,
-                    textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    colors = fieldColors(),
-                    modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = costLabel },
-                )
-            }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel(stringResource(R.string.log_receipt))
-                AttachMenu(onTake = onTakePhoto, onChoose = onChoosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
-                    val enabled = photoRoom > 0
-                    val ink = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
-                    val dash = if (enabled) scheme.outline else scheme.outlineVariant
-                    Row(
-                        Modifier.fillMaxWidth().height(56.dp)
-                            .clip(MaterialTheme.shapes.small)
-                            .drawBehind {
-                                // Twice the width, because the outer half is clipped away.
-                                drawRoundRect(
-                                    color = dash,
-                                    cornerRadius = CornerRadius(12.dp.toPx()),
-                                    style = Stroke(width = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))),
-                                )
-                            }
-                            .clickable(enabled = enabled, role = Role.Button, onClick = open),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp), tint = ink)
-                        Text(
-                            photoCount(count)?.let { stringResource(R.string.log_attach_count, it) } ?: stringResource(R.string.log_attach),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = ink,
-                            maxLines = 1,
-                        )
-                    }
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FieldLabel(stringResource(R.string.log_receipt))
+            AttachMenu(onTake = onTakePhoto, onChoose = onChoosePhotos, modifier = Modifier.fillMaxWidth()) { open ->
+                val enabled = photoRoom > 0
+                val ink = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
+                val dash = if (enabled) scheme.outline else scheme.outlineVariant
+                Row(
+                    Modifier.fillMaxWidth().height(56.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .drawBehind {
+                            // Twice the width, because the outer half is clipped away.
+                            drawRoundRect(
+                                color = dash,
+                                cornerRadius = CornerRadius(12.dp.toPx()),
+                                style = Stroke(width = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))),
+                            )
+                        }
+                        .clickable(enabled = enabled, role = Role.Button, onClick = open),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Outlined.PhotoCamera, contentDescription = null, modifier = Modifier.padding(end = 6.dp).size(18.dp), tint = ink)
+                    Text(
+                        photoCount(count)?.let { stringResource(R.string.log_attach_count, it) } ?: stringResource(R.string.log_attach),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = ink,
+                        maxLines = 1,
+                    )
                 }
             }
-        }
-        if (!form.costValid) {
-            Text(stringResource(R.string.log_cost_error), style = MaterialTheme.typography.bodySmall, color = scheme.error)
         }
         if (count > 0) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

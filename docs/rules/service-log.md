@@ -61,4 +61,9 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   the user;** `Visits.offers` is only an offer. An id held by one record alone means nothing, so deleting needs
   no tidying. Two readings in one visit are both shown, never settled. Link and unlink have no Undo. Exports lay
   a visit out as one entry; a record on its own is written exactly as before.
+- Labor and parts (#481, `design/specs/line-prices.md`): **a price belongs to a job, never split between its lines**;
+  null is "not entered", not zero. **The record's cost is the total as typed and is never worked out from, or
+  overwritten by, the prices.** The gap ("Tax and fees", or "Less than the line prices", naming no cause) is worked
+  out on every read (`JobPrices`), never stored, and nothing about it shows while nothing is priced. A line alone
+  and unpriced has no job row. Changing prices or jobs moves no reminder.
 - Clear service history deletes imported records only by default, or all; typed DELETE, no Undo.

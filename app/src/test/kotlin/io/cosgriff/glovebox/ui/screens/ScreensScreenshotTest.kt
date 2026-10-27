@@ -30,6 +30,8 @@ import io.cosgriff.glovebox.ui.service.LineMatches
 import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
+import io.cosgriff.glovebox.ui.service.WorkAndPrices
+import io.cosgriff.glovebox.ui.service.CostCard
 import io.cosgriff.glovebox.ui.settings.CategoryRulesContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
 import io.cosgriff.glovebox.ui.torque.TorqueSpecsContent
@@ -39,6 +41,7 @@ import io.cosgriff.glovebox.ui.vehicle.UpdateMileageSheet
 import io.cosgriff.glovebox.ui.settings.CheckInDialog
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsContent
 import io.cosgriff.glovebox.ui.vehicle.VehicleHomeContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.padding
@@ -176,6 +179,29 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     @Test
+    fun logServicePrices() {
+        // Made once, as below. Only the two price sections: the whole form is taller than the window.
+        val form = Fixtures.logServicePriced()
+        compose.shoot("log_service_prices", shade) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
+                WorkAndPrices(form)
+                CostCard(form)
+            }
+        }
+    }
+
+    @Test
+    fun logServiceAddPrices() {
+        val form = Fixtures.logService()
+        compose.shoot("log_service_add_prices", shade) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
+                WorkAndPrices(form)
+                CostCard(form)
+            }
+        }
+    }
+
+    @Test
     fun customItemMatches() {
         // Made once: building the form writes its state, which inside a composition would compose again for ever.
         val categories = Fixtures.logService().data!!.categories
@@ -290,6 +316,14 @@ class ScreensScreenshotTest(private val shade: Shade) {
     fun record() = compose.shoot("record", shade) {
         RecordDetailContent(
             Fixtures.recordDetail, photoProblem = null,
+            onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
+        )
+    }
+
+    @Test
+    fun recordPriced() = compose.shoot("record_priced", shade) {
+        RecordDetailContent(
+            Fixtures.recordPriced, photoProblem = null,
             onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
         )
     }

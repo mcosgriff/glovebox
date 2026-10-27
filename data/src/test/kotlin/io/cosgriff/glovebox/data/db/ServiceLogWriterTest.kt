@@ -70,4 +70,44 @@ class ServiceLogWriterTest {
 
         assertNull(writer.restore(saved, recallIds = emptyList()))
     }
+
+    @Test
+    fun `jobs are written with their lines, and an edit and its revert carry them`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val plugs = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Spark plugs", catalogId = "spark_plugs", jobId = 7)
+        val coils = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Ignition coils", jobId = 7)
+        val rotation = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Tire rotation")
+        val job = ServiceRecordJobEntity(id = 7, recordId = 0, wording = "Replace spark plugs and ignition coils", laborCents = 30_000, partsCents = 42_000)
+        val id = writer.add(record(car), listOf(plugs, coils, rotation), jobs = listOf(job))
+
+        val saved = service.record(id)!!
+        val written = saved.jobs.single()
+        assertEquals(job.copy(id = written.id, recordId = id), written)
+        assertEquals(listOf(written.id, written.id, null), saved.items.map { it.jobId })
+
+        // An edit that prices nothing leaves no job behind.
+        writer.replace(saved.record, saved.items.map { it.copy(jobId = null) }, emptyList(), emptySet())
+        assertEquals(emptyList<ServiceRecordJobEntity>(), service.record(id)!!.jobs)
+
+        assertTrue(writer.revertEdit(saved))
+        val back = service.record(id)!!
+        assertEquals(1, back.jobs.size)
+        assertEquals(listOf(back.jobs.single().id, back.jobs.single().id, null), back.items.map { it.jobId })
+    }
+
+    @Test
+    fun `a deleted record comes back with its jobs`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val id = writer.add(
+            record(car),
+            listOf(line.copy(jobId = 1)),
+            jobs = listOf(ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 18_000)),
+        )
+        val saved = service.record(id)!!
+        service.deleteRecord(saved.record)
+
+        val back = service.record(writer.restore(saved, recallIds = emptyList())!!)!!
+        assertEquals(18_000L, back.jobs.single().laborCents)
+        assertEquals(back.jobs.single().id, back.items.single().jobId)
+    }
 }
