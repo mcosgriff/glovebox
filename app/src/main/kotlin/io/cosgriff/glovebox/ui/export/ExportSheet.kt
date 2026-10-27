@@ -70,6 +70,7 @@ import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.ExportRecall
+import io.cosgriff.glovebox.domain.ExportJob
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
@@ -233,6 +234,8 @@ class ExportViewModel @Inject constructor(
             whatItTakes = v.whatItTakes().wordedLines(),
             documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date, it.expiresOn) },
             records = records.map { r ->
+                val jobs = r.jobs.sortedBy { it.position }
+                val jobIndex = jobs.withIndex().associate { (i, j) -> j.id to i }
                 ExportRecord(
                     date = r.record.date,
                     odometer = r.record.odometer,
@@ -248,6 +251,8 @@ class ExportViewModel @Inject constructor(
                     categories = r.items.map { line ->
                         line.catalogId?.let { ServiceGroup.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ServiceGroup.OTHER
                     },
+                    jobs = jobs.map { ExportJob(it.wording, it.laborCents, it.partsCents) },
+                    jobOf = if (jobs.isEmpty()) emptyList() else r.items.map { line -> line.jobId?.let(jobIndex::get) },
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->

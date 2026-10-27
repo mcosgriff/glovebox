@@ -31,6 +31,13 @@ object AppExportWords : ExportWords {
             ExportPhrase.IMPORTED_NOTE -> R.string.export_imported_note
             ExportPhrase.VISIT -> R.string.export_visit
             ExportPhrase.VISIT_TOTAL -> R.string.export_visit_total
+            ExportPhrase.JOB_LABOR -> R.string.export_job_labor
+            ExportPhrase.JOB_PARTS -> R.string.export_job_parts
+            ExportPhrase.LINES_JOINED -> R.string.export_lines_joined
+            ExportPhrase.LABOR_ON_LINES -> R.string.export_labor_on_lines
+            ExportPhrase.PARTS_ON_LINES -> R.string.export_parts_on_lines
+            ExportPhrase.TAX_AND_FEES -> R.string.export_tax_and_fees
+            ExportPhrase.LESS_THAN_LINES -> R.string.export_less_than_lines
             ExportPhrase.SCHEDULE_NOTE -> R.string.export_schedule_note
             ExportPhrase.TAKES_NOTE -> R.string.export_takes_note
             ExportPhrase.DOCUMENTS_NOTE -> R.string.export_documents_note
