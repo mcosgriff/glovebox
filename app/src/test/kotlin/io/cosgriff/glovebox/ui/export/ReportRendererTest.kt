@@ -5,6 +5,7 @@ import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.ExportDocument
+import io.cosgriff.glovebox.domain.ExportJob
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.ExportPhrase
 import io.cosgriff.glovebox.domain.ExportPaper
@@ -161,6 +162,67 @@ class ReportRendererTest {
         assertTrue(log.any { it.contains(res.getString(R.string.export_visit_total, "$84.00")) })
         assertTrue(log.any { it.contains("Made-up note") })
         assertTrue(log.any { it.contains(res.getString(R.string.export_imported_note).substringBefore(';')) })
+    }
+
+    // Made-up invoice: plugs and coils priced as one job, the oil change priced alone, the rotation free.
+    private val priced = record(
+        LocalDate.of(2026, 10, 10), 68_412, false,
+        "Spark plugs" to ServiceGroup.OIL_ENGINE, "Tire rotation" to ServiceGroup.TIRES, "Ignition coils" to ServiceGroup.OIL_ENGINE, "Oil & filter change" to ServiceGroup.OIL_ENGINE,
+    ).copy(
+        costCents = 49_731,
+        jobs = listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
+        jobOf = listOf(0, null, 0, 1),
+    )
+
+    @Test
+    fun `a priced record has its labor and parts after the cost, and only a job of one line puts its price on the chip`() {
+        val canvas = RecordingCanvas()
+        val pages = renderer.layout(doc(vehicle(records.take(3) + priced)))
+        renderer.draw(pages[1], canvas, 2, pages.size, null)
+        fun at(text: String) = canvas.at.single { it.first == text }
+        val labor = res.getString(R.string.export_job_labor, "$219.95")
+        val parts = res.getString(R.string.export_job_parts, "$240.90")
+        // On the cost's line, after it.
+        assertEquals(at("$497.31").third, at(labor).third, 0.01f)
+        assertTrue(at(labor).second > at("$497.31").second)
+        // Then the parts, on the same line or, past the log's width, wrapped onto the next.
+        assertTrue(at(parts).third > at(labor).third || at(parts).second > at(labor).second)
+        // The oil change's labor and parts together, on its chip after its name.
+        assertEquals(at("Oil & filter change").third, at("$68.45").third, 1f)
+        assertTrue(at("$68.45").second > at("Oil & filter change").second)
+        // The plugs and coils share a job: neither chip carries its $392.40, nor any part of it.
+        assertFalse(canvas.drawn.any { it.contains("$392.40") || it.contains("$180.00") || it.contains("$212.40") })
+        // A record with no prices says nothing about them.
+        assertEquals(1, canvas.drawn.count { it.startsWith(res.getString(R.string.export_job_labor, "")) })
+    }
+
+    @Test
+    fun `a record with parts priced and no labor entered shows no labor`() {
+        val partsOnly = priced.copy(jobs = listOf(ExportJob(null, null, 21_240), ExportJob(null, null, 2_850)))
+        val drawn = write(doc(vehicle(records.take(3) + partsOnly)))[1]
+        assertTrue(drawn.contains(res.getString(R.string.export_job_parts, "$240.90")))
+        assertTrue(drawn.contains("$28.50"))
+        assertFalse(drawn.toString(), drawn.any { it.startsWith(res.getString(R.string.export_job_labor, "")) })
+    }
+
+    @Test
+    fun `switching costs off leaves no price on the report`() {
+        val drawn = write(doc(vehicle(records.take(3) + priced), options = ExportOptions(costsAndNotes = false)))[1]
+        assertTrue(drawn.contains("Oil & filter change"))
+        assertFalse(drawn.toString(), drawn.any { it.contains("$") })
+    }
+
+    @Test
+    fun `a meta line too long for the log wraps instead of running past it`() {
+        val long = priced.copy(doneBy = "Made-up Automotive Service Center of the Valley", photoFiles = listOf("a.enc", "b.enc"))
+        val canvas = RecordingCanvas()
+        val pages = renderer.layout(doc(vehicle(records.take(3) + long)))
+        renderer.draw(pages[1], canvas, 2, pages.size, null)
+        fun at(text: String) = canvas.at.single { it.first == text }
+        val meta = listOf(long.doneBy, "$497.31", res.getString(R.string.export_job_labor, "$219.95"), res.getString(R.string.export_job_parts, "$240.90")).map(::at)
+        // Onto a second line, and nothing starts past the log, which ends 432 design pixels from the margin beside the average a month.
+        assertTrue(meta.last().third > meta.first().third)
+        meta.forEach { assertTrue(it.toString(), it.second < 48f + 432f) }
     }
 
     @Test

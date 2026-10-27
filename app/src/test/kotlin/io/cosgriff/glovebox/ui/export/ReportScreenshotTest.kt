@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.domain.ExportJob
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.Exports
 import io.cosgriff.glovebox.domain.ServiceGroup
@@ -24,8 +25,15 @@ class ReportScreenshotTest {
         val renderer = ReportRenderer(ReportFonts(RuntimeEnvironment.getApplication()))
         // The brake check also did a line in each of the other groups, so every colour is on the page.
         val more = listOf("Sway bar links" to ServiceGroup.SUSPENSION, "Fuel filter" to ServiceGroup.FUEL_EXHAUST, "Wiper blades" to ServiceGroup.OTHER)
+        // Made-up prices (#481): in June the shop priced the oil change and rotation as one job, so neither chip
+        // carries it; in October the owner's oil change is priced alone, on its chip, and the rotation not at all.
         val records = SampleReport.records.mapIndexed { i, r ->
-            if (i == 1) r.copy(items = r.items + more.map { it.first }, categories = r.categories + more.map { it.second }) else r
+            when (i) {
+                1 -> r.copy(items = r.items + more.map { it.first }, categories = r.categories + more.map { it.second })
+                2 -> r.copy(costCents = 9_850, jobs = listOf(ExportJob("Oil change and tire rotation", 4_000, 5_120)), jobOf = listOf(0, 0))
+                3 -> r.copy(jobs = listOf(ExportJob(null, null, 3_890)), jobOf = listOf(0, null))
+                else -> r
+            }
         }
         val pages = renderer.layout(Exports.document(listOf(SampleReport.vehicle(today, records)), ExportOptions(), today))
         pages.forEachIndexed { i, page -> renderer.bitmap(page, i + 1, pages.size, 816).shoot("report_page${i + 1}") }

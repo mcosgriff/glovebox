@@ -58,6 +58,16 @@ data class ExportRecord(
 ) {
     /** The labor and parts on its lines and the gap to its cost; null when nothing is priced, as on the record's screen. */
     val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map { JobPrice(it.laborCents, it.partsCents) }, costCents)
+
+    /**
+     * Line [index]'s own price, labor and parts together: only when its job is priced and covers that line alone.
+     * A job of several lines gives none of them a price, since it is never split between them.
+     */
+    fun lineTotal(index: Int): Long? {
+        val j = jobOf.getOrNull(index) ?: return null
+        if (jobOf.count { it == j } != 1) return null
+        return jobs.getOrNull(j)?.let { JobPrice(it.laborCents, it.partsCents).totalCents }
+    }
 }
 
 /** A job as the shop priced it (#481): one labor and one parts figure for its lines, never split between them. */
