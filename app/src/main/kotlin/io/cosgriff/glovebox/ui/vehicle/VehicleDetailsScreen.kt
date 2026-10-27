@@ -633,23 +633,7 @@ internal fun VehicleDetailsContent(
 
                 RowsCard {
                     val plate = LicensePlates.label(v.plate, v.plateRegion)
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onEditPlate),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Text(stringResource(R.string.details_plate), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(
-                            plate ?: stringResource(R.string.add),
-                            Modifier.weight(1f).padding(vertical = 8.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = if (v.plate != null) PlexMono else null,
-                            color = if (plate == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.End,
-                        )
-                        Chevron()
-                    }
+                    DetailRow(stringResource(R.string.details_plate), plate, mono = v.plate != null, onClick = onEditPlate)
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -658,29 +642,14 @@ internal fun VehicleDetailsContent(
                         // A tap adds the VIN or corrects it (#468). It is the one value worth having elsewhere (an
                         // insurer's or a parts site's form), so a long press copies it; it is the one row in mono.
                         val vinLabel = stringResource(R.string.details_vin)
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                .combinedClickable(
-                                    role = Role.Button,
-                                    onClick = onEditVin,
-                                    onLongClickLabel = v.vin?.let { stringResource(R.string.details_copy_vin) },
-                                    onLongClick = v.vin?.let { vin -> { copyText(context, vinLabel, vin, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Text(vinLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                v.vin ?: stringResource(R.string.add),
-                                Modifier.weight(1f).padding(vertical = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = if (v.vin != null) PlexMono else null,
-                                color = if (v.vin == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.End,
-                            )
-                            Chevron()
-                        }
+                        DetailRow(
+                            vinLabel,
+                            v.vin,
+                            mono = true,
+                            onClick = onEditVin,
+                            onLongClickLabel = v.vin?.let { stringResource(R.string.details_copy_vin) },
+                            onLongClick = v.vin?.let { vin -> { copyText(context, vinLabel, vin, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                        )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         val rows = listOfNotNull(
                             stringResource(R.string.details_vehicle) to (VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle)),
@@ -695,21 +664,7 @@ internal fun VehicleDetailsContent(
                             v.tpms?.let { stringResource(R.string.add_vehicle_tpms) to it },
                         )
                         rows.forEach { (label, value) ->
-                            Row(
-                                // 48dp, to match the VIN row above.
-                                Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 11.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(
-                                    value,
-                                    Modifier.weight(1f),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    textAlign = TextAlign.End,
-                                )
-                            }
+                            DetailRow(label, value)
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         if (v.vin != null) {
@@ -757,31 +712,14 @@ internal fun VehicleDetailsContent(
                             // A long press copies the row's part numbers, for a parts site's search box.
                             val parts = takes.partNumbers(spec)
                             val partsLabel = stringResource(R.string.details_part_numbers)
-                            Row(
-                                Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                    .combinedClickable(
-                                        role = Role.Button,
-                                        onClick = { onEditTakes(spec) },
-                                        onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
-                                        onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(spec.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    if (spec in known.toCheck) DoubleCheckTag()
-                                }
-                                Text(
-                                    value ?: stringResource(R.string.add),
-                                    Modifier.weight(1f).padding(vertical = 8.dp),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (value == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.End,
-                                )
-                                Chevron()
-                            }
+                            DetailRow(
+                                spec.label,
+                                value,
+                                onClick = { onEditTakes(spec) },
+                                onLongClickLabel = parts?.let { stringResource(R.string.details_copy_parts) },
+                                onLongClick = parts?.let { p -> { copyText(context, partsLabel, p, sensitive = false); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
+                                under = if (spec in known.toCheck) ({ DoubleCheckTag() }) else null,
+                            )
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         // The rest have a page of their own, like torque and fastener specs.
@@ -803,22 +741,12 @@ internal fun VehicleDetailsContent(
                             Chevron()
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Row(
-                            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onSetOffset),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Text(stringResource(R.string.offset_title), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                swap?.let { offsetLabel(it.offset, v.unit) } ?: stringResource(R.string.none),
-                                Modifier.weight(1f).padding(vertical = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                fontFamily = if (swap != null) PlexMono else null,
-                                textAlign = TextAlign.End,
-                            )
-                            Chevron()
-                        }
+                        DetailRow(
+                            stringResource(R.string.offset_title),
+                            swap?.let { offsetLabel(it.offset, v.unit) } ?: stringResource(R.string.none),
+                            mono = swap != null,
+                            onClick = onSetOffset,
+                        )
                     }
                     known.toCheckFrom?.let { KnownTakesNote(it) }
                     known.list?.let { list -> known.offer?.let { plan -> KnownTakesOffer(list, plan, onFill = onFillKnown, Modifier.padding(top = 4.dp)) } }
@@ -1068,6 +996,52 @@ private fun DrawScope.drawDashedBorder(color: Color, radius: Float, width: Float
 }
 
 /** [onClick] null shows the row as information only, without a chevron. */
+/**
+ * One of this screen's label-and-value rows (#479): the label grey at the start, the value semibold at the end,
+ * at least 48dp tall. A null [value] reads "Add", in the accent; [mono] sets a value that is there in Plex Mono.
+ * With [onClick] the row is a button ending in a [Chevron], and [onLongClick] (named by [onLongClickLabel] for
+ * TalkBack) copies something. [under] goes under the label: the DOUBLE-CHECK tag.
+ */
+@Composable
+private fun DetailRow(
+    label: String,
+    value: String?,
+    mono: Boolean = false,
+    onClick: (() -> Unit)? = null,
+    onLongClickLabel: String? = null,
+    onLongClick: (() -> Unit)? = null,
+    under: (@Composable () -> Unit)? = null,
+) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp)
+            .then(
+                if (onClick != null) {
+                    Modifier.combinedClickable(role = Role.Button, onClick = onClick, onLongClickLabel = onLongClickLabel, onLongClick = onLongClick)
+                } else {
+                    Modifier
+                },
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            under?.invoke()
+        }
+        Text(
+            value ?: stringResource(R.string.add),
+            Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = if (mono && value != null) PlexMono else null,
+            color = if (value == null) MaterialTheme.colorScheme.primary else Color.Unspecified,
+            textAlign = TextAlign.End,
+        )
+        if (onClick != null) Chevron()
+    }
+}
+
 @Composable
 private fun LinkRow(title: String, detail: String, detailColor: Color = MaterialTheme.colorScheme.onSurfaceVariant, onClick: (() -> Unit)?) {
     Row(
