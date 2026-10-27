@@ -46,5 +46,6 @@ publishes at
   blades, brakes, engine coolant, drive belts). The drive belts are inspected first at 60,000 and then
   every 15,000.
 - Brake fluid has no replacement in the guide's log, so it has no reminder from this list.
-- Not covered: 2019 and earlier (the previous generation; #192), and 2023 on, when the gas sedan had the
-  2.0L only.
+- Not covered: 2016 to 2019, the previous generation, which have lists of their own
+  ([2016](toyota-corolla-2016.md), [2017–2019](toyota-corolla-2017-2019.md)); 2015 and earlier; and 2023 on,
+  when the gas sedan had the 2.0L only.
