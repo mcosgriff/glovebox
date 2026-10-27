@@ -23,3 +23,6 @@ app/src/main/assets/adi-registration.properties
 # Python caches from the helper scripts
 __pycache__/
 .pytest_cache/
+
+# Real invoices for the invoice parser's local test (#483): words.json and expected.json per invoice. Never committed.
+domain/src/test/private-invoices/

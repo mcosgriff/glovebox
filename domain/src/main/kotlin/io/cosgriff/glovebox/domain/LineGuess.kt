@@ -43,6 +43,25 @@ object LineGuess {
         return best.id
     }
 
+    /**
+     * The lines [text] looks like when it may name more than one job (#483): a shop's one service is often two
+     * catalog lines ("Remove & Replace Spark Plugs and Ignition Coils"). Asked whole first; when that is no clear
+     * one line, each piece between "and" or "plus" is asked by itself, and a piece that says nothing of what was
+     * done ("ignition coils") takes the whole text's action words. Each answer is still only a guess, offered.
+     */
+    fun guesses(text: String): List<String> {
+        guess(text)?.let { return listOf(it) }
+        val words = words(text)
+        val pieces = mutableListOf(mutableListOf<String>())
+        words.forEach { if (it in SPLITTING) pieces += mutableListOf<String>() else pieces.last() += it }
+        val real = pieces.filter { it.isNotEmpty() }
+        if (real.size < 2) return emptyList()
+        val actions = words.filter { it in DONE || it in CHECKED }
+        return real.mapNotNull { piece -> guess((if (action(piece) == Action.NONE) piece + actions else piece).joinToString(" ")) }.distinct()
+    }
+
+    private val SPLITTING = setOf("and", "plus")
+
     /** "and" (or "plus", "with") stands between the two sets of words. */
     private fun apart(a: Set<Int>, b: Set<Int>, words: List<String>): Boolean = words.indices.any { i ->
         words[i] in JOINING && ((a.all { it < i } && b.all { it > i }) || (b.all { it < i } && a.all { it > i }))

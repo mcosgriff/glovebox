@@ -170,7 +170,7 @@ Every board on the canvas is built. Still to build: VIN scan follow-up (#83).
 
 - **Vehicles** (adding by VIN or by hand, VIN scanning, vehicle details, archiving, deleting, the odometer offset, distance units): `docs/rules/vehicles.md`
 - **Schedule and reminders** (setup, maker's schedules, drive and gearbox variants, Severe and E85, statuses, snoozes): `docs/rules/schedule.md`
-- **Service log** (Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits): `docs/rules/service-log.md`
+- **Service log** (Log service, Undo, record files, History's list, timeline and spending, custom lines and rules, guesses, visits, reading invoices): `docs/rules/service-log.md`
 - **Mileage** (Update mileage, the readings list and chart, Read dash): `docs/rules/mileage.md`
 - **Import** (the import format and schemas, schedule and history imports, the Carfax PDF, writing import files): `docs/rules/import.md`
 - **Milestones** (the milestones view and the user's own table): `docs/rules/milestones.md`
