@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log service — option B, price sheet per line</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 600">Log service</span>
+      <span style="font-size: 12px; color: {{t.muted}}">Scrolled to prices · sample data</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 12px 20px 24px 20px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK AND PRICES · 3 LINES</div>
+        <span style="font-size: 12px; color: {{t.muted}}">Tap a line to price it</span>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+          <button onClick="{{r.open}}" style="width: 100%; min-height: 64px; border: 0; border-bottom: {{r.border}}; background: transparent; padding: 10px 0; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left; color: {{t.ink}}">
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; font-weight: 600">{{r.name}}</span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{r.detail}}</span>
+            </span>
+            <span style="font-family: {{r.font}}; font-size: {{r.size}}; font-weight: 600; color: {{r.color}}">{{r.value}}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">COST</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span style="font-size: 15px; font-weight: 600">Total cost</span>
+          <span style="height: 48px; min-width: 140px; box-sizing: border-box; border: 2px solid {{t.ink}}; border-radius: 12px; display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; font-weight: 600">$305.48</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin: 0 -10px; border-radius: 10px; background: {{t.calcBg}}; font-size: 14px">
+          <span style="display: flex; align-items: center; gap: 8px">Tax and fees <span style="padding: 2px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; color: {{t.muted}}">worked out</span></span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600">$21.33</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ true }}">
+    <button onClick="{{close}}" aria-label="Close price sheet" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; border: 0; padding: 0; background: rgba(14,16,18,0.55)"></button>
+    <div role="dialog" aria-label="Prices for Front brake pads" style="position: absolute; left: 0; right: 0; bottom: 0; background: {{t.bg}}; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="width: 40px; height: 4px; border-radius: 2px; background: {{t.field}}; align-self: center"></div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 20px; font-weight: 700">Front brake pads</span>
+        <span style="font-size: 13px; color: {{t.muted}}">Brakes · Main Street Auto</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="bl" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Labor</label>
+          <div style="height: 52px; box-sizing: border-box; border: 2px solid {{t.accent}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+            <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; color: {{t.muted}}">$</span>
+            <input id="bl" value="120.00" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; font-weight: 600; color: {{t.ink}}">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="bp" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</label>
+          <div style="height: 52px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+            <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; color: {{t.muted}}">$</span>
+            <input id="bp" value="86.40" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; font-weight: 600; color: {{t.ink}}">
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 14px; color: {{t.sub}}">
+        <span>Line total</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600; color: {{t.ink}}">$206.40</span>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button onClick="{{close}}" style="flex: 1; height: 52px; border-radius: 12px; border: 1.5px solid {{t.field}}; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}">Clear prices</button>
+        <button onClick="{{close}}" style="flex: 2; height: 52px; border-radius: 12px; border: 0; background: {{t.accent}}; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.onAccent}}">Next: Tire rotation</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { open: true };
+}
+renderVals() {
+var self = this;
+var dark = (this.props.theme || 'light') === 'dark';
+var t = dark ? {
+bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
+field: '#4A4F55', accent: '#F08A4B', onAccent: '#17191C', softFg: '#FDBA74', calcBg: '#24282D'
+} : {
+bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
+field: '#B9B6AE', accent: '#C2410C', onAccent: '#FFFFFF', softFg: '#9A3412', calcBg: '#F4F3EF'
+};
+var R = [
+['Oil & filter change', 'Labor $29.00 · Parts $48.75', '$77.75', true],
+['Front brake pads', 'Labor $120.00 · Parts $86.40', '$206.40', true],
+['Tire rotation', 'Tires & wheels', 'Add price', false]
+];
+return {
+t: t, sheetOpen: this.state.open,
+close: function () { self.setState({ open: false }); },
+rows: R.map(function (r, i) {
+return { name: r[0], detail: r[1], value: r[2],
+font: r[3] ? "'IBM Plex Mono', ui-monospace, monospace" : 'inherit', size: r[3] ? '15px' : '14px', color: r[3] ? t.ink : t.softFg,
+border: i === R.length - 1 ? '0' : '1px solid ' + t.divider,
+open: function () { self.setState({ open: true }); } };
+})
+};
+}
+}
+</script>
+</body>
+</html>

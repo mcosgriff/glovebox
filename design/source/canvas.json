@@ -1,1 +1,678 @@
-{"v":3,"createdOnFiles":{"v":1,"at":"2026-10-10T18:00:00Z"},"title":"Glovebox","launch":{"view":"canvas"},"pages":[{"id":"app","name":"App screens"},{"id":"report","name":"PDF report"}],"boards":{"Main.dc.html":{"x":0,"y":0,"w":390,"h":844,"title":"1 · Add vehicle (VIN)","is_interactive":true,"radius":28},"Scan.dc.html":{"x":470,"y":0,"w":390,"h":844,"title":"2 · Scan VIN","is_interactive":true,"radius":28},"Decoded.dc.html":{"x":940,"y":0,"w":390,"h":844,"title":"3 · NHTSA decode result","is_interactive":true,"radius":28},"Garage.dc.html":{"x":1410,"y":0,"w":390,"h":844,"title":"4 · Garage / vehicle home","is_interactive":true,"radius":28},"LogService.dc.html":{"x":1880,"y":0,"w":390,"h":1240,"title":"5 · Log service (scrolls)","is_interactive":true,"radius":28},"History.dc.html":{"x":2350,"y":0,"w":390,"h":844,"title":"6 · Service history","is_interactive":true,"radius":28},"Reminders.dc.html":{"x":2820,"y":0,"w":390,"h":1060,"title":"7 · Reminder rules (scrolls)","is_interactive":true,"radius":28},"Recalls.dc.html":{"x":3290,"y":0,"w":390,"h":980,"title":"8 · Recalls (scrolls)","is_interactive":true,"radius":28},"Schedule.dc.html":{"x":3760,"y":0,"w":390,"h":1180,"title":"3b · Recommended schedule (after decode)","is_interactive":true,"radius":28},"Settings.dc.html":{"x":4230,"y":0,"w":390,"h":1520,"title":"9 · Settings — theme toggle is live","is_interactive":true,"radius":28},"Lock.dc.html":{"x":4700,"y":0,"w":390,"h":844,"title":"0 · Biometric unlock","is_interactive":true,"radius":28},"GarageMulti.dc.html":{"x":5170,"y":0,"w":390,"h":844,"title":"4a · Garage — two vehicles","is_interactive":true,"radius":28},"Upcoming.dc.html":{"x":5640,"y":0,"w":390,"h":844,"title":"10 · Reminders tab (all vehicles)","is_interactive":true,"radius":28},"UpdateMileage.dc.html":{"x":6110,"y":0,"w":390,"h":844,"title":"4b · Update mileage (sheet)","is_interactive":true,"radius":28},"RecordDetail.dc.html":{"x":6580,"y":0,"w":390,"h":1040,"title":"6a · Service record + receipt viewer","is_interactive":true,"radius":28},"Welcome.dc.html":{"x":7050,"y":0,"w":390,"h":844,"title":"0a · First-run welcome / restore","is_interactive":true,"radius":28},"GarageEmpty.dc.html":{"x":7520,"y":0,"w":390,"h":844,"title":"4c · Garage — empty","is_interactive":true,"radius":28},"VehicleDetails.dc.html":{"x":7990,"y":0,"w":390,"h":1300,"title":"4d · Vehicle details + mark as sold","is_interactive":true,"radius":28},"EditInterval.dc.html":{"x":8460,"y":0,"w":390,"h":1080,"title":"3c · Edit schedule item","is_interactive":true,"radius":28},"Specs.dc.html":{"x":8930,"y":0,"w":390,"h":1260,"title":"4e · Torque & fastener specs","is_interactive":true,"radius":28},"GarageDark.dc.html":{"x":1410,"y":1900,"w":390,"h":844,"title":"4 · Garage — dark","is_interactive":true,"radius":28},"LogServiceDark.dc.html":{"x":1880,"y":1900,"w":390,"h":1240,"title":"5 · Log service — dark","is_interactive":true,"radius":28},"HistoryDark.dc.html":{"x":2350,"y":1900,"w":390,"h":844,"title":"6 · History — dark","is_interactive":true,"radius":28},"SettingsDark.dc.html":{"x":4230,"y":1900,"w":390,"h":1520,"title":"9 · Settings — dark","is_interactive":true,"radius":28},"LockDark.dc.html":{"x":4700,"y":1900,"w":390,"h":844,"title":"0 · Unlock — dark","is_interactive":true,"radius":28},"NavMap.dc.html":{"x":0,"y":3840,"w":1440,"h":1120,"title":"Navigation map","is_interactive":true},"ManualAdd.dc.html":{"x":0,"y":5340,"w":390,"h":980,"title":"1a · Add without a VIN","is_interactive":true,"radius":28},"Archived.dc.html":{"x":470,"y":5340,"w":390,"h":844,"title":"4f · Archived vehicles","is_interactive":true,"radius":28},"ExportSheet.dc.html":{"x":940,"y":5340,"w":390,"h":844,"title":"6b · Export sheet","is_interactive":true,"radius":28},"Snooze.dc.html":{"x":1410,"y":5340,"w":390,"h":844,"title":"10a · Snooze sheet","is_interactive":true,"radius":28},"Notifications.dc.html":{"x":1880,"y":5340,"w":390,"h":960,"title":"9a · Notifications","is_interactive":true,"radius":28},"BackupCreate.dc.html":{"x":2350,"y":5340,"w":390,"h":960,"title":"9b · Create encrypted backup","is_interactive":true,"radius":28},"About.dc.html":{"x":2820,"y":5340,"w":390,"h":900,"title":"9c · About","is_interactive":true,"radius":28},"DeleteVehicle.dc.html":{"x":3290,"y":5340,"w":390,"h":900,"title":"4g · Delete vehicle + its data","is_interactive":true,"radius":28},"DeleteAll.dc.html":{"x":3760,"y":5340,"w":390,"h":940,"title":"9d · Delete all data","is_interactive":true,"radius":28},"EditRecord.dc.html":{"x":4230,"y":5340,"w":390,"h":1120,"title":"6c · Edit service + undo","is_interactive":true,"radius":28},"DeleteRecord.dc.html":{"x":4700,"y":5340,"w":390,"h":844,"title":"6d · Delete record + undo","is_interactive":true,"radius":28},"Timeline.dc.html":{"x":5170,"y":5340,"w":390,"h":1560,"title":"6e · History — timeline view","is_interactive":true,"radius":28},"ReportPage1.dc.html":{"x":0,"y":0,"w":816,"h":1056,"title":"PDF report · page 1 (infographic)","page":"report","print":"fixed","paper":"letter"},"ReportPage2.dc.html":{"x":896,"y":0,"w":816,"h":1056,"title":"PDF report · page 2 (service log)","page":"report","print":"fixed","paper":"letter"}},"order":["Main.dc.html","Scan.dc.html","Decoded.dc.html","Garage.dc.html","LogService.dc.html","History.dc.html","Reminders.dc.html","Recalls.dc.html","Schedule.dc.html","Settings.dc.html","Lock.dc.html","GarageMulti.dc.html","Upcoming.dc.html","UpdateMileage.dc.html","RecordDetail.dc.html","Welcome.dc.html","GarageEmpty.dc.html","VehicleDetails.dc.html","EditInterval.dc.html","Specs.dc.html","GarageDark.dc.html","LogServiceDark.dc.html","HistoryDark.dc.html","SettingsDark.dc.html","LockDark.dc.html","NavMap.dc.html","ManualAdd.dc.html","Archived.dc.html","ExportSheet.dc.html","Snooze.dc.html","Notifications.dc.html","BackupCreate.dc.html","About.dc.html","DeleteVehicle.dc.html","DeleteAll.dc.html","EditRecord.dc.html","DeleteRecord.dc.html","Timeline.dc.html","ReportPage1.dc.html","ReportPage2.dc.html"],"notes":{"flowtitle":{"x":0,"y":-280,"text":"Glovebox — Android flow (2019 Toyota 4Runner)","kind":"title1","maxW":9320},"darktitle":{"x":1410,"y":1620,"text":"Dark mode","kind":"title1","maxW":3680},"navtitle":{"x":0,"y":3560,"text":"Navigation map","kind":"title1","maxW":1440},"moretitle":{"x":0,"y":5060,"text":"Supporting screens & delete flows","kind":"title1","maxW":5560}},"designSystems":[]}
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "About.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9c · About",
+      "w": 390,
+      "x": 2820,
+      "y": 5340
+    },
+    "Archived.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4f · Archived vehicles",
+      "w": 390,
+      "x": 470,
+      "y": 5340
+    },
+    "BackupCreate.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9b · Create encrypted backup",
+      "w": 390,
+      "x": 2350,
+      "y": 5340
+    },
+    "Decoded.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "3 · NHTSA decode result",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "DeleteAll.dc.html": {
+      "h": 940,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9d · Delete all data",
+      "w": 390,
+      "x": 3760,
+      "y": 5340
+    },
+    "DeleteRecord.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6d · Delete record + undo",
+      "w": 390,
+      "x": 4700,
+      "y": 5340
+    },
+    "DeleteVehicle.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4g · Delete vehicle + its data",
+      "w": 390,
+      "x": 3290,
+      "y": 5340
+    },
+    "EditInterval.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "3c · Edit schedule item",
+      "w": 390,
+      "x": 8460,
+      "y": 0
+    },
+    "EditRecord.dc.html": {
+      "h": 1120,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6c · Edit service + undo",
+      "w": 390,
+      "x": 4230,
+      "y": 5340
+    },
+    "ExportSheet.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6b · Export sheet",
+      "w": 390,
+      "x": 940,
+      "y": 5340
+    },
+    "Garage.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4 · Garage / vehicle home",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "GarageDark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4 · Garage — dark",
+      "w": 390,
+      "x": 1410,
+      "y": 1900
+    },
+    "GarageEmpty.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4c · Garage — empty",
+      "w": 390,
+      "x": 7520,
+      "y": 0
+    },
+    "GarageMulti.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4a · Garage — two vehicles",
+      "w": 390,
+      "x": 5170,
+      "y": 0
+    },
+    "History.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6 · Service history",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "HistoryDark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6 · History — dark",
+      "w": 390,
+      "x": 2350,
+      "y": 1900
+    },
+    "Lock.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "0 · Biometric unlock",
+      "w": 390,
+      "x": 4700,
+      "y": 0
+    },
+    "LockDark.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "0 · Unlock — dark",
+      "w": 390,
+      "x": 4700,
+      "y": 1900
+    },
+    "LogService.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "5 · Log service (scrolls)",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "LogServiceDark.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "5 · Log service — dark",
+      "w": 390,
+      "x": 1880,
+      "y": 1900
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "1 · Add vehicle (VIN)",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "ManualAdd.dc.html": {
+      "h": 980,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "1a · Add without a VIN",
+      "w": 390,
+      "x": 0,
+      "y": 5340
+    },
+    "NavMap.dc.html": {
+      "h": 1120,
+      "is_interactive": true,
+      "title": "Navigation map",
+      "w": 1440,
+      "x": 0,
+      "y": 3840
+    },
+    "Notifications.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9a · Notifications",
+      "w": 390,
+      "x": 1880,
+      "y": 5340
+    },
+    "Recalls.dc.html": {
+      "h": 980,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "8 · Recalls (scrolls)",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "RecordDetail.dc.html": {
+      "h": 1040,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6a · Service record + receipt viewer",
+      "w": 390,
+      "x": 6580,
+      "y": 0
+    },
+    "Reminders.dc.html": {
+      "h": 1060,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "7 · Reminder rules (scrolls)",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "ReportPage1.dc.html": {
+      "h": 1056,
+      "page": "report",
+      "paper": "letter",
+      "title": "PDF report · page 1 (infographic)",
+      "w": 816,
+      "x": 0,
+      "y": 0
+    },
+    "ReportPage2.dc.html": {
+      "h": 1056,
+      "page": "report",
+      "paper": "letter",
+      "title": "PDF report · page 2 (service log)",
+      "w": 816,
+      "x": 896,
+      "y": 0
+    },
+    "Scan.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "2 · Scan VIN",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Schedule.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "3b · Recommended schedule (after decode)",
+      "w": 390,
+      "x": 3760,
+      "y": 0
+    },
+    "Settings.dc.html": {
+      "h": 1520,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9 · Settings — theme toggle is live",
+      "w": 390,
+      "x": 4230,
+      "y": 0
+    },
+    "SettingsDark.dc.html": {
+      "h": 1520,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "9 · Settings — dark",
+      "w": 390,
+      "x": 4230,
+      "y": 1900
+    },
+    "Snooze.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "10a · Snooze sheet",
+      "w": 390,
+      "x": 1410,
+      "y": 5340
+    },
+    "Specs.dc.html": {
+      "h": 1260,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4e · Torque & fastener specs",
+      "w": 390,
+      "x": 8930,
+      "y": 0
+    },
+    "Timeline.dc.html": {
+      "h": 1560,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "6e · History — timeline view",
+      "w": 390,
+      "x": 5170,
+      "y": 5340
+    },
+    "Upcoming.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "10 · Reminders tab (all vehicles)",
+      "w": 390,
+      "x": 5640,
+      "y": 0
+    },
+    "UpdateMileage.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4b · Update mileage (sheet)",
+      "w": 390,
+      "x": 6110,
+      "y": 0
+    },
+    "VehicleDetails.dc.html": {
+      "h": 1300,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4d · Vehicle details + mark as sold",
+      "w": 390,
+      "x": 7990,
+      "y": 0
+    },
+    "Welcome.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "0a · First-run welcome / restore",
+      "w": 390,
+      "x": 7050,
+      "y": 0
+    },
+    "PricesLog.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — shop, one job covers two lines",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogDiy.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1110,
+      "title": "A · Log service — DIY, nothing priced",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesEdit.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1960,
+      "title": "A · Edit service — filled",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecord.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — with job prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordPlain.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "Service record — no prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogB.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "B · Log service — price sheet per line (reference only)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogDark.dc.html": {
+      "x": 0,
+      "y": 2700,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — shop, one job covers two lines (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogDiyDark.dc.html": {
+      "x": 470,
+      "y": 2700,
+      "w": 390,
+      "h": 1110,
+      "title": "A · Log service — DIY, nothing priced (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesEditDark.dc.html": {
+      "x": 940,
+      "y": 2700,
+      "w": 390,
+      "h": 1960,
+      "title": "A · Edit service — filled (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordDark.dc.html": {
+      "x": 1410,
+      "y": 2700,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — with job prices (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordPlainDark.dc.html": {
+      "x": 1880,
+      "y": 2700,
+      "w": 390,
+      "h": 900,
+      "title": "Service record — no prices (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogBDark.dc.html": {
+      "x": 2350,
+      "y": 2700,
+      "w": 390,
+      "h": 844,
+      "title": "B · Log service — price sheet per line (reference only, dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesCombine.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 2150,
+      "title": "A · Priced together with… (menu open)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesCombineDark.dc.html": {
+      "x": 2820,
+      "y": 2700,
+      "w": 390,
+      "h": 2150,
+      "title": "A · Priced together with… (menu open) (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogUnder.dc.html": {
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — total below the line prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesLogUnderDark.dc.html": {
+      "x": 3290,
+      "y": 2700,
+      "w": 390,
+      "h": 1900,
+      "title": "A · Log service — total below the line prices (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordUnder.dc.html": {
+      "x": 3760,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — total below the line prices",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PricesRecordUnderDark.dc.html": {
+      "x": 3760,
+      "y": 2700,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — total below the line prices (dark)",
+      "page": "prices",
+      "is_interactive": true,
+      "radius": 28
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-10T18:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "darktitle": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Dark mode",
+      "w": 240,
+      "x": 1410,
+      "y": 1620
+    },
+    "flowtitle": {
+      "kind": "title1",
+      "maxW": 8000,
+      "text": "Glovebox — Android flow (2019 Toyota 4Runner)",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "moretitle": {
+      "kind": "title1",
+      "maxW": 5560,
+      "text": "Supporting screens & delete flows",
+      "w": 240,
+      "x": 0,
+      "y": 5060
+    },
+    "navtitle": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Navigation map",
+      "w": 240,
+      "x": 0,
+      "y": 3560
+    },
+    "pricestitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Labor & parts per job — light",
+      "kind": "title1",
+      "maxW": 4150,
+      "page": "prices"
+    },
+    "pricesdark": {
+      "x": 0,
+      "y": 2420,
+      "text": "Labor & parts per job — dark",
+      "kind": "title1",
+      "maxW": 4150,
+      "page": "prices"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Scan.dc.html",
+    "Decoded.dc.html",
+    "Garage.dc.html",
+    "LogService.dc.html",
+    "History.dc.html",
+    "Reminders.dc.html",
+    "Recalls.dc.html",
+    "Schedule.dc.html",
+    "Settings.dc.html",
+    "Lock.dc.html",
+    "GarageMulti.dc.html",
+    "Upcoming.dc.html",
+    "UpdateMileage.dc.html",
+    "RecordDetail.dc.html",
+    "Welcome.dc.html",
+    "GarageEmpty.dc.html",
+    "VehicleDetails.dc.html",
+    "EditInterval.dc.html",
+    "Specs.dc.html",
+    "GarageDark.dc.html",
+    "LogServiceDark.dc.html",
+    "HistoryDark.dc.html",
+    "SettingsDark.dc.html",
+    "LockDark.dc.html",
+    "NavMap.dc.html",
+    "ManualAdd.dc.html",
+    "Archived.dc.html",
+    "ExportSheet.dc.html",
+    "Snooze.dc.html",
+    "Notifications.dc.html",
+    "BackupCreate.dc.html",
+    "About.dc.html",
+    "DeleteVehicle.dc.html",
+    "DeleteAll.dc.html",
+    "EditRecord.dc.html",
+    "DeleteRecord.dc.html",
+    "Timeline.dc.html",
+    "ReportPage1.dc.html",
+    "ReportPage2.dc.html",
+    "PricesLog.dc.html",
+    "PricesLogDiy.dc.html",
+    "PricesEdit.dc.html",
+    "PricesRecord.dc.html",
+    "PricesRecordPlain.dc.html",
+    "PricesLogB.dc.html",
+    "PricesLogDark.dc.html",
+    "PricesLogDiyDark.dc.html",
+    "PricesEditDark.dc.html",
+    "PricesRecordDark.dc.html",
+    "PricesRecordPlainDark.dc.html",
+    "PricesLogBDark.dc.html",
+    "PricesCombine.dc.html",
+    "PricesCombineDark.dc.html",
+    "PricesLogUnder.dc.html",
+    "PricesLogUnderDark.dc.html",
+    "PricesRecordUnder.dc.html",
+    "PricesRecordUnderDark.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "app",
+      "name": "App screens"
+    },
+    {
+      "id": "report",
+      "name": "PDF report"
+    },
+    {
+      "id": "prices",
+      "name": "Labor & parts prices"
+    }
+  ],
+  "title": "Glovebox"
+}

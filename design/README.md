@@ -6,7 +6,7 @@ the main [README](../README.md#screenshots). They are still the reference for th
 
 Exported from the Claude design canvas: https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
-- `screens/*.png` — renders at 390 dp wide, 2× scale (phone screens; tall ones show the full scroll).
+- `screens/*.png` — renders at 390 dp wide, 2× scale (phone screens, each at its canvas frame's height; where a screen scrolls past its frame, the source has the rest).
   Fonts fell back to system fonts in the export; the design uses IBM Plex Sans / Mono.
 - `source/*.dc.html` — the exact source of each screen. Inline `style` attributes hold the real colors,
   sizes and spacing; copy text is literal. `{{name}}` holes and the `renderVals()` script at the bottom
@@ -59,6 +59,15 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 6e · History — timeline view | `screens/Timeline.png` | `source/Timeline.dc.html` |
 | PDF report · page 1 (infographic) — 816×1056 Letter | `screens/ReportPage1.png` | `source/ReportPage1.dc.html` |
 | PDF report · page 2 (service log) — 816×1056 Letter | `screens/ReportPage2.png` | `source/ReportPage2.dc.html` |
+| Prices A · Log service — shop, one job covers two lines (chosen layout) | `screens/PricesLog.png` · `screens/PricesLogDark.png` | `source/PricesLog.dc.html` |
+| Prices A · Log service — DIY, nothing priced | `screens/PricesLogDiy.png` · `screens/PricesLogDiyDark.png` | `source/PricesLogDiy.dc.html` → imports `PricesLog` |
+| Prices A · Edit service — filled | `screens/PricesEdit.png` · `screens/PricesEditDark.png` | `source/PricesEdit.dc.html` → imports `PricesLog` |
+| Prices A · "Priced together with…" menu open | `screens/PricesCombine.png` · `screens/PricesCombineDark.png` | `source/PricesCombine.dc.html` (+ `Dark`) → imports `PricesLog` |
+| Prices A · Log service — total below the line prices | `screens/PricesLogUnder.png` · `screens/PricesLogUnderDark.png` | `source/PricesLogUnder.dc.html` (+ `Dark`) → imports `PricesLog` |
+| Prices · Service record — with job prices | `screens/PricesRecord.png` · `screens/PricesRecordDark.png` | `source/PricesRecord.dc.html` |
+| Prices · Service record — no prices | `screens/PricesRecordPlain.png` · `screens/PricesRecordPlainDark.png` | `source/PricesRecordPlain.dc.html` → imports `PricesRecord` |
+| Prices · Service record — total below the line prices | `screens/PricesRecordUnder.png` · `screens/PricesRecordUnderDark.png` | `source/PricesRecordUnder.dc.html` (+ `Dark`) → imports `PricesRecord` |
+| Prices B · Log service — price sheet per line (alternative, not chosen) | `screens/PricesLogB.png` · `screens/PricesLogBDark.png` | `source/PricesLogB.dc.html` |
 
 ## PDF report
 
@@ -66,4 +75,11 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 = 8.5×11 in). In the app, render them with Android's `PdfDocument` on a 612×792 pt Letter page (design px × 0.75 = pt). Category colors
 (oil `#eb6834`, tires `#2a78d6`, brakes `#eda100`, fluids & 4WD `#1baf7a`, other `#8A8E94`) were
 checked for colorblind separation; every color also has a text label, so the report reads in grayscale.
+
+## Labor & parts per job
+
+Spec: `specs/line-prices.md`. `PricesLog.dc.html` and `PricesRecord.dc.html` hold the real markup; the
+other `Prices*.dc.html` files only import them with a different `variant` / `theme`.
+
+All `Prices*` PNGs match the current sources (jobs version). Renders use fallback fonts; the app uses IBM Plex Sans / Mono.
 

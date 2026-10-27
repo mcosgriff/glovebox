@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log service with job prices</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 600">{{title}}</span>
+      <span style="font-size: 12px; color: {{t.muted}}">2011 hatchback · sample data</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px; padding: 12px 20px 24px 20px">
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="pd" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Date</label>
+        <input id="pd" value="Jan 7, 2026" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="po" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Odometer (mi)</label>
+        <input id="po" value="129,565" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WHAT WAS DONE?</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{tabs}}" as="c" hint-placeholder-count="4">
+          <button onClick="{{c.pick}}" aria-pressed="{{c.active}}" style="height: 40px; padding: 0 12px; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: 1.5px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}">
+            {{c.label}}
+            <sc-if value="{{c.hasCount}}" hint-placeholder-val="{{ false }}">
+              <span style="min-width: 20px; height: 20px; border-radius: 10px; background: {{t.accent}}; color: {{t.onAccent}}; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{c.count}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{tabItems}}" as="it" hint-placeholder-count="3">
+          <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid {{t.divider}}; font-size: 15px">
+            <input type="checkbox" checked="{{it.on}}" onChange="{{it.toggle}}" style="width: 20px; height: 20px; accent-color: {{t.accent}}">
+            <span>{{it.name}}</span>
+          </label>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WHO DID IT?</div>
+      <div role="radiogroup" aria-label="Who did it" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: {{t.seg}}">
+        <button role="radio" aria-checked="{{isDiy}}" onClick="{{setDiy}}" style="height: 44px; border-radius: 9px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}; background: {{diyBg}}; box-shadow: {{diyShadow}}">I did it (DIY)</button>
+        <button role="radio" aria-checked="{{isShop}}" onClick="{{setShop}}" style="height: 44px; border-radius: 9px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}; background: {{shopBg}}; box-shadow: {{shopShadow}}">A shop</button>
+      </div>
+      <sc-if value="{{isShop}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="ps" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Shop name</label>
+          <input id="ps" value="Main Street Auto" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">{{workLabel}}</div>
+        <sc-if value="{{showOptional}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: {{t.muted}}">Prices are optional</span>
+        </sc-if>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: 1px solid {{t.divider}}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
+              <span style="display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 15px; font-weight: 600">{{j.heading}}</span>
+                <sc-if value="{{j.single}}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size: 12px; color: {{t.muted}}">{{j.cat}}</span>
+                </sc-if>
+              </span>
+              <sc-if value="{{j.hasSub}}" hint-placeholder-val="{{ false }}">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{j.sub}}</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px; border-left: 2px solid {{t.line}}">
+                <sc-for list="{{j.lines}}" as="ln" hint-placeholder-count="2">
+                  <span style="display: flex; justify-content: space-between; gap: 10px; font-size: 14px">
+                    <span>{{ln.name}}</span>
+                    <span style="font-size: 12px; color: {{t.muted}}">{{ln.cat}}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{itemize}}" hint-placeholder-val="{{ true }}">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <label for="{{j.laborId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Labor</label>
+                  <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+                    <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
+                    <input id="{{j.laborId}}" value="{{j.labor}}" onChange="{{j.onLabor}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <label for="{{j.partsId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</label>
+                  <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+                    <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
+                    <input id="{{j.partsId}}" value="{{j.parts}}" onChange="{{j.onParts}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                  </div>
+                </div>
+              </div>
+              <sc-if value="{{j.canJoin}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{j.toggleMenu}}" aria-expanded="{{j.menuOpen}}" style="align-self: flex-start; min-height: 48px; margin: -6px 0 -10px 0; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">Priced together with…</button>
+              </sc-if>
+              <sc-if value="{{j.menuOpen}}" hint-placeholder-val="{{ false }}">
+                <div role="menu" aria-label="Price together with" style="display: flex; flex-direction: column; border: 1px solid {{t.line}}; border-radius: 12px; background: {{t.bg}}; padding: 4px 12px; margin-top: 8px">
+                  <span style="font-size: 12px; color: {{t.muted}}; padding: 8px 0 4px 0">One labor and one parts price for both. Not split between them.</span>
+                  <sc-for list="{{j.targets}}" as="tg" hint-placeholder-count="2">
+                    <button role="menuitem" onClick="{{tg.pick}}" style="min-height: 48px; border: 0; border-top: 1px solid {{t.divider}}; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; color: {{t.ink}}">{{tg.label}}</button>
+                  </sc-for>
+                  <button role="menuitem" onClick="{{j.toggleMenu}}" style="min-height: 48px; border: 0; border-top: 1px solid {{t.divider}}; background: transparent; padding: 0; text-align: left; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.sub}}">Cancel</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{j.split}}" style="align-self: flex-start; min-height: 48px; margin: -6px 0 -10px 0; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">Price separately</button>
+              </sc-if>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{collapsed}}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{expand}}" style="width: 100%; min-height: 52px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; gap: 10px; font-family: inherit; text-align: left; color: {{t.ink}}">
+            <span aria-hidden="true" style="width: 28px; height: 28px; border-radius: 8px; background: {{t.softBg}}; color: {{t.softFg}}; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600">+</span>
+            <span style="display: flex; flex-direction: column; gap: 1px">
+              <span style="font-size: 15px; font-weight: 600">Add labor and parts</span>
+              <span style="font-size: 12px; color: {{t.muted}}">For an itemized invoice</span>
+            </span>
+          </button>
+        </sc-if>
+        <sc-if value="{{itemize}}" hint-placeholder-val="{{ true }}">
+          <div style="min-height: 12px"></div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">COST</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="ptot" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Total cost</label>
+          <div style="height: 52px; box-sizing: border-box; border: 2px solid {{totalBorder}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+            <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; color: {{t.muted}}">$</span>
+            <input id="ptot" value="{{total}}" onChange="{{onTotal}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600; color: {{t.ink}}">
+          </div>
+          <span style="font-size: 12px; color: {{t.muted}}">{{totalHelp}}</span>
+        </div>
+
+        <sc-if value="{{showBreakdown}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid {{t.divider}}">
+            <div style="display: flex; justify-content: space-between; font-size: 14px">
+              <span style="color: {{t.sub}}">Labor on lines</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace">{{laborSum}}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px">
+              <span style="color: {{t.sub}}">Parts on lines</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace">{{partsSum}}</span>
+            </div>
+            <sc-if value="{{showGap}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px; margin: 0 -10px; border-radius: 10px; background: {{t.calcBg}}">
+                <span style="display: flex; align-items: center; gap: 8px; font-size: 14px">
+                  {{gapLabel}}
+                  <span style="padding: 2px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; color: {{t.muted}}">worked out</span>
+                </span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{gap}}</span>
+              </div>
+              <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{gapHelp}}</span>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="pn" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Notes</label>
+      <textarea id="pn" rows="2" placeholder="Optional" style="box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}; resize: none"></textarea>
+    </div>
+
+    <a href="PricesRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; text-decoration: none; font-size: 16px; font-weight: 600">{{saveLabel}}</a>
+    <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}">
+      <a href="DeleteRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; font-size: 15px; font-weight: 600; color: {{t.danger}}; text-decoration: none">Delete this record</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["shop","diy","edit","combine","under"],"default":"shop"},"$preview":{"width":390,"height":1900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+var v = props.variant || 'shop';
+var diy = v === 'diy';
+// Sample data, made up. A price belongs to a job; a job holds one or more lines.
+this.state = {
+tab: diy ? 'oil' : 'oil',
+who: diy ? 'diy' : 'shop',
+itemize: !diy,
+total: diy ? '' : (v === 'under' ? '1425.00' : '1598.40'),
+menuFor: v === 'combine' ? 'jdiag' : null,
+lines: diy ? [
+{ id: 'oil', name: 'Oil & filter change', cat: 'Oil & engine', tab: 'oil', on: true, job: 'joil' },
+{ id: 'airf', name: 'Engine air filter', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jairf' },
+{ id: 'plugs', name: 'Spark plugs', cat: 'Oil & engine', tab: 'oil', on: false, job: 'jplugs' }
+] : [
+{ id: 'plugs', name: 'Spark plugs', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jign' },
+{ id: 'coils', name: 'Ignition coils', cat: 'Oil & engine', tab: 'oil', on: true, job: 'jign' },
+{ id: 'cv', name: 'Front CV axle', cat: 'Driveline', tab: 'drive', on: true, job: 'jcv' },
+{ id: 'diag', name: 'Engine diagnosis', cat: 'Other', tab: 'other', on: true, job: 'jdiag' },
+{ id: 'oil', name: 'Oil & filter change', cat: 'Oil & engine', tab: 'oil', on: false, job: 'joil' },
+{ id: 'rpads', name: 'Rear brake pads', cat: 'Brakes', tab: 'brakes', on: false, job: 'jrpads' }
+],
+jobs: diy ? {
+joil: { wording: '', labor: '', parts: '' }, jairf: { wording: '', labor: '', parts: '' }, jplugs: { wording: '', labor: '', parts: '' }
+} : {
+jign: { wording: 'Replace spark plugs and ignition coils', labor: '300.00', parts: '420.00' },
+jcv: { wording: '', labor: '290.00', parts: '260.00' },
+jdiag: { wording: '', labor: '180.00', parts: '' },
+joil: { wording: '', labor: '', parts: '' }, jrpads: { wording: '', labor: '', parts: '' }
+}
+};
+}
+setLine(id, key, val) {
+this.setState({ lines: this.state.lines.map(function (l) { if (l.id !== id) return l; var o = Object.assign({}, l); o[key] = val; return o; }) });
+}
+setJob(id, key, val) {
+var jobs = Object.assign({}, this.state.jobs); jobs[id] = Object.assign({}, jobs[id]); jobs[id][key] = val;
+this.setState({ jobs: jobs });
+}
+join(from, into) {
+// The joining job's lines move in; the job they join keeps its own prices.
+this.setState({ menuFor: null, lines: this.state.lines.map(function (l) { return l.job === from ? Object.assign({}, l, { job: into }) : l; }) });
+}
+split(id) {
+// Each line gets a job of its own, unpriced.
+var jobs = Object.assign({}, this.state.jobs);
+var lines = this.state.lines.map(function (l) {
+if (l.job !== id) return l;
+var nid = 'j-' + l.id; jobs[nid] = { wording: '', labor: '', parts: '' };
+return Object.assign({}, l, { job: nid });
+});
+this.setState({ jobs: jobs, lines: lines });
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var variant = this.props.variant || 'shop';
+var t = dark ? {
+bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
+field: '#4A4F55', seg: '#24282D', segOn: '#3A3F46', accent: '#F08A4B', onAccent: '#17191C', softBg: '#3A2418', softFg: '#FDBA74',
+danger: '#F97066', calcBg: '#24282D'
+} : {
+bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
+field: '#B9B6AE', seg: '#E9E7E0', segOn: '#FFFFFF', accent: '#C2410C', onAccent: '#FFFFFF', softBg: '#FBE9DF', softFg: '#9A3412',
+danger: '#B42318', calcBg: '#F4F3EF'
+};
+var money = function (str) { var n = parseFloat(String(str || '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
+var fmt = function (n) { return '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+var TABS = [['oil', 'Oil & engine'], ['drive', 'Driveline'], ['brakes', 'Brakes'], ['other', 'Other']];
+var on = s.lines.filter(function (l) { return l.on; });
+var tabs = TABS.map(function (tb) {
+var a = tb[0] === s.tab;
+var n = on.filter(function (l) { return l.tab === tb[0]; }).length;
+return { label: tb[1], active: a, count: n, hasCount: n > 0,
+bg: a ? t.softBg : t.surface, fg: a ? t.softFg : t.ink, border: a ? t.accent : t.line,
+pick: function () { self.setState({ tab: tb[0] }); } };
+});
+var tabItems = s.lines.filter(function (l) { return l.tab === s.tab; }).map(function (l) {
+return { name: l.name, on: l.on, toggle: function () { self.setLine(l.id, 'on', !l.on); } };
+});
+var order = [];
+on.forEach(function (l) { if (order.indexOf(l.job) < 0) order.push(l.job); });
+var label = function (id) {
+var ls = on.filter(function (l) { return l.job === id; });
+return s.jobs[id].wording || ls.map(function (l) { return l.name; }).join(' + ');
+};
+var laborSum = 0, partsSum = 0, anyPrice = false;
+var jobs = order.map(function (id) {
+var jb = s.jobs[id];
+var ls = on.filter(function (l) { return l.job === id; });
+var lb = money(jb.labor), pt = money(jb.parts);
+var has = lb !== null || pt !== null;
+if (lb !== null) { laborSum += lb; anyPrice = true; }
+if (pt !== null) { partsSum += pt; anyPrice = true; }
+var multi = ls.length > 1;
+return {
+heading: label(id), single: !multi, multi: multi, cat: ls[0].cat,
+lines: ls.map(function (l) { return { name: l.name, cat: l.cat }; }),
+labor: jb.labor, parts: jb.parts, laborId: 'lab-' + id, partsId: 'par-' + id,
+hasSub: has && s.itemize, sub: fmt((lb || 0) + (pt || 0)),
+onLabor: function (e) { self.setJob(id, 'labor', e.target.value); },
+onParts: function (e) { self.setJob(id, 'parts', e.target.value); },
+canJoin: !multi && order.length > 1,
+menuOpen: s.menuFor === id,
+toggleMenu: function () { self.setState({ menuFor: s.menuFor === id ? null : id }); },
+targets: order.filter(function (o) { return o !== id; }).map(function (o) {
+return { label: label(o), pick: function () { self.join(id, o); } };
+}),
+split: function () { self.split(id); }
+};
+});
+var total = money(s.total);
+var jobSum = laborSum + partsSum;
+var gap = total !== null ? Math.round((total - jobSum) * 100) / 100 : null;
+var showBreakdown = s.itemize && anyPrice;
+var showGap = showBreakdown && gap !== null && gap !== 0;
+var diy = s.who === 'diy';
+var totalHelp = total === null && showBreakdown
+? 'Line prices add up to ' + fmt(jobSum) + '. Type the invoice total if you have it.'
+: (diy ? 'What you spent on parts and supplies.' : 'The grand total from the invoice, as printed.');
+return {
+t: t,
+title: variant === 'edit' ? 'Edit service' : 'Log service',
+saveLabel: variant === 'edit' ? 'Save changes' : 'Save service',
+isEdit: variant === 'edit',
+tabs: tabs, tabItems: tabItems, jobs: jobs,
+workLabel: 'WORK AND PRICES · ' + on.length + (on.length === 1 ? ' LINE' : ' LINES'),
+showOptional: s.itemize,
+itemize: s.itemize, collapsed: !s.itemize,
+expand: function () { self.setState({ itemize: true }); },
+isDiy: diy, isShop: !diy,
+diyBg: diy ? t.segOn : 'transparent', diyShadow: diy ? '0 1px 3px rgba(0,0,0,0.18)' : 'none',
+shopBg: diy ? 'transparent' : t.segOn, shopShadow: diy ? 'none' : '0 1px 3px rgba(0,0,0,0.18)',
+setDiy: function () { self.setState({ who: 'diy' }); },
+setShop: function () { self.setState({ who: 'shop' }); },
+total: s.total, totalBorder: total !== null ? t.ink : t.field,
+onTotal: function (e) { self.setState({ total: e.target.value }); },
+totalHelp: totalHelp,
+showBreakdown: showBreakdown, showGap: showGap,
+laborSum: fmt(laborSum), partsSum: fmt(partsSum),
+gapLabel: gap !== null && gap < 0 ? 'Less than the line prices' : 'Tax and fees',
+gap: gap !== null ? fmt(gap) : '',
+gapHelp: gap !== null && gap < 0
+? 'The total is less than the line prices add up to. Worked out, not typed.'
+: 'Total minus line prices: tax, shop supplies and other fees. Worked out, not typed.'
+};
+}
+}
+</script>
+</body>
+</html>
