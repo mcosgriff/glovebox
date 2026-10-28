@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.0](https://github.com/mcosgriff/glovebox/compare/v0.29.0...v0.30.0) (2026-10-28)
+
+
+### Features
+
+* **service-log:** part rows and invoice charges ([#502](https://github.com/mcosgriff/glovebox/issues/502)) ([#504](https://github.com/mcosgriff/glovebox/issues/504)) ([5223efd](https://github.com/mcosgriff/glovebox/commit/5223efd6b867dfacfa87de117cc89727a40637e2))
+
 ## [0.29.0](https://github.com/mcosgriff/glovebox/compare/v0.28.0...v0.29.0) (2026-10-27)
 
 
