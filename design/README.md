@@ -68,6 +68,10 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | Prices · Service record — no prices | `screens/PricesRecordPlain.png` · `screens/PricesRecordPlainDark.png` | `source/PricesRecordPlain.dc.html` → imports `PricesRecord` |
 | Prices · Service record — total below the line prices | `screens/PricesRecordUnder.png` · `screens/PricesRecordUnderDark.png` | `source/PricesRecordUnder.dc.html` (+ `Dark`) → imports `PricesRecord` |
 | Prices B · Log service — price sheet per line (alternative, not chosen) | `screens/PricesLogB.png` · `screens/PricesLogBDark.png` | `source/PricesLogB.dc.html` |
+| Parts · Log service — part rows (collapsible), supplies, tax and fees | `screens/PartsLog.png` · `screens/PartsLogDark.png` | `source/PartsLog.dc.html` |
+| Parts · Log service — a figure left blank, no total, mismatched row | `screens/PartsLogBlanks.png` · `screens/PartsLogBlanksDark.png` | `source/PartsLogBlanks.dc.html` → imports `PartsLog` |
+| Parts · Service record — part rows and charges | `screens/PartsRecord.png` · `screens/PartsRecordDark.png` | `source/PartsRecord.dc.html` |
+| Parts · Service record — other charges worked out | `screens/PartsRecordOther.png` · `screens/PartsRecordOtherDark.png` | `source/PartsRecordOther.dc.html` → imports `PartsRecord` |
 
 ## PDF report
 
@@ -82,4 +86,21 @@ Spec: `specs/line-prices.md`. `PricesLog.dc.html` and `PricesRecord.dc.html` hol
 other `Prices*.dc.html` files only import them with a different `variant` / `theme`.
 
 All `Prices*` PNGs match the current sources (jobs version). Renders use fallback fonts; the app uses IBM Plex Sans / Mono.
+
+## Part rows & charges (#502)
+
+`PartsLog.dc.html` and `PartsRecord.dc.html` hold the real markup; the other `Parts*` files import them.
+The Log boards start at "Work and prices"; the sections above it are unchanged from Prices A.
+
+- Part rows collapse to one line (name, qty × each · line, total, status chip). Tap a row to expand and
+  edit it inline. Each job's parts header has **Expand all / Collapse all**. New and itemized rows open expanded.
+- Expanded row: Qty is a fixed 64dp column; Each and Total share the rest. Trash removes the row, chevron collapses it.
+- Qty, each and total: two typed fills the third when exact ("filled in"); inexact leaves it blank ("left blank").
+  All three typed and they disagree shows "doesn't match"; the typed total is what counts.
+- A row with no total is left out of the parts figure. Status notes are muted, never error red.
+- A row not tied to one line says "Whole job".
+- "Itemize parts" on a job with a typed parts figure moves that figure into the first row's total.
+- Cost card: when the figures equal the total it shows "Adds up to the total" (ok colour). The total field shows
+  thousands separators.
+- Record: work lines come before "Parts as printed". Breakdown bar segments are at least 4dp wide.
 

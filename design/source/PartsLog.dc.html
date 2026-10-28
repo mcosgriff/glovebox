@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log service with part rows</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 600">Log service</span>
+      <span style="font-size: 12px; color: {{t.muted}}">2011 hatchback · Main Street Auto · sample data</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px; padding: 12px 20px 24px 20px">
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="qd" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Date</label>
+        <input id="qd" value="Jan 7, 2026" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="qo" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Odometer (mi)</label>
+        <input id="qo" value="129,565" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK AND PRICES · 4 LINES</div>
+        <span style="font-size: 12px; color: {{t.muted}}">Prices are optional</span>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: {{j.border}}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
+              <span style="display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 15px; font-weight: 600">{{j.heading}}</span>
+                <sc-if value="{{j.single}}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size: 12px; color: {{t.muted}}">{{j.cat}}</span>
+                </sc-if>
+              </span>
+              <sc-if value="{{j.hasSub}}" hint-placeholder-val="{{ true }}">
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{j.sub}}</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 10px; border-left: 2px solid {{t.line}}">
+                <sc-for list="{{j.lines}}" as="ln" hint-placeholder-count="2">
+                  <span style="display: flex; justify-content: space-between; gap: 10px; font-size: 14px">
+                    <span>{{ln.name}}</span>
+                    <span style="font-size: 12px; color: {{t.muted}}">{{ln.cat}}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <label for="{{j.laborId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Labor</label>
+                <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+                  <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
+                  <input id="{{j.laborId}}" value="{{j.labor}}" onChange="{{j.onLabor}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                </div>
+              </div>
+              <sc-if value="{{j.plainParts}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <label for="{{j.partsId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</label>
+                  <div style="height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+                    <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
+                    <input id="{{j.partsId}}" value="{{j.parts}}" onChange="{{j.onParts}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{j.hasRows}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <span style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Parts</span>
+                  <div style="height: 48px; box-sizing: border-box; border: 1.5px dashed {{t.field}}; border-radius: 12px; background: {{t.calcBg}}; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; gap: 4px">
+                    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">{{j.rowsSum}}</span>
+                    <span style="font-size: 11px; font-weight: 600; color: {{t.muted}}">from rows</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{j.plainParts}}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{j.itemize}}" style="align-self: flex-start; min-height: 48px; margin: -6px 0 -10px 0; padding: 0; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">Itemize parts</button>
+            </sc-if>
+
+            <sc-if value="{{j.hasRows}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+                  <span style="display: flex; flex-direction: column; gap: 1px">
+                    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">{{j.rowsLabel}}</span>
+                    <span style="font-size: 12px; color: {{t.muted}}">As printed on the invoice</span>
+                  </span>
+                  <button onClick="{{j.toggleAll}}" aria-expanded="{{j.allOpen}}" style="min-height: 48px; padding: 0 4px; border: 0; background: transparent; display: flex; align-items: center; gap: 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.softFg}}">
+                    {{j.toggleAllLabel}}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: {{j.toggleAllTurn}}"><path d="M7 9l5-5 5 5"></path><path d="M7 15l5 5 5-5"></path></svg>
+                  </button>
+                </div>
+                <sc-for list="{{j.rows}}" as="r" hint-placeholder-count="2">
+                  <div style="border-radius: 12px; border: 1px solid {{t.line}}; background: {{r.cardBg}}">
+                    <sc-if value="{{r.closed}}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{r.toggle}}" aria-expanded="false" aria-label="{{r.openLabel}}" style="width: 100%; min-height: 60px; box-sizing: border-box; padding: 10px 6px 10px 12px; border: 0; border-radius: 12px; background: transparent; display: flex; align-items: center; gap: 10px; text-align: left; font-family: inherit; color: {{t.ink}}">
+                        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                          <span style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.nameShown}}</span>
+                          <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: {{t.muted}}">
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.detail}}</span>
+                            <sc-if value="{{r.showChip}}" hint-placeholder-val="{{ false }}">
+                              <span style="padding: 0 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; flex: none">{{r.noteTag}}</span>
+                            </sc-if>
+                          </span>
+                        </span>
+                        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{r.totalColor}}; flex: none">{{r.totalShown}}</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{t.sub}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M6 9l6 6 6-6"></path></svg>
+                      </button>
+                    </sc-if>
+                    <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px">
+                        <div style="display: flex; align-items: flex-end; gap: 0">
+                          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                            <label for="{{r.nameId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Part</label>
+                            <input id="{{r.nameId}}" value="{{r.name}}" onChange="{{r.onName}}" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+                          </div>
+                          <button onClick="{{r.remove}}" aria-label="{{r.removeLabel}}" style="width: 44px; height: 48px; flex: none; border: 0; border-radius: 12px; background: transparent; color: {{t.sub}}; display: flex; align-items: center; justify-content: center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>
+                          </button>
+                          <button onClick="{{r.toggle}}" aria-expanded="true" aria-label="{{r.closeLabel}}" style="width: 44px; height: 48px; flex: none; border: 0; border-radius: 12px; background: transparent; color: {{t.sub}}; display: flex; align-items: center; justify-content: center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"></path></svg>
+                          </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr); gap: 8px">
+                          <div style="display: flex; flex-direction: column; gap: 4px">
+                            <label for="{{r.qtyId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Qty</label>
+                            <input id="{{r.qtyId}}" value="{{r.qty}}" onChange="{{r.onQty}}" inputmode="decimal" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: {{r.qtyBorder}}; border-radius: 12px; background: {{r.qtyBg}}; padding: 0 10px; text-align: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+                          </div>
+                          <div style="display: flex; flex-direction: column; gap: 4px">
+                            <label for="{{r.eachId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Each</label>
+                            <div style="height: 48px; box-sizing: border-box; border: {{r.eachBorder}}; border-radius: 12px; background: {{r.eachBg}}; display: flex; align-items: center; padding: 0 10px; gap: 2px">
+                              <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: {{t.muted}}">$</span>
+                              <input id="{{r.eachId}}" value="{{r.each}}" onChange="{{r.onEach}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{t.ink}}">
+                            </div>
+                          </div>
+                          <div style="display: flex; flex-direction: column; gap: 4px">
+                            <label for="{{r.totalId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Total</label>
+                            <div style="height: 48px; box-sizing: border-box; border: {{r.totalBorder}}; border-radius: 12px; background: {{r.totalBg}}; display: flex; align-items: center; padding: 0 10px; gap: 2px">
+                              <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: {{t.muted}}">$</span>
+                              <input id="{{r.totalId}}" value="{{r.total}}" onChange="{{r.onTotal}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{t.ink}}">
+                            </div>
+                          </div>
+                        </div>
+                        <sc-if value="{{r.hasNote}}" hint-placeholder-val="{{ false }}">
+                          <span style="display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.4; color: {{t.muted}}">
+                            <span style="padding: 1px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; flex: none">{{r.noteTag}}</span>
+                            <span>{{r.note}}</span>
+                          </span>
+                        </sc-if>
+                        <sc-if value="{{j.multi}}" hint-placeholder-val="{{ true }}">
+                          <div style="display: flex; align-items: center; gap: 10px">
+                            <label for="{{r.tagId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}; flex: none">For line</label>
+                            <select id="{{r.tagId}}" onChange="{{r.onTag}}" style="flex: 1; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 10px; font-family: inherit; font-size: 14px; color: {{t.ink}}">
+                              <sc-for list="{{r.tagOptions}}" as="o" hint-placeholder-count="3">
+                                <option value="{{o.value}}" selected="{{o.selected}}">{{o.label}}</option>
+                              </sc-for>
+                            </select>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <button onClick="{{j.addRow}}" style="min-height: 48px; border-radius: 12px; border: 1.5px dashed {{t.field}}; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: {{t.softFg}}">+ Add part row</button>
+                <sc-if value="{{j.hasMissing}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{j.missingText}}</span>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">COST</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 12px; font-weight: 700; color: {{t.sub}}">On the whole invoice</span>
+          <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Not part of any job. Leave a figure blank if the invoice doesn’t print it.</span>
+        </div>
+        <sc-for list="{{charges}}" as="c" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <label for="{{c.id}}" style="flex: 1; font-size: 15px">{{c.label}}</label>
+            <div style="width: 150px; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+              <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; color: {{t.muted}}">$</span>
+              <input id="{{c.id}}" value="{{c.value}}" onChange="{{c.onChange}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid {{t.divider}}">
+          <label for="qtot" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Total cost</label>
+          <div style="height: 52px; box-sizing: border-box; border: 2px solid {{totalBorder}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding: 0 12px; gap: 4px">
+            <span aria-hidden="true" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; color: {{t.muted}}">$</span>
+            <input id="qtot" value="{{total}}" onChange="{{onTotal}}" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600; color: {{t.ink}}">
+          </div>
+          <span style="font-size: 12px; color: {{t.muted}}">{{totalHelp}}</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid {{t.divider}}">
+          <sc-for list="{{sums}}" as="s" hint-placeholder-count="5">
+            <div style="display: flex; justify-content: space-between; font-size: 14px">
+              <span style="color: {{t.sub}}">{{s.label}}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace">{{s.value}}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{showGap}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px; margin: 0 -10px; border-radius: 10px; background: {{t.calcBg}}">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 14px">
+                {{gapLabel}}
+                <span style="padding: 2px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; color: {{t.muted}}">worked out</span>
+              </span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">{{gap}}</span>
+            </div>
+            <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{gapHelp}}</span>
+          </sc-if>
+          <sc-if value="{{addsUp}}" hint-placeholder-val="{{ false }}">
+            <span style="display: flex; align-items: center; gap: 6px; padding-top: 2px; font-size: 13px; font-weight: 600; color: {{t.ok}}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+              Adds up to the total
+            </span>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="qn" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Notes</label>
+      <textarea id="qn" rows="2" placeholder="Optional" style="box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}; resize: none"></textarea>
+    </div>
+
+    <a href="PartsRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; text-decoration: none; font-size: 16px; font-weight: 600">Save service</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["full","blanks"],"default":"full"},"$preview":{"width":390,"height":1990}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+var blanks = props.variant === 'blanks';
+// Sample data, made up. Labor is the job's; parts may be one figure or the invoice's rows.
+var rows = [
+{ id: 'r1', name: 'Spark plug, iridium', qty: '4', each: '12.50', total: '50.00', filled: 'total', inexact: null, tag: 'Spark plugs', open: !blanks },
+{ id: 'r2', name: 'Ignition coil', qty: '4', each: '92.50', total: '370.00', filled: null, inexact: null, tag: 'Ignition coils', open: false }
+];
+if (blanks) {
+rows.push({ id: 'r3', name: 'Dielectric grease', qty: '3', each: '', total: '20.00', filled: null, inexact: 'each', tag: '', open: false });
+rows.push({ id: 'r4', name: 'Coil boot', qty: '', each: '6.00', total: '', filled: null, inexact: null, tag: 'Ignition coils', open: false });
+// All three typed and they disagree: the total as printed is what counts.
+rows.push({ id: 'r5', name: 'Coil connector', qty: '2', each: '7.50', total: '14.00', filled: null, inexact: null, tag: 'Ignition coils', open: true });
+}
+this.state = {
+jobs: [
+{ id: 'jign', wording: 'Remove & replace spark plugs and coils', lines: [['Spark plugs', 'Oil & engine'], ['Ignition coils', 'Oil & engine']], labor: '300.00', parts: '', rows: rows },
+{ id: 'jcv', wording: '', lines: [['Front CV axle', 'Driveline']], labor: '290.00', parts: '260.00', rows: null },
+{ id: 'jdiag', wording: '', lines: [['Engine diagnosis', 'Other']], labor: '180.00', parts: '', rows: null }
+],
+supplies: '38.50',
+tax: blanks ? '' : '52.10',
+fees: blanks ? '' : '12.00',
+total: blanks ? '1,598.40' : '1,552.60',
+next: 10
+};
+}
+cents(str) {
+var s = String(str || '').replace(/[^0-9.]/g, '');
+if (s === '' || isNaN(parseFloat(s))) return null;
+return Math.round(parseFloat(s) * 100);
+}
+thou(str) {
+var s = String(str || '').replace(/[^0-9.]/g, '');
+if (s === '' || isNaN(parseFloat(s))) return null;
+return Math.round(parseFloat(s) * 1000);
+}
+// Two of qty, each and total typed fills the third, only when it comes out exact; otherwise it stays blank.
+settle(r) {
+var keys = ['qty', 'each', 'total'];
+var typed = keys.filter(function (k) { return r[k] !== '' && r.filled !== k; });
+r.inexact = null;
+if (typed.length !== 2) {
+if (r.filled && typed.length < 2) { r[r.filled] = ''; r.filled = null; }
+return r;
+}
+var miss = keys.filter(function (k) { return typed.indexOf(k) < 0; })[0];
+var q = this.thou(r.qty), e = this.cents(r.each), tt = this.cents(r.total);
+var out = null;
+if (miss === 'total' && q !== null && e !== null && (q * e) % 1000 === 0) out = ((q * e / 1000) / 100).toFixed(2);
+if (miss === 'each' && q && tt !== null && (tt * 1000) % q === 0) out = ((tt * 1000 / q) / 100).toFixed(2);
+if (miss === 'qty' && e && tt !== null && (tt * 1000) % e === 0) out = String(tt * 1000 / e / 1000);
+if (out !== null) { r[miss] = out; r.filled = miss; }
+else { r[miss] = ''; r.filled = null; r.inexact = miss; }
+return r;
+}
+editJob(id, fn) {
+this.setState({ jobs: this.state.jobs.map(function (j) { return j.id === id ? fn(Object.assign({}, j)) : j; }) });
+}
+editRow(jid, rid, key, val) {
+var self = this;
+this.editJob(jid, function (j) {
+j.rows = j.rows.map(function (r) {
+if (r.id !== rid) return r;
+var o = Object.assign({}, r); o[key] = val;
+if (key === 'qty' || key === 'each' || key === 'total') {
+if (o.filled === key) o.filled = null;
+o = self.settle(o);
+}
+return o;
+});
+return j;
+});
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var t = dark ? {
+bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
+field: '#4A4F55', accent: '#F08A4B', onAccent: '#17191C', softBg: '#3A2418', softFg: '#FDBA74', calcBg: '#24282D', rowBg: '#202328', ok: '#5EEAD4'
+} : {
+bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
+field: '#B9B6AE', accent: '#C2410C', onAccent: '#FFFFFF', softBg: '#FBE9DF', softFg: '#9A3412', calcBg: '#F4F3EF', rowBg: '#FAF9F6', ok: '#0F766E'
+};
+var fmt = function (c) { return '$' + (Math.abs(c) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+var qText = function (th) { return String(th / 1000); };
+var laborSum = 0, partsSum = 0, anyPrice = false;
+var jobs = s.jobs.map(function (j, ji) {
+var multi = j.lines.length > 1;
+var lb = self.cents(j.labor);
+var pt = null, missing = 0;
+var rows = null;
+if (j.rows) {
+rows = j.rows.map(function (r) {
+var q = self.thou(r.qty), e = self.cents(r.each), tt = self.cents(r.total);
+if (tt !== null) pt = (pt || 0) + tt; else missing++;
+var note = '', tag = '', warn = false;
+if (r.filled === 'total') { tag = 'filled in'; note = 'Total is ' + qText(q) + ' × ' + fmt(e) + '.'; }
+else if (r.filled === 'each') { tag = 'filled in'; note = 'Each is ' + fmt(tt) + ' ÷ ' + qText(q) + '.'; }
+else if (r.filled === 'qty') { tag = 'filled in'; note = 'Qty is ' + fmt(tt) + ' ÷ ' + fmt(e) + '.'; }
+else if (r.inexact === 'each') { tag = 'left blank'; note = fmt(tt) + ' ÷ ' + qText(q) + ' isn’t whole cents.'; }
+else if (r.inexact === 'total') { tag = 'left blank'; note = qText(q) + ' × ' + fmt(e) + ' isn’t whole cents.'; warn = true; }
+else if (r.inexact === 'qty') { tag = 'left blank'; note = fmt(tt) + ' ÷ ' + fmt(e) + ' doesn’t come out exact.'; warn = true; }
+else if (tt === null && (r.qty || r.each || r.name)) { tag = 'no total'; note = 'Left out of the parts figure.'; warn = true; }
+else if (q !== null && e !== null && tt !== null && q * e !== tt * 1000) { tag = 'doesn’t match'; note = qText(q) + ' × ' + fmt(e) + ' is ' + fmt(Math.round(q * e / 1000)) + ', not ' + fmt(tt) + '. The total as printed is what counts.'; warn = true; }
+var bits = [];
+if (q !== null && e !== null) bits.push(qText(q) + ' × ' + fmt(e));
+else if (q !== null) bits.push('Qty ' + qText(q));
+else if (e !== null) bits.push(fmt(e) + ' each');
+if (multi) bits.push(r.tag || 'Whole job');
+var look = function (k) { return r.filled === k ? '1.5px dashed ' + t.field : '1.5px solid ' + t.field; };
+var bgk = function (k) { return r.filled === k ? t.calcBg : t.surface; };
+var opts = [{ value: '', label: 'Whole job', selected: !r.tag }].concat(j.lines.map(function (l) {
+return { value: l[0], label: l[0], selected: r.tag === l[0] };
+}));
+return {
+name: r.name, qty: r.qty, each: r.each, total: r.total,
+nameId: 'n-' + r.id, qtyId: 'q-' + r.id, eachId: 'e-' + r.id, totalId: 't-' + r.id, tagId: 'g-' + r.id,
+qtyBorder: look('qty'), eachBorder: look('each'), totalBorder: look('total'),
+qtyBg: bgk('qty'), eachBg: bgk('each'), totalBg: bgk('total'),
+hasNote: !!note, note: note, noteTag: tag,
+open: !!r.open, closed: !r.open, cardBg: r.open ? t.rowBg : t.surface,
+nameShown: r.name || 'Unnamed part', detail: bits.join(' · ') || 'Nothing typed yet',
+showChip: warn || tag === 'left blank', totalShown: tt !== null ? fmt(tt) : '—', totalColor: tt !== null ? t.ink : t.muted,
+openLabel: 'Edit ' + (r.name || 'part row'), closeLabel: 'Done editing ' + (r.name || 'part row'),
+toggle: function () { self.editRow(j.id, r.id, 'open', !r.open); },
+tagOptions: opts,
+removeLabel: 'Remove ' + (r.name || 'part row'),
+onName: function (ev) { self.editRow(j.id, r.id, 'name', ev.target.value); },
+onQty: function (ev) { self.editRow(j.id, r.id, 'qty', ev.target.value); },
+onEach: function (ev) { self.editRow(j.id, r.id, 'each', ev.target.value); },
+onTotal: function (ev) { self.editRow(j.id, r.id, 'total', ev.target.value); },
+onTag: function (ev) { self.editRow(j.id, r.id, 'tag', ev.target.value); },
+remove: function () { self.editJob(j.id, function (o) {
+var left = o.rows.filter(function (x) { return x.id !== r.id; });
+o.rows = left.length ? left : null; return o; }); }
+};
+});
+} else {
+pt = self.cents(j.parts);
+}
+if (lb !== null) { laborSum += lb; anyPrice = true; }
+if (pt !== null) { partsSum += pt; anyPrice = true; }
+var has = lb !== null || pt !== null;
+var n = j.rows ? j.rows.length : 0;
+var allOpen = n > 0 && j.rows.every(function (r) { return r.open; });
+return {
+heading: j.wording || j.lines.map(function (l) { return l[0]; }).join(' + '),
+single: !multi, multi: multi, cat: j.lines[0][1],
+lines: j.lines.map(function (l) { return { name: l[0], cat: l[1] }; }),
+labor: j.labor, parts: j.parts, laborId: 'lab-' + j.id, partsId: 'par-' + j.id,
+hasSub: has, sub: fmt((lb || 0) + (pt || 0)),
+border: ji === s.jobs.length - 1 ? '0' : '1px solid ' + t.divider,
+allOpen: allOpen, toggleAllLabel: allOpen ? 'Collapse all' : 'Expand all',
+toggleAllTurn: allOpen ? 'rotate(180deg)' : 'none',
+toggleAll: function () { self.editJob(j.id, function (o) {
+o.rows = o.rows.map(function (r) { return Object.assign({}, r, { open: !allOpen }); }); return o; }); },
+plainParts: !j.rows, hasRows: !!j.rows, rows: rows || [],
+rowsSum: pt !== null ? fmt(pt) : '—',
+rowsLabel: 'PARTS · ' + n + (n === 1 ? ' ROW' : ' ROWS'),
+hasMissing: missing > 0,
+missingText: missing === 1 ? '1 row has no total, so it isn’t in the parts figure.' : missing + ' rows have no total, so they aren’t in the parts figure.',
+onLabor: function (ev) { self.editJob(j.id, function (o) { o.labor = ev.target.value; return o; }); },
+onParts: function (ev) { self.editJob(j.id, function (o) { o.parts = ev.target.value; return o; }); },
+itemize: function () { self.editJob(j.id, function (o) {
+// A parts figure already typed starts the first row, so nothing typed is lost.
+o.rows = [{ id: 'r' + s.next, name: '', qty: '', each: '', total: o.parts, filled: null, inexact: null, tag: '', open: true }];
+o.parts = ''; return o; }); self.setState({ next: s.next + 1 }); },
+addRow: function () { self.editJob(j.id, function (o) {
+o.rows = o.rows.concat([{ id: 'r' + s.next, name: '', qty: '', each: '', total: '', filled: null, inexact: null, tag: '', open: true }]);
+return o; }); self.setState({ next: s.next + 1 }); }
+};
+});
+var sup = this.cents(s.supplies), tax = this.cents(s.tax), fees = this.cents(s.fees);
+var charges = [
+{ id: 'csup', label: 'Shop supplies', value: s.supplies, onChange: function (ev) { self.setState({ supplies: ev.target.value }); } },
+{ id: 'ctax', label: 'Tax', value: s.tax, onChange: function (ev) { self.setState({ tax: ev.target.value }); } },
+{ id: 'cfee', label: 'Fees and sublet', value: s.fees, onChange: function (ev) { self.setState({ fees: ev.target.value }); } }
+];
+var sums = [];
+if (anyPrice) { sums.push({ label: 'Labor on lines', value: fmt(laborSum) }); sums.push({ label: 'Parts on lines', value: fmt(partsSum) }); }
+if (sup !== null) sums.push({ label: 'Shop supplies', value: fmt(sup) });
+if (tax !== null) sums.push({ label: 'Tax', value: fmt(tax) });
+if (fees !== null) sums.push({ label: 'Fees and sublet', value: fmt(fees) });
+var entered = laborSum + partsSum + (sup || 0) + (tax || 0) + (fees || 0);
+var total = this.cents(s.total);
+var gap = total !== null && sums.length ? total - entered : null;
+var gapLabel = gap !== null && gap < 0 ? 'Less than the figures above'
+: (tax === null && fees === null ? 'Tax and fees' : 'Other charges');
+return {
+t: t, jobs: jobs, charges: charges, sums: sums,
+total: s.total, totalBorder: total !== null ? t.ink : t.field,
+onTotal: function (ev) { self.setState({ total: ev.target.value }); },
+totalHelp: total === null && sums.length
+? 'The figures above add up to ' + fmt(entered) + '. Type the invoice total if you have it.'
+: 'The grand total from the invoice, as printed.',
+showGap: gap !== null && gap !== 0, addsUp: gap === 0,
+gapLabel: gapLabel, gap: gap !== null ? fmt(gap) : '',
+gapHelp: gap !== null && gap < 0
+? 'The total is less than the figures above add up to. Worked out, not typed.'
+: 'The total minus the figures above. Worked out, not typed.'
+};
+}
+}
+</script>
+</body>
+</html>

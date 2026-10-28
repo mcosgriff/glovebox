@@ -540,6 +540,86 @@
       "page": "prices",
       "is_interactive": true,
       "radius": 28
+    },
+    "PartsLog.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1990,
+      "title": "Log service — part rows, supplies, tax and fees · sections above unchanged from Prices A",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsLogBlanks.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 2270,
+      "title": "Log service — a figure left blank, a row with no total · sections above unchanged from Prices A",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsRecord.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — part rows and charges",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsRecordOther.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1345,
+      "title": "Service record — other charges worked out",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsLogDark.dc.html": {
+      "x": 0,
+      "y": 2900,
+      "w": 390,
+      "h": 1990,
+      "title": "Log service — part rows, supplies, tax and fees · sections above unchanged from Prices A (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsLogBlanksDark.dc.html": {
+      "x": 470,
+      "y": 2900,
+      "w": 390,
+      "h": 2270,
+      "title": "Log service — a figure left blank, a row with no total · sections above unchanged from Prices A (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsRecordDark.dc.html": {
+      "x": 940,
+      "y": 2900,
+      "w": 390,
+      "h": 1250,
+      "title": "Service record — part rows and charges (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsRecordOtherDark.dc.html": {
+      "x": 1410,
+      "y": 2900,
+      "w": 390,
+      "h": 1345,
+      "title": "Service record — other charges worked out (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
     }
   },
   "createdOnFiles": {
@@ -598,6 +678,22 @@
       "kind": "title1",
       "maxW": 4150,
       "page": "prices"
+    },
+    "partstitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Part rows & charges (#502) — light",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "parts"
+    },
+    "partsdark": {
+      "x": 0,
+      "y": 2620,
+      "text": "Part rows & charges (#502) — dark",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "parts"
     }
   },
   "order": [
@@ -658,7 +754,15 @@
     "PricesLogUnder.dc.html",
     "PricesLogUnderDark.dc.html",
     "PricesRecordUnder.dc.html",
-    "PricesRecordUnderDark.dc.html"
+    "PricesRecordUnderDark.dc.html",
+    "PartsLog.dc.html",
+    "PartsLogBlanks.dc.html",
+    "PartsRecord.dc.html",
+    "PartsRecordOther.dc.html",
+    "PartsLogDark.dc.html",
+    "PartsLogBlanksDark.dc.html",
+    "PartsRecordDark.dc.html",
+    "PartsRecordOtherDark.dc.html"
   ],
   "pages": [
     {
@@ -672,6 +776,10 @@
     {
       "id": "prices",
       "name": "Labor & parts prices"
+    },
+    {
+      "id": "parts",
+      "name": "Part rows & charges"
     }
   ],
   "title": "Glovebox"
