@@ -7,7 +7,8 @@ Public repo, GPL-3.0 (`LICENSE`).
 Design canvas (screens, flows, light/dark, nav map):
 https://claude.ai/code/artifact/7f521081-34e6-46e9-99aa-641765621ad8
 
-Changes reach the repo only once saved on the canvas; `/design-pull` brings them into `design/`.
+Changes reach the repo only once saved on the canvas; `/design-pull` brings them into `design/`, and
+`/design-push` sends a board edited in `design/source/` back to the canvas.
 
 **Local copy of the design: `design/`** — `design/screens/<Name>.png` (renders) and
 `design/source/<Name>.dc.html` (exact colors, spacing, copy). Start from `design/README.md` and
