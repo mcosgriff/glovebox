@@ -33,16 +33,18 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
     <div style="padding-top: 6px; font-size: 13px; line-height: 1.45; color: #A5A9AF">[COST] this year · [COST] since Oct 2025 · from 4 of 4 records</div>
   </div>
 
-  <div style="display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto">
-    <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
-      <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
-    </sc-for>
-  </div>
-
-  <sc-if value="{{hasJobs}}" hint-placeholder-val="{{ true }}">
-    <div aria-label="Jobs in this category" style="display: flex; gap: 8px; padding: 0 20px 12px 20px; overflow-x: auto">
-      <sc-for list="{{jobs}}" as="j" hint-placeholder-count="2">
+  <sc-if value="{{inside}}" hint-placeholder-val="{{ true }}">
+    <div aria-label="Jobs in this category" style="display: flex; align-items: center; gap: 8px; padding: 6px 20px 6px 8px; overflow-x: auto">
+      <button onClick="{{back}}" aria-label="All categories" style="width: 48px; height: 48px; border-radius: 12px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #EDEBE6"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></button>
+      <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
         <button onClick="{{j.pick}}" aria-pressed="{{j.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{j.border}}; background: {{j.bg}}; color: {{j.fg}}">{{j.label}}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{outside}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+        <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
       </sc-for>
     </div>
   </sc-if>
@@ -122,10 +124,12 @@ filters: F.map(function (f) {
 var a = f[0] === cur;
 return { label: f[1], active: a, bg: a ? '#EDEBE6' : '#1C1F23', fg: a ? '#17191C' : '#EDEBE6', border: a ? '#EDEBE6' : '#2E3338', pick: function () { self.setState({ f: f[0], j: null }); } };
 }),
-hasJobs: jobs.length > 0,
-jobs: jobs.map(function (j) {
+inside: jobs.length > 0,
+outside: jobs.length === 0,
+back: function () { self.setState({ f: 'all', j: null }); },
+jobs: [[null, (F.filter(function (f) { return f[0] === cur; })[0] || [])[1]]].concat(jobs).map(function (j) {
 var a = j[0] === job;
-return { label: j[1], active: a, bg: a ? '#EDEBE6' : '#1C1F23', fg: a ? '#17191C' : '#EDEBE6', border: a ? '#EDEBE6' : '#2E3338', pick: function () { self.setState({ j: a ? null : j[0] }); } };
+return { label: j[1], active: a, bg: a ? '#EDEBE6' : '#1C1F23', fg: a ? '#17191C' : '#EDEBE6', border: a ? '#EDEBE6' : '#2E3338', pick: function () { self.setState({ j: j[0] === null || a ? null : j[0] }); } };
 })
 };
 }
