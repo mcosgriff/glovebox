@@ -1247,6 +1247,7 @@
     <string name="history_export">Export · PDF / MD</string>
     <!-- %1$s is the vehicle, %2$s how many records. -->
     <string name="history_subtitle">%1$s · %2$s</string>
+    <string name="history_odometer_description">Current odometer %1$s</string>
     <string name="history_subtitle_archived">%1$s · %2$s · archived, read-only</string>
     <string name="history_all">All</string>
     <string name="history_sort_by">Sort by</string>

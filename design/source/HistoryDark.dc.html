@@ -15,18 +15,35 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #121416; color: #EDEBE6; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
-  <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 4px 20px">
-    <div style="display: flex; flex-direction: column; gap: 2px">
-      <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
-      <div style="font-size: 13px; color: #A5A9AF">2019 4Runner · {{shown}} records</div>
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px 8px 20px">
+    <div style="display: flex; align-items: center; gap: 4px">
+      <div style="flex: 1; font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
+      <div role="tablist" aria-label="History view" style="display: flex; gap: 4px">
+        <a href="Timeline.dc.html" role="tab" aria-selected="false" aria-label="Timeline" style="width: 48px; height: 48px; border-radius: 12px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #C4C1BA"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 5-7 4 4"></path></svg></a>
+        <a href="History.dc.html" role="tab" aria-selected="true" aria-label="List" style="width: 48px; height: 48px; border-radius: 12px; border: 0; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #3A2418; color: #F59E6B"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 7h11M9 12h11M9 17h11"></path><path d="M4.5 7h.01M4.5 12h.01M4.5 17h.01"></path></svg></a>
+      </div>
+      <button aria-label="Export history" style="height: 48px; flex-shrink: 0; padding: 0 14px; border-radius: 12px; border: 1.5px solid #4A4F55; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #EDEBE6">Export · PDF / MD</button>
     </div>
-    <button aria-label="Export history" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #4A4F55; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #EDEBE6">Export · PDF / MD</button>
+    <div style="display: flex; align-items: center">
+      <div style="flex: 1; font-size: 14px; color: #A5A9AF">2019 4Runner · {{shown}} records</div>
+      <button aria-label="Sort by date" style="width: 48px; height: 48px; border-radius: 12px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #A5A9AF"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h6"></path></svg></button>
+      <button aria-label="Newest first" style="width: 48px; height: 48px; border-radius: 12px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #A5A9AF"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg></button>
+    </div>
+    <div aria-label="Current odometer 68,412 miles" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: #EDEBE6">68,412 mi</div>
+    <div style="padding-top: 6px; font-size: 13px; line-height: 1.45; color: #A5A9AF">[COST] this year · [COST] since Oct 2025 · from 4 of 4 records</div>
   </div>
 
   <div style="display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto">
     <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
       <button onClick="{{f.pick}}" aria-pressed="{{f.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}">{{f.label}}</button>
     </sc-for>
+  </div>
+
+  <div style="padding: 0 20px 10px 20px">
+    <div role="search" style="height: 52px; border-radius: 12px; background: #1C1F23; display: flex; align-items: center; gap: 14px; padding: 0 16px; color: #A5A9AF; font-size: 15px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
+      Search records
+    </div>
   </div>
 
   <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 16px 20px; overflow: hidden">
