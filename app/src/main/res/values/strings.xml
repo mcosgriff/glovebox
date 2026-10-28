@@ -1080,6 +1080,13 @@
     <!-- Tag on a job's parts figure while it is the sum of its rows. -->
     <string name="prices_rows_from">from rows</string>
     <string name="prices_row_part">Part</string>
+    <string name="prices_row_part_hint">Pick a line, or type it as printed</string>
+    <!-- Heading over the job's lines in the Part list. -->
+    <string name="prices_row_lines">This job’s lines</string>
+    <string name="prices_row_lines_note">Or type the part as the invoice prints it.</string>
+    <string name="prices_row_lines_note_multi">Or type the part as the invoice prints it, then choose its line.</string>
+    <!-- %1$s is the part's name or prices_row_unnamed. -->
+    <string name="prices_row_pick">Pick a line for %1$s</string>
     <string name="prices_row_qty">Qty</string>
     <string name="prices_row_each">Each</string>
     <string name="prices_row_total">Total</string>

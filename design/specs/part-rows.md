@@ -55,12 +55,17 @@ the app has them now.
 - A job's Labor field stays; its Parts is a field, or (with rows) a dashed "from rows" sum. "Itemize parts"
   turns the field into rows, moving a typed parts figure into the first row's total so nothing typed is lost.
   Removing the last row turns it back into a field.
-- Rows collapse to one line (name or "Unnamed part", qty × each · line, total, status tag); tapping one opens it
+- Rows collapse to one line (wording or picked line, or "Unnamed part"; qty × each, then the line for a typed row
+  in a job of several lines; total; status tag); tapping one opens it
   inline. The parts header has **Expand all / Collapse all**. A new row, and the first after "Itemize parts",
   opens expanded.
-- An open row: Part (wording); Qty in a fixed 64dp column, Each and Total sharing the rest; "For line"
-  picker (the job's lines, and "Whole job") only when the job has more than one line; trash removes the row,
-  the chevron collapses it. "+ Add part row" under the rows. All targets 48dp.
+- An open row: Part, typed as the invoice prints it or picked from the job's lines under its ▾ (board
+  PartsLogPick): a picked row is named by its line and tagged to it, with no wording of its own; typing a line's
+  own name picks it, and clearing the box clears both. Qty in a fixed 64dp column, Each and Total sharing the
+  rest; a "For line" picker (the job's lines, and "Whole job") only for a typed row in a job of more than one
+  line; trash removes the row, the chevron collapses it. "+ Add part row" under the rows. All targets 48dp.
+- Work and prices is one panel; each job after the first starts below an 8dp band of the page colour, edge to
+  edge (the board's earlier thin rule was too faint, and a card per job read as separate records).
 - Cost card: an "On the whole invoice" group (Shop supplies, Tax, Fees and sublet, each a money field) above
   Total cost, then Labor on lines, Parts on lines and each charge entered, then the gap row.
 

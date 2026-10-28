@@ -249,6 +249,15 @@ class LogServiceViewModelTest {
         val filter = form.jobs.single { it.id == job }.rows!!.last().id
         form.nameRow(job, filter, "Oil filter")
         form.typeRow(job, filter, PartField.EACH, "11.50")
+        // Picked from the job's lines: named and tagged by the line. Typing a line's own name picks it too.
+        form.addRow(job)
+        val picked = form.jobs.single { it.id == job }.rows!!.last().id
+        form.pickPart(job, picked, "rotation")
+        assertEquals(form.lineName("rotation"), form.partText(form.jobs.single { it.id == job }.rows!!.last()))
+        form.nameRow(job, picked, "")
+        assertEquals(null to "", form.jobs.single { it.id == job }.rows!!.last().let { it.line to it.wording })
+        form.nameRow(job, picked, form.lineName("rotation"))
+        assertEquals("rotation" to "", form.jobs.single { it.id == job }.rows!!.last().let { it.line to it.wording })
         form.shopSuppliesText = "4.25"
         form.costText = "80.25"
         // A row with no total is left out of the parts figure: labor, oil and supplies make the total.
@@ -264,17 +273,18 @@ class LogServiceViewModelTest {
         // The rows make the parts figure, so none is stored.
         assertNull(written.partsCents)
         val rows = saved.parts.sortedBy { it.position }
-        assertEquals(listOf("Synthetic oil", "Oil filter"), rows.map { it.wording })
-        assertEquals(listOf(4_500L, null), rows.map { it.quantityMilli })
-        assertEquals(listOf(800L, 1_150L), rows.map { it.eachCents })
-        assertEquals(listOf(3_600L, null), rows.map { it.totalCents })
-        assertEquals(listOf("oil", null), rows.map { r -> saved.items.firstOrNull { it.id == r.itemId }?.catalogId })
+        // The picked row has no wording of its own: its line names it.
+        assertEquals(listOf("Synthetic oil", "Oil filter", null), rows.map { it.wording })
+        assertEquals(listOf(4_500L, null, null), rows.map { it.quantityMilli })
+        assertEquals(listOf(800L, 1_150L, null), rows.map { it.eachCents })
+        assertEquals(listOf(3_600L, null, null), rows.map { it.totalCents })
+        assertEquals(listOf("oil", null, "rotation"), rows.map { r -> saved.items.firstOrNull { it.id == r.itemId }?.catalogId })
 
         val edit = loaded(LogServiceRoute(car, recordId = saved.record.id))
         awaitUntil("the edit to load") { edit.form.data != null }
         assertEquals("4.25", edit.form.shopSuppliesText)
         val opened = edit.form.jobs.single { it.rows != null }.rows!!
-        assertEquals(listOf("4.5" to "oil", "" to null), opened.map { it.quantity to it.line })
+        assertEquals(listOf("4.5" to "oil", "" to null, "" to "rotation"), opened.map { it.quantity to it.line })
         // Nothing is filled in on opening: the filter's total stays blank.
         assertEquals("", opened[1].total)
     }
