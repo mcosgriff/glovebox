@@ -466,22 +466,29 @@ internal fun HistoryContent(
                 }
             }
         }
-        if (categories.isNotEmpty()) {
+        if (jobs.isNotEmpty()) {
+            // Inside a category with two jobs or more, its jobs take the categories' place: the category itself for
+            // all of it, a job to show it alone (a second tap goes back to the whole category), and back to All.
+            // A key of its own, so the row starts at its beginning rather than where the categories were scrolled.
+            item(key = "jobs") {
+                ChipRow {
+                    IconButton(onClick = { onChooseFilter(null) }) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.history_filter_back))
+                    }
+                    categories.firstOrNull { it.id == filter }?.let { c ->
+                        InkChip(c.label, selected = job == null) { onChooseJob(null) }
+                    }
+                    jobs.forEach { j ->
+                        InkChip(j.label, selected = job == j.id) { onChooseJob(if (job == j.id) null else j.id) }
+                    }
+                }
+            }
+        } else if (categories.isNotEmpty()) {
             item(key = "categories") {
                 ChipRow {
                     InkChip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
                     categories.forEach { c ->
                         InkChip(c.label, selected = filter == c.id) { onChooseFilter(c.id) }
-                    }
-                }
-            }
-        }
-        if (jobs.isNotEmpty()) {
-            // The category's own jobs, to show one alone; a second tap on the chosen one goes back to the whole category.
-            item(key = "jobs") {
-                ChipRow {
-                    jobs.forEach { j ->
-                        InkChip(j.label, selected = job == j.id) { onChooseJob(if (job == j.id) null else j.id) }
                     }
                 }
             }
@@ -778,6 +785,7 @@ private fun ChipRow(content: @Composable () -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(top = 4.dp).horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) { content() }
 }
 

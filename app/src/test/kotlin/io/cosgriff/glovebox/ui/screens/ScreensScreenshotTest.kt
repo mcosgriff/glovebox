@@ -260,7 +260,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
-    /** One job alone: Oil & engine chosen, and its oil change under it, so the air filter's record is left out. */
+    /** Inside Oil & engine: the categories give way to a back arrow, the category and its jobs, the oil change chosen. */
     @Test
     fun historyJob() = compose.shoot("history_job", shade) {
         HistoryContent(
