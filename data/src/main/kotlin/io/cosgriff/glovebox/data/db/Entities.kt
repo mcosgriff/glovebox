@@ -6,6 +6,7 @@ import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.ForeignKey.Companion.CASCADE
 import androidx.room3.Index
+import androidx.room3.Junction
 import androidx.room3.PrimaryKey
 import androidx.room3.Relation
 import java.time.LocalDate
@@ -229,6 +230,13 @@ data class ServiceRecordEntity(
      * means nothing (see `Visits` in `:domain`), so deleting or unlinking the others needs no tidying.
      */
     val visitId: Long? = null,
+    /**
+     * What the invoice charged for the whole visit rather than a job (#502): shop supplies, tax, and fees and
+     * sublet. Null is "not entered", not zero; the record's [costCents] is never worked out from these.
+     */
+    val shopSuppliesCents: Long? = null,
+    val taxCents: Long? = null,
+    val feesCents: Long? = null,
 )
 
 /**
@@ -247,6 +255,32 @@ data class ServiceRecordJobEntity(
     val wording: String? = null,
     val laborCents: Long? = null,
     val partsCents: Long? = null,
+    val position: Int = 0,
+)
+
+/**
+ * One row of a job's parts as the invoice prints it (#502). Null is "not entered", not zero. The job's parts
+ * figure is the sum of its rows' totals, worked out on read; nothing is filled in here that wasn't on the form.
+ */
+@Entity(
+    tableName = "service_record_job_parts",
+    foreignKeys = [
+        ForeignKey(ServiceRecordJobEntity::class, ["id"], ["jobId"], onDelete = CASCADE),
+        ForeignKey(ServiceRecordItemEntity::class, ["id"], ["itemId"], onDelete = ForeignKey.SET_NULL),
+    ],
+    indices = [Index("jobId"), Index("itemId")],
+)
+data class ServiceRecordJobPartEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val jobId: Long,
+    /** As printed or typed. */
+    val wording: String? = null,
+    /** In thousandths, so a decimal quantity (oil by the quart) reads back exactly as typed. */
+    val quantityMilli: Long? = null,
+    val eachCents: Long? = null,
+    val totalCents: Long? = null,
+    /** The job's line this row is for, a label only; null for the whole job. */
+    val itemId: Long? = null,
     val position: Int = 0,
 )
 
@@ -441,4 +475,11 @@ data class ServiceRecordWithItems(
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val photos: List<PhotoEntity>,
     /** Its priced jobs (#481), each line pointing at its own by `jobId`; empty when nothing was priced. */
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val jobs: List<ServiceRecordJobEntity> = emptyList(),
+    /** Its jobs' part rows (#502), each pointing at its job by `jobId`; empty when no job's parts are itemized. */
+    @Relation(
+        parentColumns = ["id"],
+        entityColumns = ["jobId"],
+        associateBy = Junction(ServiceRecordJobEntity::class, parentColumns = ["recordId"], entityColumns = ["id"]),
+    )
+    val parts: List<ServiceRecordJobPartEntity> = emptyList(),
 )

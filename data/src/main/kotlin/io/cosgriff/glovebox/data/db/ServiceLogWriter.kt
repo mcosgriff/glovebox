@@ -39,8 +39,9 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         items: List<ServiceRecordItemEntity>,
         photoFiles: List<String> = emptyList(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
     ): Long = transaction {
-        val id = service.insertWithItems(record, items, jobs)
+        val id = service.insertWithItems(record, items, jobs, parts)
         service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
         id
     }
@@ -52,8 +53,9 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         addedPhotos: List<String>,
         removedPhotoIds: Set<Long>,
         jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
     ) = transaction {
-        service.replaceWithItems(record, items, jobs)
+        service.replaceWithItems(record, items, jobs, parts)
         service.deletePhotos(removedPhotoIds.toList())
         service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
     }
@@ -61,7 +63,7 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     /** [previous] back as it was, photos included. False if its vehicle has gone. */
     suspend fun revertEdit(previous: ServiceRecordWithItems): Boolean = transaction {
         if (vehicles.byId(previous.record.vehicleId) == null) return@transaction false
-        service.replaceWithItems(previous.record, previous.items, previous.jobs)
+        service.replaceWithItems(previous.record, previous.items, previous.jobs, previous.parts)
         service.clearPhotos(previous.record.id)
         service.insertPhotos(previous.photos.map { it.copy(id = 0) })
         true
@@ -133,7 +135,7 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
 
     private suspend fun restoreRows(record: ServiceRecordWithItems): Long? {
         if (vehicles.byId(record.record.vehicleId) == null) return null
-        val id = service.insertWithItems(record.record, record.items.map { it.copy(id = 0) }, record.jobs)
+        val id = service.insertWithItems(record.record, record.items, record.jobs, record.parts)
         // The files were left alone when the record went, for exactly this.
         service.insertPhotos(record.photos.map { it.copy(id = 0, recordId = id) })
         return id

@@ -110,4 +110,47 @@ class ServiceLogWriterTest {
         assertEquals(18_000L, back.jobs.single().laborCents)
         assertEquals(back.jobs.single().id, back.items.single().jobId)
     }
+
+    @Test
+    fun `part rows and invoice charges are written, edited, reverted and restored with their job`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        // Lines given ids of their own only so the rows can say which one they are for.
+        val plugs = ServiceRecordItemEntity(id = 1, recordId = 0, scheduleItemId = null, label = "Spark plugs", jobId = 7)
+        val coils = ServiceRecordItemEntity(id = 2, recordId = 0, scheduleItemId = null, label = "Ignition coils", jobId = 7)
+        val job = ServiceRecordJobEntity(id = 7, recordId = 0, wording = "Remove & replace spark plugs and coils", laborCents = 30_000)
+        val rows = listOf(
+            ServiceRecordJobPartEntity(jobId = 7, wording = "Spark plug, iridium", quantityMilli = 4_000, eachCents = 1_250, totalCents = 5_000, itemId = 1, position = 0),
+            ServiceRecordJobPartEntity(jobId = 7, wording = "Ignition coil", quantityMilli = 4_000, eachCents = 9_250, totalCents = 37_000, itemId = 2, position = 1),
+            ServiceRecordJobPartEntity(jobId = 7, wording = "Dielectric grease", quantityMilli = 3_000, totalCents = 2_000, position = 2),
+        )
+        val charged = record(car).copy(costCents = 155_260, shopSuppliesCents = 3_850, taxCents = 5_210, feesCents = 1_200)
+        val id = writer.add(charged, listOf(plugs, coils), jobs = listOf(job), parts = rows)
+
+        val saved = service.record(id)!!
+        assertEquals(listOf(3_850L, 5_210L, 1_200L), saved.record.let { listOf(it.shopSuppliesCents, it.taxCents, it.feesCents) })
+        val jobId = saved.jobs.single().id
+        val byLabel = saved.items.associate { it.label to it.id }
+        val parts = saved.parts.sortedBy { it.position }
+        assertEquals(listOf(jobId, jobId, jobId), parts.map { it.jobId })
+        // Each row still names its line under the line's new id; the untagged one is for the whole job.
+        assertEquals(listOf(byLabel["Spark plugs"], byLabel["Ignition coils"], null), parts.map { it.itemId })
+        assertEquals(rows.map { it.copy(id = 0, jobId = 0, itemId = null) }, parts.map { it.copy(id = 0, jobId = 0, itemId = null) })
+
+        // An edit that drops the rows leaves none behind.
+        writer.replace(saved.record, saved.items, emptyList(), emptySet(), jobs = saved.jobs)
+        assertEquals(emptyList<ServiceRecordJobPartEntity>(), service.record(id)!!.parts)
+
+        assertTrue(writer.revertEdit(saved))
+        val back = service.record(id)!!
+        val backLabels = back.items.associate { it.id to it.label }
+        assertEquals(listOf("Spark plugs", "Ignition coils", null), back.parts.sortedBy { it.position }.map { it.itemId?.let(backLabels::get) })
+
+        service.deleteRecord(back.record)
+        // Gone with its record, by cascade through the job.
+        assertEquals(emptyList<ServiceRecordJobPartEntity>(), service.record(id)?.parts.orEmpty())
+        val restored = service.record(writer.restore(back, recallIds = emptyList())!!)!!
+        assertEquals(3, restored.parts.size)
+        assertEquals(restored.jobs.single().id, restored.parts.map { it.jobId }.distinct().single())
+        assertEquals(5_210L, restored.record.taxCents)
+    }
 }
