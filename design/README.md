@@ -23,7 +23,6 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 2 · Scan VIN | `screens/Scan.png` | `source/Scan.dc.html` |
 | 3 · NHTSA decode result | `screens/Decoded.png` | `source/Decoded.dc.html` |
 | 4 · Garage / vehicle home | `screens/Garage.png` | `source/Garage.dc.html` |
-| 5 · Log service (scrolls) | `screens/LogService.png` | `source/LogService.dc.html` |
 | 6 · Service history | `screens/History.png` | `source/History.dc.html` |
 | 7 · Reminder rules (scrolls) | `screens/Reminders.png` | `source/Reminders.dc.html` |
 | 8 · Recalls (scrolls) | `screens/Recalls.png` | `source/Recalls.dc.html` |
@@ -33,14 +32,12 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 4a · Garage — two vehicles | `screens/GarageMulti.png` | `source/GarageMulti.dc.html` |
 | 10 · Reminders tab (all vehicles) | `screens/Upcoming.png` | `source/Upcoming.dc.html` |
 | 4b · Update mileage (sheet) | `screens/UpdateMileage.png` | `source/UpdateMileage.dc.html` |
-| 6a · Service record + receipt viewer | `screens/RecordDetail.png` | `source/RecordDetail.dc.html` |
 | 0a · First-run welcome / restore | `screens/Welcome.png` | `source/Welcome.dc.html` |
 | 4c · Garage — empty | `screens/GarageEmpty.png` | `source/GarageEmpty.dc.html` |
 | 4d · Vehicle details + mark as sold | `screens/VehicleDetails.png` | `source/VehicleDetails.dc.html` |
 | 3c · Edit schedule item | `screens/EditInterval.png` | `source/EditInterval.dc.html` |
 | 4e · Torque & fastener specs | `screens/Specs.png` | `source/Specs.dc.html` |
 | 4 · Garage — dark | `screens/GarageDark.png` | `source/GarageDark.dc.html` |
-| 5 · Log service — dark | `screens/LogServiceDark.png` | `source/LogServiceDark.dc.html` |
 | 6 · History — dark | `screens/HistoryDark.png` | `source/HistoryDark.dc.html` |
 | 9 · Settings — dark | `screens/SettingsDark.png` | `source/SettingsDark.dc.html` |
 | 0 · Unlock — dark | `screens/LockDark.png` | `source/LockDark.dc.html` |
@@ -54,7 +51,6 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 9c · About | `screens/About.png` | `source/About.dc.html` |
 | 4g · Delete vehicle + its data | `screens/DeleteVehicle.png` | `source/DeleteVehicle.dc.html` |
 | 9d · Delete all data | `screens/DeleteAll.png` | `source/DeleteAll.dc.html` |
-| 6c · Edit service + undo | `screens/EditRecord.png` | `source/EditRecord.dc.html` |
 | 6d · Delete record + undo | `screens/DeleteRecord.png` | `source/DeleteRecord.dc.html` |
 | 6e · History — timeline view | `screens/Timeline.png` | `source/Timeline.dc.html` |
 | PDF report · page 1 (infographic) — 816×1056 Letter | `screens/ReportPage1.png` | `source/ReportPage1.dc.html` |
