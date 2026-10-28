@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Receipt viewer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div role="dialog" aria-label="Receipt viewer" style="width: 390px; height: 844px; box-sizing: border-box; background: #0E1012; color: #F4F3EF; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 8px">
+    <a href="PartsRecord.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; color: #F4F3EF; display: flex; align-items: center; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <span style="font-size: 15px; font-weight: 600">{{label}} · {{pos}} of {{count}}</span>
+    <button aria-label="Share photo" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: transparent; color: #F4F3EF; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M16 6l-4-4-4 4"></path><path d="M12 2v13"></path></svg>
+    </button>
+  </div>
+  <div style="flex: 1; margin: 8px 24px; border-radius: 8px; background: repeating-linear-gradient(135deg, #2A2E33 0px, #2A2E33 14px, #24282D 14px, #24282D 28px); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #B9B6AE">{{caption}}</div>
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 24px 16px">
+    <button onClick="{{prev}}" aria-label="Previous photo" disabled="{{atStart}}" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: #24282D; color: {{prevFg}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <span style="font-size: 13px; color: #B9B6AE">Jan 7, 2026 · Main Street Auto</span>
+    <button onClick="{{next}}" aria-label="Next photo" disabled="{{atEnd}}" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: #24282D; color: {{nextFg}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { i: 0 };
+}
+renderVals() {
+var self = this, i = this.state.i;
+var P = ['Invoice', 'Parts'];
+return {
+label: P[i], pos: i + 1, count: P.length, caption: P[i] + ' photo · pinch to zoom',
+atStart: i === 0, atEnd: i === P.length - 1,
+prevFg: i === 0 ? '#5A5F66' : '#F4F3EF', nextFg: i === P.length - 1 ? '#5A5F66' : '#F4F3EF',
+prev: function () { if (i > 0) self.setState({ i: i - 1 }); },
+next: function () { if (i < P.length - 1) self.setState({ i: i + 1 }); }
+};
+}
+}
+</script>
+</body>
+</html>

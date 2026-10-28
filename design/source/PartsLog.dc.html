@@ -20,8 +20,8 @@ body{margin:0}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
     </a>
     <div style="flex: 1; display: flex; flex-direction: column">
-      <span style="font-size: 20px; font-weight: 600">Log service</span>
-      <span style="font-size: 12px; color: {{t.muted}}">2011 hatchback · Main Street Auto · sample data</span>
+      <span style="font-size: 20px; font-weight: 600">{{title}}</span>
+      <span style="font-size: 12px; color: {{t.muted}}">{{subtitle}}</span>
     </div>
   </div>
 
@@ -34,8 +34,69 @@ body{margin:0}
       </div>
       <div style="display: flex; flex-direction: column; gap: 6px">
         <label for="qo" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Odometer (mi)</label>
-        <input id="qo" value="129,565" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+        <input id="qo" value="{{odo}}" onChange="{{onOdo}}" inputmode="numeric" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: {{odoBorder}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{t.ink}}">
+        <sc-if value="{{odoChanged}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 12px; color: {{t.muted}}">Was <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace">{{odoWas}}</span></span>
+        </sc-if>
       </div>
+    </div>
+
+    <sc-if value="{{showDue}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">DUE NOW · ONE TAP</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{due}}" as="d" hint-placeholder-count="2">
+            <button onClick="{{d.toggle}}" aria-pressed="{{d.on}}" style="min-height: 48px; padding: 0 14px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; border: 1.5px solid {{d.border}}; background: {{d.bg}}; color: {{d.fg}}">{{d.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WHAT WAS DONE?</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{tabs}}" as="c" hint-placeholder-count="8">
+          <button onClick="{{c.pick}}" aria-pressed="{{c.active}}" style="height: 40px; padding: 0 12px; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: 1.5px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}">
+            {{c.label}}
+            <sc-if value="{{c.hasCount}}" hint-placeholder-val="{{ false }}">
+              <span style="min-width: 20px; height: 20px; border-radius: 10px; background: {{t.accent}}; color: {{t.onAccent}}; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{c.count}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{tabItems}}" as="it" hint-placeholder-count="4">
+          <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid {{t.divider}}; font-size: 15px">
+            <input type="checkbox" checked="{{it.on}}" onChange="{{it.toggle}}" style="width: 20px; height: 20px; accent-color: {{t.accent}}">
+            <span style="flex: 1">{{it.name}}</span>
+            <span style="font-size: 12px; color: {{t.muted}}">{{it.hint}}</span>
+          </label>
+        </sc-for>
+        <button style="min-height: 48px; border: 0; background: transparent; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: {{t.softFg}}">+ Add custom item</button>
+      </div>
+    </div>
+
+    <sc-if value="{{showImpact}}" hint-placeholder-val="{{ false }}">
+      <div style="background: {{t.softBg}}; border: 1px solid {{t.softLine}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.softFg}}">WHAT THIS CHANGES</span>
+        <sc-for list="{{impact}}" as="m" hint-placeholder-count="2">
+          <span style="font-size: 14px; line-height: 1.45">{{m.text}}</span>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WHO DID IT?</div>
+      <div role="radiogroup" aria-label="Who did it" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: {{t.seg}}">
+        <button role="radio" aria-checked="{{isDiy}}" onClick="{{setDiy}}" style="height: 48px; border-radius: 9px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}; background: {{diyBg}}; box-shadow: {{diyShadow}}">I did it (DIY)</button>
+        <button role="radio" aria-checked="{{isShop}}" onClick="{{setShop}}" style="height: 48px; border-radius: 9px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}; background: {{shopBg}}; box-shadow: {{shopShadow}}">A shop</button>
+      </div>
+      <sc-if value="{{isShop}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="qs" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Shop name</label>
+          <input id="qs" value="Main Street Auto" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+        </div>
+      </sc-if>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 10px">
@@ -43,9 +104,13 @@ body{margin:0}
         <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK AND PRICES · 4 LINES</div>
         <span style="font-size: 12px; color: {{t.muted}}">Prices are optional</span>
       </div>
-      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+      <div style="display: flex; flex-direction: column; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px">
         <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
-          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-bottom: {{j.border}}">
+          <div style="display: flex; flex-direction: column">
+          <sc-if value="{{j.sepBefore}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="height: 8px; background: {{t.bg}}"></div>
+          </sc-if>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px">
             <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
               <span style="display: flex; flex-direction: column; gap: 1px">
                 <span style="font-size: 15px; font-weight: 600">{{j.heading}}</span>
@@ -132,9 +197,28 @@ body{margin:0}
                     <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px">
                         <div style="display: flex; align-items: flex-end; gap: 0">
-                          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                          <div style="position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
                             <label for="{{r.nameId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Part</label>
-                            <input id="{{r.nameId}}" value="{{r.name}}" onChange="{{r.onName}}" style="width: 100%; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+                            <div style="height: 48px; box-sizing: border-box; border: {{r.partBorder}}; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; padding-left: 12px">
+                              <input id="{{r.nameId}}" value="{{r.partText}}" onChange="{{r.onName}}" placeholder="Pick a line, or type it as printed" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+                              <button onClick="{{r.toggleMenu}}" aria-expanded="{{r.menuOpen}}" aria-label="{{r.menuLabel}}" style="width: 44px; height: 46px; flex: none; border: 0; border-radius: 12px; background: transparent; color: {{t.sub}}; display: flex; align-items: center; justify-content: center">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: {{r.menuTurn}}"><path d="M6 9l6 6 6-6"></path></svg>
+                              </button>
+                            </div>
+                            <sc-if value="{{r.menuOpen}}" hint-placeholder-val="{{ false }}">
+                              <div style="position: absolute; top: 74px; left: 0; right: -88px; z-index: 5; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 12px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16); padding: 6px 0; display: flex; flex-direction: column">
+                                <span style="padding: 6px 14px 4px 14px; font-size: 12px; font-weight: 600; color: {{t.muted}}">This job’s lines</span>
+                                <sc-for list="{{r.lineOptions}}" as="o" hint-placeholder-count="2">
+                                  <button onClick="{{o.pick}}" style="min-height: 48px; padding: 0 14px; border: 0; background: {{o.bg}}; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; font-family: inherit; font-size: 15px; color: {{t.ink}}">
+                                    <span>{{o.label}}</span>
+                                    <sc-if value="{{o.selected}}" hint-placeholder-val="{{ false }}">
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.softFg}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+                                    </sc-if>
+                                  </button>
+                                </sc-for>
+                                <span style="padding: 8px 14px 6px 14px; border-top: 1px solid {{t.divider}}; font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{r.menuHint}}</span>
+                              </div>
+                            </sc-if>
                           </div>
                           <button onClick="{{r.remove}}" aria-label="{{r.removeLabel}}" style="width: 44px; height: 48px; flex: none; border: 0; border-radius: 12px; background: transparent; color: {{t.sub}}; display: flex; align-items: center; justify-content: center">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 13h10l1-13"></path><path d="M9 7V4h6v3"></path></svg>
@@ -169,7 +253,7 @@ body{margin:0}
                             <span>{{r.note}}</span>
                           </span>
                         </sc-if>
-                        <sc-if value="{{j.multi}}" hint-placeholder-val="{{ true }}">
+                        <sc-if value="{{r.showFor}}" hint-placeholder-val="{{ false }}">
                           <div style="display: flex; align-items: center; gap: 10px">
                             <label for="{{r.tagId}}" style="font-size: 12px; font-weight: 600; color: {{t.sub}}; flex: none">For line</label>
                             <select id="{{r.tagId}}" onChange="{{r.onTag}}" style="flex: 1; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 0 10px; font-family: inherit; font-size: 14px; color: {{t.ink}}">
@@ -189,6 +273,7 @@ body{margin:0}
                 </sc-if>
               </div>
             </sc-if>
+          </div>
           </div>
         </sc-for>
       </div>
@@ -247,25 +332,44 @@ body{margin:0}
       </div>
     </div>
 
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECEIPTS &amp; PHOTOS</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <a href="ReceiptViewer.dc.html" aria-label="Open invoice photo" style="height: 96px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.photo}}; display: flex; align-items: flex-end; padding: 8px; box-sizing: border-box; font-size: 12px; font-weight: 600; color: {{t.sub}}; text-decoration: none">Invoice</a>
+        <button style="height: 96px; border-radius: 12px; border: 1.5px dashed {{t.field}}; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.sub}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          Add photo
+        </button>
+      </div>
+      <span style="font-size: 12px; color: {{t.muted}}">Stored encrypted with the record.</span>
+    </div>
+
     <div style="display: flex; flex-direction: column; gap: 6px">
       <label for="qn" style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Notes</label>
       <textarea id="qn" rows="2" placeholder="Optional" style="box-sizing: border-box; border: 1.5px solid {{t.field}}; border-radius: 12px; background: {{t.surface}}; padding: 12px; font-family: inherit; font-size: 15px; color: {{t.ink}}; resize: none"></textarea>
     </div>
 
-    <a href="PartsRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; text-decoration: none; font-size: 16px; font-weight: 600">Save service</a>
+    <a href="PartsRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; text-decoration: none; font-size: 16px; font-weight: 600">{{saveLabel}}</a>
+    <sc-if value="{{isEdit}}" hint-placeholder-val="{{ false }}">
+      <a href="DeleteRecord.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; font-size: 15px; font-weight: 600; color: {{t.danger}}; text-decoration: none">Delete this record</a>
+    </sc-if>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["full","blanks"],"default":"full"},"$preview":{"width":390,"height":1990}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["full","blanks","edit","pick"],"default":"full"},"$preview":{"width":390,"height":2985}}'>
 class Component extends DCLogic {
 constructor(props) {
 super(props);
 var blanks = props.variant === 'blanks';
+var edit = props.variant === 'edit';
+var pick = props.variant === 'pick';
 // Sample data, made up. Labor is the job's; parts may be one figure or the invoice's rows.
 var rows = [
-{ id: 'r1', name: 'Spark plug, iridium', qty: '4', each: '12.50', total: '50.00', filled: 'total', inexact: null, tag: 'Spark plugs', open: !blanks },
-{ id: 'r2', name: 'Ignition coil', qty: '4', each: '92.50', total: '370.00', filled: null, inexact: null, tag: 'Ignition coils', open: false }
+{ id: 'r1', name: 'Spark plug, iridium', qty: '4', each: '12.50', total: '50.00', filled: 'total', inexact: null, tag: 'Spark plugs', open: !blanks && !pick },
+{ id: 'r2', name: '', qty: '4', each: '92.50', total: '370.00', filled: null, inexact: null, tag: 'Ignition coils', open: false }
 ];
+// A new row with the Part list open.
+if (pick) rows.push({ id: 'r3', name: '', qty: '', each: '', total: '', filled: null, inexact: null, tag: '', open: true, menu: true });
 if (blanks) {
 rows.push({ id: 'r3', name: 'Dielectric grease', qty: '3', each: '', total: '20.00', filled: null, inexact: 'each', tag: '', open: false });
 rows.push({ id: 'r4', name: 'Coil boot', qty: '', each: '6.00', total: '', filled: null, inexact: null, tag: 'Ignition coils', open: false });
@@ -282,7 +386,12 @@ supplies: '38.50',
 tax: blanks ? '' : '52.10',
 fees: blanks ? '' : '12.00',
 total: blanks ? '1,598.40' : '1,552.60',
-next: 10
+next: 10,
+odo: edit ? '129,665' : '129,565',
+tab: 'oil', who: 'shop',
+// The lines this record covers, by category. The jobs below hold their prices.
+picks: { plugs: true, coils: true, cv: true, diag: true },
+dueOn: {}
 };
 }
 cents(str) {
@@ -337,10 +446,12 @@ var self = this, s = this.state;
 var dark = (this.props.theme || 'light') === 'dark';
 var t = dark ? {
 bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
-field: '#4A4F55', accent: '#F08A4B', onAccent: '#17191C', softBg: '#3A2418', softFg: '#FDBA74', calcBg: '#24282D', rowBg: '#202328', ok: '#5EEAD4'
+field: '#4A4F55', accent: '#F08A4B', onAccent: '#17191C', softBg: '#3A2418', softFg: '#FDBA74', calcBg: '#24282D', rowBg: '#202328', ok: '#5EEAD4', seg: '#24282D', segOn: '#3A3F46', danger: '#F97066', softLine: '#5A3420',
+photo: 'repeating-linear-gradient(135deg, #24282D 0px, #24282D 10px, #1C1F23 10px, #1C1F23 20px)'
 } : {
 bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
-field: '#B9B6AE', accent: '#C2410C', onAccent: '#FFFFFF', softBg: '#FBE9DF', softFg: '#9A3412', calcBg: '#F4F3EF', rowBg: '#FAF9F6', ok: '#0F766E'
+field: '#B9B6AE', accent: '#C2410C', onAccent: '#FFFFFF', softBg: '#FBE9DF', softFg: '#9A3412', calcBg: '#F4F3EF', rowBg: '#FAF9F6', ok: '#0F766E', seg: '#E9E7E0', segOn: '#FFFFFF', danger: '#B42318', softLine: '#F3C9B1',
+photo: 'repeating-linear-gradient(135deg, #FFFFFF 0px, #FFFFFF 10px, #F1EFEA 10px, #F1EFEA 20px)'
 };
 var fmt = function (c) { return '$' + (Math.abs(c) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 var qText = function (th) { return String(th / 1000); };
@@ -361,13 +472,16 @@ else if (r.filled === 'qty') { tag = 'filled in'; note = 'Qty is ' + fmt(tt) + '
 else if (r.inexact === 'each') { tag = 'left blank'; note = fmt(tt) + ' ÷ ' + qText(q) + ' isn’t whole cents.'; }
 else if (r.inexact === 'total') { tag = 'left blank'; note = qText(q) + ' × ' + fmt(e) + ' isn’t whole cents.'; warn = true; }
 else if (r.inexact === 'qty') { tag = 'left blank'; note = fmt(tt) + ' ÷ ' + fmt(e) + ' doesn’t come out exact.'; warn = true; }
-else if (tt === null && (r.qty || r.each || r.name)) { tag = 'no total'; note = 'Left out of the parts figure.'; warn = true; }
+else if (tt === null && (r.qty || r.each || r.name || r.tag)) { tag = 'no total'; note = 'Left out of the parts figure.'; warn = true; }
 else if (q !== null && e !== null && tt !== null && q * e !== tt * 1000) { tag = 'doesn’t match'; note = qText(q) + ' × ' + fmt(e) + ' is ' + fmt(Math.round(q * e / 1000)) + ', not ' + fmt(tt) + '. The total as printed is what counts.'; warn = true; }
 var bits = [];
 if (q !== null && e !== null) bits.push(qText(q) + ' × ' + fmt(e));
 else if (q !== null) bits.push('Qty ' + qText(q));
 else if (e !== null) bits.push(fmt(e) + ' each');
-if (multi) bits.push(r.tag || 'Whole job');
+// A row is named by what the invoice printed, or by the line picked for it.
+var typed = r.name !== '';
+var shown = r.name || r.tag || 'Unnamed part';
+if (typed && multi) bits.push(r.tag || 'Whole job');
 var look = function (k) { return r.filled === k ? '1.5px dashed ' + t.field : '1.5px solid ' + t.field; };
 var bgk = function (k) { return r.filled === k ? t.calcBg : t.surface; };
 var opts = [{ value: '', label: 'Whole job', selected: !r.tag }].concat(j.lines.map(function (l) {
@@ -380,13 +494,22 @@ qtyBorder: look('qty'), eachBorder: look('each'), totalBorder: look('total'),
 qtyBg: bgk('qty'), eachBg: bgk('each'), totalBg: bgk('total'),
 hasNote: !!note, note: note, noteTag: tag,
 open: !!r.open, closed: !r.open, cardBg: r.open ? t.rowBg : t.surface,
-nameShown: r.name || 'Unnamed part', detail: bits.join(' · ') || 'Nothing typed yet',
+nameShown: shown, partText: r.name || r.tag, showFor: typed && multi,
+partBorder: r.menu ? '2px solid ' + t.accent : '1.5px solid ' + t.field,
+menuOpen: !!r.menu, menuTurn: r.menu ? 'rotate(180deg)' : 'none', menuLabel: 'Pick a line for ' + shown,
+menuHint: multi ? 'Or type the part as the invoice prints it, then choose its line.' : 'Or type the part as the invoice prints it.',
+lineOptions: j.lines.map(function (l) { var on = !typed && r.tag === l[0]; return { label: l[0], selected: on, bg: on ? t.softBg : 'transparent',
+pick: function () { self.editJob(j.id, function (o) { o.rows = o.rows.map(function (x) { return x.id === r.id ? Object.assign({}, x, { name: '', tag: l[0], menu: false }) : x; }); return o; }); } }; }),
+toggleMenu: function () { self.editRow(j.id, r.id, 'menu', !r.menu); }, detail: bits.join(' · ') || 'Nothing typed yet',
 showChip: warn || tag === 'left blank', totalShown: tt !== null ? fmt(tt) : '—', totalColor: tt !== null ? t.ink : t.muted,
-openLabel: 'Edit ' + (r.name || 'part row'), closeLabel: 'Done editing ' + (r.name || 'part row'),
+openLabel: 'Edit ' + shown, closeLabel: 'Done editing ' + shown,
+onName: function (ev) { var v = ev.target.value; self.editJob(j.id, function (o) { o.rows = o.rows.map(function (x) {
+// Typing a line's own name is picking it; clearing the box clears both.
+if (x.id !== r.id) return x; var line = j.lines.some(function (l) { return l[0] === v; });
+return Object.assign({}, x, line ? { name: '', tag: v } : { name: v, tag: v === '' ? '' : x.tag }); }); return o; }); },
 toggle: function () { self.editRow(j.id, r.id, 'open', !r.open); },
 tagOptions: opts,
-removeLabel: 'Remove ' + (r.name || 'part row'),
-onName: function (ev) { self.editRow(j.id, r.id, 'name', ev.target.value); },
+removeLabel: 'Remove ' + shown,
 onQty: function (ev) { self.editRow(j.id, r.id, 'qty', ev.target.value); },
 onEach: function (ev) { self.editRow(j.id, r.id, 'each', ev.target.value); },
 onTotal: function (ev) { self.editRow(j.id, r.id, 'total', ev.target.value); },
@@ -410,7 +533,7 @@ single: !multi, multi: multi, cat: j.lines[0][1],
 lines: j.lines.map(function (l) { return { name: l[0], cat: l[1] }; }),
 labor: j.labor, parts: j.parts, laborId: 'lab-' + j.id, partsId: 'par-' + j.id,
 hasSub: has, sub: fmt((lb || 0) + (pt || 0)),
-border: ji === s.jobs.length - 1 ? '0' : '1px solid ' + t.divider,
+sepBefore: ji > 0,
 allOpen: allOpen, toggleAllLabel: allOpen ? 'Collapse all' : 'Expand all',
 toggleAllTurn: allOpen ? 'rotate(180deg)' : 'none',
 toggleAll: function () { self.editJob(j.id, function (o) {
@@ -447,8 +570,61 @@ var total = this.cents(s.total);
 var gap = total !== null && sums.length ? total - entered : null;
 var gapLabel = gap !== null && gap < 0 ? 'Less than the figures above'
 : (tax === null && fees === null ? 'Tax and fees' : 'Other charges');
+var variant = this.props.variant || 'full';
+var isEdit = variant === 'edit';
+// Sample categories and items, made up for the 2011 hatchback. Hints are the vehicle's specs.
+var CATS = [
+{ id: 'oil', label: 'Oil & engine', items: [['oil', 'Oil & filter change', '5W-30 · 4.4 qt'], ['airf', 'Engine air filter', ''], ['plugs', 'Spark plugs', 'every 60k mi'], ['coils', 'Ignition coils', ''], ['belt', 'Serpentine belt', '']] },
+{ id: 'tires', label: 'Tires & wheels', items: [['rot', 'Tire rotation', 'every 5k mi'], ['align', 'Alignment', ''], ['newtires', 'New tires', '']] },
+{ id: 'brakes', label: 'Brakes', items: [['fpads', 'Front pads', ''], ['rpads', 'Rear pads', ''], ['bfluid', 'Brake fluid flush', '']] },
+{ id: 'fluids', label: 'Fluids', items: [['cool', 'Coolant', ''], ['atf', 'Transmission fluid', '']] },
+{ id: 'drive', label: 'Driveline', items: [['cv', 'Front CV axle', ''], ['rcv', 'Rear CV axle', ''], ['mounts', 'Engine & trans mounts', '']] },
+{ id: 'cabin', label: 'Cabin & electrical', items: [['cabf', 'Cabin air filter', ''], ['wipers', 'Wiper blades', ''], ['batt', 'Battery', '']] },
+{ id: 'insp', label: 'Inspection', items: [['multi', 'Multi-point inspection', ''], ['emis', 'Emissions test', '']] },
+{ id: 'other', label: 'Other', items: [['diag', 'Engine diagnosis', ''], ['acc', 'Accessory install', '']] }
+];
+var picks = s.picks;
+var tabs = CATS.map(function (c) {
+var a = c.id === s.tab;
+var n = c.items.filter(function (i) { return picks[i[0]]; }).length;
+return { label: c.label, active: a, count: n, hasCount: n > 0,
+bg: a ? t.softBg : t.surface, fg: a ? t.softFg : t.ink, border: a ? t.accent : t.line,
+pick: function () { self.setState({ tab: c.id }); } };
+});
+var flip = function (id) { var o = Object.assign({}, s.picks); o[id] = !o[id]; self.setState({ picks: o }); };
+var tabItems = CATS.filter(function (c) { return c.id === s.tab; })[0].items.map(function (i) {
+return { name: i[1], hint: i[2], on: !!picks[i[0]], toggle: function () { flip(i[0]); } };
+});
+// Reminders that are due: one tap adds the line.
+var due = [['rot', 'Tire rotation · overdue'], ['oil', 'Oil & filter · due soon']].map(function (d) {
+var on = !!picks[d[0]];
+return { label: (on ? '✓ ' : '+ ') + d[1], on: on,
+bg: on ? t.softBg : t.surface, fg: on ? t.softFg : t.ink, border: on ? t.accent : t.field,
+toggle: function () { flip(d[0]); } };
+});
+var odoN = parseInt(String(s.odo).replace(/[^0-9]/g, ''), 10);
+var ORIG = 129565;
+var odoChanged = isEdit && odoN !== ORIG;
+var grp = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+var diy = s.who === 'diy';
 return {
+title: isEdit ? 'Edit service' : 'Log service',
+subtitle: isEdit ? '2011 hatchback · logged Jan 7, 2026 · sample data' : '2011 hatchback · sample data',
+saveLabel: isEdit ? 'Save changes' : 'Save service', isEdit: isEdit,
+odo: s.odo, onOdo: function (ev) { self.setState({ odo: ev.target.value }); },
+odoChanged: odoChanged, odoWas: grp(ORIG),
+odoBorder: odoChanged ? '2px solid ' + t.accent : '1.5px solid ' + t.field,
+showDue: !isEdit, due: due, tabs: tabs, tabItems: tabItems,
+showImpact: odoChanged && !isNaN(odoN),
+impact: [{ text: 'Spark plugs next due ' + grp(odoN + 60000) + ' mi (was ' + grp(ORIG + 60000) + ').' },
+{ text: 'Ignition coils, front CV axle and engine diagnosis have no reminders.' }],
+isDiy: diy, isShop: !diy,
+diyBg: diy ? t.segOn : 'transparent', diyShadow: diy ? '0 1px 3px rgba(0,0,0,0.18)' : 'none',
+shopBg: diy ? 'transparent' : t.segOn, shopShadow: diy ? 'none' : '0 1px 3px rgba(0,0,0,0.18)',
+setDiy: function () { self.setState({ who: 'diy' }); },
+setShop: function () { self.setState({ who: 'shop' }); },
 t: t, jobs: jobs, charges: charges, sums: sums,
+// Jobs share one panel, told apart by a band of the page colour across it.
 total: s.total, totalBorder: total !== null ? t.ink : t.field,
 onTotal: function (ev) { self.setState({ total: ev.target.value }); },
 totalHelp: total === null && sums.length
