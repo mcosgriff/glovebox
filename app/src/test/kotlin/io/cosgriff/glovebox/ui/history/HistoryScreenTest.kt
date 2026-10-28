@@ -7,6 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasContentDescription
+import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.ui.service.asDistance
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -68,12 +71,14 @@ class HistoryScreenTest {
         }
     }
 
-    private fun overview() = GarageOverview(VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.recalls())
+    private fun logs() = VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings)
+
+    private fun overview() = GarageOverview(logs(), t.db.recalls())
 
     /** History opens on the timeline; these tests read the list unless they say so. */
     private fun listHandle() = SavedStateHandle(mapOf("view" to HistoryView.LIST.name))
 
-    private fun tab(handle: SavedStateHandle = listHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
+    private fun tab(handle: SavedStateHandle = listHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs()))
 
     @Test
     fun `the first vehicle shows, another is one tap away, and the choice is kept`() = runBlocking {
@@ -243,18 +248,39 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
         t.record(car, lines = listOf(line("Hitch greased")))
-        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview()))
+        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs()))
         show(vm)
         compose.waitForText(string(R.string.history_subtitle_archived, "2019 Corolla", plural(R.plurals.records, 1, 1.asNumber())))
         compose.onNodeWithText(plural(R.plurals.history_custom_lines, 1, 1.asNumber())).assertDoesNotExist()
         assertEquals(true, vm.archived)
     }
 
+    private fun waitForOdometer(miles: Int) = compose.waitUntil(5_000) {
+        compose.onAllNodes(hasContentDescription(string(R.string.history_odometer_description, miles.asDistance(DistanceUnit.MILES)))).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    @Test
+    fun `the vehicle's odometer shows under it`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Oil and filter", "oil")))
+        show(tab())
+        waitForOdometer(41_000)
+    }
+
+    @Test
+    fun `an archived vehicle's odometer shows under it too`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Oil and filter", "oil")))
+        t.db.vehicles().setArchived(car, today)
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs())))
+        waitForOdometer(41_000)
+    }
+
     @Test
     fun `an archived vehicle with no records says none were logged`() = runBlocking {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
-        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview())))
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs())))
         compose.waitForText(string(R.string.history_none_archived))
     }
 

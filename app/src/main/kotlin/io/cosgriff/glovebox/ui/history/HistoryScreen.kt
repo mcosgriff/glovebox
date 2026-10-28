@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistoryOrdering
@@ -133,6 +134,7 @@ import io.cosgriff.glovebox.ui.components.Chevron
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.ReminderProgress
 import io.cosgriff.glovebox.ui.garage.GarageOverview
+import io.cosgriff.glovebox.data.log.VehicleLogs
 
 data class HistoryState(
     val vehicles: List<VehicleEntity>,
@@ -147,6 +149,8 @@ data class HistoryState(
      * tab. Null when nothing is counting down, and for a sold vehicle, which has no reminders.
      */
     val next: Pair<ItemStatus, ReminderProgress>? = null,
+    /** The vehicle's odometer now, in its own unit (`VehicleLog.odometer`); null before any reading. */
+    val odometer: Int? = null,
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -165,6 +169,7 @@ class HistoryViewModel @Inject constructor(
     recalls: RecallDao,
     private val actions: RecordActions,
     overview: GarageOverview,
+    logs: VehicleLogs,
 ) : ViewModel() {
     /** Set when opened from Archived vehicles: that one vehicle's history, to read only. */
     private val archivedId: Long? = savedStateHandle.routeOrNull<ArchivedHistoryRoute>()?.vehicleId
@@ -218,8 +223,8 @@ class HistoryViewModel @Inject constructor(
 
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
-            combine(vehicles.observe(archivedId), service.observeRecords(archivedId)) { vehicle, records ->
-                HistoryState(listOfNotNull(vehicle), vehicle, records)
+            combine(vehicles.observe(archivedId), service.observeRecords(archivedId), logs.observe(archivedId)) { vehicle, records, log ->
+                HistoryState(listOfNotNull(vehicle), vehicle, records, odometer = log?.odometer)
             }
         } else {
             combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
@@ -229,9 +234,11 @@ class HistoryViewModel @Inject constructor(
                     flowOf(HistoryState(list, null, emptyList()))
                 } else {
                     combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id), overview.garage) { records, recallRows, garage ->
+                        val shown = garage.vehicles.firstOrNull { it.vehicle.id == vehicle.id }
                         HistoryState(
                             list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())),
-                            next = garage.vehicles.firstOrNull { it.vehicle.id == vehicle.id }?.comingUp?.next,
+                            next = shown?.comingUp?.next,
+                            odometer = shown?.odometer,
                         )
                     }
                 }
@@ -399,6 +406,17 @@ internal fun HistoryContent(
                         )
                         // The timeline always runs newest first, so there is nothing to sort.
                         if (state.records.size > 1 && !timeline) SortControls(order, onChooseOrder)
+                    }
+                    state.odometer?.let { miles ->
+                        val reading = miles.asDistance(v.unit)
+                        val spoken = stringResource(R.string.history_odometer_description, reading)
+                        Text(
+                            reading,
+                            Modifier.semantics { contentDescription = spoken },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = PlexMono,
+                            fontWeight = FontWeight.SemiBold,
+                        )
                     }
                 }
                 spending?.let { SpendingLine(it) }

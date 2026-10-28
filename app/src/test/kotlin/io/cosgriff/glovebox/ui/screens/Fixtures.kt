@@ -228,7 +228,7 @@ object Fixtures {
 
     val vehicleHome = VehicleHome(truck, truckOdometer, DueRule.WHICHEVER_FIRST, truckComingUp, ReminderInputs(tracked, truckEntries, truckReadings))
 
-    val history = HistoryState(listOf(truck, hatch), truck, truckRecords, customLines = CustomCount(lines = 4, wordings = 3))
+    val history = HistoryState(listOf(truck, hatch), truck, truckRecords, customLines = CustomCount(lines = 4, wordings = 3), odometer = truckOdometer)
 
     /** Custom lines as a report might word them: one Glovebox recognises, one the user has a rule for, one neither. */
     val customGroups: List<CustomGroup> = CustomLines.groups(
