@@ -107,6 +107,14 @@ import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
+import io.cosgriff.glovebox.domain.InvoiceCharges
+import io.cosgriff.glovebox.domain.PartAmounts
+import io.cosgriff.glovebox.domain.PartField
+import io.cosgriff.glovebox.domain.PartQuantity
+import io.cosgriff.glovebox.domain.PartRowDraft
+import io.cosgriff.glovebox.domain.PartRowDrafts
+import io.cosgriff.glovebox.domain.PartRows
 import io.cosgriff.glovebox.domain.CostBreakdown
 import io.cosgriff.glovebox.domain.JobDraft
 import io.cosgriff.glovebox.domain.JobGroups
@@ -299,7 +307,70 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     /** "+ Add labor and parts" tapped. Once any job has a price the fields stay out whatever this says. */
     var pricesOpen by mutableStateOf(false)
 
-    val pricesShown: Boolean get() = pricesOpen || jobs.any { price(it).priced }
+    val pricesShown: Boolean get() = pricesOpen || jobs.any { price(it).priced || it.rows != null } || charges.entered
+
+    /** What the invoice charged for the whole visit (#502), as typed. */
+    var shopSuppliesText by mutableStateOf("")
+    var taxText by mutableStateOf("")
+    var feesText by mutableStateOf("")
+
+    /** The charges as typed; one that isn't an amount counts as not entered, and [pricesValid] says so. */
+    val charges: InvoiceCharges get() = InvoiceCharges(cents(shopSuppliesText), cents(taxText), cents(feesText))
+
+    /** The part rows shown open; the others show as one line. A new row opens, and so does the first after itemizing. */
+    var openRows by mutableStateOf(emptySet<Int>())
+        internal set
+
+    /** The form's next id for a part row; ids are its own, never a row's. */
+    internal var nextRowId = 1
+
+    /** "Itemize parts": the job's parts become rows, a typed parts figure the first row's total. */
+    fun itemize(jobId: Int) {
+        val row = nextRowId++
+        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.itemize(it, row) else it }
+        openRows = openRows + row
+    }
+
+    fun addRow(jobId: Int) {
+        val row = nextRowId++
+        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.add(it, row) else it }
+        openRows = openRows + row
+    }
+
+    fun removeRow(jobId: Int, rowId: Int) {
+        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.remove(it, rowId) else it }
+        openRows = openRows - rowId
+    }
+
+    /** [text] typed into one of a row's figures: two typed fill the third, only when it comes out exact. */
+    fun typeRow(jobId: Int, rowId: Int, field: PartField, text: String) = editRow(jobId, rowId) { PartRowDrafts.type(it, field, text, ::parsePart, ::formatPart) }
+
+    fun nameRow(jobId: Int, rowId: Int, text: String) = editRow(jobId, rowId) { it.copy(wording = text) }
+
+    /** The job's line [line] is for; null for the whole job. */
+    fun tagRow(jobId: Int, rowId: Int, line: String?) = editRow(jobId, rowId) { it.copy(line = line) }
+
+    fun toggleRow(rowId: Int) {
+        openRows = if (rowId in openRows) openRows - rowId else openRows + rowId
+    }
+
+    /** "Expand all" / "Collapse all" for one job's rows. */
+    fun openAllRows(job: JobDraft<String>, open: Boolean) {
+        val ids = job.rows.orEmpty().map { it.id }.toSet()
+        openRows = if (open) openRows + ids else openRows - ids
+    }
+
+    private fun editRow(jobId: Int, rowId: Int, update: (PartRowDraft<String>) -> PartRowDraft<String>) {
+        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.edit(it, rowId, update) else it }
+    }
+
+    /** A row's figures as typed. */
+    fun amounts(row: PartRowDraft<String>): PartAmounts = PartRowDrafts.amounts(row, ::parsePart)
+
+    private fun parsePart(field: PartField, text: String): Long? =
+        if (field == PartField.QUANTITY) text.takeIf { it.isNotBlank() }?.let { PartQuantity.parseMilli(it.typedDecimal()) } else cents(text)
+
+    private fun formatPart(field: PartField, value: Long): String = if (field == PartField.QUANTITY) editableQuantity(value) else editableCost(value)
 
     fun setLabor(id: Int, text: String) {
         storedJobs = jobs.map { if (it.id == id) it.copy(labor = text) else it }
@@ -319,15 +390,23 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         storedJobs = JobGroups.split(jobs, id)
     }
 
-    /** A job's prices as typed; one that isn't an amount counts as not entered, and [pricesValid] says so. */
-    fun price(job: JobDraft<String>): JobPrice = JobPrice(cents(job.labor), cents(job.parts))
+    /**
+     * A job's prices as typed; one that isn't an amount counts as not entered, and [pricesValid] says so. With part
+     * rows, its parts are their totals added up.
+     */
+    fun price(job: JobDraft<String>): JobPrice =
+        JobPrice(cents(job.labor), job.rows?.let { rows -> PartRows.partsCents(rows.map(::amounts)) } ?: cents(job.parts))
 
-    val pricesValid: Boolean get() = jobs.all { j -> listOf(j.labor, j.parts).all { it.isBlank() || cents(it) != null } }
+    val pricesValid: Boolean
+        get() = jobs.all { j ->
+            listOf(j.labor, j.parts).all { it.isBlank() || cents(it) != null } &&
+                j.rows.orEmpty().all { r -> PartField.entries.all { f -> r.text(f).isBlank() || parsePart(f, r.text(f)) != null } }
+        } && listOf(shopSuppliesText, taxText, feesText).all { it.isBlank() || cents(it) != null }
 
     val costCents: Long? get() = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) }
 
     /** Null while nothing is priced. Worked out from what is typed; nothing is filled in from it. */
-    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map(::price), costCents)
+    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map(::price), costCents, charges)
 
     /** What a line is called on the form: as it will be saved. */
     fun lineName(key: String): String =
@@ -424,6 +503,9 @@ class LogServiceViewModel @Inject constructor(
                 form.diy = r.diy
                 form.shopName = r.shopName.orEmpty()
                 form.costText = r.costCents?.let(::editableCost).orEmpty()
+                form.shopSuppliesText = r.shopSuppliesCents?.let(::editableCost).orEmpty()
+                form.taxText = r.taxCents?.let(::editableCost).orEmpty()
+                form.feesText = r.feesCents?.let(::editableCost).orEmpty()
                 form.notes = r.notes.orEmpty()
                 form.keptPhotos = original.photos
                 val ticked = mutableSetOf<String>()
@@ -448,12 +530,24 @@ class LogServiceViewModel @Inject constructor(
                     item.id to (option?.id ?: customKey(item.label))
                 }
                 form.storedJobs = original.jobs.sortedBy { it.position }.mapIndexed { i, job ->
+                    // Its part rows as saved, figures and all: nothing is filled in on opening.
+                    val rows = original.parts.filter { it.jobId == job.id }.sortedBy { it.position }.map { row ->
+                        PartRowDraft(
+                            id = form.nextRowId++,
+                            wording = row.wording.orEmpty(),
+                            quantity = row.quantityMilli?.let(::editableQuantity).orEmpty(),
+                            each = row.eachCents?.let(::editableCost).orEmpty(),
+                            total = row.totalCents?.let(::editableCost).orEmpty(),
+                            line = row.itemId?.let(keyOf::get),
+                        )
+                    }
                     JobDraft(
                         id = i + 1,
                         lines = original.items.filter { it.jobId == job.id }.mapNotNull { keyOf[it.id] }.distinct(),
                         wording = job.wording,
                         labor = job.laborCents?.let(::editableCost).orEmpty(),
                         parts = job.partsCents?.let(::editableCost).orEmpty(),
+                        rows = rows.takeIf { it.isNotEmpty() },
                     )
                 }.filter { it.lines.isNotEmpty() }
             }
@@ -500,29 +594,48 @@ class LogServiceViewModel @Inject constructor(
                     imported = d.original?.record?.imported ?: false,
                     // An edit leaves the record in whatever visit it was linked into.
                     visitId = d.original?.record?.visitId,
+                    shopSuppliesCents = charges.shopSuppliesCents,
+                    taxCents = charges.taxCents,
+                    feesCents = charges.feesCents,
                 )
                 // A job is kept when it says something: a price, more than one line, or the shop's own wording.
                 // A line alone and unpriced is a line as it always was.
-                val kept = jobs.filter { price(it).priced || it.lines.size > 1 || it.wording != null }
+                val kept = jobs.filter { price(it).priced || it.lines.size > 1 || it.wording != null || it.rows != null }
                 val jobRows = kept.mapIndexed { i, j ->
-                    val p = price(j)
-                    ServiceRecordJobEntity(id = j.id.toLong(), recordId = 0, wording = j.wording, laborCents = p.laborCents, partsCents = p.partsCents, position = i)
+                    // A job with part rows stores no parts figure: it is their totals, worked out on read.
+                    ServiceRecordJobEntity(
+                        id = j.id.toLong(), recordId = 0, wording = j.wording, laborCents = price(j).laborCents,
+                        partsCents = if (j.rows == null) price(j).partsCents else null, position = i,
+                    )
                 }
                 val jobOf = kept.flatMap { j -> j.lines.map { it to j.id.toLong() } }.toMap()
+                // Each line numbered from 1, only so a part row can say which one it is for; the write gives ids of its own.
+                val keys = selectedOptions.map { it.id } + customItems.map(::customKey)
+                val lineId = keys.withIndex().associate { (i, key) -> key to i + 1L }
                 val items = selectedOptions.map {
                     ServiceRecordItemEntity(
+                        id = lineId.getValue(it.id),
                         recordId = 0,
                         scheduleItemId = it.scheduleItemId,
                         label = labelOf(it),
                         catalogId = it.id.takeIf { id -> id in catalogIds },
                         jobId = jobOf[it.id],
                     )
-                } + customItems.map { ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = it, jobId = jobOf[customKey(it)]) }
+                } + customItems.map { ServiceRecordItemEntity(id = lineId.getValue(customKey(it)), recordId = 0, scheduleItemId = null, label = it, jobId = jobOf[customKey(it)]) }
+                val partRows = kept.flatMap { j ->
+                    j.rows.orEmpty().mapIndexed { k, r ->
+                        val a = amounts(r)
+                        ServiceRecordJobPartEntity(
+                            jobId = j.id.toLong(), wording = r.wording.trim().ifEmpty { null }, quantityMilli = a.quantityMilli,
+                            eachCents = a.eachCents, totalCents = a.totalCents, itemId = r.line?.let(lineId::get), position = k,
+                        )
+                    }
+                }
                 val added = photoPicker.takeDraft(photoKey)
                 if (d.original != null) {
-                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows)
+                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
                 } else {
-                    actions.add(record, items, added, jobRows)
+                    actions.add(record, items, added, jobRows, partRows)
                 }
                 onDone()
             }

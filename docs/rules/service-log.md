@@ -70,6 +70,15 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   overwritten by, the prices.** The gap ("Tax and fees", or "Less than the line prices", naming no cause) is worked
   out on every read (`JobPrices`), never stored, and nothing about it shows while nothing is priced. A line alone
   and unpriced has no job row. Changing prices or jobs moves no reminder.
+- Part rows and the invoice's charges (#502, `design/specs/part-rows.md`, `PartRows`, `InvoiceCharges`): a job keeps
+  one labor figure; its parts are one figure or **the invoice's part rows, whose totals make the parts figure on every
+  read** (a job with rows stores no `partsCents`). **Two of qty, each and total fill the third on the form only when it
+  comes out exact**; otherwise it stays blank, and nothing is rounded. A filled-in figure is worked out again when a
+  typed one changes; typing over it makes it the user's. All three typed and disagreeing says so, and the typed total
+  counts. A row without a total is left out and said so; no quantity is assumed. **A row's line is a label only**: it
+  never puts a price on a line or splits the labor. Shop supplies, tax, and fees and sublet are the record's own
+  figures; the gap counts them, and is "Tax and fees" only while neither tax nor fees is entered, "Other charges" once
+  either is. An import or a saved record is never filled in: only the form does that.
 - Reading an invoice (#483, `InvoiceReader`, `:domain`; the screens are #484): **it only fills the form.** No
   per-shop templates: services come from a heading, a table whose header names labor and parts, a line carrying a
   subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when

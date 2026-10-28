@@ -18,6 +18,8 @@ import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
+import io.cosgriff.glovebox.domain.PartField
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -561,5 +563,81 @@ object Fixtures {
         setParts(byLine.getValue("spark-plugs").id, "420.00")
         setLabor(byLine.getValue("oil").id, "30.00")
         setParts(byLine.getValue("oil").id, "45.00")
+    }
+
+    /**
+     * A shop's invoice for plugs and coils priced as one job, its parts itemized (#502), made-up figures: the plug
+     * row open with its total filled in, the coil row closed, and a grease row whose price each is left blank ($20.00
+     * for 3). Shop supplies and tax on the whole invoice, and everything adds up to the total.
+     */
+    fun logServiceItemized(): LogServiceForm = logService().apply {
+        // Only the one job, so the rows fit the window.
+        listOf("oil", "spark-plugs", "ignition-coils").forEach(::toggle)
+        diy = false
+        shopName = "Main Street Auto"
+        val byLine = jobs.associateBy { it.lines.single() }
+        join(byLine.getValue("ignition-coils").id, byLine.getValue("spark-plugs").id)
+        val plugs = byLine.getValue("spark-plugs").id
+        setLabor(plugs, "300.00")
+        itemize(plugs)
+        val first = jobs.first { it.id == plugs }.rows!!.single().id
+        typeRow(plugs, first, PartField.TOTAL, "")
+        nameRow(plugs, first, "Spark plug, iridium")
+        typeRow(plugs, first, PartField.QUANTITY, "4")
+        typeRow(plugs, first, PartField.EACH, "12.50")
+        tagRow(plugs, first, "spark-plugs")
+        addRow(plugs)
+        val coil = jobs.first { it.id == plugs }.rows!!.last().id
+        nameRow(plugs, coil, "Ignition coil")
+        typeRow(plugs, coil, PartField.QUANTITY, "4")
+        typeRow(plugs, coil, PartField.EACH, "92.50")
+        tagRow(plugs, coil, "ignition-coils")
+        toggleRow(coil)
+        addRow(plugs)
+        val grease = jobs.first { it.id == plugs }.rows!!.last().id
+        nameRow(plugs, grease, "Dielectric grease")
+        typeRow(plugs, grease, PartField.QUANTITY, "3")
+        typeRow(plugs, grease, PartField.TOTAL, "20.00")
+        toggleRow(grease)
+        shopSuppliesText = "18.50"
+        taxText = "52.10"
+        costText = "810.60"
+    }
+
+    /**
+     * A record whose plugs and coils job is itemized (#502), made-up figures, with shop supplies and tax entered; the
+     * total is above everything entered, so what is left is other charges.
+     */
+    val recordItemized: RecordDetail = run {
+        val r = ServiceRecordWithItems(
+            ServiceRecordEntity(
+                106, truck.id, truckRecords[0].record.date, 62_400, diy = false, shopName = "Main Street Auto", costCents = 89_000,
+                shopSuppliesCents = 1_850, taxCents = 5_210,
+            ),
+            listOf(
+                ServiceRecordItemEntity(1060, 106, null, "Spark plugs", catalogId = "spark-plugs", jobId = 1),
+                ServiceRecordItemEntity(1061, 106, null, "Ignition coils", catalogId = "ignition-coils", jobId = 1),
+                ServiceRecordItemEntity(1062, 106, null, "Oil & filter change", catalogId = "oil", jobId = 2),
+                ServiceRecordItemEntity(1063, 106, null, "Tire rotation", catalogId = "rotation"),
+            ),
+            emptyList(),
+            listOf(
+                ServiceRecordJobEntity(1, 106, "Remove & replace spark plugs and coils", laborCents = 30_000, position = 0),
+                ServiceRecordJobEntity(2, 106, null, laborCents = 3_000, partsCents = 4_500, position = 1),
+            ),
+            listOf(
+                ServiceRecordJobPartEntity(1, 1, "Spark plug, iridium", quantityMilli = 4_000, eachCents = 1_250, totalCents = 5_000, itemId = 1060, position = 0),
+                ServiceRecordJobPartEntity(2, 1, "Ignition coil", quantityMilli = 4_000, eachCents = 9_250, totalCents = 37_000, itemId = 1061, position = 1),
+                ServiceRecordJobPartEntity(3, 1, "Dielectric grease", quantityMilli = 3_000, totalCents = 2_000, position = 2),
+            ),
+        )
+        RecordDetail(
+            record = r,
+            vehicleName = "2019 Blue truck",
+            unit = unit,
+            readOnly = false,
+            lines = r.items.map { WorkLine(it.label, ServiceCatalog.categoryOf(it.catalogId)?.label, null, current = false) },
+            deleteImpact = emptyList(),
+        )
     }
 }

@@ -64,6 +64,10 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.charges
+import io.cosgriff.glovebox.data.db.jobPrices
+import io.cosgriff.glovebox.data.db.priceOf
+import io.cosgriff.glovebox.data.db.rowsOf
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.LastDone
@@ -134,7 +138,7 @@ data class RecordDetail(
     val work: List<WorkJob> get() = workOf(record, lines)
 
     /** Null while nothing is priced: then the record shows no breakdown at all. */
-    val breakdown: CostBreakdown? get() = JobPrices.breakdown(record.jobs.map { JobPrice(it.laborCents, it.partsCents) }, record.record.costCents)
+    val breakdown: CostBreakdown? get() = JobPrices.breakdown(record.jobPrices, record.record.costCents, record.charges)
 
     /** The lines in no priced job, for the breakdown's caption. */
     val unpriced: List<String> get() = work.filter { !it.priced }.flatMap { j -> j.lines.map { it.label } }
@@ -144,7 +148,14 @@ data class RecordDetail(
  * A job as the record shows it: [heading] is the shop's wording, null for a line on its own (or a job whose
  * wording is just its line's name). [priced] when it has labor or parts.
  */
-data class WorkJob(val heading: String?, val laborCents: Long?, val partsCents: Long?, val lines: List<WorkLine>) {
+data class WorkJob(
+    val heading: String?,
+    val laborCents: Long?,
+    val partsCents: Long?,
+    val lines: List<WorkLine>,
+    /** Its parts as the invoice printed them (#502); [partsCents] is then their totals added up. */
+    val rows: List<WorkPartRow> = emptyList(),
+) {
     val priced: Boolean get() = JobPrice(laborCents, partsCents).priced
     val totalCents: Long? get() = JobPrice(laborCents, partsCents).totalCents
 }
@@ -159,9 +170,14 @@ internal fun workOf(record: ServiceRecordWithItems, lines: List<WorkLine>): List
         if (!placed.add(job.id)) return@mapNotNull null
         val own = items.filter { it.first.jobId == job.id }.map { it.second }
         val heading = job.wording?.takeIf { own.size > 1 || it != own.single().label }
-        WorkJob(heading, job.laborCents, job.partsCents, own)
+        val labels = record.items.zip(lines).associate { (item, line) -> item.id to line.label }
+        val rows = record.rowsOf(job).map { WorkPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.itemId?.let(labels::get)) }
+        WorkJob(heading, job.laborCents, record.priceOf(job).partsCents, own, rows)
     }
 }
+
+/** One part row as the record shows it (#502): as typed, with the name of the line it is for, if any. */
+data class WorkPartRow(val wording: String?, val quantityMilli: Long?, val eachCents: Long?, val totalCents: Long?, val line: String?)
 
 /** Another record, as the visit section and "Same visit as…" show it. [work] and [about] are worded. */
 data class VisitRow(val id: Long, val work: String, val about: String)

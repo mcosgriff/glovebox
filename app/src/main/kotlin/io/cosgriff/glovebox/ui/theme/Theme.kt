@@ -201,3 +201,19 @@ fun groupColor(group: ServiceGroup, dark: Boolean): Color = Color(
 
 @Composable
 fun groupColor(group: ServiceGroup): Color = groupColor(group, dark = MaterialTheme.colorScheme.background == DarkScheme.background)
+
+/**
+ * The cost breakdown's fills for the invoice's charges (#502), beside labor ([StatusColors.soon]) and parts (the
+ * accent). Chosen with them as a set with the dataviz palette validator, adjacent pairs, light and dark; each has a
+ * labelled row, which covers tax and fees falling under 3:1 on the light surface.
+ */
+@Immutable
+data class ChargeColors(val shopSupplies: Color, val tax: Color, val fees: Color)
+
+@Composable
+fun chargeColors(): ChargeColors =
+    if (MaterialTheme.colorScheme.background == DarkScheme.background) {
+        ChargeColors(shopSupplies = Color(0xFF3987E5), tax = Color(0xFFC98500), fees = Color(0xFF199E70))
+    } else {
+        ChargeColors(shopSupplies = Color(0xFF2A78D6), tax = Color(0xFFEDA100), fees = Color(0xFF1BAF7A))
+    }

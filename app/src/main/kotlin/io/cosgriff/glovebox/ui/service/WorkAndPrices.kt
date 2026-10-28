@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -48,12 +49,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.CostBreakdown
+import io.cosgriff.glovebox.domain.GapKind
 import io.cosgriff.glovebox.domain.JobDraft
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.components.WorkedOutTag
 import io.cosgriff.glovebox.ui.theme.PlexMono
+import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlin.math.absoluteValue
 
 /** What a job is called: the shop's wording, or its lines joined ("Spark plugs + Ignition coils"). */
@@ -145,15 +148,35 @@ private fun JobRow(form: LogServiceForm, job: JobDraft<String>, others: List<Job
         if (open) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 PriceField(stringResource(R.string.prices_labor), heading, job.labor, { form.setLabor(job.id, it) }, Modifier.weight(1f))
-                PriceField(stringResource(R.string.prices_parts), heading, job.parts, { form.setParts(job.id, it) }, Modifier.weight(1f))
-            }
-            if (multi) {
-                TextButton(onClick = { form.split(job.id) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
-                    Text(stringResource(R.string.prices_separately), color = scheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
+                if (job.rows == null) {
+                    PriceField(stringResource(R.string.prices_parts), heading, job.parts, { form.setParts(job.id, it) }, Modifier.weight(1f))
+                } else {
+                    PartsFromRows(form, job, Modifier.weight(1f))
                 }
-            } else if (others.isNotEmpty()) {
-                PriceTogether(form, job, others)
             }
+            // The job's own actions in one row: grouping it, and itemizing its parts.
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                if (multi) {
+                    TextButton(onClick = { form.split(job.id) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
+                        Text(stringResource(R.string.prices_separately), color = scheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
+                    }
+                } else if (others.isNotEmpty()) {
+                    PriceTogether(form, job, others)
+                }
+                if (job.rows == null) {
+                    // Every job has this button: TalkBack says whose.
+                    val itemize = stringResource(R.string.prices_itemize)
+                    val described = stringResource(R.string.prices_field_for, itemize, heading)
+                    TextButton(
+                        onClick = { form.itemize(job.id) },
+                        modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = described },
+                        contentPadding = PaddingValues(horizontal = 0.dp),
+                    ) {
+                        Text(itemize, color = scheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+            PartRowsList(form, job)
         }
     }
 }
@@ -249,6 +272,10 @@ internal fun CostCard(form: LogServiceForm) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionLabel(stringResource(R.string.prices_cost_section))
         PricesCard {
+            if (form.pricesShown) {
+                Charges(form)
+                HorizontalDivider(color = scheme.outlineVariant)
+            }
             Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_total_cost))
                 OutlinedTextField(
@@ -266,6 +293,8 @@ internal fun CostCard(form: LogServiceForm) {
                 Text(
                     when {
                         !form.costValid -> stringResource(R.string.log_cost_error)
+                        breakdown != null && breakdown.totalCents == null && breakdown.charges.entered ->
+                            stringResource(R.string.prices_total_missing_charges, Money.format(breakdown.enteredCents))
                         breakdown != null && breakdown.totalCents == null -> stringResource(R.string.prices_total_missing, Money.format(breakdown.linesCents))
                         form.diy -> stringResource(R.string.prices_total_diy)
                         else -> stringResource(R.string.prices_total_shop)
@@ -279,6 +308,9 @@ internal fun CostCard(form: LogServiceForm) {
                 Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     AmountRow(stringResource(R.string.prices_labor_on_lines), breakdown.laborCents)
                     AmountRow(stringResource(R.string.prices_parts_on_lines), breakdown.partsCents)
+                    breakdown.charges.shopSuppliesCents?.let { AmountRow(stringResource(R.string.prices_shop_supplies), it) }
+                    breakdown.charges.taxCents?.let { AmountRow(stringResource(R.string.prices_tax), it) }
+                    breakdown.charges.feesCents?.let { AmountRow(stringResource(R.string.prices_fees), it) }
                     GapRow(breakdown)
                 }
             }
@@ -294,23 +326,78 @@ private fun AmountRow(label: String, cents: Long) {
     }
 }
 
-/** The gap on its tint, tagged as worked out, with what it is; nothing when there is none. */
+/**
+ * The gap on its tint, tagged as worked out, with what it is; when the figures add up to the total exactly, says
+ * so; nothing without a total.
+ */
 @Composable
 private fun GapRow(breakdown: CostBreakdown) {
-    val gap = breakdown.gapCents?.takeIf { it != 0L } ?: return
+    val gap = breakdown.gapCents ?: return
     val scheme = MaterialTheme.colorScheme
+    val kind = breakdown.gapKind
+    if (kind == null) {
+        Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Icon(Icons.Outlined.Check, contentDescription = null, tint = statusColors().ok, modifier = Modifier.size(16.dp))
+            Text(stringResource(R.string.prices_adds_up), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = statusColors().ok)
+        }
+        return
+    }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Surface(color = scheme.surfaceVariant, shape = MaterialTheme.shapes.extraSmall, modifier = Modifier.fillMaxWidth()) {
             Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(if (gap > 0) R.string.prices_tax_and_fees else R.string.prices_less_than_lines), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(kind.label()), style = MaterialTheme.typography.bodyMedium)
                 WorkedOutTag()
                 Text(Money.format(gap.absoluteValue), Modifier.weight(1f), fontFamily = PlexMono, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
             }
         }
         Text(
-            stringResource(if (gap > 0) R.string.prices_over_note else R.string.prices_under_note),
+            stringResource(
+                when {
+                    kind == GapKind.BELOW -> R.string.prices_under_note
+                    breakdown.charges.entered -> R.string.prices_charges_over_note
+                    else -> R.string.prices_over_note
+                },
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** What a gap is called. */
+internal fun GapKind.label(): Int = when (this) {
+    GapKind.TAX_AND_FEES -> R.string.prices_tax_and_fees
+    GapKind.OTHER_CHARGES -> R.string.prices_other_charges
+    GapKind.BELOW -> R.string.prices_less_than_lines
+}
+
+/** "On the whole invoice": shop supplies, tax, and fees and sublet, each its own figure, belonging to no job (#502). */
+@Composable
+private fun Charges(form: LogServiceForm) {
+    val scheme = MaterialTheme.colorScheme
+    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.prices_charges_title), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = scheme.onSurfaceVariant)
+        Text(stringResource(R.string.prices_charges_note), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        ChargeField(stringResource(R.string.prices_shop_supplies), form.shopSuppliesText) { form.shopSuppliesText = it }
+        ChargeField(stringResource(R.string.prices_tax), form.taxText) { form.taxText = it }
+        ChargeField(stringResource(R.string.prices_fees), form.feesText) { form.feesText = it }
+    }
+}
+
+@Composable
+private fun ChargeField(label: String, value: String, onValueChange: (String) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            prefix = { Text(stringResource(R.string.log_cost_prefix), fontFamily = PlexMono) },
+            singleLine = true,
+            isError = value.isNotBlank() && Money.parseCents(value.typedDecimal()) == null,
+            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            colors = fieldColors(),
+            modifier = Modifier.width(150.dp).height(56.dp).semantics { contentDescription = label },
         )
     }
 }

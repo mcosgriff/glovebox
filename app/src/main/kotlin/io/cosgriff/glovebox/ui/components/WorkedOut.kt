@@ -19,10 +19,14 @@ import io.cosgriff.glovebox.R
  * gap row and the record's cost breakdown.
  */
 @Composable
-internal fun WorkedOutTag(modifier: Modifier = Modifier) {
+internal fun WorkedOutTag(modifier: Modifier = Modifier) = DashedTag(stringResource(R.string.prices_worked_out), modifier)
+
+/** A small dashed tag saying what a figure is, not what it says: "worked out", "filled in", "from rows" (#502). */
+@Composable
+internal fun DashedTag(text: String, modifier: Modifier = Modifier) {
     val dash = MaterialTheme.colorScheme.onSurfaceVariant
     Text(
-        stringResource(R.string.prices_worked_out),
+        text,
         modifier
             .drawBehind {
                 drawRoundRect(
@@ -35,5 +39,6 @@ internal fun WorkedOutTag(modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
     )
 }
