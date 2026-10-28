@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.CostBreakdown
+import io.cosgriff.glovebox.domain.GapKind
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.ui.components.FilledCard
@@ -38,6 +41,9 @@ import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.components.WorkedOutTag
 import io.cosgriff.glovebox.ui.service.andList
 import io.cosgriff.glovebox.ui.service.asNumber
+import io.cosgriff.glovebox.ui.service.label
+import io.cosgriff.glovebox.ui.service.quantityText
+import io.cosgriff.glovebox.ui.theme.chargeColors
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlin.math.absoluteValue
@@ -60,6 +66,7 @@ internal fun WorkJobRow(job: WorkJob) {
             if (job.priced) Category(single)
             Prices(job)
             Note(single)
+            PartsAsPrinted(job)
         } else {
             Prices(job)
             // The job's lines on a 2dp rule, each with what it means for its reminder.
@@ -75,6 +82,41 @@ internal fun WorkJobRow(job: WorkJob) {
                             Note(line)
                         }
                     }
+                }
+            }
+            // After the lines, as on the board: what was fitted is read after what it was for.
+            PartsAsPrinted(job)
+        }
+    }
+}
+
+/** "Parts as printed" (#502): each row's wording, figures and line, and its total, on a quiet tint. */
+@Composable
+private fun PartsAsPrinted(job: WorkJob) {
+    if (job.rows.isEmpty()) return
+    val scheme = MaterialTheme.colorScheme
+    Surface(color = scheme.surfaceVariant, shape = MaterialTheme.shapes.extraSmall, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+        Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            SectionLabel(stringResource(R.string.prices_parts_as_printed))
+            job.rows.forEach { row ->
+                val figures = when {
+                    row.quantityMilli != null && row.eachCents != null -> stringResource(R.string.prices_row_qty_each, quantityText(row.quantityMilli), Money.format(row.eachCents))
+                    row.quantityMilli != null -> stringResource(R.string.prices_row_qty_only, quantityText(row.quantityMilli))
+                    row.eachCents != null -> stringResource(R.string.prices_row_each_only, Money.format(row.eachCents))
+                    else -> null
+                }
+                // In a job of several lines, an untagged row is for the whole job, and says so.
+                val line = row.line ?: stringResource(R.string.prices_row_whole_job).takeIf { job.lines.size > 1 }
+                val detail = when {
+                    figures != null && line != null -> stringResource(R.string.prices_row_detail, figures, line)
+                    else -> figures ?: line
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(row.wording ?: stringResource(R.string.prices_row_unnamed), style = MaterialTheme.typography.bodyMedium)
+                        detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+                    }
+                    Text(row.totalCents?.let(Money::format) ?: "—", fontFamily = PlexMono)
                 }
             }
         }
@@ -114,26 +156,33 @@ private fun Prices(job: WorkJob) {
 @Composable
 internal fun CostBreakdownCard(breakdown: CostBreakdown, unpriced: List<String>) {
     val scheme = MaterialTheme.colorScheme
-    // Labor in ink's softer step, parts in the accent: the board's two fills.
-    val labor = statusColors().soon
-    val parts = scheme.primary
     val gap = breakdown.gapCents?.takeIf { it != 0L }
     val shares = breakdown.shares
+    val c = breakdown.charges
+    // Labor in ink's softer step, parts in the accent: the board's two fills, and the charges' three beside them.
+    val fills = chargeColors()
+    val parts = listOfNotNull(
+        Part(stringResource(R.string.prices_labor), breakdown.laborCents, shares.labor, statusColors().soon),
+        Part(stringResource(R.string.prices_parts), breakdown.partsCents, shares.parts, scheme.primary),
+        c.shopSuppliesCents?.let { Part(stringResource(R.string.prices_shop_supplies), it, shares.shopSupplies, fills.shopSupplies) },
+        c.taxCents?.let { Part(stringResource(R.string.prices_tax), it, shares.tax, fills.tax) },
+        c.feesCents?.let { Part(stringResource(R.string.prices_fees), it, shares.fees, fills.fees) },
+    )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel(stringResource(R.string.prices_breakdown_section))
         FilledCard(padding = PaddingValues(16.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(Modifier.fillMaxWidth().height(12.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    if (breakdown.laborCents > 0) Box(Modifier.weight(breakdown.laborCents.toFloat()).fillMaxHeight().background(labor, BarShape))
-                    if (breakdown.partsCents > 0) Box(Modifier.weight(breakdown.partsCents.toFloat()).fillMaxHeight().background(parts, BarShape))
-                    if (gap != null && gap > 0) Box(Modifier.weight(gap.toFloat()).fillMaxHeight().dashed(scheme.onSurfaceVariant))
+                    // Every part at least 4dp wide, so a small charge still shows.
+                    parts.filter { it.cents > 0 }.forEach { Box(Modifier.weight(it.cents.toFloat()).widthIn(min = 4.dp).fillMaxHeight().background(it.color, BarShape)) }
+                    if (gap != null && gap > 0) Box(Modifier.weight(gap.toFloat()).widthIn(min = 4.dp).fillMaxHeight().dashed(scheme.onSurfaceVariant))
                 }
-                ShareRow({ Box(Modifier.size(12.dp).background(labor, BarShape)) }, stringResource(R.string.prices_labor), shares.labor, breakdown.laborCents)
-                ShareRow({ Box(Modifier.size(12.dp).background(parts, BarShape)) }, stringResource(R.string.prices_parts), shares.parts, breakdown.partsCents)
-                if (gap != null) {
+                parts.forEach { ShareRow({ Box(Modifier.size(12.dp).background(it.color, BarShape)) }, it.label, it.share, it.cents) }
+                val kind = breakdown.gapKind
+                if (gap != null && kind != null) {
                     ShareRow(
                         { Box(Modifier.size(12.dp).dashed(scheme.onSurfaceVariant)) },
-                        stringResource(if (gap > 0) R.string.prices_tax_and_fees else R.string.prices_less_than_lines),
+                        stringResource(kind.label()),
                         shares.gap.takeIf { gap > 0 },
                         gap.absoluteValue,
                         workedOut = true,
@@ -147,10 +196,11 @@ internal fun CostBreakdownCard(breakdown: CostBreakdown, unpriced: List<String>)
                     }
                 }
                 val notes = listOfNotNull(
-                    when {
-                        gap == null -> null
-                        gap > 0 -> stringResource(R.string.prices_record_over_note)
-                        else -> stringResource(R.string.prices_record_under_note, Money.format(gap.absoluteValue))
+                    when (kind) {
+                        null -> null
+                        GapKind.BELOW -> stringResource(R.string.prices_record_under_note, Money.format(gap!!.absoluteValue))
+                        GapKind.TAX_AND_FEES -> stringResource(if (c.entered) R.string.prices_record_charges_tax_note else R.string.prices_record_over_note)
+                        GapKind.OTHER_CHARGES -> stringResource(R.string.prices_record_other_note)
                     },
                     unpriced.takeIf { it.isNotEmpty() }?.let { pluralStringResource(R.plurals.prices_unpriced, it.size, andList(it)) },
                 )
@@ -159,6 +209,9 @@ internal fun CostBreakdownCard(breakdown: CostBreakdown, unpriced: List<String>)
         }
     }
 }
+
+/** One fill of the breakdown bar with its row. */
+private data class Part(val label: String, val cents: Long, val share: Int, val color: Color)
 
 private val BarShape = RoundedCornerShape(2.dp)
 

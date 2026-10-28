@@ -14,7 +14,8 @@ the app has them now.
   label only**: it never puts a price on a line, for reminders, spending or anything else, and the job's labor
   is never split.
 - New table `service_record_job_parts`: `id`, `jobId` (FK to `service_record_jobs`, `ON DELETE CASCADE`),
-  `wording`, `quantity` (decimal as typed, text), `eachCents: Long?`, `totalCents: Long?`, `itemId: Long?`
+  `wording`, `quantityMilli: Long?` (thousandths, so "4.5" reads back exactly in any locale), `eachCents: Long?`,
+  `totalCents: Long?`, `itemId: Long?`
   (FK to `service_record_items`, `ON DELETE SET NULL`), `position`.
 - A job with part rows stores no `partsCents`: its parts figure is **the sum of its rows' totals, worked out
   on every read**. A row without a total is left out of that sum and said so; nothing is assumed (no

@@ -180,13 +180,37 @@ class ScreensScreenshotTest(private val shade: Shade) {
 
     @Test
     fun logServicePrices() {
-        // Made once, as below. Only the two price sections: the whole form is taller than the window.
+        // Made once, as below. Only the two price sections, each in a shot of its own: together they are taller
+        // than the window.
         val form = Fixtures.logServicePriced()
         compose.shoot("log_service_prices", shade) {
-            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
-                WorkAndPrices(form)
-                CostCard(form)
-            }
+            Column(Modifier.padding(20.dp)) { WorkAndPrices(form) }
+        }
+    }
+
+    @Test
+    fun logServiceCost() {
+        val form = Fixtures.logServicePriced()
+        compose.shoot("log_service_cost", shade) {
+            Column(Modifier.padding(20.dp)) { CostCard(form) }
+        }
+    }
+
+    /** Part rows open and closed, a figure filled in and one left blank (#502). */
+    @Test
+    fun logServicePartRows() {
+        val form = Fixtures.logServiceItemized()
+        compose.shoot("log_service_part_rows", shade) {
+            Column(Modifier.padding(20.dp)) { WorkAndPrices(form) }
+        }
+    }
+
+    /** The invoice's charges, and everything adding up to the total (#502). */
+    @Test
+    fun logServiceCharges() {
+        val form = Fixtures.logServiceItemized()
+        compose.shoot("log_service_charges", shade) {
+            Column(Modifier.padding(20.dp)) { CostCard(form) }
         }
     }
 
@@ -334,6 +358,14 @@ class ScreensScreenshotTest(private val shade: Shade) {
     fun recordPriced() = compose.shoot("record_priced", shade) {
         RecordDetailContent(
             Fixtures.recordPriced, photoProblem = null,
+            onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
+        )
+    }
+
+    @Test
+    fun recordPartRows() = compose.shoot("record_part_rows", shade) {
+        RecordDetailContent(
+            Fixtures.recordItemized, photoProblem = null,
             onBack = {}, onEdit = { _, _ -> }, onOpenPhoto = { _, _ -> }, onTakePhoto = {}, onChoosePhotos = {}, onDelete = {},
         )
     }

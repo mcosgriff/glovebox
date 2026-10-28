@@ -257,8 +257,9 @@ interface ServiceDao {
     suspend fun recordsFor(vehicleId: Long): List<ServiceRecordWithItems>
 
     @Insert suspend fun insertRecord(record: ServiceRecordEntity): Long
-    @Insert suspend fun insertItems(items: List<ServiceRecordItemEntity>)
+    @Insert suspend fun insertItems(items: List<ServiceRecordItemEntity>): List<Long>
     @Insert suspend fun insertJob(job: ServiceRecordJobEntity): Long
+    @Insert suspend fun insertParts(parts: List<ServiceRecordJobPartEntity>)
     @Update suspend fun updateRecord(record: ServiceRecordEntity)
     @Query("DELETE FROM service_record_items WHERE recordId = :recordId")
     suspend fun clearItems(recordId: Long)
@@ -267,27 +268,52 @@ interface ServiceDao {
 
     /**
      * [jobs] keep the ids [items] point at them by (`jobId`) only to match them up: each is written under a new
-     * id, and its lines follow it. A line pointing at no job given has no price.
+     * id, and its lines follow it. A line pointing at no job given has no price. [parts] (#502) point at their
+     * job by `jobId` and at a line by `itemId` the same way: a line's id only matches it up when it isn't 0.
      */
     @Transaction
-    suspend fun insertWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity> = emptyList()): Long {
+    suspend fun insertWithItems(
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
+    ): Long {
         val id = insertRecord(record)
-        insertItemsAndJobs(id, items, jobs)
+        insertItemsAndJobs(id, items, jobs, parts)
         return id
     }
 
-    /** Edit = replace the record, its items and its jobs atomically. Reminders recompute from the log. */
+    /** Edit = replace the record, its items, its jobs and their parts atomically. Reminders recompute from the log. */
     @Transaction
-    suspend fun replaceWithItems(record: ServiceRecordEntity, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity> = emptyList()) {
+    suspend fun replaceWithItems(
+        record: ServiceRecordEntity,
+        items: List<ServiceRecordItemEntity>,
+        jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
+    ) {
         updateRecord(record)
         clearItems(record.id)
+        // The jobs' parts go with them (ON DELETE CASCADE).
         clearJobs(record.id)
-        insertItemsAndJobs(record.id, items.map { it.copy(id = 0) }, jobs)
+        insertItemsAndJobs(record.id, items, jobs, parts)
     }
 
-    private suspend fun insertItemsAndJobs(recordId: Long, items: List<ServiceRecordItemEntity>, jobs: List<ServiceRecordJobEntity>) {
-        val ids = jobs.associate { it.id to insertJob(it.copy(id = 0, recordId = recordId)) }
-        insertItems(items.map { it.copy(recordId = recordId, jobId = it.jobId?.let(ids::get)) })
+    private suspend fun insertItemsAndJobs(
+        recordId: Long,
+        items: List<ServiceRecordItemEntity>,
+        jobs: List<ServiceRecordJobEntity>,
+        parts: List<ServiceRecordJobPartEntity>,
+    ) {
+        val jobIds = jobs.associate { it.id to insertJob(it.copy(id = 0, recordId = recordId)) }
+        val written = insertItems(items.map { it.copy(id = 0, recordId = recordId, jobId = it.jobId?.let(jobIds::get)) })
+        val itemIds = items.zip(written).filter { (item, _) -> item.id != 0L }.associate { (item, id) -> item.id to id }
+        insertParts(
+            parts.mapNotNull { part ->
+                // A part whose job wasn't given has nothing to belong to.
+                val jobId = jobIds[part.jobId] ?: return@mapNotNull null
+                part.copy(id = 0, jobId = jobId, itemId = part.itemId?.let(itemIds::get))
+            },
+        )
     }
 
     @Delete suspend fun deleteRecord(record: ServiceRecordEntity)
@@ -318,8 +344,8 @@ interface ServiceDao {
      */
     @Transaction
     suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) {
-        added.forEach { (record, items, jobs) -> insertWithItems(record, items, jobs) }
-        replaced.forEach { (record, items, jobs) -> replaceWithItems(record, items, jobs) }
+        added.forEach { (record, items, jobs, parts) -> insertWithItems(record, items, jobs, parts) }
+        replaced.forEach { (record, items, jobs, parts) -> replaceWithItems(record, items, jobs, parts) }
     }
 
     @Insert suspend fun insertPhotos(photos: List<PhotoEntity>)
@@ -641,8 +667,16 @@ interface MilestoneDao {
 /** A row's id and one whole-number column of it. */
 data class IdValue(val id: Long, val value: Int?)
 
-/** A record with its lines and jobs, to be written together; [items] point at [jobs] by `jobId` as [ServiceDao.insertWithItems] says. */
-data class RecordRows(val record: ServiceRecordEntity, val items: List<ServiceRecordItemEntity>, val jobs: List<ServiceRecordJobEntity> = emptyList())
+/**
+ * A record with its lines, jobs and their part rows, to be written together; [items] and [parts] point at [jobs]
+ * by `jobId` (and [parts] at [items] by `itemId`) as [ServiceDao.insertWithItems] says.
+ */
+data class RecordRows(
+    val record: ServiceRecordEntity,
+    val items: List<ServiceRecordItemEntity>,
+    val jobs: List<ServiceRecordJobEntity> = emptyList(),
+    val parts: List<ServiceRecordJobPartEntity> = emptyList(),
+)
 
 /** A shop as one record names it. */
 data class ShopRow(val name: String, val date: LocalDate, val id: Long)

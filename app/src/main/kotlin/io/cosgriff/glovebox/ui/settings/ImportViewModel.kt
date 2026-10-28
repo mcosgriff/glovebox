@@ -31,6 +31,7 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.RecordRows
 import io.cosgriff.glovebox.data.db.TorqueDao
@@ -42,7 +43,9 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
 import io.cosgriff.glovebox.domain.ImportedRecord
+import io.cosgriff.glovebox.domain.InvoiceCharges
 import io.cosgriff.glovebox.domain.JobSummary
+import io.cosgriff.glovebox.domain.PartSummary
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
 import io.cosgriff.glovebox.domain.TableJob
@@ -406,7 +409,14 @@ class ImportViewModel @Inject constructor(
                 costCents = r.record.costCents,
                 notes = r.record.notes,
                 enteredAsLastDone = r.record.enteredAsLastDone,
-                jobs = r.jobs.map { j -> JobSummary(j.wording, j.laborCents, j.partsCents, r.items.filter { it.jobId == j.id }.map { it.label }) },
+                jobs = r.jobs.map { j ->
+                    val labels = r.items.associate { it.id to it.label }
+                    JobSummary(
+                        j.wording, j.laborCents, j.partsCents, r.items.filter { it.jobId == j.id }.map { it.label },
+                        r.parts.filter { it.jobId == j.id }.map { PartSummary(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.itemId?.let(labels::get)) },
+                    )
+                },
+                charges = InvoiceCharges(r.record.shopSuppliesCents, r.record.taxCents, r.record.feesCents),
             )
         }
         // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
@@ -440,21 +450,34 @@ class ImportViewModel @Inject constructor(
             },
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            // The file's jobs are numbered from 1 for their lines to point at; the write gives them ids of their own.
-            // A file that says nothing about prices leaves a replaced record's jobs on the same lines.
+            // The file's jobs and lines are numbered from 1 for the lines and part rows to point at; the write gives
+            // them ids of their own. A file that says nothing about prices leaves a replaced record's jobs, and their
+            // part rows, on the same lines (each line keeping its saved id to be matched up by), and one that names no
+            // charge keeps the saved charges.
             fun rows(record: ServiceRecordEntity, r: ImportedRecord, mine: ServiceRecordWithItems? = null): RecordRows {
-                val kept = mine?.let { m -> HistoryImport.keptJobs(r, m.items.map { it.label to it.jobId }) }
+                val kept = mine?.let { m -> HistoryImport.keptJobs(r, m.items.map { it.label to (it.jobId to it.id) }) }
                 val lines = r.work.mapIndexed { i, line ->
                     val w = HistoryImport.resolve(line, refs)
-                    val job = if (kept != null) kept[i] else line.job?.let { it + 1L }
-                    ServiceRecordItemEntity(recordId = 0, scheduleItemId = w.scheduleItemId, label = w.label, catalogId = w.catalogId, jobId = job)
+                    val (job, id) = if (kept != null) kept[i] ?: (null to i + 1L) else line.job?.let { it + 1L } to i + 1L
+                    ServiceRecordItemEntity(id = id, recordId = 0, scheduleItemId = w.scheduleItemId, label = w.label, catalogId = w.catalogId, jobId = job)
                 }
-                val jobs = if (kept != null && mine != null) {
-                    mine.jobs
-                } else {
-                    r.jobs.mapIndexed { i, j -> ServiceRecordJobEntity(id = i + 1L, recordId = 0, wording = j.wording, laborCents = j.laborCents, partsCents = j.partsCents, position = i) }
+                val charged = mine?.let { m ->
+                    val c = HistoryImport.keptCharges(r, InvoiceCharges(m.record.shopSuppliesCents, m.record.taxCents, m.record.feesCents))
+                    record.copy(shopSuppliesCents = c.shopSuppliesCents, taxCents = c.taxCents, feesCents = c.feesCents)
+                } ?: record.copy(shopSuppliesCents = r.charges.shopSuppliesCents, taxCents = r.charges.taxCents, feesCents = r.charges.feesCents)
+                if (kept != null && mine != null) return RecordRows(charged, lines, mine.jobs, mine.parts)
+                val jobs = r.jobs.mapIndexed { i, j -> ServiceRecordJobEntity(id = i + 1L, recordId = 0, wording = j.wording, laborCents = j.laborCents, partsCents = j.partsCents, position = i) }
+                // A row's line is its index among its own job's lines; the line's id is its place among the record's.
+                val parts = r.jobs.flatMapIndexed { j, job ->
+                    val own = r.work.withIndex().filter { it.value.job == j }.map { it.index + 1L }
+                    job.rows.mapIndexed { k, row ->
+                        ServiceRecordJobPartEntity(
+                            jobId = j + 1L, wording = row.wording, quantityMilli = row.quantityMilli, eachCents = row.eachCents,
+                            totalCents = row.totalCents, itemId = row.line?.let(own::getOrNull), position = k,
+                        )
+                    }
                 }
-                return RecordRows(record, lines, jobs)
+                return RecordRows(charged, lines, jobs, parts)
             }
             val added = plan.new.map { r ->
                 rows(ServiceRecordEntity(

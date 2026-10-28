@@ -54,7 +54,7 @@ class MigrationTest {
 
     /** Parents before children, so every foreign key points at a row that is there. */
     private val order = listOf(
-        "vehicles", "odometer_readings", "schedule_items", "service_records", "service_record_jobs", "service_record_items",
+        "vehicles", "odometer_readings", "schedule_items", "service_records", "service_record_jobs", "service_record_items", "service_record_job_parts",
         "photos", "torque_specs", "recalls", "milestones", "milestone_jobs", "documents", "catalog_rules",
         "recall_names",
     )
@@ -186,6 +186,9 @@ class MigrationTest {
             // A line from before job prices has none.
             assertEquals(null, db.service().record(1)!!.items.single().jobId)
             assertEquals(emptyList<ServiceRecordJobEntity>(), db.service().record(1)!!.jobs)
+            // Nor any part rows or invoice charges (#502): not entered, never zero.
+            assertEquals(emptyList<ServiceRecordJobPartEntity>(), db.service().record(1)!!.parts)
+            db.service().record(1)!!.record.let { assertEquals(listOf(null, null, null), listOf(it.shopSuppliesCents, it.taxCents, it.feesCents)) }
         }
         db.close()
     }

@@ -15,6 +15,7 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
+import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
@@ -90,8 +91,9 @@ class RecordActions @Inject constructor(
         items: List<ServiceRecordItemEntity>,
         photoFiles: List<String> = emptyList(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
     ) {
-        val id = writer.add(record, items, photoFiles, jobs)
+        val id = writer.add(record, items, photoFiles, jobs, parts)
         _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
@@ -131,8 +133,9 @@ class RecordActions @Inject constructor(
         addedPhotos: List<String> = emptyList(),
         removedPhotoIds: Set<Long> = emptySet(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
+        parts: List<ServiceRecordJobPartEntity> = emptyList(),
     ) {
-        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs)
+        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
         _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
     }

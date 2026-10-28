@@ -1067,6 +1067,79 @@
         <item quantity="one">%1$s has no price listed.</item>
         <item quantity="other">%1$s have no price listed.</item>
     </plurals>
+    <!-- Part rows inside a job and the invoice's own charges (#502). -->
+    <string name="prices_itemize">Itemize parts</string>
+    <!-- %1$s is how many part rows. -->
+    <plurals name="prices_rows_section">
+        <item quantity="one">PARTS · %1$s ROW</item>
+        <item quantity="other">PARTS · %1$s ROWS</item>
+    </plurals>
+    <string name="prices_rows_as_printed">As printed on the invoice</string>
+    <string name="prices_rows_expand_all">Expand all</string>
+    <string name="prices_rows_collapse_all">Collapse all</string>
+    <!-- Tag on a job's parts figure while it is the sum of its rows. -->
+    <string name="prices_rows_from">from rows</string>
+    <string name="prices_row_part">Part</string>
+    <string name="prices_row_qty">Qty</string>
+    <string name="prices_row_each">Each</string>
+    <string name="prices_row_total">Total</string>
+    <string name="prices_row_for">For line</string>
+    <string name="prices_row_whole_job">Whole job</string>
+    <string name="prices_row_unnamed">Unnamed part</string>
+    <string name="prices_row_nothing">Nothing typed yet</string>
+    <!-- %1$s is a quantity, %2$s a price each, in dollars. -->
+    <string name="prices_row_qty_each">%1$s × %2$s</string>
+    <!-- %1$s is a quantity. -->
+    <string name="prices_row_qty_only">Qty %1$s</string>
+    <!-- %1$s is a price, in dollars. -->
+    <string name="prices_row_each_only">%1$s each</string>
+    <!-- %1$s is the row's figures, %2$s the line it is for or prices_row_whole_job. -->
+    <string name="prices_row_detail">%1$s · %2$s</string>
+    <string name="prices_row_add">+ Add part row</string>
+    <!-- %1$s is the part's name or prices_row_unnamed. -->
+    <string name="prices_row_edit">Edit %1$s</string>
+    <string name="prices_row_done">Done editing %1$s</string>
+    <string name="prices_row_remove">Remove %1$s</string>
+    <!-- %1$s is the field (Qty, Each, Total), %2$s the part's name or prices_row_unnamed. -->
+    <string name="prices_row_field_for">%1$s, %2$s</string>
+    <string name="prices_row_tag_filled">filled in</string>
+    <string name="prices_row_tag_blank">left blank</string>
+    <string name="prices_row_tag_no_total">no total</string>
+    <string name="prices_row_tag_mismatch">doesn’t match</string>
+    <!-- %1$s is a quantity, %2$s a price each. -->
+    <string name="prices_row_filled_total">Total is %1$s × %2$s.</string>
+    <!-- %1$s is a total, %2$s a quantity. -->
+    <string name="prices_row_filled_each">Each is %1$s ÷ %2$s.</string>
+    <!-- %1$s is a total, %2$s a price each. -->
+    <string name="prices_row_filled_qty">Qty is %1$s ÷ %2$s.</string>
+    <!-- %1$s is a total, %2$s a quantity. -->
+    <string name="prices_row_blank_each">%1$s ÷ %2$s isn’t whole cents.</string>
+    <!-- %1$s is a quantity, %2$s a price each. -->
+    <string name="prices_row_blank_total">%1$s × %2$s isn’t whole cents.</string>
+    <!-- %1$s is a total, %2$s a price each. -->
+    <string name="prices_row_blank_qty">%1$s ÷ %2$s doesn’t come out exact.</string>
+    <string name="prices_row_no_total">Left out of the parts figure.</string>
+    <!-- %1$s is a quantity, %2$s a price each, %3$s what they make, %4$s the total as typed. -->
+    <string name="prices_row_mismatch">%1$s × %2$s is %3$s, not %4$s. The total as printed is what counts.</string>
+    <!-- %1$s is how many rows. -->
+    <plurals name="prices_rows_missing">
+        <item quantity="one">%1$s row has no total, so it isn’t in the parts figure.</item>
+        <item quantity="other">%1$s rows have no total, so they aren’t in the parts figure.</item>
+    </plurals>
+    <string name="prices_charges_title">On the whole invoice</string>
+    <string name="prices_charges_note">Not part of any job. Leave a figure blank if the invoice doesn’t print it.</string>
+    <string name="prices_shop_supplies">Shop supplies</string>
+    <string name="prices_tax">Tax</string>
+    <string name="prices_fees">Fees and sublet</string>
+    <!-- What is left of the total once tax or fees are entered. -->
+    <string name="prices_other_charges">Other charges</string>
+    <string name="prices_charges_over_note">The total minus the figures above. Worked out, not typed.</string>
+    <!-- %1$s is what the figures add up to, in dollars. -->
+    <string name="prices_total_missing_charges">The figures above add up to %1$s. Type the invoice total if you have it.</string>
+    <string name="prices_adds_up">Adds up to the total</string>
+    <string name="prices_parts_as_printed">PARTS AS PRINTED</string>
+    <string name="prices_record_charges_tax_note">Tax and fees is the total minus the figures above.</string>
+    <string name="prices_record_other_note">Other charges is the total minus the figures above.</string>
     <string name="log_tab_open">open</string>
     <plurals name="log_tab_ticked">
         <item quantity="one">%1$s ticked</item>
@@ -2420,6 +2493,14 @@
     <string name="export_tax_and_fees">Tax and fees (worked out)</string>
     <!-- The total falls short of the line prices; no cause is named. -->
     <string name="export_less_than_lines">Less than the line prices (worked out)</string>
+    <!-- %1$s is a part row's quantity, %2$s its price each (#502). -->
+    <string name="export_part_qty_each">%1$s × %2$s</string>
+    <string name="export_part_qty">Qty %1$s</string>
+    <string name="export_part_each">%1$s each</string>
+    <string name="export_shop_supplies">Shop supplies</string>
+    <string name="export_tax">Tax</string>
+    <string name="export_fees">Fees and sublet</string>
+    <string name="export_other_charges">Other charges (worked out)</string>
     <string name="export_imported_note">Imported by the owner from a file; not logged in Glovebox at the time.</string>
     <string name="export_schedule_note">Intervals are the ones the owner set in Glovebox, not the manufacturer\'s schedule.</string>
     <string name="export_takes_note">Entered by the owner from their manuals and the parts they use; Glovebox hasn\'t checked them against the vehicle.</string>

@@ -20,8 +20,8 @@ import java.time.LocalDate
  * it reads every version from 1 up to it, each exactly as that version is specified.
  */
 enum class ImportKind(val id: String, val version: Int = 1) {
-    /** Version 2 adds a record's priced jobs (#481). */
-    SERVICE_HISTORY("service-history", 2),
+    /** Version 2 adds a record's priced jobs (#481); version 3 a job's part rows and the invoice's charges (#502). */
+    SERVICE_HISTORY("service-history", 3),
     INTERVAL_SCHEDULE("interval-schedule"),
     MILESTONE_SCHEDULE("milestone-schedule"),
     TORQUE_SPECS("torque-specs"),

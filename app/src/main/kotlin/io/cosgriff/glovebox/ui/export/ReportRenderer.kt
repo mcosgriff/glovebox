@@ -618,7 +618,8 @@ class ReportRenderer(private val fonts: ReportFonts) {
     }
 
     /**
-     * Who did the work, its cost, the labor and parts on its lines when any are entered (#481), and its photos; in a
+     * Who did the work, its cost, the labor and parts on its lines when any are entered (#481), the invoice's charges
+     * (#502), and its photos; in a
      * visit, the record's own date and reading where they differ. One line, wrapped to [width] when it runs over.
      */
     private fun meta(r: ExportRecord, entry: List<ExportRecord>, unit: DistanceUnit, width: Float): Block {
@@ -634,6 +635,10 @@ class ReportRenderer(private val fonts: ReportFonts) {
             // Each only when some job has it: a labor never entered isn't a labor of $0.00.
             b?.takeIf { r.jobs.any { it.laborCents != null } }?.let { words.phrase(ExportPhrase.JOB_LABOR, words.money(it.laborCents)) },
             b?.takeIf { r.jobs.any { it.partsCents != null } }?.let { words.phrase(ExportPhrase.JOB_PARTS, words.money(it.partsCents)) },
+            // The invoice's own charges (#502), each only when entered.
+            r.charges.shopSuppliesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.SHOP_SUPPLIES), words.money(it)) },
+            r.charges.taxCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.TAX), words.money(it)) },
+            r.charges.feesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.FEES), words.money(it)) },
             photoCount(r.photoFiles.size),
         )
         val p = paint(12f, fonts.sans, INK2)

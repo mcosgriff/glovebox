@@ -34,7 +34,7 @@ import androidx.compose.ui.semantics.stateDescription
 import io.cosgriff.glovebox.domain.HistoryOrder
 import io.cosgriff.glovebox.domain.HistoryOrdering
 import io.cosgriff.glovebox.domain.HistorySort
-import io.cosgriff.glovebox.domain.JobPrice
+import io.cosgriff.glovebox.data.db.jobPrices
 import io.cosgriff.glovebox.domain.Spending
 import io.cosgriff.glovebox.domain.HistorySearch
 import io.cosgriff.glovebox.domain.SearchableRecord
@@ -352,7 +352,7 @@ internal fun HistoryContent(
     // The spending line is the list's; the timeline shows time, not money.
     val spending = if (filter == null && !searching && !timeline) Spending.summary(state.records, today, { it.record.date }, { it.record.costCents }) else null
     // Labor and parts under it (#485), over the same records, and only while it shows.
-    val split = spending?.let { Spending.split(state.records) { r -> r.jobs.map { JobPrice(it.laborCents, it.partsCents) } } }
+    val split = spending?.let { Spending.split(state.records) { r -> r.jobPrices } }
 
     // A new order starts at the top. Without this the list would hold on to the record that was first and
     // follow it to wherever it now sorts; coming back from a record keeps the place, since that is a new composition.

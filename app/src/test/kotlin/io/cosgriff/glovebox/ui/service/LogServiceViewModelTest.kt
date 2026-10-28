@@ -22,6 +22,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import io.cosgriff.glovebox.domain.PartField
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -220,6 +221,62 @@ class LogServiceViewModelTest {
             listOf(listOf("oil", "rotation") to ("40.00" to "55.50"), listOf(customKey("Wiper fluid")) to ("" to "")),
             edit.form.jobs.map { it.lines to (it.labor to it.parts) },
         )
+    }
+
+    @Test
+    fun `part rows and charges are saved as typed, and an edit opens on them`() = runBlocking {
+        val (car, _, _) = truck()
+        val vm = loaded(LogServiceRoute(car))
+        val form = vm.form
+        form.odometerText = "53,000"
+        form.toggle("oil")
+        form.toggle("rotation")
+        form.diy = false
+        // Made-up figures: the oil change and the rotation as one job, its parts itemized.
+        val byLine = form.jobs.associateBy { it.lines.single() }
+        form.join(byLine.getValue("rotation").id, byLine.getValue("oil").id)
+        val job = byLine.getValue("oil").id
+        form.setLabor(job, "40")
+        form.setParts(job, "36.00")
+        form.itemize(job)
+        val oil = form.jobs.single { it.id == job }.rows!!.single().id
+        // The parts figure typed before became the first row's total; two figures fill the third when exact.
+        form.nameRow(job, oil, "Synthetic oil")
+        form.typeRow(job, oil, PartField.QUANTITY, "4.5")
+        assertEquals("8.00", form.jobs.single { it.id == job }.rows!!.single().each)
+        form.tagRow(job, oil, "oil")
+        form.addRow(job)
+        val filter = form.jobs.single { it.id == job }.rows!!.last().id
+        form.nameRow(job, filter, "Oil filter")
+        form.typeRow(job, filter, PartField.EACH, "11.50")
+        form.shopSuppliesText = "4.25"
+        form.costText = "80.25"
+        // A row with no total is left out of the parts figure: labor, oil and supplies make the total.
+        assertEquals(0L, form.breakdown!!.gapCents)
+        var done = false
+        vm.save { done = true }
+        awaitUntil("the save") { done }
+
+        val saved = t.db.service().recordsFor(car).maxBy { it.record.date }
+        assertEquals(425L, saved.record.shopSuppliesCents)
+        assertNull(saved.record.taxCents)
+        val written = saved.jobs.single()
+        // The rows make the parts figure, so none is stored.
+        assertNull(written.partsCents)
+        val rows = saved.parts.sortedBy { it.position }
+        assertEquals(listOf("Synthetic oil", "Oil filter"), rows.map { it.wording })
+        assertEquals(listOf(4_500L, null), rows.map { it.quantityMilli })
+        assertEquals(listOf(800L, 1_150L), rows.map { it.eachCents })
+        assertEquals(listOf(3_600L, null), rows.map { it.totalCents })
+        assertEquals(listOf("oil", null), rows.map { r -> saved.items.firstOrNull { it.id == r.itemId }?.catalogId })
+
+        val edit = loaded(LogServiceRoute(car, recordId = saved.record.id))
+        awaitUntil("the edit to load") { edit.form.data != null }
+        assertEquals("4.25", edit.form.shopSuppliesText)
+        val opened = edit.form.jobs.single { it.rows != null }.rows!!
+        assertEquals(listOf("4.5" to "oil", "" to null), opened.map { it.quantity to it.line })
+        // Nothing is filled in on opening: the filter's total stays blank.
+        assertEquals("", opened[1].total)
     }
 
     @Test

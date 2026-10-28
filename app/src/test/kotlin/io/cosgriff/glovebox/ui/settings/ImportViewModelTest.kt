@@ -253,6 +253,42 @@ class ImportViewModelTest {
     }
 
     @Test
+    fun `a version-3 file brings its part rows in on their lines, and its charges`() = runTest {
+        val id = g.vehicle()
+        val vm = vm()
+        pick(example("service-history-itemized.json"))
+        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.ADD_NEW).added)
+        val record = g.db.service().recordsFor(id).single()
+        assertEquals(listOf(1_850L, 4_845L, null), record.record.let { listOf(it.shopSuppliesCents, it.taxCents, it.feesCents) })
+        val plugs = record.jobs.single { it.wording == "Remove & Replace Spark Plugs and Coils" }
+        assertEquals(null, plugs.partsCents)
+        val labels = record.items.associate { it.id to it.label }
+        val rows = record.parts.filter { it.jobId == plugs.id }.sortedBy { it.position }
+        assertEquals(listOf("Spark plug, iridium", "Ignition coil", "Dielectric grease"), rows.map { it.wording })
+        assertEquals(listOf("Spark plugs", "Ignition coils", null), rows.map { r -> r.itemId?.let(labels::get) })
+        assertEquals(4_500L, record.parts.single { it.wording == "Synthetic oil 0W-20" }.quantityMilli)
+    }
+
+    @Test
+    fun `replacing from a file that names no charge keeps the saved charges and part rows`() = runTest {
+        val id = g.vehicle()
+        val recordId = g.db.service().insertWithItems(
+            io.cosgriff.glovebox.data.db.ServiceRecordEntity(vehicleId = id, date = LocalDate.of(2023, 4, 2), odometer = 31_800, diy = false, shopName = "Somewhere", taxCents = 152),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordItemEntity(id = 5, recordId = 0, scheduleItemId = null, label = "Cabin air filter", jobId = 1)),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 1_000)),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity(jobId = 1, wording = "Made-up filter", totalCents = 1_899, itemId = 5)),
+        )
+        val vm = vm()
+        pick(example("service-history.json"))
+        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING).replaced)
+        val record = g.db.service().recordsFor(id).single { it.record.id == recordId }
+        assertEquals(152L, record.record.taxCents)
+        val part = record.parts.single()
+        assertEquals(record.jobs.single().id, part.jobId)
+        assertEquals(record.items.single().id, part.itemId)
+    }
+
+    @Test
     fun `a reading that looks mistyped is left out unless the user ticks it`() = runTest {
         val id = g.vehicle(firstReading = 30_000)
         g.db.odometer().insert(OdometerReadingEntity(vehicleId = id, date = LocalDate.of(2025, 6, 1), odometer = 52_000))

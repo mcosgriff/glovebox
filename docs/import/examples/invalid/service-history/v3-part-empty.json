@@ -1,0 +1,1 @@
+{"glovebox": "import", "version": 3, "kind": "service-history", "items": [{"date": "2024-03-01", "odometer": 41000, "jobs": [{"labor": "300.00", "partRows": [{"part": "", "total": "50.00"}], "work": [{"label": "Spark plugs", "service": "spark-plugs"}, {"label": "Ignition coils", "service": "ignition-coils"}]}], "doneBy": {"type": "shop"}}]}

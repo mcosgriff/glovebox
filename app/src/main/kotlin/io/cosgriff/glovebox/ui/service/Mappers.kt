@@ -360,6 +360,14 @@ fun String.typedDecimal(): String = replace(DecimalFormatSymbols.getInstance(App
 fun Double.editableDecimal(): String =
     java.math.BigDecimal.valueOf(this).stripTrailingZeros().toPlainString().replace('.', DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator)
 
+/** A quantity to show from thousandths, "4" or "4.5", in the app's locale. */
+fun quantityText(milli: Long): String =
+    java.text.NumberFormat.getNumberInstance(AppText.locale).apply { maximumFractionDigits = 3 }.format(java.math.BigDecimal.valueOf(milli, 3))
+
+/** A quantity to edit from thousandths, "4" or "5.7", with the app's decimal mark and no grouping, which [typedDecimal] reads back. */
+fun editableQuantity(milli: Long): String =
+    java.math.BigDecimal.valueOf(milli, 3).stripTrailingZeros().toPlainString().replace('.', DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator)
+
 /** A cost to edit, "45.99", with the app's decimal mark and no grouping, which [typedNumber] reads back. */
 fun editableCost(cents: Long): String =
     "${cents / 100}${DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator}${(cents % 100).toString().padStart(2, '0')}"
