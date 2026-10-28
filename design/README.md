@@ -64,15 +64,6 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | Prices · state: record with no prices | `screens/PricesRecordPlain.png` · `screens/PricesRecordPlainDark.png` | `source/PricesRecordPlain.dc.html` → imports `PricesRecord` |
 | Prices · state: record, total below the line prices | `screens/PricesRecordUnder.png` · `screens/PricesRecordUnderDark.png` | `source/PricesRecordUnder.dc.html` (+ `Dark`) → imports `PricesRecord` |
 | Prices B · Log service — price sheet per line (alternative, not chosen) | `screens/PricesLogB.png` · `screens/PricesLogBDark.png` | `source/PricesLogB.dc.html` |
-<<<<<<< Updated upstream
-| Parts · Log service — part rows (collapsible), supplies, tax and fees; jobs split by a band of page colour | `screens/PartsLog.png` · `screens/PartsLogDark.png` | `source/PartsLog.dc.html` |
-| Parts · Log service — a figure left blank, no total, mismatched row | `screens/PartsLogBlanks.png` · `screens/PartsLogBlanksDark.png` | `source/PartsLogBlanks.dc.html` → imports `PartsLog` |
-| Parts · Service record — part rows and charges | `screens/PartsRecord.png` · `screens/PartsRecordDark.png` | `source/PartsRecord.dc.html` |
-| Parts · Service record — other charges worked out | `screens/PartsRecordOther.png` · `screens/PartsRecordOtherDark.png` | `source/PartsRecordOther.dc.html` → imports `PartsRecord` |
-| Parts · Log service — picking a part: the job's lines, or type it as printed | `screens/PartsLogPick.png` · `screens/PartsLogPickDark.png` | `source/PartsLogPick.dc.html` (+ `Dark`) → imports `PartsLog` |
-| Parts · Edit service — odometer changed, what this changes | `screens/PartsEdit.png` · `screens/PartsEditDark.png` | `source/PartsEdit.dc.html` (+ `Dark`) → imports `PartsLog` |
-| Parts · Receipt viewer (tap a photo on a record) | `screens/ReceiptViewer.png` | `source/ReceiptViewer.dc.html` |
-=======
 | **5 · Log service — build this** (due-now chips, categories, who did it, part rows, charges, photos) | `screens/PartsLog.png` · `screens/PartsLogDark.png` | `source/PartsLog.dc.html` |
 | 5 · Log service — state: a figure left blank, no total, mismatched row | `screens/PartsLogBlanks.png` · `screens/PartsLogBlanksDark.png` | `source/PartsLogBlanks.dc.html` → imports `PartsLog` |
 | 5 · Log service — state: picking a part (the job's lines, or type it as printed) | `screens/PartsLogPick.png` · `screens/PartsLogPickDark.png` | `source/PartsLogPick.dc.html` → imports `PartsLog` |
@@ -80,7 +71,6 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 6a · Service record — state: other charges worked out | `screens/PartsRecordOther.png` · `screens/PartsRecordOtherDark.png` | `source/PartsRecordOther.dc.html` → imports `PartsRecord` |
 | **6c · Edit service — build this** (odometer "Was", what this changes, delete) | `screens/PartsEdit.png` · `screens/PartsEditDark.png` | `source/PartsEdit.dc.html` → imports `PartsLog` |
 | 6f · Receipt viewer (tap a photo on a record) | `screens/ReceiptViewer.png` | `source/ReceiptViewer.dc.html` |
->>>>>>> Stashed changes
 
 ## PDF report
 
