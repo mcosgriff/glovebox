@@ -160,6 +160,13 @@ fun ServiceCatalog.categoryOf(catalogId: String?): CatalogCategory? =
     catalogId?.let { id -> categories.firstOrNull { c -> c.items.any { it.id == id } } }
 
 /**
+ * The jobs of category [categoryId] that appear in [used] (catalog ids of logged lines), in catalog order:
+ * History's second row of filters, so one job (an oil change) can be shown without the rest of its category.
+ */
+fun ServiceCatalog.jobsIn(categoryId: String, used: Set<String>): List<CatalogItem> =
+    categories.firstOrNull { it.id == categoryId }?.items.orEmpty().filter { it.id in used }
+
+/**
  * The Log service line a bare "last done" stands for: the one that resets the typical item made
  * from [templateKey], or the one the user's own item answers to ([service]). Null for an item no
  * line covers.

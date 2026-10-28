@@ -365,6 +365,15 @@ object Fixtures {
         next = truckComingUp.next,
     )
 
+    /** The truck's records with an engine air filter done on its own, so Oil & engine has two jobs to choose between. */
+    val historyJobs: HistoryState = history.copy(
+        records = truckRecords + ServiceRecordWithItems(
+            ServiceRecordEntity(100, truck.id, TODAY.minusMonths(16), 53_200, diy = true),
+            listOf(ServiceRecordItemEntity(1_000, 100, null, "Engine air filter", "engine-air")),
+            emptyList(),
+        ),
+    )
+
     /**
      * History with line prices (#485) on two of the three records, made-up figures: the cabin filter priced in full,
      * the oil change and rotation with labor alone. The brake check has none.

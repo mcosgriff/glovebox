@@ -72,6 +72,13 @@ class HistoryTest {
     }
 
     @Test
+    fun `a category's jobs are the ones logged, in catalog order`() {
+        assertEquals(listOf("oil", "engine-air"), ServiceCatalog.jobsIn("engine", setOf("engine-air", "rotation", "oil", "nope")).map { it.id })
+        assertEquals(emptyList<CatalogItem>(), ServiceCatalog.jobsIn("brakes", setOf("oil")))
+        assertEquals(emptyList<CatalogItem>(), ServiceCatalog.jobsIn("nope", setOf("oil")))
+    }
+
+    @Test
     fun `last entry is the visit last done comes from`() {
         val entries = listOf(
             ServiceEntry(1, LocalDate.of(2026, 1, 5), 60_000, setOf(7L)),

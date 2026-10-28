@@ -260,6 +260,16 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** One job alone: Oil & engine chosen, and its oil change under it, so the air filter's record is left out. */
+    @Test
+    fun historyJob() = compose.shoot("history_job", shade) {
+        HistoryContent(
+            Fixtures.historyJobs, chosenFilter = "engine", order = HistoryOrder(), fresh = null, archived = false, today = Fixtures.TODAY,
+            onOpenRecord = {}, onBack = null, onExport = {}, onChooseVehicle = {}, onChooseFilter = {}, onChooseOrder = {},
+            chosenJob = "oil", view = HistoryView.LIST,
+        )
+    }
+
     /** Well down a long history: the filters have scrolled away and the Top button is there to bring them back. */
     @Test
     fun historyTop() = compose.shoot("history_top", shade) {

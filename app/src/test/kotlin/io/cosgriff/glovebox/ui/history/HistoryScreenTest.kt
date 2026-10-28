@@ -135,6 +135,44 @@ class HistoryScreenTest {
     }
 
     @Test
+    fun `a category with two jobs offers each alone, a second tap goes back to the category, and another category clears it`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(60), odometer = 39_000, lines = listOf(line("Oil and filter", "oil")))
+        t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Air filter", "engine-air")))
+        t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Tires rotated", "rotation")))
+        val handle = listHandle()
+        val vm = tab(handle)
+        show(vm)
+        val oil = io.cosgriff.glovebox.ui.service.catalogLabel("oil")
+        compose.waitForText("Oil and filter")
+        compose.onNodeWithText(oil).assertDoesNotExist()
+
+        compose.onNodeWithText(io.cosgriff.glovebox.ui.service.catalogCategoryLabel("engine")).performClick()
+        compose.waitForText(oil)
+        compose.onNodeWithText("Tires rotated").assertDoesNotExist()
+        compose.onNodeWithText("Air filter").assertExists()
+
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForNoText("Air filter")
+        compose.onNodeWithText("Oil and filter").assertExists()
+        compose.onNodeWithText(oil).assertIsSelected()
+        assertEquals("oil", handle.get<String>("job"))
+
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForText("Air filter")
+        assertNull(vm.job)
+
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForNoText("Air filter")
+        // Tires has one job, so no row of jobs, and the oil change chosen under engine is let go.
+        compose.onNodeWithText(io.cosgriff.glovebox.ui.service.catalogCategoryLabel("tires")).performClick()
+        compose.waitForText("Tires rotated")
+        compose.onNodeWithText(oil).assertDoesNotExist()
+        compose.onNodeWithText(io.cosgriff.glovebox.ui.service.catalogLabel("rotation")).assertDoesNotExist()
+        assertNull(handle.get<String>("job"))
+    }
+
+    @Test
     fun `labor and parts show under the spending line from the priced records, and go with it while a filter is on`() = runBlocking {
         val car = t.vehicle()
         t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Oil and filter", "oil")), costCents = 5_000)
