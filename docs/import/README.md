@@ -32,9 +32,10 @@ your vehicles: **Settings → Import**. This folder is the specification of thos
 
 - `glovebox` is always `"import"`.
 - `version` is the format version, a whole number. Each kind has versions of its own: every kind
-  has version `1`, and `service-history` also has version `2`, which adds priced jobs. A file with a
-  higher version than the app knows for its kind is refused as made for a newer version. A
-  version-1 file will always stay readable, exactly as it is read today.
+  has version `1`, and `service-history` also has version `2`, which adds priced jobs, and version
+  `3`, which adds a job's part rows and the invoice's shop supplies, tax and fees. A file with a
+  higher version than the app knows for its kind is refused as made for a newer version. A file of
+  any version will always stay readable, exactly as it is read today.
 - `kind` says what `items` holds. One kind per file.
 - These are the only fields beside `items`, except where a kind adds one of its own
   (`milestone-schedule` has `repeatsEveryMiles`). A kind's own field in another kind's file is an
@@ -186,7 +187,8 @@ record, and the PDF / Markdown export and the backup are for it.
 
 [`schema/service-history.schema.json`](schema/service-history.schema.json) ·
 [`examples/service-history.json`](examples/service-history.json) · in kilometres: [`examples/service-history-km.json`](examples/service-history-km.json) ·
-with prices (version 2): [`examples/service-history-priced.json`](examples/service-history-priced.json) · up to 1000 records
+with prices (version 2): [`examples/service-history-priced.json`](examples/service-history-priced.json) ·
+with part rows and charges (version 3): [`examples/service-history-itemized.json`](examples/service-history-itemized.json) · up to 1000 records
 
 Maintenance that was done before you kept it in Glovebox: a dealer printout typed up, a spreadsheet,
 another app's export. One record per visit.
@@ -254,11 +256,14 @@ count for a reminder. The values, by the category History files them under:
   odometer. Two records in one file can't share both (one visit is one record; this, and the date
   not being in the future, are the rules the schema can't state).
 - **Same or different:** the work lines (in any order, ignoring capitals), who did it, the cost and
-  the notes, and in a version-2 record with `jobs`, the jobs (their wording, prices and lines).
+  the notes; in a record with `jobs`, the jobs (their wording, prices, lines and part rows); and
+  in a record with any of `shopSupplies`, `tax` and `fees`, those three.
 - **Replace matching** replaces those things. Photos on your record stay, and so does a recall
   it was the work for. A record from the file with no `jobs` (every version-1 record) says nothing
-  about prices: if its lines are the ones your record has, your record keeps its prices on them; if
-  its lines are different, the prices go with the lines they were for.
+  about prices: if its lines are the ones your record has, your record keeps its prices and part
+  rows on them; if its lines are different, the prices go with the lines they were for. A record
+  with none of `shopSupplies`, `tax` and `fees` says nothing about them either, and your record
+  keeps its own.
 - **Readings that don't fit:** an odometer only goes up, so a record whose reading breaks the run
   of the others (lower than earlier ones, or higher than later ones) is pointed out in the preview.
   It doesn't stop the import: check the date and the odometer, in the file or on the vehicle.
@@ -310,10 +315,55 @@ and the ignition coils. Glovebox never splits a job's price between its lines.
   just a line, and goes in `work`.
 - **`cost` is the invoice's grand total, as printed.** It is never worked out from the jobs. What
   is left over (tax, shop supplies, fees) shows as "Tax and fees"; when the total is less than the
-  line prices, the record says so without naming a cause. There is no field for tax or fees.
+  line prices, the record says so without naming a cause. Version 3 adds fields for those.
 - A line in a job counts for reminders exactly as a line in `work` does.
 - That a record can't have more than 30 lines in `work` and `jobs` together is the rule the schema
   can't state.
+
+### Part rows and charges: version 3
+
+A version-3 file is written exactly as a version-2 file, with `"version": 3`. A job may give its
+parts as `partRows`, the invoice's own parts table for that job, instead of one `parts` figure, and
+a record may give what the invoice charged for the whole visit rather than for a job.
+
+```json
+{
+  "wording": "Remove & Replace Spark Plugs and Coils",
+  "labor": "300.00",
+  "partRows": [
+    { "part": "Spark plug, iridium", "quantity": "4", "each": "12.50", "total": "50.00", "for": "Spark plugs" },
+    { "part": "Ignition coil", "quantity": "4", "each": "92.50", "total": "370.00", "for": "Ignition coils" },
+    { "part": "Dielectric grease", "total": "6.00" }
+  ],
+  "work": [
+    { "label": "Spark plugs", "service": "spark-plugs" },
+    { "label": "Ignition coils", "service": "ignition-coils" }
+  ]
+}
+```
+
+| Field | Required | Rules |
+|---|---|---|
+| `jobs[].partRows` | no | 1 to 30 rows, instead of `parts` (never both). The job's parts price is the sum of the rows' totals |
+| `partRows[].part` | no | The part as printed, up to 120 characters |
+| `partRows[].quantity` | no | How many, as text: `"4"` or `"5.7"`, at most three decimals |
+| `partRows[].each` | no | The price of one: dollars as text, as `cost` is |
+| `partRows[].total` | no | The row's total, the same way. A row without one isn't counted in the job's parts |
+| `partRows[].for` | no | The `label` of one of this job's own lines. Left out, the row is for the whole job |
+| `shopSupplies` | no | Shop supplies on the whole invoice: dollars as text, as `cost` is |
+| `tax` | no | Tax on the whole invoice, the same way |
+| `fees` | no | Fees and sublet on the whole invoice, the same way |
+
+- A row needs at least one of `part`, `quantity`, `each` and `total`.
+- **Nothing is worked out from the others.** Give what the invoice prints; a row with a quantity
+  and a total and no price each is saved just so. The app fills in a missing figure only on its own
+  form, and only when it comes out exact.
+- `for` is a label only: it says which line a row is for, and never puts a price on that line or
+  splits the job's labor.
+- `cost` is still the grand total as printed. What is left over once labor, parts, shop supplies,
+  tax and fees are taken off shows as "Tax and fees" while the record gives neither `tax` nor
+  `fees`, and as "Other charges" once it gives either.
+- That `for` names one of the job's own lines is the rule the schema can't state.
 
 ## `interval-schedule`
 

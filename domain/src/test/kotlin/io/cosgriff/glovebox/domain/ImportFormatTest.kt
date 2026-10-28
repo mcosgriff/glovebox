@@ -99,7 +99,7 @@ class ImportFormatTest {
     @Test
     fun `a file for a newer version is refused as such`() {
         val file = ImportFormat.parse("""{ "glovebox": "import", "version": 7, "kind": "something-new", "items": [], "extra": true }""")
-        assertEquals(listOf("version: this file is for a newer version of Glovebox (format 7; this app reads 1 to 2)"), errors(file).takeLast(1))
+        assertEquals(listOf("version: this file is for a newer version of Glovebox (format 7; this app reads 1 to 3)"), errors(file).takeLast(1))
     }
 
     @Test
@@ -109,8 +109,8 @@ class ImportFormatTest {
             errors(ImportFormat.parse("""{ "glovebox": "import", "version": 2, "kind": "torque-specs", "items": [ { "name": "A", "category": "other" } ] }""")),
         )
         assertEquals(
-            listOf("version: this file is for a newer version of Glovebox (format 3; this app reads 1 to 2)"),
-            errors(ImportFormat.parse("""{ "glovebox": "import", "version": 3, "kind": "service-history", "items": [] }""")),
+            listOf("version: this file is for a newer version of Glovebox (format 4; this app reads 1 to 3)"),
+            errors(ImportFormat.parse("""{ "glovebox": "import", "version": 4, "kind": "service-history", "items": [] }""")),
         )
     }
 
@@ -265,6 +265,87 @@ class ImportFormatTest {
         assertEquals(
             listOf("items[0]: has 31 lines of work, in \"work\" and \"jobs\" together; the most allowed is 30"),
             errors(one("""[ { "wording": "Eleven things", "work": [ $eleven ] } ]""", """"work": [ $twenty ],""")),
+        )
+    }
+
+    private fun history3(items: String) =
+        ImportFormat.parse("""{ "glovebox": "import", "version": 3, "kind": "service-history", "items": $items }""", LocalDate.of(2026, 10, 12))
+
+    @Test
+    fun `the itemized history example is accepted by the schema and by the app`() {
+        val file = File(docs, "examples/service-history-itemized.json")
+        assertTrue(schemaAccepts("service-history", file))
+        val record = (ImportFormat.parse(file.readText(), LocalDate.of(2026, 10, 12)) as ImportFile.ServiceHistory).items.single()
+        assertEquals(
+            listOf(
+                ImportedJob(
+                    "Remove & Replace Spark Plugs and Coils", 30_000, null,
+                    listOf(
+                        // Each row says which of its own job's lines it is for, by index among them.
+                        ImportedPartRow("Spark plug, iridium", 4_000, 1_250, 5_000, line = 0),
+                        ImportedPartRow("Ignition coil", 4_000, 9_250, 37_000, line = 1),
+                        ImportedPartRow("Dielectric grease", totalCents = 600),
+                    ),
+                ),
+                ImportedJob(
+                    null, 3_995, null,
+                    // Nothing is worked out: the oil filter's each stays unknown, though quantity and total are given.
+                    listOf(ImportedPartRow("Synthetic oil 0W-20", 4_500, 800, 3_600), ImportedPartRow("Oil filter", 1_000, null, 1_150)),
+                ),
+            ),
+            record.jobs,
+        )
+        assertEquals(InvoiceCharges(shopSuppliesCents = 1_850, taxCents = 4_845), record.charges)
+        assertEquals(88_240L, record.costCents)
+        assertEquals(PartSummary("Spark plug, iridium", 4_000, 1_250, 5_000, "Spark plugs"), record.jobSummaries[0].rows[0])
+    }
+
+    @Test
+    fun `a version-2 file is read as it always was, and has no part rows or charges`() {
+        val v2 = File(docs, "examples/service-history-priced.json").readText()
+        val as3 = v2.replace("\"version\": 2", "\"version\": 3")
+        assertEquals(ImportFormat.parse(v2, LocalDate.of(2026, 10, 12)), ImportFormat.parse(as3, LocalDate.of(2026, 10, 12)))
+        assertEquals(
+            listOf("items[0].tax: isn't a field Glovebox knows; remove it or check the spelling"),
+            errors(history2("""[ { "date": "2024-03-01", "odometer": 41000, "work": [ { "label": "Oil" } ], "tax": "1.00", "doneBy": { "type": "diy" } } ]""")),
+        )
+    }
+
+    @Test
+    fun `a part row says something, and is for one of its own job's lines`() {
+        fun one(rows: String, extra: String = "") =
+            history3("""[ { "date": "2024-03-01", "odometer": 41000, "jobs": [ { $extra "partRows": $rows, "work": [ { "label": "Spark plugs" }, { "label": "Ignition coils" } ] } ], "doneBy": { "type": "shop" } } ]""")
+        assertEquals(
+            listOf("items[0].jobs[0].partRows[0]: says only which line it is for; a row needs at least one of \"part\", \"quantity\", \"each\" or \"total\""),
+            errors(one("""[ { "for": "Spark plugs" } ]""")),
+        )
+        assertEquals(
+            listOf("items[0].jobs[0].partRows[0].for: must be the label of one of this job's lines of work"),
+            errors(one("""[ { "total": "1.00", "for": "Wipers" } ]""")),
+        )
+        // Capitals don't matter, and part rows alone are enough for a job of one line.
+        assertEquals(1, (one("""[ { "total": "1.00", "for": "IGNITION COILS" } ]""") as ImportFile.ServiceHistory).items.single().jobs.single().rows.single().line)
+        assertEquals(
+            listOf("items[0].jobs[0]: has both \"parts\" and \"partRows\"; give the parts as one figure or as rows, not both"),
+            errors(one("""[ { "total": "1.00" } ]""", """"parts": "1.00",""")),
+        )
+        assertEquals(
+            listOf("items[0].jobs[0].partRows[0].quantity: must be a number as text in quotes, with at most three decimals: \"4\" or \"5.7\""),
+            errors(one("""[ { "quantity": "5.7125" } ]""")),
+        )
+        assertEquals(
+            listOf("items[0].jobs[0].partRows[0].each: must be dollars as text in quotes, with at most two decimals: \"12.50\""),
+            errors(one("""[ { "each": 12.5 } ]""")),
+        )
+    }
+
+    @Test
+    fun `charges are dollars as text, and zero is a charge`() {
+        fun one(extra: String) = history3("""[ { "date": "2024-03-01", "odometer": 41000, "work": [ { "label": "Oil" } ], $extra, "doneBy": { "type": "shop" } } ]""")
+        assertEquals(InvoiceCharges(feesCents = 0), (one(""""fees": "0"""") as ImportFile.ServiceHistory).items.single().charges)
+        assertEquals(
+            listOf("items[0].shopSupplies: must be dollars as text in quotes, with at most two decimals: \"38.50\""),
+            errors(one(""""shopSupplies": 38.5""")),
         )
     }
 

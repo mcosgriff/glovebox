@@ -86,6 +86,30 @@ class HistoryImportTest {
     }
 
     @Test
+    fun `part rows are part of a job, and a file with no charges says nothing about the saved ones`() {
+        val rows = listOf(ImportedPartRow("Spark plug", 4_000, 1_250, 5_000, line = 0), ImportedPartRow("Grease", totalCents = 600))
+        val itemized = file(work = arrayOf(ImportedWork("Spark plugs", job = 0), ImportedWork("Ignition coils", job = 0)))
+            .copy(jobs = listOf(ImportedJob("Plugs and coils", 30_000, rows = rows)))
+        val labels = listOf("Spark plugs", "Ignition coils")
+        val savedRows = listOf(PartSummary("grease", null, null, 600, null), PartSummary("SPARK PLUG", 4_000, 1_250, 5_000, "spark plugs"))
+        val savedJob = JobSummary("Plugs and coils", 30_000, null, labels, savedRows)
+        fun plan(item: ImportedRecord, jobs: List<JobSummary>, charges: InvoiceCharges = InvoiceCharges.NONE) =
+            HistoryImport.plan(listOf(item), listOf(saved(1, labels = labels).copy(jobs = jobs, charges = charges)), schedule)
+        // The same rows, whatever the order and capitals, and the line each is for.
+        assertEquals(1, plan(itemized, listOf(savedJob)).same.size)
+        assertEquals(1, plan(itemized, listOf(savedJob.copy(rows = savedRows.dropLast(1)))).differs.size)
+        assertEquals(1, plan(itemized, listOf(savedJob.copy(rows = listOf(savedRows[0], savedRows[1].copy(line = "Ignition coils"))))).differs.size)
+
+        // A file with charges compares them; one with none can't say they are different.
+        val tax = InvoiceCharges(taxCents = 5_210)
+        assertEquals(1, plan(itemized.copy(charges = tax), listOf(savedJob), tax).same.size)
+        assertEquals(1, plan(itemized.copy(charges = tax), listOf(savedJob), InvoiceCharges(taxCents = 5_211)).differs.size)
+        assertEquals(1, plan(itemized, listOf(savedJob), tax).same.size)
+        assertEquals(tax, HistoryImport.keptCharges(itemized, tax))
+        assertEquals(InvoiceCharges(feesCents = 0), HistoryImport.keptCharges(itemized.copy(charges = InvoiceCharges(feesCents = 0)), tax))
+    }
+
+    @Test
     fun `a bare last done is filled in by a record that resets the same reminder`() {
         val plan = HistoryImport.plan(listOf(file(shop = "Corner Garage", diy = false)), listOf(saved(1, labels = listOf("Engine oil & filter"), lastDone = true)), schedule)
         assertEquals(listOf(1L), plan.fills.map { it.second.id })

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://raw.githubusercontent.com/mcosgriff/glovebox/main/docs/import/schema/service-history.schema.json",
+  "glovebox": "import",
+  "version": 3,
+  "kind": "service-history",
+  "items": [
+    {
+      "date": "2026-01-07",
+      "odometer": 129565,
+      "jobs": [
+        {
+          "wording": "Remove & Replace Spark Plugs and Coils",
+          "labor": "300.00",
+          "partRows": [
+            {
+              "part": "Spark plug, iridium",
+              "quantity": "4",
+              "each": "12.50",
+              "total": "50.00",
+              "for": "Spark plugs"
+            },
+            {
+              "part": "Ignition coil",
+              "quantity": "4",
+              "each": "92.50",
+              "total": "370.00",
+              "for": "Ignition coils"
+            },
+            {
+              "part": "Dielectric grease",
+              "total": "6.00"
+            }
+          ],
+          "work": [
+            {
+              "label": "Spark plugs",
+              "service": "spark-plugs"
+            },
+            {
+              "label": "Ignition coils",
+              "service": "ignition-coils"
+            }
+          ]
+        },
+        {
+          "labor": "39.95",
+          "partRows": [
+            {
+              "part": "Synthetic oil 0W-20",
+              "quantity": "4.5",
+              "each": "8.00",
+              "total": "36.00"
+            },
+            {
+              "part": "Oil filter",
+              "quantity": "1",
+              "total": "11.50"
+            }
+          ],
+          "work": [
+            {
+              "label": "Oil & filter change",
+              "service": "oil"
+            }
+          ]
+        }
+      ],
+      "work": [
+        {
+          "label": "Tire rotation",
+          "service": "rotation"
+        }
+      ],
+      "doneBy": {
+        "type": "shop",
+        "name": "Corner Garage"
+      },
+      "cost": "882.40",
+      "shopSupplies": "18.50",
+      "tax": "48.45",
+      "notes": "Rotation free with the oil change"
+    }
+  ]
+}
