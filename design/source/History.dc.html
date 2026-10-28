@@ -39,6 +39,14 @@ a{color:#C2410C}a:hover{color:#9A3412}
     </sc-for>
   </div>
 
+  <sc-if value="{{hasJobs}}" hint-placeholder-val="{{ true }}">
+    <div aria-label="Jobs in this category" style="display: flex; gap: 8px; padding: 0 20px 12px 20px; overflow-x: auto">
+      <sc-for list="{{jobs}}" as="j" hint-placeholder-count="2">
+        <button onClick="{{j.pick}}" aria-pressed="{{j.active}}" style="height: 36px; padding: 0 14px; border-radius: 999px; flex-shrink: 0; font-family: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid {{j.border}}; background: {{j.bg}}; color: {{j.fg}}">{{j.label}}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+
   <div style="padding: 0 20px 10px 20px">
     <div role="search" style="height: 52px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; gap: 14px; padding: 0 16px; color: #5A5F66; font-size: 15px">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
@@ -86,19 +94,25 @@ a{color:#C2410C}a:hover{color:#9A3412}
 class Component extends DCLogic {
 constructor(props) {
 super(props);
-this.state = { f: 'all' };
+this.state = { f: 'engine', j: 'oil' };
 }
 renderVals() {
 var self = this;
 var DATA = [
-{ date: 'Oct 10, 2026', miles: '68,412 mi', items: 'Oil & filter, engine air filter, tire rotation', who: 'DIY · just added', cost: '[COST]', tags: ['engine', 'tires'], fresh: true },
-{ date: 'Jun 14, 2026', miles: '60,100 mi', items: 'Oil & filter, tire rotation', who: 'Shop', cost: '[COST]', tags: ['engine', 'tires'] },
-{ date: 'Feb 2, 2026', miles: '54,800 mi', items: 'Front brake pads, brake inspection', who: 'DIY', cost: '[COST]', tags: ['brakes'] },
-{ date: 'Oct 18, 2025', miles: '50,200 mi', items: 'Transfer case, front & rear diff fluid', who: 'Shop', cost: '[COST]', tags: ['fourwd'] }
+{ date: 'Oct 10, 2026', miles: '68,412 mi', items: 'Oil & filter, engine air filter, tire rotation', who: 'DIY · just added', cost: '[COST]', tags: ['engine', 'tires'], jobs: ['oil', 'engine-air', 'rotation'], fresh: true },
+{ date: 'Jun 14, 2026', miles: '60,100 mi', items: 'Oil & filter, tire rotation', who: 'Shop', cost: '[COST]', tags: ['engine', 'tires'], jobs: ['oil', 'rotation'] },
+{ date: 'Feb 2, 2026', miles: '54,800 mi', items: 'Front brake pads, brake inspection', who: 'DIY', cost: '[COST]', tags: ['brakes'], jobs: ['front-pads', 'brake-inspect'] },
+{ date: 'Oct 18, 2025', miles: '50,200 mi', items: 'Transfer case, front & rear diff fluid', who: 'Shop', cost: '[COST]', tags: ['fourwd'], jobs: ['transfer-case', 'diff'] }
 ];
 var F = [['all', 'All'], ['engine', 'Oil & engine'], ['tires', 'Tires'], ['brakes', 'Brakes'], ['fourwd', '4WD']];
+// A category's jobs, in the catalog's order; the row shows only where the records hold two or more of them.
+var J = { engine: [['oil', 'Oil & filter change'], ['engine-air', 'Engine air filter']], tires: [['rotation', 'Tire rotation']], brakes: [['front-pads', 'Front brake pads'], ['brake-inspect', 'Brake inspection']], fourwd: [['transfer-case', 'Transfer case fluid'], ['diff', 'Differential fluid']] };
 var cur = this.state.f;
-var rows = DATA.filter(function (d) { return cur === 'all' || d.tags.indexOf(cur) >= 0; }).map(function (d) {
+var logged = DATA.reduce(function (acc, d) { return acc.concat(d.jobs); }, []);
+var jobs = (J[cur] || []).filter(function (j) { return logged.indexOf(j[0]) >= 0; });
+if (jobs.length < 2) jobs = [];
+var job = jobs.some(function (j) { return j[0] === self.state.j; }) ? this.state.j : null;
+var rows = DATA.filter(function (d) { return job ? d.jobs.indexOf(job) >= 0 : (cur === 'all' || d.tags.indexOf(cur) >= 0); }).map(function (d) {
 return Object.assign({}, d, { border: d.fresh ? '#C2410C' : '#DEDCD5' });
 });
 return {
@@ -106,7 +120,12 @@ shown: rows.length,
 rows: rows,
 filters: F.map(function (f) {
 var a = f[0] === cur;
-return { label: f[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ f: f[0] }); } };
+return { label: f[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ f: f[0], j: null }); } };
+}),
+hasJobs: jobs.length > 0,
+jobs: jobs.map(function (j) {
+var a = j[0] === job;
+return { label: j[1], active: a, bg: a ? '#17191C' : '#FFFFFF', fg: a ? '#FFFFFF' : '#17191C', border: a ? '#17191C' : '#DEDCD5', pick: function () { self.setState({ j: a ? null : j[0] }); } };
 })
 };
 }
