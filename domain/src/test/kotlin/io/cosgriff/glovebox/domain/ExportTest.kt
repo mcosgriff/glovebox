@@ -218,6 +218,43 @@ class ExportTest {
         assertTrue(records(bare).startsWith("### Jun 14, 2026 · 64,000 mi\n\n- Spark plugs\n- Ignition coils\n- Tire rotation\n- Oil & filter change\n\nDone by: Corner Garage · Cost: $497.31\n\n"))
     }
 
+    // The same invoice with the plugs and coils job's parts itemized and its charges entered (#502), made-up figures.
+    private val itemized = priced.copy(
+        jobs = listOf(
+            ExportJob(
+                "Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240,
+                listOf(
+                    ExportPartRow("Spark plug", 4_000, 1_250, 5_000, "Spark plugs"),
+                    ExportPartRow("Ignition coil", 4_000, 4_000, 16_000, "Ignition coils"),
+                    ExportPartRow("Dielectric grease", 4_500, null, 240),
+                ),
+            ),
+            priced.jobs[1],
+        ),
+        charges = InvoiceCharges(shopSuppliesCents = 1_850, taxCents = 1_796),
+    )
+
+    @Test
+    fun `a job's part rows go under it, and the invoice's charges in the breakdown`() {
+        assertEquals(
+            "### Jun 14, 2026 · 64,000 mi\n\n" +
+                "- Remove & Replace Spark Plugs and Ignition Coils · Labor $180.00 · Parts $212.40\n  - Spark plugs\n  - Ignition coils\n" +
+                "  - Spark plug · 4 × $12.50 · $50.00 · Spark plugs\n  - Ignition coil · 4 × $40.00 · $160.00 · Ignition coils\n  - Dielectric grease · Qty 4.5 · $2.40\n" +
+                "- Tire rotation\n" +
+                "- Oil & filter change · Labor $39.95 · Parts $28.50\n\n" +
+                "Done by: Corner Garage · Cost: $500.00\n\n" +
+                // Tax is entered, so what is left isn't tax and fees.
+                "Labor on lines: $219.95 · Parts on lines: $240.90 · Shop supplies: $18.50 · Tax: $17.96 · Other charges (worked out): $2.69\n\n",
+            records(itemized.copy(costCents = 50_000)),
+        )
+        // Adding up to the total exactly, there is nothing left to name.
+        assertTrue(records(itemized).contains("Tax: $17.96\n"))
+        // Costs off: a row keeps what was fitted, and the charges go.
+        val off = records(itemized, options = ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false))
+        assertTrue(off.contains("  - Spark plug · Qty 4 · Spark plugs\n"))
+        assertFalse(off.contains("Shop supplies"))
+    }
+
     @Test
     fun `switching costs off takes the prices and leaves the shop's wording`() {
         val md = records(priced, options = ExportOptions(format = ExportFormat.MARKDOWN, costsAndNotes = false))

@@ -71,6 +71,10 @@ import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.ExportRecall
 import io.cosgriff.glovebox.domain.ExportJob
+import io.cosgriff.glovebox.domain.ExportPartRow
+import io.cosgriff.glovebox.data.db.charges
+import io.cosgriff.glovebox.data.db.priceOf
+import io.cosgriff.glovebox.data.db.rowsOf
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
@@ -251,8 +255,15 @@ class ExportViewModel @Inject constructor(
                     categories = r.items.map { line ->
                         line.catalogId?.let { ServiceGroup.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ServiceGroup.OTHER
                     },
-                    jobs = jobs.map { ExportJob(it.wording, it.laborCents, it.partsCents) },
+                    jobs = jobs.map { job ->
+                        val labels = r.items.associate { it.id to it.label }
+                        ExportJob(
+                            job.wording, job.laborCents, r.priceOf(job).partsCents,
+                            r.rowsOf(job).map { ExportPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.itemId?.let(labels::get)) },
+                        )
+                    },
                     jobOf = if (jobs.isEmpty()) emptyList() else r.items.map { line -> line.jobId?.let(jobIndex::get) },
+                    charges = r.charges,
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->

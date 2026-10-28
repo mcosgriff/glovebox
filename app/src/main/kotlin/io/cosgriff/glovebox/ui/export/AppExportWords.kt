@@ -10,6 +10,7 @@ import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.longDate
+import io.cosgriff.glovebox.ui.service.quantityText
 import java.time.LocalDate
 
 /** An export's words in the app's language, for both writers. */
@@ -38,6 +39,13 @@ object AppExportWords : ExportWords {
             ExportPhrase.PARTS_ON_LINES -> R.string.export_parts_on_lines
             ExportPhrase.TAX_AND_FEES -> R.string.export_tax_and_fees
             ExportPhrase.LESS_THAN_LINES -> R.string.export_less_than_lines
+            ExportPhrase.PART_QTY_EACH -> R.string.export_part_qty_each
+            ExportPhrase.PART_QTY -> R.string.export_part_qty
+            ExportPhrase.PART_EACH -> R.string.export_part_each
+            ExportPhrase.SHOP_SUPPLIES -> R.string.export_shop_supplies
+            ExportPhrase.TAX -> R.string.export_tax
+            ExportPhrase.FEES -> R.string.export_fees
+            ExportPhrase.OTHER_CHARGES -> R.string.export_other_charges
             ExportPhrase.SCHEDULE_NOTE -> R.string.export_schedule_note
             ExportPhrase.TAKES_NOTE -> R.string.export_takes_note
             ExportPhrase.DOCUMENTS_NOTE -> R.string.export_documents_note
@@ -88,4 +96,6 @@ object AppExportWords : ExportWords {
 
     // Dollars and cents, whatever the language: costs are kept with no currency.
     override fun money(cents: Long): String = Money.format(cents)
+
+    override fun quantity(milli: Long): String = quantityText(milli)
 }

@@ -55,9 +55,14 @@ data class ExportRecord(
     val jobs: List<ExportJob> = emptyList(),
     /** Each of [items]' index in [jobs], in the same order; null for a line in no job. Empty when there are none. */
     val jobOf: List<Int?> = emptyList(),
+    /** What the invoice charged for the whole visit (#502). */
+    val charges: InvoiceCharges = InvoiceCharges.NONE,
 ) {
-    /** The labor and parts on its lines and the gap to its cost; null when nothing is priced, as on the record's screen. */
-    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map { JobPrice(it.laborCents, it.partsCents) }, costCents)
+    /**
+     * The labor and parts on its lines, its charges and the gap to its cost; null when nothing is priced, as on the
+     * record's screen.
+     */
+    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map { JobPrice(it.laborCents, it.partsCents) }, costCents, charges)
 
     /**
      * Line [index]'s own price, labor and parts together: only when its job is priced and covers that line alone.
@@ -70,8 +75,14 @@ data class ExportRecord(
     }
 }
 
-/** A job as the shop priced it (#481): one labor and one parts figure for its lines, never split between them. */
-data class ExportJob(val wording: String?, val laborCents: Long?, val partsCents: Long?)
+/**
+ * A job as the shop priced it (#481): one labor and one parts figure for its lines, never split between them. With
+ * [rows] (#502), [partsCents] is their totals added up.
+ */
+data class ExportJob(val wording: String?, val laborCents: Long?, val partsCents: Long?, val rows: List<ExportPartRow> = emptyList())
+
+/** One of a job's part rows as the invoice printed it (#502). [line] is the line it is for, named; null for the whole job. */
+data class ExportPartRow(val wording: String?, val quantityMilli: Long?, val eachCents: Long?, val totalCents: Long?, val line: String? = null)
 
 /** [itemId] is the schedule item the line is, to find its status in [ReportFacts]. */
 data class ExportScheduleLine(val name: String, val every: String, val lastDone: LastDone?, val itemId: Long? = null)
@@ -149,7 +160,13 @@ object Exports {
                         r.copy(
                             costCents = r.costCents.takeIf { options.costsAndNotes },
                             // A job's prices are costs; its wording is what the shop called the work, and stays.
-                            jobs = if (options.costsAndNotes) r.jobs else r.jobs.map { it.copy(laborCents = null, partsCents = null) },
+                            // A part row's quantity and wording say what was fitted, and stay; its prices go.
+                            jobs = if (options.costsAndNotes) {
+                                r.jobs
+                            } else {
+                                r.jobs.map { j -> j.copy(laborCents = null, partsCents = null, rows = j.rows.map { it.copy(eachCents = null, totalCents = null) }) }
+                            },
+                            charges = r.charges.takeIf { options.costsAndNotes } ?: InvoiceCharges.NONE,
                             notes = r.notes.takeIf { options.costsAndNotes },
                             photoFiles = r.photoFiles.takeIf { options.includesPhotos }.orEmpty(),
                         )
@@ -180,6 +197,7 @@ enum class ExportPhrase {
     RECALL_MARKED_DONE, RECALL_ARCHIVED, RECALL_OPEN,
     VISIT, VISIT_TOTAL,
     JOB_LABOR, JOB_PARTS, LINES_JOINED, LABOR_ON_LINES, PARTS_ON_LINES, TAX_AND_FEES, LESS_THAN_LINES,
+    PART_QTY_EACH, PART_QTY, PART_EACH, SHOP_SUPPLIES, TAX, FEES, OTHER_CHARGES,
     RECALL_NOTE, LAST_DONE_NOTE, IMPORTED_NOTE, SCHEDULE_NOTE, TAKES_NOTE, DOCUMENTS_NOTE,
     SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
     INSTRUMENT_CLUSTER, SOLD, PERIOD, RECORDS, EXPORTED_ON,
@@ -198,6 +216,8 @@ interface ExportWords {
     /** A distance in the vehicle's own unit: "68,412 mi" or "110,099 km". */
     fun distance(distance: Int, unit: DistanceUnit): String
     fun money(cents: Long): String
+    /** A part row's quantity from thousandths: "4" or "4.5" (#502). */
+    fun quantity(milli: Long): String
 }
 
 /** What both writers say, in [words]: the Markdown here, the PDF in `app`. */
@@ -209,6 +229,23 @@ class ExportText(private val words: ExportWords) {
     fun distance(distance: Int, unit: DistanceUnit): String = words.distance(distance, unit)
 
     fun money(cents: Long): String = words.money(cents)
+
+    fun quantity(milli: Long): String = words.quantity(milli)
+
+    /** A part row's figures: "4 × $12.50", "Qty 4" or "$12.50 each"; null when it has neither. */
+    fun rowFigures(row: ExportPartRow): String? = when {
+        row.quantityMilli != null && row.eachCents != null -> phrase(ExportPhrase.PART_QTY_EACH, quantity(row.quantityMilli), money(row.eachCents))
+        row.quantityMilli != null -> phrase(ExportPhrase.PART_QTY, quantity(row.quantityMilli))
+        row.eachCents != null -> phrase(ExportPhrase.PART_EACH, money(row.eachCents))
+        else -> null
+    }
+
+    /** What a breakdown's gap is called, worked out. */
+    fun gapPhrase(kind: GapKind): ExportPhrase = when (kind) {
+        GapKind.TAX_AND_FEES -> ExportPhrase.TAX_AND_FEES
+        GapKind.OTHER_CHARGES -> ExportPhrase.OTHER_CHARGES
+        GapKind.BELOW -> ExportPhrase.LESS_THAN_LINES
+    }
 
     /** "2 records" */
     fun records(count: Int): String = words.records(count)
@@ -277,21 +314,34 @@ class ExportText(private val words: ExportWords) {
             val lines = r.items.filterIndexed { k, _ -> r.jobOf.getOrNull(k) == j }
             val prices = listOfNotNull(job.laborCents?.let { phrase(ExportPhrase.JOB_LABOR, money(it)) }, job.partsCents?.let { phrase(ExportPhrase.JOB_PARTS, money(it)) })
             val wording = job.wording?.takeUnless { lines.size == 1 && Names.key(it) == Names.key(lines.single()) }
-            if (prices.isEmpty() && wording == null) {
+            if (prices.isEmpty() && wording == null && job.rows.isEmpty()) {
                 lines.forEach { append("- ${text(it)}\n") }
                 continue
             }
             val name = wording ?: lines.drop(1).fold(lines.first()) { a, b -> phrase(ExportPhrase.LINES_JOINED, a, b) }
             append("- ${(listOf(text(name)) + prices).joinToString(" · ")}\n")
             if (wording != null) lines.forEach { append("  - ${text(it)}\n") }
+            // Its part rows as printed, each with the line it is for when it says.
+            job.rows.forEach { row ->
+                val bits = listOfNotNull(row.wording?.let(::text), rowFigures(row), row.totalCents?.let(::money), row.line?.let(::text))
+                if (bits.isNotEmpty()) append("  - ${bits.joinToString(" · ")}\n")
+            }
         }
     }
 
-    /** "Labor on lines: $219.95 · Parts on lines: $240.90 · Tax and fees (worked out): $36.46", only when something is priced. */
+    /**
+     * "Labor on lines: $219.95 · Parts on lines: $240.90 · Shop supplies: $18.50 · Tax and fees (worked out): $36.46",
+     * only when something is priced, each charge only when entered.
+     */
     private fun StringBuilder.breakdown(r: ExportRecord) {
         val b = r.breakdown ?: return
-        val gap = b.gapCents?.takeIf { it != 0L }?.let { labelled(if (it > 0) ExportPhrase.TAX_AND_FEES else ExportPhrase.LESS_THAN_LINES, money(kotlin.math.abs(it))) }
-        append("\n" + listOfNotNull(labelled(ExportPhrase.LABOR_ON_LINES, money(b.laborCents)), labelled(ExportPhrase.PARTS_ON_LINES, money(b.partsCents)), gap).joinToString(" · ") + "\n")
+        val gap = b.gapKind?.let { labelled(gapPhrase(it), money(kotlin.math.abs(b.gapCents!!))) }
+        val charges = listOfNotNull(
+            b.charges.shopSuppliesCents?.let { labelled(ExportPhrase.SHOP_SUPPLIES, money(it)) },
+            b.charges.taxCents?.let { labelled(ExportPhrase.TAX, money(it)) },
+            b.charges.feesCents?.let { labelled(ExportPhrase.FEES, money(it)) },
+        )
+        append("\n" + (listOf(labelled(ExportPhrase.LABOR_ON_LINES, money(b.laborCents)), labelled(ExportPhrase.PARTS_ON_LINES, money(b.partsCents))) + charges + listOfNotNull(gap)).joinToString(" · ") + "\n")
     }
 
     /** The whole document as Markdown. */

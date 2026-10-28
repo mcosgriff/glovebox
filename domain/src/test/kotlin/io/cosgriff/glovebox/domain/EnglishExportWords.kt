@@ -22,6 +22,8 @@ object EnglishExportWords : ExportWords {
 
     override fun money(cents: Long): String = String.format(Locale.US, "$%,d.%02d", cents / 100, cents % 100)
 
+    override fun quantity(milli: Long): String = java.math.BigDecimal.valueOf(milli, 3).stripTrailingZeros().toPlainString()
+
     val ENGLISH: Map<ExportPhrase, String> = mapOf(
         ExportPhrase.ALL_TIME to "All time",
         ExportPhrase.DATE_RANGE to "%1\$s to %2\$s",
@@ -44,6 +46,13 @@ object EnglishExportWords : ExportWords {
         ExportPhrase.PARTS_ON_LINES to "Parts on lines",
         ExportPhrase.TAX_AND_FEES to "Tax and fees (worked out)",
         ExportPhrase.LESS_THAN_LINES to "Less than the line prices (worked out)",
+        ExportPhrase.PART_QTY_EACH to "%1\$s × %2\$s",
+        ExportPhrase.PART_QTY to "Qty %1\$s",
+        ExportPhrase.PART_EACH to "%1\$s each",
+        ExportPhrase.SHOP_SUPPLIES to "Shop supplies",
+        ExportPhrase.TAX to "Tax",
+        ExportPhrase.FEES to "Fees and sublet",
+        ExportPhrase.OTHER_CHARGES to "Other charges (worked out)",
         ExportPhrase.IMPORTED_NOTE to "Imported by the owner from a file; not logged in Glovebox at the time.",
         ExportPhrase.SCHEDULE_NOTE to "Intervals are the ones the owner set in Glovebox, not the manufacturer's schedule.",
         ExportPhrase.TAKES_NOTE to "Entered by the owner from their manuals and the parts they use; Glovebox hasn't checked them against the vehicle.",
