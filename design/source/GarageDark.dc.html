@@ -26,7 +26,7 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
     <div style="background: #24282D; border: 1px solid #343A40; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
       <div style="display: flex; justify-content: space-between; align-items: flex-start">
         <div style="display: flex; flex-direction: column; gap: 2px">
-          <div style="font-size: 22px; font-weight: 700">2019 4Runner</div>
+          <div style="font-size: 20px; font-weight: 700">2019 4Runner</div>
           <div style="font-size: 13px; color: #A5A9AF">SR5 · 4WD · 4.0L V6</div>
         </div>
         <div style="padding: 5px 10px; border-radius: 999px; background: #FDBA74; color: #17191C; font-size: 12px; font-weight: 700">1 OVERDUE</div>
@@ -36,7 +36,7 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
           <div style="font-size: 12px; color: #A5A9AF">Odometer</div>
           <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 26px; font-weight: 600">68,412 <span style="font-size: 14px; color: #A5A9AF">mi</span></div>
         </div>
-        <button style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #5A5F66; background: transparent; color: #EDEBE6; font-family: inherit; font-size: 13px; font-weight: 600">Update mileage</button>
+        <button style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #5A5F66; background: transparent; color: #EDEBE6; font-family: inherit; font-size: 13px; font-weight: 600">Update mileage</button>
       </div>
     </div>
 
@@ -51,7 +51,7 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
 
     <div style="display: flex; justify-content: space-between; align-items: baseline">
       <div style="font-size: 16px; font-weight: 700">Coming up</div>
-      <a href="Reminders.dc.html" style="font-size: 13px; font-weight: 600">Whichever comes first ›</a>
+      <a href="Reminders.dc.html" style="min-height: 48px; margin: -16px 0; display: flex; align-items: center; font-size: 13px; font-weight: 600">Whichever comes first ›</a>
     </div>
 
     <div style="background: #1C1F23; border: 1px solid #2E3338; border-radius: 16px; padding: 4px 16px">
@@ -59,7 +59,7 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px solid #2A2E33">
           <div style="display: flex; justify-content: space-between; gap: 8px">
             <span style="font-size: 15px; font-weight: 600">{{d.name}}</span>
-            <span style="font-size: 13px; font-weight: 600; color: {{d.color}}">{{d.status}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: {{d.color}}">{{d.status}}</span>
           </div>
           <div style="height: 6px; border-radius: 3px; background: #2E3338; overflow: hidden">
             <div style="height: 6px; border-radius: 3px; width: {{d.pct}}; background: {{d.color}}"></div>
@@ -70,7 +70,7 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
     </div>
   </div>
 
-  <a href="LogServiceDark.dc.html" style="position: absolute; right: 20px; bottom: 96px; height: 56px; padding: 0 22px 0 18px; border-radius: 18px; background: #F08A4B; color: #17191C; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,0.5)">
+  <a href="PartsLogDark.dc.html" style="position: absolute; right: 20px; bottom: 96px; height: 56px; padding: 0 22px 0 18px; border-radius: 18px; background: #F08A4B; color: #17191C; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,0.5)">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
     Log service
   </a>
@@ -89,8 +89,8 @@ a{color:#F59E6B}a:hover{color:#FDBA74}
       Reminders
     </a>
     <a href="SettingsDark.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #A5A9AF; text-decoration: none; font-size: 12px; font-weight: 500">
-      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></div>
-      More
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div>
+      Settings
     </a>
   </nav>
 </div>

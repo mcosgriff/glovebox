@@ -20,7 +20,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
       <div style="font-size: 26px; font-weight: 700; letter-spacing: -0.01em">History</div>
       <div style="font-size: 13px; color: #5A5F66">2019 4Runner · {{shown}} records</div>
     </div>
-    <a href="ExportSheet.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Export · PDF / MD</a>
+    <a href="ExportSheet.dc.html" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #17191C; text-decoration: none">Export · PDF / MD</a>
   </div>
 
   <div style="padding: 12px 20px 0 20px">
@@ -38,7 +38,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
 
   <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 16px 20px; overflow: hidden">
     <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
-      <a href="RecordDetail.dc.html" style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #17191C; text-decoration: none">
+      <a href="PartsRecord.dc.html" style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #17191C; text-decoration: none">
         <div style="display: flex; justify-content: space-between; align-items: baseline">
           <span style="font-size: 14px; font-weight: 700">{{r.date}}</span>
           <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3A3E44">{{r.miles}}</span>
@@ -66,8 +66,8 @@ a{color:#C2410C}a:hover{color:#9A3412}
       Reminders
     </a>
     <a href="Settings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
-      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></div>
-      More
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div>
+      Settings
     </a>
   </nav>
 </div>

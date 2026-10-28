@@ -29,7 +29,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
     <div style="background: #FFFFFF; color: #17191C; border: 1px solid #DEDCD5; box-shadow: 0 1px 2px rgba(23,25,28,0.06), 0 8px 24px rgba(23,25,28,0.06); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
       <div style="display: flex; justify-content: space-between; align-items: flex-start">
         <div style="display: flex; flex-direction: column; gap: 2px">
-          <div style="font-size: 22px; font-weight: 700">2019 4Runner</div>
+          <div style="font-size: 20px; font-weight: 700">2019 4Runner</div>
           <div style="font-size: 13px; color: #5A5F66">SR5 · 4WD · 4.0L V6</div>
         </div>
         <div style="padding: 5px 10px; border-radius: 999px; background: #FBE9DF; color: #9A3412; font-size: 12px; font-weight: 700">1 OVERDUE</div>
@@ -39,7 +39,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
           <div style="font-size: 12px; color: #5A5F66">Odometer</div>
           <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 26px; font-weight: 600">68,412 <span style="font-size: 14px; color: #5A5F66">mi</span></div>
         </div>
-        <a href="UpdateMileage.dc.html" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; color: #17191C; text-decoration: none; display: flex; align-items: center; font-size: 13px; font-weight: 600">Update mileage</a>
+        <a href="UpdateMileage.dc.html" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #B9B6AE; color: #17191C; text-decoration: none; display: flex; align-items: center; font-size: 13px; font-weight: 600">Update mileage</a>
       </div>
     </div>
 
@@ -49,12 +49,12 @@ a{color:#C2410C}a:hover{color:#9A3412}
         <span style="font-size: 14px; font-weight: 700">1 open recall · Fuel pump</span>
         <span style="font-size: 12px; color: #5A5F66">Free repair at a Toyota dealer</span>
       </span>
-      <span style="font-size: 18px; color: #C2410C" aria-hidden="true">›</span>
+      <span style="font-size: 18px; color: #9A3412" aria-hidden="true">›</span>
     </a>
 
     <div style="display: flex; justify-content: space-between; align-items: baseline">
       <div style="font-size: 16px; font-weight: 700">Coming up</div>
-      <a href="Reminders.dc.html" style="font-size: 13px; font-weight: 600">Whichever comes first ›</a>
+      <a href="Reminders.dc.html" style="min-height: 48px; margin: -16px 0; display: flex; align-items: center; font-size: 13px; font-weight: 600">Whichever comes first ›</a>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #DEDCD5; border-radius: 16px; padding: 4px 16px">
@@ -62,7 +62,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px solid #EEECE6">
           <div style="display: flex; justify-content: space-between; gap: 8px">
             <span style="font-size: 15px; font-weight: 600">{{d.name}}</span>
-            <span style="font-size: 13px; font-weight: 600; color: {{d.color}}">{{d.status}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: {{d.color}}">{{d.status}}</span>
           </div>
           <div style="height: 6px; border-radius: 3px; background: #EEECE6; overflow: hidden">
             <div style="height: 6px; border-radius: 3px; width: {{d.pct}}; background: {{d.color}}"></div>
@@ -74,7 +74,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
 
   </div>
 
-  <a href="LogService.dc.html" style="position: absolute; right: 20px; bottom: 96px; height: 56px; padding: 0 22px 0 18px; border-radius: 18px; background: #C2410C; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 18px rgba(23,25,28,0.25)">
+  <a href="PartsLog.dc.html" style="position: absolute; right: 20px; bottom: 96px; height: 56px; padding: 0 22px 0 18px; border-radius: 18px; background: #C2410C; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 18px rgba(23,25,28,0.25)">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
     Log service
   </a>
@@ -93,8 +93,8 @@ a{color:#C2410C}a:hover{color:#9A3412}
       Reminders
     </a>
     <a href="Settings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #4F545B; text-decoration: none; font-size: 12px; font-weight: 500">
-      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></div>
-      More
+      <div style="width: 56px; height: 30px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div>
+      Settings
     </a>
   </nav>
 </div>

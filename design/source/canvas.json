@@ -53,7 +53,7 @@
       "radius": 28,
       "title": "6d · Delete record + undo",
       "w": 390,
-      "x": 4700,
+      "x": 4230,
       "y": 5340
     },
     "DeleteVehicle.dc.html": {
@@ -71,17 +71,8 @@
       "radius": 28,
       "title": "3c · Edit schedule item",
       "w": 390,
-      "x": 8460,
+      "x": 7520,
       "y": 0
-    },
-    "EditRecord.dc.html": {
-      "h": 1120,
-      "is_interactive": true,
-      "radius": 28,
-      "title": "6c · Edit service + undo",
-      "w": 390,
-      "x": 4230,
-      "y": 5340
     },
     "ExportSheet.dc.html": {
       "h": 844,
@@ -116,7 +107,7 @@
       "radius": 28,
       "title": "4c · Garage — empty",
       "w": 390,
-      "x": 7520,
+      "x": 6580,
       "y": 0
     },
     "GarageMulti.dc.html": {
@@ -125,7 +116,7 @@
       "radius": 28,
       "title": "4a · Garage — two vehicles",
       "w": 390,
-      "x": 5170,
+      "x": 4700,
       "y": 0
     },
     "History.dc.html": {
@@ -134,7 +125,7 @@
       "radius": 28,
       "title": "6 · Service history",
       "w": 390,
-      "x": 2350,
+      "x": 1880,
       "y": 0
     },
     "HistoryDark.dc.html": {
@@ -143,7 +134,7 @@
       "radius": 28,
       "title": "6 · History — dark",
       "w": 390,
-      "x": 2350,
+      "x": 1880,
       "y": 1900
     },
     "Lock.dc.html": {
@@ -152,7 +143,7 @@
       "radius": 28,
       "title": "0 · Biometric unlock",
       "w": 390,
-      "x": 4700,
+      "x": 4230,
       "y": 0
     },
     "LockDark.dc.html": {
@@ -161,25 +152,7 @@
       "radius": 28,
       "title": "0 · Unlock — dark",
       "w": 390,
-      "x": 4700,
-      "y": 1900
-    },
-    "LogService.dc.html": {
-      "h": 1240,
-      "is_interactive": true,
-      "radius": 28,
-      "title": "5 · Log service (scrolls)",
-      "w": 390,
-      "x": 1880,
-      "y": 0
-    },
-    "LogServiceDark.dc.html": {
-      "h": 1240,
-      "is_interactive": true,
-      "radius": 28,
-      "title": "5 · Log service — dark",
-      "w": 390,
-      "x": 1880,
+      "x": 4230,
       "y": 1900
     },
     "Main.dc.html": {
@@ -223,16 +196,7 @@
       "radius": 28,
       "title": "8 · Recalls (scrolls)",
       "w": 390,
-      "x": 3290,
-      "y": 0
-    },
-    "RecordDetail.dc.html": {
-      "h": 1040,
-      "is_interactive": true,
-      "radius": 28,
-      "title": "6a · Service record + receipt viewer",
-      "w": 390,
-      "x": 6580,
+      "x": 2820,
       "y": 0
     },
     "Reminders.dc.html": {
@@ -241,7 +205,7 @@
       "radius": 28,
       "title": "7 · Reminder rules (scrolls)",
       "w": 390,
-      "x": 2820,
+      "x": 2350,
       "y": 0
     },
     "ReportPage1.dc.html": {
@@ -277,7 +241,7 @@
       "radius": 28,
       "title": "3b · Recommended schedule (after decode)",
       "w": 390,
-      "x": 3760,
+      "x": 3290,
       "y": 0
     },
     "Settings.dc.html": {
@@ -286,7 +250,7 @@
       "radius": 28,
       "title": "9 · Settings — theme toggle is live",
       "w": 390,
-      "x": 4230,
+      "x": 3760,
       "y": 0
     },
     "SettingsDark.dc.html": {
@@ -295,7 +259,7 @@
       "radius": 28,
       "title": "9 · Settings — dark",
       "w": 390,
-      "x": 4230,
+      "x": 3760,
       "y": 1900
     },
     "Snooze.dc.html": {
@@ -313,7 +277,7 @@
       "radius": 28,
       "title": "4e · Torque & fastener specs",
       "w": 390,
-      "x": 8930,
+      "x": 7990,
       "y": 0
     },
     "Timeline.dc.html": {
@@ -322,7 +286,7 @@
       "radius": 28,
       "title": "6e · History — timeline view",
       "w": 390,
-      "x": 5170,
+      "x": 4700,
       "y": 5340
     },
     "Upcoming.dc.html": {
@@ -331,7 +295,7 @@
       "radius": 28,
       "title": "10 · Reminders tab (all vehicles)",
       "w": 390,
-      "x": 5640,
+      "x": 5170,
       "y": 0
     },
     "UpdateMileage.dc.html": {
@@ -340,7 +304,7 @@
       "radius": 28,
       "title": "4b · Update mileage (sheet)",
       "w": 390,
-      "x": 6110,
+      "x": 5640,
       "y": 0
     },
     "VehicleDetails.dc.html": {
@@ -349,7 +313,7 @@
       "radius": 28,
       "title": "4d · Vehicle details + mark as sold",
       "w": 390,
-      "x": 7990,
+      "x": 7050,
       "y": 0
     },
     "Welcome.dc.html": {
@@ -358,7 +322,7 @@
       "radius": 28,
       "title": "0a · First-run welcome / restore",
       "w": 390,
-      "x": 7050,
+      "x": 6110,
       "y": 0
     },
     "PricesLog.dc.html": {
@@ -545,8 +509,8 @@
       "x": 0,
       "y": 0,
       "w": 390,
-      "h": 1990,
-      "title": "Log service — part rows, supplies, tax and fees · sections above unchanged from Prices A",
+      "h": 2985,
+      "title": "Log service — full screen: part rows, supplies, tax and fees",
       "page": "parts",
       "is_interactive": true,
       "radius": 28
@@ -555,8 +519,8 @@
       "x": 470,
       "y": 0,
       "w": 390,
-      "h": 2270,
-      "title": "Log service — a figure left blank, a row with no total · sections above unchanged from Prices A",
+      "h": 3260,
+      "title": "Log service — a figure left blank, a row with no total",
       "page": "parts",
       "is_interactive": true,
       "radius": 28
@@ -583,27 +547,27 @@
     },
     "PartsLogDark.dc.html": {
       "x": 0,
-      "y": 2900,
+      "y": 3660,
       "w": 390,
-      "h": 1990,
-      "title": "Log service — part rows, supplies, tax and fees · sections above unchanged from Prices A (dark)",
+      "h": 2985,
+      "title": "Log service — full screen: part rows, supplies, tax and fees (dark)",
       "page": "parts",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogBlanksDark.dc.html": {
       "x": 470,
-      "y": 2900,
+      "y": 3660,
       "w": 390,
-      "h": 2270,
-      "title": "Log service — a figure left blank, a row with no total · sections above unchanged from Prices A (dark)",
+      "h": 3260,
+      "title": "Log service — a figure left blank, a row with no total (dark)",
       "page": "parts",
       "is_interactive": true,
       "radius": 28
     },
     "PartsRecordDark.dc.html": {
       "x": 940,
-      "y": 2900,
+      "y": 3660,
       "w": 390,
       "h": 1250,
       "title": "Service record — part rows and charges (dark)",
@@ -613,10 +577,60 @@
     },
     "PartsRecordOtherDark.dc.html": {
       "x": 1410,
-      "y": 2900,
+      "y": 3660,
       "w": 390,
       "h": 1345,
       "title": "Service record — other charges worked out (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsEdit.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 3085,
+      "title": "Edit service — odometer changed, what this changes",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsEditDark.dc.html": {
+      "x": 1880,
+      "y": 3660,
+      "w": 390,
+      "h": 3085,
+      "title": "Edit service — odometer changed, what this changes (dark)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "ReceiptViewer.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Receipt viewer (tap a photo on a record)",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsLogPick.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 3060,
+      "title": "Log service — picking a part: the job's lines, or type it as printed",
+      "page": "parts",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "PartsLogPickDark.dc.html": {
+      "x": 2820,
+      "y": 3660,
+      "w": 390,
+      "h": 3060,
+      "title": "Log service — picking a part (dark)",
       "page": "parts",
       "is_interactive": true,
       "radius": 28
@@ -666,7 +680,7 @@
     "pricestitle": {
       "x": 0,
       "y": -280,
-      "text": "Labor & parts per job — light",
+      "text": "Labor & parts — states (full screens are on the Part rows page) — light",
       "kind": "title1",
       "maxW": 4150,
       "page": "prices"
@@ -682,17 +696,17 @@
     "partstitle": {
       "x": 0,
       "y": -280,
-      "text": "Part rows & charges (#502) — light",
+      "text": "Log service, edit & record — the screens to build (#502) — light",
       "kind": "title1",
-      "maxW": 1800,
+      "maxW": 3210,
       "page": "parts"
     },
     "partsdark": {
       "x": 0,
-      "y": 2620,
-      "text": "Part rows & charges (#502) — dark",
+      "y": 3380,
+      "text": "Log service, edit & record — dark",
       "kind": "title1",
-      "maxW": 1800,
+      "maxW": 3210,
       "page": "parts"
     }
   },
@@ -701,7 +715,6 @@
     "Scan.dc.html",
     "Decoded.dc.html",
     "Garage.dc.html",
-    "LogService.dc.html",
     "History.dc.html",
     "Reminders.dc.html",
     "Recalls.dc.html",
@@ -711,14 +724,12 @@
     "GarageMulti.dc.html",
     "Upcoming.dc.html",
     "UpdateMileage.dc.html",
-    "RecordDetail.dc.html",
     "Welcome.dc.html",
     "GarageEmpty.dc.html",
     "VehicleDetails.dc.html",
     "EditInterval.dc.html",
     "Specs.dc.html",
     "GarageDark.dc.html",
-    "LogServiceDark.dc.html",
     "HistoryDark.dc.html",
     "SettingsDark.dc.html",
     "LockDark.dc.html",
@@ -732,7 +743,6 @@
     "About.dc.html",
     "DeleteVehicle.dc.html",
     "DeleteAll.dc.html",
-    "EditRecord.dc.html",
     "DeleteRecord.dc.html",
     "Timeline.dc.html",
     "ReportPage1.dc.html",
@@ -762,7 +772,12 @@
     "PartsLogDark.dc.html",
     "PartsLogBlanksDark.dc.html",
     "PartsRecordDark.dc.html",
-    "PartsRecordOtherDark.dc.html"
+    "PartsRecordOtherDark.dc.html",
+    "PartsEdit.dc.html",
+    "PartsEditDark.dc.html",
+    "ReceiptViewer.dc.html",
+    "PartsLogPick.dc.html",
+    "PartsLogPickDark.dc.html"
   ],
   "pages": [
     {
@@ -779,7 +794,7 @@
     },
     {
       "id": "parts",
-      "name": "Part rows & charges"
+      "name": "Log, edit & record"
     }
   ],
   "title": "Glovebox"
