@@ -83,14 +83,17 @@ internal fun WorkAndPrices(form: LogServiceForm) {
             SectionLabel(pluralStringResource(R.plurals.prices_work_section, lineCount, lineCount.asNumber()), Modifier.weight(1f))
             if (open) Text(stringResource(R.string.prices_optional), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        PricesCard {
+        // One panel; each job after the first starts below a band of the page colour, edge to edge.
+        PricesCard(PaddingValues(0.dp)) {
             jobs.forEachIndexed { i, job ->
-                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                if (i > 0) Box(Modifier.fillMaxWidth().height(8.dp).background(MaterialTheme.colorScheme.background))
                 JobRow(form, job, others = jobs.filter { it.id != job.id }, open = open)
             }
             if (!open) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                AddPricesRow(onClick = { form.pricesOpen = true })
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    AddPricesRow(onClick = { form.pricesOpen = true })
+                }
             }
         }
         if (open && !form.pricesValid) {
@@ -100,14 +103,14 @@ internal fun WorkAndPrices(form: LogServiceForm) {
 }
 
 @Composable
-private fun PricesCard(content: @Composable () -> Unit) {
+private fun PricesCard(padding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 4.dp), content: @Composable () -> Unit) {
     Card(
         Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { content() }
+        Column(Modifier.padding(padding)) { content() }
     }
 }
 
@@ -117,7 +120,7 @@ private fun JobRow(form: LogServiceForm, job: JobDraft<String>, others: List<Job
     val heading = form.heading(job)
     val multi = job.lines.size > 1
     val total = form.price(job).totalCents
-    Column(Modifier.padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) {
                 Text(heading, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
