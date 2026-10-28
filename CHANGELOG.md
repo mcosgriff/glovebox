@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/mcosgriff/glovebox/compare/v0.30.0...v0.31.0) (2026-10-28)
+
+
+### Features
+
+* **service-log:** type or pick a part, and a band between jobs ([#506](https://github.com/mcosgriff/glovebox/issues/506)) ([8000cf7](https://github.com/mcosgriff/glovebox/commit/8000cf73c302d95eac4a8754e79619d89cf9558c))
+
 ## [0.30.0](https://github.com/mcosgriff/glovebox/compare/v0.29.0...v0.30.0) (2026-10-28)
 
 
