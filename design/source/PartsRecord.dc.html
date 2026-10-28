@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Service record with part rows</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="History.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <div style="flex: 1; font-size: 20px; font-weight: 600">Service record</div>
+    <a href="PartsLog.dc.html" style="height: 48px; padding: 0 16px; margin-right: 12px; border-radius: 12px; border: 1.5px solid {{t.field}}; box-sizing: border-box; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: {{t.ink}}; text-decoration: none">Edit</a>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 8px 20px 24px 20px">
+    <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; box-shadow: {{t.shadow}}; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+      <div style="font-size: 13px; color: {{t.muted}}">2011 hatchback · Main Street Auto · sample data</div>
+      <div style="font-size: 26px; font-weight: 700; line-height: 1.1">Jan 7, 2026</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: {{t.muted}}">Odometer</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600">129,565 mi</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: {{t.muted}}">Total cost</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 18px; font-weight: 600">{{totalText}}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK DONE · 4 LINES</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: {{j.border}}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
+              <span style="display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 15px; font-weight: 600">{{j.heading}}</span>
+                <sc-if value="{{j.single}}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size: 12px; color: {{t.muted}}">{{j.cat}}</span>
+                </sc-if>
+              </span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">{{j.sub}}</span>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 13px; color: {{t.sub}}">
+              <sc-if value="{{j.hasLabor}}" hint-placeholder-val="{{ true }}">
+                <span>Labor <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: {{t.ink}}">{{j.labor}}</span></span>
+              </sc-if>
+              <sc-if value="{{j.hasParts}}" hint-placeholder-val="{{ true }}">
+                <span>Parts <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; color: {{t.ink}}">{{j.parts}}</span></span>
+              </sc-if>
+            </div>
+            <sc-if value="{{j.single}}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{j.hasNext}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: {{t.ok}}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+                  <span>{{j.next}}</span>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{j.multi}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px 0 0 10px; border-left: 2px solid {{t.line}}">
+                <sc-for list="{{j.lines}}" as="ln" hint-placeholder-count="2">
+                  <div style="display: flex; flex-direction: column; gap: 2px">
+                    <span style="display: flex; justify-content: space-between; gap: 10px; font-size: 14px">
+                      <span>{{ln.name}}</span>
+                      <span style="font-size: 12px; color: {{t.muted}}">{{ln.cat}}</span>
+                    </span>
+                    <sc-if value="{{ln.hasNext}}" hint-placeholder-val="{{ false }}">
+                      <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: {{t.ok}}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+                        {{ln.next}}
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{j.hasRows}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 10px; background: {{t.rowBg}}">
+                <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">PARTS AS PRINTED</span>
+                <sc-for list="{{j.rows}}" as="r" hint-placeholder-count="2">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px">
+                    <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                      <span style="font-size: 14px">{{r.name}}</span>
+                      <span style="font-size: 12px; color: {{t.muted}}">{{r.detail}}</span>
+                    </span>
+                    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; flex: none; color: {{r.color}}">{{r.total}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">COST BREAKDOWN</div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div role="img" aria-label="{{barLabel}}" style="display: flex; gap: 2px; height: 14px">
+          <sc-for list="{{segs}}" as="g" hint-placeholder-count="5">
+            <span style="height: 14px; box-sizing: border-box; flex: {{g.grow}} 1 0; min-width: 4px; border-radius: {{g.radius}}; background: {{g.fill}}; border: {{g.edge}}"></span>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{rows}}" as="w" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 14px">
+              <span aria-hidden="true" style="width: 10px; height: 10px; flex: none; box-sizing: border-box; border-radius: 3px; background: {{w.fill}}; border: {{w.edge}}"></span>
+              <span style="flex: 1; display: flex; align-items: center; gap: 8px">{{w.label}}
+                <sc-if value="{{w.worked}}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 2px 6px; border-radius: 6px; border: 1px dashed {{t.field}}; font-size: 11px; font-weight: 600; color: {{t.muted}}">worked out</span>
+                </sc-if>
+              </span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{w.share}}</span>
+              <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace">{{w.amount}}</span>
+            </div>
+          </sc-for>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; padding-top: 8px; border-top: 1px solid {{t.divider}}">
+            <span style="width: 10px"></span>
+            <span style="flex: 1; font-weight: 700">Total cost</span>
+            <span style="width: 82px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600">{{totalText}}</span>
+          </div>
+        </div>
+        <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{caption}}</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECEIPTS &amp; PHOTOS</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <div aria-label="Invoice photo" style="height: 96px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.photo}}; display: flex; align-items: flex-end; padding: 8px; box-sizing: border-box; font-size: 12px; font-weight: 600; color: {{t.sub}}">Invoice</div>
+        <div style="height: 96px; border-radius: 12px; border: 1.5px dashed {{t.field}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: {{t.sub}}">+ Add</div>
+      </div>
+    </div>
+
+    <a href="DeleteRecord.dc.html" style="height: 52px; border-radius: 12px; border: 1.5px solid {{t.danger}}; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: {{t.danger}}; text-decoration: none">Delete record</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["full","other"],"default":"full"},"$preview":{"width":390,"height":1250}}'>
+class Component extends DCLogic {
+renderVals() {
+var dark = (this.props.theme || 'light') === 'dark';
+var other = this.props.variant === 'other';
+// Bar colours chosen as a set with the dataviz palette validator (#502): labor and parts as on #481's boards.
+var t = dark ? {
+bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', sub: '#C4C1BA', line: '#2E3338', divider: '#2A2E33',
+field: '#4A4F55', ok: '#5EEAD4', danger: '#F97066', shadow: 'none', rowBg: '#24282D',
+labor: '#C4C1BA', parts: '#F08A4B', supplies: '#3987E5', tax: '#C98500', fees: '#199E70', gapLine: '#8A8E94',
+photo: 'repeating-linear-gradient(135deg, #24282D 0px, #24282D 10px, #1C1F23 10px, #1C1F23 20px)'
+} : {
+bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', sub: '#3A3E44', line: '#DEDCD5', divider: '#EEECE6',
+field: '#B9B6AE', ok: '#0F766E', danger: '#B42318', shadow: '0 1px 2px rgba(23,25,28,0.06), 0 8px 24px rgba(23,25,28,0.06)', rowBg: '#F4F3EF',
+labor: '#3A3E44', parts: '#C2410C', supplies: '#2A78D6', tax: '#EDA100', fees: '#1BAF7A', gapLine: '#8A8E94',
+photo: 'repeating-linear-gradient(135deg, #FFFFFF 0px, #FFFFFF 10px, #F1EFEA 10px, #F1EFEA 20px)'
+};
+var fmt = function (c) { return '$' + (Math.abs(c) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+// Sample data, made up, in cents.
+var J = [
+{ wording: 'Remove & replace spark plugs and coils', labor: 30000, parts: other ? 45400 : 42000, rows: [
+['Spark plug, iridium', '4 × $12.50 · Spark plugs', 5000], ['Ignition coil', '4 × $92.50 · Ignition coils', 37000] ].concat(other ? [
+['Dielectric grease', 'Qty 3 · Whole job', 2000], ['Coil boot', '$6.00 each · Ignition coils · no total, not counted', null],
+['Coil connector', '2 × $7.50 · Ignition coils · total as printed', 1400] ] : []),
+lines: [['Spark plugs', 'Oil & engine', 'Next due 189,565 mi'], ['Ignition coils', 'Oil & engine', '']] },
+{ wording: '', labor: 29000, parts: 26000, rows: null, lines: [['Front CV axle', 'Driveline', '']] },
+{ wording: '', labor: 18000, parts: null, rows: null, lines: [['Engine diagnosis', 'Other', '']] }
+];
+var supplies = 3850, tax = other ? null : 5210, fees = other ? null : 1200;
+var total = other ? 159840 : 155260;
+var labor = 0, parts = 0;
+J.forEach(function (j) { labor += j.labor || 0; parts += j.parts || 0; });
+var jobs = J.map(function (j, i) {
+var multi = j.lines.length > 1;
+return {
+heading: j.wording || j.lines[0][0], single: !multi, multi: multi, cat: j.lines[0][1],
+hasLabor: j.labor !== null, hasParts: j.parts !== null,
+labor: j.labor !== null ? fmt(j.labor) : '', parts: j.parts !== null ? fmt(j.parts) : '',
+sub: fmt((j.labor || 0) + (j.parts || 0)),
+hasRows: !!j.rows,
+rows: (j.rows || []).map(function (r) { return { name: r[0], detail: r[1], total: r[2] === null ? '—' : fmt(r[2]), color: r[2] === null ? t.muted : t.ink }; }),
+next: j.lines[0][2], hasNext: !!j.lines[0][2],
+lines: j.lines.map(function (l) { return { name: l[0], cat: l[1], next: l[2], hasNext: !!l[2] }; }),
+border: i === J.length - 1 ? '0' : '1px solid ' + t.divider
+};
+});
+var parts5 = [
+{ key: 'labor', label: 'Labor', v: labor, fill: t.labor },
+{ key: 'parts', label: 'Parts', v: parts, fill: t.parts },
+{ key: 'supplies', label: 'Shop supplies', v: supplies, fill: t.supplies },
+{ key: 'tax', label: 'Tax', v: tax, fill: t.tax },
+{ key: 'fees', label: 'Fees and sublet', v: fees, fill: t.fees }
+].filter(function (p) { return p.v !== null; });
+var entered = parts5.reduce(function (a, p) { return a + p.v; }, 0);
+var gap = total - entered;
+var gapLabel = gap < 0 ? 'Less than the figures above' : (tax === null && fees === null ? 'Tax and fees' : 'Other charges');
+var bar = parts5.slice();
+if (gap > 0) bar.push({ key: 'gap', label: gapLabel, v: gap, gap: true });
+var base = bar.reduce(function (a, p) { return a + p.v; }, 0);
+// Whole percentages adding up to 100: the points rounding lost go to the shares that lost most.
+var exact = bar.map(function (p) { return p.v * 100 / base; });
+var whole = exact.map(function (x) { return Math.floor(x); });
+var left = 100 - whole.reduce(function (a, x) { return a + x; }, 0);
+exact.map(function (x, i) { return i; }).sort(function (a, b) { return (exact[b] - whole[b]) - (exact[a] - whole[a]); })
+.slice(0, left).forEach(function (i) { whole[i]++; });
+var segs = bar.map(function (p, i) {
+var first = i === 0, last = i === bar.length - 1;
+return {
+grow: p.v, fill: p.gap ? 'transparent' : p.fill, edge: p.gap ? '1.5px dashed ' + t.gapLine : '0',
+radius: first ? '4px 0 0 4px' : (last ? '0 4px 4px 0' : '0')
+};
+});
+var rows = bar.map(function (p, i) {
+return { label: p.label, fill: p.gap ? 'transparent' : p.fill, edge: p.gap ? '1.5px dashed ' + t.gapLine : '0',
+worked: !!p.gap, share: gap >= 0 ? whole[i] + '%' : '', amount: fmt(p.v) };
+});
+if (gap < 0) rows.push({ label: gapLabel, fill: 'transparent', edge: '0', worked: true, share: '', amount: fmt(gap) });
+return {
+t: t, jobs: jobs, segs: segs, rows: rows,
+totalText: fmt(total),
+barLabel: 'Of ' + fmt(total) + ': ' + bar.map(function (p) { return p.label.toLowerCase() + ' ' + fmt(p.v); }).join(', '),
+caption: gap > 0
+? gapLabel + ' is the total minus the figures above. Worked out, not typed.'
+: 'Labor, parts, shop supplies, tax and fees add up to the total.'
+};
+}
+}
+</script>
+</body>
+</html>
