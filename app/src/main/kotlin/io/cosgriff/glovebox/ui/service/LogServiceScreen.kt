@@ -345,10 +345,27 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     /** [text] typed into one of a row's figures: two typed fill the third, only when it comes out exact. */
     fun typeRow(jobId: Int, rowId: Int, field: PartField, text: String) = editRow(jobId, rowId) { PartRowDrafts.type(it, field, text, ::parsePart, ::formatPart) }
 
-    fun nameRow(jobId: Int, rowId: Int, text: String) = editRow(jobId, rowId) { it.copy(wording = text) }
+    /**
+     * [text] typed into a row's Part: the part as the invoice prints it, keeping the line it is for. Typing one of
+     * the job's lines by its name picks that line; clearing the box clears both.
+     */
+    fun nameRow(jobId: Int, rowId: Int, text: String) {
+        val line = jobs.firstOrNull { it.id == jobId }?.lines?.firstOrNull { lineName(it) == text }
+        when {
+            line != null -> pickPart(jobId, rowId, line)
+            text.isEmpty() -> editRow(jobId, rowId) { it.copy(wording = "", line = null) }
+            else -> editRow(jobId, rowId) { it.copy(wording = text) }
+        }
+    }
 
-    /** The job's line [line] is for; null for the whole job. */
+    /** One of the job's lines picked as the row's Part: the row is named by it and tagged to it. A label only. */
+    fun pickPart(jobId: Int, rowId: Int, line: String) = editRow(jobId, rowId) { it.copy(wording = "", line = line) }
+
+    /** The job's line [line] is for; null for the whole job. Asked only of a row typed as printed. */
     fun tagRow(jobId: Int, rowId: Int, line: String?) = editRow(jobId, rowId) { it.copy(line = line) }
+
+    /** What a row's Part box shows: its wording as printed, or the line picked for it. */
+    fun partText(row: PartRowDraft<String>): String = row.wording.ifEmpty { row.line?.let(::lineName).orEmpty() }
 
     fun toggleRow(rowId: Int) {
         openRows = if (rowId in openRows) openRows - rowId else openRows + rowId

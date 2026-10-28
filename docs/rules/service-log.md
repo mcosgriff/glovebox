@@ -76,7 +76,9 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   comes out exact**; otherwise it stays blank, and nothing is rounded. A filled-in figure is worked out again when a
   typed one changes; typing over it makes it the user's. All three typed and disagreeing says so, and the typed total
   counts. A row without a total is left out and said so; no quantity is assumed. **A row's line is a label only**: it
-  never puts a price on a line or splits the labor. Shop supplies, tax, and fees and sublet are the record's own
+  never puts a price on a line or splits the labor. **Part is typed as the invoice prints it or picked from the job's
+  lines**: a picked row is named by its line and saves no wording; a typed one keeps its wording and, in a job of more
+  than one line, asks "For line". Typing a line's own name picks it. The line is never worked out from the wording. Shop supplies, tax, and fees and sublet are the record's own
   figures; the gap counts them, and is "Tax and fees" only while neither tax nor fees is entered, "Other charges" once
   either is. An import or a saved record is never filled in: only the form does that.
 - Reading an invoice (#483, `InvoiceReader`, `:domain`; the screens are #484): **it only fills the form.** No

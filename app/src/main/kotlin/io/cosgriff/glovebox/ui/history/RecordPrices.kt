@@ -105,15 +105,16 @@ private fun PartsAsPrinted(job: WorkJob) {
                     row.eachCents != null -> stringResource(R.string.prices_row_each_only, Money.format(row.eachCents))
                     else -> null
                 }
-                // In a job of several lines, an untagged row is for the whole job, and says so.
-                val line = row.line ?: stringResource(R.string.prices_row_whole_job).takeIf { job.lines.size > 1 }
+                // A row picked from the job's lines is named by its line. One typed as printed says its line; in a
+                // job of several lines, an untagged one is for the whole job, and says so.
+                val line = if (row.wording == null) null else row.line ?: stringResource(R.string.prices_row_whole_job).takeIf { job.lines.size > 1 }
                 val detail = when {
                     figures != null && line != null -> stringResource(R.string.prices_row_detail, figures, line)
                     else -> figures ?: line
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Column(Modifier.weight(1f)) {
-                        Text(row.wording ?: stringResource(R.string.prices_row_unnamed), style = MaterialTheme.typography.bodyMedium)
+                        Text(row.wording ?: row.line ?: stringResource(R.string.prices_row_unnamed), style = MaterialTheme.typography.bodyMedium)
                         detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
                     }
                     Text(row.totalCents?.let(Money::format) ?: "—", fontFamily = PlexMono)

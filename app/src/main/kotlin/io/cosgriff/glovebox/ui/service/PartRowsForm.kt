@@ -1,6 +1,7 @@
 package io.cosgriff.glovebox.ui.service
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.outlined.UnfoldLess
 import androidx.compose.material.icons.outlined.UnfoldMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +89,7 @@ private fun LogServiceForm.status(row: PartRowDraft<String>): RowStatus? {
                 stringResource(R.string.prices_row_mismatch, q.orEmpty(), each.orEmpty(), Money.format(check.workedCents), total.orEmpty()),
                 true,
             )
-            else -> if (a.totalCents == null && (row.wording.isNotBlank() || row.quantity.isNotBlank() || row.each.isNotBlank())) {
+            else -> if (a.totalCents == null && (row.wording.isNotBlank() || row.line != null || row.quantity.isNotBlank() || row.each.isNotBlank())) {
                 RowStatus(stringResource(R.string.prices_row_tag_no_total), stringResource(R.string.prices_row_no_total), true)
             } else {
                 null
@@ -155,7 +158,7 @@ internal fun PartRowsList(form: LogServiceForm, job: JobDraft<String>) {
 private fun PartRowCard(form: LogServiceForm, job: JobDraft<String>, row: PartRowDraft<String>) {
     val scheme = MaterialTheme.colorScheme
     val open = row.id in form.openRows
-    val name = row.wording.trim().ifEmpty { stringResource(R.string.prices_row_unnamed) }
+    val name = form.partText(row).trim().ifEmpty { stringResource(R.string.prices_row_unnamed) }
     val status = form.status(row)
     Surface(
         color = if (open) scheme.surfaceContainerLow else scheme.surface,
@@ -178,7 +181,8 @@ private fun ClosedRow(form: LogServiceForm, job: JobDraft<String>, row: PartRowD
         a.eachCents != null -> stringResource(R.string.prices_row_each_only, Money.format(a.eachCents!!))
         else -> null
     }
-    val line = if (job.lines.size > 1) row.line?.let(form::lineName) ?: stringResource(R.string.prices_row_whole_job) else null
+    // A row typed as printed says its line; a picked one is named by it.
+    val line = if (row.typedFor(job)) row.line?.let(form::lineName) ?: stringResource(R.string.prices_row_whole_job) else null
     val detail = when {
         figures != null && line != null -> stringResource(R.string.prices_row_detail, figures, line)
         else -> figures ?: line ?: stringResource(R.string.prices_row_nothing)
@@ -215,17 +219,7 @@ private fun OpenRow(form: LogServiceForm, job: JobDraft<String>, row: PartRowDra
     val scheme = MaterialTheme.colorScheme
     Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
-            val partLabel = stringResource(R.string.prices_row_part)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                FieldLabel(partLabel)
-                OutlinedTextField(
-                    value = row.wording,
-                    onValueChange = { form.nameRow(job.id, row.id, it) },
-                    singleLine = true,
-                    colors = fieldColors(),
-                    modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = partLabel },
-                )
-            }
+            PartField(form, job, row, name, Modifier.weight(1f))
             IconButton(onClick = { form.removeRow(job.id, row.id) }) {
                 Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.prices_row_remove, name), tint = scheme.onSurfaceVariant)
             }
@@ -244,7 +238,77 @@ private fun OpenRow(form: LogServiceForm, job: JobDraft<String>, row: PartRowDra
                 Text(status.note, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
         }
-        if (job.lines.size > 1) LinePicker(form, job, row)
+        if (row.typedFor(job)) LinePicker(form, job, row)
+    }
+}
+
+/** A row typed as printed in a job of several lines, which "For line" then asks about. */
+private fun PartRowDraft<String>.typedFor(job: JobDraft<String>): Boolean = job.lines.size > 1 && wording.isNotBlank()
+
+/**
+ * "Part": typed as the invoice prints it, or one of the job's lines picked from the list under ▾, which names the
+ * row and tags it to that line.
+ */
+@Composable
+private fun PartField(form: LogServiceForm, job: JobDraft<String>, row: PartRowDraft<String>, name: String, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    var menu by remember { mutableStateOf(false) }
+    val partLabel = stringResource(R.string.prices_row_part)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FieldLabel(partLabel)
+        Box {
+            OutlinedTextField(
+                value = form.partText(row),
+                onValueChange = { form.nameRow(job.id, row.id, it) },
+                placeholder = { Text(stringResource(R.string.prices_row_part_hint), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                trailingIcon = {
+                    IconButton(onClick = { menu = !menu }) {
+                        Icon(
+                            if (menu) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = stringResource(R.string.prices_row_pick, name),
+                            tint = scheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                singleLine = true,
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = partLabel },
+            )
+            DropdownMenu(
+                expanded = menu,
+                onDismissRequest = { menu = false },
+                shape = MaterialTheme.shapes.small,
+                containerColor = scheme.surface,
+                border = BorderStroke(1.dp, scheme.outlineVariant),
+            ) {
+                Text(
+                    stringResource(R.string.prices_row_lines),
+                    Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
+                )
+                job.lines.forEach { key ->
+                    // The line picked, not one a typed part is tagged to: that one is named as printed.
+                    val picked = row.wording.isBlank() && row.line == key
+                    DropdownMenuItem(
+                        text = { Text(form.lineName(key)) },
+                        trailingIcon = if (picked) ({ Icon(Icons.Outlined.Check, contentDescription = null, tint = scheme.onPrimaryContainer) }) else null,
+                        onClick = {
+                            menu = false
+                            form.pickPart(job.id, row.id, key)
+                        },
+                        modifier = if (picked) Modifier.background(scheme.primaryContainer) else Modifier,
+                    )
+                }
+                HorizontalDivider(Modifier.padding(top = 4.dp), color = scheme.outlineVariant)
+                Text(
+                    stringResource(if (job.lines.size > 1) R.string.prices_row_lines_note_multi else R.string.prices_row_lines_note),
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp).width(240.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

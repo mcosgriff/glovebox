@@ -588,10 +588,10 @@ object Fixtures {
         tagRow(plugs, first, "spark-plugs")
         addRow(plugs)
         val coil = jobs.first { it.id == plugs }.rows!!.last().id
-        nameRow(plugs, coil, "Ignition coil")
+        // Picked from the job's lines, so named by its line.
+        pickPart(plugs, coil, "ignition-coils")
         typeRow(plugs, coil, PartField.QUANTITY, "4")
         typeRow(plugs, coil, PartField.EACH, "92.50")
-        tagRow(plugs, coil, "ignition-coils")
         toggleRow(coil)
         addRow(plugs)
         val grease = jobs.first { it.id == plugs }.rows!!.last().id
