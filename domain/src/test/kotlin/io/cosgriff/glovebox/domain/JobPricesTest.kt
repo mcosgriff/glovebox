@@ -76,6 +76,49 @@ class JobPricesTest {
     }
 
     @Test
+    fun `the invoice's charges count against the total`() {
+        val charges = InvoiceCharges(shopSuppliesCents = 3_850, taxCents = 5_210, feesCents = 1_200)
+        val b = JobPrices.breakdown(listOf(plugsAndCoils, axle, diagnosis), 155_260, charges)!!
+        assertEquals(145_000L, b.linesCents)
+        assertEquals(155_260L, b.enteredCents)
+        assertEquals(0L, b.gapCents)
+        assertNull(b.gapKind)
+    }
+
+    @Test
+    fun `what is left is tax and fees only while neither is entered`() {
+        val jobs = listOf(plugsAndCoils, axle, diagnosis)
+        assertEquals(GapKind.TAX_AND_FEES, JobPrices.breakdown(jobs, 159_840)!!.gapKind)
+        assertEquals(GapKind.TAX_AND_FEES, JobPrices.breakdown(jobs, 159_840, InvoiceCharges(shopSuppliesCents = 3_850))!!.gapKind)
+        assertEquals(GapKind.OTHER_CHARGES, JobPrices.breakdown(jobs, 159_840, InvoiceCharges(taxCents = 5_210))!!.gapKind)
+        assertEquals(GapKind.OTHER_CHARGES, JobPrices.breakdown(jobs, 159_840, InvoiceCharges(feesCents = 1_200))!!.gapKind)
+        assertEquals(GapKind.BELOW, JobPrices.breakdown(jobs, 142_500, InvoiceCharges(taxCents = 5_210))!!.gapKind)
+    }
+
+    @Test
+    fun `a zero charge is entered`() {
+        val b = JobPrices.breakdown(listOf(axle), 60_000, InvoiceCharges(taxCents = 0))!!
+        assertEquals(GapKind.OTHER_CHARGES, b.gapKind)
+    }
+
+    @Test
+    fun `charges alone make a breakdown, and no total still means no gap`() {
+        val b = JobPrices.breakdown(emptyList(), null, InvoiceCharges(shopSuppliesCents = 1_500))!!
+        assertEquals(1_500L, b.enteredCents)
+        assertNull(b.gapCents)
+        assertNull(b.gapKind)
+        assertNull(JobPrices.breakdown(emptyList(), 10_000, InvoiceCharges.NONE))
+    }
+
+    @Test
+    fun `shares cover every charge and add up to 100`() {
+        val charges = InvoiceCharges(shopSuppliesCents = 3_850, taxCents = 5_210, feesCents = 1_200)
+        val s = JobPrices.breakdown(listOf(plugsAndCoils, axle, diagnosis), 159_840, charges)!!.shares
+        assertEquals(100, s.labor + s.parts + s.gap + s.shopSupplies + s.tax + s.fees)
+        assertEquals(CostBreakdown.Shares(48, 43, 3, 2, 3, 1), s)
+    }
+
+    @Test
     fun `ticking lines gives each a job of its own, and unticking takes it out`() {
         val jobs = JobGroups.sync(emptyList(), listOf("plugs", "coils"))
         assertEquals(listOf(listOf("plugs"), listOf("coils")), jobs.map { it.lines })
