@@ -1,0 +1,337 @@
+{
+ "make": "Volkswagen",
+ "model": "CC",
+ "modelAliases": [],
+ "years": [
+  2014,
+  2015,
+  2016
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11023836",
+   "number": "Turbocharger FAQ",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This supporting FAQ is for the Turbocharger Limited Warranty Extension Class Action Settlement. This extension includes 2008-2015 GTI and Golf R*, 2012-2013 VW Beetle*, 2009 VW Jetta SportWagen*, 2013 VW Jetta Sedan and GLI*, 2009-2016 VW Eos*, 2008-2010 VW Passat*, 2009-2017 VW CC*, 2009-2018 VW Tiguan*, Certain model year 2015-2018 VW Golf*, 2015-2021 VW GTI*, 2015-2019 VW Golf R*, 2015-2019 VW Golf SportWagen and Alltrack*, 2019-2024 VW Jetta GLI*, 2019-2021 VW Arteon*, 2018-2023 VW Atlas*, and 2020-2023 VW Atlas Cross Sport*",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10235284",
+   "number": "VWP-18-11",
+   "date": "2023-04-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document was revised. The model year chat was removed for VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "STEERING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
+  },
+  {
+   "id": "10210221",
+   "number": "Circular24EFREV1",
+   "date": "2022-04-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles. Criteria 05 added to claiming instructions - Criteria 05 added to claiming instructions",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10198167",
+   "number": "VWP-21-03",
+   "date": "2021-06-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new Intake Manifold Warranty Extension for 2013, 2014, 2016 & 2017 Model Year with Engine Codes CBFA and CCTA",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10172985",
+   "number": "VWP-20-03",
+   "date": "2020-03-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new intake manifold warranty extension for 2015 Eos, Tiguan and CC vehicles",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10169142",
+   "number": "Water Pump FAQ",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the Frequently Asked Questions for the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169142-0001.pdf"
+  },
+  {
+   "id": "10169141",
+   "number": "VWP-19-08",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169141-0001.pdf"
+  },
+  {
+   "id": "10168325",
+   "number": "Circular 24EF",
+   "date": "2019-11-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10168326",
+   "number": "Dealer 24EF",
+   "date": "2019-11-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10168669",
+   "number": "VWP-19-07",
+   "date": "2019-11-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers of the new Airbag Control Module Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10149941",
+   "number": "VWP-18-11 201810",
+   "date": "2018-10-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149941-9999.pdf"
+  },
+  {
+   "id": "10149942",
+   "number": "VWP-18-11",
+   "date": "2018-10-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149942-9999.pdf"
+  },
+  {
+   "id": "10128045",
+   "number": "V241702 2045138",
+   "date": "2017-02-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This technical bulletin was updated per powertain team and warranty team. Info from this bulletin is combined with TB 2031075 (V241208) and 2038161 (V241506) due to warranty extension claiming/processing confusion. (Basically 3 technical bulletins covering the same DTC were combined into 1 technical bulletin). By combining the three technical bulletins it allowed for archiving (removal from publication) of V241208 and V241506 stated above.",
+   "products": [
+    {
+     "model": "CC",
+     "years": [
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  }
+ ]
+}
