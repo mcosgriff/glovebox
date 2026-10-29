@@ -3,10 +3,86 @@
  "model": "Golf R",
  "modelAliases": [],
  "years": [
-  2013
+  2013,
+  2015,
+  2016,
+  2018,
+  2019,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
  ],
  "asOf": "2026-10-25",
  "bulletins": [
+  {
+   "id": "11034611",
+   "number": "Dealer 91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update addresses a potential issue with special characters being broadcast over HD radio.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034611-0001.pdf"
+  },
+  {
+   "id": "11034610",
+   "number": "Customer email_91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Your vehicle is currently eligible for the 91UB software update designed to:",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034610-0001.pdf"
+  },
+  {
+   "id": "11023844",
+   "number": "VWP-25-16",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable Settlement Class Vehicles, the New Vehicle Limited Warranty will be extended to cover 50% of the repair or replacement of the Turbocharger by an authorized Volkswagen Dealer for 8.5 years or 85,000 miles, whichever occurs first, from the vehicle’s in-service date.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2015,
+      2016,
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023844-0001.pdf"
+  },
   {
    "id": "11023836",
    "number": "Turbocharger FAQ",
@@ -18,7 +94,11 @@
     {
      "model": "GOLF R",
      "years": [
-      2013
+      2013,
+      2015,
+      2016,
+      2018,
+      2019
      ]
     }
    ],
@@ -26,6 +106,406 @@
     "POWER TRAIN"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11017575",
+   "number": "Dealer 38G3_20250403",
+   "date": "2025-04-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Vehicle closures",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11017575-0001.pdf"
+  },
+  {
+   "id": "11016574",
+   "number": "Dealer 38G3_20250328",
+   "date": "2025-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Work instructions updated: Fuse pull to prevent battery draw is now required for all vehicles.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11016574-0001.pdf"
+  },
+  {
+   "id": "11016571",
+   "number": "Circular 38G3_20250328",
+   "date": "2025-03-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Work instructions updated: Fuse pull to prevent battery draw is now required for all vehicles.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11016571-0001.pdf"
+  },
+  {
+   "id": "11016573",
+   "number": "Dealer 38G3_20250312",
+   "date": "2025-03-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Added workaround steps to prevent a 12V battery draw after the software update.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11016573-0001.pdf"
+  },
+  {
+   "id": "11016570",
+   "number": "Circular 38G3_20250312",
+   "date": "2025-03-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Added workaround steps to prevent a 12V battery draw after the software update.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11016570-0001.pdf"
+  },
+  {
+   "id": "11014942",
+   "number": "Dealer 38G3_20250228",
+   "date": "2025-02-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. REPAIRS UNDER THIS ACTION HAVE BEEN PAUSED.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014942-0001.pdf"
+  },
+  {
+   "id": "11014941",
+   "number": "Dealer 38G3_20250222",
+   "date": "2025-02-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Updated to include additional model years & updated vehicle counts Claiming instructions added to include Criteria 02 Owner letters updated to reflect added model years",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014941-0001.pdf"
+  },
+  {
+   "id": "11014938",
+   "number": "Circular 38G3_20250222",
+   "date": "2025-02-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software. Updated to include additional model years & updated vehicle counts Claiming instructions added to include Criteria 02 Owner letters updated to reflect added model years",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014938-0001.pdf"
+  },
+  {
+   "id": "11014937",
+   "number": "Circular 38G3",
+   "date": "2025-02-21",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014937-0001.pdf"
+  },
+  {
+   "id": "11014940",
+   "number": "Dealer 38G3",
+   "date": "2025-02-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Transmission Control Module (TCM) Software",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11014940-0001.pdf"
+  },
+  {
+   "id": "11007386",
+   "number": "Dealer 10H9_REV1",
+   "date": "2024-08-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An engine cover was either not installed during vehicle production, or was removed as part of a previous recall remedy. A new and improved engine cover is now available and will be installed on affected vehicles free of charge. Revised: A second wave of vehicles has been added to this service action.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11007386-0001.pdf"
+  },
+  {
+   "id": "11007384",
+   "number": "Circular 10H9_REV1",
+   "date": "2024-08-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An engine cover was either not installed during vehicle production, or was removed as part of a previous recall remedy. A new and improved engine cover is now available and will be installed on affected vehicles free of charge. Revised: A second wave of vehicles has been added to this service action.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11007384-0001.pdf"
+  },
+  {
+   "id": "11001495",
+   "number": "Circular 10H9",
+   "date": "2024-05-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An engine cover was either not installed during vehicle production, or was removed as part of a previous recall remedy. A new and improved engine cover is now available and will be installed on affected vehicles free of charge.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2016,
+      2018,
+      2019,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2016,
+      2018,
+      2019,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10250796",
+   "number": "V3723012070973_2",
+   "date": "2024-02-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Transmission sets fault code P0C29 (the other faults mentioned above may be present as consequential to P0C29) after previously performing Service Action 34K1.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "POWER TRAIN"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10241195",
+   "number": "VWP-23-05",
+   "date": "2023-08-03",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Auxiliary Hydraulic Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "HYDRAULIC",
+    "SERVICE BRAKES"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10241186",
+   "number": "Dealer 34K1",
+   "date": "2023-08-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce Repair Available - Service Action 34K1 / TCM Software",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "POWER TRAIN",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10238208",
+   "number": "Dealer 40S9",
+   "date": "2023-06-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce Service Action 40S9 / Suspension Strut Mountings",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "SUSPENSION",
+    "SUSPENSION:FRONT:MACPHERSON STRUT"
+   ],
+   "pdf": null
   },
   {
    "id": "10149941",
@@ -38,7 +518,10 @@
     {
      "model": "GOLF R",
      "years": [
-      2013
+      2013,
+      2015,
+      2016,
+      2018
      ]
     }
    ],
@@ -59,7 +542,10 @@
     {
      "model": "GOLF R",
      "years": [
-      2013
+      2013,
+      2015,
+      2016,
+      2018
      ]
     }
    ],
