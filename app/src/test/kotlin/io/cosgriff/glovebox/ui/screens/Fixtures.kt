@@ -1,5 +1,15 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.domain.InvoiceFill
+import io.cosgriff.glovebox.domain.FilledJob
+import io.cosgriff.glovebox.domain.FilledFigure
+import io.cosgriff.glovebox.domain.InvoiceRecommendationNote
+import io.cosgriff.glovebox.domain.VinMismatch
+import io.cosgriff.glovebox.domain.InvoiceLine
+import io.cosgriff.glovebox.domain.LineRole
+import io.cosgriff.glovebox.domain.InvoiceFigure
+import io.cosgriff.glovebox.domain.OdometerRole
+import io.cosgriff.glovebox.ui.service.ReadInvoice
 import io.cosgriff.glovebox.ui.bulletins.BulletinsState
 import io.cosgriff.glovebox.domain.VehicleBulletins
 import io.cosgriff.glovebox.domain.BulletinProduct
@@ -572,6 +582,59 @@ object Fixtures {
         setParts(byLine.getValue("spark-plugs").id, "420.00")
         setLabor(byLine.getValue("oil").id, "30.00")
         setParts(byLine.getValue("oil").id, "45.00")
+    }
+
+    /**
+     * A shop's emailed invoice read into a new service (#484), made-up shop, VIN ending and figures: an alignment with
+     * its labor and parts, a brake inspection whose labor no sum agreed with (left blank and outlined), a total that
+     * didn't read, and an invoice VIN that isn't the truck's.
+     */
+    val invoiceFill = InvoiceFill(
+        date = LocalDate.of(2026, 6, 2),
+        odometer = 62_410,
+        shop = "Main Street Auto",
+        totalCents = null,
+        jobs = listOf(
+            FilledJob("Front Wheel Alignment", filed = null, guesses = listOf("alignment"), laborCents = 12_995, partsCents = 0, laborUnread = false, partsUnread = false),
+            FilledJob("Brake Inspection", filed = null, guesses = emptyList(), laborCents = null, partsCents = 0, laborUnread = true, partsUnread = false),
+        ),
+        recommendations = listOf(InvoiceRecommendationNote("Coolant Flush", 15_999)),
+        odometerIn = null,
+        vinMismatch = VinMismatch("4821", "1937"),
+        unread = setOf(FilledFigure.TOTAL),
+        leftOut = emptyList(),
+    )
+
+    val readInvoice = ReadInvoice(
+        invoiceFill,
+        listOf(
+            InvoiceLine(1, listOf("Main Street Auto", "Invoice #20417")),
+            InvoiceLine(1, listOf("06/02/2026")),
+            InvoiceLine(1, listOf("Odometer Out: 62410")),
+            InvoiceLine(1, listOf("Front Wheel Alignment", "SUBTOTAL: $129.95")),
+            InvoiceLine(1, listOf("Labor: $129.95")),
+            InvoiceLine(2, listOf("Brake Inspection", "SUBTOTAL: $45.00")),
+            InvoiceLine(2, listOf("Labor: $44.00")),
+            InvoiceLine(2, listOf("Coolant Flush", "$159.99")),
+            InvoiceLine(2, listOf("Sales Tax: $12.32")),
+        ),
+        listOf(
+            listOf(LineRole.Shop),
+            listOf(LineRole.Date),
+            listOf(LineRole.Odometer(OdometerRole.OUT, 62_410, taken = true)),
+            listOf(LineRole.Work(0)),
+            listOf(LineRole.Figure(InvoiceFigure.LABOR, 12_995, job = 0, taken = true)),
+            listOf(LineRole.Work(1)),
+            listOf(LineRole.Figure(InvoiceFigure.LABOR, 4_400, job = 1, taken = false)),
+            listOf(LineRole.Recommended),
+            listOf(LineRole.Figure(InvoiceFigure.TAX, 1_232, job = null, taken = null)),
+        ),
+    )
+
+    /** A new service filled from [invoiceFill], nothing saved yet. */
+    fun logServiceFromInvoice(): LogServiceForm = logService().apply {
+        fill(invoiceFill, notes = "Recommended on the invoice: Coolant Flush ($159.99)")
+        invoice = readInvoice
     }
 
     /**

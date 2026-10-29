@@ -31,6 +31,8 @@ import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.service.WorkAndPrices
+import io.cosgriff.glovebox.ui.service.InvoiceCard
+import io.cosgriff.glovebox.ui.service.WhatWasRead
 import io.cosgriff.glovebox.ui.service.CostCard
 import io.cosgriff.glovebox.ui.settings.CategoryRulesContent
 import io.cosgriff.glovebox.ui.settings.SettingsContent
@@ -176,6 +178,31 @@ class ScreensScreenshotTest(private val shade: Shade) {
             Fixtures.logService(), newPhotos = emptyList(), photoProblem = null,
             onDone = {}, onSave = {}, onDeleteInstead = {}, onTakePhoto = {}, onChoosePhotos = {}, onRemoveNewPhoto = {},
         )
+    }
+
+    /** Read an invoice (#484): what it filled, the VIN question and a figure that didn't read. */
+    @Test
+    fun logServiceInvoice() {
+        val form = Fixtures.logServiceFromInvoice()
+        compose.shoot("log_service_invoice", shade) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
+                InvoiceCard(form, "2019 Blue truck", onRead = {})
+                WorkAndPrices(form)
+            }
+        }
+    }
+
+    @Test
+    fun logServiceInvoiceCost() {
+        val form = Fixtures.logServiceFromInvoice()
+        compose.shoot("log_service_invoice_cost", shade) {
+            Column(Modifier.padding(20.dp)) { CostCard(form) }
+        }
+    }
+
+    @Test
+    fun whatWasRead() = compose.shootScreen("invoice_what_was_read", shade) {
+        WhatWasRead(Fixtures.readInvoice, onDismiss = {})
     }
 
     @Test

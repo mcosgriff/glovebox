@@ -81,7 +81,7 @@ class LogServiceScreenTest {
     private fun open(route: LogServiceRoute): LogServiceViewModel {
         val vm = t.owned(
             LogServiceViewModel(
-                routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(), t.db.catalogRules(), t.actions, t.picker,
+                routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(), t.db.catalogRules(), t.actions, t.picker, t.invoices,
             ),
         )
         compose.setContent {
