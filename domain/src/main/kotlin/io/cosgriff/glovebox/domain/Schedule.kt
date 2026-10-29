@@ -119,8 +119,9 @@ object ActiveInterval {
 
     /**
      * [of], with the months Glovebox works out for an oil change that has none ([OilMonths]). [oil] is whether the item
-     * is the oil change ([OilMonths.isOil]); [unit] is the vehicle's, which the interval is in. **A reminder is counted
-     * from this**; [of] alone is the item's own figures, as saved.
+     * is the oil change ([OilMonths.isOil]); [unit] is the vehicle's, which the interval is in; [own] is the owner's own
+     * oil change interval for the vehicle ([OwnOil]), which an oil change counts by in place of every figure it has.
+     * **A reminder is counted from this**; [of] alone is the item's own figures, as saved.
      */
     fun counted(
         normal: Interval?,
@@ -130,11 +131,43 @@ object ActiveInterval {
         useE85: Boolean = false,
         oil: Boolean,
         unit: DistanceUnit,
-    ): CountedInterval? = of(normal, severe, useSevere, e85, useE85)?.let { OilMonths.counted(it, oil, unit) }
+        own: Interval? = null,
+    ): CountedInterval? = OwnOil.counted(of(normal, severe, useSevere, e85, useE85), own, oil, unit)
 }
 
-/** The interval a reminder counts by, and whether its months are Glovebox's ([OilMonths]) rather than the item's own. */
-data class CountedInterval(val interval: Interval, val monthsWorkedOut: Boolean = false)
+/**
+ * The interval a reminder counts by; whether its months are Glovebox's ([OilMonths]) rather than the item's own or the
+ * owner's; and whether it is the owner's own oil change interval ([OwnOil]) rather than the item's figures.
+ */
+data class CountedInterval(val interval: Interval, val monthsWorkedOut: Boolean = false, val owners: Boolean = false)
+
+/**
+ * The owner's own oil change interval for one vehicle (#517), set from Vehicle details and stored on the vehicle in its
+ * own unit, as typed. **Once set, every oil change on the vehicle counts by it, whether Severe (or E85) is on or off**;
+ * "Use the maker's" clears it, and the maker's (or typical) figure counts again, with its worked-out months. Its months
+ * follow its miles at [OilMonths.MILES_A_MONTH] a month (stored as none) until the owner types months; then they stay
+ * as typed, whatever the miles. Glovebox never suggests a shorter interval as the vehicle ages: the owner decides.
+ */
+object OwnOil {
+    /** The owner's interval as stored: [distance] and [months] as typed, [months] null while they follow the miles. Null when it isn't set. */
+    fun of(distance: Int?, months: Int?): Interval? = if (distance == null && months == null) null else Interval(distance, months)
+
+    /** What the sheet's boxes hold, as it would be saved; null when it can't be (both blank, zero, not a whole number). */
+    fun parse(distanceText: String, monthsText: String): Interval? = IntervalInput.parse(distanceText, monthsText)
+
+    /** The months the owner's interval counts by: [typed] when there are some, else worked out from [distance]. */
+    fun months(distance: Int?, typed: Int?, unit: DistanceUnit): Int? = typed ?: distance?.let { OilMonths.forDistance(it, unit) }
+
+    /**
+     * What an item counts by, given [item]'s own interval in force: [own] when the item is the oil change ([oil]) and the
+     * owner has set one, else [item]; either way with the months Glovebox works out when it has none.
+     */
+    fun counted(item: Interval?, own: Interval?, oil: Boolean, unit: DistanceUnit): CountedInterval? {
+        val owners = oil && own != null
+        val interval = (if (owners) own else item) ?: return null
+        return OilMonths.counted(interval, oil, unit).copy(owners = owners)
+    }
+}
 
 /**
  * The one time limit Glovebox works out (#517, ADR-0015). An oil change given in miles alone gets a month for every

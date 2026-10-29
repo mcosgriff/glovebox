@@ -56,6 +56,8 @@ import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.domain.Exports
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
+import io.cosgriff.glovebox.ui.components.OilIntervalSheet
+import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.ui.export.AppExportWords
 import io.cosgriff.glovebox.ui.export.Exportable
 import io.cosgriff.glovebox.ui.export.ExportPreview
@@ -442,6 +444,18 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** The owner's own oil change interval, not set yet: the schedule's 7,500 mi with Glovebox's 9 months beside it (#517). */
+    @Test
+    fun oilInterval() = compose.shootScreen("oil_interval", shade) {
+        OilIntervalSheet(Fixtures.oilChange, own = null, unit = DistanceUnit.MILES, onSave = {}, onDismiss = {})
+    }
+
+    /** The owner's 5,000 mi with months left to follow it (6, Glovebox's), and Use the typical. */
+    @Test
+    fun oilIntervalYours() = compose.shootScreen("oil_interval_yours", shade) {
+        OilIntervalSheet(Fixtures.oilChange, own = Interval(5_000, null), unit = DistanceUnit.MILES, onSave = {}, onDismiss = {})
+    }
+
     @Test
     fun checkIn() = compose.shootScreen("check_in", shade) {
         CheckInDialog(VehicleCheckIn.Default, default = 14, onSave = {}, onDismiss = {})
@@ -459,7 +473,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
             nickname = Fixtures.truck.nickname.orEmpty(), noticePrefs = NoticePrefs(), onNicknameChange = {},
             onBack = {}, onOpenRecalls = {}, onOpenSchedule = {}, onDelete = {}, onOpenTorqueSpecs = {}, onOpenMoreTakes = {},
             onOpenReadings = {}, onOpenImport = {}, onOpenDocuments = {}, onClearHistory = {},
-            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onEditVin = {}, onLookUpVin = {}, onSetOffset = {}, onChangeUnit = {},
+            onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onEditVin = {}, onLookUpVin = {}, onSetOffset = {}, onSetOil = {}, onChangeUnit = {},
             onSell = {}, onPickPhoto = {}, onRemovePhoto = {},
         )
     }

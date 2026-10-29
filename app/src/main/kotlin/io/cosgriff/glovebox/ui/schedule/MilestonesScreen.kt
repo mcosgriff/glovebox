@@ -98,6 +98,7 @@ import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.data.log.toEntry
 import io.cosgriff.glovebox.data.log.toTracked
+import io.cosgriff.glovebox.data.log.ownOil
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -175,7 +176,7 @@ class MilestonesViewModel @Inject constructor(
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null, vehicle.unit) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null, vehicle.unit, vehicle.ownOil()) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = vehicle.highestReading(records, readings)?.let { swap.actual(it) }

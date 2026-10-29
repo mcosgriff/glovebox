@@ -74,6 +74,8 @@ import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.ui.components.OilChange
+import io.cosgriff.glovebox.ui.components.OilSource
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.categoryOf
@@ -479,6 +481,9 @@ object Fixtures {
         ),
     )
 
+    /** The truck's oil change as its schedule gives it: 7,500 mi with no months, so 9 are Glovebox's (#517). */
+    val oilChange: OilChange get() = OilChange(OilMonths.counted(Interval(7_500, null), oil = true, unit), OilSource.TYPICAL)
+
     val vehicleDetails = VehicleDetails(
         vehicle = truck,
         schedule = ScheduleSummary(tracked = tracked.size, severe = 0),
@@ -486,6 +491,7 @@ object Fixtures {
         torqueSpecs = 3,
         documentCount = 2,
         documentBytes = 1_450_000,
+        oil = oilChange,
     )
 
     val schedule: ScheduleState = run {

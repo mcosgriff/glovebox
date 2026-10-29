@@ -25,6 +25,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.semantics.SemanticsActions
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.ui.service.titleWord
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.LicensePlates
@@ -343,6 +345,32 @@ class VehicleDetailsScreenTest {
         compose.onNode(hasText(g.string(R.string.offset_remove)) and hasClickAction()).performScrollTo().click()
         compose.awaitThat { g.db.vehicles().byId(id)?.odometerOffset == 0 }
         assertNull(g.vehicle(id)!!.clusterSwappedOn)
+    }
+
+    @Test
+    fun `the owner's own oil interval is saved as typed, months following the miles, and Use the maker's clears it`() {
+        val id = g.add(VehicleFixtures.wagon)
+        runBlocking {
+            g.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Change engine oil", service = "oil", knownList = "made-up", intervalMiles = 10_000, intervalMonths = null)))
+        }
+        show(id)
+        tap(g.string(R.string.oil_title))
+        field(DistanceUnit.MILES.titleWord).performTextInput("7500")
+        compose.onNode(hasText(g.string(R.string.save)) and hasClickAction()).performScrollTo().click()
+        compose.awaitThat { g.vehicle(id)?.ownOilMiles != null }
+        assertEquals(7_500 to null, g.vehicle(id)!!.let { it.ownOilMiles to it.ownOilMonths })
+
+        tap(g.string(R.string.oil_title))
+        compose.onNode(hasText(g.string(R.string.oil_use_maker)) and hasClickAction()).performScrollTo().click()
+        compose.awaitThat { g.vehicle(id)?.ownOilMiles == null }
+        assertNull(g.vehicle(id)!!.ownOilMonths)
+    }
+
+    @Test
+    fun `a vehicle with no oil change on its schedule has no Oil change row`() {
+        val id = g.add(VehicleFixtures.wagon)
+        show(id)
+        compose.onAllNodes(hasText(g.string(R.string.oil_title))).assertCountEquals(0)
     }
 
     @Test

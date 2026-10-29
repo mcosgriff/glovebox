@@ -88,6 +88,13 @@ import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.resetters
 import io.cosgriff.glovebox.ui.ScheduleRoute
 import io.cosgriff.glovebox.data.log.clusterSwap
+import io.cosgriff.glovebox.data.log.isOil
+import io.cosgriff.glovebox.data.log.ownOil
+import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.ui.components.OilChange
+import io.cosgriff.glovebox.ui.components.OilIntervalSheet
+import io.cosgriff.glovebox.ui.components.oilChange
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -142,6 +149,7 @@ class ScheduleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     logs: VehicleLogs,
     private val schedule: ScheduleDao,
+    private val vehicles: VehicleDao,
     private val actions: RecordActions,
     private val milestones: MilestoneDao,
     private val writer: ScheduleWriter,
@@ -155,6 +163,18 @@ class ScheduleViewModel @Inject constructor(
         .screenState(viewModelScope, false)
 
     private var entities: Map<String, ScheduleItemEntity> = emptyMap()
+
+    /** The vehicle's oil change as its schedule gives it, when [item] is that oil change already saved (#517); null otherwise. */
+    fun oilChangeFor(item: DraftItem): OilChange? {
+        val unit = state.value?.vehicle?.unit ?: return null
+        if (entities[item.key]?.isOil() != true) return null
+        return entities.values.toList().oilChange(unit)
+    }
+
+    /** The owner's own oil change interval for the vehicle (#517), as typed; null is "Use the maker's". */
+    fun setOwnOil(own: Interval?) {
+        viewModelScope.launch { vehicles.setOwnOil(vehicleId, own?.miles, own?.months) }
+    }
 
     /** The schedule as an import file: every tracked item, as it is saved. */
     fun written(): WrittenFile = ScheduleExport.file(entities.values.sortedBy { it.id }.map { it.toSaved() }, state.value?.vehicle?.unit ?: DistanceUnit.MILES)
@@ -364,6 +384,20 @@ fun ScheduleScreen(
                 onDismiss = { enteringLastDone = false },
             )
         }
+        val oil = vm.oilChangeFor(editing)
+        var settingOil by rememberSaveable { mutableStateOf(false) }
+        if (settingOil && oil != null) {
+            OilIntervalSheet(
+                oil = oil,
+                own = state.vehicle.ownOil(),
+                unit = state.vehicle.unit,
+                onSave = {
+                    vm.setOwnOil(it)
+                    settingOil = false
+                },
+                onDismiss = { settingOil = false },
+            )
+        }
         BackHandler(onBack = vm::closeEditor)
         ScheduleItemEditor(
             item = editing,
@@ -386,6 +420,7 @@ fun ScheduleScreen(
                     estimate = log?.estimate,
                 )
             },
+            ownOil = oil?.let { OwnOilLink(state.vehicle.ownOil()) { settingOil = true } },
         )
         return
     }

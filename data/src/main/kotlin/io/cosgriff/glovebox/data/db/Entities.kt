@@ -136,6 +136,13 @@ data class VehicleEntity(
      * the Notifications setting, 0 never asks.
      */
     val mileageCheckInDays: Int? = null,
+    /**
+     * The owner's own oil change interval (#517, OwnOil in :domain), a schedule figure in [distanceUnit] as typed; null
+     * when not set. Every oil change on the vehicle counts by it over its own figures, Severe or not.
+     */
+    val ownOilMiles: Int? = null,
+    /** Its months as typed; null while they follow [ownOilMiles] (OilMonths.forDistance), which is never stored. */
+    val ownOilMonths: Int? = null,
 )
 
 @Entity(

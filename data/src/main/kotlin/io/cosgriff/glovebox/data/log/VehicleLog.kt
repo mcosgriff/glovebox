@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.domain.OwnOil
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ServiceEntry
@@ -92,7 +93,7 @@ fun VehicleEntity.log(
         swap = swap,
         entries = records.map { it.toEntry(swap, links) },
         updates = readings.toReadings(swap),
-        tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap, unit) },
+        tracked = items.filter { it.tracked }.mapNotNull { it.toTracked(settings.defaultRule, swap, unit, ownOil()) },
         lead = settings.leadFor(unit),
         defaultRule = settings.defaultRule,
         answering = links,
@@ -107,11 +108,12 @@ fun VehicleEntity.highestReading(records: List<ServiceRecordWithItems>, readings
 
 /**
  * The interval and rule in force for a schedule item, as a reminder ([TrackedItem.of]); null if it is none. [unit] is
- * the vehicle's, which an oil change's worked-out months are figured in ([countedInterval]).
+ * the vehicle's, which an oil change's worked-out months are figured in, and [ownOil] the owner's own oil change
+ * interval for it ([VehicleEntity.ownOil]), which an oil change counts by instead ([countedInterval]).
  */
-fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?, unit: DistanceUnit): TrackedItem? {
+fun ScheduleItemEntity.toTracked(defaultRule: DueRule, swap: ClusterSwap?, unit: DistanceUnit, ownOil: Interval?): TrackedItem? {
     val snooze = if (snoozedUntilOdometer != null || snoozedUntilDate != null) Snooze(snoozedUntilOdometer, snoozedUntilDate) else null
-    val counted = countedInterval(unit)
+    val counted = countedInterval(unit, ownOil)
     return TrackedItem.of(
         id, name, counted?.interval, rule ?: defaultRule, snooze, firstMiles, severeOnly, useSevere, swap,
         monthsWorkedOut = counted?.monthsWorkedOut ?: false,
@@ -130,9 +132,19 @@ fun ScheduleItemEntity.activeInterval(): Interval? = ActiveInterval.of(
     useE85 = useE85,
 )
 
-/** [activeInterval], with the months Glovebox works out for an oil change that has none (#517, [ActiveInterval.counted]). */
-fun ScheduleItemEntity.countedInterval(unit: DistanceUnit): CountedInterval? =
-    activeInterval()?.let { OilMonths.counted(it, OilMonths.isOil(templateKey, service), unit) }
+/**
+ * What a reminder counts by (#517, [ActiveInterval.counted]): for an oil change, [ownOil] when the owner has set one
+ * ([VehicleEntity.ownOil]), Severe or not; otherwise [activeInterval]. Either way with the months Glovebox works out
+ * for an oil change that has none.
+ */
+fun ScheduleItemEntity.countedInterval(unit: DistanceUnit, ownOil: Interval?): CountedInterval? =
+    OwnOil.counted(activeInterval(), ownOil, isOil(), unit)
+
+/** Whether this is the vehicle's oil change ([OilMonths.isOil]): the item the owner's own oil interval replaces. */
+fun ScheduleItemEntity.isOil(): Boolean = OilMonths.isOil(templateKey, service)
+
+/** The owner's own oil change interval for this vehicle ([OwnOil]), in its unit as typed; null when it isn't set. */
+fun VehicleEntity.ownOil(): Interval? = OwnOil.of(ownOilMiles, ownOilMonths)
 
 private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 

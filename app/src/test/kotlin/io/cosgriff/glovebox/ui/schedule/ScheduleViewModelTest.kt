@@ -37,7 +37,7 @@ class ScheduleViewModelTest {
         val vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
                 routeHandle(ScheduleRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
-                world.db.schedule(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
+                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
             )
         }
         world.keep(vm.state)
@@ -299,7 +299,7 @@ class ScheduleViewModelTest {
         val vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
                 routeHandle(ScheduleRoute(404)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
-                world.db.schedule(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
+                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
             )
         }
         world.keep(vm.state)

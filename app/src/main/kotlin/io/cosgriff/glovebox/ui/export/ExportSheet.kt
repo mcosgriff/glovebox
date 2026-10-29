@@ -89,6 +89,7 @@ import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.data.log.toTracked
+import io.cosgriff.glovebox.data.log.ownOil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -267,7 +268,7 @@ class ExportViewModel @Inject constructor(
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->
-                val tracked = item.toTracked(log.defaultRule, swap, v.unit) ?: return@mapNotNull null
+                val tracked = item.toTracked(log.defaultRule, swap, v.unit, v.ownOil()) ?: return@mapNotNull null
                 // As the odometer read that day, to match the record it comes from.
                 ExportScheduleLine(item.name, tracked.interval.text(v.unit, item.firstMiles, monthsOurs = tracked.monthsWorkedOut), ServiceLog.lastDone(item.id, log.entries)?.let { swap.asReadOn(it) }, item.id)
             },

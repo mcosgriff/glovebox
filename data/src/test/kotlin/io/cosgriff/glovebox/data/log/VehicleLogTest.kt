@@ -114,11 +114,11 @@ class VehicleLogTest {
     @Test
     fun `an item's own rule, snooze and swap are passed to its reminder`() {
         val snoozed = ScheduleItemEntity(id = 3, vehicleId = 1, name = "Wipers", intervalMiles = null, intervalMonths = 12, ruleOverride = DueRule.TIME_ONLY.name, snoozedUntilDate = day)
-        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, swap, DistanceUnit.MILES)!!
+        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, swap, DistanceUnit.MILES, ownOil = null)!!
         assertEquals(DueRule.TIME_ONLY, s.rule)
         assertEquals(Snooze(untilDate = day), s.snooze)
         assertEquals(-130_000, s.zeroAt)
-        assertEquals(DueRule.WHICHEVER_FIRST, snoozed.copy(ruleOverride = null).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!.rule)
+        assertEquals(DueRule.WHICHEVER_FIRST, snoozed.copy(ruleOverride = null).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, ownOil = null)!!.rule)
     }
 
     @Test
@@ -127,17 +127,41 @@ class VehicleLogTest {
         val known = ScheduleItemEntity(id = 5, vehicleId = 1, name = "Change engine oil and filter", service = "oil", intervalMiles = 10_000, intervalMonths = null)
         val other = ScheduleItemEntity(id = 6, vehicleId = 1, name = "Spark plugs", service = "spark-plugs", intervalMiles = 40_000, intervalMonths = null)
         listOf(typical, known).forEach { item ->
-            val t = item.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!
+            val t = item.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, ownOil = null)!!
             assertEquals(Interval(10_000, 12), t.interval)
             assertTrue(t.monthsWorkedOut)
             assertNull(item.intervalMonths)
             assertEquals(Interval(10_000, null), item.activeInterval())
         }
-        val plugs = other.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!
+        val plugs = other.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, ownOil = null)!!
         assertEquals(Interval(40_000, null), plugs.interval)
         assertFalse(plugs.monthsWorkedOut)
         // A kilometre vehicle's 16,000 km is a manual's 10,000 mi.
-        assertEquals(Interval(16_000, 12), typical.copy(intervalMiles = 16_000).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.KILOMETERS)!!.interval)
+        assertEquals(Interval(16_000, 12), typical.copy(intervalMiles = 16_000).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.KILOMETERS, ownOil = null)!!.interval)
+    }
+
+    @Test
+    fun `the owner's own oil interval is what every oil change on the vehicle counts by, Severe or not`() {
+        val severe = ScheduleItemEntity(id = 4, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 10_000, intervalMonths = 12, severeMiles = 5_000, severeMonths = 6, useSevere = true)
+        val plugs = ScheduleItemEntity(id = 6, vehicleId = 1, name = "Spark plugs", service = "spark-plugs", intervalMiles = 40_000, intervalMonths = null)
+        val own = vehicle(swapped = false).copy(ownOilMiles = 7_500).ownOil()
+        val t = severe.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, own)!!
+        // Months follow the owner's miles until typed: Glovebox's, and said so.
+        assertEquals(Interval(7_500, 9), t.interval)
+        assertTrue(t.monthsWorkedOut)
+        assertEquals(Interval(7_500, 9), severe.copy(useSevere = false).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, own)!!.interval)
+        assertEquals(Interval(7_500, 12), severe.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, Interval(7_500, 12))!!.interval)
+        assertEquals(Interval(40_000, null), plugs.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, own)!!.interval)
+        // Use the maker's: none of the owner's, and the item's own figures count again.
+        assertNull(vehicle(swapped = false).ownOil())
+        assertEquals(Interval(5_000, 6), severe.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES, null)!!.interval)
+    }
+
+    @Test
+    fun `a vehicle's log counts its oil change by the owner's interval`() {
+        val v = vehicle(swapped = false).copy(ownOilMiles = 6_000, ownOilMonths = 6)
+        val items = listOf(ScheduleItemEntity(id = 4, vehicleId = v.id, name = "Oil change", templateKey = "oil", intervalMiles = 10_000, intervalMonths = null))
+        assertEquals(Interval(6_000, 6), v.log(items, emptyList(), emptyList(), Settings()).tracked.single().interval)
     }
 
     @Test
