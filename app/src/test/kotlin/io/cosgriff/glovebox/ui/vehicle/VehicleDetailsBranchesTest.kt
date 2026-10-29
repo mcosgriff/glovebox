@@ -70,7 +70,7 @@ class VehicleDetailsBranchesTest {
                         known = TakesKnown(), makerDocs = s.makerDocs, nickname = s.vehicle.nickname.orEmpty(), noticePrefs = s.noticePrefs,
                         onNicknameChange = {}, onBack = {}, onOpenRecalls = {}, onOpenSchedule = {}, onDelete = {}, onOpenTorqueSpecs = {},
                         onOpenMoreTakes = {}, onOpenReadings = {}, onOpenImport = {}, onOpenDocuments = {}, onClearHistory = {},
-                        onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onEditVin = {}, onLookUpVin = {}, onSetOffset = {},
+                        onEditTakes = {}, onFillKnown = {}, onEditPlate = {}, onEditCheckIn = {}, onEditVin = {}, onLookUpVin = {}, onSetOffset = {}, onSetOil = {},
                         onChangeUnit = {}, onSell = {}, onPickPhoto = {}, onRemovePhoto = {},
                     )
                 }

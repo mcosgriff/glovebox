@@ -85,6 +85,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET mileageCheckInDays = :days WHERE id = :id")
     suspend fun setMileageCheckIn(id: Long, days: Int?)
 
+    /** The owner's own oil change interval (#517), as typed in the vehicle's unit; [months] null follows the miles. Both null is "Use the maker's". */
+    @Query("UPDATE vehicles SET ownOilMiles = :miles, ownOilMonths = :months WHERE id = :id")
+    suspend fun setOwnOil(id: Long, miles: Int?, months: Int?)
+
     /** Fills in the engine for a vehicle that has none on record; one that has is left exactly as it is. */
     @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
     suspend fun setEngineIfBlank(id: Long, engine: String)
@@ -754,13 +758,13 @@ interface UnitDao {
     @Query("SELECT * FROM vehicles WHERE id = :id")
     suspend fun vehicle(id: Long): VehicleEntity?
 
-    @Query("UPDATE vehicles SET distanceUnit = :unit, odometerOffset = :offset, clusterStartReading = :start, milestonesRepeatEveryMiles = :repeat WHERE id = :id")
-    suspend fun setVehicle(id: Long, unit: String, offset: Int, start: Int?, repeat: Int?)
+    @Query("UPDATE vehicles SET distanceUnit = :unit, odometerOffset = :offset, clusterStartReading = :start, milestonesRepeatEveryMiles = :repeat, ownOilMiles = :ownOil WHERE id = :id")
+    suspend fun setVehicle(id: Long, unit: String, offset: Int, start: Int?, repeat: Int?, ownOil: Int?)
 
     /**
      * Puts the vehicle and everything stored for it into [to]. Measurements (readings, snooze points,
      * the cluster offset) are converted exactly; schedule figures (intervals, milestones, how a
-     * milestone table repeats) the way a manual gives them. See DistanceConversion.
+     * milestone table repeats, the owner's own oil change interval) the way a manual gives them. See DistanceConversion.
      */
     @Transaction
     suspend fun convert(vehicleId: Long, to: DistanceUnit) {
@@ -783,7 +787,7 @@ interface UnitDao {
         val order = if (to == DistanceUnit.KILOMETERS) table.indices.reversed() else table.indices
         for (i in order) setMilestone(table[i].id, moved[i])
 
-        setVehicle(vehicleId, to.name, measured(vehicle.odometerOffset), vehicle.clusterStartReading?.let(::measured), repeat)
+        setVehicle(vehicleId, to.name, measured(vehicle.odometerOffset), vehicle.clusterStartReading?.let(::measured), repeat, vehicle.ownOilMiles?.let(::scheduled))
     }
 }
 

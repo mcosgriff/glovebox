@@ -70,6 +70,9 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.domain.OwnOil
+import io.cosgriff.glovebox.ui.components.Chevron
+import io.cosgriff.glovebox.ui.service.every
 import io.cosgriff.glovebox.domain.IntervalInput
 import io.cosgriff.glovebox.domain.ServiceCatalog
 
@@ -89,6 +92,8 @@ fun ScheduleItemEditor(
     onStopTracking: () -> Unit,
     onClose: () -> Unit,
     history: ItemHistory? = null,
+    /** For an oil change already on the schedule (#517): the owner's own interval for the vehicle, and its sheet. */
+    ownOil: OwnOilLink? = null,
 ) {
     var name by remember(item.key) { mutableStateOf(item.name) }
     var normal by remember(item.key) { mutableStateOf(item.normal) }
@@ -247,6 +252,8 @@ fun ScheduleItemEditor(
                 }
             }
 
+            ownOil?.let { link -> OwnOilCard(link, unit) }
+
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SectionLabel(stringResource(R.string.item_first_at))
                 NumberField(unit.titleWord, firstText, { firstText = it }, showErrors && firstBad, Modifier.fillMaxWidth())
@@ -270,8 +277,9 @@ fun ScheduleItemEditor(
                 LastDoneCard(history, unit)
                 NextDueCard(
                     history = history,
-                    // As the reminder will count it: an oil change in miles alone gets Glovebox's months (#517).
-                    counted = typed?.let { OilMonths.counted(it, OilMonths.isOil(item.template?.key, service.takeIf { item.own }), unit) },
+                    // As the reminder will count it (#517): an oil change by the owner's own interval when there is one, and
+                    // one in miles alone with Glovebox's months.
+                    counted = typed?.let { OwnOil.counted(it, ownOil?.own, OilMonths.isOil(item.template?.key, service.takeIf { item.own }), unit) },
                     rule = rule ?: defaultRule,
                     unit = unit,
                     // The pace estimate was worked out for what is saved, not for what is being typed.
@@ -313,6 +321,33 @@ internal fun NumberField(label: String, value: String, onChange: (String) -> Uni
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = modifier,
     )
+}
+
+/** The owner's own oil change interval for the vehicle ([OwnOil]), null when not set, and [onOpen] for its sheet. */
+data class OwnOilLink(val own: Interval?, val onOpen: () -> Unit)
+
+/** The way from an oil change's editor to the vehicle's own oil change interval (#517), saying what it is. */
+@Composable
+private fun OwnOilCard(link: OwnOilLink, unit: DistanceUnit) {
+    BorderedCard(onClick = link.onOpen) {
+        Row(
+            Modifier.heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.item_oil_own), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                val counted = link.own?.let { OwnOil.counted(it, it, oil = true, unit) }
+                Text(
+                    counted?.let { stringResource(R.string.item_oil_own_set, it.interval.every(unit, it.monthsWorkedOut)) }
+                        ?: stringResource(R.string.item_oil_own_none),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Chevron()
+        }
+    }
 }
 
 /** What the service log says about an item that is already being tracked. */

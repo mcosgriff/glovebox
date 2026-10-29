@@ -32,6 +32,7 @@ class UnitDaoTest {
     private suspend fun filled(): Long {
         val v = db.vehicles().add(testVehicle(), firstReading = 61_000)
         db.vehicles().writeClusterSwap(v, offset = 40_000, on = day.minusDays(100), startReading = 20_000)
+        db.vehicles().setOwnOil(v, miles = 7_500, months = 9)
         db.service().insertWithItems(ServiceRecordEntity(vehicleId = v, date = day, odometer = 60_000, diy = true), emptyList())
         db.schedule().insertAll(
             listOf(
@@ -54,6 +55,8 @@ class UnitDaoTest {
         assertEquals(measured(40_000), vehicle.odometerOffset)
         assertEquals(measured(20_000), vehicle.clusterStartReading)
         assertEquals(scheduled(30_000), vehicle.milestonesRepeatEveryMiles)
+        // The owner's oil change interval is a schedule figure; its months are not a distance.
+        assertEquals(scheduled(7_500) to 9, vehicle.ownOilMiles to vehicle.ownOilMonths)
         assertEquals(listOf(measured(61_000)), db.odometer().readingsFor(v).map { it.odometer })
         assertEquals(listOf(measured(60_000)), db.service().recordsFor(v).map { it.record.odometer })
         val oil = db.schedule().allFor(v).single { it.name == "Oil" }
@@ -75,6 +78,7 @@ class UnitDaoTest {
         assertEquals("MILES", vehicle.distanceUnit)
         assertEquals(listOf(15_000, 30_000), db.milestones().tableFor(v).map { it.milestone.atMiles })
         assertEquals(listOf(5_000), db.schedule().allFor(v).filter { it.name == "Oil" }.map { it.intervalMiles })
+        assertEquals(7_500, vehicle.ownOilMiles)
     }
 
     @Test

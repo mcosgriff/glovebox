@@ -52,6 +52,15 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   and never over months the item has. **Wherever a reminder's interval is shown, say the months are
   Glovebox's** (`TrackedItem.monthsWorkedOut`, `TrackedItem.every`, `interval_months_ours`). No other job gets it
   (the owner's decision, 2026-10-28).
+- **The owner's own oil interval (#517, `OwnOil`): each vehicle may have one**, set from the "Oil change" row on
+  Vehicle details (`OilIntervalSheet`, with the schedule's figure beside it) or the link in the oil change's item
+  editor. **Once set, every oil change on the vehicle counts by it in place of the item's figures, Severe (and E85)
+  on or off** (`ActiveInterval.counted(own = …)`, `countedInterval(unit, ownOil)`, `toTracked(rule, swap, unit,
+  ownOil)`; always pass `vehicle.ownOil()`). Its months follow its miles by `OilMonths` until the owner types months,
+  and are then kept as typed, whatever the miles; following months are stored as none and said to be Glovebox's.
+  "Use the maker's" (or the typical, or the schedule's) clears it. **Glovebox never suggests a shorter interval as
+  the vehicle ages**: there is no rule that shortens it; the owner decides. The item's own figures stay as they
+  are, and the Maintenance schedule, its import and export files and the rule preview still show those.
 - **Use `ItemStatus.counting`, not `lastDone != null`, to decide whether a reminder has something to count
   from.** A job the vehicle hasn't reached counts down to its first mileage, by distance only; it is not "Not
   logged yet".

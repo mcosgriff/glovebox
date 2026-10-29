@@ -34,7 +34,7 @@ class Converters {
         CatalogRuleEntity::class,
         RecallNameEntity::class,
     ],
-    version = 38,
+    version = 39,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -74,6 +74,7 @@ class Converters {
         AutoMigration(from = 35, to = 36), // service_record_jobs, service_record_items.jobId
         AutoMigration(from = 36, to = 37), // vehicles.bodyStyle
         AutoMigration(from = 37, to = 38), // service_record_job_parts, service_records.shopSuppliesCents, taxCents, feesCents
+        AutoMigration(from = 38, to = 39), // vehicles.ownOilMiles, ownOilMonths
     ],
 )
 @ColumnTypeConverters(Converters::class)

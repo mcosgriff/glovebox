@@ -25,4 +25,4 @@ A GTI whose oil was last changed on 2024-10-24 at 126,677 mi showed, two years l
 
 - An oil change in miles alone now comes due by date as well as distance, under the vehicle's rule (whichever first, by default), and in notifications, the widget, snoozes, "Skip this one" and the report alike, since all of them count through `ActiveInterval.counted`.
 - The Maintenance schedule and its import and export still show and carry the item's own figures; the editor's next-due card shows the months and says whose they are.
-- The owner's own oil interval (#517's last part) gives its miles the same months until the owner types months (`OilMonths.forDistance`).
+- The owner's own oil interval (#517's last part, `OwnOil`) gives its miles the same months until the owner types months (`OilMonths.forDistance`): stored as none, worked out on reading, like the item's. Typed months are stored and stay as typed.

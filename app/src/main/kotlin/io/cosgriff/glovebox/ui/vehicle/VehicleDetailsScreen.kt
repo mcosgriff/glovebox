@@ -158,6 +158,12 @@ import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.data.log.clusterSwap
+import io.cosgriff.glovebox.data.log.ownOil
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.ui.components.OilChange
+import io.cosgriff.glovebox.ui.components.OilIntervalSheet
+import io.cosgriff.glovebox.ui.components.oilChange
+import io.cosgriff.glovebox.ui.components.oilChangeLine
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -180,6 +186,8 @@ data class VehicleDetails(
     val torqueSpecs: Int,
     val documentCount: Int = 0,
     val documentBytes: Long = 0,
+    /** The vehicle's oil change as its schedule gives it (#517); null when it has none, and then there is no "Oil change" row. */
+    val oil: OilChange? = null,
 )
 
 /** Looking the saved VIN up again (#462). */
@@ -257,6 +265,7 @@ class VehicleDetailsViewModel @Inject constructor(
             torqueSpecs = specs.size,
             documentCount = docs.size,
             documentBytes = docs.sumOf { it.sizeBytes },
+            oil = items.oilChange(vehicle.unit),
         )
     }.screenState(viewModelScope, null)
 
@@ -321,6 +330,9 @@ class VehicleDetailsViewModel @Inject constructor(
     /** Null removes it. Readings are stored as typed, so nothing else has to be rewritten. */
     /** Changes what the odometer counts in, converting every figure stored for the vehicle with it. */
     fun convertTo(unit: DistanceUnit) = viewModelScope.launch { units.convert(vehicleId, unit) }
+
+    /** The owner's own oil change interval (#517), as typed in the vehicle's unit; null is "Use the maker's". */
+    fun setOwnOil(own: Interval?) = viewModelScope.launch { vehicles.setOwnOil(vehicleId, own?.miles, own?.months) }
 
     fun setClusterSwap(swap: ClusterSwap?) = viewModelScope.launch {
         vehicles.setClusterSwap(vehicleId, swap?.offset ?: 0, swap?.on, swap?.startReading)
@@ -423,6 +435,7 @@ fun VehicleDetailsScreen(
     var editingCheckIn by rememberSaveable { mutableStateOf(false) }
     val noticePrefs by vm.noticePrefs.collectAsStateWithLifecycle()
     var settingOffset by rememberSaveable { mutableStateOf(false) }
+    var settingOil by rememberSaveable { mutableStateOf(false) }
     var changingUnit by rememberSaveable { mutableStateOf(false) }
     val swap = v.clusterSwap()
 
@@ -463,6 +476,20 @@ fun VehicleDetailsScreen(
                 settingOffset = false
             },
             onDismiss = { settingOffset = false },
+        )
+    }
+
+    val oil = details.oil
+    if (settingOil && oil != null) {
+        OilIntervalSheet(
+            oil = oil,
+            own = v.ownOil(),
+            unit = v.unit,
+            onSave = {
+                vm.setOwnOil(it)
+                settingOil = false
+            },
+            onDismiss = { settingOil = false },
         )
     }
 
@@ -548,7 +575,7 @@ fun VehicleDetailsScreen(
         onOpenTorqueSpecs = onOpenTorqueSpecs, onOpenMoreTakes = onOpenMoreTakes, onOpenReadings = onOpenReadings,
         onOpenImport = onOpenImport, onOpenDocuments = onOpenDocuments, onClearHistory = onClearHistory,
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
-        onEditCheckIn = { editingCheckIn = true }, onEditVin = { editingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onChangeUnit = { changingUnit = true },
+        onEditCheckIn = { editingCheckIn = true }, onEditVin = { editingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onSetOil = { settingOil = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
         bulletins = bulletins, onOpenBulletins = onOpenBulletins,
     )
@@ -585,6 +612,8 @@ internal fun VehicleDetailsContent(
     /** Look the saved VIN up again, to fill what is empty. */
     onLookUpVin: () -> Unit,
     onSetOffset: () -> Unit,
+    /** The owner's own oil change interval (#517). */
+    onSetOil: () -> Unit,
     onChangeUnit: () -> Unit,
     onSell: () -> Unit,
     onPickPhoto: () -> Unit,
@@ -804,6 +833,14 @@ internal fun VehicleDetailsContent(
                         // An empty schedule offers the typical one, or adding items one at a time.
                         onClick = { onOpenSchedule(v.id) },
                     )
+                    details.oil?.let { oil ->
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LinkRow(
+                            title = stringResource(R.string.oil_title),
+                            detail = oilChangeLine(oil, v.ownOil(), v.unit),
+                            onClick = onSetOil,
+                        )
+                    }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     val open = details.recalls
                     LinkRow(

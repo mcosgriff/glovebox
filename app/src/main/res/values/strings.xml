@@ -479,6 +479,34 @@
     <string name="offset_explained">Offset %1$s. Readings dated %2$s or later count as the new cluster\'s, earlier ones as the old one\'s. Reminders snoozed to a mileage come back.</string>
     <string name="offset_remove">Remove the offset</string>
 
+    <!-- The owner's own oil change interval (#517): the Vehicle details row and its sheet. -->
+    <string name="oil_title">Oil change</string>
+    <string name="oil_intro">How often this vehicle\'s oil is changed. Once you set your own, every oil change reminder counts by it, with Severe on or off.</string>
+    <string name="oil_maker">Maker\'s schedule</string>
+    <string name="oil_typical">Typical schedule</string>
+    <string name="oil_schedule">Your schedule</string>
+    <!-- Under the schedule's figure when its months are Glovebox's. %1$s is "12 months". -->
+    <string name="oil_schedule_months_ours">The schedule gives no time limit, so Glovebox gives it %1$s. Check your manual.</string>
+    <string name="oil_none">No interval</string>
+    <string name="oil_yours">YOURS</string>
+    <!-- %1$s is "9 months", worked out from the miles typed. -->
+    <string name="oil_months_follow">Months left blank follow your miles: %1$s (Glovebox\'s). Type months to keep your own.</string>
+    <string name="oil_months_typed">Your months stay as typed, whatever the miles.</string>
+    <string name="oil_months_blank">Leave months blank and they follow your miles.</string>
+    <string name="oil_check_manual">Glovebox never shortens it as the vehicle ages; that is yours to decide. Check your service manual.</string>
+    <string name="oil_use_maker">Use the maker\'s</string>
+    <string name="oil_use_typical">Use the typical</string>
+    <string name="oil_use_schedule">Use your schedule\'s</string>
+    <!-- The Vehicle details row. %1$s is "7,500 mi or 9 mo". -->
+    <string name="oil_yours_every">Yours: every %1$s</string>
+    <string name="oil_maker_every">The maker\'s: every %1$s</string>
+    <string name="oil_typical_every">Typical: every %1$s</string>
+    <string name="oil_schedule_every">Your schedule\'s: every %1$s</string>
+    <!-- In the schedule item editor of an oil change: the link to the sheet. %1$s is "Every 7,500 mi or 9 mo". -->
+    <string name="item_oil_own">Your own oil change interval</string>
+    <string name="item_oil_own_set">%1$s. Counted instead of the figures above.</string>
+    <string name="item_oil_own_none">None: the figures above count. Set your own for this vehicle.</string>
+
     <!-- Mark as sold (MarkAsSoldSheet) -->
     <string name="sold_title">Mark %1$s as sold</string>
     <string name="sold_date">Date sold · %1$s</string>

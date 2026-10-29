@@ -41,3 +41,7 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   schedule figure (interval, milestone, repeat) goes at 1.6, as manuals print them. Glovebox's own figures are
   kept in miles and given to a km vehicle as schedule figures. **Always take the lead distance through
   `Settings.leadFor(vehicle.unit)`, never `Settings.lead`.** Each vehicle in a list is worded in its own unit.
+- The owner's own oil change interval (#517, `vehicles.ownOilMiles`, `ownOilMonths`) is a schedule figure in the
+  vehicle's unit as typed, written with `setOwnOil` alone, and converted at 1.6 by `UnitDao.convert`; its months are not
+  a distance. The "Oil change" row is there only while the schedule has an oil change (`oilChange`); its rules are in
+  `schedule.md`.
