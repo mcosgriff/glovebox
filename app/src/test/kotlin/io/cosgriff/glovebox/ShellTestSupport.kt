@@ -54,8 +54,8 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.utils.io.InternalAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.lang.reflect.Constructor
@@ -299,7 +299,11 @@ class ShellGraph(private val app: Application) {
     }
 
     fun close() {
-        scope.cancel()
+        // Cancelling only asks: work part way through a query finishes it first. Closing the database under that
+        // query fails it with "the connection pool has been closed", in whichever test is running by then.
+        val job = scope.coroutineContext[Job]!!
+        job.cancel()
+        idleMainUntil { job.children.none() }
         db.close()
         // So the next test, whichever application it runs in, starts from the defaults.
         clearStore("io.cosgriff.glovebox.data.settings.SettingsRepositoryKt", "getDataStore")
