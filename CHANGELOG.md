@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.34.0](https://github.com/mcosgriff/glovebox/compare/v0.33.0...v0.34.0) (2026-10-29)
+
+
+### Features
+
+* **schedule:** oil change gets a worked-out time limit ([#517](https://github.com/mcosgriff/glovebox/issues/517)) ([#520](https://github.com/mcosgriff/glovebox/issues/520)) ([ce8f19c](https://github.com/mcosgriff/glovebox/commit/ce8f19c124f05d080cac69f1640908ab371d301d))
+* **schedule:** Volkswagen e-Golf 2015 and 2016–2017 maker's schedules ([#438](https://github.com/mcosgriff/glovebox/issues/438)) ([#524](https://github.com/mcosgriff/glovebox/issues/524)) ([d0f008e](https://github.com/mcosgriff/glovebox/commit/d0f008e8ce19d286a88c2aed0980ebe096fdec6b))
+* **schedule:** Volkswagen Golf 2010 and 2014 maker's schedules ([#434](https://github.com/mcosgriff/glovebox/issues/434)) ([#526](https://github.com/mcosgriff/glovebox/issues/526)) ([4fc6081](https://github.com/mcosgriff/glovebox/commit/4fc6081aeedd55d4dbc35dc713c980f3ad5c8363))
+* **schedule:** Volkswagen Jetta 2014–2016 and 2018 maker's schedules ([#440](https://github.com/mcosgriff/glovebox/issues/440)) ([#529](https://github.com/mcosgriff/glovebox/issues/529)) ([12a30f6](https://github.com/mcosgriff/glovebox/commit/12a30f66c60e4c4ca109211f889e7f1b94cc9124))
+* **schedule:** Volkswagen Jetta and Jetta SportWagen 2010 and 2014 maker's schedules ([#439](https://github.com/mcosgriff/glovebox/issues/439)) ([#527](https://github.com/mcosgriff/glovebox/issues/527)) ([88caed3](https://github.com/mcosgriff/glovebox/commit/88caed392f943afcc0ffca4755acd7339c41eab3))
+* **schedule:** Volkswagen Jetta Hybrid 2015 and 2016 maker's schedules ([#441](https://github.com/mcosgriff/glovebox/issues/441)) ([#521](https://github.com/mcosgriff/glovebox/issues/521)) ([d2eb62d](https://github.com/mcosgriff/glovebox/commit/d2eb62de490e9e9db384dd4e7c468a458f89957c))
+* **schedule:** Volkswagen maker's schedules for 16 more models ([#147](https://github.com/mcosgriff/glovebox/issues/147)) ([#548](https://github.com/mcosgriff/glovebox/issues/548)) ([a035da3](https://github.com/mcosgriff/glovebox/commit/a035da34593fa76cdf0a2288847af1b992c0a3de))
+* **schedule:** Volkswagen Passat 2010 maker's schedule ([#443](https://github.com/mcosgriff/glovebox/issues/443)) ([#525](https://github.com/mcosgriff/glovebox/issues/525)) ([045c9b5](https://github.com/mcosgriff/glovebox/commit/045c9b538d3ae7537b1cff61ca4ee08ddb54b42d))
+* **vehicles:** the owner's own oil change interval ([#517](https://github.com/mcosgriff/glovebox/issues/517)) ([#522](https://github.com/mcosgriff/glovebox/issues/522)) ([bcebf54](https://github.com/mcosgriff/glovebox/commit/bcebf543398567b178ee8384a8eef7c5d8dd61e0))
+
+
+### Bug Fixes
+
+* **schedule:** GTI oil change every 10,000 or 12 months ([#517](https://github.com/mcosgriff/glovebox/issues/517)) ([f7efac4](https://github.com/mcosgriff/glovebox/commit/f7efac42850c79a0099a99616e01f4d462100115))
+* **schedule:** GTI oil change every 10,000 or 12 months ([#518](https://github.com/mcosgriff/glovebox/issues/518)) ([f7efac4](https://github.com/mcosgriff/glovebox/commit/f7efac42850c79a0099a99616e01f4d462100115))
+
+
+### Build System
+
+* **domain:** rerun the domain tests when a bundled list changes ([#528](https://github.com/mcosgriff/glovebox/issues/528)) ([6351da4](https://github.com/mcosgriff/glovebox/commit/6351da4863214b8f729502a4142f71b73e12a714))
+
 ## [0.33.0](https://github.com/mcosgriff/glovebox/compare/v0.32.0...v0.33.0) (2026-10-29)
 
 
