@@ -1,0 +1,159 @@
+{
+ "make": "Volkswagen",
+ "model": "Golf Alltrack",
+ "modelAliases": [],
+ "years": [
+  2018,
+  2019
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11023844",
+   "number": "VWP-25-16",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable Settlement Class Vehicles, the New Vehicle Limited Warranty will be extended to cover 50% of the repair or replacement of the Turbocharger by an authorized Volkswagen Dealer for 8.5 years or 85,000 miles, whichever occurs first, from the vehicle’s in-service date.",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023844-0001.pdf"
+  },
+  {
+   "id": "11023836",
+   "number": "Turbocharger FAQ",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This supporting FAQ is for the Turbocharger Limited Warranty Extension Class Action Settlement. This extension includes 2008-2015 GTI and Golf R*, 2012-2013 VW Beetle*, 2009 VW Jetta SportWagen*, 2013 VW Jetta Sedan and GLI*, 2009-2016 VW Eos*, 2008-2010 VW Passat*, 2009-2017 VW CC*, 2009-2018 VW Tiguan*, Certain model year 2015-2018 VW Golf*, 2015-2021 VW GTI*, 2015-2019 VW Golf R*, 2015-2019 VW Golf SportWagen and Alltrack*, 2019-2024 VW Jetta GLI*, 2019-2021 VW Arteon*, 2018-2023 VW Atlas*, and 2020-2023 VW Atlas Cross Sport*",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "10243301",
+   "number": "VWP-23-06_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension revision. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243301-0001.pdf"
+  },
+  {
+   "id": "10243298",
+   "number": "SunroofFAQ_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243298-0001.pdf"
+  },
+  {
+   "id": "10241197",
+   "number": "SunroofFAQ",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241197-0001.pdf"
+  },
+  {
+   "id": "10241196",
+   "number": "VWP-23-06",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241196-0001.pdf"
+  },
+  {
+   "id": "10241188",
+   "number": "Circular60e5rev2",
+   "date": "2023-08-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Reopening this service action for unrepaired vehicles in order to support a class action settlement.",
+   "products": [
+    {
+     "model": "GOLF ALLTRACK",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": null
+  }
+ ]
+}
