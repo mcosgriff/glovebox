@@ -24,3 +24,13 @@ kover {
         createVariant("coverage") { add("jvm") }
     }
 }
+
+// The tests read the bundled lists and the import docs from outside this module (by relative path, from the
+// module's folder), so they are declared here: a changed list reruns the tests instead of passing from the cache.
+tasks.test {
+    val assets = rootProject.layout.projectDirectory.dir("app/src/main/assets")
+    listOf("known-schedules", "known-specs", "known-takes", "maker-documents", "bulletins").forEach { name ->
+        inputs.dir(assets.dir(name)).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("assets.$name")
+    }
+    inputs.dir(rootProject.layout.projectDirectory.dir("docs/import")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("importDocs")
+}
