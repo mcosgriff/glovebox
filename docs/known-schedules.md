@@ -362,6 +362,7 @@ One page per list, named by its `id`:
 - [Volkswagen Eos, 2016](known-schedules/volkswagen-eos-2016.md) (`volkswagen-eos-2016`)
 - [Volkswagen Golf 2.5L, 2010 (Mk6)](known-schedules/volkswagen-golf-2010-2.5.md) (`volkswagen-golf-2010-2.5`)
 - [Volkswagen Golf 2.5L, 2014 (Mk6)](known-schedules/volkswagen-golf-2014-2.5.md) (`volkswagen-golf-2014-2.5`)
+- [Volkswagen Golf R, 2013 (Mk6)](known-schedules/volkswagen-golf-r-2013.md) (`volkswagen-golf-r-2013`)
 - [Volkswagen Golf TDI, 2010 (Mk6)](known-schedules/volkswagen-golf-2010-tdi.md) (`volkswagen-golf-2010-tdi`)
 - [Volkswagen GTI, 2006 (Mk5)](known-schedules/volkswagen-gti-2006.md) (`volkswagen-gti-2006`)
 - [Volkswagen GTI, 2007 (Mk5)](known-schedules/volkswagen-gti-2007.md) (`volkswagen-gti-2007`)
