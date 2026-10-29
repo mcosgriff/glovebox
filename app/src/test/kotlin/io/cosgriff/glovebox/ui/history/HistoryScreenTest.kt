@@ -135,6 +135,61 @@ class HistoryScreenTest {
     }
 
     @Test
+    fun `a category with two jobs swaps the categories for its jobs, one shows alone, and back goes to All`() = runBlocking {
+        val car = t.vehicle()
+        t.record(car, date = today.minusDays(60), odometer = 39_000, lines = listOf(line("Oil and filter", "oil")))
+        t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Air filter", "engine-air")))
+        t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Tires rotated", "rotation")))
+        val handle = listHandle()
+        val vm = tab(handle)
+        show(vm)
+        val oil = io.cosgriff.glovebox.ui.service.catalogLabel("oil")
+        val engine = io.cosgriff.glovebox.ui.service.catalogCategoryLabel("engine")
+        val tires = io.cosgriff.glovebox.ui.service.catalogCategoryLabel("tires")
+        compose.waitForText("Oil and filter")
+        compose.onNodeWithText(oil).assertDoesNotExist()
+
+        compose.onNodeWithText(engine).performClick()
+        compose.waitForText(oil)
+        compose.onNodeWithText(tires).assertDoesNotExist()
+        compose.onNodeWithText(string(R.string.history_all)).assertDoesNotExist()
+        compose.onNodeWithText(engine).assertIsSelected()
+        compose.onNodeWithText("Tires rotated").assertDoesNotExist()
+        compose.onNodeWithText("Air filter").assertExists()
+
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForNoText("Air filter")
+        compose.onNodeWithText("Oil and filter").assertExists()
+        compose.onNodeWithText(oil).assertIsSelected()
+        assertEquals("oil", handle.get<String>("job"))
+
+        // A second tap, or the category's own chip, is the whole category again.
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForText("Air filter")
+        assertNull(vm.job)
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForNoText("Air filter")
+        compose.onNodeWithText(engine).performClick()
+        compose.waitForText("Air filter")
+        assertNull(vm.job)
+
+        compose.onNodeWithText(oil).performClick()
+        compose.waitForNoText("Air filter")
+        compose.onNodeWithContentDescription(string(R.string.history_filter_back)).performClick()
+        compose.waitForText("Tires rotated")
+        compose.onNodeWithText(oil).assertDoesNotExist()
+        compose.onNodeWithText(string(R.string.history_all)).assertIsSelected()
+        assertNull(handle.get<String>("filter"))
+        assertNull(handle.get<String>("job"))
+
+        // Tires has one job, so it is chosen in place, with nothing to step into.
+        compose.onNodeWithText(tires).performClick()
+        compose.waitForNoText("Air filter")
+        compose.onNodeWithText(tires).assertIsSelected()
+        compose.onNodeWithContentDescription(string(R.string.history_filter_back)).assertDoesNotExist()
+    }
+
+    @Test
     fun `labor and parts show under the spending line from the priced records, and go with it while a filter is on`() = runBlocking {
         val car = t.vehicle()
         t.record(car, date = today.minusDays(40), odometer = 40_000, lines = listOf(line("Oil and filter", "oil")), costCents = 5_000)

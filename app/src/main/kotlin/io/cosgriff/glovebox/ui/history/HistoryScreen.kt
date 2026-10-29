@@ -110,6 +110,8 @@ import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.CatalogCategory
+import io.cosgriff.glovebox.domain.CatalogItem
+import io.cosgriff.glovebox.domain.jobsIn
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.categoryOf
@@ -158,6 +160,10 @@ data class HistoryState(
             val used = records.flatMap { it.items }.mapNotNull { ServiceCatalog.categoryOf(it.catalogId)?.id }.toSet()
             return ServiceCatalog.categories.filter { it.id in used }
         }
+
+    /** The jobs of [categoryId] that appear in this vehicle's records, in catalog order. */
+    fun jobsIn(categoryId: String): List<CatalogItem> =
+        ServiceCatalog.jobsIn(categoryId, records.flatMap { it.items }.mapNotNull { it.catalogId }.toSet())
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -186,6 +192,16 @@ class HistoryViewModel @Inject constructor(
     fun chooseFilter(categoryId: String?) {
         filter = categoryId
         savedStateHandle[FILTER] = categoryId
+        chooseJob(null)
+    }
+
+    /** Catalog id of the one job to show within [filter], or null for the whole category. */
+    var job by mutableStateOf(savedStateHandle.get<String>(JOB))
+        private set
+
+    fun chooseJob(catalogId: String?) {
+        job = catalogId
+        savedStateHandle[JOB] = catalogId
     }
 
     /** What is typed in the search field, as typed. Kept with the vehicle and category through a restart. */
@@ -272,6 +288,7 @@ class HistoryViewModel @Inject constructor(
     private companion object {
         const val CHOSEN_VEHICLE = "chosenVehicle"
         const val FILTER = "filter"
+        const val JOB = "job"
         const val SEARCH = "search"
         const val SORT_BY = "sortBy"
         const val DESCENDING = "descending"
@@ -303,7 +320,7 @@ fun HistoryScreen(
     HistoryContent(
         state, vm.filter, vm.order, fresh, vm.archived, remember { LocalDate.now() }, onOpenRecord, onBack,
         onExport = { exporting = true }, onChooseVehicle = vm::chooseVehicle, onChooseFilter = vm::chooseFilter,
-        onChooseOrder = vm::chooseOrder, search = vm.search, onSearch = vm::search,
+        onChooseOrder = vm::chooseOrder, chosenJob = vm.job, onChooseJob = vm::chooseJob, search = vm.search, onSearch = vm::search,
         onSortCustom = onSortCustom?.let { open -> state.vehicle?.let { v -> { open(v.id) } } },
         view = vm.view, onChooseView = vm::chooseView, onLogIt = onLogIt,
     )
@@ -325,6 +342,9 @@ internal fun HistoryContent(
     onChooseVehicle: (Long) -> Unit,
     onChooseFilter: (String?) -> Unit,
     onChooseOrder: (HistoryOrder) -> Unit,
+    /** The one job chosen within the category, as a catalog id, or null for the whole category. */
+    chosenJob: String? = null,
+    onChooseJob: (String?) -> Unit = {},
     /** What is typed in the search field. */
     search: String = "",
     onSearch: (String) -> Unit = {},
@@ -339,6 +359,9 @@ internal fun HistoryContent(
     val categories = state.categories
     // A filter can outlive the last record that matched it (e.g. after a delete).
     val filter = chosenFilter?.takeIf { f -> categories.any { it.id == f } }
+    // A category with one job in it has nothing to narrow, so its row of jobs only shows from two.
+    val jobs = filter?.let(state::jobsIn).orEmpty().takeIf { it.size > 1 }.orEmpty()
+    val job = chosenJob?.takeIf { j -> jobs.any { it.id == j } }
     val swap = state.vehicle?.clusterSwap()
     val sorted = HistoryOrdering.sorted(
         state.records,
@@ -348,7 +371,8 @@ internal fun HistoryContent(
         id = { it.record.id },
     )
     fun matches(r: ServiceRecordWithItems) =
-        (filter == null || r.items.any { ServiceCatalog.categoryOf(it.catalogId)?.id == filter }) && HistorySearch.matches(r.searchable(), search)
+        (filter == null || r.items.any { if (job != null) it.catalogId == job else ServiceCatalog.categoryOf(it.catalogId)?.id == filter }) &&
+            HistorySearch.matches(r.searchable(), search)
     // A visit (#307) is one card where its first record sorts, and shows whole when any of its records matches.
     val groups = Visits.grouped(sorted) { it.record.visitId }.filter { g -> g.any(::matches) }
     val shown = groups.flatten()
@@ -442,7 +466,24 @@ internal fun HistoryContent(
                 }
             }
         }
-        if (categories.isNotEmpty()) {
+        if (jobs.isNotEmpty()) {
+            // Inside a category with two jobs or more, its jobs take the categories' place: the category itself for
+            // all of it, a job to show it alone (a second tap goes back to the whole category), and back to All.
+            // A key of its own, so the row starts at its beginning rather than where the categories were scrolled.
+            item(key = "jobs") {
+                ChipRow {
+                    IconButton(onClick = { onChooseFilter(null) }) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.history_filter_back))
+                    }
+                    categories.firstOrNull { it.id == filter }?.let { c ->
+                        InkChip(c.label, selected = job == null) { onChooseJob(null) }
+                    }
+                    jobs.forEach { j ->
+                        InkChip(j.label, selected = job == j.id) { onChooseJob(if (job == j.id) null else j.id) }
+                    }
+                }
+            }
+        } else if (categories.isNotEmpty()) {
             item(key = "categories") {
                 ChipRow {
                     InkChip(stringResource(R.string.history_all), selected = filter == null) { onChooseFilter(null) }
@@ -744,6 +785,7 @@ private fun ChipRow(content: @Composable () -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(top = 4.dp).horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) { content() }
 }
 

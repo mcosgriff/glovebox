@@ -28,6 +28,11 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   the share sheet), both in `res/xml/file_paths.xml`.
 - A new record, a delete and a restore end on History (`RecordActions.focus` outlines the record); an edit
   returns to the record.
+- History's filters are one row. A category with two or more jobs logged on this vehicle
+  (`ServiceCatalog.jobsIn`) **is stepped into**: the row becomes a back arrow (to All), the category's own chip
+  (all of it) and its jobs, to show one alone (an oil change without the rest of Oil & engine). A category with
+  one job is chosen in place. A job matches a line by its `catalogId` only, never by `covers`; a second tap on it
+  goes back to the category, and another vehicle lets it go. It counts as a filter wherever a filter is on.
 - History's spending line (#285) counts records with a cost and is **hidden while a filter or search is on**,
   since a cost covers all a record's lines. Search (#284) and the sort order live in saved state; nothing is
   stored.
