@@ -24,7 +24,8 @@ as a reissue with its print date. Read on 2026-10-26.
   one job.
 - **No months per column.** The footnotes give the first minor service at 10,000 or 1 year, then every
   20,000 or 2 years after the last, and standard services every 20,000 or 2 years. The columns carry no
-  months, so, as on the 2023–2026 list, the milestones have none and the oil reminder has none.
+  months, so, as on the 2023–2026 list, the milestones have none. The oil reminder is 10,000 or 12 months,
+  from the minor service's "or 1 year" (the owner's ruling of 2026-10-28, #517).
 - **Additional Maintenance Items** are reminders in `additional` with the card's figures, never placed on
   the grid (the owner's ruling of 2026-10-23, #33): air filter 60,000 / 72 mo; brake fluid every 24 months
   by time alone (USA: 3 years after registration first, then every 2); dust and pollen filter 40,000 /

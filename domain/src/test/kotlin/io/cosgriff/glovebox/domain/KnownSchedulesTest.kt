@@ -568,7 +568,8 @@ class KnownSchedulesTest {
         // The brake fluid is by time alone on the card: drawn at 30,000 and every 20,000 after.
         assertEquals(listOf(30_000, 50_000, 70_000, 90_000, 110_000), list.milestones.filter { m -> m.work.any { it.service == "brake-fluid" } }.map { it.atMiles })
         val by = list.intervals.associateBy { it.service }
-        assertEquals(Interval(10_000, null), by.getValue("oil").normal)
+        // The table prints no months, but the reissues' "or 1 year" gives the oil change its own (#517).
+        assertEquals(Interval(10_000, 12), by.getValue("oil").normal)
         assertEquals(Interval(20_000, 24), by.getValue("cabin-air").normal)
         assertEquals(Interval(60_000, 72), by.getValue("spark-plugs").normal)
         assertEquals(Interval(60_000, 72), by.getValue("engine-air").normal)
@@ -592,8 +593,8 @@ class KnownSchedulesTest {
             assertTrue(list(year).milestones.all { m -> m.work.any { it.service == "oil" } })
             assertEquals(5_000, list(year).milestones.first().atMiles)
         }
-        // 2009: every 10,000, each heading "or 1 year after last service", which gives no months.
-        assertEquals(Interval(10_000, null), oil(2009))
+        // 2009: every 10,000, each heading "or 1 year after last service": the table has no months, the oil change has 12 (#517).
+        assertEquals(Interval(10_000, 12), oil(2009))
         assertTrue(list(2009).milestones.all { it.orMonths == null })
         // 2008's brake fluid rows and time table disagree (3 years, 2 years): no months, so no reminder.
         assertTrue(list(2008).milestones.any { m -> m.work.any { it.service == "brake-fluid" } })

@@ -16,9 +16,10 @@ at 40,000 and spark plugs at 60,000, as the reissue does.
 - **The table:** 10,000 to 130,000, every 10,000. Its "every 5,000 miles" section holds only the 3.0L TDI's
   AdBlue, so the table has no 5,000-mile stops.
 - **"Or 1 Year after Last Service"** heads every milestone. That is a time limit counted from the last visit,
-  not months from new, so the table has no months and **no reminder is given months for it** (the owner's ruling
-  on #145). Check the booklet: by this schedule a car driven little is still serviced once a year.
-- **Reminders:** engine oil and tire rotation 10,000; DSG fluid and filter 40,000 (not for a manual car); spark
+  not months from new, so the table has no months and no reminder is given months for it (the owner's ruling
+  on #145), **except the oil change, which is every 10,000 or 12 months** (the owner's ruling of 2026-10-28,
+  #517: a car driven little still has its oil changed once a year). Check the booklet.
+- **Reminders:** engine oil 10,000 / 12 months (above); tire rotation 10,000; DSG fluid and filter 40,000 (not for a manual car); spark
   plugs 60,000 / 72 months. The spark plug rows are "1.8L, 2.0L, 3.6L and 4.2L only" at 60,000 (the GTI's 2.0T
   is the year's only 2.0L petrol engine; the NHTSA sheet above agrees) and "all gasoline engines" at 120,000; the
   months are the time list's 6 years.
