@@ -66,4 +66,4 @@ taken; the card from the time wins (the owner's ruling of 2026-10-23):
   2025 reissue would be the only source, and the reissues differ from the cards from the time (above); that is the
   open question on the Golf ([#434](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244),
   question 3), so 2012 waits for it. The 2013 card isn't stretched back over it.
-- The Mk7 Golf R (2015 on), which has cards of its own.
+- The Mk7 and Mk8 Golf R (2015 on), which have cards and lists of their own: see the [2015 Golf R's page](volkswagen-golf-r-2015.md).

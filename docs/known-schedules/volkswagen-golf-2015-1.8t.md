@@ -48,7 +48,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | 2021 | All model gasoline vehicles, 7/9/2020 | `2020/MC-10177239-0001` | [Golf 1.4T, 2020–2021](volkswagen-golf-2020-2021-1.4t.md) |
 
 NHTSA's index also files `2014/MC-10242449-9999`, "2.0TSI Engine (292 HP)", under the 2015 Golf and Golf
-SportWagen. That is the Golf R's engine, which is #437's; it wasn't read. No 2015 or 2016 card is for a
+SportWagen. That is the Golf R's card (its title says so), read for the [2015 Golf R's list](volkswagen-golf-r-2015.md) (#437). No 2015 or 2016 card is for a
 1.4T, and no card before 2018 names the Golf Alltrack.
 
 ## What isn't covered
