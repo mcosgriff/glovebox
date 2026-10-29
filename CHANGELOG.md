@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.33.0](https://github.com/mcosgriff/glovebox/compare/v0.32.0...v0.33.0) (2026-10-29)
+
+
+### Features
+
+* **service-log:** read a paper invoice from photos of its pages ([#513](https://github.com/mcosgriff/glovebox/issues/513)) ([#516](https://github.com/mcosgriff/glovebox/issues/516)) ([96c0fac](https://github.com/mcosgriff/glovebox/commit/96c0faca1c7f81ca9122db26dc8f56a8cc79cc9f))
+* **service-log:** read a shop's emailed invoice into Log service ([#484](https://github.com/mcosgriff/glovebox/issues/484)) ([#514](https://github.com/mcosgriff/glovebox/issues/514)) ([9df9818](https://github.com/mcosgriff/glovebox/commit/9df981880d87458f8562c8a2be8e1a26ebf5c64a))
+
 ## [0.32.0](https://github.com/mcosgriff/glovebox/compare/v0.31.0...v0.32.0) (2026-10-29)
 
 
