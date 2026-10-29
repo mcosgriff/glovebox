@@ -30,8 +30,16 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   takes a saved shop's spelling. The read odometer is an offer from the invoice, so the never-prefilled rule doesn't
   cover it. "What was read" is viewing only. The PDF is held in memory and kept, encrypted, among the vehicle's
   documents only while "Keep the invoice" is on; Undo of the record leaves it there. Debug builds alone write
-  `files/invoice-traces/` (Delete all data removes it). A scan has no text layer: photos are #513. Filing a custom line
-  carries its job and prices with it.
+  `files/invoice-traces/` (Delete all data removes it). Filing a custom line carries its job and prices with it.
+- Photos of a paper invoice (#513, `InvoicePhotos`, `PageLight`, `PhotoPages`): the same reader and form fill, with
+  Tesseract's words. **Each page is encrypted the moment it arrives**, as a record photo; the camera's copy is in the
+  clear only in `cache/capture/` until then, and the gallery's is never copied. What is read stays in memory. Pages
+  are read one at a time as they come, on the phone, as #482 measured best: the app's own `eng` model, light
+  flattened, 3400 px wide, PSM 3. **The form fills only when the user asks, once every page is read**; moving,
+  retaking or removing a page before that is free. Save keeps the pages as the record's photos, as many as fit, while
+  "Keep the pages as photos" is on; otherwise, and on leaving or "Put the pages aside", their files go, and the sweep
+  takes any left over. No crop or straightening step until a phone's skewed and dim photos say one is needed; debug
+  traces carry each page's reading time to measure on a phone.
 - **Photo and document files are never deleted when a row is**, so Undo can put the row back: the files go in
   `RecordActions.discard` when the Undo bar ends untaken, and `RecordPhotoStore.sweep` removes leftovers on
   launch. An Undo bar lasts `LogEdits.UNDO_SECONDS` (10) and has a ✕; whatever ends it without Undo discards its

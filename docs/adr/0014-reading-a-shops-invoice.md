@@ -5,7 +5,7 @@ Until now, "Import from a dealer record" was left out on purpose. An invoice rea
 - **The sums vouch for the figures.** An invoice checks itself: parts rows against the parts figure, a service's labor and parts against its subtotal, every service against the totals block, and the totals block against the grand total. `InvoiceReader` (#483) takes a figure only when one of those sums agrees, so a misread digit is left blank instead of being offered.
 - **It fills the form and saves nothing.** The owner reads the invoice into Log service, checks it there and saves it themselves. Every guard the form already has still holds: no future dates, writes through `RecordActions`, Undo.
 
-The first cut reads a shop's **emailed PDF**. Its text layer is exact, so there's no OCR. Photos of a paper invoice come next, through the same reader with Tesseract's words (#513).
+The first cut reads a shop's **emailed PDF**. Its text layer is exact, so there's no OCR. Photos of a paper invoice follow (#513), through the same reader with Tesseract's words, set up as #482 measured best on real phone photos (55 of 56 figures, none wrong): the app's 4 MB `eng` model, the light flattened, 3400 px wide, page layout analysis (PSM 3).
 
 ## Guardrails
 
@@ -15,6 +15,7 @@ The first cut reads a shop's **emailed PDF**. Its text layer is exact, so there'
 - A VIN that isn't the vehicle's is asked about by its last four characters. It is never a block, and there's no offer to switch vehicles.
 - "What was read" shows each line and what it became. It is for viewing only; nothing in it is exported.
 - The PDF is read in memory, under the time limit `PdfWords` already applies to the Carfax report. It is kept, encrypted, in the vehicle's documents only if the owner leaves "Keep the invoice" on.
+- A photographed page is encrypted, as a record photo, the moment it arrives; what is read from it stays in memory. The pages go with the record as its photos only if the owner leaves "Keep the pages as photos" on.
 - Debug builds write the words and the trace to `files/invoice-traces/`, to feed the private fixtures. Release builds never write them, and Delete all data removes them.
 - Everything happens on the phone. Nothing is sent anywhere ([ADR-0007](0007-network-nhtsa-only.md)).
 
@@ -27,6 +28,7 @@ The first cut reads a shop's **emailed PDF**. Its text layer is exact, so there'
 
 ## Consequences
 
-- A scanned PDF has no text layer. The form says so and is filled in by hand until #513.
+- A scanned PDF has no text layer. The form says so; the paper copy can be photographed instead.
+- Photos are read in the background without a crop or straightening step. Neither was measured on a phone before building (#513): the debug trace carries each page's reading time, and a skewed or dim page that reads badly is the case for adding one.
 - Totals-block charges (shop supplies, tax, fees) are used to check the figures but aren't filled in. The gap shows them as "Tax and fees".
 - A second service worded the same as an earlier one can't be a second line of the same name. It is left out, and the form says so.
