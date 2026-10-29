@@ -216,7 +216,7 @@ private fun Row(row: LastDoneRow, unit: DistanceUnit, onEnter: () -> Unit, onOpe
         Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(row.item.name, style = MaterialTheme.typography.titleSmall)
             Text(
-                row.item.interval.every(unit),
+                row.item.every(unit),
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )

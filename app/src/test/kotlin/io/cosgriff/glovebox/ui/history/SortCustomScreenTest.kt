@@ -11,13 +11,17 @@ import io.cosgriff.glovebox.data.db.MilestoneEntity
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.LastDone
+import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.domain.nextDueAfter
+import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.ui.SortCustomRoute
 import io.cosgriff.glovebox.ui.screens.PHONE
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import io.cosgriff.glovebox.ui.service.ServiceTestDb
-import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.service.catalogCategoryLabel
 import io.cosgriff.glovebox.ui.service.catalogLabel
@@ -91,7 +95,9 @@ class SortCustomScreenTest {
         compose.onNodeWithText(string(R.string.sort_custom_looks_like, lineName("water-pump"))).assertExists()
         // What saving would do: the oil change counts, so its reminder and the table's job move.
         waitForText(string(R.string.sort_custom_table_jobs, "Engine oil"))
-        compose.onNodeWithText(string(R.string.reminder_change_next_due, "Oil change", 45_000.asDistance(DistanceUnit.MILES))).assertExists()
+        // 5,000 mi and no months: an oil change, so Glovebox's 6 months count too (#517).
+        val next = Interval(5_000, OilMonths.forDistance(5_000, DistanceUnit.MILES)).nextDueAfter(LastDone(today.minusDays(90), 40_000))
+        compose.onNodeWithText(string(R.string.reminder_change_next_due, "Oil change", next.text(DistanceUnit.MILES))).assertExists()
         compose.onNodeWithText(plural(R.plurals.sort_custom_save, 2, 2.asNumber())).assertExists()
 
         // The guess is only taken on a tap.

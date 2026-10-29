@@ -296,7 +296,7 @@ internal fun VehicleHomeContent(
                                         )
                                     }
                                     Text(
-                                        status.item.interval.every(unit),
+                                        status.item.every(unit),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -535,7 +535,7 @@ private fun ProgressBar(fraction: Double, color: Color) {
  */
 @Composable
 private fun ItemStatus.detail(progress: ReminderProgress, swap: ClusterSwap?, unit: DistanceUnit): String {
-    val every = item.interval.every(unit)
+    val every = item.every(unit)
     // As it was read at the time, which is what the record says.
     val last = lastDone?.let { swap.asReadOn(it) }
     val lastText = when {

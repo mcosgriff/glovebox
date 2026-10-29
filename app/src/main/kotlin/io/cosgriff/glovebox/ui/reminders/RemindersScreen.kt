@@ -12,7 +12,7 @@ import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.InkChip
 import io.cosgriff.glovebox.ui.components.SectionLabel
-import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.TrackedItem
 import androidx.compose.ui.platform.LocalResources
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
@@ -319,7 +319,7 @@ private fun ReminderCard(
                     )
                 }
                 Text(
-                    "${r.vehicle.shortName()} · ${r.status.item.interval.everyShort(r.vehicle.unit)}",
+                    "${r.vehicle.shortName()} · ${r.status.item.everyShort(r.vehicle.unit)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -386,8 +386,9 @@ private fun ReminderCard(
 
 /** "every 5,000 mi" for a single limit; "10,000 mi / 12 mo" already reads as a pair. */
 @Composable
-private fun Interval.everyShort(unit: DistanceUnit): String =
-    if (miles != null && months != null) text(unit) else stringResource(R.string.reminders_every, text(unit))
+private fun TrackedItem.everyShort(unit: DistanceUnit): String = interval.text(unit, monthsOurs = monthsWorkedOut).let { text ->
+    if (interval.miles != null && interval.months != null) text else stringResource(R.string.reminders_every, text)
+}
 
 /** "3,312 mi over", "in 640 mi", "in 12 days", "Mar 2027" */
 @Composable

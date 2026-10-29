@@ -79,6 +79,16 @@ class MappersTest {
     }
 
     @Test
+    fun `an oil change's worked-out months say they are Glovebox's`() {
+        val ours = string(R.string.interval_months_ours, string(R.string.months_short, "12"))
+        val oil = TrackedItem(1, "Oil change", Interval(10_000, 12), DueRule.WHICHEVER_FIRST, monthsWorkedOut = true)
+        assertEquals(string(R.string.interval_every, string(R.string.either_or, 10_000.asDistance(mi), ours)), oil.every(mi))
+        assertEquals(string(R.string.interval_slash, 10_000.asDistance(mi), ours), oil.interval.text(mi, monthsOurs = true))
+        // The maker's months are said as they are.
+        assertEquals(Interval(10_000, 12).every(mi), oil.copy(monthsWorkedOut = false).every(mi))
+    }
+
+    @Test
     fun `due headlines and amounts say how far, in the vehicle's unit or in days and months`() {
         assertEquals(string(R.string.due_not_logged), DueHeadline.NotLogged.text(mi))
         assertEquals(string(R.string.due_in, 1_688.asDistance(km)), DueHeadline.Miles(1_688).text(km))

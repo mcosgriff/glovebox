@@ -67,7 +67,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.OilMonths
 import io.cosgriff.glovebox.domain.IntervalInput
 import io.cosgriff.glovebox.domain.ServiceCatalog
 
@@ -268,7 +270,8 @@ fun ScheduleItemEditor(
                 LastDoneCard(history, unit)
                 NextDueCard(
                     history = history,
-                    interval = typed,
+                    // As the reminder will count it: an oil change in miles alone gets Glovebox's months (#517).
+                    counted = typed?.let { OilMonths.counted(it, OilMonths.isOil(item.template?.key, service.takeIf { item.own }), unit) },
                     rule = rule ?: defaultRule,
                     unit = unit,
                     // The pace estimate was worked out for what is saved, not for what is being typed.
@@ -477,9 +480,10 @@ private fun LastDoneCard(history: ItemHistory, unit: DistanceUnit) {
 
 /** [interval] is what is in the boxes right now, so the card follows the edit; null while it can't be used. */
 @Composable
-private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule, unit: DistanceUnit, showEstimate: Boolean) {
+private fun NextDueCard(history: ItemHistory, counted: CountedInterval?, rule: DueRule, unit: DistanceUnit, showEstimate: Boolean) {
     val scheme = MaterialTheme.colorScheme
     val last = history.lastDone
+    val interval = counted?.interval
     Surface(
         Modifier.fillMaxWidth(),
         color = scheme.primaryContainer,
@@ -504,6 +508,9 @@ private fun NextDueCard(history: ItemHistory, interval: Interval?, rule: DueRule
                     Text(
                         listOfNotNull(
                             rule.label().takeIf { interval.miles != null && interval.months != null },
+                            interval.months?.takeIf { counted.monthsWorkedOut }?.let {
+                                stringResource(R.string.item_months_ours, pluralStringResource(R.plurals.months, it, it.asNumber()))
+                            },
                             history.estimate?.takeIf { showEstimate }?.let { stringResource(R.string.item_estimate, it.format(longDate)) },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,

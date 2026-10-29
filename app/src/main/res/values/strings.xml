@@ -15,6 +15,8 @@
     <string name="unit_miles_title">Miles</string>
     <string name="unit_kilometres_title">Kilometres</string>
     <string name="months_short">%1$s mo</string>
+    <!-- Months Glovebox worked out for an oil change its schedule gives in miles alone (#517): "12 mo (Glovebox's: check your manual)". -->
+    <string name="interval_months_ours">%1$s (Glovebox\'s: check your manual)</string>
     <!-- A distance and a time: "7,500 mi / 12 mo". -->
     <string name="interval_slash">%1$s / %2$s</string>
     <!-- Two ways a thing can happen: "7,500 mi or 12 mo", "73,412 mi or Apr 10, 2027". -->
@@ -1643,6 +1645,8 @@
     <string name="item_next_due">NEXT DUE</string>
     <string name="item_log_once">Log it once and the countdown starts from that date and mileage.</string>
     <string name="item_enter_interval">Enter an interval above</string>
+    <!-- Under the next due point of an oil change its schedule gives in miles alone (#517). %1$s is "12 months". -->
+    <string name="item_months_ours">Glovebox gives an oil change %1$s when its schedule gives no time limit. Check your manual.</string>
     <string name="item_estimate">est. %1$s at your pace</string>
 
     <!-- When were these last done? (LastDoneScreen), more -->

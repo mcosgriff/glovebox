@@ -42,7 +42,7 @@ fun WhatItTakes.wordedLines(): List<Pair<String, String>> = lines().map { (item,
 /** The note beside a Log service line: what the vehicle takes, or "Every 5,000 mi / 6 mo". */
 fun WorkHint.text(unit: DistanceUnit): String = when (this) {
     is WorkHint.Takes -> parts.text()
-    is WorkHint.Every -> AppText.res.getString(R.string.interval_every, interval.text(unit))
+    is WorkHint.Every -> AppText.res.getString(R.string.interval_every, interval.text(unit, monthsOurs = monthsWorkedOut))
 }
 
 fun TakesPart.text(): String {

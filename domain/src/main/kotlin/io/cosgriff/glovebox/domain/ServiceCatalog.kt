@@ -83,8 +83,8 @@ sealed interface WorkHint {
     /** What this vehicle takes for the job, as the owner wrote it down. */
     data class Takes(val parts: List<TakesPart>) : WorkHint
 
-    /** How often the reminder it resets comes round. */
-    data class Every(val interval: Interval) : WorkHint
+    /** How often the reminder it resets comes round; [monthsWorkedOut] when its months are Glovebox's ([OilMonths]). */
+    data class Every(val interval: Interval, val monthsWorkedOut: Boolean = false) : WorkHint
 }
 
 
@@ -92,11 +92,12 @@ object ServiceCatalog {
     /**
      * The small note on the right of a Log service line: what this vehicle takes for the job, where
      * the user has written it down, otherwise how often the reminder it resets comes round.
-     * [interval] is that reminder's, when the line resets a tracked one. Null when there is nothing
-     * worth saying. Nothing here is looked up: it is all the user's own data.
+     * [interval] is that reminder's, when the line resets a tracked one, and [monthsWorkedOut] whether its months are
+     * Glovebox's ([OilMonths]). Null when there is nothing worth saying. Nothing here is looked up: it is all the
+     * user's own data, but for those months, which the hint says are Glovebox's.
      */
-    fun hint(optionId: String, interval: Interval?, specs: WhatItTakes): WorkHint? =
-        specs.hint(optionId)?.let(WorkHint::Takes) ?: interval?.let(WorkHint::Every)
+    fun hint(optionId: String, interval: Interval?, specs: WhatItTakes, monthsWorkedOut: Boolean = false): WorkHint? =
+        specs.hint(optionId)?.let(WorkHint::Takes) ?: interval?.let { WorkHint.Every(it, monthsWorkedOut) }
 
     const val YOUR_ITEMS = "yours"
 
@@ -359,6 +360,8 @@ data class TrackedItem(
      * replaced. A schedule counts from there, so "one interval from zero" is this plus the interval.
      */
     val zeroAt: Int = 0,
+    /** Whether [interval]'s months are Glovebox's, worked out for an oil change that has none ([OilMonths]); `app` says so. */
+    val monthsWorkedOut: Boolean = false,
 ) {
     companion object {
         /**
@@ -377,10 +380,11 @@ data class TrackedItem(
             severeOnly: Boolean,
             useSevere: Boolean,
             swap: ClusterSwap?,
+            monthsWorkedOut: Boolean = false,
         ): TrackedItem? {
             if (interval == null || (severeOnly && !useSevere)) return null
             val zeroAt = -(swap?.offset ?: 0)
-            return TrackedItem(id, name, interval, rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt)
+            return TrackedItem(id, name, interval, rule, snooze, firstAt = firstMiles?.let { it + zeroAt }, zeroAt = zeroAt, monthsWorkedOut = monthsWorkedOut)
         }
     }
 }

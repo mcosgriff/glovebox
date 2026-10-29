@@ -175,7 +175,7 @@ class MilestonesViewModel @Inject constructor(
         if (vehicle == null) return@combine null
         val swap = vehicle.clusterSwap()
         val entries = records.map { it.toEntry(swap, items.answering()) }
-        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
+        val tracked = items.mapNotNull { it.toTracked(s.defaultRule, swap = null, vehicle.unit) }.filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
         val current = vehicle.highestReading(records, readings)?.let { swap.actual(it) }

@@ -25,6 +25,11 @@ import io.cosgriff.glovebox.ui.service.routeHandle
 import io.cosgriff.glovebox.ui.service.settle
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.LastDone
+import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.domain.nextDueAfter
+import io.cosgriff.glovebox.ui.service.text
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -114,7 +119,9 @@ class RecordDetailScreenTest {
         compose.onNodeWithText(Money.format(7_450)).assertExists()
         compose.onNodeWithText(catalogCategoryLabel("engine")).assertExists()
         compose.onNodeWithText(string(R.string.log_custom)).assertExists()
-        compose.onNodeWithText(string(R.string.record_next_due, 50_000.asDistance(DistanceUnit.MILES))).assertExists()
+        // 5,000 mi and no months: an oil change, so Glovebox's 6 months count too (#517).
+        val next = Interval(5_000, OilMonths.forDistance(5_000, DistanceUnit.MILES)).nextDueAfter(LastDone(today.minusDays(20), 45_000))
+        compose.onNodeWithText(string(R.string.record_next_due, next.text(DistanceUnit.MILES))).assertExists()
         compose.onNodeWithText(plural(R.plurals.record_work_done, 2, 2.asNumber())).assertExists()
 
         compose.onNodeWithText(string(R.string.edit)).performClick()

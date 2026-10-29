@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.domain
 
+import kotlin.math.roundToInt
+
 /**
  * One suggested maintenance item. [severe] is null when hard use (towing, off-road, dust,
  * short trips) doesn't change the interval.
@@ -105,7 +107,7 @@ object IntervalInput {
  * The interval a schedule item counts by. Its E85 interval while the owner has said the vehicle runs mostly
  * on E85 and the item has one (a flex-fuel guide's oil change, #33); otherwise its severe interval while
  * severe use is on, part by part, falling back to the normal one; otherwise the normal one. Null when the
- * item has no usable interval. **Every place a reminder is counted from goes through this.**
+ * item has no usable interval. **Every place a reminder is counted from goes through this**, by way of [counted].
  */
 object ActiveInterval {
     fun of(normal: Interval?, severe: Interval?, useSevere: Boolean, e85: Interval? = null, useE85: Boolean = false): Interval? {
@@ -113,5 +115,57 @@ object ActiveInterval {
         val miles = if (useSevere) severe?.miles ?: normal?.miles else normal?.miles
         val months = if (useSevere) severe?.months ?: normal?.months else normal?.months
         return if (miles == null && months == null) null else Interval(miles, months)
+    }
+
+    /**
+     * [of], with the months Glovebox works out for an oil change that has none ([OilMonths]). [oil] is whether the item
+     * is the oil change ([OilMonths.isOil]); [unit] is the vehicle's, which the interval is in. **A reminder is counted
+     * from this**; [of] alone is the item's own figures, as saved.
+     */
+    fun counted(
+        normal: Interval?,
+        severe: Interval?,
+        useSevere: Boolean,
+        e85: Interval? = null,
+        useE85: Boolean = false,
+        oil: Boolean,
+        unit: DistanceUnit,
+    ): CountedInterval? = of(normal, severe, useSevere, e85, useE85)?.let { OilMonths.counted(it, oil, unit) }
+}
+
+/** The interval a reminder counts by, and whether its months are Glovebox's ([OilMonths]) rather than the item's own. */
+data class CountedInterval(val interval: Interval, val monthsWorkedOut: Boolean = false)
+
+/**
+ * The one time limit Glovebox works out (#517, ADR-0015). An oil change given in miles alone gets a month for every
+ * [MILES_A_MONTH] miles, rounded, never more than [MOST_MONTHS]: 10,000 mi is 12 months, 7,500 is 9, 5,000 is 6. Oil
+ * ages in the sump whether the car is driven or not, and a maker that prints no months still means some. It is worked
+ * out each time reminders are read and never stored, so editing the miles moves it, and months the item has (the
+ * maker's or the owner's) are always left as they are. **Only the oil change**; every other job counts by what it has.
+ */
+object OilMonths {
+    const val MILES_A_MONTH = 833
+    const val MOST_MONTHS = 12
+
+    /**
+     * The months for an oil change every [distance], in [unit]. A kilometre figure is taken as the schedule figure it
+     * is (16,000 km is a manual's 10,000 mi, `DistanceUnit.scheduledInMiles`), so it gets the months its miles would.
+     * Also what an owner's own interval in miles is given until the owner types months.
+     */
+    fun forDistance(distance: Int, unit: DistanceUnit): Int =
+        (unit.scheduledInMiles(distance).toDouble() / MILES_A_MONTH).roundToInt().coerceIn(1, MOST_MONTHS)
+
+    /** The typical oil change, or one of the owner's set to that catalog line: the items `ServiceLinks.own` gives line `oil`. */
+    fun isOil(templateKey: String?, service: String?): Boolean =
+        if (templateKey != null) templateKey == Snoozing.OIL_TEMPLATE_KEY else service == Snoozing.OIL_TEMPLATE_KEY
+
+    /** [interval] with its worked-out months when it is an oil change in miles alone; as it is otherwise. */
+    fun counted(interval: Interval, oil: Boolean, unit: DistanceUnit): CountedInterval {
+        val miles = interval.miles
+        return if (oil && miles != null && interval.months == null) {
+            CountedInterval(interval.copy(months = forDistance(miles, unit)), monthsWorkedOut = true)
+        } else {
+            CountedInterval(interval)
+        }
     }
 }

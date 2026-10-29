@@ -101,7 +101,9 @@ Each has an ADR in `docs/adr/` with its reasons and the options turned down; rea
 - **"Last done" is never stored.** It's derived from service records (`ServiceLog.lastDone`), so editing
   or deleting a record rolls reminders back. Don't add a cached last-done column. A "last done" the user
   gives on its own is a service record flagged `enteredAsLastDone` (#78). **Nothing is assumed or estimated
-  for the user:** there is no "assume everything was done on schedule".
+  for the user:** there is no "assume everything was done on schedule". The one exception: an oil change given in
+  miles alone gets months worked out at 833 mi a month, never more than 12, at read time and never stored, and
+  the screen says they are Glovebox's (#517, ADR-0015, `OilMonths`).
 - **Torque stored in N·m**, converted for display.
 - **Distances are stored in the vehicle's own unit, as typed** (#93, `vehicles.distanceUnit`). Every reading,
   interval, snooze point, cluster offset and milestone is in that unit exactly as typed, so a figure always
