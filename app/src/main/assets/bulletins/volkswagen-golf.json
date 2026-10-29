@@ -1,0 +1,557 @@
+{
+ "make": "Volkswagen",
+ "model": "Golf",
+ "modelAliases": [],
+ "years": [
+  2010,
+  2014
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "10235284",
+   "number": "VWP-18-11",
+   "date": "2023-04-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document was revised. The model year chat was removed for VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "STEERING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
+  },
+  {
+   "id": "10198167",
+   "number": "VWP-21-03",
+   "date": "2021-06-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new Intake Manifold Warranty Extension for 2013, 2014, 2016 & 2017 Model Year with Engine Codes CBFA and CCTA",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10240621",
+   "number": "CustomerLetterB",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10164246",
+   "number": "VWP-17-09",
+   "date": "2019-08-20",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of a revision to the Extended Emissions Warranty Limited Warranty Extension for 2.0L TDI Gen 1 vehicles. Added clarification on totaled vehicles and loaners",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10149941",
+   "number": "VWP-18-11 201810",
+   "date": "2018-10-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149941-9999.pdf"
+  },
+  {
+   "id": "10149942",
+   "number": "VWP-18-11",
+   "date": "2018-10-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149942-9999.pdf"
+  },
+  {
+   "id": "10128045",
+   "number": "V241702 2045138",
+   "date": "2017-02-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This technical bulletin was updated per powertain team and warranty team. Info from this bulletin is combined with TB 2031075 (V241208) and 2038161 (V241506) due to warranty extension claiming/processing confusion. (Basically 3 technical bulletins covering the same DTC were combined into 1 technical bulletin). By combining the three technical bulletins it allowed for archiving (removal from publication) of V241208 and V241506 stated above.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10122882",
+   "number": "VWP-17-03",
+   "date": "2017-02-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of a limited warranty extension for the ABS control module for certain 2009 - 2010 Volkswagen vehicles repaired by Safety Recall 45F2.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+    "HYDRAULIC:ANTILOCK/TRACTION CONTROL/ELECTRONIC LIMITED SLIP:CONTROL UNIT/MODULE",
+    "SERVICE BRAKES"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2017/MC-10122882-9999.pdf"
+  },
+  {
+   "id": "10130704",
+   "number": "Customer Letter",
+   "date": "2015-06-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for High-Pressure Fuel Pump: Volkswagen informed customers of a decision to extend the warranty for the high-pressure fuel pump (HPFP) in the TDI® Clean Diesel engine vehicle under specific conditions to 10 years or 120,000 miles, whichever occurs first, from the vehicle's original in-service date.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10128097",
+   "number": "Campaign Circula",
+   "date": "2015-06-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action (Certain 2010-2014 Volkswagen Vehicles with 2.0L TDI® Clean Diesel Engine ECM Software Update): The vehicle?s engine management software has been improved to assure the vehicle?s tailpipe emissions are optimized and operating efficiently. Under certain operating conditions, the earlier strategy may have increased the chance of the vehicle?s MIL light illuminating. If the MIL illuminates for any reason, the vehicle will not pass an IM emissions inspection in some regions. The corrective action taken was to Install updated ECM software",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10127984",
+   "number": "Circular - 20T8",
+   "date": "2015-05-29",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action Campaign: As diesel engine passenger vehicles become more popular, auto manufacturers have seen an increase in the number of misfueling cases where diesel engine vehicles are mistakenly fueled with gasoline. As an additional safeguard to help prevent a gasoline fuel pump nozzle from being used to fuel a TDI Clean Diesel engine vehicle, dealers will install a misfueling guard in the fuel filler neck of vehicles affected by this action. This document contains the fault codes work procedure for servicing these issues",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10130696",
+   "number": "Campaign Circula",
+   "date": "2015-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action: The vehicle?s engine management software has been improved to assure the vehicle?s tailpipe emissions are optimized and operating efficiently.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157413",
+   "number": "Campaign Circula",
+   "date": "2013-09-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action Campaign (TDI Clean Diesel Engine Install Misfueling Guard): As diesel engine passenger vehicles become more popular, auto manufacturers have seen an increase in the number of misfueling cases where diesel engine vehicles are mistakenly fueled with gasoline. The resulting fuel system contamination can lead to costly repairs that are not covered under warranty. This document contains the procedure to install the Misfueling Guard.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157458",
+   "number": "Dealer Letter -",
+   "date": "2013-09-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Revision to Service Action 20T8 ? Owner Supplements Install Misfueling Guard): This document informs the work procedure for Service Action 20T8 has been revised to include an owner supplement that must be provided to customers upon completion of this repair. An allocation of supplements was sent to dealerships in early September. If additional copies are needed, please see the revised campaign circular for ordering instructions. An updated campaign circular has been posted to ServiceNet and will be visible in ElsaWeb shortly.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157406",
+   "number": "Customer Letter",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkswagen Note (Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, Volkswagen is informing customers of the decision to extend the customers Emissions Control Systems Warranty for the intake manifold and fuel injectors under specific conditions to 10 years or 120,000 miles, whichever occurs first.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
+  },
+  {
+   "id": "10125779",
+   "number": "Dealer Letter-FA",
+   "date": "2013-06-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Revision to Service Action 20T8 Install Misfueling Guard): This document informs effective immediately, the work procedure for Service Action 20T8 has been revised to exclude the spring-loaded flap insert found in the 5K0 201 400 Misfueling Guard Kit. This change was made based upon feedback/recommendations received from dealer and field colleagues. An updated campaign circular has been posted to ServiceNet and will be visible in ElsaWeb shortly. An updated FAQ will also be available for dealer reference.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10125775",
+   "number": "Campaign Circula",
+   "date": "2013-06-28",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action Campaign (Certain 2009-2012 Model Year Vehicles with TDI Clean Diesel Engine Install Misfueling Guard): As diesel engine passenger vehicles become more popular, auto manufacturers have seen an increase in the number of misfueling cases where diesel engine vehicles are mistakenly fueled with gasoline. The resulting fuel system contamination can lead to costly repairs that are not covered under warranty. The corrective action taken for this issue was installing a misfueling guard in the fuel filler neck of vehicles.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10253491",
+   "number": "VWP1313",
+   "date": "2013-06-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Secondary Air Pressure Sensor Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10126874",
+   "number": "VWP-13-13",
+   "date": "2013-06-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Secondary Air Pressure Sensor Limited Warranty Extension. Volkswagen has extended the Emission Control Systems Warrantly for secondary air pressure sensor replacement under specific conditions to 10 years or 120,000 miles whichever occurs first, from the vehicle's original in-service date, for the following 2.5 L engine vehicles.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10125776",
+   "number": "Dealer Letter -",
+   "date": "2013-06-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Service Action 20T8 Install Misfueling Guard): Volkswagen has received feedback from some vehicle owners in localized areas who have concerns about their ability to refuel their vehicle after the 20T8 Service Action was performed. A few customers have advised that they are unable to fuel their vehicle at their preferred fueling stations or that it now takes a very long time to refuel. Volkswagen believes the root cause is attributed to damage and/or variances in diesel fuel nozzles found at fueling stations. At this time, Volkswagen has no evidence to conclude that there is any problem with the misfueling guard. Dealers should continue performing Service Action 20T8 on vehicles that show the code open in ElsaWeb. In discussing this action with customers, Volkswagen encourages to utilize the talking points in this document.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10240650",
+   "number": "Action20T8a",
+   "date": "2013-06-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "We would like to inform you that the FAQ for Service Action 20T8 has been revised to include additional information for dealers to share with customers about the misfueling guard.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10240650-9999.pdf"
+  },
+  {
+   "id": "10125778",
+   "number": "Dealer Letter an",
+   "date": "2013-06-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Revision to Service Action 20T8 FAQ Install Misfueling Guard): This document informs with a FAQ for Service Action 20T8 has been revised to include additional information for dealers to share with customers about the misfueling guard.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10253483",
+   "number": "VWP1305",
+   "date": "2013-03-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Engine Exhaust Flap Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
+  },
+  {
+   "id": "10157780",
+   "number": "Dealer Letter Ar",
+   "date": "2012-11-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (20R9 Service Action Kit Allocation): This document informs of the submission of additional 20R9 kits for dealership?s use. The document instructs parts managers to use the kits to address any affected inventory vehicles, so that the campaign is completed prior to retail sale. The document also informs how additional kits can be ordered.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157750",
+   "number": "Dealer Letter -",
+   "date": "2012-11-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (20R9 Service Action Kit Allocation): Volkswagen will be sending an additional allocation of 20R9 kits for dealership?s to use. In addition to any customer vehicles showing the 20R9 service action open the kits are to be used to address any affected inventory vehicles, so that the campaign is completed prior to retail sale. This document informs how to acquire additional kits as well.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10037349",
+   "number": "SB-28E6",
+   "date": "2010-11-24",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "VOLKSWAGEN: THERE IS A WARRANTY EXTENSION ON HARD START CONDITIONS FOR CUSTOMERS WHO HAD AN EARLIER CAMPAIGN ADDRESSED ON THEIR VEHICLES. *RM",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  }
+ ]
+}

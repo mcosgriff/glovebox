@@ -51,6 +51,7 @@ NHTSA_MODELS = {
     "Toyota/Sienna": ["SIENNA", "SIENNA HYBRID"],
     "Toyota/Tacoma": ["TACOMA", "TACOMA HYBRID"],
     "Toyota/Tundra": ["TUNDRA", "TUNDRA HYBRID"],
+    "Volkswagen/Golf": ["GOLF"],
     "Volkswagen/GTI": ["GTI"],
     "Volkswagen/Golf GTI": ["GTI"],
     "Volkswagen/Jetta": ["JETTA", "JETTA HYBRID"],

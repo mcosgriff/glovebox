@@ -649,7 +649,7 @@
           "service": "fuel-filter"
         },
         {
-          "name": "Check diesel particulate filter ash loading (after 120,000 miles; then every 10,000 until it is replaced)"
+          "name": "Check diesel particulate filter ash loading (after 120,000; then every 10,000)"
         },
         {
           "name": "Replace timing belt",
