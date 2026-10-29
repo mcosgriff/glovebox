@@ -2720,14 +2720,21 @@
     <string name="invoice_pages_add">Add a page</string>
     <string name="invoice_pages_put_aside">Put the pages aside</string>
     <string name="invoice_pages_nothing_read">Nothing could be read on these pages. Take them again in brighter, even light, or fill the form in yourself.</string>
-    <!-- %1$s is the most pages an invoice can have. -->
-    <string name="invoice_pages_full">An invoice can have up to %1$s pages.</string>
-    <!-- %1$s is how many were added, %2$s the most pages an invoice can have. -->
-    <string name="invoice_pages_too_many">Only %1$s more would fit; an invoice can have up to %2$s pages.</string>
+    <!-- %1$s is the most a record can hold, its photos and an invoice's pages together. -->
+    <plurals name="invoice_pages_full">
+        <item quantity="one">A record holds %1$s photo or page.</item>
+        <item quantity="other">A record holds up to %1$s photos and pages together.</item>
+    </plurals>
+    <!-- %1$s is how many were added, %2$s the most a record can hold (the quantity). -->
+    <plurals name="invoice_pages_too_many">
+        <item quantity="one">Only %1$s more would fit; a record holds %2$s photo or page.</item>
+        <item quantity="other">Only %1$s more would fit; a record holds up to %2$s photos and pages together.</item>
+    </plurals>
     <!-- Under a page's picture in the strip. -->
     <string name="invoice_page_reading">Reading…</string>
     <string name="invoice_page_read">Read</string>
     <string name="invoice_page_blank">Nothing read</string>
+    <string name="invoice_page_unreadable">Couldn\'t be opened</string>
     <!-- What tapping a page in the strip does, for screen readers. %1$s is the page's number. -->
     <string name="invoice_page_options">Options for page %1$s</string>
     <string name="invoice_page_earlier">Move earlier</string>

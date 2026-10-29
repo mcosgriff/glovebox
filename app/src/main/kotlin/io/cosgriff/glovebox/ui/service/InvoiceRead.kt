@@ -63,7 +63,10 @@ import io.cosgriff.glovebox.ui.components.GloveboxSheet
 import io.cosgriff.glovebox.ui.components.SwitchRow
 
 /** What an invoice was read as (#484), for "What was read": its lines and what each became. Held in memory only. */
-class ReadInvoice(val fill: InvoiceFill, val lines: List<InvoiceLine>, val roles: List<List<LineRole>>, val photos: Boolean = false)
+class ReadInvoice(val fill: InvoiceFill, val lines: List<InvoiceLine>, val roles: List<List<LineRole>>, val source: InvoiceSource = InvoiceSource.PDF)
+
+/** What an invoice was read from: a shop's emailed PDF (#484) or photos of a paper one (#513). */
+enum class InvoiceSource { PDF, PHOTOS }
 
 /** Why a picked invoice filled nothing. */
 enum class InvoiceProblem { NOT_A_PDF, UNREADABLE, NO_TEXT }
@@ -80,7 +83,9 @@ internal fun invoiceNotes(fill: InvoiceFill, unit: DistanceUnit): String {
 
 /** A paper invoice's pages on the form (#513), and what can be done with them; the ViewModel's, or a test's. */
 class InvoicePages(
-    val pages: PhotoPages = PhotoPages(),
+    val strip: PhotoPages = PhotoPages(),
+    /** How many more pages fit: a record's photos and pages share its room. */
+    val room: Int = RecordPhotos.room(strip.pages.size),
     /** Why the last pages added fewer than were asked for. */
     val problem: String? = null,
     val onTake: () -> Unit = {},
@@ -116,7 +121,7 @@ internal fun InvoiceCard(form: LogServiceForm, vehicleName: String, onRead: () -
                     }
                     if (read.fill.jobs.isEmpty()) Text(stringResource(R.string.invoice_no_work), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface)
                     form.invoiceLeftOut.forEach { Text(stringResource(R.string.invoice_left_out, it), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface) }
-                    KeepSwitch(form, vehicleName, photos = read.photos)
+                    KeepSwitch(form, vehicleName, read.source)
                     TextButton(onClick = { showing = true }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) {
                         Text(stringResource(R.string.invoice_what_was_read), color = scheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
                     }
@@ -126,7 +131,7 @@ internal fun InvoiceCard(form: LogServiceForm, vehicleName: String, onRead: () -
                 CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
                 Text(stringResource(R.string.invoice_reading), style = MaterialTheme.typography.bodyMedium)
             }
-            pages.pages.pages.isNotEmpty() -> PagesCard(form, vehicleName, pages, thumb)
+            pages.strip.pages.isNotEmpty() -> PagesCard(form, vehicleName, pages, thumb)
             else -> {
                 ReadRow(Icons.Outlined.Description, stringResource(R.string.invoice_read_title), stringResource(R.string.invoice_read_hint), onRead)
                 AttachMenu(onTake = pages.onTake, onChoose = pages.onChoose, modifier = Modifier.fillMaxWidth()) { open ->
@@ -173,7 +178,8 @@ private fun ReadRow(icon: ImageVector, title: String, hint: String, onClick: () 
 
 /** Keep the PDF among the vehicle's documents, or the pages as the record's photos: on unless turned off. */
 @Composable
-private fun KeepSwitch(form: LogServiceForm, vehicleName: String, photos: Boolean) {
+private fun KeepSwitch(form: LogServiceForm, vehicleName: String, source: InvoiceSource) {
+    val photos = source == InvoiceSource.PHOTOS
     SwitchRow(
         title = stringResource(if (photos) R.string.invoice_keep_pages_title else R.string.invoice_keep_title),
         about = if (photos) stringResource(R.string.invoice_keep_pages_about) else stringResource(R.string.invoice_keep_about, vehicleName),
@@ -190,7 +196,7 @@ private fun KeepSwitch(form: LogServiceForm, vehicleName: String, photos: Boolea
 @Composable
 private fun PagesCard(form: LogServiceForm, vehicleName: String, pages: InvoicePages, thumb: PageThumb) {
     val scheme = MaterialTheme.colorScheme
-    val all = pages.pages
+    val all = pages.strip
     Surface(shape = MaterialTheme.shapes.medium, color = scheme.surface, border = BorderStroke(1.dp, scheme.outlineVariant), modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.invoice_pages_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -212,7 +218,7 @@ private fun PagesCard(form: LogServiceForm, vehicleName: String, pages: InvoiceP
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (RecordPhotos.room(all.pages.size) > 0) {
+                if (pages.room > 0) {
                     AttachMenu(onTake = pages.onTake, onChoose = pages.onChoose) { open ->
                         TextButton(onClick = open, modifier = Modifier.heightIn(min = 48.dp)) {
                             Text(stringResource(R.string.invoice_pages_add), color = scheme.onPrimaryContainer, fontWeight = FontWeight.SemiBold)
@@ -223,7 +229,7 @@ private fun PagesCard(form: LogServiceForm, vehicleName: String, pages: InvoiceP
                     Text(stringResource(R.string.invoice_pages_put_aside), color = scheme.onSurfaceVariant)
                 }
             }
-            KeepSwitch(form, vehicleName, photos = true)
+            KeepSwitch(form, vehicleName, InvoiceSource.PHOTOS)
         }
     }
 }
@@ -247,10 +253,11 @@ private fun PageTile(index: Int, page: PhotoPage, count: Int, pages: InvoicePage
             }
         }
         Text(
-            when (page.words?.isEmpty()) {
-                null -> stringResource(R.string.invoice_page_reading)
-                true -> stringResource(R.string.invoice_page_blank)
-                false -> stringResource(R.string.invoice_page_read)
+            when {
+                page.unreadable -> stringResource(R.string.invoice_page_unreadable)
+                page.words == null -> stringResource(R.string.invoice_page_reading)
+                page.words?.isEmpty() == true -> stringResource(R.string.invoice_page_blank)
+                else -> stringResource(R.string.invoice_page_read)
             },
             style = MaterialTheme.typography.bodySmall,
             color = scheme.onSurfaceVariant,

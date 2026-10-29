@@ -29,6 +29,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,8 +42,9 @@ private class PageImage(val luminance: ByteArray, val width: Int, val height: In
  * leaving for the camera or the gallery can lock the app.
  *
  * Each page is encrypted the moment it arrives, as a record photo; the camera's copy is in the clear only in
- * `cache/capture/` until then. What is read is held in memory only. Pages are read one at a time, in the order they
- * came, since a page takes seconds (#482 guessed 5–8 on a phone).
+ * `cache/capture/` until then, and is held full size, encrypted, until its turn to be read
+ * ([RecordPhotoStore.hold]). A gallery page is read from the gallery. What is read is held in memory only. Pages are
+ * read one at a time, in the order they came, since a page takes seconds (#482 guessed 5–8 on a phone).
  */
 @Singleton
 class InvoicePhotos @Inject constructor(
@@ -53,10 +55,10 @@ class InvoicePhotos @Inject constructor(
     private val picker = LauncherSlot<() -> Unit>()
     private val camera = LauncherSlot<(Uri) -> Unit>()
 
-    /** The form the next pages go to, and the page they take the place of when retaken. */
+    /** The form the next pages go to, how many more it can take, and the page a new photo takes the place of. */
     private var target: String? = null
-    private var retaking: String? = null
     private var room = 0
+    private var retaking: String? = null
     private var captureFile: File? = null
 
     private val _pages = MutableStateFlow(emptyMap<String, PhotoPages>())
@@ -64,10 +66,10 @@ class InvoicePhotos @Inject constructor(
     /** Each open form's pages, by its key. */
     val pages: StateFlow<Map<String, PhotoPages>> = _pages.asStateFlow()
 
-    private val _problem = MutableStateFlow<String?>(null)
+    private val _problems = MutableStateFlow(emptyMap<String, String>())
 
-    /** Why the last pages added fewer than were asked for; cleared by the next attempt. */
-    val problem: StateFlow<String?> = _problem.asStateFlow()
+    /** Why a form's last pages added fewer than were asked for, by its key; cleared by its next attempt. */
+    val problems: StateFlow<Map<String, String>> = _problems.asStateFlow()
 
     /** One page read at a time, and one engine for them all while there are pages to read. */
     private val reading = Mutex()
@@ -84,67 +86,68 @@ class InvoicePhotos @Inject constructor(
         if (this.picker.detach(picker)) camera.launcher?.let(camera::detach)
     }
 
-    /** The caller must already hold the camera permission. */
-    fun capture(key: String) {
+    /**
+     * A photo of a page for form [key], which can take [room] more (record photos and pages together), in place of
+     * page [retake] if given. The caller must already hold the camera permission.
+     */
+    fun capture(key: String, room: Int, retake: String? = null) {
         val launch = camera.launcher ?: return
-        if (!begin(key, null)) return
+        if (!begin(key, room, retake)) return
         val (file, uri) = context.newCapture(store.captureDir)
         captureFile = file
         launch(uri)
     }
 
-    /** [file] photographed again: the new photo takes its place. */
-    fun retake(key: String, file: String) {
-        val launch = camera.launcher ?: return
-        if (!begin(key, file)) return
-        val (capture, uri) = context.newCapture(store.captureDir)
-        captureFile = capture
-        launch(uri)
-    }
-
-    fun pick(key: String) {
+    /** Pages for form [key] from the gallery, as many as its [room]. */
+    fun pick(key: String, room: Int) {
         val launch = picker.launcher ?: return
-        if (!begin(key, null)) return
+        if (!begin(key, room, null)) return
         launch()
     }
 
-    private fun begin(key: String, retake: String?): Boolean {
-        _problem.value = null
-        // A retake replaces a page, so it needs no room.
-        room = if (retake != null) 1 else RecordPhotos.room(pagesOf(key).pages.size)
-        if (room <= 0) {
-            _problem.value = AppText.res.getString(R.string.invoice_pages_full, RecordPhotos.MAX_PER_RECORD.asNumber())
-            return false
-        }
+    private fun begin(key: String, room: Int, retake: String?): Boolean {
+        _problems.update { it - key }
+        // A retake replaces its page, so it needs no room unless that page is taken off while the camera is open.
+        if (retake == null && !fits(key, room)) return false
         target = key
+        this.room = room
         retaking = retake
         return true
     }
+
+    /** Room for one more page on form [key]; if not, it says so. */
+    private fun fits(key: String, room: Int): Boolean {
+        if (room > 0) return true
+        problem(key, AppText.res.getQuantityString(R.plurals.invoice_pages_full, RecordPhotos.MAX_PER_RECORD, RecordPhotos.MAX_PER_RECORD.asNumber()))
+        return false
+    }
+
+    private fun problem(key: String, text: String) = _problems.update { it + (key to text) }
 
     fun onCaptured(saved: Boolean) {
         val key = target
         val file = captureFile
         val retake = retaking
+        val room = room
         target = null
         retaking = null
         captureFile = null
         if (key == null || file == null) return
         scope.launch {
-            var image: PageImage? = null
-            val name = if (saved) {
-                // Read into memory before the camera's copy goes: it is the only full-size one.
-                image = decode(Uri.fromFile(file))
-                store.import(Uri.fromFile(file))
-            } else {
-                null
-            }
+            // Both copies are encrypted before the camera's goes: the record's photo, and the full-size one to read.
+            val name = if (saved) store.import(Uri.fromFile(file)) else null
+            val held = name?.let { store.hold(file) }
             file.delete()
-            if (name == null || image == null) {
+            if (name == null || held == null) {
                 name?.let { store.delete(listOf(it)) }
-                if (saved) _problem.value = AppText.res.getString(R.string.photo_unreadable)
+                if (saved) problem(key, AppText.res.getString(R.string.photo_unreadable))
                 return@launch
             }
-            if (arrived(key, name, retake)) readPage(key, name) { image }
+            if (arrived(key, name, retake, room)) {
+                readPage(key, name, then = { store.delete(listOf(held)) }) { store.held(held)?.let { decode(ImageDecoder.createSource(ByteBuffer.wrap(it))) } }
+            } else {
+                store.delete(listOf(held))
+            }
         }
     }
 
@@ -163,58 +166,65 @@ class InvoicePhotos @Inject constructor(
                     continue
                 }
                 // The gallery keeps its copy, so it is read from there when its turn comes, not held in memory.
-                if (arrived(key, name, null)) launch { readPage(key, name) { decode(uri) } }
+                if (arrived(key, name, null, room)) launch { readPage(key, name) { decode(ImageDecoder.createSource(context.contentResolver, uri)) } }
             }
-            _problem.value = when {
-                unreadable > 0 -> AppText.res.getString(R.string.photos_unreadable, unreadable.asNumber())
-                uris.size > wanted.size -> AppText.res.getString(R.string.invoice_pages_too_many, wanted.size.asNumber(), RecordPhotos.MAX_PER_RECORD.asNumber())
-                else -> null
+            when {
+                unreadable > 0 -> problem(key, AppText.res.getString(R.string.photos_unreadable, unreadable.asNumber()))
+                uris.size > wanted.size -> problem(
+                    key,
+                    AppText.res.getQuantityString(R.plurals.invoice_pages_too_many, RecordPhotos.MAX_PER_RECORD, wanted.size.asNumber(), RecordPhotos.MAX_PER_RECORD.asNumber()),
+                )
             }
         }
     }
 
     /**
-     * Page [name] goes on form [key]'s strip: in [retake]'s place, or at the end if there is none (or it was taken off
-     * while the camera was open). False, and the file deleted, when the form has gone.
+     * Page [name] goes on form [key]'s strip: in [retake]'s place, or at the end if there is none (it was taken off
+     * while the camera was open, and only if [room] allows). False, and the file deleted, when it has nowhere to go.
      */
-    private suspend fun arrived(key: String, name: String, retake: String?): Boolean {
+    private suspend fun arrived(key: String, name: String, retake: String?, room: Int): Boolean {
         val pages = _pages.value[key]
-        if (pages == null) {
+        val replaces = retake?.takeIf { r -> pages?.pages?.any { it.file == r } == true }
+        if (pages == null || (retake != null && replaces == null && !fits(key, room))) {
             store.delete(listOf(name))
             return false
         }
-        val replaces = retake?.takeIf { r -> pages.pages.any { it.file == r } }
         _pages.update { it + (key to if (replaces != null) pages.retake(replaces, name) else pages.add(name)) }
         replaces?.let { store.delete(listOf(it)) }
         return true
     }
 
-    /** Reads page [name] of form [key] when its turn comes, unless it has been taken off or retaken by then. */
-    private suspend fun readPage(key: String, name: String, image: suspend () -> PageImage?) {
+    /**
+     * Reads page [name] of form [key] when its turn comes, unless it has been taken off or retaken by then, and runs
+     * [then] either way. A picture that can't be opened, or an engine that can't run, leaves the page unreadable.
+     */
+    private suspend fun readPage(key: String, name: String, then: suspend () -> Unit = {}, image: suspend () -> PageImage?) {
         waiting++
         try {
             reading.withLock {
                 if (!has(key, name)) return
-                val page = image()
                 val started = SystemClock.elapsedRealtime()
+                val page = image()
                 val words = page?.let { p ->
                     withContext(Dispatchers.Default) {
                         val engine = reader ?: TextReader.page(context).also { reader = it }
-                        engine.boxedWords(PageLight.flatten(p.luminance, p.width, p.height), p.width, p.height)
+                        engine.boxedWords(PageLight.flatten(p.luminance, p.width, p.height), p.width, p.height).takeUnless { engine.failed }
                     }
-                }.orEmpty()
+                }
                 val millis = SystemClock.elapsedRealtime() - started
-                _pages.update { all -> all[key]?.let { all + (key to it.read(name, words, millis)) } ?: all }
+                _pages.update { all ->
+                    val pages = all[key] ?: return@update all
+                    all + (key to if (words != null) pages.read(name, words, millis) else pages.unreadable(name))
+                }
             }
         } finally {
+            then()
             // The engine holds tens of megabytes; it goes once nothing is left to read.
             if (--waiting == 0) reading.withLock { if (waiting == 0) reader?.close().also { reader = null } }
         }
     }
 
     private fun has(key: String, name: String) = _pages.value[key]?.pages?.any { it.file == name } == true
-
-    private fun pagesOf(key: String) = _pages.value[key] ?: PhotoPages()
 
     /** A form begins taking pages: until then, pages arriving for it go nowhere. */
     fun open(key: String) {
@@ -225,13 +235,14 @@ class InvoicePhotos @Inject constructor(
 
     fun remove(key: String, file: String) {
         _pages.update { all -> all[key]?.let { all + (key to it.remove(file)) } ?: all }
-        scope.launch { store.delete(listOf(file)) }
+        drop(listOf(file))
     }
 
-    /** The form was saved: its pages' files, in order, now the caller's to keep or delete. */
+    /** The form was saved: its pages' files, in order, now the caller's to keep or [drop]. */
     fun take(key: String): List<String> {
         val files = _pages.value[key]?.pages.orEmpty().map { it.file }
         _pages.update { it - key }
+        _problems.update { it - key }
         return files
     }
 
@@ -241,15 +252,11 @@ class InvoicePhotos @Inject constructor(
     }
 
     /** The pages are put aside, or the form was left: their files go, and pages arriving later go nowhere. Does nothing after [take]. */
-    fun discard(key: String) {
-        _problem.value = null
-        drop(take(key))
-    }
+    fun discard(key: String) = drop(take(key))
 
-    /** The page at [uri] [PageLight.READ_WIDTH] wide in greyscale, or null if it can't be decoded. */
-    private suspend fun decode(uri: Uri): PageImage? = withContext(Dispatchers.IO) {
+    /** The page [PageLight.READ_WIDTH] wide in greyscale, or null if it can't be decoded. */
+    private suspend fun decode(source: ImageDecoder.Source): PageImage? = withContext(Dispatchers.IO) {
         try {
-            val source = ImageDecoder.createSource(context.contentResolver, uri)
             val decoded = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
                 val (w, h) = PageLight.readSize(info.size.width, info.size.height)
                 decoder.setTargetSize(w, h)
@@ -268,6 +275,7 @@ class InvoicePhotos @Inject constructor(
         } catch (_: IOException) {
             null
         } catch (_: RuntimeException) {
+            // A gallery grant that has lapsed comes as a SecurityException.
             null
         } catch (_: OutOfMemoryError) {
             null

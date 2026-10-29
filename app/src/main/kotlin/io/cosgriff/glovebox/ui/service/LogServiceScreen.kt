@@ -570,7 +570,8 @@ class LogServiceViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val photoProblem: StateFlow<String?> = photoPicker.problem
 
-    val photoRoom: Int get() = RecordPhotos.room(form.keptPhotos.size + newPhotos.value.size)
+    /** A record's photos and an invoice's pages share its room, so the pages always fit when they are kept (#513). */
+    val photoRoom: Int get() = RecordPhotos.room(form.keptPhotos.size + newPhotos.value.size + invoicePages.value.pages.size)
 
     fun takePhoto() = photoPicker.capture(PhotoTarget.Draft(photoKey), photoRoom)
     fun choosePhotos() = photoPicker.pick(PhotoTarget.Draft(photoKey), photoRoom)
@@ -612,7 +613,7 @@ class LogServiceViewModel @Inject constructor(
                 words == null -> form.invoiceProblem = InvoiceProblem.UNREADABLE
                 // A scan has no text layer: it is photographed instead (#513).
                 words.isEmpty() -> form.invoiceProblem = InvoiceProblem.NO_TEXT
-                fillFrom(d, words, photos = false) -> invoicePdf = picked.bytes
+                fillFrom(d, words, InvoiceSource.PDF) -> invoicePdf = picked.bytes
                 else -> form.invoiceProblem = InvoiceProblem.UNREADABLE
             }
         } finally {
@@ -621,7 +622,7 @@ class LogServiceViewModel @Inject constructor(
     }
 
     /** The invoice's [words] read and put on the form; false if the reader tripped on them. [millis] go in the debug trace. */
-    private suspend fun fillFrom(d: LogServiceData, words: List<InvoiceWord>, photos: Boolean, millis: List<Long?> = emptyList()): Boolean {
+    private suspend fun fillFrom(d: LogServiceData, words: List<InvoiceWord>, source: InvoiceSource, millis: List<Long?> = emptyList()): Boolean {
         // The readings are in dash terms; an invoice after a cluster swap reads as the new cluster does.
         // An invoice laid out in a way the reader trips on is one it couldn't read, never a crash.
         val reading = withContext(Dispatchers.Default) {
@@ -634,18 +635,19 @@ class LogServiceViewModel @Inject constructor(
         invoices.writeTrace(words, reading, millis)
         val fill = InvoiceFills.of(reading, d.log.vehicle.vin)
         form.fill(fill, invoiceNotes(fill, d.unit))
-        form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading), photos)
+        form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading), source)
         return true
     }
 
     /** A paper invoice's pages on this form (#513), each read as it comes. */
     val invoicePages: StateFlow<PhotoPages> = invoicePhotos.pages.map { it[photoKey] ?: PhotoPages() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, PhotoPages())
-    val invoicePagesProblem: StateFlow<String?> = invoicePhotos.problem
+    val invoicePagesProblem: StateFlow<String?> = invoicePhotos.problems.map { it[photoKey] }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    fun photographInvoice() = invoicePhotos.capture(photoKey)
-    fun chooseInvoicePages() = invoicePhotos.pick(photoKey)
-    fun retakeInvoicePage(file: String) = invoicePhotos.retake(photoKey, file)
+    fun photographInvoice() = invoicePhotos.capture(photoKey, photoRoom)
+    fun chooseInvoicePages() = invoicePhotos.pick(photoKey, photoRoom)
+    fun retakeInvoicePage(file: String) = invoicePhotos.capture(photoKey, photoRoom, retake = file)
     fun moveInvoicePage(file: String, by: Int) = invoicePhotos.move(photoKey, file, by)
     fun removeInvoicePage(file: String) = invoicePhotos.remove(photoKey, file)
 
@@ -664,7 +666,7 @@ class LogServiceViewModel @Inject constructor(
         form.readingInvoice = true
         viewModelScope.launch {
             try {
-                if (!fillFrom(d, pages.words(), photos = true, pages.pages.map { it.millis })) form.invoiceProblem = InvoiceProblem.UNREADABLE
+                if (!fillFrom(d, pages.words(), InvoiceSource.PHOTOS, pages.pages.map { it.millis })) form.invoiceProblem = InvoiceProblem.UNREADABLE
             } finally {
                 form.readingInvoice = false
             }
@@ -842,9 +844,10 @@ class LogServiceViewModel @Inject constructor(
                     }
                 }
                 val added = photoPicker.takeDraft(photoKey)
-                // A paper invoice's pages go with the record as its photos, unless the user turned that off, as many as fit.
+                // A paper invoice's pages go with the record as its photos unless the user turned that off. They share
+                // the record's room with its other photos (photoRoom), so they fit.
                 val pages = invoicePhotos.take(photoKey)
-                val keptPages = if (keepInvoice) pages.take(RecordPhotos.room(added.size)) else emptyList()
+                val keptPages = if (keepInvoice) pages else emptyList()
                 invoicePhotos.drop(pages - keptPages.toSet())
                 if (d.original != null) {
                     actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
@@ -889,7 +892,7 @@ fun LogServiceScreen(
         onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onRemoveNewPhoto = vm::removeNewPhoto,
         onReadInvoice = vm::readInvoice,
         invoicePages = InvoicePages(
-            pages, pagesProblem,
+            pages, RecordPhotos.room(vm.form.keptPhotos.size + newPhotos.size + pages.pages.size), pagesProblem,
             onTake = vm::photographInvoice, onChoose = vm::chooseInvoicePages, onRetake = vm::retakeInvoicePage,
             onMove = vm::moveInvoicePage, onRemove = vm::removeInvoicePage, onFill = vm::fillFromInvoicePages,
             onPutAside = vm::putInvoicePagesAside,
@@ -1174,7 +1177,7 @@ internal fun LogServiceContent(
 
             CostCard(form)
 
-            Photos(form, newPhotos, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
+            Photos(form, newPhotos, invoicePages.strip.pages.size, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 FieldLabel(stringResource(R.string.log_notes_label))
@@ -1275,6 +1278,8 @@ internal fun fieldColors() = OutlinedTextFieldDefaults.colors(
 private fun Photos(
     form: LogServiceForm,
     newPhotos: List<String>,
+    /** An invoice's photographed pages (#513): they become photos too, so they share the room. */
+    invoicePages: Int,
     problem: String?,
     onTakePhoto: () -> Unit,
     onChoosePhotos: () -> Unit,
@@ -1282,7 +1287,7 @@ private fun Photos(
 ) {
     val scheme = MaterialTheme.colorScheme
     val count = form.keptPhotos.size + newPhotos.size
-    val photoRoom = RecordPhotos.room(count)
+    val photoRoom = RecordPhotos.room(count + invoicePages)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FieldLabel(stringResource(R.string.log_receipt))

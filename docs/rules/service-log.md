@@ -33,12 +33,14 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   `files/invoice-traces/` (Delete all data removes it). Filing a custom line carries its job and prices with it.
 - Photos of a paper invoice (#513, `InvoicePhotos`, `PageLight`, `PhotoPages`): the same reader and form fill, with
   Tesseract's words. **Each page is encrypted the moment it arrives**, as a record photo; the camera's copy is in the
-  clear only in `cache/capture/` until then, and the gallery's is never copied. What is read stays in memory. Pages
-  are read one at a time as they come, on the phone, as #482 measured best: the app's own `eng` model, light
-  flattened, 3400 px wide, PSM 3. **The form fills only when the user asks, once every page is read**; moving,
-  retaking or removing a page before that is free. Save keeps the pages as the record's photos, as many as fit, while
-  "Keep the pages as photos" is on; otherwise, and on leaving or "Put the pages aside", their files go, and the sweep
-  takes any left over. No crop or straightening step until a phone's skewed and dim photos say one is needed; debug
+  clear only in `cache/capture/` until then, and is held full size, encrypted (`RecordPhotoStore.hold`), until its
+  turn to be read. The gallery's is read from the gallery, never copied. What is read stays in memory. Pages are read
+  one at a time as they come, on the phone, as #482 measured best: the app's own `eng` model, the page divided by its
+  own blurred copy, 3400 px wide, PSM 3. A page that can't be opened says so, apart from one with nothing read on it.
+  **The form fills only when the user asks, once every page is read**; moving, retaking or removing a page before
+  that is free. **Pages and the record's other photos share its ten**, so Save keeps every page as a photo while "Keep
+  the pages as photos" is on; otherwise, and on leaving or "Put the pages aside", their files go, and the sweep takes
+  any left over. No crop or straightening step until a phone's skewed and dim photos say one is needed; debug
   traces carry each page's reading time to measure on a phone.
 - **Photo and document files are never deleted when a row is**, so Undo can put the row back: the files go in
   `RecordActions.discard` when the Undo bar ends untaken, and `RecordPhotoStore.sweep` removes leftovers on
