@@ -2706,6 +2706,43 @@
     <string name="invoice_page">Page %1$s</string>
     <!-- Under a field the invoice printed a figure for that no sum on it agreed with: left blank. -->
     <string name="invoice_unread">Couldn\'t read: check the invoice</string>
+    <!-- Read an invoice from photos of a paper one (#513): each page photographed or picked, read on the phone. -->
+    <string name="invoice_photos_title">Photograph a paper invoice</string>
+    <string name="invoice_photos_hint">Take a photo of each page, or choose them. They\'re read on this phone. Nothing is saved until you save.</string>
+    <string name="invoice_pages_title">Invoice pages</string>
+    <string name="invoice_pages_about">Put the pages in order: tap one to move it, take it again or remove it. Each is read as it comes.</string>
+    <!-- %1$s is the page being read, %2$s how many pages there are. -->
+    <string name="invoice_pages_reading">Reading page %1$s of %2$s…</string>
+    <plurals name="invoice_pages_fill">
+        <item quantity="one">Fill the form from this page</item>
+        <item quantity="other">Fill the form from these %1$s pages</item>
+    </plurals>
+    <string name="invoice_pages_add">Add a page</string>
+    <string name="invoice_pages_put_aside">Put the pages aside</string>
+    <string name="invoice_pages_nothing_read">Nothing could be read on these pages. Take them again in brighter, even light, or fill the form in yourself.</string>
+    <!-- %1$s is the most a record can hold, its photos and an invoice's pages together. -->
+    <plurals name="invoice_pages_full">
+        <item quantity="one">A record holds %1$s photo or page.</item>
+        <item quantity="other">A record holds up to %1$s photos and pages together.</item>
+    </plurals>
+    <!-- %1$s is how many were added, %2$s the most a record can hold (the quantity). -->
+    <plurals name="invoice_pages_too_many">
+        <item quantity="one">Only %1$s more would fit; a record holds %2$s photo or page.</item>
+        <item quantity="other">Only %1$s more would fit; a record holds up to %2$s photos and pages together.</item>
+    </plurals>
+    <!-- Under a page's picture in the strip. -->
+    <string name="invoice_page_reading">Reading…</string>
+    <string name="invoice_page_read">Read</string>
+    <string name="invoice_page_blank">Nothing read</string>
+    <string name="invoice_page_unreadable">Couldn\'t be opened</string>
+    <!-- What tapping a page in the strip does, for screen readers. %1$s is the page's number. -->
+    <string name="invoice_page_options">Options for page %1$s</string>
+    <string name="invoice_page_earlier">Move earlier</string>
+    <string name="invoice_page_later">Move later</string>
+    <string name="invoice_page_retake">Take it again</string>
+    <string name="invoice_page_remove">Remove</string>
+    <string name="invoice_keep_pages_title">Keep the pages as photos</string>
+    <string name="invoice_keep_pages_about">Saved, encrypted, as this record\'s photos.</string>
     <!-- The saved PDF's name among the vehicle's documents; %1$s is the shop. -->
     <string name="invoice_document_name">Invoice, %1$s</string>
     <string name="invoice_document_name_plain">Invoice</string>

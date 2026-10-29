@@ -6,6 +6,7 @@ import io.cosgriff.glovebox.ui.welcome.WelcomeScreen
 import io.cosgriff.glovebox.ui.welcome.WelcomeAction
 import io.cosgriff.glovebox.ui.welcome.FirstRun
 import io.cosgriff.glovebox.ui.settings.ImportPicker
+import io.cosgriff.glovebox.ui.service.InvoicePhotos
 import io.cosgriff.glovebox.ui.service.InvoicePicker
 import io.cosgriff.glovebox.ui.settings.RestorePicker
 import io.cosgriff.glovebox.data.backup.BackupRestorer
@@ -89,6 +90,15 @@ class MainActivity : FragmentActivity() {
     private val openInvoice = registerForActivityResult(ActivityResultContracts.OpenDocument()) { invoicePicker.onPicked(it) }
     private val launchInvoicePicker: () -> Unit = { openInvoice.launch(arrayOf("application/pdf")) }
 
+    @Inject lateinit var invoicePhotos: InvoicePhotos
+
+    private val pickInvoicePages =
+        registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(RecordPhotos.MAX_PER_RECORD)) { invoicePhotos.onPicked(it) }
+    private val takeInvoicePage = registerForActivityResult(ActivityResultContracts.TakePicture()) { invoicePhotos.onCaptured(it) }
+    private val launchInvoicePages: () -> Unit = {
+        pickInvoicePages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
     @Inject lateinit var documentPicker: DocumentPicker
 
     private val openDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) { documentPicker.onPicked(it) }
@@ -118,6 +128,7 @@ class MainActivity : FragmentActivity() {
         restorePicker.attach(launchBackupPicker)
         importPicker.attach(launchImportPicker)
         invoicePicker.attach(launchInvoicePicker)
+        invoicePhotos.attach(launchInvoicePages) { takeInvoicePage.launch(it) }
         documentPicker.attach(launchDocumentPicker) { takeDocumentPhoto.launch(it) }
         // Once per process, and only on a fresh start: a restored activity may have a form with photos attached.
         if (savedInstanceState == null && !swept) {
@@ -183,6 +194,7 @@ class MainActivity : FragmentActivity() {
         restorePicker.detach(launchBackupPicker)
         importPicker.detach(launchImportPicker)
         invoicePicker.detach(launchInvoicePicker)
+        invoicePhotos.detach(launchInvoicePages)
         documentPicker.detach(launchDocumentPicker)
         super.onDestroy()
     }

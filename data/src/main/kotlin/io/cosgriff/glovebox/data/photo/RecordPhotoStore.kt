@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.domain.StoredFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.util.UUID
 
 /**
@@ -54,6 +55,25 @@ class RecordPhotoStore(
         crypto.encryptTo(name, jpeg.inputStream())
         name
     }
+
+    /**
+     * The camera's photo of an invoice page as it came, full size, encrypted until it is read (#513): the record keeps
+     * only a smaller copy, and reading wants every pixel. Its name, for [held]; deleted once read, and the sweep takes
+     * any left over. Null if it couldn't be copied.
+     */
+    suspend fun hold(source: File): String? = withContext(Dispatchers.IO) {
+        val name = "held-${UUID.randomUUID()}.jpg"
+        try {
+            source.inputStream().use { crypto.encryptTo(name, it) }
+            name
+        } catch (_: IOException) {
+            crypto.delete(name)
+            null
+        }
+    }
+
+    /** A photo [hold] kept, decrypted in memory only; null if it is gone or unreadable. */
+    suspend fun held(name: String): ByteArray? = withContext(Dispatchers.IO) { decrypt(name) }
 
     /** Decrypted in memory only, shrunk to about [edge] on its longest side; null if the file is missing or unreadable. */
     suspend fun load(fileName: String, edge: Int): Bitmap? = withContext(Dispatchers.IO) {

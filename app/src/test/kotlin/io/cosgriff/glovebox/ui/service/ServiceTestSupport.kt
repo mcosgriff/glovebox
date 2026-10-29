@@ -48,6 +48,7 @@ internal class ServiceTestDb {
     val picker = RecordPhotoPicker(context, photos, db.service(), appScope)
     val documents = DocumentStore(context, crypto, db.documents(), photos)
     val invoices = InvoicePicker(context, appScope, documents)
+    val invoicePhotos = InvoicePhotos(context, photos, appScope)
     val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
 
     /** The folder encrypted files live in; the tests only ever look at which names are there. */

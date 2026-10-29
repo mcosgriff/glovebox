@@ -10,6 +10,15 @@ import io.cosgriff.glovebox.domain.LineRole
 import io.cosgriff.glovebox.domain.InvoiceFigure
 import io.cosgriff.glovebox.domain.OdometerRole
 import io.cosgriff.glovebox.ui.service.ReadInvoice
+import io.cosgriff.glovebox.ui.service.PageThumb
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import io.cosgriff.glovebox.domain.InvoiceWord
+import io.cosgriff.glovebox.domain.PhotoPages
 import io.cosgriff.glovebox.ui.bulletins.BulletinsState
 import io.cosgriff.glovebox.domain.VehicleBulletins
 import io.cosgriff.glovebox.domain.BulletinProduct
@@ -630,6 +639,26 @@ object Fixtures {
             listOf(LineRole.Figure(InvoiceFigure.TAX, 1_232, job = null, taken = null)),
         ),
     )
+
+    private val pageWord = InvoiceWord("SERVICES", page = 0, left = 120f, top = 900f, right = 420f, bottom = 940f, confidence = 92f)
+
+    /** Three photographed pages of a made-up paper invoice (#513): two read, the third still being read. No photos: the tiles are plain. */
+    val invoicePagesReading: PhotoPages = PhotoPages()
+        .add("record-page-1.jpg").add("record-page-2.jpg").add("record-page-3.jpg")
+        .read("record-page-1.jpg", listOf(pageWord), millis = 5200)
+        .read("record-page-2.jpg", emptyList(), millis = 4800)
+
+    val invoicePagesRead: PhotoPages = invoicePagesReading.read("record-page-3.jpg", listOf(pageWord), millis = 6100)
+
+    /** A page's picture as a plain tile: the fixtures have no photos. */
+    val pageThumb: PageThumb = { _, description, modifier ->
+        Surface(
+            modifier.semantics { contentDescription = description },
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shape = MaterialTheme.shapes.small,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        ) {}
+    }
 
     /** A new service filled from [invoiceFill], nothing saved yet. */
     fun logServiceFromInvoice(): LogServiceForm = logService().apply {

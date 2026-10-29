@@ -32,6 +32,7 @@ import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.service.WorkAndPrices
 import io.cosgriff.glovebox.ui.service.InvoiceCard
+import io.cosgriff.glovebox.ui.service.InvoicePages
 import io.cosgriff.glovebox.ui.service.WhatWasRead
 import io.cosgriff.glovebox.ui.service.CostCard
 import io.cosgriff.glovebox.ui.settings.CategoryRulesContent
@@ -186,9 +187,27 @@ class ScreensScreenshotTest(private val shade: Shade) {
         val form = Fixtures.logServiceFromInvoice()
         compose.shoot("log_service_invoice", shade) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
-                InvoiceCard(form, "2019 Blue truck", onRead = {})
+                InvoiceCard(form, "2019 Blue truck", onRead = {}, InvoicePages(), Fixtures.pageThumb)
                 WorkAndPrices(form)
             }
+        }
+    }
+
+    /** Photographing a paper invoice (#513): the page strip while a page is still being read. */
+    @Test
+    fun logServiceInvoicePages() {
+        val form = Fixtures.logService()
+        compose.shoot("log_service_invoice_pages", shade) {
+            Column(Modifier.padding(20.dp)) { InvoiceCard(form, "2019 Blue truck", onRead = {}, InvoicePages(Fixtures.invoicePagesReading), Fixtures.pageThumb) }
+        }
+    }
+
+    /** Every page read: the form can be filled from them. */
+    @Test
+    fun logServiceInvoicePagesRead() {
+        val form = Fixtures.logService()
+        compose.shoot("log_service_invoice_pages_read", shade) {
+            Column(Modifier.padding(20.dp)) { InvoiceCard(form, "2019 Blue truck", onRead = {}, InvoicePages(Fixtures.invoicePagesRead), Fixtures.pageThumb) }
         }
     }
 

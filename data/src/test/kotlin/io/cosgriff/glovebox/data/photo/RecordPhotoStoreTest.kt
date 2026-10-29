@@ -69,6 +69,18 @@ class RecordPhotoStoreTest {
     }
 
     @Test
+    fun `an invoice page the camera took is held full size, only encrypted, until it is read`() = runBlocking {
+        val bytes = "made-up camera bytes".toByteArray()
+        val capture = File(context.cacheDir, "capture.jpg").apply { writeBytes(bytes) }
+
+        val name = store.hold(capture)!!
+
+        assertTrue(name.startsWith("held-"))
+        assertFalse(File(crypto.photoDir, name).readBytes().contentEquals(bytes))
+        assertTrue(store.held(name)!!.contentEquals(bytes))
+    }
+
+    @Test
     fun `something that isn't a picture is not imported`() = runBlocking {
         assertNull(store.import(PickedFilesProvider.offer("notes.txt", "made-up notes".toByteArray())))
         assertEquals(0, crypto.photoDir.list()!!.size)
