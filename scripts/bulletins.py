@@ -66,6 +66,7 @@ NHTSA_MODELS = {
     "Volkswagen/Passat": ["PASSAT", "PASSAT TDI", "PASSAT WAGON"],
     "Volkswagen/Tiguan": ["TIGUAN"],
     "Volkswagen/Tiguan Limited": ["TIGUAN LIMITED"],
+    "Volkswagen/Touareg": ["TOUAREG", "TOUAREG HYBRID"],
     "Volkswagen/e-Golf": ["E-GOLF", "EGOLF"],
 }
 
