@@ -49,8 +49,8 @@ The card is Chrysler's layout in Volkswagen's frame: 15 columns, 10,000 to 150,0
   fluid 120,000, with 60,000 as its interval under Severe. The card prints no months for any of them.
 - **No oil or tire rotation reminder.** The card puts both under the oil change indicator, not a fixed
   distance (#147's survey, point 6): it draws them every 10,000, so the table does, but a 10,000-mile reminder
-  would state a figure the card doesn't fix. They stay in the table only until the owner decides (the open
-  question on #452). Their names say the indicator decides.
+  would state a figure the card doesn't fix. They stay in the table only until the owner decides ([question 1 on
+  #452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764)). Their names say the indicator decides.
 - **The towing / fleet transmission fluid change** is not a `severeOnly` reminder: it is drawn once, at 60,000,
   and a 60,000 interval would put it at 120,000 too, where the card has only the ordinary change, so rule 7
   refuses it. It is the guide giving the ordinary job a shorter interval under those conditions, so the ordinary
@@ -64,4 +64,5 @@ The card is Chrysler's layout in Volkswagen's frame: 15 columns, 10,000 to 150,0
 
 - **2009.** NHTSA's index has no Routan maintenance card for 2009 (its 2009 Routan rows are Carefree policy
   letters), and the 2010 card isn't stretched over it.
-- **The oil and rotation reminders** on this list (above).
+- **The oil and rotation reminders** on this list (above); the open questions are on
+  [#452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764).

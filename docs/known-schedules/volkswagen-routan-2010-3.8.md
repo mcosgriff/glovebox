@@ -37,7 +37,7 @@ gets neither until setup asks which engine it has.
   102,000. Accessory drive belts at 120,000: reminder every 120,000.
 - **Engine coolant is table-only**, at 60,000 and 102,000 as drawn, each cell marked "4": "flush and replace
   the engine coolant if not completed at 60 months". Footnote 3, "at 60 months if not completed at 102,000
-  miles", is marked on no cell. 60,000 and 102,000 are no one interval, so no reminder is the table's own (the
-  open question on #452 asks whether the 60,000 cell stands for the 60 months).
+  miles", is marked on no cell. 60,000 and 102,000 are no one interval, so no reminder is the table's own ([question 4 on
+  #452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764) asks whether the 60,000 cell stands for the 60 months).
 - Left out: the "Carefree Maintenance Program Coverage" shading and the "**" / "***" notes on coverage and the
   emissions warranty.
