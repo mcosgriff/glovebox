@@ -2,7 +2,7 @@
 
 How `app/src/main/assets/known-schedules/volkswagen-passat-2014-2.5.json` was made. The rules it follows are
 in [known-schedules.md](../known-schedules.md). This page also lists every card read for the Passat NMS
-(2012–2019) and says what wasn't covered and why.
+(2012–2022) and says what wasn't covered and why.
 
 Source: Volkswagen's "Maintenance Schedule For USA" cards, which Volkswagen files with NHTSA as
 manufacturer communications (`https://static.nhtsa.gov/odi/tsbs/<year>/MC-<id>-<suffix>.pdf`; the ids are
@@ -24,6 +24,9 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | 2016 | 2.0L TDI | Posted August 2015, in full | `2015/MC-10123064-9999` | [2016 TDI](volkswagen-passat-2016-tdi.md) |
 | 2018 | all models | Revised 11/26/2019, the newest revision | `2019/MC-10168646-0001` | [2018 2.0T](volkswagen-passat-2018-2.0t.md), [2018 3.6L](volkswagen-passat-2018-3.6.md) |
 | 2019 | all models | Revised 11/12/2020, the newest revision | `2020/MC-10183295-0001` | [2019](volkswagen-passat-2019.md) |
+| 2020 | all models | Revised 11/26/2019, the newest revision | `2019/MC-10168643-0001` | [2020–2021](volkswagen-passat-2020-2021.md) |
+| 2021 | all gasoline models | 7/9/2020, the only one | `2020/MC-10177239-0001` | [2020–2021](volkswagen-passat-2020-2021.md) |
+| 2022 | all gasoline models | Revised 7/21/2021, the newest revision | `2021/MC-10199495-0001` | [2022](volkswagen-passat-2022.md) |
 
 NHTSA's index files `MC-10240824`, `MC-10240825` and `MC-10240826` ("Maintenance Schedule For USA", filed in
 2023) under the 2015 Passat; they weren't fetched. The 2014 and 2015 per-engine cards are read off the page the
@@ -79,5 +82,7 @@ is the 2014 1.8T, below.
 - **2017.** NHTSA's index has two "New Publication" filings under the 2017 Passat (`MC-10107219`,
   `MC-10107220`); `2016/MC-10107219-9999` and `2017/MC-10107219-9999` are not there (404), as for the Jetta's
   2017 filings. Volkswagen's 2017 reissue would be the only source; left out, as for #434's question 3.
-- **The 2018 and 2019 gearbox rows**: see the [2018 2.0T's page](volkswagen-passat-2018-2.0t.md).
-- The 2010 B6 has [its own list](volkswagen-passat-2010.md); the 2020–2022 Passat is another issue's.
+- **The 2018 and 2019 gearbox rows**: see the [2018 2.0T's page](volkswagen-passat-2018-2.0t.md). The 2020–2022
+  automatic row: see the [2020–2021 page](volkswagen-passat-2020-2021.md); asked on #445.
+- The 2010 B6 has [its own list](volkswagen-passat-2010.md); the 2020–2022 Passat's lists are
+  [2020–2021](volkswagen-passat-2020-2021.md) and [2022](volkswagen-passat-2022.md).

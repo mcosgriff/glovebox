@@ -389,3 +389,5 @@ One page per list, named by its `id`:
 - [Volkswagen Passat TDI, 2016 (NMS)](known-schedules/volkswagen-passat-2016-tdi.md) (`volkswagen-passat-2016-tdi`)
 - [Volkswagen Passat, 2010 (B6)](known-schedules/volkswagen-passat-2010.md) (`volkswagen-passat-2010`)
 - [Volkswagen Passat, 2019 (NMS)](known-schedules/volkswagen-passat-2019.md) (`volkswagen-passat-2019`)
+- [Volkswagen Passat, 2020–2021 (NMS)](known-schedules/volkswagen-passat-2020-2021.md) (`volkswagen-passat-2020-2021`)
+- [Volkswagen Passat, 2022 (NMS)](known-schedules/volkswagen-passat-2022.md) (`volkswagen-passat-2022`)
