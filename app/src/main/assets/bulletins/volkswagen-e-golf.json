@@ -1,0 +1,220 @@
+{
+ "make": "Volkswagen",
+ "model": "e-Golf",
+ "modelAliases": [],
+ "years": [
+  2015,
+  2016,
+  2017
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11010013",
+   "number": "DC_Multclosure_VW",
+   "date": "2024-10-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Service Action Closure Notice",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2016,
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10160845",
+   "number": "Dealer 93D7 ver2",
+   "date": "2019-05-24",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "UPDATED Parts Department Information for Service Action 93D7 - California Only Field Quality Parts",
+   "products": [
+    {
+     "model": "EGOLF",
+     "years": [
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "ELECTRICAL SYSTEM:12V/24V/48V BATTERY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10160890",
+   "number": "Dealer 93D7",
+   "date": "2019-05-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action 93D7 / Field Quality Parts Collection ÃÂ¢ÃÂÃÂ High-Voltage (HV) Battery Pack",
+   "products": [
+    {
+     "model": "EGOLF",
+     "years": [
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "ELECTRICAL SYSTEM:12V/24V/48V BATTERY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10158510",
+   "number": "Closure Notifica",
+   "date": "2019-02-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Closure Notification to dealers. Service Action 80C1 High-Voltage Heater Element",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10128075",
+   "number": "Dealer Letter an",
+   "date": "2015-05-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Vehicles Added to Emissions Service Action 01A4 ? Vehicle Emission Control Information Label 2015 Model Year Volkswagen e-Golf): Volkswagen has added vehicles to Emissions Service Action dealerships should refer to the Campaign Data Sheets for additional information",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10127983",
+   "number": "Circular - 01A4",
+   "date": "2015-05-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action: During vehicle production, the Vehicle Emission Control Information label was not installed on certain 2015 model year e-Golf vehicles. This document contains the procedure for installing the Vehicle Emission Control Information label. This document contains the claim entry instructions for servicing the affected vehicles",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10128073",
+   "number": "Circular - 01A4",
+   "date": "2015-05-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action: During vehicle production, the Vehicle Emission Control Information label was not installed on certain 2015 model year e-Golf vehicles. This document is about the corrective action taken which will Install the Vehicle Emission Control Information label.",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10127986",
+   "number": "01A4 Z8 5-4-15",
+   "date": "2015-05-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION: This document informs dealships of an upcoming Emissions Service Action. During vehicle production, the Vehicle Emission Control Information label was not installed",
+   "products": [
+    {
+     "model": "E-GOLF",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  }
+ ]
+}

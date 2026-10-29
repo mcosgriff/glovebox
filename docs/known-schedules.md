@@ -344,6 +344,8 @@ One page per list, named by its `id`:
 - [Toyota Tundra, 2024 (hybrid)](known-schedules/toyota-tundra-2024-hybrid.md) (`toyota-tundra-2024-hybrid`)
 - [Toyota Tundra, 2025–2026 (gas)](known-schedules/toyota-tundra-2025-2026-gas.md) (`toyota-tundra-2025-2026-gas`)
 - [Toyota Tundra, 2025–2026 (hybrid)](known-schedules/toyota-tundra-2025-2026-hybrid.md) (`toyota-tundra-2025-2026-hybrid`)
+- [Volkswagen e-Golf, 2015](known-schedules/volkswagen-e-golf-2015.md) (`volkswagen-e-golf-2015`)
+- [Volkswagen e-Golf, 2016–2017](known-schedules/volkswagen-e-golf-2016-2017.md) (`volkswagen-e-golf-2016-2017`)
 - [Volkswagen GTI, 2006 (Mk5)](known-schedules/volkswagen-gti-2006.md) (`volkswagen-gti-2006`)
 - [Volkswagen GTI, 2007 (Mk5)](known-schedules/volkswagen-gti-2007.md) (`volkswagen-gti-2007`)
 - [Volkswagen GTI, 2008 (Mk5)](known-schedules/volkswagen-gti-2008.md) (`volkswagen-gti-2008`)
