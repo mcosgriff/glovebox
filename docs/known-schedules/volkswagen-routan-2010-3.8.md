@@ -19,7 +19,7 @@ gets neither until setup asks which engine it has.
 - Oil and filter, and tire rotation, in every column: reminders every 6,000. **The card prints no oil change
   indicator wording and no months**, so the grid's 6,000 is the card's own interval and the reminders are
   shipped; the 2013–2014 card puts both under the indicator, and Volkswagen's bulletin `MC-10124405` (2014)
-  speaks of the Routan's "change oil" indicator for 2009–2014 (the open question on #452). No months (#517:
+  speaks of the Routan's "change oil" indicator for 2009–2014 ([the open question on #452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764)). No months (#517:
   none recorded).
 - Engine air filter at 30,000, 60,000, 90,000 and 120,000: reminder every 30,000.
 - "If using your vehicle for dusty or off-road conditions: inspect the engine air cleaner filter" every 12,000:

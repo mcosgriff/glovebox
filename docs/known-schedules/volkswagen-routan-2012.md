@@ -11,6 +11,6 @@ How `app/src/main/assets/known-schedules/volkswagen-routan-2012.json` was made. 
 The card is the [2011 card](volkswagen-routan-2011.md) row for row, with one mark fewer: **the exhaust system
 inspection is not drawn at 24,000** (it is at 16,000, with the same footnote, then 48,000, 72,000, 96,000 and
 120,000). So the list is the 2011 list without that one cell, read the same way: oil and tire rotation reminders
-every 8,000 (no months, and see the open question on #452), engine air filter 32,000, coolant 104,000 / 60 mo,
+every 8,000 (no months, and see [the open question on #452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764)), engine air filter 32,000, coolant 104,000 / 60 mo,
 automatic transmission fluid 120,000 (64,000 under Severe), spark plugs 96,000, accessory drive belts 120,000;
 the air conditioning filter "(if applicable)" table-only.

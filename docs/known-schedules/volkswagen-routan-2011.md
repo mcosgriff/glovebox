@@ -14,7 +14,7 @@ The card is an older grid than 2013's: 15 columns, 8,000 to 120,000, and no oil 
   indicator wording and no months**, so the grid's 8,000 is the card's own interval and the reminders are
   shipped. The 2013–2014 card puts both under the indicator instead, and Volkswagen's bulletin `MC-10124405`
   (2014) speaks of the Routan's "change oil" indicator for 2009–2014; whether that should take the 2011 oil
-  reminder away is in the open question on #452. No months (#517: none recorded).
+  reminder away is in [the open question on #452](https://github.com/mcosgriff/glovebox/issues/452#issuecomment-6492943764). No months (#517: none recorded).
 - Engine air filter at 32,000, 64,000 and 96,000: reminder every 32,000.
 - "If using your vehicle for dusty or off-road conditions: inspect the engine air cleaner filter" at 16,000,
   48,000, 80,000 and 112,000: table-only, named with its condition (an inspection).
