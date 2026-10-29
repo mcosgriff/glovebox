@@ -37,14 +37,15 @@ are in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026
       30,000, 50,000 and so on.
     - Standard services fall every 20,000 or 2 years: 20,000, 40,000 and so on.
     - So the oil is still changed every 10,000, or about once a year.
-    The old cards print no months, so the list has none.
+    The old cards print no months, so the table has none, but the oil reminder is 10,000 or 12 months from
+    these (the owner's ruling of 2026-10-28, #517).
   - **The table** is the old cards' 12 columns. The reissues' minor/standard/extended layout isn't the
     same table.
   - The owner of a 2011 or 2013 should still check the list against the booklet in the car.
 - The card is a grid: 12 columns, 10,000 to 120,000 miles, with no months printed for a column. Jobs
   "regardless of mileage" (airbag check yearly, brake fluid, the tire mobility kit) are drawn in the
   columns Volkswagen chose and named with their time here.
-- Reminders: engine oil and tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; DSG fluid and
+- Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; DSG fluid and
   filter 40,000 (not for a manual car); air filter and spark plugs 60,000 / 72 mo; brake fluid every
   24 months by time alone (the card says at 3 years first, then every 2).
 - Left out of the 2010 card's rows as not the GTI's: AdBlue, the diesel particulate and fuel filters

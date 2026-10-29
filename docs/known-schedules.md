@@ -35,7 +35,10 @@ of the lists; how each one was made is recorded on its own page, `known-schedule
 7. **A reminder interval has to be the table's own.** `KnownSchedules.parse` refuses an interval unless
    its job is in the table at exactly the multiples of that interval, with the table's months, or, for
    a job with a first time of its own (`firstAtMiles`: "first at 100,000, then every 50,000"), at that
-   mileage and every interval after it. A job that fits neither stays in the table only. Reminders are given for work that gets
+   mileage and every interval after it. A job that fits neither stays in the table only. Where the table
+   prints no months but the guide's own footnotes give the oil change a time limit ("10,000 or 1 year"),
+   the oil reminder takes those months (the owner's ruling of 2026-10-28, #517); the page says where.
+   Reminders are given for work that gets
    logged (replace, rotate, lubricate). Of the inspections, only the differential and transfer case oil
    checks are reminders, on every list whose guide prints them (the owner asked for them on the 4Runner on
    2026-10-13, and for every vehicle with a differential on 2026-10-23, #33); logging a change of one counts

@@ -21,8 +21,8 @@ filed with NHTSA as a manufacturer communication. Read on 2026-10-23.
   runs to 120,000 and nothing says it repeats.
 - **No months per column.** The footnotes give a first minor service at 10,000 or 1 year, then every
   20,000 or 2 years, and standard services at 20,000 or 2 years, then every 20,000 or 2 years, each
-  counted from the last. The grid's columns carry no months, so the milestones have none, and the oil
-  reminder has no months either (the footnotes come to about once a year).
+  counted from the last. The grid's columns carry no months, so the milestones have none. The oil reminder
+  is 10,000 or 12 months, from the minor service's "or 1 year" (the owner's ruling of 2026-10-28, #517).
 - **"Additional Maintenance Items"** are a separate table of job and interval with no column marked. They
   are reminders in `additional` with the card's figures, never placed on the grid (the owner's ruling of
   2026-10-23, #33): air filter 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says 3
@@ -43,6 +43,6 @@ filed with NHTSA as a manufacturer communication. Read on 2026-10-23.
   belt and tensioning roller for belt starter-generator" check has none. Rows the card marks "(if
   equipped)" say "(if fitted)" (headlight washers, trailer hitch, torque splitter oil, sunroof).
 - Nothing in the three levels was left out: the card marks none of their rows for another model.
-- Reminders: engine oil 10,000 (from the table); the five additional items above.
+- Reminders: engine oil 10,000 (from the table) / 12 mo (the footnotes); the five additional items above.
 - Not covered: 2021 and earlier (Mk7), and 2023 on, which has its own list from Volkswagen's reissued
   cards ([2023–2026](volkswagen-gti-2023-2026.md)).

@@ -35,8 +35,8 @@ cited as reissues with their print dates. Read on 2026-10-23.
   100,000 (with kilometres under the miles); nothing says it repeats.
 - **No months per column.** The footnotes give the first minor service at 10,000 or 1 year, then every
   20,000 or 2 years after the last, and standard services every 20,000 or 2 years. The columns carry no
-  months, so the milestones have none and the oil reminder has none either (the footnotes come to about
-  once a year).
+  months, so the milestones have none. The oil reminder is 10,000 or 12 months, from the minor service's
+  "or 1 year" (the owner's ruling of 2026-10-28, #517).
 - **"Additional Maintenance Items"** are a separate table of job, interval and applicability, with no
   column marked. They are reminders in `additional` with the card's figures, never placed on the grid
   (the owner's ruling of 2026-10-23, #33): air filter 60,000 / 72 mo; brake fluid every 24 months by time
@@ -60,6 +60,6 @@ cited as reissues with their print dates. Read on 2026-10-23.
   apart and only one has it (the brake pad check is `brake-inspect`; the brake system and shock absorber
   check has none). Rows marked "All Applicable Vehicles" or "(if equipped)" say "(if fitted)" (tire
   pressure monitoring calibration, tire repair kit, trailer hitch, torque splitter oil, sunroof).
-- Reminders: engine oil 10,000 (from the table); the five additional items above.
+- Reminders: engine oil 10,000 (from the table) / 12 mo (the footnotes); the five additional items above.
 - Not covered: 2022 ([its own list](volkswagen-gti-2022.md)); 2027, whose maintenance card isn't on the
   owners-literature site.
