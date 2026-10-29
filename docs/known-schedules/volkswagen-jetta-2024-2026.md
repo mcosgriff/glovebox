@@ -19,7 +19,7 @@ page images, by eye, and compared with each other and the 2023 card.
 - **The list is the [2023 Jetta's](volkswagen-jetta-2023.md) without its gearbox reminder**: the three service levels
   and every additional item that names the Jetta read the same in all three years and in 2023 (spark plugs 80,000 or 6
   years, "Jetta"; sunroof drains and the camshaft toothed-belt roller, inspections, "Jetta"), but for the automatic.
-- **The automatic is left out**, asked on #442. Each card puts the Jetta on two automatic rows that differ:
+- **The automatic is left out**, asked on [#442](https://github.com/mcosgriff/glovebox/issues/442#issuecomment-6491794904) (question 1). Each card puts the Jetta on two automatic rows that differ:
   - 2024: "Transmission, Automatic - Change Fluid & filter (if applicable) » USA Only«", every 80,000 miles, "09S:
     Jetta, Taos" and "0GC (DSG): Arteon, GTI, Golf R, Jetta, Taos"; and a second row, "Every 80,000 miles (120K km) -
     Severe driving conditions only (i.e. taxi/ towing, etc.)", "09U: Jetta".

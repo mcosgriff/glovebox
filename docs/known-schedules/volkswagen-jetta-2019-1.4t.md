@@ -69,5 +69,5 @@ for "Jetta" and "Jetta GLI" and name no engine.
 ## Not covered
 
 - **The gearbox rows on the 1.4T and the 2022 Jetta**: the non-DSG automatic's row names no model (above).
-- **The 2023–2026 GLI's DSG** and **the 2024–2026 Jetta's automatic**: their pages say why, asked on #442.
+- **The 2023–2026 GLI's DSG** and **the 2024–2026 Jetta's automatic**: their pages say why, asked on [#442](https://github.com/mcosgriff/glovebox/issues/442#issuecomment-6491794904).
 - 2027: no maintenance card on the owners-literature site (as on the GTI's page).

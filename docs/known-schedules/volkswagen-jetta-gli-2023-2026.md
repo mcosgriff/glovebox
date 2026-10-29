@@ -14,7 +14,7 @@ on 2026-10-29, as page images, by eye.
   columns to 100,000, no months on them; oil 10,000 or 12 months, #517).
 - **Spark plugs** every 80,000 miles or 6 years, "GLI" on all four cards ("Jetta, GLI, Taos" in 2023 and 2024; "Jetta",
   "GLI, GTI" in 2025; "GLI" on its own line in 2026): 80,000 / 72 mo.
-- **The DSG is left out**, asked on #442. The cards' automatic row ("Transmission, Automatic - Change Fluid & filter
+- **The DSG is left out**, asked on [#442](https://github.com/mcosgriff/glovebox/issues/442#issuecomment-6491794904) (question 2). The cards' automatic row ("Transmission, Automatic - Change Fluid & filter
   (if applicable)", every 80,000 miles) gives the DSG as "0GC (DSG): Arteon, GTI, Golf R, Jetta, Taos" (2023, 2024),
   "GTI, Golf R, Jetta, Taos" (2025), "GTI, Golf R, Jetta" (2026). It names the "Jetta", not the "GLI", while the spark
   plug row on the same cards names the two apart, and vPIC has "Jetta" and "Jetta GLI" apart for these years. The
