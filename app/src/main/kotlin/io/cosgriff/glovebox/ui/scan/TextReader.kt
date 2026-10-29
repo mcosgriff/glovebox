@@ -1,14 +1,17 @@
 package io.cosgriff.glovebox.ui.scan
 
 import android.content.Context
+import com.googlecode.tesseract.android.ResultIterator
 import com.googlecode.tesseract.android.TessBaseAPI
+import io.cosgriff.glovebox.domain.InvoiceWord
 import java.io.File
 import java.io.IOException
 
 /**
- * Reads the text in one camera frame with Tesseract, entirely on the phone, for the two things the
- * camera is pointed at to read: the odometer ([digits]) and a printed VIN ([vin]). Tesseract is told
- * which characters there can be ([characters]), and keeps only the words it is at least
+ * Reads the text in one camera frame with Tesseract, entirely on the phone, for the things the
+ * camera is pointed at to read: the odometer ([digits]), a printed VIN ([vin]) and a page of a paper
+ * invoice ([page]). Tesseract is told which characters there can be ([characters], null for any) and
+ * how the text is laid out ([pageMode]), and [read] keeps only the words it is at least
  * [minConfidence] (of 100) sure of.
  *
  * It runs entirely on the phone: the engine is a native
@@ -19,7 +22,14 @@ import java.io.IOException
  * cache the first time and reused; Android may clear it, and `DataWipe` does, and it is simply
  * copied again. It holds nothing of the user's.
  */
-class TextReader private constructor(private val context: Context, private val characters: String, private val minConfidence: Float) {
+class TextReader private constructor(
+    private val context: Context,
+    private val characters: String?,
+    private val minConfidence: Float,
+    // The numbers on a cluster, and a VIN among the other print on a plate or a card, are scattered about, not laid out as a page.
+    private val pageMode: Int = TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT,
+    private val wordLists: Map<String, String> = NO_WORD_LISTS,
+) {
     private var api: TessBaseAPI? = null
 
     /** Set when the engine couldn't be started; nothing more is tried after that. */
@@ -44,19 +54,33 @@ class TextReader private constructor(private val context: Context, private val c
     data class Word(val text: String, val confidence: Float, val startsLine: Boolean)
 
     /** Everything Tesseract found, sure of it or not; [read] keeps the words it is sure of. */
-    fun words(luminance: ByteArray, width: Int, height: Int): List<Word> {
+    fun words(luminance: ByteArray, width: Int, height: Int): List<Word> =
+        recognise(luminance, width, height) { text, iterator -> Word(text, iterator.confidence(WORD), iterator.isAtBeginningOf(LINE)) }
+
+    /**
+     * Every word with its box in the picture's pixels and its confidence, sure of it or not, for
+     * [io.cosgriff.glovebox.domain.InvoiceReader] (#513): the sums on the invoice vouch for its figures, not
+     * Tesseract. The words are on page 0; [io.cosgriff.glovebox.domain.PhotoPages] numbers them.
+     */
+    fun boxedWords(luminance: ByteArray, width: Int, height: Int): List<InvoiceWord> =
+        recognise(luminance, width, height) { text, iterator ->
+            val box = iterator.getBoundingBox(WORD)
+            InvoiceWord(text, 0, box[0].toFloat(), box[1].toFloat(), box[2].toFloat(), box[3].toFloat(), iterator.confidence(WORD))
+        }
+
+    private fun <T> recognise(luminance: ByteArray, width: Int, height: Int, word: (String, ResultIterator) -> T): List<T> {
         val engine = api ?: start() ?: return emptyList()
         engine.setImage(darkOnLight(luminance), width, height, 1, width)
         try {
             // Recognition runs here; the iterator below only walks what it found.
             if (engine.utF8Text.isNullOrBlank()) return emptyList()
-            val words = mutableListOf<Word>()
+            val words = mutableListOf<T>()
             val iterator = engine.resultIterator ?: return emptyList()
             try {
                 iterator.begin()
                 do {
-                    val word = iterator.getUTF8Text(WORD)?.trim().orEmpty()
-                    if (word.isNotEmpty()) words += Word(word, iterator.confidence(WORD), iterator.isAtBeginningOf(LINE))
+                    val text = iterator.getUTF8Text(WORD)?.trim().orEmpty()
+                    if (text.isNotEmpty()) words += word(text, iterator)
                 } while (iterator.next(WORD))
             } finally {
                 iterator.delete()
@@ -76,7 +100,7 @@ class TextReader private constructor(private val context: Context, private val c
         if (failed) return null
         val engine = try {
             val data = languageFile()
-            TessBaseAPI().takeIf { it.init(data.parentFile!!.parentFile!!.absolutePath, LANGUAGE, TessBaseAPI.OEM_LSTM_ONLY, NO_WORD_LISTS) }
+            TessBaseAPI().takeIf { it.init(data.parentFile!!.parentFile!!.absolutePath, LANGUAGE, TessBaseAPI.OEM_LSTM_ONLY, wordLists) }
         } catch (_: IOException) {
             null
         } catch (_: LinkageError) {
@@ -88,9 +112,8 @@ class TextReader private constructor(private val context: Context, private val c
             failed = true
             return null
         }
-        engine.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, characters)
-        // The numbers on a cluster, and a VIN among the other print on a plate or a card, are scattered about, not laid out as a page.
-        engine.pageSegMode = TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT
+        characters?.let { engine.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, it) }
+        engine.pageSegMode = pageMode
         api = engine
         return engine
     }
@@ -136,6 +159,15 @@ class TextReader private constructor(private val context: Context, private val c
          * its check digit, and has to be read the same twice.
          */
         fun vin(context: Context) = TextReader(context, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ", minConfidence = 0f)
+
+        /**
+         * For a page of a paper invoice (#513), already flattened (`PageLight`): any character, with the
+         * English word lists, since most of an invoice is words. Read as a page (PSM 3): #482 measured it
+         * best on real photos, 55 of 56 figures, since the layout analysis tells the description column from
+         * the subtotals beside it.
+         */
+        fun page(context: Context) =
+            TextReader(context, characters = null, minConfidence = 0f, pageMode = TessBaseAPI.PageSegMode.PSM_AUTO, wordLists = emptyMap())
 
         /** Darker than this on average and the picture is taken to be lit digits on a dark display. */
         private const val DARK = 110
