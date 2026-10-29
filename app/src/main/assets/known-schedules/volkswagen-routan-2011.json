@@ -1,0 +1,405 @@
+{
+  "id": "volkswagen-routan-2011",
+  "title": "2011 Routan",
+  "make": "Volkswagen",
+  "model": "Routan",
+  "years": {
+    "from": 2011,
+    "to": 2011
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10156036-9999.pdf",
+    "retrieved": "2026-10-29",
+    "note": "Read from Volkswagen's USA maintenance schedule for the Routan, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Routan, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "milestones": [
+    {
+      "atMiles": 8000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 16000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect engine air filter, replace if needed · dusty or off-road use"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        }
+      ]
+    },
+    {
+      "atMiles": 24000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect exhaust system"
+        }
+      ]
+    },
+    {
+      "atMiles": 32000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 48000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect engine air filter, replace if needed · dusty or off-road use"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        }
+      ]
+    },
+    {
+      "atMiles": 56000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 64000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Change transmission fluid and filter · police, taxi, fleet or frequent towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 72000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect exhaust system"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect engine air filter, replace if needed · dusty or off-road use"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        }
+      ]
+    },
+    {
+      "atMiles": 88000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        }
+      ]
+    },
+    {
+      "atMiles": 96000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect PCV valve, replace if needed",
+          "service": "pcv"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        }
+      ]
+    },
+    {
+      "atMiles": 104000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Replace engine coolant (at 104,000 miles or 5 years)",
+          "service": "coolant"
+        }
+      ]
+    },
+    {
+      "atMiles": 112000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect engine air filter, replace if needed · dusty or off-road use"
+        },
+        {
+          "name": "Replace air conditioning filter (if applicable)"
+        },
+        {
+          "name": "Inspect brake linings, replace if needed",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Change automatic transmission fluid and filter",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Replace accessory drive belts",
+          "service": "belt"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 8000,
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires",
+      "everyMiles": 8000,
+      "service": "rotation"
+    },
+    {
+      "name": "Replace engine air filter",
+      "everyMiles": 32000,
+      "service": "engine-air"
+    },
+    {
+      "name": "Change automatic transmission fluid and filter",
+      "everyMiles": 120000,
+      "severe": {
+        "everyMiles": 64000
+      },
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Replace engine coolant (at 104,000 miles or 5 years)",
+      "everyMiles": 104000,
+      "everyMonths": 60,
+      "service": "coolant"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 96000,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Replace accessory drive belts",
+      "everyMiles": 120000,
+      "service": "belt"
+    }
+  ]
+}

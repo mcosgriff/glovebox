@@ -1,0 +1,652 @@
+{
+  "id": "volkswagen-routan-2013-2014",
+  "title": "2013–2014 Routan",
+  "make": "Volkswagen",
+  "model": "Routan",
+  "years": {
+    "from": 2013,
+    "to": 2014
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10125859-9999.pdf",
+    "retrieved": "2026-10-29",
+    "note": "Read from Volkswagen's USA maintenance schedule for the Routan, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Routan, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "milestones": [
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Change transmission fluid and filter · police, taxi, fleet or frequent towing"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Replace engine coolant (at 10 years or 150,000 miles)",
+          "service": "coolant"
+        },
+        {
+          "name": "Inspect PCV valve, replace if needed",
+          "service": "pcv"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Change automatic transmission fluid and filter",
+          "service": "trans-fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 130000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        }
+      ]
+    },
+    {
+      "atMiles": 140000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect front suspension, tie rod ends and boot seals; replace if needed"
+        },
+        {
+          "name": "Inspect brake linings and parking brake function"
+        },
+        {
+          "name": "Replace cabin air filter",
+          "service": "cabin-air"
+        }
+      ]
+    },
+    {
+      "atMiles": 150000,
+      "work": [
+        {
+          "name": "Change engine oil and filter (when the oil change indicator says)",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires (at each oil change, or sooner at the first sign of uneven wear)",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect battery; clean and tighten terminals as needed"
+        },
+        {
+          "name": "Check automatic transmission fluid (if it has a dipstick)"
+        },
+        {
+          "name": "Inspect brake pads, shoes, rotors, drums, hoses and parking brake",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect cooling system protection and hoses"
+        },
+        {
+          "name": "Inspect exhaust system"
+        },
+        {
+          "name": "Inspect engine air filter · dusty or off-road use"
+        },
+        {
+          "name": "Inspect CV joints"
+        },
+        {
+          "name": "Replace engine air filter",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace engine coolant (at 10 years or 150,000 miles)",
+          "service": "coolant"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Replace engine air filter",
+      "everyMiles": 30000,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace cabin air filter",
+      "everyMiles": 20000,
+      "service": "cabin-air"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 100000,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Change automatic transmission fluid and filter",
+      "everyMiles": 120000,
+      "severe": {
+        "everyMiles": 60000
+      },
+      "service": "trans-fluid"
+    }
+  ]
+}
