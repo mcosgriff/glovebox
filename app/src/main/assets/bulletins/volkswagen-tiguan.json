@@ -7,10 +7,84 @@
   2013,
   2014,
   2015,
-  2016
+  2016,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024
  ],
  "asOf": "2026-10-25",
  "bulletins": [
+  {
+   "id": "11038142",
+   "number": "Email 91OL",
+   "date": "2026-09-07",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update provides improvements to connectivity stability and OCU module diagnostics, which will reduce OCU module replacements due to false DTC detection. This software update is also a prerequisite for future updates.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11034611",
+   "number": "Dealer 91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update addresses a potential issue with special characters being broadcast over HD radio.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034611-0001.pdf"
+  },
+  {
+   "id": "11034610",
+   "number": "Customer email_91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Your vehicle is currently eligible for the 91UB software update designed to:",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034610-0001.pdf"
+  },
   {
    "id": "11023836",
    "number": "Turbocharger FAQ",
@@ -26,7 +100,8 @@
       2013,
       2014,
       2015,
-      2016
+      2016,
+      2018
      ]
     }
    ],
@@ -34,6 +109,373 @@
     "POWER TRAIN"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11021367",
+   "number": "Circular 69MJ",
+   "date": "2025-07-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An incorrect EPROM component with lower bytes memory density may have been installed in some airbag control modules. This could cause the airbag indicator light on the instrument panel to come on. To address this issue, dealers will replace the airbag control module in the affected vehicles.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11021368",
+   "number": "Dealer 69MJ",
+   "date": "2025-07-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An incorrect EPROM component with lower bytes memory density may have been installed in some airbag control modules. This could cause the airbag indicator light on the instrument panel to come on. To address this issue, dealers will replace the airbag control module in the affected vehicles.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018946",
+   "number": "VWP-25-06",
+   "date": "2025-05-07",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen has extended the Warranty coverage for the Evap Leak Detection Pump (LDP) to 15 years or 150,000 miles, whichever occurs first, from the vehicles original in-service date, for certain 2022 Model Year Volkswagen vehicles.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11012458",
+   "number": "Circular 37U2",
+   "date": "2024-12-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicles included in this action may have been built with incorrect settings in the Transmission Control Module (TCM) which results in the Start / Stop system not working correctly. A disabled Start / Stop system will increase engine idle time while vehicle is stationary, however, the vehicle emissions remain within certified tailpipe standards.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11012459",
+   "number": "Dealer 37U2",
+   "date": "2024-12-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicles included in this action may have been built with incorrect settings in the Transmission Control Module (TCM) which results in the Start / Stop system not working correctly. A disabled Start / Stop system will increase engine idle time while vehicle is stationary, however, the vehicle emissions remain within certified tailpipe standards.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11011380",
+   "number": "VWP-24-09",
+   "date": "2024-11-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen Warranty has extended the coverage for the overhead console on 2019-2022 Tiguan Vehicles for 2 years 24,000 from the expiration of NVLW",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008844",
+   "number": "Dealer 66EX_REV1",
+   "date": "2024-09-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture. Updated label overlay ordering information",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008839",
+   "number": "Circular 66EX_REV1",
+   "date": "2024-09-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture. Updated label overlay ordering information",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11002871",
+   "number": "Circular 66EX",
+   "date": "2024-06-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10243301",
+   "number": "VWP-23-06_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension revision. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243301-0001.pdf"
+  },
+  {
+   "id": "10243298",
+   "number": "SunroofFAQ_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243298-0001.pdf"
+  },
+  {
+   "id": "10241197",
+   "number": "SunroofFAQ",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241197-0001.pdf"
+  },
+  {
+   "id": "10241196",
+   "number": "VWP-23-06",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241196-0001.pdf"
+  },
+  {
+   "id": "10241188",
+   "number": "Circular60e5rev2",
+   "date": "2023-08-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Reopening this service action for unrepaired vehicles in order to support a class action settlement.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10239662",
+   "number": "DCV09B3Closure",
+   "date": "2023-07-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce the closure of Service Action 09B3.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "EQUIPMENT"
+   ],
+   "pdf": null
   },
   {
    "id": "10235284",
@@ -50,7 +492,8 @@
       2013,
       2014,
       2015,
-      2016
+      2016,
+      2018
      ]
     }
    ],
@@ -122,6 +565,48 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10181405",
+   "number": "Circular 91AG",
+   "date": "2020-10-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Our records indicate that a backend systems (cellular network) issue disrupted the Car-Net registration process for vehicles included in this service action. As a result, the green light for the Car-Net system is not on. In order for these owners to get the 5-year Car-Net remote access package that came with the vehicle, a manual reset of the Car-Net module is required.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10181409",
+   "number": "Dealer 91AG",
+   "date": "2020-10-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Our records indicate that a backend systems (cellular network) issue disrupted the Car-Net registration process for vehicles included in this service action. As a result, the green light for the Car-Net system is not on. In order for these owners to get the 5-year Car-Net remote access package that came with the vehicle, a manual reset of the Car-Net module is required.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": null
   },
   {
    "id": "10172985",
@@ -259,6 +744,46 @@
    "pdf": null
   },
   {
+   "id": "10154355",
+   "number": "46H8",
+   "date": "2019-01-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Front Brake Pad Noise",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "SERVICE BRAKES"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10154357",
+   "number": "Dealer Letter-46",
+   "date": "2019-01-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Front Brake Pad Noise",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "SERVICE BRAKES"
+   ],
+   "pdf": null
+  },
+  {
    "id": "10154376",
    "number": "Vehicle Maintena",
    "date": "2019-01-17",
@@ -295,7 +820,8 @@
       2013,
       2014,
       2015,
-      2016
+      2016,
+      2018
      ]
     }
    ],
@@ -320,7 +846,8 @@
       2013,
       2014,
       2015,
-      2016
+      2016,
+      2018
      ]
     }
    ],
@@ -329,6 +856,26 @@
     "STEERING: STEERING WHEEL/HANDLE BAR"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149942-9999.pdf"
+  },
+  {
+   "id": "10149815",
+   "number": "Service Action 6",
+   "date": "2018-10-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Under Hood Cowl Seam",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY:HOOD"
+   ],
+   "pdf": null
   },
   {
    "id": "10149887",
