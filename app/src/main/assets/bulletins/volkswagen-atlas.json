@@ -1,0 +1,637 @@
+{
+ "make": "Volkswagen",
+ "model": "Atlas",
+ "modelAliases": [],
+ "years": [
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11038142",
+   "number": "Email 91OL",
+   "date": "2026-09-07",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update provides improvements to connectivity stability and OCU module diagnostics, which will reduce OCU module replacements due to false DTC detection. This software update is also a prerequisite for future updates.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11035774",
+   "number": "VWP-26-07",
+   "date": "2026-07-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable 2018-2022 Atlas and Atlas Cross Sport 3.6L Settlement Class Vehicles (NA6 warranty key), the New Vehicle Limited Warranty will be extended to cover 80% of the replacement of the Water Pump or Water Pump Gasket by an authorized Volkswagen Dealer to 8.5 years or 85,000 miles, whichever occurs first, from the vehicle’s original in-service date.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11035773",
+   "number": "VWP-26-07 FAQ",
+   "date": "2026-07-06",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Supporting FAQ for VWP-26-07 Main Engine Wiring Harness Limited Warranty Extension (Class Action)",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11034611",
+   "number": "Dealer 91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update addresses a potential issue with special characters being broadcast over HD radio.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034611-0001.pdf"
+  },
+  {
+   "id": "11034610",
+   "number": "Customer email_91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Your vehicle is currently eligible for the 91UB software update designed to:",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034610-0001.pdf"
+  },
+  {
+   "id": "11033521",
+   "number": "Circular 37HT",
+   "date": "2026-05-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "A small number of vehicles were equipped with an incorrect differential race in the transmission. Under this service action, dealers will replace the transmission at no cost to owners",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2026
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11033523",
+   "number": "Dealer 37HT",
+   "date": "2026-05-21",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "A small number of vehicles were equipped with an incorrect differential race in the transmission. Under this service action, dealers will replace the transmission at no cost to owners",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2026
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026165",
+   "number": "Circular 10LP",
+   "date": "2025-11-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The positive crankcase ventilation (PCV) valve / oil separator may fail prematurely due to material aging. If this happens, the Malfunction Indicator Lamp (MIL) will illuminate. While this issue does not directly impact vehicle tailpipe emissions, the presence of an illuminated MIL can impact a vehicle’s ability to pass an emissions inspection.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026168",
+   "number": "Dealer 10LP",
+   "date": "2025-11-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The positive crankcase ventilation (PCV) valve / oil separator may fail prematurely due to material aging. If this happens, the Malfunction Indicator Lamp (MIL) will illuminate. While this issue does not directly impact vehicle tailpipe emissions, the presence of an illuminated MIL can impact a vehicle’s ability to pass an emissions inspection.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026166",
+   "number": "Circular 10XY_V2",
+   "date": "2025-11-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Install engine cover.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026169",
+   "number": "Dealer 10XY",
+   "date": "2025-11-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Install engine cover.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11023844",
+   "number": "VWP-25-16",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable Settlement Class Vehicles, the New Vehicle Limited Warranty will be extended to cover 50% of the repair or replacement of the Turbocharger by an authorized Volkswagen Dealer for 8.5 years or 85,000 miles, whichever occurs first, from the vehicle’s in-service date.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023844-0001.pdf"
+  },
+  {
+   "id": "11023836",
+   "number": "Turbocharger FAQ",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This supporting FAQ is for the Turbocharger Limited Warranty Extension Class Action Settlement. This extension includes 2008-2015 GTI and Golf R*, 2012-2013 VW Beetle*, 2009 VW Jetta SportWagen*, 2013 VW Jetta Sedan and GLI*, 2009-2016 VW Eos*, 2008-2010 VW Passat*, 2009-2017 VW CC*, 2009-2018 VW Tiguan*, Certain model year 2015-2018 VW Golf*, 2015-2021 VW GTI*, 2015-2019 VW Golf R*, 2015-2019 VW Golf SportWagen and Alltrack*, 2019-2024 VW Jetta GLI*, 2019-2021 VW Arteon*, 2018-2023 VW Atlas*, and 2020-2023 VW Atlas Cross Sport*",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11018948",
+   "number": "VWP-25-07",
+   "date": "2025-05-21",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable 2018-2024 Volkswagen Atlas Settlement Class Vehicles, the New Vehicle Limited Warranty has been extended to cover the repair or replacement of the Second Row Seat Latching Mechanism by an authorized Volkswagen dealer for 10 years or 100,000 miles, whichever occurs first, from the vehicles original in-service date.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "SEATS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018947",
+   "number": "VWP-25-07 FAQ",
+   "date": "2025-05-21",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Supporting FAQ for the VWP-25-07 Atlas Second Row Seat Latching Mechanism",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "SEATS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018946",
+   "number": "VWP-25-06",
+   "date": "2025-05-07",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen has extended the Warranty coverage for the Evap Leak Detection Pump (LDP) to 15 years or 150,000 miles, whichever occurs first, from the vehicles original in-service date, for certain 2022 Model Year Volkswagen vehicles.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11010030",
+   "number": "VWP-24-08",
+   "date": "2024-10-10",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen is extending warranty coverage for the Front Door Wiring Harnesses on certain 2019-2023 Atlas and Atlas Cross Sport vehicles identified by the U70 Warranty Key for 5 years / 60,000 miles (whichever occurs first) from the date that the 97GF recall was performed.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11010017",
+   "number": "DoorHarnessFAQ",
+   "date": "2024-10-10",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This Supporting FAQ is for the Atlas Front Door Wiring Harness Class Action Settlement for vehicles identified by U70 Warranty Key.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10247541",
+   "number": "VWP-23-08",
+   "date": "2023-12-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document announces the policy for the Engine Control Module Software Update Limited Warranty extension.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:ENGINE:ENGINE CONTROL MODULE (ECU/ECM):SOFTWARE",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10243301",
+   "number": "VWP-23-06_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension revision. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243301-0001.pdf"
+  },
+  {
+   "id": "10243298",
+   "number": "SunroofFAQ_V2",
+   "date": "2023-09-28",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions. Revised to include info on how to proceed with vehicles not applicable to the 60E2/60E5.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10243298-0001.pdf"
+  },
+  {
+   "id": "10241197",
+   "number": "SunroofFAQ",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension FAQ for commonly asked questions",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241197-0001.pdf"
+  },
+  {
+   "id": "10241196",
+   "number": "VWP-23-06",
+   "date": "2023-08-22",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the Sunroof Class Action Limited Warranty Extension",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019,
+      2020,
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10241196-0001.pdf"
+  },
+  {
+   "id": "10241187",
+   "number": "Circular60e2rev2",
+   "date": "2023-08-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Reopening this service action for unrepaired vehicles in order to support a class action settlement.",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "VISIBILITY:SUN/MOON ROOF ASSEMBLY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10161660",
+   "number": "VWP-19-03",
+   "date": "2019-06-21",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new warranty extension of the 12 Volt Battery Warranty Extension for certain Atlas vehicles",
+   "products": [
+    {
+     "model": "ATLAS",
+     "years": [
+      2018,
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:12V/24V/48V BATTERY"
+   ],
+   "pdf": null
+  }
+ ]
+}
