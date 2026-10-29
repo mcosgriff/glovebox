@@ -36,6 +36,7 @@ Map raw hex colors to the theme tokens in `app/.../ui/theme/Theme.kt` rather tha
 | 4c · Garage — empty | `screens/GarageEmpty.png` | `source/GarageEmpty.dc.html` |
 | 4d · Vehicle details + mark as sold | `screens/VehicleDetails.png` | `source/VehicleDetails.dc.html` |
 | 3c · Edit schedule item | `screens/EditInterval.png` | `source/EditInterval.dc.html` |
+| 4h · Oil change interval (sheet, from Vehicle details; #517) — no render yet | `screens/OilInterval.png` · `screens/OilIntervalDark.png` | `source/OilInterval.dc.html` (+ `Dark` → imports it) |
 | 4e · Torque & fastener specs | `screens/Specs.png` | `source/Specs.dc.html` |
 | 4 · Garage — dark | `screens/GarageDark.png` | `source/GarageDark.dc.html` |
 | 6 · History — dark | `screens/HistoryDark.png` | `source/HistoryDark.dc.html` |

@@ -634,6 +634,24 @@
       "page": "parts",
       "is_interactive": true,
       "radius": 28
+    },
+    "OilInterval.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4h · Oil change interval (sheet)",
+      "w": 390,
+      "x": 5170,
+      "y": 5340
+    },
+    "OilIntervalDark.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "4h · Oil change interval (sheet) — dark",
+      "w": 390,
+      "x": 5640,
+      "y": 5340
     }
   },
   "createdOnFiles": {
@@ -777,7 +795,9 @@
     "PartsEditDark.dc.html",
     "ReceiptViewer.dc.html",
     "PartsLogPick.dc.html",
-    "PartsLogPickDark.dc.html"
+    "PartsLogPickDark.dc.html",
+    "OilInterval.dc.html",
+    "OilIntervalDark.dc.html"
   ],
   "pages": [
     {

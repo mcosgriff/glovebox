@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Oil change interval</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: {{ground}}; color: {{ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+  <div aria-hidden="true" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="height: 44px; display: flex; align-items: center; font-size: 22px; font-weight: 700">Vehicle details</div>
+    <div style="height: 150px; border-radius: 16px; background: {{surface}}"></div>
+    <div style="border-radius: 16px; background: {{surface}}; border: 1px solid {{line}}; padding: 4px 16px">
+      <div style="min-height: 56px; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid {{line}}">
+        <div style="font-size: 14px; font-weight: 600">Maintenance schedule</div>
+        <div style="font-size: 12px; color: {{muted}}">9 items tracked · Normal driving</div>
+      </div>
+      <div style="min-height: 56px; display: flex; flex-direction: column; justify-content: center">
+        <div style="font-size: 14px; font-weight: 600">Oil change</div>
+        <div style="font-size: 12px; color: {{muted}}">{{rowDetail}}</div>
+      </div>
+    </div>
+  </div>
+  <a href="VehicleDetails.dc.html" aria-label="Close" style="position: absolute; left: 0; top: 0; width: 390px; height: 900px; background: rgba(14,16,18,0.55)"></a>
+
+  <div role="dialog" aria-label="Oil change" style="position: absolute; left: 0; right: 0; bottom: 0; background: {{ground}}; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="width: 40px; height: 4px; border-radius: 2px; background: {{handle}}; align-self: center"></div>
+    <div style="font-size: 20px; font-weight: 700">Oil change</div>
+    <div style="font-size: 14px; line-height: 1.45; color: {{muted}}">How often this vehicle's oil is changed. Once you set your own, every oil change reminder counts by it, with Severe on or off.</div>
+
+    <div style="background: {{surface}}; border: 1px solid {{line}}; border-radius: 16px; padding: 0 16px">
+      <div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid {{line}}">
+        <span style="font-size: 14px; color: {{muted}}">Maker's schedule</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600">10,000 mi / 12 mo</span>
+      </div>
+      <div style="padding: 10px 0; font-size: 12px; line-height: 1.45; color: {{muted}}">The schedule gives no time limit, so Glovebox gives it 12 months. Check your manual.</div>
+    </div>
+
+    <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: {{muted}}">YOURS</div>
+    <div style="display: flex; gap: 10px">
+      <label style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; color: {{muted}}">Miles</span>
+        <input id="oil-mi" value="{{miles}}" onChange="{{onMiles}}" inputmode="numeric" autocomplete="off" style="width: 100%; min-width: 0; height: 52px; box-sizing: border-box; border: 1.5px solid {{fieldLine}}; border-radius: 12px; background: transparent; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 600; color: {{ink}}">
+      </label>
+      <label style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; color: {{muted}}">Months</span>
+        <input id="oil-mo" value="{{months}}" onChange="{{onMonths}}" inputmode="numeric" autocomplete="off" placeholder="{{monthsHint}}" style="width: 100%; min-width: 0; height: 52px; box-sizing: border-box; border: 1.5px solid {{fieldLine}}; border-radius: 12px; background: transparent; padding: 0 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 600; color: {{ink}}">
+      </label>
+    </div>
+    <div style="font-size: 12px; line-height: 1.45; color: {{muted}}">{{monthsNote}}</div>
+    <div style="font-size: 12px; line-height: 1.45; color: {{muted}}">Glovebox never shortens it as the vehicle ages; that is yours to decide. Check your service manual.</div>
+
+    <div style="display: flex; gap: 8px">
+      <a href="VehicleDetails.dc.html" style="flex: 1; height: 52px; border-radius: 12px; border: 1.5px solid {{line}}; color: {{ink}}; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">Cancel</a>
+      <a href="VehicleDetails.dc.html" style="flex: 2; height: 52px; border-radius: 12px; background: {{accent}}; color: {{onAccent}}; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">Save</a>
+    </div>
+    <sc-if value="{{hasOwn}}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{useMaker}}" style="height: 48px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: {{accent}}">Use the maker's</button>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up figures: the owner's 7,500 mi with months left to follow the miles.
+this.state = { miles: '7500', months: '' };
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var fmt = function (x) { return x.toLocaleString('en-US'); };
+var mi = parseInt((s.miles || '').replace(/[^0-9]/g, ''), 10);
+var mo = parseInt((s.months || '').replace(/[^0-9]/g, ''), 10);
+// One month for every 833 miles, rounded, never more than 12 (ADR-0015).
+var followed = mi > 0 ? Math.max(1, Math.min(12, Math.round(mi / 833))) : null;
+var hasOwn = mi > 0 || mo > 0;
+var counted = mo > 0 ? mo : followed;
+var note = mo > 0 ? 'Your months stay as typed, whatever the miles.'
+  : followed ? 'Months left blank follow your miles: ' + followed + ' months (Glovebox’s). Type months to keep your own.'
+  : 'Leave months blank and they follow your miles.';
+var row = !hasOwn ? 'The maker’s: every 10,000 mi or 12 mo (Glovebox’s: check your manual)'
+  : 'Yours: every ' + [mi > 0 ? fmt(mi) + ' mi' : null, counted ? counted + ' mo' + (mo > 0 ? '' : ' (Glovebox’s: check your manual)') : null].filter(Boolean).join(' or ');
+return {
+ground: dark ? '#121416' : '#F4F3EF',
+surface: dark ? '#1C1F23' : '#FFFFFF',
+ink: dark ? '#EDEBE6' : '#17191C',
+muted: dark ? '#A5A9AF' : '#5A5F66',
+line: dark ? '#33373D' : '#DEDCD5',
+fieldLine: dark ? '#5A5F66' : '#B9B6AE',
+handle: dark ? '#5A5F66' : '#B9B6AE',
+accent: dark ? '#F08A4B' : '#C2410C',
+onAccent: dark ? '#17191C' : '#FFFFFF',
+miles: s.miles, months: s.months,
+monthsHint: followed ? String(followed) : '',
+monthsNote: note,
+rowDetail: row,
+hasOwn: hasOwn,
+onMiles: function (e) { self.setState({ miles: e.target.value }); },
+onMonths: function (e) { self.setState({ months: e.target.value }); },
+useMaker: function () { self.setState({ miles: '', months: '' }); }
+};
+}
+}
+</script>
+</body>
+</html>
