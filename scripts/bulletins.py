@@ -54,6 +54,7 @@ NHTSA_MODELS = {
     "Volkswagen/GTI": ["GTI"],
     "Volkswagen/Golf GTI": ["GTI"],
     "Volkswagen/Jetta": ["JETTA", "JETTA HYBRID"],
+    "Volkswagen/Passat": ["PASSAT", "PASSAT WAGON"],
     "Volkswagen/e-Golf": ["E-GOLF", "EGOLF"],
 }
 
