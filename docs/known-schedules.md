@@ -357,3 +357,5 @@ One page per list, named by its `id`:
 - [Volkswagen GTI, 2020–2021 (Mk7)](known-schedules/volkswagen-gti-2020-2021.md) (`volkswagen-gti-2020-2021`)
 - [Volkswagen GTI, 2022 (Mk8)](known-schedules/volkswagen-gti-2022.md) (`volkswagen-gti-2022`)
 - [Volkswagen GTI, 2023–2026 (Mk8)](known-schedules/volkswagen-gti-2023-2026.md) (`volkswagen-gti-2023-2026`)
+- [Volkswagen Jetta Hybrid, 2015](known-schedules/volkswagen-jetta-2015-hybrid.md) (`volkswagen-jetta-2015-hybrid`)
+- [Volkswagen Jetta Hybrid, 2016](known-schedules/volkswagen-jetta-2016-hybrid.md) (`volkswagen-jetta-2016-hybrid`)

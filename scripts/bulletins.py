@@ -53,6 +53,7 @@ NHTSA_MODELS = {
     "Toyota/Tundra": ["TUNDRA", "TUNDRA HYBRID"],
     "Volkswagen/GTI": ["GTI"],
     "Volkswagen/Golf GTI": ["GTI"],
+    "Volkswagen/Jetta": ["JETTA", "JETTA HYBRID"],
 }
 
 TYPED = {
