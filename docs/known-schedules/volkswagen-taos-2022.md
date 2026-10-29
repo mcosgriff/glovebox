@@ -22,7 +22,7 @@ from the time wins (the owner's ruling of 2026-10-23).
   "Only: Golf R, Golf GTI, Jetta GLI", which leaves the Taos out; "Transmission, automatic: Change fluid (excluding
   Canada) (only non-DSG Automatic Transmission)", every 80,000 miles, names no model
   ([#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)). Neither is put on
-  the list; see [#455's question 3](https://github.com/mcosgriff/glovebox/issues/455).
+  the list; see [#455's question 3](https://github.com/mcosgriff/glovebox/issues/455#issuecomment-6493694589).
 - **No months on the columns**, as on the 2022 GTI's list. The oil reminder is 10,000 or 12 months, from the minor
   service's "or 1 year" (#517).
 - Kept for every model, as there: the trailer hitch check ("(if equipped)", no model named on this card) and the
@@ -68,7 +68,7 @@ so no list names one.
 
 - **The gearbox on 2022** (above), and **on 2025 and 2026**
   ([2025–2026's page](volkswagen-taos-2025-2026.md)); asked on
-  [#455](https://github.com/mcosgriff/glovebox/issues/455).
+  [#455](https://github.com/mcosgriff/glovebox/issues/455#issuecomment-6493694589).
 - **The AWD clutch fluid on 2022 on**, printed "(if equipped)" (2022) and "All Applicable Vehicles" (2023 on): read as
   an AWD job, as the Tiguan's, Atlas's and Arteon's lists do; that reading waits on
   [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).

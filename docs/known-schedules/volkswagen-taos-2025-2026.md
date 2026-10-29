@@ -25,7 +25,7 @@ print dates. Read on 2026-10-29, as page images, by eye, and compared with each 
     That reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
   - Not reminders, as before: the sunroof drains check ("Taos") and the camshaft toothed-belt tensioning roller check
     ("GTI, Golf R, Jetta, Taos, Tiguan (RM1)").
-- **The automatic is left out**, asked on [#455](https://github.com/mcosgriff/glovebox/issues/455) (questions 1 and 2):
+- **The automatic is left out**, asked on [#455](https://github.com/mcosgriff/glovebox/issues/455#issuecomment-6493694589) (questions 1 and 2):
   - 2025: "Transmission, Automatic - Change Fluid & filter (if applicable) » USA Only«", every 80,000 miles, "09H:
     Atlas, Tiguan (RM1)" and "0GC (DSG): GTI, Golf R, Jetta ,Taos"; and "Every 60,000 miles (90K km) - If driven
     under Severe Operation (i.e. taxi/ towing, etc.)", "09U: Jetta, Taos, Tiguan (RM1)". The Taos is on two rows
