@@ -432,3 +432,7 @@ One page per list, named by its `id`:
 - [Volkswagen Passat, 2019 (NMS)](known-schedules/volkswagen-passat-2019.md) (`volkswagen-passat-2019`)
 - [Volkswagen Passat, 2020–2021 (NMS)](known-schedules/volkswagen-passat-2020-2021.md) (`volkswagen-passat-2020-2021`)
 - [Volkswagen Passat, 2022 (NMS)](known-schedules/volkswagen-passat-2022.md) (`volkswagen-passat-2022`)
+- [Volkswagen Tiguan Limited, 2018 (1st generation)](known-schedules/volkswagen-tiguan-limited-2018.md) (`volkswagen-tiguan-limited-2018`)
+- [Volkswagen Tiguan, 2010 (1st generation)](known-schedules/volkswagen-tiguan-2010.md) (`volkswagen-tiguan-2010`)
+- [Volkswagen Tiguan, 2013–2015 (1st generation)](known-schedules/volkswagen-tiguan-2013-2015.md) (`volkswagen-tiguan-2013-2015`)
+- [Volkswagen Tiguan, 2016 (1st generation)](known-schedules/volkswagen-tiguan-2016.md) (`volkswagen-tiguan-2016`)
