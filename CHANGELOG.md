@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.32.0](https://github.com/mcosgriff/glovebox/compare/v0.31.0...v0.32.0) (2026-10-29)
+
+
+### Features
+
+* **history:** filter by one job within a category ([#511](https://github.com/mcosgriff/glovebox/issues/511)) ([a3d49bc](https://github.com/mcosgriff/glovebox/commit/a3d49bc3823f8046796bfaaa6728990cc2d17c11))
+* **history:** show the vehicle's odometer under it ([#509](https://github.com/mcosgriff/glovebox/issues/509)) ([f68b052](https://github.com/mcosgriff/glovebox/commit/f68b0522171b153135fac45928cbe972684d92b9))
+
 ## [0.31.0](https://github.com/mcosgriff/glovebox/compare/v0.30.0...v0.31.0) (2026-10-28)
 
 
