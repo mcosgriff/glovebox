@@ -19,7 +19,7 @@ too), read in full on 2026-10-29, as page images, by eye. It is read as
 - **The other two gearbox rows are left out**: "Transmission, 6-Speed DSG: Change fluid and filter" (every 40,000)
   and "Transmission, Automatic (non-DSG): Change fluid" (every 80,000) name no model. The card gives the Golf R a
   self-shifting gearbox row of its own, and taking an unnamed row as well would give a Golf R with the 7-speed two
-  gearbox jobs (point 9 of the reading; asked on #437).
+  gearbox jobs (point 9 of the reading; [asked on #437](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764), question 2).
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years (AWD only vehicles)": "Change
   AWD clutch fluid (AWD)", an `additional` reminder by time alone every 36 months, no service line, in
   `allWheelDriveOnly`, never on the grid (point 8; PR #537). The Golf R was sold with 4Motion all-wheel drive only;

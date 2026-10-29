@@ -63,7 +63,7 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
   [#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244). vPIC's model list
   has "Golf R" for 2017.
 - **2020 and 2021.** #437 covers 2015–2019 and 2022 on. vPIC's model list has "Golf R" for 2020 (not for 2021), and
-  the 2020 card (`2019/MC-10168643-0001`) and the 2021 card (`2020/MC-10177239-0001`) name the Golf R on their spark
-  plug and 7-speed DSG rows, but no 2020 list is made here: nothing on a card says a 2020 Golf R was sold, and that
-  is left for the owner (asked on #437).
+  the 2020 card (`2019/MC-10168643-0001`) names the Golf R on its 7-speed DSG row (the 2021 card,
+  `2020/MC-10177239-0001`, on its spark plug row too), but no 2020 list is made here: nothing on a card says a 2020 Golf R was sold, and that
+  is left for the owner ([asked on #437](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764), question 4).
 - The Mk6 Golf R (2012–2013) is [#435's](volkswagen-golf-r-2013.md).

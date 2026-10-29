@@ -15,7 +15,7 @@ compared with the 2025 card.
   - **The torque-vectoring rear differential** is "Rear Axle Differential with Torque Vectoring - Change fluid (if
     applicable)", "Golf R" (2023–2025 have no "(if applicable)"). An "(if applicable)" row is never a reminder (the
     owner's ruling of 2026-10-23), and an additional item has no table to stand in, so it is **left out**, and asked
-    on #437: whether a row that names the Golf R alone but is marked "(if applicable)" should be a reminder for it.
+    on [#437](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764) (question 1): whether a row that names the Golf R alone but is marked "(if applicable)" should be a reminder for it.
 - Every other row is the 2025 card's for the Golf R: the three service levels, the DSG row ("0GC (DSG): GTI, Golf R,
   Jetta"), the AWD clutch fluid, air filter, brake fluid and dust and pollen filter.
 - **Model name.** vPIC's model list for Volkswagen, 2026 (`GetModelsForMakeYear`, read 2026-10-29), names it
