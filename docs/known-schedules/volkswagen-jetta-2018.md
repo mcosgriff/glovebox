@@ -79,4 +79,4 @@ first read it; a later list from this card should read it the same way, or say w
   trailer hitch, the convertible top, and the sunroof water drains (Passat only).
 - Reminders: engine oil 10,000 / 12 mo; additional items as in point 5; spark plugs 40,000 / 48 mo.
 - **Not covered:** 2017 and the other Mk6 years: see the [2014 1.8T's page](volkswagen-jetta-2014-1.8t.md#what-isnt-covered).
-  The Mk7 Jetta (2019 on) is #442's.
+  The Mk7 Jetta (2019 on) has lists of its own: see the [2019 1.4T's page](volkswagen-jetta-2019-1.4t.md#every-mk7-jetta-card-read).
