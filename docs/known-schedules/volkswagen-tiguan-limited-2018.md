@@ -34,7 +34,7 @@ Tiguan too), read in full on 2026-10-29, as page images, by eye. It is read as
   "Transmission, Automatic (non-DSG): Change fluid", every 80,000 miles. The card names no model on it, and the
   row is left out as on the Passat's lists ([#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514),
   [#445's question 1](https://github.com/mcosgriff/glovebox/issues/445#issuecomment-6489825579)); asked again
-  for the Tiguan Limited on [#449](https://github.com/mcosgriff/glovebox/issues/449). The 6-speed DSG row (no
+  for the Tiguan Limited on [#449's question 2](https://github.com/mcosgriff/glovebox/issues/449#issuecomment-6492074401). The 6-speed DSG row (no
   DSG on this car) and the 7-speed DSG ("Golf R only") are not its.
 - Left out as not the Tiguan Limited's, by their own words: the convertible top (Beetle Convertible only), the
   sunroof water drains (Passat only), the 1.4L Jetta's belt checks, and the 3.6L's spark plugs.

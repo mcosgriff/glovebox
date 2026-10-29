@@ -72,4 +72,4 @@ Limited" (this one, carried on; see its page).
   ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). The 2010
   and 2013 cards aren't stretched over them.
 - **The 2018 Tiguan** (second generation, "Tiguan" in vPIC's 2018 list) is issue #450's, not this one's.
-- The open questions for these lists are on [#449](https://github.com/mcosgriff/glovebox/issues/449).
+- The open questions for these lists are on [#449](https://github.com/mcosgriff/glovebox/issues/449#issuecomment-6492074401): the Haldex row (question 1) and the 2018 Tiguan Limited's automatic gearbox row (question 2).
