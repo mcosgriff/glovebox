@@ -1072,13 +1072,13 @@ internal fun LogServiceContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        val intervals = remember(data) { data.log.tracked.associate { it.id to it.interval } }
+                        val reminders = remember(data) { data.log.tracked.associateBy { it.id } }
                         data.categories.first { it.id == form.categoryId }.options.forEach { option ->
                             CheckRow(
                                 label = option.label,
                                 // Kept wording says what was written; otherwise what the vehicle takes, or how often.
                                 hint = form.keptLabels[option.id]?.let { stringResource(R.string.log_kept_wording, it) }
-                                    ?: ServiceCatalog.hint(option.id, option.scheduleItemId?.let(intervals::get), data.specs)?.text(data.unit),
+                                    ?: option.scheduleItemId?.let(reminders::get).let { r -> ServiceCatalog.hint(option.id, r?.interval, data.specs, r?.monthsWorkedOut == true) }?.text(data.unit),
                                 checked = option.id in form.selected,
                                 onToggle = { form.toggle(option.id) },
                             )

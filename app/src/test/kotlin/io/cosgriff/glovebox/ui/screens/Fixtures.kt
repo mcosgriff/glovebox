@@ -73,6 +73,8 @@ import io.cosgriff.glovebox.domain.TorqueCategory
 import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TorqueUnit
 import io.cosgriff.glovebox.domain.TrackedItem
+import io.cosgriff.glovebox.domain.OilMonths
+import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.VehicleReminders
 import io.cosgriff.glovebox.domain.categoryOf
 import io.cosgriff.glovebox.domain.nextDueAfter
@@ -164,8 +166,11 @@ object Fixtures {
     private val untracked = setOf("trans-fluid", "diff-fluid")
     private fun id(key: String) = ids.getValue(key)
 
-    private val tracked: List<TrackedItem> = templates.filter { it.key !in untracked }
-        .map { TrackedItem(id(it.key), it.label, it.normal, DueRule.WHICHEVER_FIRST) }
+    /** The oil change in miles alone, as some makers' cards print it, so it counts by Glovebox's months (#517). */
+    private val tracked: List<TrackedItem> = templates.filter { it.key !in untracked }.map {
+        val counted = if (it.key == "oil") OilMonths.counted(Interval(it.normal.miles, null), oil = true, unit) else CountedInterval(it.normal)
+        TrackedItem(id(it.key), it.label, counted.interval, DueRule.WHICHEVER_FIRST, monthsWorkedOut = counted.monthsWorkedOut)
+    }
 
     private fun record(id: Long, monthsAgo: Long, odometer: Int, keys: List<String>, shop: String? = null, cents: Long? = null, notes: String? = null) =
         ServiceRecordWithItems(

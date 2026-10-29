@@ -38,6 +38,8 @@ of the lists; how each one was made is recorded on its own page, `known-schedule
    mileage and every interval after it. A job that fits neither stays in the table only. Where the table
    prints no months but the guide's own footnotes give the oil change a time limit ("10,000 or 1 year"),
    the oil reminder takes those months (the owner's ruling of 2026-10-28, #517); the page says where.
+   An oil change a list leaves in miles alone gets Glovebox's worked-out months when reminders are read
+   ([ADR-0015](adr/0015-oil-months-worked-out.md)), never in the list.
    Reminders are given for work that gets
    logged (replace, rotate, lubricate). Of the inspections, only the differential and transfer case oil
    checks are reminders, on every list whose guide prints them (the owner asked for them on the 4Runner on

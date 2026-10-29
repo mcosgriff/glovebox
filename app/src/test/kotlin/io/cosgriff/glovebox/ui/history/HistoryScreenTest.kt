@@ -342,9 +342,10 @@ class HistoryScreenTest {
     @Test
     fun `the timeline is kept in the saved state, lays the records out by date, and its next reminder opens Log service`() = runBlocking {
         val car = t.vehicle()
-        t.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null)))
+        // By distance only, so the dates below never make it overdue (an oil change would get Glovebox's months, #517).
+        t.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Tire rotation", templateKey = "rotation", intervalMiles = 5_000, intervalMonths = null)))
         val oil = t.db.schedule().allFor(car).single().id
-        t.record(car, date = LocalDate.of(2025, 10, 18), odometer = 50_200, lines = listOf(line("Oil and filter", "oil")))
+        t.record(car, date = LocalDate.of(2025, 10, 18), odometer = 50_200, lines = listOf(line("Rotated the tires", "rotation")))
         t.record(car, date = LocalDate.of(2026, 2, 2), odometer = 54_800, lines = listOf(line("Front brake pads", "front-pads")))
         val handle = SavedStateHandle()
         val vm = tab(handle)
@@ -371,7 +372,7 @@ class HistoryScreenTest {
         compose.onNodeWithText(plural(R.plurals.history_timeline_apart, 3, 3.asNumber())).assertExists()
         compose.onNodeWithText(string(R.string.history_timeline_since, LocalDate.of(2025, 10, 1).format(monthYear))).performScrollTo().assertExists()
 
-        compose.onNodeWithText("Oil change").performClick()
+        compose.onNodeWithText("Tire rotation").performClick()
         assertEquals(listOf(car to oil), logged)
         compose.onNodeWithText("Front brake pads").performScrollTo().performClick()
         assertEquals(1, opened.size)

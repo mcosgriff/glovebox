@@ -27,6 +27,7 @@ import io.cosgriff.glovebox.domain.SavedTorqueSpec
 import io.cosgriff.glovebox.domain.Torque
 import io.cosgriff.glovebox.domain.TorqueCategory
 import io.cosgriff.glovebox.domain.TorqueSource
+import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.nextDueAfter
@@ -90,22 +91,30 @@ val DistanceUnit.pluralWord: String
         },
     )
 
-/** "7,500 mi / 12 mo", "30,000 mi" or "36 mo". [unit] is the vehicle's, which is what the interval is in. */
-fun Interval.text(unit: DistanceUnit): String = parts(unit, R.string.interval_slash)
+/**
+ * "7,500 mi / 12 mo", "30,000 mi" or "36 mo". [unit] is the vehicle's, which is what the interval is in. [monthsOurs]
+ * when the months are Glovebox's, worked out for an oil change that has none (#517): "10,000 mi / 12 mo (Glovebox's:
+ * check your manual)". A reminder passes its item's `monthsWorkedOut`.
+ */
+fun Interval.text(unit: DistanceUnit, monthsOurs: Boolean = false): String = parts(unit, R.string.interval_slash, monthsOurs)
 
 /** "7,500 mi or 12 mo": the same, in a sentence. */
-fun Interval.orText(unit: DistanceUnit): String = parts(unit, R.string.either_or)
+fun Interval.orText(unit: DistanceUnit, monthsOurs: Boolean = false): String = parts(unit, R.string.either_or, monthsOurs)
 
 /** "Every 7,500 mi or 12 mo" */
-fun Interval.every(unit: DistanceUnit): String = AppText.res.getString(R.string.interval_every, orText(unit))
+fun Interval.every(unit: DistanceUnit, monthsOurs: Boolean = false): String = AppText.res.getString(R.string.interval_every, orText(unit, monthsOurs))
 
 /** "First at 100,000 mi, then every 50,000 mi / 60 mo" for a job with a first time of its own; the plain [text] otherwise. */
-fun Interval.text(unit: DistanceUnit, firstAt: Int?): String =
-    if (firstAt == null) text(unit) else AppText.res.getString(R.string.interval_first_then_every, firstAt.asDistance(unit), text(unit))
+fun Interval.text(unit: DistanceUnit, firstAt: Int?, monthsOurs: Boolean = false): String =
+    if (firstAt == null) text(unit, monthsOurs) else AppText.res.getString(R.string.interval_first_then_every, firstAt.asDistance(unit), text(unit, monthsOurs))
 
-private fun Interval.parts(unit: DistanceUnit, join: Int): String {
+/** "Every 10,000 mi or 12 mo", saying so when the months are Glovebox's. A reminder's interval, as it counts. */
+fun TrackedItem.every(unit: DistanceUnit): String = interval.every(unit, monthsWorkedOut)
+
+private fun Interval.parts(unit: DistanceUnit, join: Int, monthsOurs: Boolean): String {
     val distance = miles?.asDistance(unit)
     val time = months?.let { AppText.res.getString(R.string.months_short, it.asNumber()) }
+        ?.let { if (monthsOurs) AppText.res.getString(R.string.interval_months_ours, it) else it }
     return if (distance != null && time != null) AppText.res.getString(join, distance, time) else distance ?: time.orEmpty()
 }
 

@@ -2,7 +2,7 @@
 
 "Last done" for a reminder is never stored. It is worked out from the service records (`ServiceLog.lastDone`), so editing or deleting a record rolls the reminder back by itself. When the user tells the app when something was last done without logging a visit, that is saved as a service record flagged `enteredAsLastDone` (#78).
 
-Nothing is assumed or estimated for the user: there is no "assume everything was done on schedule". An item nobody has logged stays "Not logged yet".
+Nothing is assumed or estimated for the user: there is no "assume everything was done on schedule". An item nobody has logged stays "Not logged yet". The one figure Glovebox works out is an oil change's months where its schedule gives miles alone ([ADR-0015](0015-oil-months-worked-out.md)); it is a time limit for the reminder, never a record.
 
 ## Considered Options
 

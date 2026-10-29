@@ -65,5 +65,9 @@ class TakesTextTest {
             string(R.string.interval_every, Interval(8_000, 6).text(DistanceUnit.KILOMETERS)),
             WorkHint.Every(Interval(8_000, 6)).text(DistanceUnit.KILOMETERS),
         )
+        assertEquals(
+            string(R.string.interval_every, Interval(16_000, 12).text(DistanceUnit.KILOMETERS, monthsOurs = true)),
+            WorkHint.Every(Interval(16_000, 12), monthsWorkedOut = true).text(DistanceUnit.KILOMETERS),
+        )
     }
 }

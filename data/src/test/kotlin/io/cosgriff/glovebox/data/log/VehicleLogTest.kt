@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.data.testVehicle
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.Snooze
@@ -25,7 +26,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -111,11 +114,30 @@ class VehicleLogTest {
     @Test
     fun `an item's own rule, snooze and swap are passed to its reminder`() {
         val snoozed = ScheduleItemEntity(id = 3, vehicleId = 1, name = "Wipers", intervalMiles = null, intervalMonths = 12, ruleOverride = DueRule.TIME_ONLY.name, snoozedUntilDate = day)
-        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, swap)!!
+        val s = snoozed.toTracked(DueRule.WHICHEVER_FIRST, swap, DistanceUnit.MILES)!!
         assertEquals(DueRule.TIME_ONLY, s.rule)
         assertEquals(Snooze(untilDate = day), s.snooze)
         assertEquals(-130_000, s.zeroAt)
-        assertEquals(DueRule.WHICHEVER_FIRST, snoozed.copy(ruleOverride = null).toTracked(DueRule.WHICHEVER_FIRST, null)!!.rule)
+        assertEquals(DueRule.WHICHEVER_FIRST, snoozed.copy(ruleOverride = null).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!.rule)
+    }
+
+    @Test
+    fun `an oil change in miles alone counts by Glovebox's months, and says so, while nothing is saved`() {
+        val typical = ScheduleItemEntity(id = 4, vehicleId = 1, name = "Oil change", templateKey = "oil", intervalMiles = 10_000, intervalMonths = null)
+        val known = ScheduleItemEntity(id = 5, vehicleId = 1, name = "Change engine oil and filter", service = "oil", intervalMiles = 10_000, intervalMonths = null)
+        val other = ScheduleItemEntity(id = 6, vehicleId = 1, name = "Spark plugs", service = "spark-plugs", intervalMiles = 40_000, intervalMonths = null)
+        listOf(typical, known).forEach { item ->
+            val t = item.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!
+            assertEquals(Interval(10_000, 12), t.interval)
+            assertTrue(t.monthsWorkedOut)
+            assertNull(item.intervalMonths)
+            assertEquals(Interval(10_000, null), item.activeInterval())
+        }
+        val plugs = other.toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.MILES)!!
+        assertEquals(Interval(40_000, null), plugs.interval)
+        assertFalse(plugs.monthsWorkedOut)
+        // A kilometre vehicle's 16,000 km is a manual's 10,000 mi.
+        assertEquals(Interval(16_000, 12), typical.copy(intervalMiles = 16_000).toTracked(DueRule.WHICHEVER_FIRST, null, DistanceUnit.KILOMETERS)!!.interval)
     }
 
     @Test

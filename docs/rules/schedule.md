@@ -8,7 +8,8 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
 - **Never send a vehicle that already has items back through setup**: it inserts every item again.
 - Known maintenance schedules (#134, `KnownSchedules`, `docs/known-schedules.md`, which has the rules, and
   `docs/known-schedules/<id>.md`, what was read for each list). **Glovebox has no schedule of its own for any
-  model and works none out; a bundled schedule is a maker's published guide, named.** Only facts are taken, in
+  model and works none out; a bundled schedule is a maker's published guide, named.** The one exception is an
+  oil change's months, below. Only facts are taken, in
   Glovebox's words, for only the years whose guides were read and agree. **An interval has to be the table's
   own** (`KnownSchedules.parse` refuses one that isn't), except a job the guide prints only apart from its table
   (`additional`, never placed on it). Of the inspections, only the differential and transfer
@@ -40,8 +41,17 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   switch, not one per condition** (the user's choice). The editor can't make one.
 - E85 (#33): a flex-fuel list's `e85` intervals are counted by while **"Runs mostly on E85"** is on, a separate
   switch shown only for items that have one, off by default; Normal / Severe is not folded into it (the
-  owner's choice). **Take an item's interval through `ActiveInterval`** (`activeInterval()`), never from
-  `useSevere` alone. Import and export files don't carry it.
+  owner's choice). **Take an item's interval through `ActiveInterval`**, never from `useSevere` alone; a reminder
+  counts by `ActiveInterval.counted` (`countedInterval(unit)`, `toTracked(rule, swap, unit)`). Import and export
+  files don't carry it.
+- **Oil months (#517, [ADR-0015](../adr/0015-oil-months-worked-out.md)): the one time limit Glovebox works out.**
+  An oil change (the typical `oil` item, or the owner's set to the `oil` line) whose interval in force has miles
+  and no months, after the Severe and E85 choice, counts by `OilMonths`: miles ÷ 833, rounded, never more than 12
+  (10,000 → 12, 7,500 → 9, 5,000 → 6; severe miles the same, no rate of their own). A kilometre figure is read
+  as the schedule figure it is (16,000 km as 10,000 mi). **Worked out when reminders are read, never stored,**
+  and never over months the item has. **Wherever a reminder's interval is shown, say the months are
+  Glovebox's** (`TrackedItem.monthsWorkedOut`, `TrackedItem.every`, `interval_months_ours`). No other job gets it
+  (the owner's decision, 2026-10-28).
 - **Use `ItemStatus.counting`, not `lastDone != null`, to decide whether a reminder has something to count
   from.** A job the vehicle hasn't reached counts down to its first mileage, by distance only; it is not "Not
   logged yet".

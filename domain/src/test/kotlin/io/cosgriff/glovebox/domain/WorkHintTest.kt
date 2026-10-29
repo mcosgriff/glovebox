@@ -28,6 +28,7 @@ class WorkHintTest {
         assertEquals(WorkHint.Every(Interval(5_000, 6)), ServiceCatalog.hint("rotation", Interval(5_000, 6), specs))
         assertEquals(WorkHint.Every(Interval(null, 36)), ServiceCatalog.hint("brake-fluid", Interval(null, 36), specs))
         assertEquals(WorkHint.Every(Interval(7_500, 12)), ServiceCatalog.hint("oil", Interval(7_500, 12), WhatItTakes()))
+        assertEquals(WorkHint.Every(Interval(10_000, 12), monthsWorkedOut = true), ServiceCatalog.hint("oil", Interval(10_000, 12), WhatItTakes(), monthsWorkedOut = true))
     }
 
     @Test
