@@ -79,4 +79,4 @@ way, and a later list from this card should too:
   check at 60,000 then every 20,000. It is a later layout (10 columns to 100,000; minor, standard and
   extended services; a table of additional items).
 - **Not covered:** the B6's earlier years, 2006–2009 (outside #443; NHTSA's index has no Volkswagen card
-  before 2010), and the Passat NMS from 2012, which has cards of its own (#147).
+  before 2010), and the Passat NMS from 2012, which has cards of its own (#444; see the [2014 2.5L's page](volkswagen-passat-2014-2.5.md)).
