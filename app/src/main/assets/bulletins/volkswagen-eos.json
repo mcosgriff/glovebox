@@ -1,0 +1,338 @@
+{
+ "make": "Volkswagen",
+ "model": "Eos",
+ "modelAliases": [],
+ "years": [
+  2010,
+  2014,
+  2015,
+  2016
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11023836",
+   "number": "Turbocharger FAQ",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This supporting FAQ is for the Turbocharger Limited Warranty Extension Class Action Settlement. This extension includes 2008-2015 GTI and Golf R*, 2012-2013 VW Beetle*, 2009 VW Jetta SportWagen*, 2013 VW Jetta Sedan and GLI*, 2009-2016 VW Eos*, 2008-2010 VW Passat*, 2009-2017 VW CC*, 2009-2018 VW Tiguan*, Certain model year 2015-2018 VW Golf*, 2015-2021 VW GTI*, 2015-2019 VW Golf R*, 2015-2019 VW Golf SportWagen and Alltrack*, 2019-2024 VW Jetta GLI*, 2019-2021 VW Arteon*, 2018-2023 VW Atlas*, and 2020-2023 VW Atlas Cross Sport*",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "10235284",
+   "number": "VWP-18-11",
+   "date": "2023-04-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document was revised. The model year chat was removed for VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "STEERING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
+  },
+  {
+   "id": "10198167",
+   "number": "VWP-21-03",
+   "date": "2021-06-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new Intake Manifold Warranty Extension for 2013, 2014, 2016 & 2017 Model Year with Engine Codes CBFA and CCTA",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2014,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10240621",
+   "number": "CustomerLetterB",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10172985",
+   "number": "VWP-20-03",
+   "date": "2020-03-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new intake manifold warranty extension for 2015 Eos, Tiguan and CC vehicles",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10169142",
+   "number": "Water Pump FAQ",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the Frequently Asked Questions for the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169142-0001.pdf"
+  },
+  {
+   "id": "10169141",
+   "number": "VWP-19-08",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169141-0001.pdf"
+  },
+  {
+   "id": "10154376",
+   "number": "Vehicle Maintena",
+   "date": "2019-01-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "The Vehicle Maintenance Declaration has been added back to WISE for the Timing Chain Warranty Extension.",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10154376-9999.pdf"
+  },
+  {
+   "id": "10149941",
+   "number": "VWP-18-11 201810",
+   "date": "2018-10-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149941-9999.pdf"
+  },
+  {
+   "id": "10149942",
+   "number": "VWP-18-11",
+   "date": "2018-10-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149942-9999.pdf"
+  },
+  {
+   "id": "10149887",
+   "number": "VWP-18-07",
+   "date": "2018-08-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document advises dealers regarding the Timing Chain/Timing Chain Tensioner Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149887-9999.pdf"
+  },
+  {
+   "id": "10128045",
+   "number": "V241702 2045138",
+   "date": "2017-02-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This technical bulletin was updated per powertain team and warranty team. Info from this bulletin is combined with TB 2031075 (V241208) and 2038161 (V241506) due to warranty extension claiming/processing confusion. (Basically 3 technical bulletins covering the same DTC were combined into 1 technical bulletin). By combining the three technical bulletins it allowed for archiving (removal from publication) of V241208 and V241506 stated above.",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010,
+      2014,
+      2015,
+      2016
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157406",
+   "number": "Customer Letter",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkswagen Note (Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, Volkswagen is informing customers of the decision to extend the customers Emissions Control Systems Warranty for the intake manifold and fuel injectors under specific conditions to 10 years or 120,000 miles, whichever occurs first.",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
+  },
+  {
+   "id": "10240650",
+   "number": "Action20T8a",
+   "date": "2013-06-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "We would like to inform you that the FAQ for Service Action 20T8 has been revised to include additional information for dealers to share with customers about the misfueling guard.",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10240650-9999.pdf"
+  },
+  {
+   "id": "10253483",
+   "number": "VWP1305",
+   "date": "2013-03-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Engine Exhaust Flap Limited Warranty Extension",
+   "products": [
+    {
+     "model": "EOS",
+     "years": [
+      2010
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
+  }
+ ]
+}

@@ -52,6 +52,7 @@ NHTSA_MODELS = {
     "Toyota/Tacoma": ["TACOMA", "TACOMA HYBRID"],
     "Toyota/Tundra": ["TUNDRA", "TUNDRA HYBRID"],
     "Volkswagen/CC": ["CC", "PASSAT CC"],
+    "Volkswagen/Eos": ["EOS"],
     "Volkswagen/Golf": ["GOLF"],
     "Volkswagen/GTI": ["GTI"],
     "Volkswagen/Golf GTI": ["GTI"],
