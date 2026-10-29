@@ -13,7 +13,7 @@ Tiguan too), read in full on 2026-10-29, as page images, by eye. It is read as
   Limited". vPIC's model list for Volkswagen, 2018 (`GetModelsForMakeYear`, read 2026-10-29), names both
   "Tiguan" and "Tiguan Limited", and vPIC decodes the patterns `WVGAV7AX*J` and `WVGBV7AX*J` (model year 2018,
   read 2026-10-29) as "Tiguan Limited". So this list is for "Tiguan Limited", with no alias; a 2018 "Tiguan" is
-  the second generation (issue #450). One spark plug row covers its 2.0L engine, so the list names none.
+  the second generation, with [its own list](volkswagen-tiguan-2018.md) (issue #450). One spark plug row covers its 2.0L engine, so the list names none.
 - **The rows are the [2018 Golf Alltrack](volkswagen-golf-alltrack-2018.md)'s**, in that list's wording, with
   the model's name, and two more, which the card gives the Tiguan Limited by its own words:
   - **"Removable trailer hitch: Check function and inspect for damage (Tiguan, Tiguan Limited, and Atlas only

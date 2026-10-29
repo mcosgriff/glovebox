@@ -436,3 +436,8 @@ One page per list, named by its `id`:
 - [Volkswagen Tiguan, 2010 (1st generation)](known-schedules/volkswagen-tiguan-2010.md) (`volkswagen-tiguan-2010`)
 - [Volkswagen Tiguan, 2013–2015 (1st generation)](known-schedules/volkswagen-tiguan-2013-2015.md) (`volkswagen-tiguan-2013-2015`)
 - [Volkswagen Tiguan, 2016 (1st generation)](known-schedules/volkswagen-tiguan-2016.md) (`volkswagen-tiguan-2016`)
+- [Volkswagen Tiguan, 2018 (2nd generation)](known-schedules/volkswagen-tiguan-2018.md) (`volkswagen-tiguan-2018`)
+- [Volkswagen Tiguan, 2019 (2nd generation)](known-schedules/volkswagen-tiguan-2019.md) (`volkswagen-tiguan-2019`)
+- [Volkswagen Tiguan, 2020–2021 (2nd generation)](known-schedules/volkswagen-tiguan-2020-2021.md) (`volkswagen-tiguan-2020-2021`)
+- [Volkswagen Tiguan, 2022 (2nd generation)](known-schedules/volkswagen-tiguan-2022.md) (`volkswagen-tiguan-2022`)
+- [Volkswagen Tiguan, 2023–2024 (2nd generation)](known-schedules/volkswagen-tiguan-2023-2024.md) (`volkswagen-tiguan-2023-2024`)
