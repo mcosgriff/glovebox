@@ -17,7 +17,7 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
   115K, 125K and every 5K after". The table has it at every 5,000 from 5,000 to 120,000: the points between the
   columns are milestones of their own with only that check. It is an inspection, so table-only. **125,000 and
   "every 5,000 after" are past the grid's end** and aren't in the table (rule 9); asked on
-  [#451](https://github.com/mcosgriff/glovebox/issues/451).
+  [#451](https://github.com/mcosgriff/glovebox/issues/451#issuecomment-6492650721).
 - Rows and names, in the wording of the [2010 Jetta TDI](volkswagen-jetta-2010-tdi.md) list where it is the same
   job:
   - "Dust and pollen filter: Replace" at every 20,000, **with no time limit**: this card has no "every 2 years"
@@ -42,7 +42,7 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
   tire pressure sensor and timing belt rows are "(if applicable)" (this card has the sensors for every
   Touareg TDI and no timing belt). Its 3.0L TDI rows (AdBlue, fuel filter drain and change, the particulate
   filter) agree with this card. Whether the dust and pollen filter should take the all-model card's 24 months
-  is asked on [#451](https://github.com/mcosgriff/glovebox/issues/451).
+  is asked on [#451](https://github.com/mcosgriff/glovebox/issues/451#issuecomment-6492650721).
 - `"engine": { "label": "3.0L TDI", "displacementL": 3.0, "fuel": "Diesel" }`. No 2010 Touareg had a 3.0L
   hybrid, but the fuel is set as on the later TDI lists.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000; fuel filter 40,000;

@@ -79,4 +79,4 @@ The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is table-only (s
   a 2010 Touareg was sold with the 4.2L wasn't checked, so the 2010 petrol list is for the 3.6L only.
 - **2018 on.** Outside #451. vPIC's 2018 model list still names "Touareg", but no Touareg row is in the 2018
   all-model card's index entry, and none was looked for.
-- The open questions for these lists are on [#451](https://github.com/mcosgriff/glovebox/issues/451).
+- The open questions for these lists are on [#451](https://github.com/mcosgriff/glovebox/issues/451#issuecomment-6492650721): the 2010 TDI dust filter months (question 1) and AdBlue checks past 120,000 (question 2), the supercharger belt (question 3), and the 2010 4.2L (question 4).
