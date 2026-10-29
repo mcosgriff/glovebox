@@ -8,7 +8,10 @@
   2015,
   2016,
   2018,
-  2019
+  2019,
+  2020,
+  2021,
+  2022
  ],
  "asOf": "2026-10-25",
  "bulletins": [
@@ -33,6 +36,26 @@
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
   },
   {
+   "id": "11018946",
+   "number": "VWP-25-06",
+   "date": "2025-05-07",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen has extended the Warranty coverage for the Evap Leak Detection Pump (LDP) to 15 years or 150,000 miles, whichever occurs first, from the vehicles original in-service date, for certain 2022 Model Year Volkswagen vehicles.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
    "id": "11001522",
    "number": "VWP-24-04",
    "date": "2024-05-15",
@@ -45,7 +68,10 @@
      "years": [
       2016,
       2018,
-      2019
+      2019,
+      2020,
+      2021,
+      2022
      ]
     }
    ],
@@ -67,7 +93,10 @@
      "years": [
       2016,
       2018,
-      2019
+      2019,
+      2020,
+      2021,
+      2022
      ]
     }
    ],
@@ -92,7 +121,10 @@
       2015,
       2016,
       2018,
-      2019
+      2019,
+      2020,
+      2021,
+      2022
      ]
     }
    ],
@@ -100,6 +132,46 @@
     "STEERING"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
+  },
+  {
+   "id": "10211923",
+   "number": "Dealer91BMREV2",
+   "date": "2022-05-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "As indicated on the Monroney label at the time of retail sale, the vehicles included in this service action were sold before July 1, 2020 with a non-functioning Car-NetÂ® Operating Control Unit (OCU). Purchasers were advised that a functioning OCU would be installed free of charge once parts became available. Updated work instructions to align with updated ODIS test plans",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:ELECTRICAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10211922",
+   "number": "Circ91BMREV2",
+   "date": "2022-05-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "As indicated on the Monroney label at the time of retail sale, the vehicles included in this service action were sold before July 1, 2020 with a non-functioning Car-NetÂ® Operating Control Unit (OCU). Purchasers were advised that a functioning OCU would be installed free of charge once parts became available. Updated work instructions to align with updated ODIS test plans",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:ELECTRICAL"
+   ],
+   "pdf": null
   },
   {
    "id": "10210221",
@@ -150,6 +222,47 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10190519",
+   "number": "Circular 91BM",
+   "date": "2021-04-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "As indicated on the Monroney label at the time of retail sale, the vehicles included in this service action were sold before July 1, 2020 with a non-functioning Car-Net Operating Control Unit (OCU). Purchasers were advised that a functioning OCU would be installed free of charge once parts became available.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10190525",
+   "number": "Dealer 91BM",
+   "date": "2021-04-12",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "As indicated on the Monroney label at the time of retail sale, the vehicles included in this service action were sold before July 1, 2020 with a non-functioning Car-Net Operating Control Unit (OCU). Purchasers were advised that a functioning OCU would be installed free of charge once parts became available.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": null
   },
   {
    "id": "10169142",
