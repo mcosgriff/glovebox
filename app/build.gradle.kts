@@ -79,6 +79,8 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.DEBUG: Read an invoice writes its trace in debug builds only (#484).
+        buildConfig = true
     }
 
     // The screenshot tests (#233) draw screens under Robolectric, which needs the app's resources and fonts.

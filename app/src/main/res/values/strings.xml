@@ -2682,4 +2682,80 @@
     <string name="licences_tesseract_bundled">Leptonica, libjpeg and libpng licences</string>
     <!-- A vehicle's short name: the year, then its nickname or model ("2019 Blue truck"). -->
     <string name="vehicle_short_name">%1$s %2$s</string>
+
+    <!-- Read an invoice (#484), on a new Log service: a shop's emailed PDF fills the form, for the user to check. -->
+    <string name="invoice_read_title">Read a shop\'s invoice</string>
+    <string name="invoice_read_hint">Fill this form from the PDF the shop emailed. Nothing is saved until you save.</string>
+    <string name="invoice_reading">Reading the invoice…</string>
+    <string name="invoice_problem_not_pdf">That isn\'t a PDF, or it\'s over 20 MB. Pick the invoice the shop emailed.</string>
+    <string name="invoice_problem_unreadable">This PDF couldn\'t be opened. Fill the form in yourself.</string>
+    <string name="invoice_problem_no_text">This PDF is a scan, with no text to read. Fill the form in yourself.</string>
+    <string name="invoice_filled_title">Filled from the invoice</string>
+    <string name="invoice_filled_body">Check every figure against the invoice before you save. A figure left blank couldn\'t be read.</string>
+    <string name="invoice_no_work">No work was found on it: tick what was done.</string>
+    <!-- %1$s and %2$s are the last four characters of the invoice's VIN and of the vehicle's. A question, never a block. -->
+    <string name="invoice_vin_mismatch">This invoice\'s VIN ends …%1$s, this vehicle\'s ends …%2$s. Is it for this vehicle?</string>
+    <!-- %1$s is a service's wording as the shop printed it, worded the same as an earlier one. -->
+    <string name="invoice_left_out">Not filled in: %1$s, worded the same as another service. Add it if it was done.</string>
+    <string name="invoice_keep_title">Keep the invoice</string>
+    <!-- %1$s is the vehicle's name. -->
+    <string name="invoice_keep_about">Saved, encrypted, with the documents of %1$s.</string>
+    <string name="invoice_what_was_read">What was read</string>
+    <string name="invoice_what_was_read_about">Each line of the invoice, and what it became. Only for checking: nothing here is saved.</string>
+    <!-- %1$s is the page's number. -->
+    <string name="invoice_page">Page %1$s</string>
+    <!-- Under a field the invoice printed a figure for that no sum on it agreed with: left blank. -->
+    <string name="invoice_unread">Couldn\'t read: check the invoice</string>
+    <!-- The saved PDF's name among the vehicle's documents; %1$s is the shop. -->
+    <string name="invoice_document_name">Invoice, %1$s</string>
+    <string name="invoice_document_name_plain">Invoice</string>
+    <!-- Notes filled in from the invoice. %1$s is the recommended work, its items joined by invoice_notes_separator. -->
+    <string name="invoice_notes_recommended">Recommended on the invoice: %1$s</string>
+    <!-- %1$s is a recommended item as printed, %2$s its price in dollars. -->
+    <string name="invoice_notes_item_priced">%1$s (%2$s)</string>
+    <string name="invoice_notes_separator">"; "</string>
+    <!-- %1$s is the odometer when the car came in, with its unit. -->
+    <string name="invoice_notes_odometer_in">Odometer in: %1$s</string>
+    <!-- "What was read": what each line became. -->
+    <string name="invoice_role_ignored">Not used</string>
+    <string name="invoice_role_repeated">The header every page repeats: skipped</string>
+    <string name="invoice_role_work">A line of work</string>
+    <string name="invoice_role_recommended">Recommended work: to the notes</string>
+    <string name="invoice_role_shop">The shop</string>
+    <string name="invoice_role_date">The date</string>
+    <string name="invoice_role_vin">The VIN</string>
+    <string name="invoice_role_vin_left_out">A VIN whose check digit fails: left out</string>
+    <!-- %1$s is a figure's name, %2$s its amount in dollars. -->
+    <string name="invoice_role_figure_taken">%1$s %2$s: filled in</string>
+    <string name="invoice_role_figure_left_out">%1$s %2$s: left out, no sum on the invoice agrees</string>
+    <string name="invoice_role_figure_check">%1$s %2$s: used to check the others</string>
+    <!-- %1$s is a reading, as a number. -->
+    <string name="invoice_role_odometer_in">Odometer in %1$s</string>
+    <string name="invoice_role_odometer_out">Odometer out %1$s</string>
+    <string name="invoice_role_odometer">Odometer %1$s</string>
+    <!-- %1$s is one of the odometer roles above. -->
+    <string name="invoice_role_left_out">%1$s: left out</string>
+    <string name="invoice_section_services">The services begin</string>
+    <string name="invoice_section_table">A table of work</string>
+    <string name="invoice_section_totals">The totals</string>
+    <string name="invoice_section_recommended">Recommended work begins</string>
+    <string name="invoice_section_terms">The shop\'s terms: not read</string>
+    <string name="invoice_figure_subtotal">Subtotal</string>
+    <string name="invoice_figure_labor">Labor</string>
+    <string name="invoice_figure_parts">Parts</string>
+    <string name="invoice_figure_fees">Fees</string>
+    <string name="invoice_figure_sublet">Sublet</string>
+    <string name="invoice_figure_part_each">Part, each</string>
+    <string name="invoice_figure_part_total">Part, total</string>
+    <string name="invoice_figure_total_labor">Total labor</string>
+    <string name="invoice_figure_total_parts">Total parts</string>
+    <string name="invoice_figure_total_fees">Total fees</string>
+    <string name="invoice_figure_total_sublets">Total sublets</string>
+    <string name="invoice_figure_supplies">Shop supplies</string>
+    <string name="invoice_figure_tax">Tax</string>
+    <string name="invoice_figure_other">Other charge</string>
+    <string name="invoice_figure_discount">Discount</string>
+    <string name="invoice_figure_grand_total">Grand total</string>
+    <string name="invoice_figure_balance_due">Balance due</string>
+    <string name="invoice_figure_paid">Paid</string>
 </resources>

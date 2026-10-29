@@ -150,9 +150,9 @@ private fun JobRow(form: LogServiceForm, job: JobDraft<String>, others: List<Job
         }
         if (open) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                PriceField(stringResource(R.string.prices_labor), heading, job.labor, { form.setLabor(job.id, it) }, Modifier.weight(1f))
+                PriceField(stringResource(R.string.prices_labor), heading, job.labor, { form.setLabor(job.id, it) }, Modifier.weight(1f), unread = form.laborUnread(job))
                 if (job.rows == null) {
-                    PriceField(stringResource(R.string.prices_parts), heading, job.parts, { form.setParts(job.id, it) }, Modifier.weight(1f))
+                    PriceField(stringResource(R.string.prices_parts), heading, job.parts, { form.setParts(job.id, it) }, Modifier.weight(1f), unread = form.partsUnread(job))
                 } else {
                     PartsFromRows(form, job, Modifier.weight(1f))
                 }
@@ -226,7 +226,7 @@ private fun PriceTogether(form: LogServiceForm, job: JobDraft<String>, others: L
 }
 
 @Composable
-private fun PriceField(label: String, job: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier) {
+private fun PriceField(label: String, job: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier, unread: Boolean = false) {
     val described = stringResource(R.string.prices_field_for, label, job)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FieldLabel(label)
@@ -238,10 +238,11 @@ private fun PriceField(label: String, job: String, value: String, onValueChange:
             isError = value.isNotBlank() && Money.parseCents(value.typedDecimal()) == null,
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            colors = fieldColors(),
+            colors = if (unread) unreadFieldColors() else fieldColors(),
             // Every job has a Labor and a Parts: TalkBack says whose.
             modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = described },
         )
+        if (unread) UnreadNote()
     }
 }
 
@@ -290,9 +291,10 @@ internal fun CostCard(form: LogServiceForm) {
                     isError = !form.costValid,
                     textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    colors = fieldColors(),
+                    colors = if (form.costUnread) unreadFieldColors() else fieldColors(),
                     modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = costLabel },
                 )
+                if (form.costUnread) UnreadNote()
                 Text(
                     when {
                         !form.costValid -> stringResource(R.string.log_cost_error)

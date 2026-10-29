@@ -18,8 +18,20 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
 - Log service: **the odometer is never prefilled** (a prefilled reading gets saved untouched and miscounts every
   reminder); "Use current" fills it on a tap. Future dates are refused. "Due" chips only for reminders that have
   a log entry. Category buttons are tabs, not ticks (the user found the solid "open" button read as chosen).
-- "When were these last done?" saves a one-line record with `enteredAsLastDone`; nothing else changes. "Import
-  from a dealer record" and "assume everything was done on schedule" are deliberately not built.
+- "When were these last done?" saves a one-line record with `enteredAsLastDone`; nothing else changes. "Assume
+  everything was done on schedule" is deliberately not built.
+- Read an invoice (#484, `docs/adr/0014-reading-a-shops-invoice.md`, `InvoiceFills`, `InvoiceCard`): on a new Log
+  service only, a shop's emailed PDF **fills the form and saves nothing**; the owner checks it and saves. Wording says
+  check it against the invoice, never "detected". A figure printed and not vouched for is left blank and outlined
+  "Couldn't read" until something is typed there. One invoice is one record: each service a line of the shop's wording
+  (under the line the owner's rule files it under, otherwise custom, with guesses only through "File under…") in a job
+  of its own with its vouched labor and parts; what was already ticked stays. Recommended work and "odometer in" go to
+  the notes, never to the lines. A VIN that isn't the vehicle's is a question by its last four, never a block. The shop
+  takes a saved shop's spelling. The read odometer is an offer from the invoice, so the never-prefilled rule doesn't
+  cover it. "What was read" is viewing only. The PDF is held in memory and kept, encrypted, among the vehicle's
+  documents only while "Keep the invoice" is on; Undo of the record leaves it there. Debug builds alone write
+  `files/invoice-traces/` (Delete all data removes it). A scan has no text layer: photos are #513. Filing a custom line
+  carries its job and prices with it.
 - **Photo and document files are never deleted when a row is**, so Undo can put the row back: the files go in
   `RecordActions.discard` when the Undo bar ends untaken, and `RecordPhotoStore.sweep` removes leftovers on
   launch. An Undo bar lasts `LogEdits.UNDO_SECONDS` (10) and has a ✕; whatever ends it without Undo discards its

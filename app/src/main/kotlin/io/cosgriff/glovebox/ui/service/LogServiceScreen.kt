@@ -109,6 +109,13 @@ import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
 import io.cosgriff.glovebox.domain.InvoiceCharges
+import io.cosgriff.glovebox.domain.FilledFigure
+import io.cosgriff.glovebox.domain.InvoiceFill
+import io.cosgriff.glovebox.domain.InvoiceFills
+import io.cosgriff.glovebox.domain.InvoiceReader
+import io.cosgriff.glovebox.ui.AppText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.domain.PartAmounts
 import io.cosgriff.glovebox.domain.PartField
 import io.cosgriff.glovebox.domain.PartQuantity
@@ -278,9 +285,105 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
      */
     fun fileCustom(label: String, option: WorkOption) {
         if (option.id in selected) return
+        // Its job, prices and all, goes with it to the line.
+        val from = customKey(label)
+        storedJobs = jobs.map { j -> j.copy(lines = j.lines.map { if (it == from) option.id else it }, rows = j.rows?.map { if (it.line == from) it.copy(line = option.id) else it }) }
+        if (from in unreadLabor) unreadLabor = unreadLabor - from + option.id
+        if (from in unreadParts) unreadParts = unreadParts - from + option.id
         customItems = customItems - label
         selected = selected + option.id
         if (label != option.label) keptLabels = keptLabels + (option.id to label)
+    }
+
+    /** Set once an invoice has filled the form (#484); it fills a form once. */
+    var invoiceRead by mutableStateOf(false)
+        private set
+
+    /** What the invoice was read as, for "What was read"; null until one is. */
+    var invoice by mutableStateOf<ReadInvoice?>(null)
+        internal set
+    var readingInvoice by mutableStateOf(false)
+        internal set
+    var invoiceProblem by mutableStateOf<InvoiceProblem?>(null)
+        internal set
+
+    /** Services the invoice had that the form couldn't take as lines of their own: the user adds them. */
+    var invoiceLeftOut by mutableStateOf(emptyList<String>())
+        private set
+
+    /** Keep the PDF in the vehicle's documents on saving: on unless the user turns it off. */
+    var keepInvoice by mutableStateOf(true)
+
+    /** Figures the invoice printed and no sum vouched for: outlined "Couldn't read" while left blank. */
+    private var unreadFigures by mutableStateOf(emptySet<FilledFigure>())
+    private var unreadLabor by mutableStateOf(emptySet<String>())
+    private var unreadParts by mutableStateOf(emptySet<String>())
+
+    val odometerUnread: Boolean get() = FilledFigure.ODOMETER in unreadFigures && odometerText.isBlank()
+    val costUnread: Boolean get() = FilledFigure.TOTAL in unreadFigures && costText.isBlank()
+    fun laborUnread(job: JobDraft<String>): Boolean = job.labor.isBlank() && job.lines.any { it in unreadLabor }
+    fun partsUnread(job: JobDraft<String>): Boolean = job.rows == null && job.parts.isBlank() && job.lines.any { it in unreadParts }
+
+    /**
+     * What an invoice was read as goes on the form (#484), for the user to check against it; nothing is saved until
+     * they save. Each service is a line of the shop's wording: under the line the user's rule files it under, or a
+     * custom line, and its own job with the prices a sum vouched for. What was ticked stays. [notes] (the recommended
+     * work, odometer in) go after any already typed.
+     */
+    fun fill(fill: InvoiceFill, notes: String) {
+        if (invoiceRead) return
+        invoiceRead = true
+        fill.date?.takeIf { !it.isAfter(today()) }?.let { date = it }
+        fill.odometer?.let { odometerText = it.asNumber() }
+        fill.shop?.let { shop ->
+            diy = false
+            shopName = shops.firstOrNull { it.name.equals(shop, ignoreCase = true) }?.name ?: shop
+        }
+        fill.totalCents?.let { costText = editableCost(it) }
+        if (notes.isNotEmpty()) this.notes = listOf(this.notes.trim(), notes).filter { it.isNotEmpty() }.joinToString("\n\n")
+
+        val options = data?.categories.orEmpty().flatMap { it.options }
+        var stored = jobs
+        var next = (stored.maxOfOrNull { it.id } ?: 0) + 1
+        val labor = mutableSetOf<String>()
+        val parts = mutableSetOf<String>()
+        val filled = mutableSetOf<String>()
+        val leftOut = fill.leftOut.toMutableList()
+        // A line is free for a service unless another service took it, or the user already typed a price on it.
+        fun free(key: String) = key !in filled && stored.none { s -> key in s.lines && (s.lines.size > 1 || s.labor.isNotBlank() || s.parts.isNotBlank() || s.rows != null) }
+        fill.jobs.forEach { j ->
+            val wording = j.wording.trim()
+            val option = j.filed?.let { id -> options.firstOrNull { it.id == id } }?.takeIf { free(it.id) }
+            val key = when {
+                option != null -> {
+                    if (option.id !in selected) {
+                        selected = selected + option.id
+                        if (wording != option.label) keptLabels = keptLabels + (option.id to wording)
+                    }
+                    option.id
+                }
+                wording.isNotEmpty() && free(customKey(wording)) -> {
+                    addCustom(wording)
+                    customKey(wording)
+                }
+                else -> {
+                    // Nowhere of its own to go: said so on the form, never dropped quietly.
+                    leftOut += j.wording
+                    return@forEach
+                }
+            }
+            filled += key
+            stored = stored.mapNotNull { s -> s.copy(lines = s.lines - key).takeIf { it.lines.isNotEmpty() } } +
+                JobDraft(next++, listOf(key), labor = j.laborCents?.let(::editableCost).orEmpty(), parts = j.partsCents?.let(::editableCost).orEmpty())
+            if (j.laborUnread) labor += key
+            if (j.partsUnread) parts += key
+        }
+        invoiceLeftOut = leftOut
+        storedJobs = stored
+        unreadFigures = fill.unread
+        unreadLabor = labor
+        unreadParts = parts
+        if (fill.jobs.any { it.laborCents != null || it.partsCents != null || it.laborUnread || it.partsUnread }) pricesOpen = true
     }
 
     fun addCustom(label: String) {
@@ -454,6 +557,7 @@ class LogServiceViewModel @Inject constructor(
     catalogRules: CatalogRuleDao,
     private val actions: RecordActions,
     private val photoPicker: RecordPhotoPicker,
+    private val invoices: InvoicePicker,
 ) : ViewModel() {
     /** Names this form to the photo picker, which holds its new photos until it is saved or left. */
     private val photoKey = UUID.randomUUID().toString()
@@ -472,6 +576,7 @@ class LogServiceViewModel @Inject constructor(
     /** Leaving without saving: the photos attached here were never the record's. */
     override fun onCleared() {
         photoPicker.discardDraft(photoKey)
+        invoices.take(photoKey)
     }
 
     private val route = savedStateHandle.route<LogServiceRoute>()
@@ -480,6 +585,54 @@ class LogServiceViewModel @Inject constructor(
 
     /** What is on the form; [save] writes it. */
     val form = LogServiceForm(editing)
+
+    /** The invoice read on this form, held in memory only until it is saved or left. */
+    private var invoicePdf: ByteArray? = null
+
+    /** "Read a shop's invoice": the picker answers in [onInvoice]. */
+    fun readInvoice() {
+        form.invoiceProblem = null
+        invoices.pick(photoKey)
+    }
+
+    private suspend fun onInvoice(picked: PickedInvoice) {
+        val d = form.data ?: return
+        if (picked !is PickedInvoice.Pdf) {
+            form.invoiceProblem = InvoiceProblem.NOT_A_PDF
+            return
+        }
+        form.readingInvoice = true
+        try {
+            val words = invoices.words(picked.bytes)
+            when {
+                words == null -> form.invoiceProblem = InvoiceProblem.UNREADABLE
+                // A scan has no text layer; reading a photo of one is #513.
+                words.isEmpty() -> form.invoiceProblem = InvoiceProblem.NO_TEXT
+                else -> {
+                    // The readings are in dash terms; an invoice after a cluster swap reads as the new cluster does.
+                    // An invoice laid out in a way the reader trips on is one it couldn't read, never a crash.
+                    val reading = withContext(Dispatchers.Default) {
+                        try {
+                            InvoiceReader.read(words, LocalDate.now(), d.readings, d.unit, d.rules)
+                        } catch (_: RuntimeException) {
+                            null
+                        }
+                    }
+                    if (reading == null) {
+                        form.invoiceProblem = InvoiceProblem.UNREADABLE
+                        return
+                    }
+                    invoices.writeTrace(words, reading)
+                    val fill = InvoiceFills.of(reading, d.log.vehicle.vin)
+                    invoicePdf = picked.bytes
+                    form.fill(fill, invoiceNotes(fill, d.unit))
+                    form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading))
+                }
+            }
+        } finally {
+            form.readingInvoice = false
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -583,6 +736,8 @@ class LogServiceViewModel @Inject constructor(
                 original = original,
                 rules = catalogRules.all().map { it.toRule() },
             )
+            // Only once the form has its vehicle, so an invoice picked meanwhile waits for it rather than going nowhere.
+            if (!editing) invoices.picked.collect { if (it?.key == photoKey) invoices.take(photoKey)?.let { p -> onInvoice(p) } }
         }
     }
 
@@ -653,7 +808,18 @@ class LogServiceViewModel @Inject constructor(
                     actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
                 } else {
                     actions.add(record, items, added, jobRows, partRows)
+                    // Paperwork of the vehicle's, not the record's: an Undo of the record leaves it there.
+                    invoicePdf?.takeIf { keepInvoice }?.let { pdf ->
+                        val name = record.shopName?.let { AppText.res.getString(R.string.invoice_document_name, it) }
+                            ?: AppText.res.getString(R.string.invoice_document_name_plain)
+                        try {
+                            invoices.keep(vehicleId, pdf, name, date)
+                        } catch (_: Exception) {
+                            // The record is saved by now; a copy that can't be kept costs only the copy.
+                        }
+                    }
                 }
+                invoicePdf = null
                 onDone()
             }
         }
@@ -677,6 +843,7 @@ fun LogServiceScreen(
         onSave = { vm.save(if (vm.editing) onDone else onAdded) },
         onDeleteInstead = onDeleteInstead,
         onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onRemoveNewPhoto = vm::removeNewPhoto,
+        onReadInvoice = vm::readInvoice,
     )
 }
 
@@ -694,6 +861,8 @@ internal fun LogServiceContent(
     onTakePhoto: () -> Unit,
     onChoosePhotos: () -> Unit,
     onRemoveNewPhoto: (fileName: String) -> Unit,
+    /** "Read a shop's invoice" (#484), on a new service only. */
+    onReadInvoice: () -> Unit = {},
 ) {
     val data = form.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
@@ -719,6 +888,8 @@ internal fun LogServiceContent(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
+            if (!form.editing) InvoiceCard(form, data.vehicleName, onReadInvoice)
+
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -745,9 +916,10 @@ internal fun LogServiceContent(
                             isError = form.showErrors && form.odometer == null,
                             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = PlexMono, fontWeight = FontWeight.SemiBold),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = fieldColors(),
+                            colors = if (form.odometerUnread) unreadFieldColors() else fieldColors(),
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                         )
+                        if (form.odometerUnread) UnreadNote()
                         // Only on the user's tap: a reading filled in by itself gets saved untouched.
                         val current = data.lastOdometer?.let { data.swap.asReadOn(it, form.date) }
                         if (current != null && !form.editing && form.odometerText.isBlank()) {

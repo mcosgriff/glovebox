@@ -66,6 +66,8 @@ class DataWipe(
             photos.restoreDir.deleteRecursively()
             // Settings and the notification log.
             File(context.filesDir, "datastore").deleteRecursively()
+            // A debug build's Read an invoice traces (#484): a real invoice's words, in the clear.
+            File(context.filesDir, "invoice-traces").deleteRecursively()
             // Exports, a picked backup file, and photos on their way in or out.
             context.cacheDir.listFiles()?.forEach { it.deleteRecursively() }
             marker(context).delete()

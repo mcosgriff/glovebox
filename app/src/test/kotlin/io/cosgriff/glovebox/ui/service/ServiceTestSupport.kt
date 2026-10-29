@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
+import io.cosgriff.glovebox.data.photo.DocumentStore
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
@@ -45,6 +46,8 @@ internal class ServiceTestDb {
     /** Runs its work at once on the caller's thread, so a test sees it done when the call returns. */
     val appScope = CoroutineScope(Dispatchers.Unconfined)
     val picker = RecordPhotoPicker(context, photos, db.service(), appScope)
+    val documents = DocumentStore(context, crypto, db.documents(), photos)
+    val invoices = InvoicePicker(context, appScope, documents)
     val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
 
     /** The folder encrypted files live in; the tests only ever look at which names are there. */
