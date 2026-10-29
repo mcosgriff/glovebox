@@ -29,6 +29,11 @@ plugins {
 }
 
 subprojects {
+    // A failing test prints its whole stack, causes and all: CI's log is often the only place a failure that
+    // doesn't happen locally can be read.
+    tasks.withType<Test>().configureEach {
+        testLogging { exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
+    }
     pluginManager.withPlugin("com.android.base") {
         dependencies.constraints {
             listOf(libs.bouncycastle, libs.bouncycastle.pkix, libs.bouncycastle.util, libs.httpclient).forEach { add("androidLintTool", it) }
