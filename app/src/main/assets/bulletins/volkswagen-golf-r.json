@@ -1,0 +1,113 @@
+{
+ "make": "Volkswagen",
+ "model": "Golf R",
+ "modelAliases": [],
+ "years": [
+  2013
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11023836",
+   "number": "Turbocharger FAQ",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "This supporting FAQ is for the Turbocharger Limited Warranty Extension Class Action Settlement. This extension includes 2008-2015 GTI and Golf R*, 2012-2013 VW Beetle*, 2009 VW Jetta SportWagen*, 2013 VW Jetta Sedan and GLI*, 2009-2016 VW Eos*, 2008-2010 VW Passat*, 2009-2017 VW CC*, 2009-2018 VW Tiguan*, Certain model year 2015-2018 VW Golf*, 2015-2021 VW GTI*, 2015-2019 VW Golf R*, 2015-2019 VW Golf SportWagen and Alltrack*, 2019-2024 VW Jetta GLI*, 2019-2021 VW Arteon*, 2018-2023 VW Atlas*, and 2020-2023 VW Atlas Cross Sport*",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "10149941",
+   "number": "VWP-18-11 201810",
+   "date": "2018-10-31",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149941-9999.pdf"
+  },
+  {
+   "id": "10149942",
+   "number": "VWP-18-11",
+   "date": "2018-10-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on VWP-18-11 for the Steering Wheel Clock Spring Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "STEERING",
+    "STEERING: STEERING WHEEL/HANDLE BAR"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149942-9999.pdf"
+  },
+  {
+   "id": "10124330",
+   "number": "Campaign Circula",
+   "date": "2014-03-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action (2012 and 2013 MY Golf R Coolant Pump): Some customers of 2012 and 2013 model year Golf R vehicles have reported engine compartment noise and hard start issues with their vehicles. Volkswagen has determined that the coolant pump is the source of these concerns. The correct action taken for this issue was to Replace the coolant pump.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10124328",
+   "number": "Dealer Letter, D",
+   "date": "2014-03-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Upcoming Service Action 19J5 Coolant Pump issue): customers have reported engine compartment noise and hard start issues with their vehicles. Volkswagen has determined that the coolant pump is the source of these concerns. The corrective action taken was to replace the coolant pump",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
+  }
+ ]
+}
