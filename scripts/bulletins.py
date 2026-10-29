@@ -51,6 +51,7 @@ NHTSA_MODELS = {
     "Toyota/Sienna": ["SIENNA", "SIENNA HYBRID"],
     "Toyota/Tacoma": ["TACOMA", "TACOMA HYBRID"],
     "Toyota/Tundra": ["TUNDRA", "TUNDRA HYBRID"],
+    "Volkswagen/Arteon": ["ARTEON"],
     "Volkswagen/Atlas": ["ATLAS"],
     "Volkswagen/Atlas Cross Sport": ["ATLAS CROSS SPORT"],
     "Volkswagen/Beetle": ["BEETLE", "BEETLE CONVERTIBLE", "BEETLE TDI", "BEETLE CONVERTIBLE TDI"],
