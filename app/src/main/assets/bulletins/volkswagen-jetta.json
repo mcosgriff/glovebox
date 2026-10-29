@@ -7,10 +7,110 @@
   2014,
   2015,
   2016,
-  2018
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
  ],
  "asOf": "2026-10-25",
  "bulletins": [
+  {
+   "id": "11038142",
+   "number": "Email 91OL",
+   "date": "2026-09-07",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update provides improvements to connectivity stability and OCU module diagnostics, which will reduce OCU module replacements due to false DTC detection. This software update is also a prerequisite for future updates.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11034611",
+   "number": "Dealer 91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "This OTA update addresses a potential issue with special characters being broadcast over HD radio.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034611-0001.pdf"
+  },
+  {
+   "id": "11034610",
+   "number": "Customer email_91UB",
+   "date": "2026-06-15",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Your vehicle is currently eligible for the 91UB software update designed to:",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2026/MC-11034610-0001.pdf"
+  },
+  {
+   "id": "11023844",
+   "number": "VWP-25-16",
+   "date": "2025-09-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "For applicable Settlement Class Vehicles, the New Vehicle Limited Warranty will be extended to cover 50% of the repair or replacement of the Turbocharger by an authorized Volkswagen Dealer for 8.5 years or 85,000 miles, whichever occurs first, from the vehicle’s in-service date.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "POWER TRAIN"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023844-0001.pdf"
+  },
   {
    "id": "11023836",
    "number": "Turbocharger FAQ",
@@ -22,7 +122,13 @@
     {
      "model": "JETTA",
      "years": [
-      2010
+      2010,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
      ]
     }
    ],
@@ -30,6 +136,271 @@
     "POWER TRAIN"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11023830",
+   "number": "Circular 21ZV",
+   "date": "2025-09-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In affected vehicles, the turbocharger housing included an unintended and unused hose port. To avoid possible oil seepage or a small air leak over time, Volkswagen will proactively replace the turbocharger. Based on engineering judgement, this incorrect part is not anticipated to impact performance, fuel consumption, or emissions.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11023831",
+   "number": "Dealer 21ZV",
+   "date": "2025-09-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In affected vehicles, the turbocharger housing included an unintended and unused hose port. To avoid possible oil seepage or a small air leak over time, Volkswagen will proactively replace the turbocharger. Based on engineering judgement, this incorrect part is not anticipated to impact performance, fuel consumption, or emissions.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11021367",
+   "number": "Circular 69MJ",
+   "date": "2025-07-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An incorrect EPROM component with lower bytes memory density may have been installed in some airbag control modules. This could cause the airbag indicator light on the instrument panel to come on. To address this issue, dealers will replace the airbag control module in the affected vehicles.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11021368",
+   "number": "Dealer 69MJ",
+   "date": "2025-07-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "An incorrect EPROM component with lower bytes memory density may have been installed in some airbag control modules. This could cause the airbag indicator light on the instrument panel to come on. To address this issue, dealers will replace the airbag control module in the affected vehicles.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "AIR BAGS"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018924",
+   "number": "Circular 26OB",
+   "date": "2025-05-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In affected vehicles it is possible that a faulty exhaust pressure sensor may impact tailpipe emissions. To address this issue, the exhaust pressure sensor will be replaced on affected vehicles",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018925",
+   "number": "Dealer 26OB",
+   "date": "2025-05-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "In affected vehicles it is possible that a faulty exhaust pressure sensor may impact tailpipe emissions. To address this issue, the exhaust pressure sensor will be replaced on affected vehicles",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11018946",
+   "number": "VWP-25-06",
+   "date": "2025-05-07",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen has extended the Warranty coverage for the Evap Leak Detection Pump (LDP) to 15 years or 150,000 miles, whichever occurs first, from the vehicles original in-service date, for certain 2022 Model Year Volkswagen vehicles.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11014958",
+   "number": "VWP 22 18",
+   "date": "2025-02-05",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "The Rear Brake Pad Limited Warranty Extension has been revised to include model year 2025 for Certain Volkswagen Jetta and Certain Volkswagen Taos vehicles.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "SERVICE BRAKES"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11010015",
+   "number": "Dealer 90X1_REV1",
+   "date": "2024-10-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Volkswagen is providing a hardware and/or a software update to address an issue in selected vehicles where the fuel gage may show a lower fuel level than what is actually remaining in the vehicle.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11010012",
+   "number": "Circular 90X1_REV1",
+   "date": "2024-10-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Volkswagen is providing a hardware and/or a software update to address an issue in selected vehicles where the fuel gage may show a lower fuel level than what is actually remaining in the vehicle.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2020
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008844",
+   "number": "Dealer 66EX_REV1",
+   "date": "2024-09-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture. Updated label overlay ordering information",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008839",
+   "number": "Circular 66EX_REV1",
+   "date": "2024-09-11",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture. Updated label overlay ordering information",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11002871",
+   "number": "Circular 66EX",
+   "date": "2024-06-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "On certain vehicles, the year of manufacture listed on the compliance label is incorrect. Dealers will affix an overlay label to the vehicle's compliance label to provide the correct month/year of manufacture.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
   },
   {
    "id": "11001522",
@@ -43,7 +414,12 @@
      "model": "JETTA",
      "years": [
       2016,
-      2018
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
      ]
     }
    ],
@@ -64,7 +440,12 @@
      "model": "JETTA",
      "years": [
       2016,
-      2018
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
      ]
     }
    ],
@@ -72,6 +453,26 @@
     "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10241190",
+   "number": "Dealer 20DZ",
+   "date": "2023-08-15",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce Repair Available ÃÂ¢ÃÂÃÂ Emissions Service Action 20DZ / EVAP Purge Valve and Hose Assembly",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
   },
   {
    "id": "10235284",
@@ -96,6 +497,26 @@
     "STEERING"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
+  },
+  {
+   "id": "10205525",
+   "number": "VWP-21-06",
+   "date": "2021-12-08",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the warranty extension for the Activated Carbon Filter Pipe",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": null
   },
   {
    "id": "10240621",
@@ -191,6 +612,46 @@
    "pdf": null
   },
   {
+   "id": "10166742",
+   "number": "DEACLetter 92D9",
+   "date": "2019-10-15",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor - Temporary Deactivation",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10166743",
+   "number": "ODISLetter 92D9",
+   "date": "2019-10-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor - Temporary Delay - ODIS Issue Causing Errors",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
    "id": "10164246",
    "number": "VWP-17-09",
    "date": "2019-08-20",
@@ -230,6 +691,131 @@
    "components": [
     "DIESEL",
     "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10161713",
+   "number": "Circular - 55K4",
+   "date": "2019-06-26",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service action on trunk springs.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY:TRUNK LID"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10161712",
+   "number": "Dealer - 55K4",
+   "date": "2019-06-25",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service action on trunk springs.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY:TRUNK LID"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10158509",
+   "number": "Circular - 92D9",
+   "date": "2019-02-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor - A humidity sensor installed in affected vehicles deactivates the start-stop feature when the Climatronic system is turned on.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157328",
+   "number": "Circular - 92D9",
+   "date": "2019-02-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+    "VISIBILITY:DEFROSTER/DEFOGGER/HVAC SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10158512",
+   "number": "Dealer Letter -",
+   "date": "2019-02-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor - A humidity sensor installed in affected vehicles deactivates the start-stop feature when the Climatronic system is turned on.",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT ADAPTIVE/MOBILITY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157331",
+   "number": "Dealer Letter -",
+   "date": "2019-02-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Service Action - Rain/Light/Humidity Sensor",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2019
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT ADAPTIVE/MOBILITY",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL",
+    "VISIBILITY:DEFROSTER/DEFOGGER/HVAC SYSTEM"
    ],
    "pdf": null
   },

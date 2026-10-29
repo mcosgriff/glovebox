@@ -1,0 +1,700 @@
+{
+  "id": "volkswagen-golf-2015-1.8t",
+  "title": "2015 Golf 1.8T",
+  "make": "Volkswagen",
+  "model": "Golf",
+  "years": {
+    "from": 2015,
+    "to": 2015
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10242450-9999.pdf",
+    "retrieved": "2026-10-29",
+    "note": "Read from Volkswagen's USA maintenance schedule for the Golf and Golf SportWagen 1.8T, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Golf and Golf SportWagen, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "engine": {
+    "label": "1.8T",
+    "displacementL": 1.8
+  },
+  "manualExcluded": [
+    "Change automatic transmission fluid (automatic only)"
+  ],
+  "milestones": [
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks and mounting pins"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check exterior lights, turn signals and hazard lights"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check and clean sunroof front water drains (if fitted)"
+        },
+        {
+          "name": "Test drive: brakes, steering, electrics, heating and air conditioning"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Replace tire mobility kit filler bottle (if fitted; every 4 years)"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Change automatic transmission fluid (automatic only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks and mounting pins"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check exterior lights, turn signals and hazard lights"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check and clean sunroof front water drains (if fitted)"
+        },
+        {
+          "name": "Test drive: brakes, steering, electrics, heating and air conditioning"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Replace tire mobility kit filler bottle (if fitted; every 4 years)"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Change automatic transmission fluid (automatic only)",
+          "service": "trans-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Inspect body for corrosion"
+        },
+        {
+          "name": "Check coolant level and frost protection"
+        },
+        {
+          "name": "Check CV joints for leaks and damage"
+        },
+        {
+          "name": "Lubricate door checks and mounting pins"
+        },
+        {
+          "name": "Check engine bay from above for leaks and damage"
+        },
+        {
+          "name": "Check engine, transmission, final drive and drive shaft boots from below"
+        },
+        {
+          "name": "Check exhaust system for leaks, damage and secure fittings"
+        },
+        {
+          "name": "Check headlight adjustment"
+        },
+        {
+          "name": "Check interior lights, power outlets, horn and warning lamps"
+        },
+        {
+          "name": "Check exterior lights, turn signals and hazard lights"
+        },
+        {
+          "name": "Check power steering fluid level"
+        },
+        {
+          "name": "Check ribbed belt condition"
+        },
+        {
+          "name": "Check, clean and lubricate sunroof (if fitted)"
+        },
+        {
+          "name": "Check and clean sunroof front water drains (if fitted)"
+        },
+        {
+          "name": "Test drive: brakes, steering, electrics, heating and air conditioning"
+        },
+        {
+          "name": "Check tie rod ends for play and boots for damage"
+        },
+        {
+          "name": "Replace tire mobility kit filler bottle (if fitted; every 4 years)"
+        },
+        {
+          "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    {
+      "name": "Change engine oil and filter",
+      "everyMiles": 10000,
+      "everyMonths": 12,
+      "service": "oil"
+    },
+    {
+      "name": "Rotate tires front to rear",
+      "everyMiles": 10000,
+      "service": "rotation"
+    },
+    {
+      "name": "Replace dust and pollen filter",
+      "everyMiles": 20000,
+      "everyMonths": 24,
+      "service": "cabin-air"
+    },
+    {
+      "name": "Replace air filter element and clean housing",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "engine-air"
+    },
+    {
+      "name": "Replace spark plugs",
+      "everyMiles": 60000,
+      "everyMonths": 72,
+      "service": "spark-plugs"
+    },
+    {
+      "name": "Change automatic transmission fluid (automatic only)",
+      "everyMiles": 50000,
+      "service": "trans-fluid"
+    },
+    {
+      "name": "Change brake fluid (at 3 years, then every 2 years)",
+      "everyMonths": 24,
+      "rule": "time-only",
+      "service": "brake-fluid"
+    }
+  ]
+}

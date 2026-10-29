@@ -529,7 +529,8 @@ class KnownSchedulesTest {
     @Test
     fun `every job a list names for all-wheel drive is marked so, and the other way round`() {
         bundled.forEach { list ->
-            val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name }).toSet()
+            val names = (list.milestones.flatMap { m -> m.work.map { it.name } } + list.intervals.map { it.name } +
+                list.additional.map { it.name }).toSet()
             assertEquals(list.id, names.filter { "(AWD)" in it }.map(MilestoneImport::nameKey).toSet(), list.allWheelDriveOnly)
         }
     }

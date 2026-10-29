@@ -1,0 +1,270 @@
+{
+ "make": "Volkswagen",
+ "model": "Beetle",
+ "modelAliases": [],
+ "years": [
+  2014,
+  2018,
+  2019
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "10239662",
+   "number": "DCV09B3Closure",
+   "date": "2023-07-10",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce the closure of Service Action 09B3.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2018
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2018
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10169142",
+   "number": "Water Pump FAQ",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the Frequently Asked Questions for the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169142-0001.pdf"
+  },
+  {
+   "id": "10169141",
+   "number": "VWP-19-08",
+   "date": "2019-12-02",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the the new Water Pump Limited Warranty Extension",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10169141-0001.pdf"
+  },
+  {
+   "id": "10167183",
+   "number": "VWP1802 20191025",
+   "date": "2019-10-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers the warranty extension for the steering column lock housing has been revised to include 2014 and 2015 model year",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "STEERING"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10164246",
+   "number": "VWP-17-09",
+   "date": "2019-08-20",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of a revision to the Extended Emissions Warranty Limited Warranty Extension for 2.0L TDI Gen 1 vehicles. Added clarification on totaled vehicles and loaners",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10154376",
+   "number": "Vehicle Maintena",
+   "date": "2019-01-17",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "The Vehicle Maintenance Declaration has been added back to WISE for the Timing Chain Warranty Extension.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE",
+    "EQUIPMENT"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2019/MC-10154376-9999.pdf"
+  },
+  {
+   "id": "10236416",
+   "number": "Action24DR",
+   "date": "2018-11-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions service action 24DR/ECM Software.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION:SOFTWARE",
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10149887",
+   "number": "VWP-18-07",
+   "date": "2018-08-27",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document advises dealers regarding the Timing Chain/Timing Chain Tensioner Limited Warranty Extension",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149887-9999.pdf"
+  },
+  {
+   "id": "10128097",
+   "number": "Campaign Circula",
+   "date": "2015-06-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action (Certain 2010-2014 Volkswagen Vehicles with 2.0L TDI® Clean Diesel Engine ECM Software Update): The vehicle?s engine management software has been improved to assure the vehicle?s tailpipe emissions are optimized and operating efficiently. Under certain operating conditions, the earlier strategy may have increased the chance of the vehicle?s MIL light illuminating. If the MIL illuminates for any reason, the vehicle will not pass an IM emissions inspection in some regions. The corrective action taken was to Install updated ECM software",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10130696",
+   "number": "Campaign Circula",
+   "date": "2015-04-07",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Emissions Service Action: The vehicle?s engine management software has been improved to assure the vehicle?s tailpipe emissions are optimized and operating efficiently.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2014
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2014
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  }
+ ]
+}

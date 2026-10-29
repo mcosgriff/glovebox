@@ -62,6 +62,8 @@ way, and a later list from this card should too:
   at 60,000 and 120,000 (every 6 years); the timing belt "(if applicable, except 2.0L TDI)" at 110,000.
 - **The model.** NHTSA's vPIC model list for Volkswagen, 2010 (`GetModelsForMakeYear`), names it "Passat",
   so the list is for that model, with no `engine`. The list has no "CC" for 2010.
+  A vPIC decode of the CC's VIN pattern for 2010 names it "Passat" too, so a 2010 CC gets this list (see the
+  [CC's page](volkswagen-cc-2014-2015-2.0t.md#what-isnt-covered)).
 - Left out as not the Passat's, by the card's own marks: AdBlue (3.0L TDI), the diesel particulate filter
   (2.0L and 3.0L TDI), the three fuel filter rows (2.0L / 3.0L TDI), the 2.0L TDI timing belt, the New
   Beetle's brake fluid, the 2.5L / 3.2L spark plugs, the automatic gearbox fluid (2.5L Jetta, New Beetle and
@@ -79,4 +81,4 @@ way, and a later list from this card should too:
   check at 60,000 then every 20,000. It is a later layout (10 columns to 100,000; minor, standard and
   extended services; a table of additional items).
 - **Not covered:** the B6's earlier years, 2006–2009 (outside #443; NHTSA's index has no Volkswagen card
-  before 2010), and the Passat NMS from 2012, which has cards of its own (#147).
+  before 2010), and the Passat NMS from 2012, which has cards of its own (#444; see the [2014 2.5L's page](volkswagen-passat-2014-2.5.md)).
