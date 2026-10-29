@@ -1,0 +1,146 @@
+{
+ "make": "Volkswagen",
+ "model": "Routan",
+ "modelAliases": [],
+ "years": [
+  2010,
+  2011,
+  2012,
+  2013,
+  2014
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "10240621",
+   "number": "CustomerLetterB",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2010,
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING",
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10240620",
+   "number": "CustomerLetterA",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240620-9999.pdf"
+  },
+  {
+   "id": "10127730",
+   "number": "Customer Letter",
+   "date": "2015-02-05",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Left Cylinder Head Certain 2011 - 2012 Model Year Volkswagen Routan with 3.6L Engine (Engine Code CJRA)",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10121223",
+   "number": "VWP-15-02",
+   "date": "2015-01-13",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Left Cylinder Head Limited Warranty Extension ? Certain 2011 ? 2012 Model Year Routan with 3.6L Engine (Engine Code CJRA) (US Dealers)",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10240650",
+   "number": "Action20T8a",
+   "date": "2013-06-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "We would like to inform you that the FAQ for Service Action 20T8 has been revised to include additional information for dealers to share with customers about the misfueling guard.",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2010,
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10240650-9999.pdf"
+  },
+  {
+   "id": "10253483",
+   "number": "VWP1305",
+   "date": "2013-03-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Engine Exhaust Flap Limited Warranty Extension",
+   "products": [
+    {
+     "model": "ROUTAN",
+     "years": [
+      2010,
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
+  }
+ ]
+}
