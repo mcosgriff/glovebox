@@ -38,6 +38,18 @@ class PhotoPagesTest {
     }
 
     @Test
+    fun `a page that couldn't be opened counts as read, and is told apart from one with nothing on it`() {
+        val pages = PhotoPages().add("record-a.jpg").add("record-b.jpg")
+            .read("record-a.jpg", listOf(word("SERVICES")), millis = 5400)
+            .unreadable("record-b.jpg")
+
+        assertEquals(2, pages.readCount)
+        assertEquals(true, pages.pages[1].unreadable)
+        assertEquals(true, pages.ready)
+        assertEquals(true, PhotoPages().add("record-c.jpg").unreadable("record-c.jpg").nothingRead)
+    }
+
+    @Test
     fun `pages with nothing read on any of them can't fill the form`() {
         val blank = PhotoPages().add("record-a.jpg").read("record-a.jpg", emptyList(), millis = 3000)
         assertEquals(1, blank.readCount)

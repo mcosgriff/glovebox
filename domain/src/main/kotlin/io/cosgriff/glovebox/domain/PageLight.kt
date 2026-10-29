@@ -12,31 +12,32 @@ object PageLight {
     fun readSize(width: Int, height: Int): Pair<Int, Int> =
         READ_WIDTH to (height.toLong() * READ_WIDTH / width.coerceAtLeast(1)).toInt().coerceAtLeast(1)
 
-    /** The page is looked at in squares this many pixels across to find its paper. */
+    /** The blurred copy is made at an eighth of the page's size: a 3400 px page's own would take tens of megabytes. */
     private const val CELL = 8
 
-    /** How many squares either way the paper's light is averaged over: about a line and a half of print at [READ_WIDTH]. */
-    private const val BLUR_CELLS = 4
+    /** How many [CELL] squares either way the blur reaches: about 70 px at [READ_WIDTH], two or three lines of print. */
+    private const val BLUR_CELLS = 8
 
     /**
-     * The page divided by its own light, so paper reads as white wherever it is lit and print stays dark: a hand's
-     * shadow across a page cost #482 four figures that flattening won back. The light is the brightest pixel of each
-     * [CELL] square (paper, not print), averaged over its neighbours and spread smoothly back over the page.
+     * The page divided by its own blurred copy, as #482 measured (+4 figures over plain greyscale): paper reads as
+     * white wherever it is lit and print stays dark, so a hand's shadow across the page washes out. The copy is a box
+     * blur, worked out on the page shrunk by [CELL] and spread smoothly back over it.
      * [luminance] is [width] x [height], one byte per pixel, rows top to bottom; so is what comes back.
      */
     fun flatten(luminance: ByteArray, width: Int, height: Int): ByteArray {
         val across = (width + CELL - 1) / CELL
         val down = (height + CELL - 1) / CELL
-        val brightest = IntArray(across * down)
+        val sums = LongArray(across * down)
+        val counts = IntArray(across * down)
         for (y in 0 until height) {
             val row = (y / CELL) * across
             for (x in 0 until width) {
-                val v = luminance[y * width + x].toInt() and 0xFF
                 val c = row + x / CELL
-                if (v > brightest[c]) brightest[c] = v
+                sums[c] += (luminance[y * width + x].toInt() and 0xFF).toLong()
+                counts[c]++
             }
         }
-        val light = blur(brightest, across, down)
+        val light = blur(IntArray(sums.size) { (sums[it] / counts[it]).toInt() }, across, down)
         val out = ByteArray(width * height)
         for (y in 0 until height) {
             // Between the middles of the squares above and below, and of those either side.

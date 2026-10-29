@@ -2,9 +2,10 @@ package io.cosgriff.glovebox.domain
 
 /**
  * One photographed page of a paper invoice (#513): its encrypted [file], and once read, its [words] (on page 0;
- * [PhotoPages.words] numbers them) and how long reading took, for the debug trace.
+ * [PhotoPages.words] numbers them) and how long reading took, for the debug trace. [unreadable] when the picture
+ * couldn't be opened or the text reader couldn't run: read, with no words, but not a page with nothing on it.
  */
-data class PhotoPage(val file: String, val words: List<InvoiceWord>? = null, val millis: Long? = null)
+data class PhotoPage(val file: String, val words: List<InvoiceWord>? = null, val millis: Long? = null, val unreadable: Boolean = false)
 
 /**
  * The pages of a paper invoice in the order the user put them in, each read as soon as it is taken. Each change gives
@@ -16,6 +17,10 @@ data class PhotoPages(val pages: List<PhotoPage> = emptyList()) {
     /** [file] read as [words] in [millis]. Nothing happens if it was taken off meanwhile. */
     fun read(file: String, words: List<InvoiceWord>, millis: Long) =
         PhotoPages(pages.map { if (it.file == file) it.copy(words = words, millis = millis) else it })
+
+    /** [file] couldn't be read at all. Nothing happens if it was taken off meanwhile. */
+    fun unreadable(file: String) =
+        PhotoPages(pages.map { if (it.file == file) it.copy(words = emptyList(), unreadable = true) else it })
 
     /** [file] moved [by] places, -1 earlier and 1 later; no further than either end. */
     fun move(file: String, by: Int): PhotoPages {
