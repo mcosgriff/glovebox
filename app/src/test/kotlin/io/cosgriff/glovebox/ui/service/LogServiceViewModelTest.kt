@@ -50,7 +50,7 @@ class LogServiceViewModelTest {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T = LogServiceViewModel(
                     routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(),
-                    t.db.catalogRules(), t.actions, t.picker, t.invoices,
+                    t.db.catalogRules(), t.actions, t.picker, t.invoices, t.invoicePhotos,
                 ) as T
             },
         )[route.toString(), LogServiceViewModel::class]

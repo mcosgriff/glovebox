@@ -98,9 +98,10 @@ class InvoicePicker @Inject constructor(
     /**
      * Debug builds only: the words, their boxes and the reader's trace as JSON in `files/invoice-traces/`, so an
      * invoice it reads wrong can become a private test (`domain/src/test/private-invoices/`). A release build never
-     * writes it; the PDF itself is never written.
+     * writes it; the PDF itself is never written. [millis] is how long each photographed page took to read (#513), to
+     * measure on a phone.
      */
-    suspend fun writeTrace(words: List<InvoiceWord>, reading: InvoiceReading) {
+    suspend fun writeTrace(words: List<InvoiceWord>, reading: InvoiceReading, millis: List<Long?> = emptyList()) {
         if (!BuildConfig.DEBUG) return
         withContext(Dispatchers.IO) {
             val json = JsonObject(
@@ -108,6 +109,7 @@ class InvoicePicker @Inject constructor(
                     "words" to Json.parseToJsonElement(InvoiceWords.toJson(words)),
                     "lines" to JsonArray(reading.lines.map { JsonPrimitive(it.text) }),
                     "trace" to JsonArray(reading.trace.map { JsonPrimitive(it.toString()) }),
+                    "millis" to JsonArray(millis.map { JsonPrimitive(it) }),
                 ),
             )
             val dir = File(context.filesDir, TRACES).apply { mkdirs() }

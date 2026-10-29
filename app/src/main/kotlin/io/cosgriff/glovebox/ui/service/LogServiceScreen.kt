@@ -113,6 +113,7 @@ import io.cosgriff.glovebox.domain.FilledFigure
 import io.cosgriff.glovebox.domain.InvoiceFill
 import io.cosgriff.glovebox.domain.InvoiceFills
 import io.cosgriff.glovebox.domain.InvoiceReader
+import io.cosgriff.glovebox.domain.InvoiceWord
 import io.cosgriff.glovebox.ui.AppText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -138,6 +139,7 @@ import io.cosgriff.glovebox.domain.toDash
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ServiceCatalog
+import io.cosgriff.glovebox.domain.PhotoPages
 import io.cosgriff.glovebox.domain.RecordPhotos
 import io.cosgriff.glovebox.domain.ServiceLog
 import io.cosgriff.glovebox.domain.VehicleReminders
@@ -558,6 +560,7 @@ class LogServiceViewModel @Inject constructor(
     private val actions: RecordActions,
     private val photoPicker: RecordPhotoPicker,
     private val invoices: InvoicePicker,
+    private val invoicePhotos: InvoicePhotos,
 ) : ViewModel() {
     /** Names this form to the photo picker, which holds its new photos until it is saved or left. */
     private val photoKey = UUID.randomUUID().toString()
@@ -577,6 +580,7 @@ class LogServiceViewModel @Inject constructor(
     override fun onCleared() {
         photoPicker.discardDraft(photoKey)
         invoices.take(photoKey)
+        invoicePhotos.discard(photoKey)
     }
 
     private val route = savedStateHandle.route<LogServiceRoute>()
@@ -606,35 +610,69 @@ class LogServiceViewModel @Inject constructor(
             val words = invoices.words(picked.bytes)
             when {
                 words == null -> form.invoiceProblem = InvoiceProblem.UNREADABLE
-                // A scan has no text layer; reading a photo of one is #513.
+                // A scan has no text layer: it is photographed instead (#513).
                 words.isEmpty() -> form.invoiceProblem = InvoiceProblem.NO_TEXT
-                else -> {
-                    // The readings are in dash terms; an invoice after a cluster swap reads as the new cluster does.
-                    // An invoice laid out in a way the reader trips on is one it couldn't read, never a crash.
-                    val reading = withContext(Dispatchers.Default) {
-                        try {
-                            InvoiceReader.read(words, LocalDate.now(), d.readings, d.unit, d.rules)
-                        } catch (_: RuntimeException) {
-                            null
-                        }
-                    }
-                    if (reading == null) {
-                        form.invoiceProblem = InvoiceProblem.UNREADABLE
-                        return
-                    }
-                    invoices.writeTrace(words, reading)
-                    val fill = InvoiceFills.of(reading, d.log.vehicle.vin)
-                    invoicePdf = picked.bytes
-                    form.fill(fill, invoiceNotes(fill, d.unit))
-                    form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading))
-                }
+                fillFrom(d, words, photos = false) -> invoicePdf = picked.bytes
+                else -> form.invoiceProblem = InvoiceProblem.UNREADABLE
             }
         } finally {
             form.readingInvoice = false
         }
     }
 
+    /** The invoice's [words] read and put on the form; false if the reader tripped on them. [millis] go in the debug trace. */
+    private suspend fun fillFrom(d: LogServiceData, words: List<InvoiceWord>, photos: Boolean, millis: List<Long?> = emptyList()): Boolean {
+        // The readings are in dash terms; an invoice after a cluster swap reads as the new cluster does.
+        // An invoice laid out in a way the reader trips on is one it couldn't read, never a crash.
+        val reading = withContext(Dispatchers.Default) {
+            try {
+                InvoiceReader.read(words, LocalDate.now(), d.readings, d.unit, d.rules)
+            } catch (_: RuntimeException) {
+                null
+            }
+        } ?: return false
+        invoices.writeTrace(words, reading, millis)
+        val fill = InvoiceFills.of(reading, d.log.vehicle.vin)
+        form.fill(fill, invoiceNotes(fill, d.unit))
+        form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading), photos)
+        return true
+    }
+
+    /** A paper invoice's pages on this form (#513), each read as it comes. */
+    val invoicePages: StateFlow<PhotoPages> = invoicePhotos.pages.map { it[photoKey] ?: PhotoPages() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, PhotoPages())
+    val invoicePagesProblem: StateFlow<String?> = invoicePhotos.problem
+
+    fun photographInvoice() = invoicePhotos.capture(photoKey)
+    fun chooseInvoicePages() = invoicePhotos.pick(photoKey)
+    fun retakeInvoicePage(file: String) = invoicePhotos.retake(photoKey, file)
+    fun moveInvoicePage(file: String, by: Int) = invoicePhotos.move(photoKey, file, by)
+    fun removeInvoicePage(file: String) = invoicePhotos.remove(photoKey, file)
+
+    /** The pages go, unread, and the form is as it was. */
+    fun putInvoicePagesAside() {
+        invoicePhotos.discard(photoKey)
+        invoicePhotos.open(photoKey)
+    }
+
+    /** "Fill the form from these pages", once every page is read. */
+    fun fillFromInvoicePages() {
+        val d = form.data ?: return
+        val pages = invoicePages.value
+        if (!pages.ready || form.invoiceRead || form.readingInvoice) return
+        form.invoiceProblem = null
+        form.readingInvoice = true
+        viewModelScope.launch {
+            try {
+                if (!fillFrom(d, pages.words(), photos = true, pages.pages.map { it.millis })) form.invoiceProblem = InvoiceProblem.UNREADABLE
+            } finally {
+                form.readingInvoice = false
+            }
+        }
+    }
+
     init {
+        if (!editing) invoicePhotos.open(photoKey)
         viewModelScope.launch {
             // The form has nothing to log against once the vehicle has gone.
             val log = logs.load(vehicleId) ?: return@launch
@@ -804,10 +842,14 @@ class LogServiceViewModel @Inject constructor(
                     }
                 }
                 val added = photoPicker.takeDraft(photoKey)
+                // A paper invoice's pages go with the record as its photos, unless the user turned that off, as many as fit.
+                val pages = invoicePhotos.take(photoKey)
+                val keptPages = if (keepInvoice) pages.take(RecordPhotos.room(added.size)) else emptyList()
+                invoicePhotos.drop(pages - keptPages.toSet())
                 if (d.original != null) {
                     actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
                 } else {
-                    actions.add(record, items, added, jobRows, partRows)
+                    actions.add(record, items, added + keptPages, jobRows, partRows)
                     // Paperwork of the vehicle's, not the record's: an Undo of the record leaves it there.
                     invoicePdf?.takeIf { keepInvoice }?.let { pdf ->
                         val name = record.shopName?.let { AppText.res.getString(R.string.invoice_document_name, it) }
@@ -838,12 +880,20 @@ fun LogServiceScreen(
 ) {
     val newPhotos by vm.newPhotos.collectAsStateWithLifecycle()
     val problem by vm.photoProblem.collectAsStateWithLifecycle()
+    val pages by vm.invoicePages.collectAsStateWithLifecycle()
+    val pagesProblem by vm.invoicePagesProblem.collectAsStateWithLifecycle()
     LogServiceContent(
         vm.form, newPhotos, problem, onDone,
         onSave = { vm.save(if (vm.editing) onDone else onAdded) },
         onDeleteInstead = onDeleteInstead,
         onTakePhoto = vm::takePhoto, onChoosePhotos = vm::choosePhotos, onRemoveNewPhoto = vm::removeNewPhoto,
         onReadInvoice = vm::readInvoice,
+        invoicePages = InvoicePages(
+            pages, pagesProblem,
+            onTake = vm::photographInvoice, onChoose = vm::chooseInvoicePages, onRetake = vm::retakeInvoicePage,
+            onMove = vm::moveInvoicePage, onRemove = vm::removeInvoicePage, onFill = vm::fillFromInvoicePages,
+            onPutAside = vm::putInvoicePagesAside,
+        ),
     )
 }
 
@@ -863,6 +913,9 @@ internal fun LogServiceContent(
     onRemoveNewPhoto: (fileName: String) -> Unit,
     /** "Read a shop's invoice" (#484), on a new service only. */
     onReadInvoice: () -> Unit = {},
+    /** A paper invoice's pages (#513), on a new service only. */
+    invoicePages: InvoicePages = InvoicePages(),
+    pageThumb: PageThumb = { file, description, modifier -> PhotoThumb(file, description, modifier) },
 ) {
     val data = form.data ?: return // first frame while the vehicle loads
     var pickingDate by remember { mutableStateOf(false) }
@@ -888,7 +941,7 @@ internal fun LogServiceContent(
             Modifier.padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
-            if (!form.editing) InvoiceCard(form, data.vehicleName, onReadInvoice)
+            if (!form.editing) InvoiceCard(form, data.vehicleName, onReadInvoice, invoicePages, pageThumb)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
