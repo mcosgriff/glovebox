@@ -14,6 +14,9 @@
     "note": "Read from the newest revision of Volkswagen's 2018 USA maintenance schedule, the jobs for the Golf SportWagen, in Glovebox's wording. Check it against the booklet that came with your car.",
     "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for its models, as filed with NHTSA, for a car the owner maintains; only the rows that apply to the Golf SportWagen. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
+  "allWheelDriveOnly": [
+    "Change AWD clutch fluid (AWD)"
+  ],
   "milestones": [
     {
       "atMiles": 10000,
@@ -645,6 +648,11 @@
       "everyMiles": 60000,
       "everyMonths": 72,
       "service": "engine-air"
+    },
+    {
+      "name": "Change AWD clutch fluid (AWD)",
+      "everyMonths": 36,
+      "rule": "time-only"
     },
     {
       "name": "Change brake fluid (at 3 years, then every 2 years)",

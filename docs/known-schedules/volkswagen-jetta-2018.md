@@ -46,7 +46,9 @@ first read it; a later list from this card should read it the same way, or say w
    doubtful against a row (the GTI and "Golf"), the row is left out and asked.
 8. **"AWD clutch: Change fluid (if equipped)", "AWD only vehicles"**, every 3 years: for a model sold with
    all-wheel drive it is an `additional` reminder by time alone in `allWheelDriveOnly`, named "(AWD)". The GTI
-   and the Jetta were sold with front-wheel drive only, so it is left out of their lists.
+   and the Jetta were sold with front-wheel drive only, so it is left out of their lists. The 2018–2019 Golf
+   SportWagen (4Motion, 1.8T) and Golf Alltrack carry it as "Change AWD clutch fluid (AWD)", every 36 months,
+   with no service line.
 9. **The gearbox rows.** "Transmission, 6-Speed DSG: Change fluid and filter" (every 40,000) and
    "Transmission, Automatic (non-DSG): Change fluid" (every 80,000) name no model; the 7-speed DSG is "Golf R
    only". Where a model was sold with only one kind of self-shifting gearbox the card names, its row is a

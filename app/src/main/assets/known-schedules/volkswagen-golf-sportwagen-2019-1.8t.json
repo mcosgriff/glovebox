@@ -18,6 +18,9 @@
     "label": "1.8T",
     "displacementL": 1.8
   },
+  "allWheelDriveOnly": [
+    "Change AWD clutch fluid (AWD)"
+  ],
   "milestones": [
     {
       "atMiles": 10000,
@@ -649,6 +652,11 @@
       "everyMiles": 60000,
       "everyMonths": 72,
       "service": "engine-air"
+    },
+    {
+      "name": "Change AWD clutch fluid (AWD)",
+      "everyMonths": 36,
+      "rule": "time-only"
     },
     {
       "name": "Change brake fluid (at 3 years, then every 2 years)",

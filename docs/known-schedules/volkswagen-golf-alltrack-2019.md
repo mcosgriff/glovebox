@@ -13,9 +13,12 @@ Alltrack too), read in full on 2026-10-29, as page images, by eye.
 - **Spark plugs** 40,000 / 48 mo: the 40,000-mile or 4-year row is "Except" models among which the Alltrack
   isn't, and the 80,000-mile row is "Only" those. No row names an Alltrack engine, so the list names none.
 - **Left out and asked on #436**, as on the [2018 Alltrack](volkswagen-golf-alltrack-2018.md): the hood latch
-  ("Does not apply to: Passat, Golf, Beetle, and Jetta") and the AWD clutch fluid ("AWD clutch: Change fluid
-  (if equipped)", every 3 years; an `additional` job can't be named in `allWheelDriveOnly` without a change
-  to `KnownSchedulesTest`). The Alltrack was sold with 4Motion all-wheel drive.
+  ("Does not apply to: Passat, Golf, Beetle, and Jetta").
+- **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years", an additional item. The
+  2019 Golf Alltrack was sold with 4Motion all-wheel drive, so it is read as on the [2018 Alltrack](volkswagen-golf-alltrack-2018.md):
+  "Change AWD clutch fluid (AWD)", an `additional` reminder by time alone, every 36 months, no service line, in
+  `allWheelDriveOnly`, never placed on the grid. vPIC decodes `3VWH17AU*KM` (2019 Golf Alltrack, 4Motion S, SE, SEL, 1.8L, read
+  2026-10-29) as "AWD/All-Wheel Drive".
 - Both gearbox rows are left out, as on the Golf's list.
 - vPIC's model list for Volkswagen, 2019 (`GetModelsForMakeYear`), names it "Golf Alltrack".
 - Reminders: engine oil 10,000 / 12 mo; additional items as on the SportWagen 1.8T's list.
