@@ -56,8 +56,8 @@ weren't fetched.
 ## What isn't covered
 
 - **2011–2013.** NHTSA's index has no Jetta sedan card for these years (only the Jetta Hybrid's, from 2013).
-  Volkswagen's 2025 reissues would be the only source; they differ from the cards from the time (see the
-  Golf's [question 3 on #434](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+  They have lists from Volkswagen's reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2.5L](volkswagen-jetta-2011-2013-2.5.md) and
+  [TDI](volkswagen-jetta-2011-2013-tdi.md); the 2.0L petrol engines are left out (see the 2.5L's page).
 - **The 2.0L gasoline engines, 2014–2016: the 2.0L MPI and the GLI's 2.0L TSI.** Each has its own card:
   - 2.0L MPI: `2013/MC-10125798-9999` (2014), `2014/MC-10120124-9999` (2015), `2015/MC-10123067-9999` (2016);
   - GLI 2.0L TSI: `2013/MC-10125796-9999` (2014, filed under the Jetta Hybrid, headed "2014 Volkswagen GLI
@@ -78,10 +78,9 @@ weren't fetched.
   those lists keep it, as the Passat TDI's does.
 - **2017.** NHTSA's index has no Jetta card for 2017 (two "New Publication" filings under the 2017 Jetta,
   `MC-10107217` and `MC-10107218`, aren't at the usual address). Volkswagen's 2017 reissue (`USA5R506721`) would
-  be the only source, and it differs from the cards either side: it gives "Jetta (163)" spark plugs every
-  60,000 or 6 years, where the 2016 1.4T card gives 4 years and the 2018 card 40,000 or 4 years for every
-  Jetta engine, and it names the Jetta under the `09G`, `09S`, `01M` and `02E (DSG)` gearboxes. Left out, as
-  for #434's question 3.
+  be the only source, and it names the Jetta under the `09G`, `09S`, `01M` and `02E (DSG)` gearboxes. It has
+  [a list from the reissue alone](volkswagen-jetta-2017.md) ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)); read off the page, its "Jetta (163)" spark
+  plugs are on the 40,000 or 4 years line.
 - **2016 1.4T and 1.8T** have lists of their own ([1.4T](volkswagen-jetta-2016-1.4t.md),
   [1.8T](volkswagen-jetta-2016-1.8t.md)), and **2018** one for every engine
   ([2018](volkswagen-jetta-2018.md)).

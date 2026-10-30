@@ -3,9 +3,11 @@
  "model": "Golf R",
  "modelAliases": [],
  "years": [
+  2012,
   2013,
   2015,
   2016,
+  2017,
   2018,
   2019,
   2020,
@@ -74,6 +76,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -95,9 +98,11 @@
     {
      "model": "GOLF R",
      "years": [
+      2012,
       2013,
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -355,6 +360,26 @@
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11007384-0001.pdf"
   },
   {
+   "id": "11005811",
+   "number": "DC_Closure_37H7",
+   "date": "2024-07-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Closure of the campaign.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
    "id": "11001495",
    "number": "Circular 10H9",
    "date": "2024-05-30",
@@ -387,6 +412,7 @@
      "model": "GOLF R",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2022,
@@ -411,6 +437,7 @@
      "model": "GOLF R",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2022,
@@ -519,9 +546,11 @@
     {
      "model": "GOLF R",
      "years": [
+      2012,
       2013,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -543,9 +572,11 @@
     {
      "model": "GOLF R",
      "years": [
+      2012,
       2013,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -567,6 +598,7 @@
     {
      "model": "GOLF R",
      "years": [
+      2012,
       2013
      ]
     }
@@ -587,6 +619,7 @@
     {
      "model": "GOLF R",
      "years": [
+      2012,
       2013
      ]
     }
@@ -595,6 +628,46 @@
     "ENGINE AND ENGINE COOLING"
    ],
    "pdf": null
+  },
+  {
+   "id": "10240650",
+   "number": "Action20T8a",
+   "date": "2013-06-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "We would like to inform you that the FAQ for Service Action 20T8 has been revised to include additional information for dealers to share with customers about the misfueling guard.",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10240650-9999.pdf"
+  },
+  {
+   "id": "10253483",
+   "number": "VWP1305",
+   "date": "2013-03-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Engine Exhaust Flap Limited Warranty Extension",
+   "products": [
+    {
+     "model": "GOLF R",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
   }
  ]
 }

@@ -52,11 +52,8 @@ The Golf's 2.0L TDI has [a list of its own](volkswagen-golf-2010-tdi.md) from th
 - Always left out: the dealer's service sticker, the New Beetle's brake fluid row, both convertible roof
   rows, and the grey "Carefree Maintenance" shading.
 - **Not covered:**
-  - **2011–2013.** No Golf card from the time was found; NHTSA's index has none for these years, and
-    Volkswagen's reissues weren't read for this list. They would be its only source (the owner's ruling of
-    2026-10-23 allows that), but the 2010 reissue's gearbox table names the Golf under five gearboxes at two
-    intervals, by code, and gives spark plugs and the dust and pollen filter other intervals than the
-    cards. Whether to build 2011–2013 from reissues alone is asked on #434.
+  - **2011–2013.** No Golf card from the time was found; the years have [their own list](volkswagen-golf-2011-2013-2.5.md),
+    from Volkswagen's reissues alone, as the owner ruled ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
   - **2014** has [its own list](volkswagen-golf-2014-2.5.md).
   - Years before 2010 (NHTSA's index has no Volkswagen card before 2010) and the Mk7 (2015 on), which has
     an issue of its own (#147).

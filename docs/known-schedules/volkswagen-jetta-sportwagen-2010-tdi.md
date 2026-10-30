@@ -31,7 +31,7 @@ rows. Read on 2026-10-28, as page images, by eye.
 - Always left out: the dealer's service sticker, the New Beetle's brake fluid row, both convertible roof
   rows, and the grey "Carefree Maintenance" shading.
 - **Not covered:**
-  - **2011–2013**, as on the [2.5L's page](volkswagen-jetta-sportwagen-2010-2.5.md).
+  - **2011–2013** has [its own list](volkswagen-jetta-sportwagen-2011-2013-tdi.md), from Volkswagen's reissues ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
   - **2014** has [a list of its own](volkswagen-jetta-sportwagen-2014-tdi.md), from the Jetta SportWagen
     2.0L TDI card (`2013/MC-10125864-9999`, posted June 2013). It is the
     [2014 Golf TDI](volkswagen-golf-2014-tdi.md) card with the model's name: a grid of 13 columns to

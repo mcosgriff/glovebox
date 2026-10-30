@@ -91,8 +91,8 @@ Asked on [#448](https://github.com/mcosgriff/glovebox/issues/448); nothing below
   rear nozzle or sticker; the dust and pollen filter every 40,000 or 2 years), which is row for row the 2016
   Beetle Convertible 2.0T card without the roof rows. No Beetle card is headed 2016 for the 2.0L TSI. The same
   case as the Passat 3.6L ([#444's question 2](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)).
-- **2012, 2013 and 2017.** NHTSA's index has no Beetle card for those years. Volkswagen's 2025 reissues would be
-  the only source; they weren't read for the Beetle, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+- **2012, 2013 and 2017.** NHTSA's index has no Beetle card for those years. They have lists from Volkswagen's
+  reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2.5L](volkswagen-beetle-2012-2013-2.5.md), [2.0T](volkswagen-beetle-2012-2013-2.0t.md)
+  and [TDI](volkswagen-beetle-2012-2013-tdi.md) for 2012–2013, and [2017](volkswagen-beetle-2017.md).
 - **The 2010 New Beetle** is on the 2010 card for all models except the Routan; it is the older generation and
   outside #448.

@@ -63,8 +63,8 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
 - **2017.** NHTSA's index has no 2017 card for the Golf R (its only 2017 cards are the e-Golf's). Volkswagen's 2017
   reissue would be the only source, and the reissues differ from the cards from the time (the
   [2013 Golf R's page](volkswagen-golf-r-2013.md#the-2013-reissue) and the
-  [2017 GTI's page](volkswagen-gti-2017.md#how-far-the-reissue-matches-a-card-from-the-time) say how), so 2017 waits on
-  [#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244). vPIC's model list
+  [2017 GTI's page](volkswagen-gti-2017.md#how-far-the-reissue-matches-a-card-from-the-time) say how); 2017 has
+  [a list from the reissue alone](volkswagen-golf-r-2017.md), as the owner ruled ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)). vPIC's model list
   has "Golf R" for 2017.
 - **2021.** vPIC's model list for Volkswagen has no "Golf R" for 2021, so no list is made. (2020 has a
   [list](volkswagen-golf-r-2020.md), by the owner's ruling on [#556](https://github.com/mcosgriff/glovebox/issues/556#issuecomment-6511734459), question 2.)

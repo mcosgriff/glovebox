@@ -53,7 +53,6 @@ and lubricate seals", and it is table-only: no catalog line names it, and it is 
 
 ## What isn't covered
 
-- **2011, 2012 and 2013.** NHTSA's index has no Eos card for those years. Volkswagen's 2025 reissues would be
-  the only source; they weren't read for the Eos, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+- **2011, 2012 and 2013.** NHTSA's index has no Eos card for those years; they have
+  [a list from Volkswagen's reissues alone](volkswagen-eos-2011-2013.md) ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
 - **2007–2009** (outside #447): NHTSA's index has no Volkswagen card before 2010.

@@ -61,7 +61,8 @@ miles, named "(DSG only)", in `manualExcluded`. The 3.6L cards print no gearbox 
   alone or against it. No list named "CC" is made for 2010: no vPIC name for the year would ever match it.
   Those lists' open question about the DSG row ([#443](https://github.com/mcosgriff/glovebox/issues/443#issuecomment-6488582333))
   applies to the 2010 CC as well (a DSG 2.0T and a conventional-automatic 3.6L).
-- **2011, 2012, 2013 and 2017.** NHTSA's index has no CC card for those years. Volkswagen's 2025 reissues
-  would be the only source; they weren't read for the CC, and for the Golf they differ from the cards from the
-  time ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). vPIC's
+- **2011, 2012, 2013 and 2017.** NHTSA's index has no CC card for those years. They have lists from Volkswagen's
+  reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2011 2.0T](volkswagen-cc-2011-2.0t.md), [2011 3.6L](volkswagen-cc-2011-3.6.md),
+  [2012–2013 2.0T](volkswagen-cc-2012-2013-2.0t.md), [2012–2013 3.6L](volkswagen-cc-2012-2013-3.6.md) and
+  [2017 2.0T](volkswagen-cc-2017-2.0t.md). vPIC's
   2013 model list has no "CC" either, so a 2011–2013 CC may decode as "Passat", which has no list for those years.

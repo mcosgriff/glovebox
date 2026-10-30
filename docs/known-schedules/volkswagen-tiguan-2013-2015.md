@@ -67,9 +67,7 @@ Limited" (this one, carried on; see its page).
 ## What isn't covered
 
 - **2009.** NHTSA's index has no Volkswagen card before 2010.
-- **2011, 2012 and 2017.** NHTSA's index has no Tiguan card for those years. Volkswagen's 2025 reissues would be
-  the only source; they weren't read for the Tiguan, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). The 2010
-  and 2013 cards aren't stretched over them.
+- **2011, 2012 and 2017.** NHTSA's index has no Tiguan card for those years. They have lists from Volkswagen's
+  reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2011–2012](volkswagen-tiguan-2011-2012.md) and [2017](volkswagen-tiguan-2017.md).
 - **The 2018 Tiguan** (second generation, "Tiguan" in vPIC's 2018 list) and the rest of the second generation, 2018–2024, have lists of their own: see the [2018 Tiguan's page](volkswagen-tiguan-2018.md#every-second-generation-tiguan-card-read) (#450).
 - The open questions for these lists were on [#449](https://github.com/mcosgriff/glovebox/issues/449#issuecomment-6492074401): the Haldex row (question 1, settled on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)) and the 2018 Tiguan Limited's automatic gearbox row (question 2).

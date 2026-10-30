@@ -9,7 +9,7 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29.
 
 | Model year | What was read | Document |
 |---|---|---|
-| 2012 | **No card from the time was found.** NHTSA's index has no 2012 Golf R card; see [Not covered](#not-covered) | – |
+| 2012 | **No card from the time was found.** NHTSA's index has no 2012 Golf R card; 2012 has [a list from the reissue](volkswagen-golf-r-2012.md) | – |
 | 2013 | The Golf R card ("Applicable engines: 2.0T", revised October 2012), in full; the list was written from it. NHTSA files it twice; the two files are byte for byte the same | `2012/MC-10156106-9999`, `2012/MC-10157647-9999` |
 | 2013 | Volkswagen's 2013 reissue, for the oil change's time limit only (see below) | reissue `USA5R505321`, printed 11/24/2025 |
 
@@ -61,7 +61,7 @@ taken; the card from the time wins (the owner's ruling of 2026-10-23):
 ## Not covered
 
 - **2012**: NHTSA's index has no Golf R card for 2012 (its only 2012 Volkswagen card is the Routan's). Volkswagen's
-  2025 reissue would be the only source, and the reissues differ from the cards from the time (above); that is the
-  open question on the Golf ([#434](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244),
-  question 3), so 2012 waits for it. The 2013 card isn't stretched back over it.
+  2012 reissue is the only source, and the reissues differ from the cards from the time (above); the owner ruled to
+  build such years from the reissue alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)),
+  so 2012 has [its own list](volkswagen-golf-r-2012.md). The 2013 card isn't stretched back over it.
 - The Mk7 and Mk8 Golf R (2015 on), which have cards and lists of their own: see the [2015 Golf R's page](volkswagen-golf-r-2015.md).

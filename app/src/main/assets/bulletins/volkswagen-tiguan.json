@@ -4,10 +4,13 @@
  "modelAliases": [],
  "years": [
   2010,
+  2011,
+  2012,
   2013,
   2014,
   2015,
   2016,
+  2017,
   2018,
   2019,
   2020,
@@ -97,10 +100,13 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -489,10 +495,13 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -513,6 +522,7 @@
     {
      "model": "TIGUAN",
      "years": [
+      2012,
       2014,
       2015
      ]
@@ -535,7 +545,8 @@
      "model": "TIGUAN",
      "years": [
       2014,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -555,7 +566,8 @@
     {
      "model": "TIGUAN",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -565,6 +577,28 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10240620",
+   "number": "CustomerLetterA",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240620-9999.pdf"
   },
   {
    "id": "10181405",
@@ -640,6 +674,8 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014
      ]
@@ -663,6 +699,8 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014
      ]
@@ -685,6 +723,7 @@
     {
      "model": "TIGUAN",
      "years": [
+      2012,
       2013,
       2014,
       2015
@@ -709,6 +748,7 @@
     {
      "model": "TIGUAN",
      "years": [
+      2012,
       2013,
       2014,
       2015
@@ -795,6 +835,8 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013
      ]
     }
@@ -817,10 +859,13 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -843,10 +888,13 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -889,6 +937,8 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013
      ]
     }
@@ -910,6 +960,8 @@
      "model": "TIGUAN",
      "years": [
       2010,
+      2011,
+      2012,
       2013,
       2014,
       2015,
@@ -933,7 +985,8 @@
     {
      "model": "TIGUAN",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -942,6 +995,28 @@
     "EQUIPMENT"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
+  },
+  {
+   "id": "10157400",
+   "number": "Customer Letter",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkswagen Note (Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, Volkswagen is informing the customers of the decision to extend the customers Emissions Control Systems Warranty for fuel injector replacement under specific conditions to 10 years or 120,000 miles, whichever occurs first. Volkswagen has determined that a faulty fuel injector may cause minor misfire conditions and, in turn, cause the Malfunction Indicator Lamp (MIL) on the instrument cluster to illuminate due to the presence of specific fault codes caused by this component. In Volkswagen's continuing efforts to assure proper performance of Volkswagen vehicles, the dealer will diagnose and replace a faulty fuel injector, if necessary, at no cost to the customer as long as the vehicle remains within the time and mileage limits of this warranty extension.",
+   "products": [
+    {
+     "model": "TIGUAN",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "FUEL SYSTEM",
+    "GASOLINE"
+   ],
+   "pdf": null
   },
   {
    "id": "10240650",
@@ -954,7 +1029,9 @@
     {
      "model": "TIGUAN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -974,7 +1051,9 @@
     {
      "model": "TIGUAN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],

@@ -4,9 +4,12 @@
  "modelAliases": [],
  "years": [
   2010,
+  2012,
+  2013,
   2014,
   2015,
   2016,
+  2017,
   2018,
   2019,
   2020,
@@ -56,6 +59,46 @@
    "pdf": null
   },
   {
+   "id": "11010013",
+   "number": "DC_Multclosure_VW",
+   "date": "2024-10-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Service Action Closure Notice",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11005811",
+   "number": "DC_Closure_37H7",
+   "date": "2024-07-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Closure of the campaign.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
    "id": "11001522",
    "number": "VWP-24-04",
    "date": "2024-05-15",
@@ -67,6 +110,7 @@
      "model": "PASSAT",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2020,
@@ -92,6 +136,7 @@
      "model": "PASSAT",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2020,
@@ -117,9 +162,12 @@
      "model": "PASSAT",
      "years": [
       2010,
+      2012,
+      2013,
       2014,
       2015,
       2016,
+      2017,
       2018,
       2019,
       2020,
@@ -184,9 +232,12 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014,
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -317,9 +368,12 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014,
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -341,9 +395,12 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014,
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -365,6 +422,8 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014
      ]
     }
@@ -434,6 +493,7 @@
     {
      "model": "PASSAT",
      "years": [
+      2013,
       2014
      ]
     }
@@ -457,7 +517,8 @@
      "years": [
       2014,
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -478,9 +539,12 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -502,9 +566,12 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014,
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -586,6 +653,8 @@
     {
      "model": "PASSAT",
      "years": [
+      2012,
+      2013,
       2014
      ]
     }
@@ -606,6 +675,7 @@
     {
      "model": "PASSAT",
      "years": [
+      2013,
       2014
      ]
     }
@@ -626,12 +696,138 @@
     {
      "model": "PASSAT",
      "years": [
+      2013,
       2014
      ]
     }
    ],
    "components": [
     "EQUIPMENT:APPLIANCE:AIR CONDITIONER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10058792",
+   "number": "SB-48326",
+   "date": "2015-11-24",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "VOLKSWAGEN: TSB CONTAINS AN OWNER'S NOTIFICATION LETTER. SEE DOCUMENT SEARCH BUTTON BELOW. ON CERTAIN VEHICLES, A WARRANTY EXTENSION HAS BEEN ISSUED FOR HIGH PRESSURE FUEL PUMP. MODEL 2009-12 TOUAREG, 2012 PASSAT. *PE",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "OTHER:DELIVERY:FUEL PUMP"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10134911",
+   "number": "Customer Letter",
+   "date": "2015-06-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for High-Pressure Fuel Pump Certain 2009-2012 Model Year Volkswagen Touareg TDI® Clean Diesel Engine Vehicles & Certain 2012 Model Year Volkswagen Passat TDI® Clean Diesel Engine Vehicles. This warranty extension covers the diagnosis and replacement of the high-pressure fuel pump only if the correct, uncontaminated fuel is present in your vehicle.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10130704",
+   "number": "Customer Letter",
+   "date": "2015-06-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for High-Pressure Fuel Pump: Volkswagen informed customers of a decision to extend the warranty for the high-pressure fuel pump (HPFP) in the TDI® Clean Diesel engine vehicle under specific conditions to 10 years or 120,000 miles, whichever occurs first, from the vehicle's original in-service date.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10250696",
+   "number": "VWP1405",
+   "date": "2014-07-18",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Turbocharger Limited Warranty Extension",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012,
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:ENGINE:GASOLINE:TURBO/SUPERCHARGER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10120242",
+   "number": "VWP-14-04",
+   "date": "2014-07-18",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Information (Turbocharger Limited Warranty Extension): Volkswagen has extended the Emissions Control Systems Warranty for the turbocharger under specific conditions to 10 years or 120,000 miles, whichever occurs first, from the vehicle?s original in-service date, for certain 2012 ? 2013 Model Year Volkswagen Passat TDI Clean Diesel Engine vehicles. Volkswagen has determined that, under specific conditions, the turbocharger could malfunction and may cause the Malfunction Indicator Lamp (MIL) on the instrument cluster to illuminate due to the presence of specific fault codes caused by this component. Additionally, you may hear noise coming from the turbocharger.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012,
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157457",
+   "number": "Dealer Letter -",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkwagen Note (Warranty Extension for Intake Manifold & Fuel Injectors Certain 2008-2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine (Engine Codes CBFA & CCTA)): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, we are informing you of our decision to extend your Emissions Control Systems Warranty for the intake manifold and fuel injectors under specific conditions to 10 years or 120,000 miles, whichever occurs first, from the vehicle's original in-service date. Volkswagen has determined that, under specific conditions: ? a faulty intake manifold may cause the Malfunction Indicator Lamp (MIL) on the instrument cluster to illuminate due to the presence of specific fault codes caused by this component. and/or ? a faulty fuel injector may cause minor misfire conditions and, in turn, cause the Malfunction Indicator Lamp (MIL) on the instrument cluster to illuminate due to the presence of specific fault codes caused by this component.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
    ],
    "pdf": null
   },
@@ -663,6 +859,46 @@
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
   },
   {
+   "id": "10253491",
+   "number": "VWP1313",
+   "date": "2013-06-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Secondary Air Pressure Sensor Limited Warranty Extension",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10126874",
+   "number": "VWP-13-13",
+   "date": "2013-06-25",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Secondary Air Pressure Sensor Limited Warranty Extension. Volkswagen has extended the Emission Control Systems Warrantly for secondary air pressure sensor replacement under specific conditions to 10 years or 120,000 miles whichever occurs first, from the vehicle's original in-service date, for the following 2.5 L engine vehicles.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE"
+   ],
+   "pdf": null
+  },
+  {
    "id": "10240650",
    "number": "Action20T8a",
    "date": "2013-06-05",
@@ -673,7 +909,8 @@
     {
      "model": "PASSAT",
      "years": [
-      2010
+      2010,
+      2012
      ]
     },
     {
@@ -699,7 +936,8 @@
     {
      "model": "PASSAT",
      "years": [
-      2010
+      2010,
+      2012
      ]
     },
     {
@@ -713,6 +951,46 @@
     "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10253483-9999.pdf"
+  },
+  {
+   "id": "10157780",
+   "number": "Dealer Letter Ar",
+   "date": "2012-11-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (20R9 Service Action Kit Allocation): This document informs of the submission of additional 20R9 kits for dealership?s use. The document instructs parts managers to use the kits to address any affected inventory vehicles, so that the campaign is completed prior to retail sale. The document also informs how additional kits can be ordered.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10157750",
+   "number": "Dealer Letter -",
+   "date": "2012-11-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (20R9 Service Action Kit Allocation): Volkswagen will be sending an additional allocation of 20R9 kits for dealership?s to use. In addition to any customer vehicles showing the 20R9 service action open the kits are to be used to address any affected inventory vehicles, so that the campaign is completed prior to retail sale. This document informs how to acquire additional kits as well.",
+   "products": [
+    {
+     "model": "PASSAT",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT"
+   ],
+   "pdf": null
   },
   {
    "id": "10037349",

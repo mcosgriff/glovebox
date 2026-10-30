@@ -5,6 +5,7 @@
  "years": [
   2015,
   2016,
+  2017,
   2018,
   2019,
   2020
@@ -24,6 +25,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -47,6 +49,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -56,6 +59,26 @@
     "POWER TRAIN"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2025/MC-11023836-0001.pdf"
+  },
+  {
+   "id": "11005811",
+   "number": "DC_Closure_37H7",
+   "date": "2024-07-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Closure of the campaign.",
+   "products": [
+    {
+     "model": "GOLF SPORTWAGEN",
+     "years": [
+      2017
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
   },
   {
    "id": "11001522",
@@ -69,6 +92,7 @@
      "model": "GOLF SPORTWAGEN",
      "years": [
       2016,
+      2017,
       2018,
       2019
      ]
@@ -91,6 +115,7 @@
      "model": "GOLF SPORTWAGEN",
      "years": [
       2016,
+      2017,
       2018,
       2019
      ]
@@ -114,6 +139,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -137,6 +163,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -160,6 +187,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -183,6 +211,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]
@@ -206,6 +235,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018,
       2019
      ]

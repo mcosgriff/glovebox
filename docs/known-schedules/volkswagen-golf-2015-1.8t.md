@@ -56,8 +56,9 @@ SportWagen. That is the Golf R's card (its title says so), read for the [2015 Go
 - **2017.** NHTSA's index has no 2017 card for the Golf, Golf SportWagen or Golf Alltrack. Volkswagen's 2017
   reissue would be the only source, and its 2016 reissue differs from the 2016 card from the time (spark
   plugs "Golf (AU1)" every 40,000 or 4 years, where the card says 60,000 or 6; the gearboxes by code), as
-  the [2017 GTI's page](volkswagen-gti-2017.md#how-far-the-reissue-matches-a-card-from-the-time) found. So
-  2017 waits on [#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244).
+  the [2017 GTI's page](volkswagen-gti-2017.md#how-far-the-reissue-matches-a-card-from-the-time) found. The
+  owner ruled to build such years from the reissue alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): see the [2017 Golf](volkswagen-golf-2017.md) and
+  [2017 Golf SportWagen](volkswagen-golf-sportwagen-2017.md) lists. The 2017 Alltrack isn't covered.
 - **The gearbox rows of 2018–2021** are left out of every list made from the all-model cards: see the
   [2018 Golf's page](volkswagen-golf-2018.md).
 - **The Golf SportWagen and Golf Alltrack, 2021.** vPIC's model list has neither for 2021. (For 2020 the newest

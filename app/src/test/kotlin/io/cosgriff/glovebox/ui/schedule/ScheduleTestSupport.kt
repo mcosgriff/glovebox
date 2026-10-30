@@ -137,7 +137,7 @@ object ScheduleFixtures {
     fun fourRunner(engine: String? = "4.0L V6") = VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", engine = engine, drivetrain = "4WD", createdOn = ADDED)
 
     /** A model with no maker's list: the typical list. */
-    fun hatch() = VehicleEntity(vin = null, year = 2013, make = "Volkswagen", model = "Golf", drivetrain = "FWD", fuel = "Gasoline", createdOn = ADDED)
+    fun hatch() = VehicleEntity(vin = null, year = 2008, make = "Volkswagen", model = "Golf", drivetrain = "FWD", fuel = "Gasoline", createdOn = ADDED)
 }
 
 /** Draws [content] as the app does, in the light theme on the page colour. */

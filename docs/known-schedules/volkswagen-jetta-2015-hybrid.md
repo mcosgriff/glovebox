@@ -58,6 +58,6 @@ document type "Maintenance Card", `en-US`). Read on 2026-10-28, as page images, 
     not 2013–2015, because 2014 isn't covered by these cards (below).
   - **2014.** No card from the time was found. The 2013 (January 2013) and 2015 cards agree row for row,
     and Volkswagen's 2014 reissue agrees with every reminder except the dust and pollen filter (40,000 or
-    2 years, as in every reissue of these years; see the GTI's page). Whether that is enough to cover 2014
-    is the owner's to decide (asked on #441).
+    2 years, as in every reissue of these years; see the GTI's page). 2014 has
+    [a list from the reissue alone](volkswagen-jetta-2014-hybrid.md), as the owner ruled ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
   - **2016** has [its own list](volkswagen-jetta-2016-hybrid.md).

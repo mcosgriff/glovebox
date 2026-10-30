@@ -65,10 +65,10 @@ The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is an all-wheel-
 
 ## What isn't covered
 
-- **2011, 2012, 2013 and 2017.** NHTSA's index has no Touareg card for those years. Volkswagen's 2025 reissues
-  would be the only source; they weren't read for the Touareg, and for the Golf they differ from the cards from
-  the time ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). The
-  2010 and 2014 cards aren't stretched over them.
+- **2011, 2012, 2013 and 2017.** NHTSA's index has no Touareg card for those years. They have lists from
+  Volkswagen's reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): 2011–2013 [3.6L](volkswagen-touareg-2011-2013-3.6.md),
+  [TDI](volkswagen-touareg-2011-2013-tdi.md) and [Hybrid](volkswagen-touareg-2011-2013-hybrid.md), and
+  [2017 3.6L](volkswagen-touareg-2017.md).
 - **The 2015 and 2016 Hybrid.** Two different cards are headed "2015 … 3.0L Hybrid": the June 2014 card
   (`MC-10240829`, row for row the 2014 Hybrid card) and the August 2015 card (`MC-10123062`, in the 2016
   layout: no yearly airbag check, tire rotation, door checks, rear nozzle or sticker, and the dust and pollen

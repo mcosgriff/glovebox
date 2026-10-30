@@ -52,8 +52,9 @@ The sedan has [its own lists](volkswagen-jetta-2010-2.5.md).
   - **2011–2013.** NHTSA's index files no Jetta SportWagen card for these years. One 2.5L card filed under
     2014 (`2013/MC-10125863-9999`, posted June 2013) is headed "2013 Volkswagen Jetta SportWagen" on every
     page; whether it is a 2013 card is asked on #439 (see the
-    [2014 list's page](volkswagen-jetta-sportwagen-2014-2.5.md)). Volkswagen's 2011–2013 reissues weren't
-    read for this list; whether to build years from reissues alone is the Golf's question 3 on #434.
+    [2014 list's page](volkswagen-jetta-sportwagen-2014-2.5.md)). 2011–2012 have
+    [a list from Volkswagen's reissues alone](volkswagen-jetta-sportwagen-2011-2012-2.5.md) ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)); 2013 is left to
+    that card.
   - **2014** has [its own list](volkswagen-jetta-sportwagen-2014-2.5.md).
   - Years before 2010 (NHTSA's index has no Volkswagen card before 2010), and the Golf SportWagen from 2015,
     which has an issue of its own (#147).
