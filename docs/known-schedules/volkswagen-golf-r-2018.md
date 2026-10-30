@@ -25,9 +25,8 @@ too), read in full on 2026-10-29, as page images, by eye. It is read as
   `allWheelDriveOnly`, never on the grid (point 8; PR #537). The Golf R was sold with 4Motion all-wheel drive only;
   vPIC decodes the pattern `WVWVF7AU*JW` (model year 2018, read 2026-10-29) as "Golf R", 2.0L, 292 HP,
   "AWD/All-Wheel Drive". Only a car known to drive two wheels would lose it.
-- **Left out and asked**, as on the Golf Alltrack's list ([#436](https://github.com/mcosgriff/glovebox/issues/436#issuecomment-6491060259)):
-  **the hood latch**, "Hood latch: Lubricate (Does not apply to: Passat, Golf, Beetle, and Jetta)". Whether "Golf"
-  takes in the Golf R isn't said.
+- **Left out: the hood latch**, "Hood latch: Lubricate (Does not apply to: Passat, Golf, Beetle, and Jetta)", by
+  the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - Left out by their own words: the Passat-only sunroof water drains, the trailer hitch, the convertible top, the
   1.4L Jetta's belt checks and the 3.6L's spark plugs.
 - **Model name.** vPIC's model list for Volkswagen, 2018 (`GetModelsForMakeYear`), has "Golf R" apart from "Golf".

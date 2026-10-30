@@ -77,5 +77,5 @@ is the 2014 1.8T, which takes the 2015 card's automatic row ([its page](volkswag
   2017 filings. Volkswagen's 2017 reissue would be the only source; left out, as for #434's question 3.
 - **The 2018 and 2019 gearbox rows**: see the [2018 2.0T's page](volkswagen-passat-2018-2.0t.md). The 2020–2022
   automatic row: see the [2020–2021 page](volkswagen-passat-2020-2021.md); asked on #445.
-- The 2010 B6 has [its own list](volkswagen-passat-2010.md); the 2020–2022 Passat's lists are
+- The 2010 B6 has [its own list](volkswagen-passat-2010-2.0t.md); the 2020–2022 Passat's lists are
   [2020–2021](volkswagen-passat-2020-2021.md) and [2022](volkswagen-passat-2022.md).

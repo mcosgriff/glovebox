@@ -1,6 +1,7 @@
-# Volkswagen Passat, 2010 (B6)
+# Volkswagen Passat 2.0T, 2010 (B6)
 
-How `app/src/main/assets/known-schedules/volkswagen-passat-2010.json` was made. The rules it follows are
+How `app/src/main/assets/known-schedules/volkswagen-passat-2010-2.0t.json` was made, and the
+[3.6L's](volkswagen-passat-2010-3.6.md), which is the same list for the other engine. The rules it follows are
 in [known-schedules.md](../known-schedules.md).
 
 Source: Volkswagen's "Maintenance Schedule For USA" card for all models except the Routan, which Volkswagen
@@ -67,14 +68,21 @@ way, and a later list from this card should too:
 - Table-only "(if applicable)" rows: tire pressure sensors at 60,000 and 120,000 (every 6 years); the timing belt
   "(if applicable, except 2.0L TDI)" at 110,000.
 - **The model.** NHTSA's vPIC model list for Volkswagen, 2010 (`GetModelsForMakeYear`), names it "Passat",
-  so the list is for that model, with no `engine`. The list has no "CC" for 2010.
-  A vPIC decode of the CC's VIN pattern for 2010 names it "Passat" too, so a 2010 CC gets this list (see the
+  so the list is for that model. The list has no "CC" for 2010.
+  A vPIC decode of the CC's VIN pattern for 2010 names it "Passat" too, so a 2010 CC gets these lists, by its engine (see the
   [CC's page](volkswagen-cc-2014-2015-2.0t.md#what-isnt-covered)).
+- **Petrol engines only** (the owner's ruling on
+  [#556](https://github.com/mcosgriff/glovebox/issues/556#issuecomment-6511734459), question 3): the card's TDI
+  rows are left out, so the list is marked for the Passat's two petrol engines, the 2.0T and the 3.6L, the sizes the spark plug row
+  names. The format takes one size per `engine` block, so there are two lists, row for row the same: this one,
+  `"engine": { "label": "2.0T", "displacementL": 2.0 }`, and the [3.6L's](volkswagen-passat-2010-3.6.md),
+  `{ "label": "3.6L", "displacementL": 3.6 }`. A Passat with no engine on record is asked which it has; one
+  on record with another engine (a TDI) gets neither.
 - Left out as not the Passat's, by the card's own marks: AdBlue (3.0L TDI), the diesel particulate filter
   (2.0L and 3.0L TDI), the three fuel filter rows (2.0L / 3.0L TDI), the 2.0L TDI timing belt, the New
   Beetle's brake fluid, the 2.5L / 3.2L spark plugs, the automatic gearbox fluid (2.5L Jetta, New Beetle and
-  convertible, Golf), and both convertible roof rows. The card names no Passat TDI; if one were on record it
-  would still get this list, without those rows (asked on #443).
+  convertible, Golf), and both convertible roof rows. The card names no Passat TDI, and a TDI on record matches
+  neither list (above).
 - **Left out, asked on #443: the DSG fluid change.** The card's row "Transmission: DSG (non automatic):
   Change fluid and filter" (page 3) is drawn at 40,000, 80,000 and 120,000 for every model. The reissue's
   gearbox rows (page 5) give the Passat two automatic gearboxes: `09M` every 80,000 and `02E (DSG)` every

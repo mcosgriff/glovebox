@@ -15,9 +15,7 @@ images, by eye.
   either engine. So this list has `"engine": { "label": "1.4T", "displacementL": 1.4 }` and spark plugs
   80,000 / 72 mo, and the [1.8T](volkswagen-golf-sportwagen-2019-1.8t.md) has a list of its own. A SportWagen
   with no engine on record is asked which it has.
-- **Left out and asked on #436**, as on the [2018 SportWagen](volkswagen-golf-sportwagen-2018.md): the hood
-  latch ("Does not apply to: Passat, Golf, Beetle, and Jetta"; whether "Golf" takes in the SportWagen isn't
-  said).
+- **Left out: the hood latch** ("Does not apply to: Passat, Golf, Beetle, and Jetta"), by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - **No AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", every 3 years, is on the
   [1.8T's list](volkswagen-golf-sportwagen-2019-1.8t.md): the 2019 SportWagen's 4Motion came with the 1.8T
   (vPIC decodes `3VW117AU*KM`, 2019 Golf SportWagen 4Motion S, as 1.8L, "AWD/All-Wheel Drive", read

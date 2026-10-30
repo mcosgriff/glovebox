@@ -7,9 +7,9 @@ in [known-schedules.md](../known-schedules.md). Every Eos card read, and what is
 | Model year | What was read | Document |
 |---|---|---|
 | 2010 | The card for all models except the Routan (revised October 2012), in full, read again on 2026-10-29 as page images; the list was written from it | `2012/MC-10156104-9999` |
-| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010.md) (for the oil change's time limit; not read again apart from its spark plug and gearbox rows on page 5). Its model codes include the Eos (`1F7`) | reissue `USA5R503621`, printed 11/24/2025 |
+| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md) (for the oil change's time limit; not read again apart from its spark plug and gearbox rows on page 5). Its model codes include the Eos (`1F7`) | reissue `USA5R503621`, printed 11/24/2025 |
 
-The card is read as the [2010 Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+The card is read as the [2010 Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
 says, and the list is the 2010 Passat list's, in its wording, with these differences:
 
 - **The Eos's own rows**, both table-only (no catalog line names them):

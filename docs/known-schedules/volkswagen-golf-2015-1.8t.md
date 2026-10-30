@@ -44,7 +44,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | 2016 | Golf and Golf SportWagen, 2.0L TDI (August 2015) | `2015/MC-10123074-9999` | none (below) |
 | 2018 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168646-0001` | [Golf](volkswagen-golf-2018.md), [Golf SportWagen](volkswagen-golf-sportwagen-2018.md), [Golf Alltrack](volkswagen-golf-alltrack-2018.md) |
 | 2019 | All models except e-Golf, revised 11/12/2020 | `2020/MC-10183295-0001` | [Golf 1.4T](volkswagen-golf-2019-1.4t.md), [Golf SportWagen 1.4T](volkswagen-golf-sportwagen-2019-1.4t.md) and [1.8T](volkswagen-golf-sportwagen-2019-1.8t.md), [Golf Alltrack](volkswagen-golf-alltrack-2019.md) |
-| 2020 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168643-0001` | [Golf 1.4T, 2020–2021](volkswagen-golf-2020-2021-1.4t.md) |
+| 2020 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168643-0001` | [Golf 1.4T, 2020–2021](volkswagen-golf-2020-2021-1.4t.md), [Golf SportWagen 1.4T](volkswagen-golf-sportwagen-2020-1.4t.md) and [1.8T](volkswagen-golf-sportwagen-2020-1.8t.md), [Golf Alltrack](volkswagen-golf-alltrack-2020.md) |
 | 2021 | All model gasoline vehicles, 7/9/2020 | `2020/MC-10177239-0001` | [Golf 1.4T, 2020–2021](volkswagen-golf-2020-2021-1.4t.md) |
 
 NHTSA's index also files `2014/MC-10242449-9999`, "2.0TSI Engine (292 HP)", under the 2015 Golf and Golf
@@ -66,9 +66,7 @@ SportWagen. That is the Golf R's card (its title says so), read for the [2015 Go
   2017 waits on [#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244).
 - **The gearbox rows of 2018–2021** are left out of every list made from the all-model cards: see the
   [2018 Golf's page](volkswagen-golf-2018.md).
-- **The Golf SportWagen and Golf Alltrack, 2020 and 2021.** vPIC's model list has both for 2020 and neither
-  for 2021. The newest 2020 card names neither: its spark plug rows name "Golf 1.4L", and the 2019 card names
-  "Golf 1.4L" and "Golf SportWagen 1.4L" apart, so which row a 2020 SportWagen is on isn't said. NHTSA's index
-  files only the earlier 2020 revisions (`2019/MC-10163843`, `2019/MC-10164263`) under the SportWagen. No list;
-  asked on #436.
+- **The Golf SportWagen and Golf Alltrack, 2021.** vPIC's model list has neither for 2021. (For 2020 the newest
+  card names neither; by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335) the SportWagen 1.4L is read as the "Golf 1.4L" and
+  every other SportWagen and the Alltrack take the 40,000-mile spark plug row, so they have lists.)
 - The GTI and the Golf R have lists of their own (#143, #437); the e-Golf too (#438).

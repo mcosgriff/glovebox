@@ -10,7 +10,7 @@ change's time limit only; and the 2014 Golf 2.0L TDI card (posted October 2013, 
 as the model's own card for the "(if applicable)" rows. Read on 2026-10-28, as page images, by eye.
 
 - **The card is read as the 2.5L's page says**, which follows the
-  [Passat's](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read). The rows that are also on the
+  [Passat's](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read). The rows that are also on the
   [2010–2014 GTI](volkswagen-gti-2010-2014.md) use that list's wording.
 - **One list per engine** (the owner's ruling of 2026-10-23). This list takes the rows marked for the
   2.0L TDI and leaves out the rows marked for other engines only:

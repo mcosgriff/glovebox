@@ -54,12 +54,12 @@ miles, named "(DSG only)", in `manualExcluded`. The 3.6L cards print no gearbox 
 ## What isn't covered
 
 - **2010.** The 2010 card is Volkswagen's card for all models except the Routan, read for the
-  [2010 Passat](volkswagen-passat-2010.md). vPIC's 2010 model list for Volkswagen has no "CC", and a vPIC
+  [2010 Passat](volkswagen-passat-2010-2.0t.md). vPIC's 2010 model list for Volkswagen has no "CC", and a vPIC
   decode of the CC's VIN pattern for 2010 (`WVWML7AN*AE`, read 2026-10-29) names the model "Passat" (trim
-  "Sport"). A 2010 CC as NHTSA decodes it is therefore matched by the 2010 Passat list, which was read from the
+  "Sport"). A 2010 CC as NHTSA decodes it is therefore matched by the 2010 Passat lists (2.0T and 3.6L), which were read from the
   same card: the card names the CC only in its brake fluid row (with the Passat), and has no row for the CC
   alone or against it. No list named "CC" is made for 2010: no vPIC name for the year would ever match it.
-  That list's open question about the DSG row ([#443](https://github.com/mcosgriff/glovebox/issues/443#issuecomment-6488582333))
+  Those lists' open question about the DSG row ([#443](https://github.com/mcosgriff/glovebox/issues/443#issuecomment-6488582333))
   applies to the 2010 CC as well (a DSG 2.0T and a conventional-automatic 3.6L).
 - **2011, 2012, 2013 and 2017.** NHTSA's index has no CC card for those years. Volkswagen's 2025 reissues
   would be the only source; they weren't read for the CC, and for the Golf they differ from the cards from the

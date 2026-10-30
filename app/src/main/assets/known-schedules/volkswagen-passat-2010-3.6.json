@@ -1,6 +1,6 @@
 {
-  "id": "volkswagen-passat-2010",
-  "title": "2010 Passat",
+  "id": "volkswagen-passat-2010-3.6",
+  "title": "2010 Passat 3.6L",
   "make": "Volkswagen",
   "model": "Passat",
   "years": {
@@ -17,6 +17,10 @@
   "allWheelDriveOnly": [
     "Change Haldex clutch oil, every 3 years (AWD)"
   ],
+  "engine": {
+    "label": "3.6L",
+    "displacementL": 3.6
+  },
   "milestones": [
     {
       "atMiles": 10000,

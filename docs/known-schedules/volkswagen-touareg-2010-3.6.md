@@ -7,9 +7,9 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
 | Model year | What was read | Document |
 |---|---|---|
 | 2010 | The card for all models except the Routan (revised October 2012), in full, read again on 2026-10-29 as page images; the list was written from it | `2012/MC-10156104-9999` |
-| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621`, printed 11/24/2025 |
+| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621`, printed 11/24/2025 |
 
-The card is read as the [2010 Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+The card is read as the [2010 Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
 says, and the list is the 2010 Passat list's, in its wording, with these differences:
 
 - **Left out on the evidence of the Touareg's own cards**: the timing belt "(if applicable, except 2.0L TDI)".
