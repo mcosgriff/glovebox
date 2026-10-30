@@ -23,8 +23,8 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 - "Transmission: Automatic (non DSG): Change fluid" at 50,000 and 100,000: the `trans-fluid` service, a
   reminder every 50,000 miles, in `manualExcluded`. The card has no DSG row.
 - **The engine.** The card is for the 1.8T, so the list has `"engine": { "label": "1.8T", "displacementL": 1.8 }`.
-  The 2015 Golf TDI has no list (below), so a Golf with no engine on record is asked, with "1.8T" or
-  "Neither". NHTSA's vPIC model list for Volkswagen, 2015 (`GetModelsForMakeYear`), has "Golf", "Golf
+  The [2015 Golf TDI](volkswagen-golf-2015-tdi.md) has a list too, so a Golf with no engine on record is
+  asked, with "1.8T", "2.0L TDI" or "Neither". NHTSA's vPIC model list for Volkswagen, 2015 (`GetModelsForMakeYear`), has "Golf", "Golf
   SportWagen", "GTI" and "e-Golf" apart, and no "Golf R".
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; spark
   plugs and air filter 60,000 / 72 mo; automatic gearbox fluid 50,000 (not for a manual); brake fluid every
@@ -39,9 +39,9 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | Model year | Card | Document | List |
 |---|---|---|---|
 | 2015 | Golf, 1.8T (June 2014) and Golf and Golf SportWagen, 1.8T (December 2014) | `2014/MC-10120118-9999`, `2014/MC-10242450-9999` | this list, [Golf SportWagen 2015](volkswagen-golf-sportwagen-2015-1.8t.md) |
-| 2015 | Golf, 2.0L TDI (June 2014) and Golf and Golf SportWagen, 2.0L TDI (December 2014); the same card, pixel for pixel, but the title | `2014/MC-10120119-9999`, `2014/MC-10242448-9999` | none (below) |
+| 2015 | Golf, 2.0L TDI (June 2014) and Golf and Golf SportWagen, 2.0L TDI (December 2014); the same card, pixel for pixel, but the title | `2014/MC-10120119-9999`, `2014/MC-10242448-9999` | [Golf TDI 2015](volkswagen-golf-2015-tdi.md), [Golf SportWagen TDI 2015](volkswagen-golf-sportwagen-2015-tdi.md) |
 | 2016 | Golf and Golf SportWagen, 1.8T (August 2015) | `2015/MC-10123075-9999` | [Golf 2016](volkswagen-golf-2016-1.8t.md), [Golf SportWagen 2016](volkswagen-golf-sportwagen-2016-1.8t.md) |
-| 2016 | Golf and Golf SportWagen, 2.0L TDI (August 2015) | `2015/MC-10123074-9999` | none (below) |
+| 2016 | Golf and Golf SportWagen, 2.0L TDI (August 2015) | `2015/MC-10123074-9999` | [Golf TDI 2016](volkswagen-golf-2016-tdi.md), [Golf SportWagen TDI 2016](volkswagen-golf-sportwagen-2016-tdi.md) |
 | 2018 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168646-0001` | [Golf](volkswagen-golf-2018.md), [Golf SportWagen](volkswagen-golf-sportwagen-2018.md), [Golf Alltrack](volkswagen-golf-alltrack-2018.md) |
 | 2019 | All models except e-Golf, revised 11/12/2020 | `2020/MC-10183295-0001` | [Golf 1.4T](volkswagen-golf-2019-1.4t.md), [Golf SportWagen 1.4T](volkswagen-golf-sportwagen-2019-1.4t.md) and [1.8T](volkswagen-golf-sportwagen-2019-1.8t.md), [Golf Alltrack](volkswagen-golf-alltrack-2019.md) |
 | 2020 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168643-0001` | [Golf 1.4T, 2020–2021](volkswagen-golf-2020-2021-1.4t.md) |
@@ -53,12 +53,6 @@ SportWagen. That is the Golf R's card (its title says so), read for the [2015 Go
 
 ## What isn't covered
 
-- **The 2.0L TDI, 2015 and 2016.** Both cards run 13 columns to 130,000, and the 130,000 column holds only
-  "AdBlue: Check fluid level and add if necessary" and "Timing Belt: Replace"; every other job, the oil
-  change included, stops at 120,000. That is the 2014 Golf TDI's column
-  ([#434's question 2](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)), with the
-  AdBlue check as well, so no list is made until it is answered. Their DSG row is "(if applicable)" and
-  would be table-only.
 - **2017.** NHTSA's index has no 2017 card for the Golf, Golf SportWagen or Golf Alltrack. Volkswagen's 2017
   reissue would be the only source, and its 2016 reissue differs from the 2016 card from the time (spark
   plugs "Golf (AU1)" every 40,000 or 4 years, where the card says 60,000 or 6; the gearboxes by code), as
