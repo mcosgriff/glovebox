@@ -1,15 +1,15 @@
 {
-  "id": "volkswagen-jetta-2015-1.8t",
-  "title": "2015 Jetta 1.8T",
+  "id": "volkswagen-jetta-2014-2015-1.8t",
+  "title": "2014–2015 Jetta 1.8T",
   "make": "Volkswagen",
   "model": "Jetta",
   "years": {
-    "from": 2015,
+    "from": 2014,
     "to": 2015
   },
   "source": {
     "name": "Volkswagen maintenance schedule",
-    "url": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10120123-9999.pdf",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10125772-9999.pdf",
     "retrieved": "2026-10-29",
     "note": "Read from Volkswagen's USA maintenance schedule for the Jetta sedan, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
     "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Jetta, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."

@@ -1,6 +1,6 @@
-# Volkswagen Jetta 1.8T, 2014 (Mk6)
+# Volkswagen Jetta 1.8T, 2014–2015 (Mk6)
 
-How `app/src/main/assets/known-schedules/volkswagen-jetta-2014-1.8t.json` was made. The rules it follows are
+How `app/src/main/assets/known-schedules/volkswagen-jetta-2014-2015-1.8t.json` was made. The rules it follows are
 in [known-schedules.md](../known-schedules.md). This page also says what wasn't covered for the Mk6 Jetta and
 GLI (2011–2018) and why.
 
@@ -10,32 +10,47 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 
 | Model year | What was read | Document |
 |---|---|---|
-| 2014 | The Jetta Sedan 1.8L TSI card posted July 2013, in full; the list was written from it. NHTSA files it again as `MC-10242451`, byte for byte the same | `2013/MC-10125772-9999`, `2014/MC-10242451-9999` |
+| 2014 | The Jetta Sedan 1.8L TSI card posted July 2013, in full; the list's source link. NHTSA files it again as `MC-10242451`, byte for byte the same. Row for row the 2015 card | `2013/MC-10125772-9999`, `2014/MC-10242451-9999` |
 | 2014 | The Jetta Sedan 1.8L TSI card posted June 2013, in full. It differs from the July card in its gearbox row only (below) | `2013/MC-10125797-9999` |
 | 2014 | Volkswagen's 2014 reissue, for the oil change's time limit only, as read for the [2014 Golf 2.5L](volkswagen-golf-2014-2.5.md) (not read again here) | reissue `USA5R505521`, printed 11/24/2025 |
+| 2015 | The Jetta Sedan 1.8L TSI card (posted June 2014), in full; the list was written from it | `2014/MC-10120123-9999` |
+| 2015 | Volkswagen's 2015 reissue, for the oil change's time limit only, as read for the [2015 Jetta Hybrid](volkswagen-jetta-2015-hybrid.md) (not read again here) | reissue `USA5R505821`, printed 11/24/2025 |
 
 NHTSA's index also files `MC-10125798` and `MC-10125799` under the 2014 Jetta (posted June 2013, both read):
 the 2.0L MPI and 2.0L TDI cards, below. The 2014 GLI's card, `MC-10125796`, is filed under the Jetta Hybrid
 (below). `MC-10242462`, `MC-10242467` and `MC-10242468`, "2.0L TSI Engine", dated June 2013 and filed in 2023,
 weren't fetched.
 
-- **The list is the [2015 1.8T](volkswagen-jetta-2015-1.8t.md)'s, without the gearbox row.** The July 2013
-  card and the 2015 card print the same rows with the same marks; only the year in the heading and the
-  copyright differ. The jobs, wording, engine and reminders are as on that page.
-- **Left out, asked on #440: the gearbox row.** The two 2014 cards differ in one row:
+- **The 2015 card is the [2014 Jetta SportWagen 2.5L](volkswagen-jetta-sportwagen-2014-2.5.md)'s grid** with the
+  model's and engine's name: the same rows with the same marks in the same columns, except the spark plugs.
+  So the list is that one's, in that list's wording, with these differences:
+  - spark plugs at 60,000 and 120,000, each with footnote 6, "every 6 years regardless of mileage": a
+    reminder every 60,000 miles or 72 months (the SportWagen 2.5L's are at 40,000, 80,000 and 120,000);
+  - the tire check names no tire age and the washer check adds the headlight washers, so those two rows use
+    the [Jetta Hybrid](volkswagen-jetta-2015-hybrid.md)'s wording (the card prints them as the SportWagen's
+    card does).
+- **2014's gearbox row: the July 2013 card** (the owner's ruling of 2026-10-29 on #553, [part A](https://github.com/mcosgriff/glovebox/issues/553#issuecomment-6511794772):
+  the newest printing wins for the 2013–2016 per-model cards too). The two 2014 cards differ in one row:
   - June 2013 (`MC-10125797`): "Transmission: DSG (non Automatic): Change fluid and filter (if applicable)"
     at 40,000, 80,000 and 120,000;
   - July 2013 (`MC-10125772`, filed again in 2014 as `MC-10242451`): "Transmission: Automatic (non DSG):
     Change fluid" at 50,000 and 100,000, as on the 2015 card.
 
-  The July card reads as a correction of the June one, but the owner's ruling that the newest revision wins
-  is for the 2018-on all-model cards (#143), so nothing is chosen here. If the July card is taken, this list
-  and the 2015 one are the same and become one 2014–2015 list.
+  Taking the July card, the 2014 and 2015 cards print the same rows with the same marks (only the year in the
+  heading and the copyright differ), so the two years are one list. Until 2026-10-29 2014 had a list of its own
+  without the gearbox row (asked on #440's question 1).
+- A grid of 12 columns, 10,000 to 120,000, no months printed, not repeated (rule 9).
+- "Transmission: Automatic (non DSG): Change fluid" at 50,000 and 100,000: the `trans-fluid` service, a
+  reminder every 50,000 miles, in `manualExcluded`. Neither the 2015 card nor the July 2013 card has a DSG row.
+- **The engine.** The card is for the 1.8L TSI, so the list has
+  `"engine": { "label": "1.8T", "displacementL": 1.8 }`. No other 2014 or 2015 Jetta list is 1.8L. A Jetta with no
+  engine on record is asked which it has. NHTSA's vPIC model list for Volkswagen, 2015
+  (`GetModelsForMakeYear`), has "Jetta" and no "GLI" or "Jetta Sedan".
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; spark
-  plugs and air filter 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years
-  first, then every 2).
-- **Oil 12 months**, from Volkswagen's 2014 reissue, as on the Golf's page (the owner's ruling of
-  2026-10-28, #517). The table has none.
+  plugs and air filter 60,000 / 72 mo; automatic gearbox fluid 50,000 (not for a manual); brake fluid every
+  24 months by time alone (the card says at 3 years first, then every 2).
+- **Oil 12 months**, from Volkswagen's 2014 and 2015 reissues, as on the Golf's and the Jetta Hybrid's pages (the owner's ruling of 2026-10-28,
+  #517). The table has none.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first columns.
 
 ## What isn't covered

@@ -15,7 +15,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | 2015 | "Golf", 1.8T (posted June 2014), in full. Apart from the title and the posting date it is the same card, pixel for pixel; NHTSA files it twice | `2014/MC-10120118-9999`, `2014/MC-10240818-9999` |
 | 2015 | Volkswagen's 2015 reissue, for the oil change's time limit only, as read for the [2015 Jetta Hybrid](volkswagen-jetta-2015-hybrid.md) (not read again here) | reissue `USA5R505821`, printed 11/24/2025 |
 
-- **The card is the [2015 Jetta 1.8T](volkswagen-jetta-2015-1.8t.md)'s** (`2014/MC-10120123-9999`) with the
+- **The card is the [2015 Jetta 1.8T](volkswagen-jetta-2014-2015-1.8t.md)'s** (`2014/MC-10120123-9999`) with the
   model's name: the same rows, worded the same, with the same marks in the same columns. Read off the page,
   then checked row by row against the Jetta's card. So the list is that one's, in that list's wording:
   12 columns, 10,000 to 120,000, no months printed, not repeated (rule 9).
