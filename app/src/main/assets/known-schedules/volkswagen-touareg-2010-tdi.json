@@ -19,6 +19,9 @@
     "displacementL": 3.0,
     "fuel": "Diesel"
   },
+  "allWheelDriveOnly": [
+    "Change Haldex clutch oil, every 3 years (AWD)"
+  ],
   "milestones": [
     {
       "atMiles": 5000,
@@ -234,7 +237,7 @@
           "name": "Check exhaust system for leaks, damage and secure fittings"
         },
         {
-          "name": "Change Haldex clutch oil (if applicable)"
+          "name": "Change Haldex clutch oil, every 3 years (AWD)"
         },
         {
           "name": "Check headlight adjustment"
@@ -506,7 +509,7 @@
           "name": "Check exhaust system for leaks, damage and secure fittings"
         },
         {
-          "name": "Change Haldex clutch oil (if applicable)"
+          "name": "Change Haldex clutch oil, every 3 years (AWD)"
         },
         {
           "name": "Check headlight adjustment"
@@ -770,7 +773,7 @@
           "name": "Check exhaust system for leaks, damage and secure fittings"
         },
         {
-          "name": "Change Haldex clutch oil (if applicable)"
+          "name": "Change Haldex clutch oil, every 3 years (AWD)"
         },
         {
           "name": "Check headlight adjustment"
@@ -861,6 +864,11 @@
       "everyMiles": 60000,
       "everyMonths": 72,
       "service": "tpms"
+    },
+    {
+      "name": "Change Haldex clutch oil, every 3 years (AWD)",
+      "everyMonths": 36,
+      "rule": "time-only"
     },
     {
       "name": "Change brake fluid (at 3 years, then every 2 years)",

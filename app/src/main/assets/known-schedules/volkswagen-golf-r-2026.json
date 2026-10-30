@@ -678,6 +678,12 @@
       "service": "cabin-air"
     },
     {
+      "name": "Change rear differential fluid",
+      "everyMiles": 40000,
+      "everyMonths": 48,
+      "service": "rear-diff"
+    },
+    {
       "name": "Replace spark plugs",
       "everyMiles": 40000,
       "everyMonths": 72,

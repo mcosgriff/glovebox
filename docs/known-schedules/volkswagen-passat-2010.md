@@ -41,7 +41,8 @@ way, and a later list from this card should too:
   both changing the oil: so oil every 10,000 or about once a year. The oil reminder takes 12 months (the
   owner's ruling of 2026-10-28, #517); the table has none. Nothing else is taken from the reissue.
 - **"(if applicable)" rows that name no drivetrain or engine are table-only** (no `service`, no
-  reminder), unless a card for the model itself shows they aren't its rows. The GTI list left out Haldex
+  reminder), unless a card for the model itself shows they aren't its rows. The Haldex row is the exception
+  (below). The GTI list left out Haldex
   clutch oil, the timing belt and the tire pressure sensors on the evidence of its 2012 and 2014 cards; the
   Passat has no such card, so here they are in the table, named "(if applicable)". The rear washer nozzle,
   power steering, the sunroof rows and the tire mobility kit are named "(if fitted)" and are inspections
@@ -54,12 +55,17 @@ way, and a later list from this card should too:
 ## This list
 
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air
-  filter and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3
-  years first, then every 2).
+  filter and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid
+  every 24 months by time alone (the card says at 3 years first, then every 2).
 - Spark plugs: the row "(2.0T, 3.6L and 4.2L only)", 60,000 and 120,000, footnote 8 every 6 years. The
   "(2.5L and 3.2L only)" row is left out.
-- Table-only "(if applicable)" rows: Haldex clutch oil at 40,000, 80,000 and 120,000; tire pressure sensors
-  at 60,000 and 120,000 (every 6 years); the timing belt "(if applicable, except 2.0L TDI)" at 110,000.
+- **"Haldex Clutch: Change oil (if applicable)"**, drawn at 40,000, 80,000 and 120,000: the 4Motion coupling's job,
+  read as the [CC 3.6L](volkswagen-cc-2014-2015-3.6.md) reads it, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): named "Change Haldex clutch oil, every 3 years (AWD)", in
+  `allWheelDriveOnly`, and a reminder every 36 months by time alone, with no `service` (no catalog line names the
+  job). This card prints no time for the row; the 3 years is the ruling's. The table keeps the card's columns. A
+  vehicle known to drive two wheels loses it.
+- Table-only "(if applicable)" rows: tire pressure sensors at 60,000 and 120,000 (every 6 years); the timing belt
+  "(if applicable, except 2.0L TDI)" at 110,000.
 - **The model.** NHTSA's vPIC model list for Volkswagen, 2010 (`GetModelsForMakeYear`), names it "Passat",
   so the list is for that model, with no `engine`. The list has no "CC" for 2010.
   A vPIC decode of the CC's VIN pattern for 2010 names it "Passat" too, so a 2010 CC gets this list (see the

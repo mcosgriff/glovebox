@@ -15,11 +15,15 @@ says, and the list is the 2010 Passat list's, in its wording, with these differe
 - **Left out on the evidence of the Tiguan's own cards**: the timing belt "(if applicable, except 2.0L TDI)"
   and the tire pressure sensors. None of the 2013, 2014, 2015 and 2016 Tiguan cards has either, as the
   [2010 Eos](volkswagen-eos-2010.md) and the GTI list left them out on the evidence of their own cards.
-- **The Haldex row stays**, table-only: "Haldex Clutch: Change oil (if applicable)", drawn at 40,000, 80,000 and
-  120,000 on this card (the Tiguan's own cards from 2013 draw it every 3 years, at 30,000, 60,000, 90,000 and
-  120,000). The table takes this card's columns. Named "Change Haldex clutch oil (if applicable)", with no
-  `service` and no reminder, as on the 2010 Passat list; whether it should be an all-wheel-drive reminder is
-  the open question on the CC ([#446](https://github.com/mcosgriff/glovebox/issues/446#issuecomment-6490065640)).
+- **The Haldex row stays**: "Haldex Clutch: Change oil (if applicable)", drawn at 40,000, 80,000 and 120,000 on
+  this card, which prints no time for it (the Tiguan's own cards from 2013 draw it every 3 years, at 30,000,
+  60,000, 90,000 and 120,000). The table takes this card's columns. Read as on the 2010 Passat list and the
+  [CC 3.6L](volkswagen-cc-2014-2015-3.6.md), by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): "Change Haldex clutch oil, every 3 years (AWD)", in
+  `allWheelDriveOnly`, a reminder every 36 months by time alone, with no `service`. **Drive:** the Tiguan was
+  sold with front-wheel drive and with 4Motion. vPIC decodes `WVGBV7AX*A` (2010) as "Tiguan", trim "4-Motion",
+  "AWD/All-Wheel Drive", and `WVGAV7AX*A` (2010, the front-drive pattern) as "Tiguan" with no drive type (read
+  2026-10-29). A Tiguan known to drive two wheels (FWD picked by hand) loses the job; one with no drive type on
+  record keeps it.
 - **No gearbox row.** The card's "Transmission: DSG (non automatic)" row isn't the Tiguan's: the reissue's
   gearbox rows (page 5) name the Tiguan only under the conventional automatics `09M` and `09P`, never under a
   DSG, and the Tiguan's 2013–2016 cards print no gearbox row. The card's automatic row names other models only
@@ -32,8 +36,8 @@ says, and the list is the 2010 Passat list's, in its wording, with these differe
   Golf, Tiguan, and CC").
 - **The model.** vPIC's 2010 model list for Volkswagen (`GetModelsForMakeYear`, read 2026-10-28) names it "Tiguan".
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air filter
-  and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years first,
-  then every 2).
+  and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid every 24
+  months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from the reissue (the owner's ruling of 2026-10-28, #517). The table has none.
 - Left out as not the Tiguan's, by the card's own marks: AdBlue, the diesel particulate filter, the fuel filter
   rows and the 2.0L TDI timing belt (TDI), the New Beetle's brake fluid, the 2.5L / 3.2L spark plugs, the

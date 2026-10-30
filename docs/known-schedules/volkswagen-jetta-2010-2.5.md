@@ -40,11 +40,16 @@ SportWagen has [its own lists](volkswagen-jetta-sportwagen-2010-2.5.md).
   from the time wins.)
 - **"(if applicable)" rows are in the table only, named "(if applicable)"**, as on the Passat: no card of
   the Jetta sedan's own for these years was found to show they aren't its rows (the 2014 Jetta cards are
-  for the later sedan, #440). Haldex clutch oil at 40,000, 80,000 and 120,000; tire pressure sensors at
-  60,000 and 120,000 (every 6 years); the timing belt "(if applicable, except 2.0L TDI)" at 110,000.
+  for the later sedan, #440): tire pressure sensors at 60,000 and 120,000 (every 6 years); the timing belt
+  "(if applicable, except 2.0L TDI)" at 110,000.
+- **"Haldex Clutch: Change oil (if applicable)"**, drawn at 40,000, 80,000 and 120,000, is
+  read as the [CC 3.6L](volkswagen-cc-2014-2015-3.6.md) reads it, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): named "Change Haldex clutch oil, every 3 years (AWD)", in
+  `allWheelDriveOnly`, and a reminder every 36 months by time alone, with no `service` (no catalog line names the
+  job). This card prints no time for the row; the 3 years is the ruling's. The table keeps the card's columns. A
+  vehicle known to drive two wheels loses it.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; spark
-  plugs 40,000 / 72 mo; air filter 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says
-  at 3 years first, then every 2).
+  plugs 40,000 / 72 mo; air filter 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD);
+  brake fluid every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Left out, asked on #439: both gearbox rows.** "Transmission: Automatic :Change fluid (2.5L Jetta models,
   NB and NBC, and Golf)" at 50,000 and 100,000, and "Transmission: DSG (non automatic): Change fluid and
   filter" at 40,000, 80,000 and 120,000 with no model mark (page 3). Read as printed, a 2010 Jetta 2.5L gets

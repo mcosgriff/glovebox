@@ -25,19 +25,17 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29.
     on the GTI list (the clutch is worked by the same fluid, and a job's name is held to 60 characters),
     `brake-fluid`, a reminder every 24 months by time alone.
   - "Haldex Clutch: Change oil (if applicable)", at 30,000, 60,000, 90,000 and 120,000, with footnote 4, "Every 3
-    years, regardless of mileage: Haldex clutch: Change oil (if applicable)". **Table-only**, with no `service` and
-    no reminder, by the "(if applicable)" rule, as on the [2010 Passat](volkswagen-passat-2010.md). The Golf R was
-    sold only with 4Motion, so the row is every Golf R's; whether such a row should be a reminder is the open
-    question on the CC's ([#446](https://github.com/mcosgriff/glovebox/issues/446#issuecomment-6490065640)), and no
-    catalog line fits a Haldex oil change yet. It is not in `allWheelDriveOnly`: the model has no two-wheel-drive
-    version to leave it off.
+    years, regardless of mileage: Haldex clutch: Change oil (if applicable)". It is
+    read as the [CC 3.6L](volkswagen-cc-2014-2015-3.6.md) reads it, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): named "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`,
+    and a reminder every 36 months by time alone, with no `service` (no catalog line names the job). The Golf R was
+    sold only with 4Motion, so every Golf R keeps it unless one is on record as two-wheel drive.
 - The "Air filter element and snow filter" row is named "Replace air filter element and clean housing", as on the
   GTI list.
 - **No gearbox row**: the card has none. The Mk6 Golf R was sold in the USA with a 6-speed manual only.
 - No engine block: the card is for the 2.0T, the Golf R's only engine.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air filter
-  and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years
-  first, then every 2).
+  and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid every 24
+  months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from Volkswagen's 2013 reissue (the owner's ruling of 2026-10-28, #517): its first minor
   service, which changes the oil, falls "at 10,000 miles … or 1 year after delivery", and the following minor and
   standard services keep the oil at every 10,000 or about once a year, as read for the
