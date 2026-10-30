@@ -1,0 +1,554 @@
+{
+ "make": "Volkswagen",
+ "model": "ID.4",
+ "modelAliases": [],
+ "years": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11035758",
+   "number": "E-mail_OUE7",
+   "date": "2026-07-03",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Subject: Get ready for your Over-the-Air software update",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11029304",
+   "number": "Dealer OUE7_20260203",
+   "date": "2026-02-03",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "The OUE7 code has been applied to vehicles that will be receiving an over-the-air update to software level 3.8.11. The software is being released to vehicles in waves. It provides enhancements to IT security, improved stability for the infotainment system, and a bug fix for the air conditioning refrigerant display. Updated criteria information",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11029302",
+   "number": "Bulletin OUE7_20260203",
+   "date": "2026-02-03",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "The OUE7 code has been applied to vehicles that will be receiving an over-the-air update to software level 3.8.11. The software is being released to vehicles in waves. It provides enhancements to IT security, improved stability for the infotainment system, and a bug fix for the air conditioning refrigerant display. Updated criteria information",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11028499",
+   "number": "EMAIL_ID420260129",
+   "date": "2026-01-29",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Email communication to customers who have consented to download SW 3.8.11 that the SW is ready to install and will be sent to vehicles over the air",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11027246",
+   "number": "Dealer 91VH_20251202",
+   "date": "2025-12-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicle Software (SW Level 5.4.3) - Updated test plan steps and added additional test plan photos. Updated bus sleep note in claiming section.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11027245",
+   "number": "Circular 91VH_20251202",
+   "date": "2025-12-02",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicle Software (SW Level 5.4.3) - Updated test plan steps and added additional test plan photos. Updated bus sleep note in claiming section.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026181",
+   "number": "Circular 91VH",
+   "date": "2025-11-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicle Software (SW Level 5.4.3)",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026182",
+   "number": "Dealer 91VH",
+   "date": "2025-11-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Vehicle Software (SW Level 5.4.3)",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11023846",
+   "number": "Dealer OUE7",
+   "date": "2025-09-30",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "The OUE7 code has been applied to vehicles that will be receiving an over-the-air update to software level 3.8.11. The software is being released to vehicles in waves. It provides enhancements to IT security, improved stability for the infotainment system, and a bug fix for the air conditioning refrigerant display.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11023845",
+   "number": "Bulletin OUE7",
+   "date": "2025-09-30",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "The OUE7 code has been applied to vehicles that will be receiving an over-the-air update to software level 3.8.11. The software is being released to vehicles in waves. It provides enhancements to IT security, improved stability for the infotainment system, and a bug fix for the air conditioning refrigerant display.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11016595",
+   "number": "VWP-25-01",
+   "date": "2025-03-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "Volkswagen has extended the Warranty coverage for the Steering Wheel for 2 years / Unlimited mileage, whichever occurs first, from the expiration of the New Vehicle Limited Warranty, for certain 2023 Model Year ID.4 Volkswagen vehicles.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2023
+     ]
+    }
+   ],
+   "components": [
+    "STEERING"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11013868",
+   "number": "VWC-25-01",
+   "date": "2025-01-14",
+   "kind": "OVER_THE_AIR",
+   "byWording": false,
+   "summary": "Time Recording Waiver for Compliance Recall 919A",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008840",
+   "number": "DC_e-mail_57J9_VER2",
+   "date": "2024-09-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "ID.4 Stop Sale Update and Dealer Support Measures",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11008841",
+   "number": "DC_e-mail_57J9",
+   "date": "2024-09-06",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "The affected vehicles may have been built with door handles that do not meet the factory specifications for protection against water ingress. Water ingress into the printed circuit board can lead to malfunctions causing an “open command” to the door lock. An open door on a moving vehicle puts occupants at risk of injury and can cause damage to objects and people who may be outside of the vehicle.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022,
+      2023,
+      2024
+     ]
+    }
+   ],
+   "components": [
+    "STRUCTURE:BODY"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11002883",
+   "number": "97ZZ 97HB reminder",
+   "date": "2024-06-18",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Reminder to complete 97ZZ/97HB campaign",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11001522",
+   "number": "VWP-24-04",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001522-0001.pdf"
+  },
+  {
+   "id": "11001494",
+   "number": "AEB FAQ",
+   "date": "2024-05-15",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": false,
+   "summary": "These documents are for the Automatic Emergency Braking (AEB) Limited Warranty Extension as part of the Class Action Settlement",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10243302",
+   "number": "VWC-23-11",
+   "date": "2023-09-29",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "This Document informs dealers on waiving the punch times for the 97HB Service Action.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10243310",
+   "number": "Dealer 97HB",
+   "date": "2023-09-27",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce Repair Available - Service Action 97HB / ID.4 Software Update",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10241450",
+   "number": "Dealer 93P7_REV3",
+   "date": "2023-08-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Dealer Letter to announce Campaign Circular Revision - Service Action 93P7 / HV Battery Cell Module(s)",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10234525",
+   "number": "DC_97ZZ_93P7",
+   "date": "2023-04-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "This week, we released repair information for Safety Recall 97ZZ and Service Action 93P7. With the number of customer vehicles requiring work under both actions, it is critical to set the stage for success and reinforce your commitment to the customer EV experience. The information provided here is supplemental to the information found in the campaign circulars published to ELSA and ServiceNet.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021,
+      2022
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "EQUIPMENT"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10230930",
+   "number": "DC_97FY_pause_2",
+   "date": "2023-01-30",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Update Regarding MY 21 ID.4 Software Service Action",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION:SOFTWARE"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10230927",
+   "number": "DC_97FY_pause",
+   "date": "2023-01-27",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Update Regarding MY 21 ID.4 Software Service Action",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "BACK OVER PREVENTION"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10228692",
+   "number": "Circ 97FY_REV3",
+   "date": "2022-12-23",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SERV_ACT - Volkswagen ID.4 Update Package - Updated work instructions. Service Action 97FY no longer has to be performed before completing the 93O2 repair.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10228696",
+   "number": "Dealer 97FY_REV3",
+   "date": "2022-12-22",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "SERV_ACT - Volkswagen ID.4 Update Package - Updated work instructions. Service Action 97FY no longer has to be performed before completing the 93O2 repair.",
+   "products": [
+    {
+     "model": "ID.4",
+     "years": [
+      2021
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  }
+ ]
+}
