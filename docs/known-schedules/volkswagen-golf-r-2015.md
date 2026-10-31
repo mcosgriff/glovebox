@@ -24,14 +24,16 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
   only)", `trans-fluid`, a reminder every 40,000 miles in `manualExcluded` (only a car known to be a manual loses it).
   The card has no row for a conventional automatic.
 - **"Haldex Clutch: Change oil (if applicable)"** at 30,000, 60,000, 90,000 and 120,000, footnote 5, "Every 3 years,
-  regardless of mileage": **table-only**, with no `service`, as on the 2013 list, by the "(if applicable)" rule. It is
-  not in `allWheelDriveOnly`: the Golf R has no two-wheel-drive version to leave it off.
+  regardless of mileage", is
+  read as the [CC 3.6L](volkswagen-cc-2014-2015-3.6.md) reads it, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): named "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`,
+  and a reminder every 36 months by time alone, with no `service` (no catalog line names the job). The Golf R was
+  sold only with 4Motion, so every Golf R keeps it unless one is on record as two-wheel drive.
 - Spark plugs at 60,000 and 120,000 with footnote 7, "every 6 years": 60,000 / 72 mo. The air filter the same
   (footnote 8).
 - No engine block: the card is for the 2.0TSI, the Golf R's only engine.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; DSG fluid and
-  filter 40,000 (not for a manual); air filter and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time
-  alone (the card says at 3 years first, then every 2).
+  filter 40,000 (not for a manual); air filter and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by
+  time alone (AWD); brake fluid every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from Volkswagen's 2015 reissue, as on the 2015 Golf's page (the owner's ruling of 2026-10-28,
   #517). The table has none.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first column.

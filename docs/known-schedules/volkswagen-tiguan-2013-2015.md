@@ -45,21 +45,21 @@ Limited" (this one, carried on; see its page).
   with the same marks in the same columns (a script's comparison of the two lists' tables, then the pages). So
   the list is that one's, in its wording, but for the Haldex row (below).
 - **"Haldex Clutch: Change oil (if applicable)"**, drawn at 30,000, 60,000, 90,000 and 120,000 with footnote 5,
-  "Every 3 years, regardless of mileage: Haldex clutch: Change oil (if applicable)". **Table-only**, named
-  "Change Haldex clutch oil (if applicable)", with no `service` and no reminder, by the "(if applicable)" rule,
-  as on the [2010 Passat](volkswagen-passat-2010.md) and the [2013 Golf R](volkswagen-golf-r-2013.md). The
-  Tiguan was sold with front-wheel drive and with 4Motion, so the row is a 4Motion Tiguan's job; the CC's
-  3.6L lists read the same row as an all-wheel-drive reminder instead, and which reading should hold is the
-  open question on the CC ([#446](https://github.com/mcosgriff/glovebox/issues/446#issuecomment-6490065640)).
-  If the owner takes the CC's reading, this row becomes "Change Haldex clutch oil, every 3 years (AWD)" in
-  `allWheelDriveOnly`, every 36 months by time alone.
+  "Every 3 years, regardless of mileage: Haldex clutch: Change oil (if applicable)". Read as the CC 3.6L reads it,
+  by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`, a reminder every 36 months by
+  time alone, with no `service` (no catalog line names the job). **Drive:** the Tiguan was sold with
+  front-wheel drive and with 4Motion. vPIC decodes `WVGBV7AX*D` (2013) as "Tiguan", trim "4-Motion",
+  "AWD/All-Wheel Drive", and `WVGAV7AX*D` (2013, the front-drive pattern) as "Tiguan" with no drive type (read
+  2026-10-29); the same car carried on as the 2018 Tiguan Limited, whose `WVGAV7AX*J` vPIC decodes as
+  "FWD/Front-Wheel Drive". A Tiguan known to drive two wheels loses the job; one with no drive type on record
+  keeps it.
 - **No gearbox row**: the cards print none, so the list has no transmission fluid job.
 - Spark plugs and the air filter at 60,000 and 120,000 with footnotes 7 and 8, "every 6 years": every 60,000
   miles or 72 months. The "Air filter element and snow filter" row is named "Replace air filter element and
   clean housing", as on the GTI list.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; spark
-  plugs and air filter 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years
-  first, then every 2).
+  plugs and air filter 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid every
+  24 months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from Volkswagen's 2013, 2014 and 2015 reissues (the owner's ruling of 2026-10-28, #517).
   The table has none.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first columns.
@@ -72,4 +72,4 @@ Limited" (this one, carried on; see its page).
   ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). The 2010
   and 2013 cards aren't stretched over them.
 - **The 2018 Tiguan** (second generation, "Tiguan" in vPIC's 2018 list) and the rest of the second generation, 2018–2024, have lists of their own: see the [2018 Tiguan's page](volkswagen-tiguan-2018.md#every-second-generation-tiguan-card-read) (#450).
-- The open questions for these lists are on [#449](https://github.com/mcosgriff/glovebox/issues/449#issuecomment-6492074401): the Haldex row (question 1) and the 2018 Tiguan Limited's automatic gearbox row (question 2).
+- The open questions for these lists were on [#449](https://github.com/mcosgriff/glovebox/issues/449#issuecomment-6492074401): the Haldex row (question 1, settled on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)) and the 2018 Tiguan Limited's automatic gearbox row (question 2).

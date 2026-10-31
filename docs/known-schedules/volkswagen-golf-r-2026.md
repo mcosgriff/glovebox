@@ -9,18 +9,20 @@ site (`https://ownersliterature.vw.com/owners-literature-service/v1/document/d06
 the only source for the year (the owner's ruling of 2026-10-23), read on 2026-10-29, as page images, by eye, and
 compared with the 2025 card.
 
-- **The list is the [2023–2025 Golf R](volkswagen-golf-r-2023-2025.md)'s, read the same way, with two differences**
+- **The list is the [2023–2025 Golf R](volkswagen-golf-r-2023-2025.md)'s, read the same way, with one difference**
   in the rows that name the Golf R:
   - **Spark plugs** "Every 40,000 miles (60K km), or 6 years", "Golf R" (2023–2025: 4 years): 40,000 / 72 mo.
-  - **The torque-vectoring rear differential** is "Rear Axle Differential with Torque Vectoring - Change fluid (if
-    applicable)", "Golf R" (2023–2025 have no "(if applicable)"). An "(if applicable)" row is never a reminder (the
-    owner's ruling of 2026-10-23), and an additional item has no table to stand in, so it is **left out**, and asked
-    on [#437](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764) (question 1): whether a row that names the Golf R alone but is marked "(if applicable)" should be a reminder for it.
+- **The torque-vectoring rear differential** is "Rear Axle Differential with Torque Vectoring - Change fluid (if
+  applicable)", "Golf R" (2023–2025 have no "(if applicable)"). The row names the Golf R alone, so it is read as
+  in 2023–2025, by the owner's ruling on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part C, 2026-10-29): "Change rear differential fluid",
+  `rear-diff`, 40,000 / 48 mo.
 - Every other row is the 2025 card's for the Golf R: the three service levels, the DSG row ("0GC (DSG): GTI, Golf R,
   Jetta"), the AWD clutch fluid, air filter, brake fluid and dust and pollen filter.
 - **Model name.** vPIC's model list for Volkswagen, 2026 (`GetModelsForMakeYear`, read 2026-10-29), names it
   "Golf R".
 - Reminders: engine oil 10,000 / 12 mo; additional items: air filter 60,000 / 72 mo; AWD clutch fluid every 36
   months by time alone; brake fluid every 24 months by time alone (3 years after registration first, in its name);
-  dust and pollen filter 40,000 / 24 mo; spark plugs 40,000 / 72 mo; DSG fluid and filter 80,000 (not for a manual).
+  dust and pollen filter 40,000 / 24 mo; rear differential fluid 40,000 / 48 mo; spark plugs 40,000 / 72 mo; DSG
+  fluid and filter 80,000 (not for a manual).
 - Not covered: 2027, whose maintenance card isn't on the owners-literature site (as on the GTI's page).

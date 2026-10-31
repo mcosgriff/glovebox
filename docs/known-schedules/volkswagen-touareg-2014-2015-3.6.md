@@ -45,7 +45,7 @@ every list is for "Touareg".
 
 **All-wheel drive.** The Touareg was sold in the USA with 4Motion only. None of the 2014–2016 cards prints an
 all-wheel-drive row (no Haldex, transfer case or differential job), so these lists have no `allWheelDriveOnly`.
-The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is table-only (see the 2010 pages).
+The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is an all-wheel-drive reminder (#554; see the 2010 pages).
 
 ## This list
 

@@ -21,11 +21,12 @@ time limit and the engines. Read on 2026-10-28, as page images, by eye.
   It has `"engine": { "label": "2.0T", "displacementL": 2.0, "fuel": "Gasoline" }`: the
   [TDI's list](volkswagen-jetta-2010-tdi.md) is 2.0L too, so the two are told apart by fuel, as vPIC spells
   it. A Jetta with no engine or no fuel on record is asked which it has.
-- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: Haldex clutch oil, tire pressure
-  sensors, and the timing belt "(if applicable, except 2.0L TDI)" at 110,000.
+- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: tire pressure sensors, and the
+  timing belt "(if applicable, except 2.0L TDI)" at 110,000. The Haldex row is read as on the 2.5L's list:
+  "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`, every 36 months by time alone (#554).
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air
-  filter and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years
-  first, then every 2).
+  filter and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid
+  every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Left out, asked on #439: the DSG fluid change.** The automatic row is marked "2.5L Jetta models, NB and
   NBC, and Golf", so it isn't this engine's. The row "Transmission: DSG (non automatic): Change fluid and
   filter", at 40,000, 80,000 and 120,000, names no model, so read as printed it is the 2.0T Jetta's, and the

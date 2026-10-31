@@ -19,7 +19,8 @@ in [known-schedules.md](../known-schedules.md). Every CC card read, and what isn
   so it is read as a job for all-wheel drive (issue #446) and not as a table-only "(if applicable)" row: named
   "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`, and a reminder every 36 months by
   time alone (no catalog line names the job, so it has no `service`). A CC known to drive two wheels loses it.
-  A 2010 Passat or CC keeps the all-model card's Haldex row table-only, as that card names no engine for it.
+  The 2010 all-model card's row (a 2010 CC gets the [2010 Passat](volkswagen-passat-2010.md)'s list) is read the
+  same way, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)).
 - **No gearbox row**: the card prints none, so the list has no transmission fluid job.
 - Spark plugs at 60,000 and 120,000 with footnote 7, "every 6 years": every 60,000 miles or 72 months.
 - `"engine": { "label": "3.6L", "displacementL": 3.6 }`.
