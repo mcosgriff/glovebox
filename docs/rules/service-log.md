@@ -81,7 +81,9 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   **no more** (small marks past seven aren't told apart). `groupColor` (`Theme.kt`) has a light and a dark step for
   each, chosen as a set with the dataviz palette validator (every pair ΔE ≥ 15, ≥ 6 for red-green colour blindness,
   3:1 on the card and the page ground); **change one only by checking the whole set again.** Every coloured mark
-  sits beside its name, and Other's grey is an outline, not a fill.
+  sits beside its name, and Other's grey is an outline, not a fill. **A line's group has one answer,
+  `ServiceGroup.of`** (#579), read through `RecordSummary` by both: its catalog line's group, else its schedule
+  item's (the owner's own items save no catalog line), else Other.
 - "Add custom item" (#309) only offers lines, never ticks one; filing a custom line under a line **keeps its
   wording**. So Custom stays rare.
 - Custom lines and category rules (#310): **a line is Custom only when it has no home** (no `catalogId`, no

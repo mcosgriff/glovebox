@@ -2,7 +2,10 @@
 
 Rules for exports, the PDF report, backup, restore. Read before changing any of it; review holds a diff to every line here.
 
-- `Exports.document` applies the options once; `Reports.build` works out the PDF report from it, and the Markdown
+- `ExportBuilder` (`:data`, #579) puts each vehicle together from its `VehicleLog`, recalls and documents, named
+  through `ExportNames`; the sheet's ViewModel only holds the choices. Each record's work is its `RecordSummary`
+  (`VehicleLog.summary`: lines, their group, jobs, part rows, charges, the gap), the one History's timeline reads too.
+  `Exports.document` applies the options once; `Reports.build` works out the PDF report from it, and the Markdown
   writer and `ReportRenderer` only lay out what they are given. **An export is written straight into the document
   "save as" hands back** (`ExportSaver.saveExport`): nothing is kept in the app's storage, and photos are decrypted
   into memory a page at a time. A backup or import file still goes through `cache/export/`, deleted either way. An

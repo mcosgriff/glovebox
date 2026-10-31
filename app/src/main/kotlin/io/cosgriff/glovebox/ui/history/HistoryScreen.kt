@@ -131,6 +131,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.semantics.Role
 import io.cosgriff.glovebox.domain.Visits
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.ui.components.Chevron
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.ReminderProgress
@@ -152,6 +153,8 @@ data class HistoryState(
     val next: Pair<ItemStatus, ReminderProgress>? = null,
     /** The vehicle's odometer now, in its own unit (`VehicleLog.odometer`); null before any reading. */
     val odometer: Int? = null,
+    /** Each of the vehicle's schedule items' group (`VehicleLog.itemGroups`), for the timeline's record summaries. */
+    val itemGroups: Map<Long, ServiceGroup> = emptyMap(),
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -238,7 +241,7 @@ class HistoryViewModel @Inject constructor(
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
             logs.observe(archivedId).map { log ->
-                HistoryState(listOfNotNull(log?.vehicle), log?.vehicle, log?.records.orEmpty(), odometer = log?.odometer)
+                HistoryState(listOfNotNull(log?.vehicle), log?.vehicle, log?.records.orEmpty(), odometer = log?.odometer, itemGroups = log?.itemGroups.orEmpty())
             }
         } else {
             combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
@@ -254,6 +257,7 @@ class HistoryViewModel @Inject constructor(
                             list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())),
                             next = shown?.comingUp?.next,
                             odometer = shown?.odometer,
+                            itemGroups = log?.itemGroups.orEmpty(),
                         )
                     }
                 }
@@ -509,6 +513,7 @@ internal fun HistoryContent(
                 HistoryTimelineList(
                     vehicle = state.vehicle,
                     groups = Visits.grouped(byDate) { it.record.visitId }.filter { g -> g.any(::matches) },
+                    itemGroups = state.itemGroups,
                     // Like the spending line, the next reminder is about the whole vehicle, so it goes while a filter or search is on.
                     next = state.next.takeIf { filter == null && !searching },
                     since = state.records.minOfOrNull { it.record.date },

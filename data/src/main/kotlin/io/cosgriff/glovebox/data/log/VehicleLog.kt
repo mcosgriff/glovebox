@@ -5,6 +5,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.db.rule
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.domain.ActiveInterval
 import io.cosgriff.glovebox.domain.ClusterSwap
@@ -18,9 +19,11 @@ import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OilMonths
 import io.cosgriff.glovebox.domain.OwnOil
+import io.cosgriff.glovebox.domain.RecordSummary
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ServiceEntry
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
@@ -53,7 +56,15 @@ class VehicleLog(
     val defaultRule: DueRule,
     /** Which of [items] answer to which catalog line ([answering]), built once for every record. */
     val answering: Map<String, Set<Long>> = items.answering(),
+    /** Each of [items]' group by id ([ServiceGroup.ofItem]): what a line logged against one is in when it has no catalog line. */
+    val itemGroups: Map<Long, ServiceGroup> = items.associate { it.id to ServiceGroup.ofItem(it.templateKey, it.service) },
 ) {
+    /**
+     * [record] as the Markdown, the PDF report and History's timeline all read it (#579): its lines and their groups,
+     * jobs, part rows, charges and cost.
+     */
+    fun summary(record: ServiceRecordWithItems): RecordSummary = RecordSummary.of(record.toModel(), itemGroups)
+
     /** The unit every figure in the vehicle's tables is in, as typed (ADR-0006). */
     val unit: DistanceUnit get() = DistanceUnit.of(vehicle.distanceUnit)
 

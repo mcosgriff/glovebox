@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements
 import java.io.OutputStream
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.ExportJob
 import io.cosgriff.glovebox.domain.ExportPaper
 import io.cosgriff.glovebox.domain.ExportRecall
 import io.cosgriff.glovebox.domain.ExportRecord
@@ -19,7 +20,9 @@ import io.cosgriff.glovebox.domain.ExportVehicle
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.OdometerReading
+import io.cosgriff.glovebox.domain.RecordSummary
 import io.cosgriff.glovebox.domain.ServiceGroup
+import io.cosgriff.glovebox.domain.SummaryLine
 import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.ServiceLog
@@ -130,7 +133,7 @@ object SampleReport {
     val categories = mapOf(1L to ServiceGroup.OIL_ENGINE, 2L to ServiceGroup.TIRES, 3L to ServiceGroup.BRAKES, 4L to ServiceGroup.FLUIDS_4WD)
 
     fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg lines: Pair<String, ServiceGroup>, photos: List<String> = emptyList()): ExportRecord =
-        ExportRecord(date, odometer, lines.map { it.first }, if (diy) "DIY" else "Corner Garage", 4_200, null, photos, diy = diy, categories = lines.map { it.second })
+        ExportRecord(date, odometer, RecordSummary(lines.map { SummaryLine(it.first, it.second) }, costCents = 4_200), if (diy) "DIY" else "Corner Garage", null, photos, diy = diy)
 
     val records = listOf(
         record(LocalDate.of(2025, 10, 18), 50_200, false, "Diff fluid" to ServiceGroup.FLUIDS_4WD),
@@ -160,3 +163,12 @@ object SampleReport {
         report = ReportFacts(VehicleReminders.statuses(items, entries, emptyList(), today, LeadTime(1_500)), categories, entries.map { OdometerReading(it.date, it.odometer) }),
     )
 }
+
+/** This made-up record with [jobs], its lines in them by [jobOf] (as they were when null), and its cost as [costCents]. */
+fun ExportRecord.withJobs(jobs: List<ExportJob>, jobOf: List<Int?>? = null, costCents: Long? = summary.costCents): ExportRecord = copy(
+    summary = summary.copy(
+        jobs = jobs,
+        costCents = costCents,
+        lines = jobOf?.let { j -> summary.lines.mapIndexed { i, line -> line.copy(job = j.getOrNull(i)) } } ?: summary.lines,
+    ),
+)

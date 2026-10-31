@@ -72,9 +72,9 @@ class SpendingTest {
     @Test
     fun `the total is the export's`() {
         val records = listOf(
-            ExportRecord(LocalDate.of(2026, 1, 5), 10_000, listOf("Oil"), "DIY", 4_500, null),
-            ExportRecord(LocalDate.of(2025, 1, 5), 5_000, listOf("Wipers"), "DIY", null, null),
-            ExportRecord(LocalDate.of(2024, 1, 5), 1_000, listOf("Tires"), "Shop", 80_000, null),
+            ExportRecord(LocalDate.of(2026, 1, 5), 10_000, summary("Oil", costCents = 4_500), "DIY", null),
+            ExportRecord(LocalDate.of(2025, 1, 5), 5_000, summary("Wipers"), "DIY", null),
+            ExportRecord(LocalDate.of(2024, 1, 5), 1_000, summary("Tires", costCents = 80_000), "Shop", null),
         )
         val vehicle = ExportVehicle("2019 Toyota 4Runner", null, null, unit = DistanceUnit.MILES, odometer = 10_000, soldOn = null, records = records, schedule = emptyList(), recalls = emptyList())
         assertEquals(vehicle.totalCents, Spending.summary(records, today, { it.date }, { it.costCents })!!.totalCents)

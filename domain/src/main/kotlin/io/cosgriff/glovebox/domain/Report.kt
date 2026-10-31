@@ -210,7 +210,7 @@ object Reports {
         val done = mutableMapOf<ServiceGroup, MutableSet<Int>>()
         v.records.forEach { r ->
             val at = swap.toDash(r.odometer, r.date)
-            r.categories.ifEmpty { listOf(ServiceGroup.OTHER) }.forEach { done.getOrPut(it) { sortedSetOf() } += at }
+            r.summary.groups.ifEmpty { listOf(ServiceGroup.OTHER) }.forEach { done.getOrPut(it) { sortedSetOf() } += at }
         }
         val next = statuses.filter { it.counting }
             .mapNotNull { s -> s.status.dueAtOdometer?.let { (categories[s.item.id] ?: ServiceGroup.OTHER) to it } }
