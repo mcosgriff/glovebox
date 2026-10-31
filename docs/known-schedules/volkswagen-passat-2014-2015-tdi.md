@@ -19,7 +19,7 @@ Every Passat NMS card read, and what isn't covered, is on the [2014 2.5L's page]
   the 130,000 column here is a whole service: the yearly airbag check, the oil change, tire rotation, brake pad check, brake fluid,
   AdBlue check, rear washer nozzle, service display and washer check are all drawn in it, with the timing
   belt. So every reminder falls on the table at every multiple of its interval, and nothing is past the grid.
-- **The rows are the [2014 3.6L](volkswagen-passat-2014-3.6.md)'s** in that list's wording, with the
+- **The rows are the [2014 3.6L](volkswagen-passat-2014-2015-3.6.md)'s** in that list's wording, with the
   spark plugs left out (the card has none), every 10,000-mile row carried on to 130,000, and the diesel's rows:
   - "AdBlue® Fluid: Check fluid level and add if necessary", in every column: an inspection, table-only.
     Footnote 6 at 40,000, 80,000 and 120,000, "At the 4 year mark, if the mileage is under 10,000 miles:

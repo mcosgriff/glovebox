@@ -25,4 +25,4 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
   alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from Volkswagen's 2016 reissue (the owner's ruling of 2026-10-28, #517). The table has none.
 - No tire rotation, and no special operating conditions: the card has neither.
-- **Not covered:** see the [2014 1.8T's page](volkswagen-jetta-2014-1.8t.md#what-isnt-covered).
+- **Not covered:** see the [2014 1.8T's page](volkswagen-jetta-2014-2015-1.8t.md#what-isnt-covered).

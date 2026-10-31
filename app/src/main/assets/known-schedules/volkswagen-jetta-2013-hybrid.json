@@ -1,22 +1,23 @@
 {
-  "id": "volkswagen-passat-2014-1.8t",
-  "title": "2014 Passat 1.8T",
+  "id": "volkswagen-jetta-2013-hybrid",
+  "title": "2013 Jetta Hybrid",
   "make": "Volkswagen",
-  "model": "Passat",
+  "model": "Jetta",
   "years": {
-    "from": 2014,
-    "to": 2014
+    "from": 2013,
+    "to": 2013
   },
   "source": {
     "name": "Volkswagen maintenance schedule",
-    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10125862-9999.pdf",
-    "retrieved": "2026-10-29",
-    "note": "Read from Volkswagen's USA maintenance schedule for the Passat 1.8L TSI, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
-    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Passat, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10242444-9999.pdf",
+    "retrieved": "2026-10-28",
+    "note": "Read from Volkswagen's USA maintenance schedule for the Jetta Hybrid, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Jetta Hybrid, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
   "engine": {
-    "label": "1.8T",
-    "displacementL": 1.8
+    "label": "1.4L hybrid",
+    "displacementL": 1.4,
+    "powertrain": "hybrid"
   },
   "milestones": [
     {
@@ -36,6 +37,9 @@
         {
           "name": "Check brake pad thickness and brake disc condition",
           "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -80,6 +84,9 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
           "name": "Check rear window washer nozzle (if fitted)"
         },
         {
@@ -111,6 +118,9 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -155,6 +165,9 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
           "name": "Inspect body for corrosion"
         },
         {
@@ -188,7 +201,7 @@
           "name": "Check power steering fluid level"
         },
         {
-          "name": "Check ribbed belt condition"
+          "name": "Check ribbed belt condition (if fitted)"
         },
         {
           "name": "Check, clean and lubricate sunroof (if fitted)"
@@ -207,6 +220,10 @@
         },
         {
           "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -240,6 +257,9 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -284,12 +304,11 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
-          "name": "Replace air filter element and clean housing",
-          "service": "engine-air"
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
-          "name": "Replace spark plugs",
-          "service": "spark-plugs"
+          "name": "Replace air filter element and clean housing",
+          "service": "engine-air"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -323,6 +342,9 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -367,6 +389,9 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
           "name": "Inspect body for corrosion"
         },
         {
@@ -400,7 +425,7 @@
           "name": "Check power steering fluid level"
         },
         {
-          "name": "Check ribbed belt condition"
+          "name": "Check ribbed belt condition (if fitted)"
         },
         {
           "name": "Check, clean and lubricate sunroof (if fitted)"
@@ -419,6 +444,10 @@
         },
         {
           "name": "Inspect underbody sealant for damage"
+        },
+        {
+          "name": "Replace spark plugs",
+          "service": "spark-plugs"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -452,6 +481,9 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -496,6 +528,9 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
           "name": "Check rear window washer nozzle (if fitted)"
         },
         {
@@ -527,6 +562,9 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -571,6 +609,9 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
           "name": "Inspect body for corrosion"
         },
         {
@@ -604,7 +645,7 @@
           "name": "Check power steering fluid level"
         },
         {
-          "name": "Check ribbed belt condition"
+          "name": "Check ribbed belt condition (if fitted)"
         },
         {
           "name": "Check, clean and lubricate sunroof (if fitted)"
@@ -642,6 +683,129 @@
           "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
         }
       ]
+    },
+    {
+      "atMiles": 130000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 140000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Inspect brake system, pads, discs and fluid level; shock absorbers for leaks",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Check battery"
+        },
+        {
+          "name": "Replace dust and pollen filter",
+          "service": "cabin-air"
+        },
+        {
+          "name": "Check tread depth, condition, wear and pressure of all tires and the spare"
+        },
+        {
+          "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
+    },
+    {
+      "atMiles": 150000,
+      "work": [
+        {
+          "name": "Inspect airbag system visually (every year)"
+        },
+        {
+          "name": "Change engine oil and filter",
+          "service": "oil"
+        },
+        {
+          "name": "Rotate tires front to rear",
+          "service": "rotation"
+        },
+        {
+          "name": "Check brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Change brake fluid (at 3 years, then every 2 years)",
+          "service": "brake-fluid"
+        },
+        {
+          "name": "Inspect high-voltage hybrid components and their lines for damage"
+        },
+        {
+          "name": "Check timing belt (then every 20,000 until it needs replacing)"
+        },
+        {
+          "name": "Check coolant pump timing belt (then every 20,000 until it needs replacing)"
+        },
+        {
+          "name": "Check rear window washer nozzle (if fitted)"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check windshield and headlight washers and wiper blades; top up washer fluid"
+        }
+      ]
     }
   ],
   "intervals": [
@@ -663,16 +827,16 @@
       "service": "cabin-air"
     },
     {
+      "name": "Replace spark plugs",
+      "everyMiles": 40000,
+      "everyMonths": 48,
+      "service": "spark-plugs"
+    },
+    {
       "name": "Replace air filter element and clean housing",
       "everyMiles": 60000,
       "everyMonths": 72,
       "service": "engine-air"
-    },
-    {
-      "name": "Replace spark plugs",
-      "everyMiles": 60000,
-      "everyMonths": 72,
-      "service": "spark-plugs"
     },
     {
       "name": "Change brake fluid (at 3 years, then every 2 years)",

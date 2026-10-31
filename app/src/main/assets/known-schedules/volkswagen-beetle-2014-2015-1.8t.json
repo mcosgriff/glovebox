@@ -1,11 +1,11 @@
 {
-  "id": "volkswagen-beetle-2014-1.8t",
-  "title": "2014 Beetle 1.8T",
+  "id": "volkswagen-beetle-2014-2015-1.8t",
+  "title": "2014–2015 Beetle 1.8T",
   "make": "Volkswagen",
   "model": "Beetle",
   "years": {
     "from": 2014,
-    "to": 2014
+    "to": 2015
   },
   "source": {
     "name": "Volkswagen maintenance schedule",

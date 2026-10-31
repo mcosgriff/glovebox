@@ -4,6 +4,8 @@
  "modelAliases": [],
  "years": [
   2014,
+  2015,
+  2016,
   2018,
   2019
  ],
@@ -89,13 +91,15 @@
     {
      "model": "BEETLE",
      "years": [
-      2014
+      2014,
+      2015
      ]
     },
     {
      "model": "BEETLE CONVERTIBLE",
      "years": [
-      2014
+      2014,
+      2015
      ]
     }
    ],
@@ -122,6 +126,33 @@
      "model": "BEETLE CONVERTIBLE",
      "years": [
       2014
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10164243",
+   "number": "VWP-17-01",
+   "date": "2019-08-20",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of a revision to the claim coding for the \"Extended Emissions Warranty\" Limited Warranty Extension for certain 2.0L TDI GEN 3 vehicles. Added clarification on totaled vehicles and loaners.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2015
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2015
      ]
     }
    ],
@@ -169,13 +200,17 @@
     {
      "model": "BEETLE",
      "years": [
-      2014
+      2014,
+      2015,
+      2016
      ]
     },
     {
      "model": "BEETLE CONVERTIBLE",
      "years": [
-      2014
+      2014,
+      2015,
+      2016
      ]
     }
    ],
@@ -210,6 +245,32 @@
     "ENGINE"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2018/MC-10149887-9999.pdf"
+  },
+  {
+   "id": "10121013",
+   "number": "VWP-17-01",
+   "date": "2017-01-12",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of an \"Extended Emissions Warranty\" Limited Warranty Extension for certain 2.0L TDI vehicles.",
+   "products": [
+    {
+     "model": "BEETLE",
+     "years": [
+      2015
+     ]
+    },
+    {
+     "model": "BEETLE CONVERTIBLE",
+     "years": [
+      2015
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
   },
   {
    "id": "10128097",

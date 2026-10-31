@@ -1,11 +1,11 @@
 {
-  "id": "volkswagen-passat-2014-3.6",
-  "title": "2014 Passat 3.6L",
+  "id": "volkswagen-passat-2014-2015-3.6",
+  "title": "2014–2015 Passat 3.6L",
   "make": "Volkswagen",
   "model": "Passat",
   "years": {
     "from": 2014,
-    "to": 2014
+    "to": 2015
   },
   "source": {
     "name": "Volkswagen maintenance schedule",

@@ -15,9 +15,9 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 NHTSA's index files four more 2016 Jetta cards, all posted August 2015 and all read: the 1.4T
 (`MC-10123069`, [its own list](volkswagen-jetta-2016-1.4t.md)), the 2.0L MPI (`MC-10123067`), the 2.0L TDI
 (`MC-10123066`) and, under "Jetta GLI", the GLI 2.0L TSI (`MC-10123071`). For why the last three have no list,
-see the [2014 1.8T's page](volkswagen-jetta-2014-1.8t.md#what-isnt-covered).
+see the [2014 1.8T's page](volkswagen-jetta-2014-2015-1.8t.md#what-isnt-covered).
 
-- **What differs from 2015.** The 2016 card is the [2015 1.8T](volkswagen-jetta-2015-1.8t.md)'s grid without
+- **What differs from 2015.** The 2016 card is the [2015 1.8T](volkswagen-jetta-2014-2015-1.8t.md)'s grid without
   five rows: tire rotation, the yearly airbag check, the door check lubrication, the rear window washer nozzle
   check and the service sticker. Its dust and pollen filter is every 40,000 miles or 2 years, drawn at 40,000,
   80,000 and 120,000 (2015: every 20,000, and every 2 years), and "Transmission: Automatic (non DSG): Change

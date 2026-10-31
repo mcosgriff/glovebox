@@ -32,7 +32,7 @@ NHTSA's vPIC model list for Volkswagen (`GetModelsForMakeYear`) names the car "C
 needs `fuel`. A CC with no engine on record is asked which it has.
 
 **The gearbox rows.** The 2.0L TSI cards print one gearbox row, "Transmission: DSG (non Automatic): Change
-fluid and filter (if applicable)", and no automatic's row. It is read as the [2014 Passat 3.6L](volkswagen-passat-2014-3.6.md)
+fluid and filter (if applicable)", and no automatic's row. It is read as the [2014 Passat 3.6L](volkswagen-passat-2014-2015-3.6.md)
 and the [2010–2014 GTI](volkswagen-gti-2010-2014.md) read the same row: `trans-fluid`, a reminder every 40,000
 miles, named "(DSG only)", in `manualExcluded`. The 3.6L cards print no gearbox row at all, so those lists have none.
 
@@ -40,7 +40,7 @@ miles, named "(DSG only)", in `manualExcluded`. The 3.6L cards print no gearbox 
 
 ## This list
 
-- **The card is the [2014 Passat 3.6L](volkswagen-passat-2014-3.6.md)'s grid**: the same rows with the same
+- **The card is the [2014 Passat 3.6L](volkswagen-passat-2014-2015-3.6.md)'s grid**: the same rows with the same
   marks in the same columns, DSG row included (a script's comparison of the two lists' tables, then the pages).
   So the list is that one's, in its wording.
 - `"engine": { "label": "2.0T", "displacementL": 2.0 }`.

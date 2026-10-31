@@ -11,7 +11,7 @@ document type "Maintenance Card", `en-US`). Read on 2026-10-28, as page images, 
 
 | Model year | What was read | Document |
 |---|---|---|
-| 2013 | The Jetta Hybrid 1.4L card in two printings: posted November 2012 (filed twice) and posted January 2013. They differ (below), so 2013 isn't in this list | `2012/MC-10156148-9999`, `2013/MC-10242481-9999` (Nov. 2012); `2013/MC-10242444-9999` (Jan. 2013) |
+| 2013 | The Jetta Hybrid 1.4L card in two printings: posted November 2012 (filed twice) and posted January 2013. The January 2013 one is row for row this list's card; 2013 has [a list of its own](volkswagen-jetta-2013-hybrid.md) | `2012/MC-10156148-9999`, `2013/MC-10242481-9999` (Nov. 2012); `2013/MC-10242444-9999` (Jan. 2013) |
 | 2014 | **No card for the Jetta Hybrid was found.** NHTSA's index files `2013/MC-10125796-9999` under the 2014 Jetta Hybrid; it is the 2014 GLI 2.0L TSI's card. Volkswagen's 2014 reissue was read (below) | reissue `USA5R505521`, printed 11/24/2025, `…/v1/document/033ff2d5-58e3-4663-97cf-1bbdb864258d` |
 | 2015 | The Jetta Hybrid 1.4L card (posted June 2014), in full; the list was written from it | `2014/MC-10120122-9999` |
 | 2015 | Volkswagen's 2015 reissue, for the oil change's time limit (below) | reissue `USA5R505821`, printed 11/24/2025, `…/v1/document/cd0baffd-4470-48db-b81c-b2b59ce5e527` |
@@ -52,10 +52,10 @@ document type "Maintenance Card", `en-US`). Read on 2026-10-28, as page images, 
 - No special operating conditions are given on the card.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first column.
 - **Not covered:**
-  - **2013.** The two printings disagree: the November 2012 card draws brake fluid at 30,000 to 110,000
-    only and the tire mobility kit check at 20,000 to 120,000 only; the January 2013 card draws them to
-    150,000 and 140,000, as the 2015 card does. Every other row is the same in all three, and the
-    reminders don't change. Which printing a list follows is the owner's to decide (asked on #441).
+  - **2013** has [its own list](volkswagen-jetta-2013-hybrid.md), the same as this one: the January 2013
+    printing wins over the November 2012 one (the owner's ruling of 2026-10-29 on #553,
+    [part A](https://github.com/mcosgriff/glovebox/issues/553#issuecomment-6511794772)). It is a list apart,
+    not 2013–2015, because 2014 isn't covered by these cards (below).
   - **2014.** No card from the time was found. The 2013 (January 2013) and 2015 cards agree row for row,
     and Volkswagen's 2014 reissue agrees with every reminder except the dust and pollen filter (40,000 or
     2 years, as in every reissue of these years; see the GTI's page). Whether that is enough to cover 2014

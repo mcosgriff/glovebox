@@ -4,6 +4,7 @@
  "modelAliases": [],
  "years": [
   2010,
+  2013,
   2014,
   2015,
   2016,
@@ -123,6 +124,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2019,
       2020,
       2021,
@@ -486,6 +488,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014,
       2015,
       2016,
@@ -515,6 +518,26 @@
    ],
    "components": [
     "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10198167",
+   "number": "VWP-21-03",
+   "date": "2021-06-14",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This Document informs dealers on the new Intake Manifold Warranty Extension for 2013, 2014, 2016 & 2017 Model Year with Engine Codes CBFA and CCTA",
+   "products": [
+    {
+     "model": "JETTA",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
    ],
    "pdf": null
   },
@@ -552,6 +575,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -574,6 +598,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -595,6 +620,7 @@
     {
      "model": "JETTA",
      "years": [
+      2013,
       2014,
       2015
      ]
@@ -663,6 +689,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -831,6 +858,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -852,6 +880,7 @@
     {
      "model": "JETTA",
      "years": [
+      2013,
       2014,
       2015,
       2016
@@ -876,6 +905,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014,
       2015,
       2016,
@@ -901,6 +931,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014,
       2015,
       2016,
@@ -926,6 +957,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -947,6 +979,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -1032,6 +1065,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }
@@ -1097,6 +1131,7 @@
      "model": "JETTA",
      "years": [
       2010,
+      2013,
       2014
      ]
     }

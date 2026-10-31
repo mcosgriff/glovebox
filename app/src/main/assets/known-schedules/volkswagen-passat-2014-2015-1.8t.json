@@ -1,23 +1,26 @@
 {
-  "id": "volkswagen-jetta-2014-1.8t",
-  "title": "2014 Jetta 1.8T",
+  "id": "volkswagen-passat-2014-2015-1.8t",
+  "title": "2014–2015 Passat 1.8T",
   "make": "Volkswagen",
-  "model": "Jetta",
+  "model": "Passat",
   "years": {
     "from": 2014,
-    "to": 2014
+    "to": 2015
   },
   "source": {
     "name": "Volkswagen maintenance schedule",
-    "url": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10125772-9999.pdf",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2014/MC-10120125-9999.pdf",
     "retrieved": "2026-10-29",
-    "note": "Read from Volkswagen's USA maintenance schedule for the Jetta sedan, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
-    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Jetta, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+    "note": "Read from Volkswagen's USA maintenance schedule for the Passat 1.8L TSI, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedules for the Passat, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
   "engine": {
     "label": "1.8T",
     "displacementL": 1.8
   },
+  "manualExcluded": [
+    "Change automatic transmission fluid (automatic only)"
+  ],
   "milestones": [
     {
       "atMiles": 10000,
@@ -240,6 +243,10 @@
         {
           "name": "Change brake fluid (at 3 years, then every 2 years)",
           "service": "brake-fluid"
+        },
+        {
+          "name": "Change automatic transmission fluid (automatic only)",
+          "service": "trans-fluid"
         },
         {
           "name": "Check rear window washer nozzle (if fitted)"
@@ -496,6 +503,10 @@
           "name": "Check tire mobility kit filler bottle date (if fitted; every 2 years)"
         },
         {
+          "name": "Change automatic transmission fluid (automatic only)",
+          "service": "trans-fluid"
+        },
+        {
           "name": "Check rear window washer nozzle (if fitted)"
         },
         {
@@ -673,6 +684,11 @@
       "everyMiles": 60000,
       "everyMonths": 72,
       "service": "spark-plugs"
+    },
+    {
+      "name": "Change automatic transmission fluid (automatic only)",
+      "everyMiles": 50000,
+      "service": "trans-fluid"
     },
     {
       "name": "Change brake fluid (at 3 years, then every 2 years)",
