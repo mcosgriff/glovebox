@@ -25,6 +25,7 @@ import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
+import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.readings
 import io.cosgriff.glovebox.domain.toDash
@@ -34,12 +35,15 @@ import java.time.LocalDate
  * A vehicle's log, readings and tracked reminders, set up the one way the screens and workers need them: in dash
  * terms through the vehicle's cluster swap, with every link a logged line counts for (built once, not per record),
  * and the lead time in the vehicle's own unit. [items] are all the vehicle's schedule items, tracked or not;
- * [records] are as saved. Read one through [VehicleLogs], or build it with [VehicleEntity.log].
+ * [records] and [readings] are as saved. Screens read a vehicle through it rather than gathering the rows (#577).
+ * Read one through [VehicleLogs], or build it with [VehicleEntity.log].
  */
 class VehicleLog(
     val vehicle: VehicleEntity,
     val items: List<ScheduleItemEntity>,
     val records: List<ServiceRecordWithItems>,
+    /** The standalone odometer readings, as typed; [updates] has them in dash terms. */
+    val readings: List<OdometerReadingEntity>,
     val swap: ClusterSwap?,
     val entries: List<ServiceEntry>,
     val updates: List<OdometerReading>,
@@ -50,8 +54,14 @@ class VehicleLog(
     /** Which of [items] answer to which catalog line ([answering]), built once for every record. */
     val answering: Map<String, Set<Long>> = items.answering(),
 ) {
+    /** The unit every figure in the vehicle's tables is in, as typed (ADR-0006). */
+    val unit: DistanceUnit get() = DistanceUnit.of(vehicle.distanceUnit)
+
     /** The highest reading on record, as the dash shows it. */
     val odometer: Int? get() = VehicleReminders.currentOdometer(entries, updates)
+
+    /** [odometer] as the miles really covered: the old cluster's reading added back after a swap ([ClusterSwap]). */
+    val actualOdometer: Int? get() = odometer?.let { swap.actual(it) }
 
     fun statuses(today: LocalDate): List<ItemStatus> = VehicleReminders.statuses(tracked, entries, updates, today, lead)
 
@@ -95,6 +105,7 @@ fun VehicleEntity.log(
         vehicle = this,
         items = items,
         records = records,
+        readings = readings,
         swap = swap,
         entries = records.map { it.toEntry(swap, links) },
         updates = readings.toReadings(swap),
@@ -103,12 +114,6 @@ fun VehicleEntity.log(
         defaultRule = settings.defaultRule,
         answering = links,
     )
-}
-
-/** The highest reading on record, as the dash shows it, where nothing else about the log is needed. */
-fun VehicleEntity.highestReading(records: List<ServiceRecordWithItems>, readings: List<OdometerReadingEntity>): Int? {
-    val swap = clusterSwap()
-    return VehicleReminders.currentOdometer(records.map { it.toEntry(swap, NoLinks) }, readings.toReadings(swap))
 }
 
 /**

@@ -3,7 +3,7 @@ package io.cosgriff.glovebox.ui.schedule
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.data.log.highestReading
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.MakersSchedules
@@ -69,11 +69,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.MilestoneEntity
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.JobDone
@@ -94,7 +89,6 @@ import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.data.log.toEntry
 import io.cosgriff.glovebox.data.log.tracked
@@ -104,7 +98,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.data.log.answering
 import io.cosgriff.glovebox.data.log.NoLinks
 import javax.inject.Inject
 
@@ -145,11 +138,7 @@ data class MilestonesState(
 @HiltViewModel
 class MilestonesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    schedule: ScheduleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
-    settings: SettingsRepository,
+    logs: VehicleLogs,
     private val table: MilestoneDao,
     private val saver: ExportSaver,
     private val makers: MakersSchedules,
@@ -159,30 +148,29 @@ class MilestonesViewModel @Inject constructor(
     /** How many milestones past the odometer are shown; "Show more" raises it. */
     private val ahead = MutableStateFlow(savedStateHandle.get<Int>(AHEAD) ?: Milestones.AHEAD)
 
-    private val log = combine(service.observeRecords(vehicleId), odometer.observe(vehicleId), table.observe(vehicleId)) { records, readings, rows ->
-        Triple(records, readings, rows)
-    }
+    private val log = logs.observe(vehicleId)
 
     private val knownLists = flow { emit(makers.lists()) }
 
     /**
-     * Null while loading, and if the vehicle no longer exists. Not read through `VehicleLogs`: milestones go by
-     * actual mileage, with no swap, and the user's own table, so this builds its own on the same functions.
+     * Null while loading, and if the vehicle no longer exists. Read through `VehicleLogs`, but milestones go by actual
+     * mileage, so the tracked items are taken again with no swap, and the user's own table is read beside it.
      */
     val state: StateFlow<MilestonesState?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeTracked(vehicleId),
         log,
-        combine(settings.settings, knownLists) { s, lists -> s to lists },
+        table.observe(vehicleId),
+        knownLists,
         ahead,
-    ) { vehicle, items, (records, readings, rows), (s, lists), count ->
-        if (vehicle == null) return@combine null
-        val swap = vehicle.clusterSwap()
-        val entries = records.map { it.toEntry(swap, items.answering()) }
-        val tracked = vehicle.tracked(items, s.defaultRule, swap = null).filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
+    ) { log, rows, lists, count ->
+        if (log == null) return@combine null
+        val vehicle = log.vehicle
+        val records = log.records
+        val swap = log.swap
+        val entries = log.entries
+        val tracked = vehicle.tracked(log.items, log.defaultRule, swap = null).filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
         val keys = tracked.map { it.id }.toSet()
         // A manual's mileages are miles really covered, so everything is placed by actual mileage.
-        val current = vehicle.highestReading(records, readings)?.let { swap.actual(it) }
+        val current = log.actualOdometer
         val name = vehicle.shortName()
         if (rows.isNotEmpty()) {
             // The user's own table is shown as it is, in place of the view built from the schedule.

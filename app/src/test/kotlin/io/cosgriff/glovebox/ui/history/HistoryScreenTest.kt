@@ -78,7 +78,7 @@ class HistoryScreenTest {
     /** History opens on the timeline; these tests read the list unless they say so. */
     private fun listHandle() = SavedStateHandle(mapOf("view" to HistoryView.LIST.name))
 
-    private fun tab(handle: SavedStateHandle = listHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs()))
+    private fun tab(handle: SavedStateHandle = listHandle()) = t.owned(HistoryViewModel(handle, t.db.vehicles(), t.db.recalls(), t.actions, overview(), logs()))
 
     @Test
     fun `the first vehicle shows, another is one tap away, and the choice is kept`() = runBlocking {
@@ -303,7 +303,7 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
         t.record(car, lines = listOf(line("Hitch greased")))
-        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs()))
+        val vm = t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.recalls(), t.actions, overview(), logs()))
         show(vm)
         compose.waitForText(string(R.string.history_subtitle_archived, "2019 Corolla", plural(R.plurals.records, 1, 1.asNumber())))
         compose.onNodeWithText(plural(R.plurals.history_custom_lines, 1, 1.asNumber())).assertDoesNotExist()
@@ -327,7 +327,7 @@ class HistoryScreenTest {
         val car = t.vehicle()
         t.record(car, date = today.minusDays(20), odometer = 41_000, lines = listOf(line("Oil and filter", "oil")))
         t.db.vehicles().setArchived(car, today)
-        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs())))
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.recalls(), t.actions, overview(), logs())))
         waitForOdometer(41_000)
     }
 
@@ -335,7 +335,7 @@ class HistoryScreenTest {
     fun `an archived vehicle with no records says none were logged`() = runBlocking {
         val car = t.vehicle()
         t.db.vehicles().setArchived(car, today)
-        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.service(), t.db.recalls(), t.actions, overview(), logs())))
+        show(t.owned(HistoryViewModel(routeHandle(ArchivedHistoryRoute(car)), t.db.vehicles(), t.db.recalls(), t.actions, overview(), logs())))
         compose.waitForText(string(R.string.history_none_archived))
     }
 

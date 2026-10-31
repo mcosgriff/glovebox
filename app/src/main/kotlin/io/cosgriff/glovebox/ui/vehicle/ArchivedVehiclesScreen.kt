@@ -3,7 +3,7 @@ package io.cosgriff.glovebox.ui.vehicle
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
-import io.cosgriff.glovebox.data.log.highestReading
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -42,16 +42,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
-import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -66,29 +63,17 @@ data class ArchivedVehicle(
 
 @HiltViewModel
 class ArchivedVehiclesViewModel @Inject constructor(
-    vehicles: VehicleDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
+    logs: VehicleLogs,
     private val archiver: VehicleArchiver,
 ) : ViewModel() {
     /** Most recently sold first. Null while loading. */
-    val archived: StateFlow<List<ArchivedVehicle>?> = combine(
-        vehicles.observeArchived(),
-        service.observeAllRecords(),
-        odometer.observeAll(),
-    ) { list, records, readings ->
-        val recordsBy = records.groupBy { it.record.vehicleId }
-        val readingsBy = readings.groupBy { it.vehicleId }
-        list.map { v ->
-            val mine = recordsBy[v.id].orEmpty()
+    val archived: StateFlow<List<ArchivedVehicle>?> = logs.observeArchived().map { list ->
+        list.map { log ->
             ArchivedVehicle(
-                vehicle = v,
-                finalOdometer = v.highestReading(
-                    mine,
-                    readingsBy[v.id].orEmpty(),
-                ),
-                records = mine.size,
-                photos = mine.sumOf { it.photos.size },
+                vehicle = log.vehicle,
+                finalOdometer = log.odometer,
+                records = log.records.size,
+                photos = log.records.sumOf { it.photos.size },
             )
         }
     }.screenState(viewModelScope, null)
