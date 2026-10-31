@@ -8,7 +8,7 @@ import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.rule
-import io.cosgriff.glovebox.data.db.ScheduleWriter
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -33,8 +33,6 @@ import io.cosgriff.glovebox.ui.export.SaveAsImportFile
 import io.cosgriff.glovebox.domain.KnownIntervalPlan
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
-import io.cosgriff.glovebox.domain.BodyStyles
-import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -152,9 +150,8 @@ class ScheduleViewModel @Inject constructor(
     private val vehicles: VehicleDao,
     private val actions: RecordActions,
     private val milestones: MilestoneDao,
-    private val writer: ScheduleWriter,
+    private val makers: MakersSchedules,
     private val saver: ExportSaver,
-    catalog: KnownScheduleCatalog,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<ScheduleRoute>().vehicleId
 
@@ -187,7 +184,7 @@ class ScheduleViewModel @Inject constructor(
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<ScheduleState?> = combine(
         logs.observe(vehicleId),
-        flow { emit(catalog.lists()) },
+        flow { emit(makers.lists()) },
     ) { log, lists ->
         log ?: return@combine null
         val vehicle = log.vehicle
@@ -223,7 +220,7 @@ class ScheduleViewModel @Inject constructor(
             odometer = log.odometer,
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle))
+            known = makers.forVehicle(vehicle)
                 ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )
@@ -301,7 +298,7 @@ class ScheduleViewModel @Inject constructor(
         // On E85 only where the owner has already said so on this schedule; nothing is assumed.
         val e85 = s.e85 == true
         // One write: the items, the doubles stopped, and the maker's table unless the vehicle has one of its own.
-        writer.adopt(
+        makers.adopt(
             vehicleId,
             plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly), useE85 = e85) },
             list,

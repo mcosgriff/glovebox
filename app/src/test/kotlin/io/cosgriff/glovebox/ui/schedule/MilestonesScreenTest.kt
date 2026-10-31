@@ -61,7 +61,7 @@ class MilestonesScreenTest {
         vm = world.viewModel(MilestonesViewModel::class) {
             MilestonesViewModel(
                 routeHandle(MilestonesRoute(vehicleId)), world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(),
-                world.settings, world.db.milestones(), world.saver, world.catalog,
+                world.settings, world.db.milestones(), world.saver, world.makers,
             )
         }
         compose.show { MilestonesScreen(onBack = {}, onOpenRecord = { opened = it }, vm = vm) }

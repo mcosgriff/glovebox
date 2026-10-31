@@ -11,6 +11,7 @@ import io.cosgriff.glovebox.domain.ImportedScheduleItem
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
+import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.KnownSpecSource
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.TableJob
@@ -26,15 +27,17 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
 
-/** Taking up a maker's schedule (#429), through Android's own driver as [MigrationTest] explains. */
+/**
+ * Which maker's schedule a vehicle is on (#576), and taking one up (#429), through Android's own driver as
+ * [MigrationTest] explains. The lists are made up here, not read from the app's assets.
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
-class ScheduleWriterTest {
+class MakersSchedulesTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val db = inMemoryDatabase(context)
     private val schedule = db.schedule()
     private val milestones = db.milestones()
-    private val writer = ScheduleWriter(db)
 
     @After fun close() = db.close()
 
@@ -53,7 +56,17 @@ class ScheduleWriterTest {
         ),
         intervals = listOf(ImportedScheduleItem("Replace engine oil", Interval(5_000, 6), service = "oil-change")),
         fourWheelDriveOnly = setOf("replace transfer case oil"),
+        engine = KnownEngine("2.4L I4", 2.4),
     )
+
+    /** The same made-up truck's other engine, with a list of its own. */
+    private val v6 = list.copy(id = "madeup-truck-v6-2020-2024", title = "2020–2024 Made-up Truck V6", engine = KnownEngine("4.0L V6", 4.0))
+
+    private val writer = MakersSchedules({ listOf(list, v6) }, db)
+
+    private fun truck(engine: String?) = testVehicle(make = "Madeup", model = "Truck", year = 2022).copy(engine = engine)
+
+    private suspend fun vehicle(id: Long) = db.vehicles().byId(id)!!
 
     private fun items(vehicleId: Long) = list.intervals.map { it.toEntity(vehicleId, knownList = list.id) }
 
@@ -145,5 +158,48 @@ class ScheduleWriterTest {
         assertEquals("4.0L V6", kept.engine)
         assertEquals(Powertrain.GAS.name, kept.powertrain)
         assertEquals(BodyStyle.SEDAN.name, kept.bodyStyle)
+    }
+
+    @Test
+    fun `a vehicle with nothing taken up is on the list that covers it as it is on record`() = runBlocking {
+        val car = db.vehicles().insert(truck("2.4L I4"))
+        val blank = db.vehicles().insert(truck(null))
+
+        assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
+        assertNull(writer.forVehicle(vehicle(blank)))
+        assertEquals(listOf(list.id, v6.id), writer.choices(vehicle(blank)).map { it.id })
+    }
+
+    @Test
+    fun `a vehicle stays on the list it took up after its engine text changes`() = runBlocking {
+        val car = db.vehicles().insert(truck("2.4L I4"))
+        writer.adopt(car, items(car), list)
+        db.vehicles().update(vehicle(car).copy(engine = "4.0L V6"))
+
+        assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
+        db.vehicles().update(vehicle(car).copy(engine = "something none of them is for"))
+        assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
+    }
+
+    @Test
+    fun `a list taken up that no longer ships gives way to the one that covers the vehicle`() = runBlocking {
+        val car = db.vehicles().insert(truck("4.0L V6"))
+        schedule.insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Replace engine oil", intervalMiles = 5_000, intervalMonths = 6, knownList = "madeup-gone")))
+
+        assertEquals(v6.id, writer.forVehicle(vehicle(car))?.id)
+    }
+
+    @Test
+    fun `taking up a list's table on its own writes it, in the vehicle's unit and for its drive`() = runBlocking {
+        val car = db.vehicles().insert(truck("2.4L I4").copy(drivetrain = "4x2", distanceUnit = DistanceUnit.KILOMETERS.name))
+        writer.addTable(car, list)
+
+        val table = milestones.tableFor(car)
+        val inKm = KnownSchedules.milestonesIn(list, DistanceUnit.KILOMETERS, "4x2").map { it.atMiles }
+        assertEquals(listOf(5_000, 30_000), list.milestones.map { it.atMiles })
+        assertEquals(inKm, table.map { it.milestone.atMiles })
+        assertEquals(listOf("Replace engine oil"), table.last().ordered.map { it.name })
+        assertEquals(list.id, vehicle(car).milestonesKnownList)
+        assertEquals(emptyList<ScheduleItemEntity>(), schedule.allFor(car))
     }
 }

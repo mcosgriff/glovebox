@@ -15,13 +15,11 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.db.ScheduleWriter
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.BodyStyle
-import io.cosgriff.glovebox.domain.BodyStyles
-import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -181,8 +179,7 @@ class ScheduleSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
     settings: SettingsRepository,
-    private val catalog: KnownScheduleCatalog,
-    private val writer: ScheduleWriter,
+    private val makers: MakersSchedules,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<ScheduleSetupRoute>().vehicleId
 
@@ -233,11 +230,10 @@ class ScheduleSetupViewModel @Inject constructor(
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
             val unit = v?.unit ?: DistanceUnit.MILES
-            val lists = catalog.lists()
-            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel, Powertrains.of(it.powertrain), BodyStyles.of(it.bodyStyle)) }
+            val list = v?.let { makers.forVehicle(it) }
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
-            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel, Powertrains.of(v.powertrain), BodyStyles.of(v.bodyStyle))
+            if (list == null && v != null) engineChoices = makers.choices(v)
             items = if (list != null) {
                 knownItems(list, v)
             } else {
@@ -327,7 +323,7 @@ class ScheduleSetupViewModel @Inject constructor(
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
         // One write: the items, the engine chosen, and the maker's table, which goes with its schedule.
-        writer.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
+        makers.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
         onDone(vehicleId)
     }
 }

@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.schedule
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.cosgriff.glovebox.data.db.KnownScheduleLists
 import io.cosgriff.glovebox.domain.KnownScheduleFile
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
@@ -15,10 +16,10 @@ import javax.inject.Singleton
  * The makers' maintenance schedules that ship with the app: every file in `assets/known-schedules`,
  * read once. What a list is and what may be in one is `KnownSchedules` in `:domain`, where a test
  * reads these same files, so one that doesn't parse fails the build's tests; here such a file is
- * simply left out.
+ * simply left out. `:data`'s `MakersSchedules` reads them through [KnownScheduleLists].
  */
 @Singleton
-class KnownScheduleCatalog @Inject constructor(@ApplicationContext private val context: Context) {
+class KnownScheduleCatalog @Inject constructor(@ApplicationContext private val context: Context) : KnownScheduleLists {
     private val loaded: List<KnownScheduleList> by lazy {
         try {
             context.assets.list(KnownSchedules.ASSET_DIR).orEmpty().sorted().mapNotNull { name ->
@@ -30,5 +31,5 @@ class KnownScheduleCatalog @Inject constructor(@ApplicationContext private val c
         }
     }
 
-    suspend fun lists(): List<KnownScheduleList> = withContext(Dispatchers.IO) { loaded }
+    override suspend fun lists(): List<KnownScheduleList> = withContext(Dispatchers.IO) { loaded }
 }

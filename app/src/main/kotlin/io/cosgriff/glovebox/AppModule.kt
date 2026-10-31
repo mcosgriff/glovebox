@@ -4,6 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.cosgriff.glovebox.data.db.KnownScheduleLists
+import io.cosgriff.glovebox.ui.schedule.KnownScheduleCatalog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,4 +26,8 @@ annotation class ApplicationScope
 object AppModule {
     @Provides @Singleton @ApplicationScope
     fun applicationScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    /** The bundled makers' schedules, from the app's assets, for `:data`'s `MakersSchedules`. */
+    @Provides
+    fun knownScheduleLists(catalog: KnownScheduleCatalog): KnownScheduleLists = catalog
 }

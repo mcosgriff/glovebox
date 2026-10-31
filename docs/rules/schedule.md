@@ -27,10 +27,15 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   same; `vehicles.bodyStyle` is set from vPIC's `BodyClass` only where it is plainly one of them, or picked on
   "Is this your vehicle?", and a blank matches no list that names a body: setup asks.
 - **Taking up a schedule is one transaction** (#429): setup's save and "Use the maker's schedule" go through
-  `ScheduleWriter.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
+  `MakersSchedules.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
   engine and powertrain, and adds the maker's table (read from the vehicle as it is) unless the vehicle has one.
   The caller builds the item rows from the owner's picks. A process that dies part-way must leave the vehicle as
   it was, never a maker's schedule without its table.
+- **Which maker's schedule a vehicle is on is asked of `MakersSchedules.forVehicle`** (`:data`, #576), never
+  matched by a screen: the list its items were taken up from (`knownList`) while that list still ships, else the
+  list that covers the vehicle as it is on record. So a list the owner picked keeps its offers (newer intervals,
+  "Use the maker's table") after the vehicle's engine text stops matching it. Matching from the vehicle's fields is
+  written once there, for anything new to match by.
 - A vehicle set up earlier is offered "Use the maker's schedule"; there is no replace of the user's own items.
   **A replaced typical item is deleted** (the user found an unticked twin confusing) unless a service was logged
   against it, when it stays untracked. That is the one place a typical item is deleted.
