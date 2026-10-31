@@ -1,6 +1,6 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
-agp = "9.4.1"
+agp = "9.5.0"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 coroutines = "1.11.0"
@@ -20,7 +20,7 @@ glance = "1.2.0"
 room = "3.0.3"
 sqlite = "2.7.1"
 sqlcipher = "4.19.1"
-tink = "1.23.0"
+tink = "1.24.0"
 ktor = "3.6.0"
 camerax = "1.6.2"
 pdf = "1.0.0-beta01"
@@ -47,7 +47,7 @@ profileinstaller = "1.4.1"
 
 junit = "4.13.2"
 # Screenshot tests (#233) on the JVM through Robolectric: test only, nothing of it ships.
-roborazzi = "1.76.0"
+roborazzi = "1.77.0"
 # Test coverage for Codecov (CI only; nothing of it ships).
 kover = "0.9.11"
 jsonSchemaValidator = "3.0.8"
