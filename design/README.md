@@ -106,6 +106,27 @@ where they differ from `Parts*`, `Parts*` wins. Undo after delete is on `DeleteR
   thousands separators.
 - Record: work lines come before "Parts as printed". Breakdown bar segments are at least 4dp wide.
 
+## Shop recommended (#572)
+
+`RecommendedLog.dc.html` (variants `read`, `done`) and `RecommendedList.dc.html` (variants `list`, `home`) hold
+the real markup; the other `Recommended*` files only import them with a different `variant` / `theme`.
+
+| Board | Render | Source |
+|---|---|---|
+| Log service — invoice read: recommended by the shop (keep, note or let go) | `screens/RecommendedLog.png` · `screens/RecommendedLogDark.png` | `source/RecommendedLog.dc.html` (+ `Dark`) |
+| Log service — a ticked line matches an open recommendation: done with these? | `screens/RecommendedLogDone.png` · `screens/RecommendedLogDoneDark.png` | `source/RecommendedLogDone.dc.html` (+ `Dark`) → imports `RecommendedLog` |
+| Vehicle home — the shop recommendations row | `screens/RecommendedHome.png` · `screens/RecommendedHomeDark.png` | `source/RecommendedHome.dc.html` (+ `Dark`) → imports `RecommendedList` |
+| Shop recommended — the vehicle's open list, close and undo | `screens/RecommendedList.png` · `screens/RecommendedListDark.png` | `source/RecommendedList.dc.html` (+ `Dark`) |
+
+- Each recommendation and red or yellow finding is its own row with **Keep for later** and **Add to notes**.
+  Every row starts kept; **Keep all / Keep none** sets the whole list; neither chip means it is let go.
+  The sample shows a list already chosen row by row (4 kept, 1 in the notes, 2 let go).
+- NEEDS WORK (red) and WATCH (amber) tags carry a dot as well as colour. A kept row names the line whose log
+  closes it, as a guess the user can change.
+- A new recommendation from the same shop for the same work replaces the open one.
+- Logging matching work, by any shop or the user, asks before closing ("Done with these?", ticked by default).
+  Recommendations never change a reminder or make anything overdue.
+
 ## UX rules (apply to every screen)
 
 - **Touch targets:** every tappable thing is at least 48×48dp, including text links (pad them). Chips and

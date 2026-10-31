@@ -652,6 +652,86 @@
       "w": 390,
       "x": 5640,
       "y": 5340
+    },
+    "RecommendedLog.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2100,
+      "title": "Log service — invoice read: recommended by the shop (keep, note or let go)",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedLogDark.dc.html": {
+      "x": 0,
+      "y": 2500,
+      "w": 390,
+      "h": 2100,
+      "title": "Log service — invoice read: recommended by the shop (keep, note or let go) (dark)",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedLogDone.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "title": "Log service — a ticked line matches an open recommendation: done with these?",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedLogDoneDark.dc.html": {
+      "x": 470,
+      "y": 2500,
+      "w": 390,
+      "h": 1000,
+      "title": "Log service — a ticked line matches an open recommendation: done with these? (dark)",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedHome.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Vehicle home — the shop recommendations row",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedHomeDark.dc.html": {
+      "x": 940,
+      "y": 2500,
+      "w": 390,
+      "h": 844,
+      "title": "Vehicle home — the shop recommendations row (dark)",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedList.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1500,
+      "title": "Shop recommended — the vehicle's open list, close and undo",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "RecommendedListDark.dc.html": {
+      "x": 1410,
+      "y": 2500,
+      "w": 390,
+      "h": 1500,
+      "title": "Shop recommended — the vehicle's open list, close and undo (dark)",
+      "page": "recommended",
+      "is_interactive": true,
+      "radius": 28
     }
   },
   "createdOnFiles": {
@@ -726,6 +806,22 @@
       "kind": "title1",
       "maxW": 3210,
       "page": "parts"
+    },
+    "rectitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Shop recommended (#572) — light",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "recommended"
+    },
+    "recdark": {
+      "x": 0,
+      "y": 2220,
+      "text": "Shop recommended (#572) — dark",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "recommended"
     }
   },
   "order": [
@@ -797,7 +893,15 @@
     "PartsLogPick.dc.html",
     "PartsLogPickDark.dc.html",
     "OilInterval.dc.html",
-    "OilIntervalDark.dc.html"
+    "OilIntervalDark.dc.html",
+    "RecommendedLog.dc.html",
+    "RecommendedLogDark.dc.html",
+    "RecommendedLogDone.dc.html",
+    "RecommendedLogDoneDark.dc.html",
+    "RecommendedHome.dc.html",
+    "RecommendedHomeDark.dc.html",
+    "RecommendedList.dc.html",
+    "RecommendedListDark.dc.html"
   ],
   "pages": [
     {
@@ -815,6 +919,10 @@
     {
       "id": "parts",
       "name": "Log, edit & record"
+    },
+    {
+      "id": "recommended",
+      "name": "Shop recommended (#572)"
     }
   ],
   "title": "Glovebox"
