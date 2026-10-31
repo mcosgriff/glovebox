@@ -66,15 +66,16 @@ is the 2014 1.8T, which takes the 2015 card's automatic row ([its page](volkswag
 
 ## What isn't covered
 
-- **2012 and 2013.** NHTSA's index has no Passat card for either year. Volkswagen's 2025 reissues would be the
-  only source; they weren't read for the Passat, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+- **2012 and 2013.** NHTSA's index has no Passat card for either year. They have lists from Volkswagen's
+  reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2.5L](volkswagen-passat-2012-2013-2.5.md), [3.6L](volkswagen-passat-2012-2013-3.6.md),
+  [2012 TDI](volkswagen-passat-2012-tdi.md) and [2013 TDI](volkswagen-passat-2013-tdi.md).
 - The 2014 1.8T's gearbox row and the two 3.6L cards headed "2015" were settled by the owner on 2026-10-29
   (#553, [part B and C](https://github.com/mcosgriff/glovebox/issues/553#issuecomment-6511733565)): see the [2014–2015 1.8T](volkswagen-passat-2014-2015-1.8t.md),
   [2014–2015 3.6L](volkswagen-passat-2014-2015-3.6.md) and [2016 3.6L](volkswagen-passat-2016-3.6.md) pages.
 - **2017.** NHTSA's index has two "New Publication" filings under the 2017 Passat (`MC-10107219`,
   `MC-10107220`); `2016/MC-10107219-9999` and `2017/MC-10107219-9999` are not there (404), as for the Jetta's
-  2017 filings. Volkswagen's 2017 reissue would be the only source; left out, as for #434's question 3.
+  2017 filings. Volkswagen's 2017 reissue is the only source: [1.8T](volkswagen-passat-2017-1.8t.md) and
+  [3.6L](volkswagen-passat-2017-3.6.md) lists ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
 - **The 2018 and 2019 gearbox rows**: see the [2018 2.0T's page](volkswagen-passat-2018-2.0t.md). The 2020–2022
   automatic row: see the [2020–2021 page](volkswagen-passat-2020-2021.md); asked on #445.
 - The 2010 B6 has [its own list](volkswagen-passat-2010-2.0t.md); the 2020–2022 Passat's lists are

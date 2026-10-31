@@ -45,5 +45,5 @@ the 2014 GTI 2.0TFSI card.
   Nothing else is taken from the reissue, which is a later layout.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first two
   columns.
-- **Not covered:** 2011–2013 (see the
-  [2010 2.5L's page](volkswagen-golf-2010-2.5.md)), and the Mk7 from 2015.
+- **Not covered:** 2011–2013 ([their own list](volkswagen-golf-2011-2013-2.5.md), from the reissues), and the Mk7
+  from 2015.

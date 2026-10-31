@@ -40,7 +40,7 @@ as the model's own card for the "(if applicable)" rows. Read on 2026-10-28, as p
 - Always left out: the dealer's service sticker, the New Beetle's brake fluid row, both convertible roof
   rows, and the grey "Carefree Maintenance" shading.
 - **Not covered:**
-  - **2011–2013**, as on the 2.5L's page (asked on #434).
+  - **2011–2013** has [its own list](volkswagen-golf-2011-2013-tdi.md), from Volkswagen's reissues ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
   - **2014.** The Golf 2.0L TDI card (`2013/MC-10155943-9999`, filed again as `2013/MC-10157534-9999` and
     `2013/MC-10242463-9999`, byte for byte the same) has [a list of its own](volkswagen-golf-2014-tdi.md):
     its grid has 13 columns, to 130,000, and the 130,000 column has only "Timing Belt: Replace", so that

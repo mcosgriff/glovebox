@@ -4,9 +4,13 @@
  "modelAliases": [],
  "years": [
   2010,
+  2011,
+  2012,
+  2013,
   2014,
   2015,
-  2016
+  2016,
+  2017
  ],
  "asOf": "2026-10-25",
  "bulletins": [
@@ -22,7 +26,8 @@
      "model": "TOUAREG",
      "years": [
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -43,7 +48,8 @@
      "model": "TOUAREG",
      "years": [
       2015,
-      2016
+      2016,
+      2017
      ]
     }
    ],
@@ -51,6 +57,26 @@
     "FORWARD COLLISION AVOIDANCE: AUTOMATIC EMERGENCY BRAKING"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2024/MC-11001494-0001.pdf"
+  },
+  {
+   "id": "10210221",
+   "number": "Circular24EFREV1",
+   "date": "2022-04-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles. Criteria 05 added to claiming instructions - Criteria 05 added to claiming instructions",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
   },
   {
    "id": "10240621",
@@ -63,7 +89,14 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011
+     ]
+    },
+    {
+     "model": "TOUAREG HYBRID",
+     "years": [
+      2011
      ]
     }
    ],
@@ -73,6 +106,101 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10240620",
+   "number": "CustomerLetterA",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2011
+     ]
+    },
+    {
+     "model": "TOUAREG HYBRID",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240620-9999.pdf"
+  },
+  {
+   "id": "10168325",
+   "number": "Circular 24EF",
+   "date": "2019-11-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10168326",
+   "number": "Dealer 24EF",
+   "date": "2019-11-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10164251",
+   "number": "VWP-18-06",
+   "date": "2019-08-20",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of the Extended Emissions Warranty Limited Warranty Extension for 3.0L TDI Gen 1.2 vehicles. Added clarification on totaled vehicles and loaners.",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "DIESEL",
+    "EQUIPMENT",
+    "FUEL SYSTEM"
+   ],
+   "pdf": null
   },
   {
    "id": "10164250",
@@ -128,6 +256,7 @@
     {
      "model": "TOUAREG",
      "years": [
+      2013,
       2014
      ]
     }
@@ -149,12 +278,34 @@
     {
      "model": "TOUAREG",
      "years": [
+      2013,
       2014
      ]
     }
    ],
    "components": [
     "ENGINE AND ENGINE COOLING:EXHAUST SYSTEM:EMISSION CONTROL:CATALYTIC CONVERTOR"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10150827",
+   "number": "VWP-18-06",
+   "date": "2018-07-26",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "This document informs dealers of the Extended Emissions Warranty Limited Warranty Extension for 3.0L TDI Gen 1.2 vehicles.",
+   "products": [
+    {
+     "model": "TOUAREG",
+     "years": [
+      2011,
+      2012
+     ]
+    }
+   ],
+   "components": [
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
    ],
    "pdf": null
   },
@@ -191,6 +342,7 @@
     {
      "model": "TOUAREG",
      "years": [
+      2013,
       2014
      ]
     }
@@ -212,6 +364,9 @@
      "model": "TOUAREG",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014,
       2015,
       2016
@@ -234,6 +389,7 @@
     {
      "model": "TOUAREG",
      "years": [
+      2013,
       2014
      ]
     }
@@ -275,7 +431,9 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -296,7 +454,9 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -317,7 +477,9 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -338,7 +500,16 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
+     ]
+    },
+    {
+     "model": "TOUAREG HYBRID",
+     "years": [
+      2011,
+      2012
      ]
     }
    ],
@@ -358,7 +529,16 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
+     ]
+    },
+    {
+     "model": "TOUAREG HYBRID",
+     "years": [
+      2011,
+      2012
      ]
     }
    ],
@@ -378,7 +558,9 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -398,7 +580,9 @@
     {
      "model": "TOUAREG",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],

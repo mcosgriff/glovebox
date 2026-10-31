@@ -275,9 +275,9 @@ class ScheduleViewModelTest {
 
         var asked: Pair<String, String>? = null
         world.saver.attach { mime, name -> asked = mime to name }
-        vm.saveAsFile(file.text!!, "2013-volkswagen-golf")
+        vm.saveAsFile(file.text!!, "2008-volkswagen-golf")
         eventually { asked != null }
-        assertEquals(ScheduleExport.fileName("2013-volkswagen-golf"), asked!!.second)
+        assertEquals(ScheduleExport.fileName("2008-volkswagen-golf"), asked!!.second)
     }
 
     @Test

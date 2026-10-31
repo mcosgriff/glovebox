@@ -4,9 +4,13 @@
  "modelAliases": [],
  "years": [
   2010,
+  2011,
+  2012,
+  2013,
   2014,
   2015,
   2016,
+  2017,
   2018,
   2019,
   2020,
@@ -27,6 +31,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -49,6 +54,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -70,6 +76,7 @@
      "model": "GOLF",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2020,
@@ -94,6 +101,7 @@
      "model": "GOLF",
      "years": [
       2016,
+      2017,
       2018,
       2019,
       2020,
@@ -119,6 +127,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -141,6 +150,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -163,6 +173,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -185,6 +196,7 @@
      "years": [
       2015,
       2016,
+      2017,
       2018
      ]
     }
@@ -206,6 +218,9 @@
      "model": "GOLF",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014,
       2016,
       2018
@@ -218,6 +233,26 @@
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2023/MC-10235284-0001.pdf"
   },
   {
+   "id": "10210221",
+   "number": "Circular24EFREV1",
+   "date": "2022-04-08",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles. Criteria 05 added to claiming instructions - Criteria 05 added to claiming instructions",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
+   ],
+   "pdf": null
+  },
+  {
    "id": "10198167",
    "number": "VWP-21-03",
    "date": "2021-06-14",
@@ -228,6 +263,7 @@
     {
      "model": "GOLF",
      "years": [
+      2013,
       2014
      ]
     }
@@ -248,7 +284,8 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -258,6 +295,72 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10240620",
+   "number": "CustomerLetterA",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240620-9999.pdf"
+  },
+  {
+   "id": "10168325",
+   "number": "Circular 24EF",
+   "date": "2019-11-20",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10168326",
+   "number": "Dealer 24EF",
+   "date": "2019-11-19",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "Engine and/or transmission control module software designed and certified for similar models/model years was used in vehicles affected by this emissions service action. It is undetermined whether there could be an impact to OBD or CO2 emissions. As a precautionary measure, Volkswagen is proactively updating the software calibrations on affected vehicles.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM:SOFTWARE",
+    "ENGINE",
+    "POWER TRAIN:AUTOMATIC TRANSMISSION:CONTROL MODULE (TCM/PCM/TECM)"
+   ],
+   "pdf": null
   },
   {
    "id": "10164246",
@@ -271,6 +374,9 @@
      "model": "GOLF",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -313,7 +419,8 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -334,7 +441,8 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -356,6 +464,9 @@
      "model": "GOLF",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -419,7 +530,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -441,6 +554,9 @@
      "model": "GOLF",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -463,7 +579,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -485,12 +603,36 @@
      "model": "GOLF",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
    ],
    "components": [
     "ELECTRICAL SYSTEM:SOFTWARE",
+    "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10240652",
+   "number": "Action19J5",
+   "date": "2014-03-01",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "We would like to inform you of an upcoming Service Action. Please refer to the attached Campaign Data Sheet for additional information.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2012,
+      2013
+     ]
+    }
+   ],
+   "components": [
     "EQUIPMENT:OTHER:OWNERS/SERVICE/OTHER MANUAL"
    ],
    "pdf": null
@@ -506,7 +648,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -527,7 +671,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -547,7 +693,8 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -556,6 +703,28 @@
     "EQUIPMENT"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2013/MC-10157406-9999.pdf"
+  },
+  {
+   "id": "10157400",
+   "number": "Customer Letter",
+   "date": "2013-08-30",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Volkswagen Note (Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen Vehicles with 2.0 TFSI Engine): As part of Volkswagen?s ongoing commitment to our environment, and in cooperation with the United States Environmental Protection Agency and the California Air Resources Board, Volkswagen is informing the customers of the decision to extend the customers Emissions Control Systems Warranty for fuel injector replacement under specific conditions to 10 years or 120,000 miles, whichever occurs first. Volkswagen has determined that a faulty fuel injector may cause minor misfire conditions and, in turn, cause the Malfunction Indicator Lamp (MIL) on the instrument cluster to illuminate due to the presence of specific fault codes caused by this component. In Volkswagen's continuing efforts to assure proper performance of Volkswagen vehicles, the dealer will diagnose and replace a faulty fuel injector, if necessary, at no cost to the customer as long as the vehicle remains within the time and mileage limits of this warranty extension.",
+   "products": [
+    {
+     "model": "GOLF",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "ELECTRICAL SYSTEM",
+    "FUEL SYSTEM",
+    "GASOLINE"
+   ],
+   "pdf": null
   },
   {
    "id": "10125779",
@@ -568,7 +737,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -589,7 +760,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -610,7 +783,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -630,7 +805,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -650,7 +827,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -671,7 +850,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -691,7 +872,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -712,7 +895,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -732,7 +917,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -752,7 +939,9 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -772,7 +961,8 @@
     {
      "model": "GOLF",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],

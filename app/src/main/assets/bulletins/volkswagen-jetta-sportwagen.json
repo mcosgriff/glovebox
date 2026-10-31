@@ -4,6 +4,9 @@
  "modelAliases": [],
  "years": [
   2010,
+  2011,
+  2012,
+  2013,
   2014
  ],
  "asOf": "2026-10-25",
@@ -20,6 +23,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -40,13 +46,15 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011
      ]
     },
     {
      "model": "GOLF WAGON",
      "years": [
-      2010
+      2010,
+      2011
      ]
     }
    ],
@@ -56,6 +64,34 @@
     "GASOLINE:FUEL INJECTION SYSTEM"
    ],
    "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240621-9999.pdf"
+  },
+  {
+   "id": "10240620",
+   "number": "CustomerLetterA",
+   "date": "2021-04-23",
+   "kind": "WARRANTY_EXTENSION",
+   "byWording": true,
+   "summary": "Warranty Extension for Fuel Injectors Certain 2011 Model Year Volkswagen",
+   "products": [
+    {
+     "model": "JETTA SPORTWAGEN",
+     "years": [
+      2011
+     ]
+    },
+    {
+     "model": "GOLF WAGON",
+     "years": [
+      2011
+     ]
+    }
+   ],
+   "components": [
+    "FUEL SYSTEM",
+    "GASOLINE:FUEL INJECTION SYSTEM",
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10240620-9999.pdf"
   },
   {
    "id": "10164246",
@@ -69,6 +105,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -91,6 +130,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -113,6 +155,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -134,7 +179,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -156,6 +203,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     },
@@ -163,6 +213,9 @@
      "model": "GOLF WAGON",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -185,7 +238,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -206,7 +261,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -228,6 +285,9 @@
      "model": "JETTA SPORTWAGEN",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     },
@@ -235,6 +295,9 @@
      "model": "GOLF WAGON",
      "years": [
       2010,
+      2011,
+      2012,
+      2013,
       2014
      ]
     }
@@ -256,6 +319,7 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
+      2013,
       2014
      ]
     }
@@ -263,6 +327,27 @@
    "components": [
     "ENGINE AND ENGINE COOLING",
     "EQUIPMENT:ELECTRICAL"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "10121585",
+   "number": "Dealer Letter-Da",
+   "date": "2014-10-17",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": true,
+   "summary": "VOLKSWAGEN DEALERSHIP COMMUNICATION (Upcoming Emissions Service Action 28G8 ? USA Only Glow Plug Control Module): This document informs if the engine is started during the initial glow plug glow phase, the engine control module (ECM) may receive an incorrect reading from the glow plug control module which may cause the vehicle?s Malfunction Indicator Light (MIL) to come on. If this happens, the vehicle may not pass an IM (emissions) inspection. The corrective action taken for this issue was to Inspect and, if necessary, replace the glow plug control module. The document contains a list of frequently asked questions for dealers.",
+   "products": [
+    {
+     "model": "JETTA SPORTWAGEN",
+     "years": [
+      2012,
+      2013
+     ]
+    }
+   ],
+   "components": [
+    "ENGINE AND ENGINE COOLING"
    ],
    "pdf": null
   },
@@ -277,7 +362,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -298,7 +385,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -339,7 +428,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -360,7 +451,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -381,7 +474,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -401,7 +496,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -421,7 +518,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -442,13 +541,17 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     },
     {
      "model": "GOLF WAGON",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -468,7 +571,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -489,7 +594,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -509,7 +616,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],
@@ -529,7 +638,9 @@
     {
      "model": "JETTA SPORTWAGEN",
      "years": [
-      2010
+      2010,
+      2011,
+      2012
      ]
     }
    ],

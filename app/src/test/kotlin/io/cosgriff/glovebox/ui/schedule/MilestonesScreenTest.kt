@@ -186,7 +186,7 @@ class MilestonesScreenTest {
         scrollTo(text(R.string.save_file_button))
         compose.onNodeWithText(text(R.string.save_file_button)).performClick()
         compose.until { asked != null }
-        assertEquals(MilestoneExport.fileName("2013-volkswagen-golf"), asked)
+        assertEquals(MilestoneExport.fileName("2008-volkswagen-golf"), asked)
 
         // A milestone is deleted from its editor.
         scrollTo(text(R.string.milestones_edit_repeat, 15_000.asDistance(unit)))
