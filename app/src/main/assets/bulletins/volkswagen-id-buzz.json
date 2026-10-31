@@ -1,0 +1,151 @@
+{
+ "make": "Volkswagen",
+ "model": "ID. Buzz",
+ "modelAliases": [],
+ "years": [
+  2025
+ ],
+ "asOf": "2026-10-25",
+ "bulletins": [
+  {
+   "id": "11034612",
+   "number": "E-mail 60BD 20260609",
+   "date": "2026-06-09",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Some vehicles with a panoramic glass roof produced during a limited production period may have bonding issues at the corners of the glass roof. Dealers will inspect the roof corner bonding and re-bond the entire glass roof if needed.",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11033522",
+   "number": "Circular 60BD",
+   "date": "2026-05-14",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Some vehicles with a panoramic glass roof produced during a limited production period may have bonding issues at the corners of the glass roof. Dealers will inspect the roof corner bonding and re-bond the entire glass roof if needed.",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11033524",
+   "number": "Dealer 60BD",
+   "date": "2026-05-13",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Some vehicles with a panoramic glass roof produced during a limited production period may have bonding issues at the corners of the glass roof. Dealers will inspect the roof corner bonding and re-bond the entire glass roof if needed.",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026164",
+   "number": "Circuar 06iB",
+   "date": "2025-11-05",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Owner’s Manual Supplement - Adjusting Second Row Seats",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11026167",
+   "number": "Dealer 06iB",
+   "date": "2025-11-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Owner’s Manual Supplement - Adjusting Second Row Seats",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11016572",
+   "number": "Circular 91SK",
+   "date": "2025-03-04",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Volkswagen will replace the emergency call module for vehicles included in this service action to help address an issue that may cause complications when attempting to enroll (register) the primary user.",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  },
+  {
+   "id": "11016575",
+   "number": "Dealer 91SK",
+   "date": "2025-03-03",
+   "kind": "SERVICE_CAMPAIGN",
+   "byWording": false,
+   "summary": "Volkswagen will replace the emergency call module for vehicles included in this service action to help address an issue that may cause complications when attempting to enroll (register) the primary user.",
+   "products": [
+    {
+     "model": "ID. BUZZ",
+     "years": [
+      2025
+     ]
+    }
+   ],
+   "components": [
+    "UNKNOWN OR OTHER"
+   ],
+   "pdf": null
+  }
+ ]
+}

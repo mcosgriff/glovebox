@@ -28,7 +28,10 @@ data class KnownScheduleList(
     val unit: DistanceUnit,
     /** The guide's table, every line of it, in mileage order. */
     val milestones: List<ImportedMilestone>,
-    /** The jobs of the table that come round evenly, as reminders. Never anything the table doesn't say. */
+    /**
+     * The jobs of the table that come round evenly, as reminders. Never anything the table doesn't say. Empty
+     * only where the table is all inspections and every reminder is in [additional] (a battery-electric guide, #456).
+     */
     val intervals: List<ImportedScheduleItem>,
     /**
      * The names of the jobs the guide marks as for four-wheel drive only, in the table or among the
@@ -110,8 +113,8 @@ object KnownSchedules {
     /** The folder in the app's assets the lists live in. */
     const val ASSET_DIR = "known-schedules"
 
-    private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body")
+    private val required = KnownLists.headerKeys + setOf("milestones")
+    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -120,7 +123,8 @@ object KnownSchedules {
         // Both readers report under "items", as they do for an import file; the two errors lists are kept apart.
         val milestones = o["milestones"]?.let { MilestoneImport.read(it, check) }.orEmpty()
         val tableFailed = check.failed
-        val intervals = o["intervals"]?.let { ScheduleImport.read(it, check) }.orEmpty()
+        // Empty or left out only where every reminder is a job apart from the table (checked below, #456).
+        val intervals = o["intervals"]?.let { ScheduleImport.read(it, check, min = 0) }.orEmpty()
         val intervalsFailed = check.failed
         val e85 = o["e85"]?.let { e85(it, milestones, intervals, held = !intervalsFailed, check) }.orEmpty()
         if (!intervalsFailed) {
@@ -129,6 +133,9 @@ object KnownSchedules {
             (contradictions(milestones, plain) + fuelled.mapNotNull { onTable(milestones, it) }).forEach { check.fail("intervals", it) }
         }
         val additional = o["additional"]?.let { ScheduleImport.read(it, check) }.orEmpty()
+        if (intervals.isEmpty() && "additional" !in o && !intervalsFailed) {
+            check.fail("intervals", "must have at least one entry, unless \"additional\" has one")
+        }
         val tableJobs = milestones.flatMap { m -> m.work.map { MilestoneImport.jobKey(it) } }.toSet() +
             intervals.map { MilestoneImport.jobKey(TableJob(it.name, it.service)) }
         additional.filter { MilestoneImport.jobKey(TableJob(it.name, it.service)) in tableJobs }

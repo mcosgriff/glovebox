@@ -109,6 +109,12 @@ that is also in the table, or among `intervals`, by its line or its name, is ref
 one job both ways has to be settled on the list's page first. The drive and gearbox fields name these
 jobs as they do any other.
 
+**A list may have no `intervals`** (the field left out, or `[]`) when its `additional` has at least one job: a
+guide whose table is all inspections, such as Volkswagen's battery-electric schedule, gives its only
+reminders apart from the table (the owner's ruling on #456). A list with neither is refused, since it would
+remind of nothing. This is only for a bundled list: an `interval-schedule` import file still needs at least
+one item.
+
 Toyota's footnotes give some jobs' intervals past the end of the table, such as the inverter coolant of a
 2016–2024 hybrid (first at 150,000 miles, then every 50,000, on a table that ends at 120,000). Such a job is
 in `additional` with the footnote's figures (the owner's ruling of 2026-10-23, #33).
@@ -411,6 +417,10 @@ One page per list, named by its `id`:
 - [Volkswagen GTI, 2020–2021 (Mk7)](known-schedules/volkswagen-gti-2020-2021.md) (`volkswagen-gti-2020-2021`)
 - [Volkswagen GTI, 2022 (Mk8)](known-schedules/volkswagen-gti-2022.md) (`volkswagen-gti-2022`)
 - [Volkswagen GTI, 2023–2026 (Mk8)](known-schedules/volkswagen-gti-2023-2026.md) (`volkswagen-gti-2023-2026`)
+- [Volkswagen ID. Buzz, 2025](known-schedules/volkswagen-id-buzz-2025.md) (`volkswagen-id-buzz-2025`)
+- [Volkswagen ID.4, 2021](known-schedules/volkswagen-id4-2021.md) (`volkswagen-id4-2021`)
+- [Volkswagen ID.4, 2022](known-schedules/volkswagen-id4-2022.md) (`volkswagen-id4-2022`)
+- [Volkswagen ID.4, 2023–2026](known-schedules/volkswagen-id4-2023-2026.md) (`volkswagen-id4-2023-2026`)
 - [Volkswagen Jetta 1.4T, 2016 (Mk6)](known-schedules/volkswagen-jetta-2016-1.4t.md) (`volkswagen-jetta-2016-1.4t`)
 - [Volkswagen Jetta 1.4T, 2019 (Mk7)](known-schedules/volkswagen-jetta-2019-1.4t.md) (`volkswagen-jetta-2019-1.4t`)
 - [Volkswagen Jetta 1.4T, 2020–2021 (Mk7)](known-schedules/volkswagen-jetta-2020-2021-1.4t.md) (`volkswagen-jetta-2020-2021-1.4t`)

@@ -30,10 +30,11 @@ class KnownSchedulesTest {
         { "name": "Swap the tires round", "everyMiles": 8000, "everyMonths": 8, "service": "rotation" }
     ]"""
 
-    private fun file(table: String = someTable, intervals: String = someIntervals, extra: String = "", model: String = "Roadster") = """
+    /** [intervals] null leaves the field out. */
+    private fun file(table: String = someTable, intervals: String? = someIntervals, extra: String = "", model: String = "Roadster") = """
         { "id": "made-up", "title": "Made-up Roadster", "make": "Acme", "model": "$model", "years": { "from": 2001, "to": 2005 },
           "source": { "name": "Acme service booklet", "url": "https://example.test/booklet", "retrieved": "2026-01-02", "note": "A made-up booklet.", "basis": "Made up for the tests." },
-          $extra "milestones": $table, "intervals": $intervals }
+          $extra "milestones": $table${intervals?.let { ", \"intervals\": $it" }.orEmpty()} }
     """.trimIndent()
 
     private val roadster get() = (KnownSchedules.parse(file()) as KnownScheduleFile.Ok).list
@@ -471,6 +472,28 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a list whose table is all inspections may have only jobs apart from it`() {
+        // A made-up guide whose table only looks things over, and whose reminders are all apart from it (#456).
+        val looks = """[
+            { "atMiles": 4000, "work": [ { "name": "Look at the belts" } ] },
+            { "atMiles": 8000, "work": [ { "name": "Look at the belts" }, { "name": "Look at the hinges" } ] }
+        ]"""
+        val apart = """"additional": [ { "name": "Replace the brake fluid", "everyMonths": 24, "rule": "time-only", "service": "brake-fluid" } ],"""
+        listOf(file(table = looks, intervals = null, extra = apart), file(table = looks, intervals = "[]", extra = apart)).forEach { text ->
+            val list = (KnownSchedules.parse(text) as KnownScheduleFile.Ok).list
+            assertEquals(emptyList<ImportedScheduleItem>(), list.intervals)
+            assertEquals(listOf("Replace the brake fluid"), KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null).map { it.name })
+        }
+        // With nothing apart from the table either, there would be no reminder at all.
+        assertTrue(errors(file(table = looks, intervals = null)).single().contains("intervals"))
+        assertTrue(errors(file(table = looks, intervals = "[]")).single().contains("intervals"))
+        assertTrue(errors(file(table = looks, intervals = "[]", extra = """"additional": [],""")).isNotEmpty())
+        // An import file is unchanged: it still needs at least one item.
+        val import = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "interval-schedule", "items": [] }""")
+        assertTrue("$import", import is ImportFile.Invalid)
+    }
+
+    @Test
     fun `a flex-fuel list's E85 intervals are held to its table, and only a flex-fuel list has them`() {
         val flex = """"engine": { "label": "2.0L flex-fuel", "displacementL": 2.0, "powertrain": "flex-fuel" },"""
         // The table is drawn for E85 use: the oil in every box. On other fuel the guide says every 8,000 / 8.
@@ -547,6 +570,27 @@ class KnownSchedulesTest {
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind(null))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("6x4"))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("Other"))
+    }
+
+    @Test
+    fun `the battery-electric Volkswagens remind only of the jobs apart from the table`() {
+        fun list(year: Int, model: String = "ID.4") = KnownSchedules.match(bundled, year, "Volkswagen", model)!!
+        assertEquals(listOf("volkswagen-id4-2021", "volkswagen-id4-2022", "volkswagen-id4-2023-2026"), (2021..2026).map { list(it).id }.distinct())
+        assertEquals("volkswagen-id-buzz-2025", list(2025, "ID. Buzz").id)
+        assertEquals("volkswagen-id-buzz-2025", list(2025, "id.buzz").id)
+        assertNull(KnownSchedules.match(bundled, 2026, "Volkswagen", "ID. Buzz"))
+        fun reminders(l: KnownScheduleList) = KnownSchedules.intervalsIn(l, DistanceUnit.MILES, "AWD").associate { it.service to (it.normal to it.rule) }
+        listOf(list(2021), list(2022), list(2023), list(2025, "ID. Buzz")).forEach { l ->
+            // The table is all inspections; nothing on it is a reminder.
+            assertTrue(l.id, l.intervals.isEmpty())
+            assertEquals(l.id, Interval(null, 24) to DueRule.TIME_ONLY, reminders(l)["brake-fluid"])
+        }
+        assertEquals((10_000..120_000 step 10_000).toList(), list(2021).milestones.map { it.atMiles })
+        assertEquals((10_000..100_000 step 10_000).toList(), list(2022).milestones.map { it.atMiles })
+        // The 1/5/2021 card's filter is 40,000 or 2 years (its 11/13/2020 printing said 2 years); from 2023, 2 years alone.
+        assertEquals(Interval(40_000, 24) to null, reminders(list(2021))["cabin-air"])
+        assertEquals(Interval(40_000, 24) to null, reminders(list(2022))["cabin-air"])
+        assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, reminders(list(2024))["cabin-air"])
     }
 
     @Test
