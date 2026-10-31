@@ -223,6 +223,50 @@ class InvoiceReaderTest {
     }
 
     @Test
+    fun `approved work in the inspection report is the invoice's service, not a recommendation, wrapped or not`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 3)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Remove & Replace Suspension Struts ( Front, Both Sides )", right to "SUBTOTAL: $900.00")
+                    row(right to "Labor: $400.00")
+                    row(right to "Parts: $500.00")
+                    numbered("2", 260 to "Four Wheel Alignment", right to "SUBTOTAL: $149.99")
+                    row(right to "Labor: $149.99")
+                    row(right to "Parts: $0.00")
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $1,049.99")
+                    row(right to "Total Labor: $549.99")
+                    row(right to "Total Parts: $500.00")
+                }
+                page {
+                    header(2, 3)
+                    row(left to "INSPECTION REPORT")
+                    row(left to "Steering/Suspension")
+                    row(left to "Struts leaking, alignment out")
+                    row(left to "Four Wheel Alignment", 1100 to "$149.99 +tax", 1500 to "Approved by phone, 10:29am 11/24/25")
+                    row(left to "Remove & Replace Suspension Struts ( Front, Both", 1500 to "Approved by phone, 9:56am 11/24/25")
+                    row(left to "Sides )", 1100 to "$900.00 +tax")
+                    row(left to "Lights")
+                    row(left to "Fog lights not working")
+                    row(left to "Electrical Concern Testing and Analysis", 1100 to "$203.26 +tax")
+                }
+                page {
+                    header(3, 3)
+                    row(left to "Past Recommendations")
+                    row(left to "Synthetic Oil Change", 1100 to "$141.99 +tax")
+                    row(left to "Attached Images:")
+                    row(left to "IMG 2041")
+                }
+            },
+        )
+        assertEquals(
+            listOf("Electrical Concern Testing and Analysis" to 20_326L, "Synthetic Oil Change" to 14_199L),
+            r.recommendations.map { it.text to it.cents },
+        )
+    }
+
+    @Test
     fun `a recommendation's "+taxes and fees" is not its wording, even wrapped onto a line of its own`() {
         val r = read(
             invoice {

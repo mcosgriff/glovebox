@@ -74,6 +74,11 @@ class LineGuessTest {
         assertEquals(emptyList<String>(), LineGuess.guesses("Vehicle health report"))
         // "Water pump checked" must never reset the pump, split or not.
         assertEquals(listOf("wipers"), LineGuess.guesses("Water pump checked and wipers replaced"))
+        // The check engine light is a diagnosis, not the lights; a leak test is not a check of the fluids.
+        assertEquals(emptyList<String>(), LineGuess.guesses("Check Engine Light Testing and Analysis"))
+        assertEquals(emptyList<String>(), LineGuess.guesses("Fluid Leak Degrease & Dye Test"))
+        assertEquals(listOf("lights-check"), LineGuess.guesses("Exterior lights inspected"))
+        assertEquals(listOf("fluid-check"), LineGuess.guesses("All fluid levels checked"))
     }
 
     @Test
