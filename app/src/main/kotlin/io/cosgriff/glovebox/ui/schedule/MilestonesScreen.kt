@@ -90,6 +90,8 @@ import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.MilestonePlace
 import io.cosgriff.glovebox.domain.MilestoneStatus
 import io.cosgriff.glovebox.domain.Milestones
+import io.cosgriff.glovebox.domain.MilestoneContinuation
+import androidx.compose.material.icons.outlined.Info
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
@@ -132,6 +134,10 @@ data class MilestonesState(
     /** The vehicle's drive type, which decides which of a maker's jobs are for it. */
     val drivetrain: String? = null,
     val transmission: String? = null,
+    /** Where a maker's table ends when Glovebox carries it on past its last column (#568); null when it isn't. */
+    val continuedAfter: Int? = null,
+    /** The names of the maker's jobs that aren't carried on, as the table gives them no even spacing. */
+    val notContinued: List<String> = emptyList(),
 )
 
 /**
@@ -192,10 +198,18 @@ class MilestonesViewModel @Inject constructor(
             }
             // A table that repeats goes on past what is shown, like the view built from the schedule; one that ends doesn't.
             val every = vehicle.milestonesRepeatEveryMiles?.takeIf { it >= saved.maxOf { m -> m.atMiles } }
-            val list = if (every != null) MilestoneImport.milestones(saved, every, current, more = count - Milestones.AHEAD) else MilestoneImport.milestones(saved)
+            // A maker's table that doesn't repeat is carried on past its last column from its own rows (#568).
+            val makers = vehicle.milestonesKnownList?.let { id -> lists.firstOrNull { it.id == id } }
+            val laid = MilestoneContinuation.laidOut(
+                saved, every, fromMaker = vehicle.milestonesKnownList != null,
+                later = makers?.let { KnownSchedules.intervalsIn(it, vehicle.unit, vehicle.drivetrain, vehicle.transmission) }.orEmpty(),
+                current = current, more = count - Milestones.AHEAD,
+            )
             return@combine MilestonesState(
                 vehicleName = name,
-                milestones = Milestones.status(list, done, current, continues = every != null),
+                milestones = Milestones.status(laid.milestones, done, current, continues = every != null),
+                continuedAfter = laid.endsAt.takeIf { laid.continues },
+                notContinued = if (laid.continues) laid.notContinued.map { it.name } else emptyList(),
                 current = current,
                 swap = swap,
                 unit = vehicle.unit,
@@ -387,7 +401,9 @@ internal fun MilestonesContent(
     val list = rememberLazyListState()
     // Opens on the next milestone, with the past above it. Once only: after that the user is scrolling.
     var placed by rememberSaveable { mutableStateOf(false) }
-    val rows = Milestones.folded(state.milestones)
+    // The maker's table and Glovebox's continuation of it are folded apart, so the note between them has a place.
+    val rows = state.milestones.partition { !it.milestone.continued }.let { (makers, continued) -> Milestones.folded(makers) + Milestones.folded(continued) }
+    val firstContinued = rows.indexOfFirst { it.first().milestone.continued }.takeIf { it >= 0 && state.continuedAfter != null }
     // Open or closed is the user's once they touch it: a card they tapped, or everything through the two
     // buttons. Until then only the next milestone is open, so the screen reads as a list of mileages.
     var all by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -423,7 +439,9 @@ internal fun MilestonesContent(
     LaunchedEffect(rows.isNotEmpty()) {
         if (!placed && rows.isNotEmpty()) {
             val next = rows.indexOfFirst { it.first().place == MilestonePlace.NEXT }
-            if (next > 0) list.scrollToItem(next + HEADER_ITEMS)
+            // The note on the continuation is one more item above everything after it; when the next milestone is
+            // the first continued one, the list opens on the note, so it is read before the milestone.
+            if (next > 0) list.scrollToItem(next + HEADER_ITEMS + if (firstContinued != null && next > firstContinued) 1 else 0)
             placed = true
         }
     }
@@ -467,7 +485,10 @@ internal fun MilestonesContent(
                     }
                 }
             }
-            rows.forEach { row ->
+            rows.forEachIndexed { index, row ->
+                if (index == firstContinued && state.continuedAfter != null) {
+                    item(key = "continued") { ContinuedNote(state.continuedAfter, state.notContinued, unit) }
+                }
                 val first = row.first().milestone.atMiles
                 if (row.size == 1 || first in openedRuns) {
                     items(row, key = { it.milestone.atMiles }) { m ->
@@ -476,8 +497,9 @@ internal fun MilestonesContent(
                             open = isOpen(m),
                             onToggle = { toggle(m) },
                             onOpenRecord = onOpenRecord,
-                            // Only the user's own table can be edited; a repeat is the milestone it repeats.
-                            onEdit = if (state.fromTable) ({ onEdit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
+                            // Only the user's own table can be edited; a repeat is the milestone it repeats. Glovebox's
+                            // continuation isn't in the table, so there is nothing of it to edit.
+                            onEdit = if (state.fromTable && !m.milestone.continued) ({ onEdit(m.milestone.repeatOf ?: m.milestone.atMiles) }) else null,
                             unit = unit,
                         )
                     }
@@ -527,7 +549,13 @@ internal fun MilestonesContent(
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                     Text(state.repeatsEveryMiles?.let { stringResource(R.string.milestones_repeats_every, it.asDistance(unit)) } ?: stringResource(R.string.milestones_no_repeat), style = MaterialTheme.typography.bodyLarge)
                                     Text(
-                                        stringResource(if (state.repeatsEveryMiles != null) R.string.milestones_repeat_detail else R.string.milestones_ends_detail),
+                                        stringResource(
+                                            when {
+                                                state.repeatsEveryMiles != null -> R.string.milestones_repeat_detail
+                                                state.continuedAfter != null -> R.string.milestones_continued_detail
+                                                else -> R.string.milestones_ends_detail
+                                            },
+                                        ),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = scheme.onSurfaceVariant,
                                     )
@@ -576,6 +604,41 @@ internal fun MilestonesContent(
                             color = scheme.onSurfaceVariant,
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Once per screen, between a maker's last milestone and Glovebox's continuation of it: where the maker's table
+ * ends, that what follows isn't the maker's, and the jobs it doesn't carry on (rule 5 of known-schedules.md).
+ */
+@Composable
+private fun ContinuedNote(endsAt: Int, notContinued: List<String>, unit: DistanceUnit) {
+    val scheme = MaterialTheme.colorScheme
+    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
+            Text(
+                stringResource(R.string.milestones_continued_heading),
+                Modifier.semantics { heading() },
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = scheme.onSurfaceVariant,
+            )
+            HorizontalDivider(Modifier.weight(1f), color = scheme.outlineVariant)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(stringResource(R.string.milestones_continued_note, endsAt.asDistance(unit)), style = MaterialTheme.typography.bodyMedium)
+                if (notContinued.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.milestones_not_continued, notContinued.joinToString(", ")),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -634,6 +697,7 @@ private fun MilestoneCard(
                             pluralStringResource(R.plurals.completed, completed, completed.asNumber()).takeIf { completed > 0 },
                             m.milestone.orMonths?.let { pluralStringResource(R.plurals.milestones_or_months, it, it.asNumber()) },
                             m.milestone.repeatOf?.let { stringResource(R.string.milestones_repeat_of, it.asDistance(unit)) },
+                            stringResource(R.string.milestones_continued).takeIf { m.milestone.continued },
                             // With a replaced cluster the dash never shows the milestone's figure, so say what it will show.
                             swap?.takeIf { m.place != MilestonePlace.PAST && m.milestone.atMiles - it.offset > 0 }
                                 ?.let { stringResource(R.string.milestones_on_dash, (m.milestone.atMiles - it.offset).asDistance(unit)) },

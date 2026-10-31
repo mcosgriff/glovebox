@@ -1538,6 +1538,11 @@
         <item quantity="other">or %1$s months</item>
     </plurals>
     <string name="milestones_repeat_of">repeat of %1$s</string>
+    <string name="milestones_continued">continued by Glovebox</string>
+    <string name="milestones_continued_heading">CONTINUED BY GLOVEBOX</string>
+    <string name="milestones_continued_note">The maker\'s table ends at %1$s. Past it, Glovebox carries on each job the table marks at an even spacing. These milestones aren\'t the maker\'s: check your service manual.</string>
+    <string name="milestones_not_continued">Not continued, as the table shows no even spacing for them: %1$s</string>
+    <string name="milestones_continued_detail">Glovebox continues it past its last milestone from its own rows</string>
     <string name="milestones_on_dash">%1$s on the dash</string>
     <string name="milestones_next_in">NEXT · IN %1$s</string>
     <string name="milestones_next">NEXT</string>

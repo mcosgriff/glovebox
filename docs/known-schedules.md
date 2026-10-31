@@ -56,7 +56,17 @@ of the lists; how each one was made is recorded on its own page, `known-schedule
    are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
    ticked, and are removed when the schedule is taken, so each job is on the list once. One that has a
    service logged against it is kept, untracked, so that record keeps its link.
-9. **A table doesn't repeat unless the guide says it does.**
+9. **A table doesn't repeat unless the guide says it does**, but maintenance doesn't stop at its last
+   column (the owner, 2026-10-31, #568). Past it, the Milestones view continues each **regular** row: a
+   job the table marks at least twice, at one even spacing, on to its last column (10K, 20K … 120K is every
+   10,000; 40K/80K/120K every 40,000). A job whose marks follow no single cycle (a one-off, a "first at
+   100,000, then every 50,000" the table shows once, a row that differs between columns or stops early) is
+   not continued, and the view says the maker's table ends there for it. A job the guide starts past the
+   last column (`firstAtMiles`) comes in from its first time. The continued milestones are marked as
+   Glovebox's, once per screen with "check your service manual" (rule 5), never as the maker's; they reach
+   the car's mileage plus the table's length. The list file is unchanged: nothing is written for the
+   continuation. The guide's own repeat statement, where there is one (a table's repeat), still wins.
+   `MilestoneContinuation` in `:domain`.
 
 ## The file
 

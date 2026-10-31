@@ -533,6 +533,14 @@ class ScreensScreenshotTest(private val shade: Shade) {
     }
 
     @Test
+    fun milestonesContinued() = compose.shoot("milestones_continued", shade) {
+        MilestonesContent(
+            Fixtures.milestonesContinued, onBack = {}, onOpenRecord = {},
+            onEdit = {}, onShowMore = {}, onAddMilestone = {}, onChangeRepeat = {}, onSaveFile = {}, onRemove = {}, onAddKnown = {},
+        )
+    }
+
+    @Test
     fun settings() = compose.shoot("settings", shade) {
         SettingsContent(
             Fixtures.settings, Fixtures.settingsVehicles, canLock = true,

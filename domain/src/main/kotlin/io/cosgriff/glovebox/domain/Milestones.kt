@@ -9,8 +9,10 @@ data class MilestoneJob(val key: String, val name: String)
  * A mileage point with the work listed there, the way an owner's manual prints a schedule.
  * [atMiles] is miles the vehicle has really covered, not what a replaced cluster reads.
  * [repeatOf] is set on a later round of a table that repeats: the mileage it is written at in the table.
+ * [continued] marks Glovebox's continuation of a maker's table past its last column ([MilestoneContinuation]),
+ * never the maker's own.
  */
-data class Milestone(val atMiles: Int, val jobs: List<MilestoneJob>, val orMonths: Int? = null, val repeatOf: Int? = null)
+data class Milestone(val atMiles: Int, val jobs: List<MilestoneJob>, val orMonths: Int? = null, val repeatOf: Int? = null, val continued: Boolean = false)
 
 /** One time a job was logged. [actualMiles] places it among the milestones; [readMiles] is what the dash said that day. */
 data class JobDone(val key: String, val date: LocalDate, val actualMiles: Int, val readMiles: Int, val recordId: Long)

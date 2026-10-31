@@ -61,6 +61,9 @@ import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.data.log.VehicleLog
 import io.cosgriff.glovebox.domain.SavedLine
+import io.cosgriff.glovebox.domain.SavedMilestone
+import io.cosgriff.glovebox.domain.TableJob
+import io.cosgriff.glovebox.domain.MilestoneContinuation
 import io.cosgriff.glovebox.domain.ReminderPresentation
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ScheduleSummary
@@ -546,6 +549,35 @@ object Fixtures {
             unit = unit,
             hasMileageItems = true,
             fromTable = false,
+        )
+    }
+
+    /**
+     * A made-up maker's table on a 10,000 grid to 60,000, carried on past its last column (#568): oil and brakes
+     * at every column, plugs every 30,000, and a belt shown once, which isn't carried on.
+     */
+    val milestonesContinued: MilestonesState = run {
+        val oil = TableJob("Change oil and filter", "oil")
+        val brakes = TableJob("Inspect brakes")
+        val plugs = TableJob("Replace spark plugs")
+        val belt = TableJob("Replace timing belt")
+        val table = (1..6).map { i ->
+            val at = i * 10_000
+            SavedMilestone(i.toLong(), at, listOfNotNull(oil, brakes, plugs.takeIf { at % 30_000 == 0 }, belt.takeIf { at == 60_000 }), orMonths = i * 12)
+        }
+        val laid = MilestoneContinuation.laidOut(table, repeatsEvery = null, fromMaker = true, later = emptyList(), current = truckOdometer)
+        MilestonesState(
+            vehicleName = "2016 Silver hatchback",
+            milestones = Milestones.status(laid.milestones, emptyList(), truckOdometer, continues = false),
+            current = truckOdometer,
+            swap = null,
+            unit = unit,
+            hasMileageItems = true,
+            fromTable = true,
+            table = table,
+            startedFrom = "From the Sample Motors Maintenance Guide, 2016 hatchback.",
+            continuedAfter = laid.endsAt,
+            notContinued = laid.notContinued.map { it.name },
         )
     }
 
