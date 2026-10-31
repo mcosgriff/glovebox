@@ -19,7 +19,7 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.monthYear
-import io.cosgriff.glovebox.ui.service.text
+import io.cosgriff.glovebox.ui.service.slashText
 import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.ui.service.unit
@@ -386,7 +386,7 @@ private fun ReminderCard(
 
 /** "every 5,000 mi" for a single limit; "10,000 mi / 12 mo" already reads as a pair. */
 @Composable
-private fun TrackedItem.everyShort(unit: DistanceUnit): String = interval.text(unit, monthsOurs = monthsWorkedOut).let { text ->
+private fun TrackedItem.everyShort(unit: DistanceUnit): String = slashText(unit).let { text ->
     if (interval.miles != null && interval.months != null) text else stringResource(R.string.reminders_every, text)
 }
 

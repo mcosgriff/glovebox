@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
-import io.cosgriff.glovebox.data.log.activeInterval
+import io.cosgriff.glovebox.data.log.scheduledOil
 import io.cosgriff.glovebox.data.log.isOil
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -59,7 +59,7 @@ data class OilChange(val schedule: CountedInterval?, val source: OilSource)
 fun List<ScheduleItemEntity>.oilChange(unit: DistanceUnit): OilChange? {
     val item = filter { it.isOil() }.sortedBy { !it.tracked }.firstOrNull() ?: return null
     return OilChange(
-        schedule = OwnOil.counted(item.activeInterval(), own = null, oil = true, unit),
+        schedule = item.scheduledOil(unit),
         source = when {
             item.knownList != null -> OilSource.MAKER
             item.templateKey != null -> OilSource.TYPICAL
@@ -73,7 +73,7 @@ fun List<ScheduleItemEntity>.oilChange(unit: DistanceUnit): OilChange? {
 fun oilChangeLine(oil: OilChange, own: Interval?, unit: DistanceUnit): String {
     val counted = OwnOil.counted(oil.schedule?.interval, own, oil = true, unit)
         ?: return stringResource(R.string.oil_none)
-    val every = counted.interval.orText(unit, counted.monthsWorkedOut)
+    val every = counted.orText(unit)
     return when {
         counted.owners -> stringResource(R.string.oil_yours_every, every)
         else -> stringResource(oil.source.everyRes, every)
