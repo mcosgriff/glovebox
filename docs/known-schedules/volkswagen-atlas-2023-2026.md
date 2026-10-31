@@ -37,7 +37,7 @@ difference looked at on the page).
 - **"AWD Clutch - Change fluid"**, every 3 years, "All Applicable Vehicles": read as on the Tiguan's list, "Change AWD
   clutch fluid (AWD)", every 36 months by time alone, no service line, in `allWheelDriveOnly`. The Atlas was sold with
   front-wheel drive and with 4Motion (NHTSA's 2025 safety-rating list: "Atlas SUV AWD" and "… FWD"). That reading
-  waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **Left out of the additional items**, as on the Tiguan's list: the front axle differential lock fluid ("All
   Applicable Vehicles"), the belt starter-generator ribbed belt (110,000, past the grid's end), the tire mobility kit
   bottle and the toothed-belt checks. The Canada-only tire rotation is left out of the levels.

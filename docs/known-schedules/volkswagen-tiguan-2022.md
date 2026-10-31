@@ -18,8 +18,8 @@ rows). Volkswagen's reissue of the card (`USA5R507921`, 12/03/2025) isn't used: 
     lists leave it out as "(if equipped)" on front-drive cars; the Tiguan was sold with front-wheel drive and with
     4Motion, so it is read as on the [2022 Golf R](volkswagen-golf-r-2022.md) and the 2018–2021 Tiguan lists:
     "Change AWD clutch fluid (AWD)", every 36 months by time alone, no service line, in `allWheelDriveOnly`. That
-    reading of the 2022 row waits on
-    [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+    reading of the 2022 row is confirmed by the owner on
+    [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **No gearbox row.** The 7-speed DSG row is "Only: Golf R, Golf GTI, Jetta GLI"; "Transmission, automatic: Change
   fluid (excluding Canada) (only non-DSG Automatic Transmission)", every 80,000 miles, names no model
   ([#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)).

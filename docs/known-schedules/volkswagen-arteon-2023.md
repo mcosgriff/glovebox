@@ -28,7 +28,7 @@ date. Read on 2026-10-29, as page images, by eye.
 - **"AWD Clutch - Change fluid"**, every 3 years, "All Applicable Vehicles": read as on the Golf R's and the
   [2023–2024 Tiguan](volkswagen-tiguan-2023-2024.md)'s lists, "Change AWD clutch fluid (AWD)", every 36 months by
   time alone, no service line, in `allWheelDriveOnly`. vPIC decodes `WVWTR7AN*PE` as "AWD/All-Wheel Drive"; that
-  reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  reading is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **Left out of the additional items**, as on the Golf R's list: the front axle differential lock fluid, the belt
   starter-generator ribbed belt (110,000, past the grid's end) and the tire mobility kit bottle ("All Applicable"),
   and the coolant pump toothed belt check. The Canada-only tire rotation is left out of the levels.

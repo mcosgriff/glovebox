@@ -80,8 +80,8 @@ AWD" and "… FWD", so 4Motion was still sold; every list carries the AWD clutch
 - **The non-DSG automatic on 2018–2022**: left out (above),
   [#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514).
 - **The AWD clutch fluid on 2022–2026**, printed "(if equipped)" (2022) and "All Applicable Vehicles" (2023 on): read
-  as an AWD job, as the Tiguan's and the Golf R's lists do; that reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  as an AWD job, as the Tiguan's and the Golf R's lists do; that reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **2019 on is not split by engine.** From 2019 the spark plug rows name the Atlas, not an engine, so the 2.0T and
   the 3.6L share each list.
 - 2027 on: no maintenance card on the owners-literature site.

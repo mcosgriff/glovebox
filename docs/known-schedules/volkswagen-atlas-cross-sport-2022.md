@@ -13,7 +13,7 @@ Source: Volkswagen's "2022 VW Maintenance Schedule - All Model Gasoline Vehicles
   equipped)"), so it is kept, "(if fitted)", as for every model.
 - **The AWD clutch fluid** "(if equipped)": "Change AWD clutch fluid (AWD)", every 36 months by time alone, in
   `allWheelDriveOnly` (sold with front-wheel drive and with 4Motion: NHTSA's 2020 and 2025 safety-rating lists); the
-  reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  reading is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **No gearbox row** ([#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)).
   No months on the columns; oil 10,000 or 12 months (#517).
 - vPIC's model list for Volkswagen, 2022 (read 2026-10-29), names it "Atlas Cross Sport". No engine is named.

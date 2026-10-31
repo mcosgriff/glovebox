@@ -17,7 +17,7 @@ from the time wins (the owner's ruling of 2026-10-23).
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years", read as on the 2022 Tiguan and
   Atlas: "Change AWD clutch fluid (AWD)", every 36 months by time alone, no service line, in `allWheelDriveOnly`. The
   Arteon was sold with 4Motion (vPIC: `WVWBR7AN*LE`, 2020, and `WVWTR7AN*PE`, 2023, "AWD/All-Wheel Drive"). That
-  reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  reading is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **No gearbox row.** The 7-speed DSG row is "Only: Golf R, Golf GTI, Jetta GLI"; the non-DSG automatic row, every
   80,000 miles, names no model
   ([#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)).

@@ -22,7 +22,7 @@ print dates. Read on 2026-10-29, as page images, by eye, and compared with each 
     (2026 lists the same models): 80,000 / 72 mo.
   - **"AWD Clutch - Change fluid"**, every 3 years, "All Applicable Vehicles": "Change AWD clutch fluid (AWD)", every
     36 months by time alone, in `allWheelDriveOnly`. NHTSA's 2025 safety-rating list has "Taos SUV AWD" and "… FWD".
-    That reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+    That reading is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
   - Not reminders, as before: the sunroof drains check ("Taos") and the camshaft toothed-belt tensioning roller check
     ("GTI, Golf R, Jetta, Taos, Tiguan (RM1)").
 - **The automatic is left out**, asked on [#455](https://github.com/mcosgriff/glovebox/issues/455#issuecomment-6493694589) (questions 1 and 2):

@@ -52,6 +52,6 @@ The Atlas Cross Sport was sold in the USA from 2020. The cards are the all-model
 
 - **The non-DSG automatic on 2020–2022**: [#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514).
 - **The AWD clutch fluid on 2022 and 2023–2026** ("(if equipped)", "All Applicable Vehicles"): read as an AWD job,
-  waiting on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - What #453 asked about 2023–2024, the 2025 automatic and the 2020–2021 trailer hitch is settled by the owner's
   ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335); the [2023–2026 page](volkswagen-atlas-cross-sport-2023-2026.md) says how.
