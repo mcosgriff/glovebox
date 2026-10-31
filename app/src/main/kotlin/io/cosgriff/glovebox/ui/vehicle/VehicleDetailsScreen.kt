@@ -6,9 +6,9 @@ import io.cosgriff.glovebox.ui.components.BackToTop
 import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import io.cosgriff.glovebox.ui.service.editableDecimal
 import io.cosgriff.glovebox.ui.screenState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.data.log.highestReading
+import androidx.compose.runtime.getValue
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -129,11 +129,8 @@ import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.DocumentDao
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.TorqueDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
@@ -210,10 +207,8 @@ sealed interface VinLookup {
 class VehicleDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
-    schedule: ScheduleDao,
+    logs: VehicleLogs,
     recalls: RecallDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
     torque: TorqueDao,
     documents: DocumentDao,
     private val photos: VehiclePhotoStore,
@@ -249,15 +244,18 @@ class VehicleDetailsViewModel @Inject constructor(
         knownTakes.save(v, item, change(v.whatItTakes()), checked)
     }
 
+    private val log = logs.observe(vehicleId)
+
     /** Null while loading, and if the vehicle no longer exists. */
     val details: StateFlow<VehicleDetails?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeAll(vehicleId),
+        log,
         recalls.observe(vehicleId),
         torque.observe(vehicleId),
         documents.observe(vehicleId),
-    ) { vehicle, items, list, specs, docs ->
-        if (vehicle == null) return@combine null
+    ) { log, list, specs, docs ->
+        if (log == null) return@combine null
+        val vehicle = log.vehicle
+        val items = log.items
         VehicleDetails(
             vehicle = vehicle,
             schedule = items.takeIf { it.isNotEmpty() }?.let { all -> ScheduleSummaries.of(all.map { it.tracked to it.useSevere }) },
@@ -280,13 +278,7 @@ class VehicleDetailsViewModel @Inject constructor(
         .screenState(viewModelScope, false)
 
     /** The highest reading so far, which a sale's final odometer starts from. */
-    val lastOdometer: StateFlow<Int?> = combine(
-        vehicles.observe(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
-    ) { vehicle, records, readings ->
-        vehicle?.highestReading(records, readings)
-    }.screenState(viewModelScope, null)
+    val lastOdometer: StateFlow<Int?> = log.map { it?.odometer }.screenState(viewModelScope, null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)
 

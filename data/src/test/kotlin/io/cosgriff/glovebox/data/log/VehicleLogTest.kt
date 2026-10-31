@@ -73,10 +73,25 @@ class VehicleLogTest {
     fun `the highest reading is in dash terms, so an old cluster's big figure doesn't win`() {
         val v = vehicle(swapped = true)
         val records = listOf(record(1, day.minusDays(10), 148_000), record(2, day.plusDays(3), 21_000))
-        assertEquals(21_000, v.highestReading(records, emptyList()))
+        assertEquals(21_000, v.log(emptyList(), records, emptyList(), Settings()).odometer)
         assertEquals(swap, v.clusterSwap())
         assertNull(vehicle().clusterSwap())
-        assertEquals(148_000, vehicle().highestReading(records, emptyList()))
+        assertEquals(148_000, vehicle().log(emptyList(), records, emptyList(), Settings()).odometer)
+    }
+
+    @Test
+    fun `the log keeps its readings as typed and gives the odometer in dash terms and in miles really covered`() {
+        val v = vehicle(swapped = true)
+        val readings = listOf(OdometerReadingEntity(id = 5, vehicleId = 1, date = day.plusDays(4), odometer = 22_500))
+        val log = v.log(emptyList(), listOf(record(1, day.minusDays(10), 148_000)), readings, Settings())
+        assertEquals(readings, log.readings)
+        assertEquals(DistanceUnit.MILES, log.unit)
+        assertEquals(22_500, log.odometer)
+        assertEquals(152_500, log.actualOdometer)
+        // Without a swap the two are the same, and a vehicle with no readings has neither.
+        assertEquals(148_000, vehicle().log(emptyList(), listOf(record(1, day, 148_000)), emptyList(), Settings()).actualOdometer)
+        assertNull(vehicle().log(emptyList(), emptyList(), emptyList(), Settings()).actualOdometer)
+        assertEquals(DistanceUnit.KILOMETERS, vehicle().copy(distanceUnit = DistanceUnit.KILOMETERS.name).log(emptyList(), emptyList(), emptyList(), Settings()).unit)
     }
 
     @Test
@@ -242,6 +257,14 @@ class VehicleLogTest {
             assertEquals(41_000, withTimeout(5_000) { logs.observe(car).filterNotNull().first { it.odometer != null } }.odometer)
             assertEquals(41_000, logs.load(car)!!.odometer)
             assertEquals(listOf(car), logs.observeGarage().first().map { it.vehicle.id })
+            assertEquals(emptyList<Long>(), logs.observeArchived().first().map { it.vehicle.id })
+
+            // Once sold, it is among the archived logs, with its records, and out of the garage.
+            db.vehicles().setArchived(car, day)
+            assertEquals(emptyList<Long>(), logs.observeGarage().first().map { it.vehicle.id })
+            val sold = logs.observeArchived().first().single()
+            assertEquals(car, sold.vehicle.id)
+            assertEquals(41_000, sold.odometer)
 
             db.vehicles().delete(db.vehicles().byId(car)!!)
             assertNull(logs.load(car))

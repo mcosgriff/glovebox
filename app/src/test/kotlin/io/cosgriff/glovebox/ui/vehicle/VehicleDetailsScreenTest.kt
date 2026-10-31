@@ -68,7 +68,7 @@ class VehicleDetailsScreenTest {
 
     private fun viewModel(id: Long) = g.viewModel {
         VehicleDetailsViewModel(
-        routeHandle(VehicleDetailsRoute(id)), g.db.vehicles(), g.db.schedule(), g.db.recalls(), g.db.service(), g.db.odometer(),
+        routeHandle(VehicleDetailsRoute(id)), g.db.vehicles(), g.logs, g.db.recalls(),
         g.db.torque(), g.db.documents(), g.vehiclePhotos, g.photoPicker, g.archiver, g.db.units(), g.knownTakes, g.makerDocuments, g.bulletins, g.settings,
         nhtsa.client,
         )

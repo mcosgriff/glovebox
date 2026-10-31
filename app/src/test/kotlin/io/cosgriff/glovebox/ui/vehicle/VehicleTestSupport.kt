@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.bulletins.BulletinCatalog
 import android.app.Application
 import android.os.Looper
@@ -83,6 +84,9 @@ class VehicleTestGarage : ExternalResource() {
     val photoPicker = VehiclePhotoPicker(vehiclePhotos, appScope)
     val documentPicker = DocumentPicker(context, documentStore, recordPhotos, appScope)
     val readingUndo = MileageReadingUndo(db.odometer(), db.vehicles(), appScope)
+
+    /** Each vehicle's log, read from this database: how the screens read a vehicle (#577). */
+    val logs = VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings)
 
     /** Adds [vehicle] (its id is the database's), with [firstReading] as its first odometer reading. */
     fun add(vehicle: VehicleEntity, firstReading: Int? = null): Long = runBlocking { db.vehicles().add(vehicle.copy(id = 0), firstReading) }

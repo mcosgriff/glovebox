@@ -2,7 +2,7 @@ package io.cosgriff.glovebox.ui.vehicle
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.data.log.highestReading
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -54,12 +54,8 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.data.db.DocumentDao
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.TorqueDao
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.TypedConfirmation
@@ -88,12 +84,9 @@ data class DeleteVehicleData(
 @HiltViewModel
 class DeleteVehicleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val vehicles: VehicleDao,
-    private val service: ServiceDao,
-    private val schedule: ScheduleDao,
+    private val logs: VehicleLogs,
     private val torque: TorqueDao,
     private val recalls: RecallDao,
-    private val odometer: OdometerDao,
     private val documents: DocumentDao,
     private val wipe: DataWipe,
     private val archiver: VehicleArchiver,
@@ -108,22 +101,17 @@ class DeleteVehicleViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val v = vehicles.byId(vehicleId) ?: return@launch
-            val records = service.recordsFor(vehicleId)
-            val readings = odometer.readingsFor(vehicleId)
+            val log = logs.load(vehicleId) ?: return@launch
             data = DeleteVehicleData(
-                vehicle = v,
-                records = records.size,
-                photos = records.sumOf { it.photos.size },
-                scheduleItems = schedule.allFor(vehicleId).size,
+                vehicle = log.vehicle,
+                records = log.records.size,
+                photos = log.records.sumOf { it.photos.size },
+                scheduleItems = log.items.size,
                 torqueSpecs = torque.observe(vehicleId).first().size,
                 recalls = recalls.recallsFor(vehicleId).size,
-                mileageReadings = readings.size,
+                mileageReadings = log.readings.size,
                 documents = documents.documentsFor(vehicleId).size,
-                lastOdometer = v.highestReading(
-                    records,
-                    readings,
-                ),
+                lastOdometer = log.odometer,
             )
         }
     }

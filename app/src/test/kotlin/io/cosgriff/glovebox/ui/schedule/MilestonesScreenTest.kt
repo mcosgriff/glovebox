@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
@@ -60,8 +61,8 @@ class MilestonesScreenTest {
     private fun show(vehicleId: Long, loads: Boolean = true) {
         vm = world.viewModel(MilestonesViewModel::class) {
             MilestonesViewModel(
-                routeHandle(MilestonesRoute(vehicleId)), world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(),
-                world.settings, world.db.milestones(), world.saver, world.makers,
+                routeHandle(MilestonesRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
+                world.db.milestones(), world.saver, world.makers,
             )
         }
         compose.show { MilestonesScreen(onBack = {}, onOpenRecord = { opened = it }, vm = vm) }

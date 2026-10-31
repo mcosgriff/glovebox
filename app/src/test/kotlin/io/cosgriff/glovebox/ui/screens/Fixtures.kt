@@ -606,7 +606,7 @@ object Fixtures {
                 categories = categories,
                 due = listOf(DueSuggestion(oil.id, oil.label, overdue = true)),
                 log = VehicleLog(
-                    vehicle = truck, items = emptyList(), records = truckRecords, swap = null, entries = truckEntries, updates = truckReadings,
+                    vehicle = truck, items = emptyList(), records = truckRecords, readings = emptyList(), swap = null, entries = truckEntries, updates = truckReadings,
                     tracked = tracked, lead = settings.leadFor(unit), defaultRule = settings.defaultRule, answering = ServiceLinks.answering(refs),
                 ),
                 readings = ServiceLog.readings(truckEntries, truckReadings),

@@ -39,7 +39,7 @@ class ArchivedVehiclesScreenTest {
     private val messages = mutableListOf<Pair<String, () -> Unit>>()
 
     private fun show(until: String) {
-        val vm = g.viewModel { ArchivedVehiclesViewModel(g.db.vehicles(), g.db.service(), g.db.odometer(), g.archiver) }
+        val vm = g.viewModel { ArchivedVehiclesViewModel(g.logs, g.archiver) }
         compose.setContent {
             GloveboxTheme {
                 ArchivedVehiclesScreen(

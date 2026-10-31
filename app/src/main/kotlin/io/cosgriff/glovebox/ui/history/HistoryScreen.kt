@@ -105,7 +105,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -171,7 +170,6 @@ data class HistoryState(
 class HistoryViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
-    service: ServiceDao,
     recalls: RecallDao,
     private val actions: RecordActions,
     overview: GarageOverview,
@@ -239,8 +237,8 @@ class HistoryViewModel @Inject constructor(
 
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
-            combine(vehicles.observe(archivedId), service.observeRecords(archivedId), logs.observe(archivedId)) { vehicle, records, log ->
-                HistoryState(listOfNotNull(vehicle), vehicle, records, odometer = log?.odometer)
+            logs.observe(archivedId).map { log ->
+                HistoryState(listOfNotNull(log?.vehicle), log?.vehicle, log?.records.orEmpty(), odometer = log?.odometer)
             }
         } else {
             combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
@@ -249,7 +247,8 @@ class HistoryViewModel @Inject constructor(
                 if (vehicle == null) {
                     flowOf(HistoryState(list, null, emptyList()))
                 } else {
-                    combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id), overview.garage) { records, recallRows, garage ->
+                    combine(logs.observe(vehicle.id), recalls.observe(vehicle.id), overview.garage) { log, recallRows, garage ->
+                        val records = log?.records.orEmpty()
                         val shown = garage.vehicles.firstOrNull { it.vehicle.id == vehicle.id }
                         HistoryState(
                             list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())),
