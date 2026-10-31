@@ -27,6 +27,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -63,6 +64,7 @@ class ScheduleWorld {
     val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
     val settings = SettingsRepository(context)
     val catalog = KnownScheduleCatalog(context)
+    val makers = MakersSchedules(catalog, db)
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val saver = ExportSaver(context, appScope)
     val actions by lazy {

@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.data.log.highestReading
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
-import io.cosgriff.glovebox.data.db.toRows
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -22,8 +22,6 @@ import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
-import io.cosgriff.glovebox.domain.BodyStyles
-import io.cosgriff.glovebox.domain.Powertrains
 import kotlinx.coroutines.flow.flow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -148,7 +146,7 @@ class MilestonesViewModel @Inject constructor(
     settings: SettingsRepository,
     private val table: MilestoneDao,
     private val saver: ExportSaver,
-    catalog: KnownScheduleCatalog,
+    private val makers: MakersSchedules,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<MilestonesRoute>().vehicleId
 
@@ -159,7 +157,7 @@ class MilestonesViewModel @Inject constructor(
         Triple(records, readings, rows)
     }
 
-    private val knownLists = flow { emit(catalog.lists()) }
+    private val knownLists = flow { emit(makers.lists()) }
 
     /**
      * Null while loading, and if the vehicle no longer exists. Not read through `VehicleLogs`: milestones go by
@@ -219,7 +217,7 @@ class MilestonesViewModel @Inject constructor(
             unit = vehicle.unit,
             hasMileageItems = tracked.isNotEmpty(),
             fromTable = false,
-            known = KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle)),
+            known = makers.forVehicle(vehicle),
             drivetrain = vehicle.drivetrain,
             transmission = vehicle.transmission,
         )
@@ -268,15 +266,8 @@ class MilestonesViewModel @Inject constructor(
      * It is then an ordinary table: edited, saved as a file or removed like one the user typed.
      */
     fun addKnown() {
-        val s = state.value ?: return
-        val list = s.known ?: return
-        viewModelScope.launch {
-            table.addKnown(
-                vehicleId,
-                list.id,
-                KnownSchedules.milestonesIn(list, s.unit, s.drivetrain, s.transmission).map { it.toRows(vehicleId) },
-            )
-        }
+        val list = state.value?.known ?: return
+        viewModelScope.launch { makers.addTable(vehicleId, list) }
     }
 
     fun setRepeat(everyMiles: Int?) = viewModelScope.launch { table.setRepeat(vehicleId, everyMiles) }
