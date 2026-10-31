@@ -25,7 +25,11 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**. A list's
   `body` (#185) tells a sedan from a hatchback of one engine where their guides differ and NHTSA names both the
   same; `vehicles.bodyStyle` is set from vPIC's `BodyClass` only where it is plainly one of them, or picked on
-  "Is this your vehicle?", and a blank matches no list that names a body: setup asks.
+  "Is this your vehicle?", and a blank matches no list that names a body: setup asks. `convertible` (#569) tells
+  the Beetle Convertible from the Beetle. A list's `trim` (#569) tells apart two cars of one engine size and fuel
+  that only vPIC's `Trim` does (the 2011–2016 Jetta GLI from the Jetta 2.0L 8-valve): it names a word the
+  vehicle's trim has, or hasn't, and a vehicle with no trim on record matches neither: setup asks. Neither is a
+  new vehicle field; both read what the vehicle already has.
 - **Taking up a schedule is one transaction** (#429): setup's save and "Use the maker's schedule" go through
   `MakersSchedules.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
   engine and powertrain, and adds the maker's table (read from the vehicle as it is) unless the vehicle has one.

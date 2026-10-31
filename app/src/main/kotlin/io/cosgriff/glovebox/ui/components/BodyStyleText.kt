@@ -9,4 +9,5 @@ import io.cosgriff.glovebox.domain.BodyStyle
 internal fun BodyStyle.label(): Int = when (this) {
     BodyStyle.SEDAN -> R.string.body_style_sedan
     BodyStyle.HATCHBACK -> R.string.body_style_hatchback
+    BodyStyle.CONVERTIBLE -> R.string.body_style_convertible
 }

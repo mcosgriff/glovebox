@@ -126,6 +126,7 @@
     <string name="add_vehicle_body_style_note">Only matters where the maker\'s schedule differs, as it does for some sedans and hatchbacks of one model. NHTSA\'s answer is filled in only where it says so plainly.</string>
     <string name="body_style_sedan">Sedan</string>
     <string name="body_style_hatchback">Hatchback</string>
+    <string name="body_style_convertible">Convertible</string>
     <string name="add_vehicle_transmission">Transmission</string>
     <string name="add_vehicle_engine_code">Engine code</string>
     <string name="add_vehicle_tpms">Tire pressure sensors</string>

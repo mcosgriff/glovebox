@@ -46,14 +46,14 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
 
     /**
      * The lists the owner could pick between, one per engine (or body), when no list matches because the vehicle's
-     * engine, fuel or body isn't on record ([KnownSchedules.engineChoices]).
+     * engine, fuel, body or trim isn't on record ([KnownSchedules.engineChoices]).
      */
     suspend fun choices(vehicle: VehicleEntity): List<KnownScheduleList> =
-        KnownSchedules.engineChoices(lists(), vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle))
+        KnownSchedules.engineChoices(lists(), vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
 
-    /** What is on record about [vehicle] that a list is matched by: the only place that is said (#569 adds to it). */
+    /** What is on record about [vehicle] that a list is matched by: the only place that is said (#569 added the trim). */
     private fun match(lists: List<KnownScheduleList>, vehicle: VehicleEntity): KnownScheduleList? =
-        KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle))
+        KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
 
     /** The DAO calls in [block] are kept together or not at all. */
     internal suspend fun <T> transaction(block: suspend () -> T): T =
