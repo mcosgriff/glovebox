@@ -85,6 +85,6 @@ still sold at the end; every list carries the AWD clutch fluid in `allWheelDrive
   [#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514), asked again for the
   Tiguan on [#450](https://github.com/mcosgriff/glovebox/issues/450).
 - **The AWD clutch fluid on 2022–2024**, printed "(if equipped)" (2022) and "All Applicable Vehicles" (2023–2024):
-  read as an AWD job, as the Golf R's lists do; that reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  read as an AWD job, as the Golf R's lists do; that reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - The first-generation Tiguan's years are on the [2013–2015 Tiguan's page](volkswagen-tiguan-2013-2015.md#what-isnt-covered).

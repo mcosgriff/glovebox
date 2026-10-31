@@ -33,8 +33,8 @@ print dates. Read on 2026-10-29, as page images, by eye, and compared with each 
     toothed-belt tensioning roller check ("Arteon, GTI, Golf R, Jetta, Taos, Tiguan", 180,000 or 15 years).
 - **"AWD Clutch - Change fluid"**, every 3 years, "All Applicable Vehicles": "Change AWD clutch fluid (AWD)", every 36
   months by time alone, no service line, in `allWheelDriveOnly`, as on the Tiguan's list. NHTSA's 2024 safety-rating
-  list has "Taos SUV AWD" and "… FWD". That reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  list has "Taos SUV AWD" and "… FWD". That reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **Left out of the additional items**, as on the Tiguan's list: the front axle differential lock fluid ("All
   Applicable Vehicles"), the belt starter-generator ribbed belt (110,000, past the grid's end), the tire mobility kit
   bottle and the coolant pump toothed belt check. Not the Taos's: the 40,000-mile spark plugs (Arteon, Golf R) and

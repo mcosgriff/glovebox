@@ -33,8 +33,8 @@ print dates. Read on 2026-10-29, as page images, by eye, and compared with each 
     out on front-drive cars; the Tiguan was sold with front-wheel drive and with 4Motion (vPIC decodes
     `3VV2B7AX*RM`, 2024, as "AWD/All-Wheel Drive"), so it is read as on the
     [2023–2025 Golf R](volkswagen-golf-r-2023-2025.md): "Change AWD clutch fluid (AWD)", every 36 months by time
-    alone, no service line, in `allWheelDriveOnly`. That reading waits on
-    [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+    alone, no service line, in `allWheelDriveOnly`. That reading is confirmed by the owner on
+    [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
   - Air filter 60,000 / 72 mo; brake fluid every 24 months by time alone (USA: 3 years after registration first);
     dust and pollen filter 40,000 / 24 mo.
 - **Left out of the additional items**, as on the GTI's and Jetta's lists: the front axle differential lock fluid

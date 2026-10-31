@@ -26,7 +26,7 @@ dates. Read on 2026-10-29, as page images, by eye.
 - **"AWD Clutch - Change fluid"**, "All Applicable Vehicles": "Change AWD clutch fluid (AWD)", every 36 months by time
   alone, in `allWheelDriveOnly`, as on the Atlas's list. NHTSA's safety-rating list for 2025
   (`api.nhtsa.gov/SafetyRatings`, read 2026-10-29) has "2025 Volkswagen Atlas Cross Sport SUV AWD" and "… FWD". The
-  reading waits on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  reading is confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - Left out as on the Atlas's list: the front axle differential lock fluid, the belt starter-generator belt, the tire
   mobility kit bottle, the inspections and the Canada-only tire rotation.
 - vPIC's model lists for Volkswagen, 2023 to 2026 (`GetModelsForMakeYear`, read 2026-10-29), name it "Atlas Cross
