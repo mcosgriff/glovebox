@@ -104,10 +104,8 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.PhotoEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
+import io.cosgriff.glovebox.data.db.toModel
+import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.domain.InvoiceCharges
 import io.cosgriff.glovebox.domain.FilledFigure
 import io.cosgriff.glovebox.domain.InvoiceFill
@@ -125,6 +123,10 @@ import io.cosgriff.glovebox.domain.PartRowDrafts
 import io.cosgriff.glovebox.domain.PartRows
 import io.cosgriff.glovebox.domain.CostBreakdown
 import io.cosgriff.glovebox.domain.JobDraft
+import io.cosgriff.glovebox.domain.RecordJob
+import io.cosgriff.glovebox.domain.RecordLine
+import io.cosgriff.glovebox.domain.RecordPartRow
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.domain.JobGroups
 import io.cosgriff.glovebox.domain.JobPrice
 import io.cosgriff.glovebox.domain.JobPrices
@@ -707,53 +709,50 @@ class LogServiceViewModel @Inject constructor(
             }
 
             if (original != null) {
-                val r = original.record
+                val r = original.toModel()
                 form.date = r.date
                 form.odometerText = r.odometer.asNumber()
                 form.diy = r.diy
                 form.shopName = r.shopName.orEmpty()
                 form.costText = r.costCents?.let(::editableCost).orEmpty()
-                form.shopSuppliesText = r.shopSuppliesCents?.let(::editableCost).orEmpty()
-                form.taxText = r.taxCents?.let(::editableCost).orEmpty()
-                form.feesText = r.feesCents?.let(::editableCost).orEmpty()
+                form.shopSuppliesText = r.charges.shopSuppliesCents?.let(::editableCost).orEmpty()
+                form.taxText = r.charges.taxCents?.let(::editableCost).orEmpty()
+                form.feesText = r.charges.feesCents?.let(::editableCost).orEmpty()
                 form.notes = r.notes.orEmpty()
                 form.keptPhotos = original.photos
+                // The option each saved line is ticked as; null for a custom line.
+                val optionOf = r.lines.map { line -> options.firstOrNull { it.id == line.catalogId } ?: line.scheduleItemId?.let(optionFor::get) }
                 val ticked = mutableSetOf<String>()
                 val custom = mutableListOf<String>()
                 val kept = mutableMapOf<String, String>()
-                original.items.forEach { item ->
-                    val option = options.firstOrNull { it.id == item.catalogId }
-                        ?: item.scheduleItemId?.let(optionFor::get)
+                r.lines.zip(optionOf).forEach { (line, option) ->
                     if (option == null) {
-                        custom += item.label
-                    } else if (ticked.add(option.id) && item.label != option.label) {
+                        custom += line.label
+                    } else if (ticked.add(option.id) && line.label != option.label) {
                         // Saved as written; an edit doesn't put the line's name in its place.
-                        kept[option.id] = item.label
+                        kept[option.id] = line.label
                     }
                 }
                 form.selected = ticked
                 form.customItems = custom
                 form.keptLabels = kept
                 // Each line under the job it was priced in, by the key the form knows it by.
-                val keyOf = original.items.associate { item ->
-                    val option = options.firstOrNull { it.id == item.catalogId } ?: item.scheduleItemId?.let(optionFor::get)
-                    item.id to (option?.id ?: customKey(item.label))
-                }
-                form.storedJobs = original.jobs.sortedBy { it.position }.mapIndexed { i, job ->
+                val keyOf = r.lines.mapIndexed { i, line -> optionOf[i]?.id ?: customKey(line.label) }
+                form.storedJobs = r.jobs.mapIndexed { j, job ->
                     // Its part rows as saved, figures and all: nothing is filled in on opening.
-                    val rows = original.parts.filter { it.jobId == job.id }.sortedBy { it.position }.map { row ->
+                    val rows = job.rows.map { row ->
                         PartRowDraft(
                             id = form.nextRowId++,
                             wording = row.wording.orEmpty(),
                             quantity = row.quantityMilli?.let(::editableQuantity).orEmpty(),
                             each = row.eachCents?.let(::editableCost).orEmpty(),
                             total = row.totalCents?.let(::editableCost).orEmpty(),
-                            line = row.itemId?.let(keyOf::get),
+                            line = row.line?.let(keyOf::getOrNull),
                         )
                     }
                     JobDraft(
-                        id = i + 1,
-                        lines = original.items.filter { it.jobId == job.id }.mapNotNull { keyOf[it.id] }.distinct(),
+                        id = j + 1,
+                        lines = r.linesOf(j).map(keyOf::get).distinct(),
                         wording = job.wording,
                         labor = job.laborCents?.let(::editableCost).orEmpty(),
                         parts = job.partsCents?.let(::editableCost).orEmpty(),
@@ -791,8 +790,11 @@ class LogServiceViewModel @Inject constructor(
         viewModelScope.launch {
             with(form) {
                 val catalogIds = d.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
-                val record = ServiceRecordEntity(
-                    id = d.original?.record?.id ?: 0,
+                // Each line by the key the form knows it by, so its job and its part rows can find it.
+                val keys = selectedOptions.map { it.id } + customItems.map(::customKey)
+                val lineIndex = keys.withIndex().associate { (i, key) -> key to i }
+                val jobIndex = jobs.withIndex().flatMap { (i, j) -> j.lines.map { it to i } }.toMap()
+                val edit = ServiceRecord(
                     vehicleId = vehicleId,
                     date = date,
                     odometer = odo,
@@ -800,49 +802,24 @@ class LogServiceViewModel @Inject constructor(
                     shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
                     costCents = costCents,
                     notes = notes.trim().takeIf { it.isNotEmpty() },
-                    // Correcting a bare "last done" here doesn't turn it into a service logged at the time.
-                    enteredAsLastDone = d.original?.record?.enteredAsLastDone ?: false,
-                    // Nor does correcting an imported record make it one that was logged here.
-                    imported = d.original?.record?.imported ?: false,
-                    // An edit leaves the record in whatever visit it was linked into.
-                    visitId = d.original?.record?.visitId,
-                    shopSuppliesCents = charges.shopSuppliesCents,
-                    taxCents = charges.taxCents,
-                    feesCents = charges.feesCents,
-                )
-                // A job is kept when it says something: a price, more than one line, or the shop's own wording.
-                // A line alone and unpriced is a line as it always was.
-                val kept = jobs.filter { price(it).priced || it.lines.size > 1 || it.wording != null || it.rows != null }
-                val jobRows = kept.mapIndexed { i, j ->
-                    // A job with part rows stores no parts figure: it is their totals, worked out on read.
-                    ServiceRecordJobEntity(
-                        id = j.id.toLong(), recordId = 0, wording = j.wording, laborCents = price(j).laborCents,
-                        partsCents = if (j.rows == null) price(j).partsCents else null, position = i,
-                    )
-                }
-                val jobOf = kept.flatMap { j -> j.lines.map { it to j.id.toLong() } }.toMap()
-                // Each line numbered from 1, only so a part row can say which one it is for; the write gives ids of its own.
-                val keys = selectedOptions.map { it.id } + customItems.map(::customKey)
-                val lineId = keys.withIndex().associate { (i, key) -> key to i + 1L }
-                val items = selectedOptions.map {
-                    ServiceRecordItemEntity(
-                        id = lineId.getValue(it.id),
-                        recordId = 0,
-                        scheduleItemId = it.scheduleItemId,
-                        label = labelOf(it),
-                        catalogId = it.id.takeIf { id -> id in catalogIds },
-                        jobId = jobOf[it.id],
-                    )
-                } + customItems.map { ServiceRecordItemEntity(id = lineId.getValue(customKey(it)), recordId = 0, scheduleItemId = null, label = it, jobId = jobOf[customKey(it)]) }
-                val partRows = kept.flatMap { j ->
-                    j.rows.orEmpty().mapIndexed { k, r ->
-                        val a = amounts(r)
-                        ServiceRecordJobPartEntity(
-                            jobId = j.id.toLong(), wording = r.wording.trim().ifEmpty { null }, quantityMilli = a.quantityMilli,
-                            eachCents = a.eachCents, totalCents = a.totalCents, itemId = r.line?.let(lineId::get), position = k,
+                    lines = selectedOptions.map { RecordLine(labelOf(it), it.id.takeIf { id -> id in catalogIds }, it.scheduleItemId, jobIndex[it.id]) } +
+                        customItems.map { RecordLine(it, job = jobIndex[customKey(it)]) },
+                    jobs = jobs.map { j ->
+                        // A job with part rows stores no parts figure: it is their totals, worked out on read.
+                        RecordJob(
+                            wording = j.wording,
+                            laborCents = price(j).laborCents,
+                            partsCents = if (j.rows == null) price(j).partsCents else null,
+                            rows = j.rows.orEmpty().map { r ->
+                                val a = amounts(r)
+                                RecordPartRow(r.wording.trim().ifEmpty { null }, a.quantityMilli, a.eachCents, a.totalCents, r.line?.let(lineIndex::get))
+                            },
+                            itemized = j.rows != null,
                         )
-                    }
-                }
+                    },
+                    charges = charges,
+                ).withoutBareJobs()
+                val (record, items, jobRows, partRows) = (d.original?.toModel()?.editedAs(edit) ?: edit).toRows()
                 val added = photoPicker.takeDraft(photoKey)
                 // A paper invoice's pages go with the record as its photos unless the user turned that off. They share
                 // the record's room with its other photos (photoRoom), so they fit.
