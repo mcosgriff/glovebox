@@ -109,12 +109,13 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   figures; the gap counts them, and is "Tax and fees" only while neither tax nor fees is entered, "Other charges" once
   either is. An import or a saved record is never filled in: only the form does that.
 - Reading an invoice (#483, `InvoiceReader`, `:domain`; the screens are #484): **it only fills the form.** No
-  per-shop templates: services come from a heading, a table whose header names labor and parts, a line carrying a
-  subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when
+  per-shop templates: services come from a heading, a table whose header names labor and parts (inside a service, a
+  header without labor is that service's parts table), a line carrying a subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when
   a sum the invoice prints agrees** (parts rows, a service's subtotal, every service's labor, parts, fees and sublet
   against the totals block, the totals block or the subtotals against the grand total); otherwise it is left out,
   never guessed or worked out from the others. **Jobs come only from the services, up to the totals**: recommended,
-  declined or deferred work and an inspection report's priced items are text offered for notes, never a job. A VIN
+  declined or deferred work and an inspection report's priced items are text offered for notes, never a job; what follows a price ("+taxes and fees",
+  wrapped or not) is the price's, not the wording. A VIN
   must pass its check digit; on a line labelled VIN, at most two look-alikes (S/5, B/8, Z/2, G/6) are folded, and
   only when exactly one way passes. The odometer follows Read dash's range from the last reading on or before the
   invoice's date; out below in, or more than 1,000 past it, leaves both out. A date after today is left out. Wording

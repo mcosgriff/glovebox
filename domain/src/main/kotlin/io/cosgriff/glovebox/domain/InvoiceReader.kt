@@ -385,8 +385,10 @@ object InvoiceReader {
                     return figuresOnly(line, labelled)
                 }
             }
+            // Inside a numbered service, "PARTS  QTY  EACH  TOTAL" is that service's parts table, read as part rows.
+            val partsOfService = job != null && table == null
             if (labelled.isEmpty() && (zone == Zone.SERVICES || (zone == Zone.BEFORE && !recommending && !inTerms))) {
-                tableHeader(line)?.let { columns ->
+                tableHeader(line)?.takeUnless { cols -> partsOfService && cols.none { it.figure == InvoiceFigure.LABOR } }?.let { columns ->
                     if (zone == Zone.BEFORE) startServices(line, InvoiceSection.LINE_TABLE) else trace += InvoiceStep.SectionStarted(line.index, InvoiceSection.LINE_TABLE)
                     job = null
                     table = columns
@@ -638,8 +640,13 @@ object InvoiceReader {
             if (inTerms) return
             val ws = rest.flatten()
             val priced = ws.mapNotNull { money(it.text) }
-            val text = ws.filter { money(it.text) == null && norm(it.text) !in PRICE_WORDS && it.text != "$" }.joinToString(" ") { it.text }.trim()
+            fun wording(of: List<InvoiceWord>) = of.filter { money(it.text) == null && norm(it.text) !in PRICE_WORDS && it.text != "$" }.joinToString(" ") { it.text }.trim()
+            // What follows the price is the price's ("$58.33 +taxes and fees"); the wording is what comes before it.
+            val beforePrice = wording(ws.takeWhile { money(it.text) == null })
+            val text = if (priced.isNotEmpty() && hasLetters(beforePrice)) beforePrice else wording(ws)
             if (!hasLetters(text)) return
+            // "and fees" wrapped from the price on the line above is that price's, not a recommendation.
+            if (priced.isEmpty() && recommendations.isNotEmpty() && PRICE_WRAP.matches(text)) return
             // Under a recommendations heading, every line; after the totals with none, the priced ones (an inspection report's).
             if (recommending || priced.isNotEmpty()) {
                 val cents = priced.firstOrNull()
@@ -860,6 +867,9 @@ object InvoiceReader {
 
     /** Words beside a recommendation's price that are not its wording ("$141.99 +tax"). */
     private val PRICE_WORDS = setOf("+tax", "+ tax", "plus", "tax", "+", "ea", "each")
+
+    /** The rest of a price's "+taxes and fees" wrapped onto a line of its own. */
+    private val PRICE_WRAP = Regex("""(?i)^((and|&|\+|plus)\s*)?(tax(es)?|fees?)(\s*(and|&|\+)\s*(tax(es)?|fees?))?$""")
 
     /** Year-month-day, or month/day/year as a US shop prints it. A two-digit year is left out: which century is a guess. */
     private val DATE = Regex("""\b(\d{4})-(\d{1,2})-(\d{1,2})\b|\b(\d{1,2})/(\d{1,2})/(\d{4})\b""")

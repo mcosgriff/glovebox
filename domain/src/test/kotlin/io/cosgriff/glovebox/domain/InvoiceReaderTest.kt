@@ -183,6 +183,74 @@ class InvoiceReaderTest {
     }
 
     @Test
+    fun `a recommendation's "+taxes and fees" is not its wording, even wrapped onto a line of its own`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 1)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Front Wheel Alignment", right to "SUBTOTAL: $129.95")
+                    row(right to "Labor: $129.95")
+                    row(right to "Parts: $0.00")
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $129.95")
+                    row(right to "Total Labor: $129.95")
+                    row(right to "Total Parts: $0.00")
+                    row(left to "Past Recommendations")
+                    row(left to "Brake Inspection", 1300 to "$58.33 +taxes and fees")
+                    row(left to "Transmission Fluid Exchange Service", 1300 to "$404.99 +taxes")
+                    row(1300 to "and fees")
+                    row(left to "Coolant Flush", 1300 to "$159.99 plus tax & fees")
+                    row(left to "Wiper blades and fees waived", 1300 to "$24.00")
+                }
+            },
+        )
+        assertEquals(
+            listOf(
+                "Brake Inspection" to 5_833L,
+                "Transmission Fluid Exchange Service" to 40_499L,
+                "Coolant Flush" to 15_999L,
+                "Wiper blades and fees waived" to 2_400L,
+            ),
+            r.recommendations.map { it.text to it.cents },
+        )
+    }
+
+    @Test
+    fun `a service's parts header on one line with its columns is its parts table, not a table of work`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 1)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Replace Front Brake Pads & Rotors", right to "SUBTOTAL: $301.00")
+                    row(left to "LABOR", right to "Labor: $120.00")
+                    row(left to "Replace front brake pads and rotors", right to "Parts: $181.00")
+                    row(right to "Fees: $0.00")
+                    row(right to "Sublet: $0.00")
+                    row(left to "PARTS", mid to "QTY", 1100 to "EACH", 1350 to "TOTAL")
+                    row(left to "Disc Brake Pad Set", mid to "1.0", 1100 to "$61.00", 1350 to "$61.00")
+                    row(left to "Disc Brake Rotor", mid to "2.0", 1100 to "$60.00", 1350 to "$120.00")
+                    gap()
+                    numbered("2", 260 to "Brake Fluid Service", right to "SUBTOTAL: $95.00")
+                    row(left to "LABOR", right to "Labor: $80.00")
+                    row(left to "Perform brake fluid service", right to "Parts: $15.00")
+                    row(right to "Fees: $0.00")
+                    row(right to "Sublet: $0.00")
+                    row(left to "PARTS", mid to "QTY", 1100 to "EACH", 1350 to "TOTAL")
+                    row(left to "Brake Fluid DOT 4", mid to "1.0", 1100 to "$15.00", 1350 to "$15.00")
+                    gap()
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $396.00")
+                    row(right to "Total Labor: $200.00")
+                    row(right to "Total Parts: $196.00")
+                }
+            },
+        )
+        assertEquals(listOf("Replace Front Brake Pads & Rotors", "Brake Fluid Service"), r.jobs.map { it.wording })
+        assertEquals(listOf(JobPrice(12_000, 18_100), JobPrice(8_000, 1_500)), r.jobs.map { it.price })
+        assertEquals(listOf(6_100L, 12_000L, 1_500L), r.trace.filterIsInstance<InvoiceStep.PartRow>().map { it.totalCents })
+    }
+
+    @Test
     fun `the header every page repeats is skipped, and a service's parts join up across the page`() {
         val r = read(shopWare())
         val skipped = r.trace.filterIsInstance<InvoiceStep.RepeatedLineSkipped>().map { r.lines[it.line] }
