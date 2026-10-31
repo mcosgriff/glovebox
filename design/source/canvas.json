@@ -732,6 +732,26 @@
       "page": "recommended",
       "is_interactive": true,
       "radius": 28
+    },
+    "Milestones.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1700,
+      "title": "Milestones — the maker's table continued past its last column (#568)",
+      "page": "milestones",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "MilestonesDark.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1700,
+      "title": "Milestones — the maker's table continued past its last column (#568) (dark)",
+      "page": "milestones",
+      "is_interactive": true,
+      "radius": 28
     }
   },
   "createdOnFiles": {
@@ -822,6 +842,14 @@
       "kind": "title1",
       "maxW": 1800,
       "page": "recommended"
+    },
+    "miletitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Milestones: the maker's table continued (#568) — light and dark",
+      "kind": "title1",
+      "maxW": 860,
+      "page": "milestones"
     }
   },
   "order": [
@@ -901,7 +929,9 @@
     "RecommendedHome.dc.html",
     "RecommendedHomeDark.dc.html",
     "RecommendedList.dc.html",
-    "RecommendedListDark.dc.html"
+    "RecommendedListDark.dc.html",
+    "Milestones.dc.html",
+    "MilestonesDark.dc.html"
   ],
   "pages": [
     {
@@ -923,6 +953,10 @@
     {
       "id": "recommended",
       "name": "Shop recommended (#572)"
+    },
+    {
+      "id": "milestones",
+      "name": "Milestones continued (#568)"
     }
   ],
   "title": "Glovebox"
