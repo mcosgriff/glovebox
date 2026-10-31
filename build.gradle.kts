@@ -67,3 +67,41 @@ kover {
         }
     }
 }
+
+// Robolectric's Android jars (#585). Left to itself, Robolectric fetches android-all-instrumented from Maven
+// Central at test time, outside Gradle: no cache holds it, verification-metadata.xml never checks it, and a
+// Maven Central hiccup fails every Robolectric test in CI. Here Gradle resolves the jars (one per SDK the tests
+// run on, versions in libs.versions.toml beside `robolectric`), copies them to build/robolectric, and every unit
+// test task, Roborazzi's and Kover's runs included, reads them from there with Robolectric kept offline.
+abstract class RobolectricOffline : CommandLineArgumentProvider {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val jars: DirectoryProperty
+
+    override fun asArguments() = listOf(
+        "-Drobolectric.offline=true",
+        "-Drobolectric.dependency.dir=${jars.get().asFile.absolutePath}",
+    )
+}
+
+configure(listOf(project(":app"), project(":data"))) {
+    // One configuration per jar: in one, Gradle would keep only the highest of the versions of the one module.
+    val androidAll = mapOf(
+        "Sdk35" to rootProject.libs.robolectric.androidAll.sdk35,
+        "Sdk29" to rootProject.libs.robolectric.androidAll.sdk29,
+    ).map { (sdk, jar) ->
+        configurations.create("robolectricAndroidAll$sdk") {
+            isCanBeConsumed = false
+            isTransitive = false
+        }.also { dependencies.add(it.name, jar) }
+    }
+    val copyJars = tasks.register<Sync>("robolectricAndroidAll") {
+        description = "Copies the Android jars Robolectric runs the unit tests on, so it never downloads them."
+        androidAll.forEach { from(it) }
+        into(layout.buildDirectory.dir("robolectric"))
+    }
+    val offline = objects.newInstance<RobolectricOffline>().apply {
+        jars.fileProvider(copyJars.map { it.destinationDir })
+    }
+    tasks.withType<Test>().configureEach { jvmArgumentProviders.add(offline) }
+}
