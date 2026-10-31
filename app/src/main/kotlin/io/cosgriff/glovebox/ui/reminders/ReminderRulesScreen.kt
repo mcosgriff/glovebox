@@ -94,13 +94,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.data.log.activeInterval
 import javax.inject.Inject
 
 /** A real, logged service with both intervals, used as the worked example. */
 data class PreviewSource(
     val title: String,
+    /** What the reminder counts by (`VehicleLog.tracked`): the owner's own oil interval, Glovebox's oil months. */
     val interval: Interval,
+    /** Whether [interval]'s months are Glovebox's, worked out for an oil change that has none (ADR-0015). */
+    val monthsWorkedOut: Boolean,
     val last: LastDone,
     /** [last] as the odometer read that day; differs only for a service before a cluster replacement. */
     val lastRead: LastDone,
@@ -138,15 +140,17 @@ class ReminderRulesViewModel @Inject constructor(
 
         // The oil change if it qualifies, otherwise the first reminder that does.
         val preview = mine.sortedBy { it.templateKey != Snoozing.OIL_TEMPLATE_KEY }.firstNotNullOfOrNull { item ->
-            val counted = item.activeInterval()
-            val miles = counted?.miles ?: return@firstNotNullOfOrNull null
-            val months = counted.months ?: return@firstNotNullOfOrNull null
             val log = logOf.getValue(item.vehicleId)
+            // As the reminder counts it, so the example matches it (#575).
+            val tracked = log.tracked(item.id) ?: return@firstNotNullOfOrNull null
+            val miles = tracked.interval.miles ?: return@firstNotNullOfOrNull null
+            val months = tracked.interval.months ?: return@firstNotNullOfOrNull null
             val last = ServiceLog.lastDone(item.id, log.entries) ?: return@firstNotNullOfOrNull null
             val all = ServiceLog.readings(log.entries, log.updates)
             PreviewSource(
                 title = if (several) "${item.name} · ${names[item.vehicleId]}" else item.name,
                 interval = Interval(miles, months),
+                monthsWorkedOut = tracked.monthsWorkedOut,
                 last = last,
                 lastRead = log.swap.asReadOn(last),
                 odometer = all.maxOf { it.odometer },
@@ -334,11 +338,13 @@ private fun PreviewCard(source: PreviewSource?, rule: DueRule) {
                 fontWeight = FontWeight.Bold,
                 color = scheme.onSurfaceVariant,
             )
+            val months = pluralStringResource(R.plurals.months, source.interval.months!!, source.interval.months!!.asNumber())
             Text(
                 stringResource(
                     R.string.rules_preview_source,
                     source.interval.miles!!.asDistance(unit),
-                    pluralStringResource(R.plurals.months, source.interval.months!!, source.interval.months!!.asNumber()),
+                    // Glovebox's months are said to be, wherever a reminder's interval is shown (ADR-0015).
+                    if (source.monthsWorkedOut) stringResource(R.string.interval_months_ours, months) else months,
                     source.last.date.format(longDate),
                     source.lastRead.odometer.asDistance(unit),
                 ),

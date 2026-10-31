@@ -17,6 +17,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
@@ -110,6 +111,18 @@ fun Interval.text(unit: DistanceUnit, firstAt: Int?, monthsOurs: Boolean = false
 
 /** "Every 10,000 mi or 12 mo", saying so when the months are Glovebox's. A reminder's interval, as it counts. */
 fun TrackedItem.every(unit: DistanceUnit): String = interval.every(unit, monthsWorkedOut)
+
+/** "10,000 mi / 12 mo", saying so when the months are Glovebox's: a reminder's interval, without its first time. */
+fun TrackedItem.slashText(unit: DistanceUnit): String = interval.text(unit, monthsWorkedOut)
+
+/** "First at 100,000 mi, then every 50,000 mi / 60 mo", or [slashText] for a job with no first time of its own. */
+fun TrackedItem.text(unit: DistanceUnit): String = interval.text(unit, firstMiles, monthsWorkedOut)
+
+/** "Every 7,500 mi or 9 mo", saying so when the months are Glovebox's. */
+fun CountedInterval.every(unit: DistanceUnit): String = interval.every(unit, monthsWorkedOut)
+
+/** "7,500 mi or 9 mo", saying so when the months are Glovebox's. */
+fun CountedInterval.orText(unit: DistanceUnit): String = interval.orText(unit, monthsWorkedOut)
 
 private fun Interval.parts(unit: DistanceUnit, join: Int, monthsOurs: Boolean): String {
     val distance = miles?.asDistance(unit)

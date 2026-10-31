@@ -36,14 +36,19 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   against it, when it stays untracked. That is the one place a typical item is deleted.
 - **A list's source is said once per screen, never under every item** (the user found that too busy).
 - `firstMiles` ("first at 100,000, then every 50,000") is distance really covered; **pass the vehicle's swap
-  wherever statuses are worked out** (`TrackedItem.of`, through `toTracked(rule, swap)`).
+  wherever statuses are worked out** (`TrackedItem.of`, through `VehicleLog.tracked`, or `vehicle.tracked(items, rule,
+  swap)` for a caller that needs another swap).
 - Severe-only jobs (#136): `TrackedItem.of` returns null for them while `useSevere` is off. **One Normal / Severe
   switch, not one per condition** (the user's choice). The editor can't make one.
 - E85 (#33): a flex-fuel list's `e85` intervals are counted by while **"Runs mostly on E85"** is on, a separate
   switch shown only for items that have one, off by default; Normal / Severe is not folded into it (the
   owner's choice). **Take an item's interval through `ActiveInterval`**, never from `useSevere` alone; a reminder
-  counts by `ActiveInterval.counted` (`countedInterval(unit)`, `toTracked(rule, swap, unit)`). Import and export
-  files don't carry it.
+  counts by `ActiveInterval.counted`. Import and export files don't carry it.
+- **What a tracked item counts by has one answer: `VehicleLog.tracked`** (#575): `log.tracked` for all of them,
+  `log.tracked(itemId)` for one. Its `TrackedItem` carries the interval in force (Normal / Severe, E85, the owner's
+  own oil interval, Glovebox's oil months), its first time and whether its months are Glovebox's, so a screen words
+  it from the item alone (`TrackedItem.every(unit)`, `.text(unit)`, `.slashText(unit)`) and passes no flags. Never
+  work an item's interval out again on a screen.
 - **Oil months (#517, [ADR-0015](../adr/0015-oil-months-worked-out.md)): the one time limit Glovebox works out,**
   and the one exception to CLAUDE.md's "nothing is assumed or estimated for the user".
   An oil change (the typical `oil` item, or the owner's set to the `oil` line) whose interval in force has miles
@@ -56,12 +61,13 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
 - **The owner's own oil interval (#517, `OwnOil`): each vehicle may have one**, set from the "Oil change" row on
   Vehicle details (`OilIntervalSheet`, with the schedule's figure beside it) or the link in the oil change's item
   editor. **Once set, every oil change on the vehicle counts by it in place of the item's figures, Severe (and E85)
-  on or off** (`ActiveInterval.counted(own = …)`, `countedInterval(unit, ownOil)`, `toTracked(rule, swap, unit,
-  ownOil)`; always pass `vehicle.ownOil()`). Its months follow its miles by `OilMonths` until the owner types months,
+  on or off** (`ActiveInterval.counted(own = …)`, through `VehicleLog.tracked`; the schedule's own figure beside it
+  is `scheduledOil(unit)`). Its months follow its miles by `OilMonths` until the owner types months,
   and are then kept as typed, whatever the miles; following months are stored as none and said to be Glovebox's.
   "Use the maker's" (or the typical, or the schedule's) clears it. **Glovebox never suggests a shorter interval as
   the vehicle ages**: there is no rule that shortens it; the owner decides. The item's own figures stay as they
-  are, and the Maintenance schedule, its import and export files and the rule preview still show those.
+  are, and the Maintenance schedule and its import and export files still show those; the rule preview shows what
+  the reminder counts by (#575).
 - **Use `ItemStatus.counting`, not `lastDone != null`, to decide whether a reminder has something to count
   from.** A job the vehicle hasn't reached counts down to its first mileage, by distance only; it is not "Not
   logged yet".

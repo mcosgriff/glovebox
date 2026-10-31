@@ -339,7 +339,7 @@ private fun OwnOilCard(link: OwnOilLink, unit: DistanceUnit) {
                 Text(stringResource(R.string.item_oil_own), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 val counted = link.own?.let { OwnOil.counted(it, it, oil = true, unit) }
                 Text(
-                    counted?.let { stringResource(R.string.item_oil_own_set, it.interval.every(unit, it.monthsWorkedOut)) }
+                    counted?.let { stringResource(R.string.item_oil_own_set, it.every(unit)) }
                         ?: stringResource(R.string.item_oil_own_none),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
