@@ -24,9 +24,12 @@ class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWor
         y += HEIGHT * 1.6f
     }
 
-    /** A service's title line with its number printed large at the left, as Shop-Ware prints it. */
-    fun numbered(number: String, vararg cells: Pair<Int, String>) {
-        place(60f, number, HEIGHT * 2, 90f)
+    /**
+     * A service's title line with its number printed large at the left, as Shop-Ware prints it. [drop] moves the
+     * number's middle down by that many line heights, as Shop-Ware's sits a little below its title's.
+     */
+    fun numbered(number: String, vararg cells: Pair<Int, String>, drop: Float = 0f) {
+        place(60f, number, HEIGHT * 2, 90f, HEIGHT * drop)
         row(*cells)
         y += HEIGHT * 0.6f
     }
@@ -35,8 +38,8 @@ class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWor
         y += HEIGHT * 1.6f * lines
     }
 
-    private fun place(x: Float, text: String, height: Float, conf: Float) {
-        val middle = y + HEIGHT / 2
+    private fun place(x: Float, text: String, height: Float, conf: Float, drop: Float = 0f) {
+        val middle = y + HEIGHT / 2 + drop
         var left = x
         text.split(' ').filter { it.isNotEmpty() }.forEach { w ->
             val width = w.length * height / 2

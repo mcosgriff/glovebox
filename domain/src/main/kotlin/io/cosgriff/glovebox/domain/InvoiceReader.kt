@@ -75,7 +75,9 @@ object InvoiceReader {
             val rows = mutableListOf<MutableList<InvoiceWord>>()
             var centre = 0f
             onPage.sortedBy(::middle).forEach { w ->
-                if (rows.isNotEmpty() && abs(middle(w) - centre) <= h * SAME_LINE) {
+                // A word printed taller than the page's lines (a service's number) may sit further off its line's middle.
+                val reach = maxOf(h, w.bottom - w.top) * SAME_LINE
+                if (rows.isNotEmpty() && abs(middle(w) - centre) <= reach) {
                     rows.last() += w
                     centre = rows.last().map(::middle).average().toFloat()
                 } else {

@@ -183,6 +183,46 @@ class InvoiceReaderTest {
     }
 
     @Test
+    fun `a service's large number set a little below its title is still that title's`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 1)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Front Wheel Alignment", drop = 0.6f)
+                    row(right to "SUBTOTAL: $129.95")
+                    row(right to "Labor: $129.95")
+                    row(right to "Parts: $0.00")
+                    numbered("2", 260 to "Fluid Leak Dye Test", drop = 0.6f)
+                    row(right to "SUBTOTAL: $90.00")
+                    row(right to "Labor: $90.00")
+                    row(right to "Parts: $0.00")
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $219.95")
+                    row(right to "Total Labor: $219.95")
+                    row(right to "Total Parts: $0.00")
+                }
+            },
+        )
+        assertEquals(listOf(1, 2), r.jobs.map { it.number })
+        assertEquals(listOf("Front Wheel Alignment", "Fluid Leak Dye Test"), r.jobs.map { it.wording })
+        assertEquals(listOf(JobPrice(12_995, 0), JobPrice(9_000, 0)), r.jobs.map { it.price })
+    }
+
+    @Test
+    fun `words printed large with nothing beside them are lines of their own`() {
+        val r = read(
+            invoice {
+                page {
+                    numbered("INVOICE")
+                    numbered("PAID")
+                    header(1, 1)
+                }
+            },
+        )
+        assertEquals(listOf("INVOICE", "PAID"), r.lines.take(2).map { it.text })
+    }
+
+    @Test
     fun `a recommendation's "+taxes and fees" is not its wording, even wrapped onto a line of its own`() {
         val r = read(
             invoice {
