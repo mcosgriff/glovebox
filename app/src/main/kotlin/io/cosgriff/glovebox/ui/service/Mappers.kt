@@ -1,6 +1,9 @@
 package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.domain.enumOrNull
+import io.cosgriff.glovebox.domain.Money
+import io.cosgriff.glovebox.domain.PartQuantity
+import io.cosgriff.glovebox.domain.TypedFigures
 import java.text.DecimalFormatSymbols
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
@@ -393,3 +396,14 @@ fun editableQuantity(milli: Long): String =
 /** A cost to edit, "45.99", with the app's decimal mark and no grouping, which [typedNumber] reads back. */
 fun editableCost(cents: Long): String =
     "${cents / 100}${DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator}${(cents % 100).toString().padStart(2, '0')}"
+
+/** The forms' figures as typed in the app's locale (#578): what a draft in `:domain` asks to read and write them. */
+object AppFigures : TypedFigures {
+    override fun cents(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedDecimal()) }
+
+    override fun milli(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { PartQuantity.parseMilli(it.typedDecimal()) }
+
+    override fun costText(cents: Long): String = editableCost(cents)
+
+    override fun quantityText(milli: Long): String = editableQuantity(milli)
+}

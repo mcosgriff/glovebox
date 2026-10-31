@@ -117,17 +117,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.domain.PartAmounts
 import io.cosgriff.glovebox.domain.PartField
-import io.cosgriff.glovebox.domain.PartQuantity
 import io.cosgriff.glovebox.domain.PartRowDraft
-import io.cosgriff.glovebox.domain.PartRowDrafts
-import io.cosgriff.glovebox.domain.PartRows
 import io.cosgriff.glovebox.domain.CostBreakdown
 import io.cosgriff.glovebox.domain.JobDraft
-import io.cosgriff.glovebox.domain.RecordJob
-import io.cosgriff.glovebox.domain.RecordLine
-import io.cosgriff.glovebox.domain.RecordPartRow
+import io.cosgriff.glovebox.domain.LogDraft
+import io.cosgriff.glovebox.domain.LogTerms
+import io.cosgriff.glovebox.domain.dateOn
+import io.cosgriff.glovebox.domain.shopAmong
 import io.cosgriff.glovebox.domain.ServiceRecord
-import io.cosgriff.glovebox.domain.JobGroups
 import io.cosgriff.glovebox.domain.JobPrice
 import io.cosgriff.glovebox.domain.JobPrices
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
@@ -168,10 +165,8 @@ import io.cosgriff.glovebox.domain.ServiceLinks
 import io.cosgriff.glovebox.domain.ShopUse
 import javax.inject.Inject
 
-private const val CUSTOM_KEY = "custom:"
-
 /** The form's key for a custom line, beside the catalog's line ids. */
-internal fun customKey(label: String): String = CUSTOM_KEY + label
+internal fun customKey(label: String): String = LogDraft.customKey(label)
 
 /** A tracked reminder that's due, offered as a one-tap chip. [optionId] is the tick box it sets. */
 data class DueSuggestion(val optionId: String, val name: String, val overdue: Boolean)
@@ -220,16 +215,30 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     val dateInFuture: Boolean get() = date.isAfter(today())
     var odometerText by mutableStateOf("")
     var categoryId by mutableStateOf("")
-    var selected by mutableStateOf(emptySet<String>())
+
+    /** The lines, jobs and prices as typed (#578): every rule about them is the draft's; the form reads and words it. */
+    var draft by mutableStateOf(LogDraft())
         internal set
-    var customItems by mutableStateOf(emptyList<String>())
-        internal set
+
+    /** What the draft is read against: the vehicle's lines, named as the app names them, and figures in its locale. */
+    internal val terms: LogTerms get() = LogTerms(data?.categories.orEmpty(), { it.label }, AppFigures)
+
+    var selected: Set<String>
+        get() = draft.selected
+        internal set(value) {
+            draft = draft.copy(selected = value)
+        }
+    var customItems: List<String>
+        get() = draft.customItems
+        internal set(value) {
+            draft = draft.copy(customItems = value)
+        }
+
     /**
      * Ticked line id -> the wording it is saved with in place of the line's name: a custom line filed under
      * a line, or a record's line as it was written (an import's "Oil and filter changed"), which an edit keeps.
      */
-    var keptLabels by mutableStateOf(emptyMap<String, String>())
-        internal set
+    val keptLabels: Map<String, String> get() = draft.keptLabels
     var diy by mutableStateOf(true)
     var shopName by mutableStateOf("")
     /** Shops named on earlier records of every vehicle, which the shop field offers. */
@@ -242,7 +251,7 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
 
     val odometer: Int? get() = OdometerInput.parse(odometerText.typedNumber())
     val costValid: Boolean get() = costText.isBlank() || Money.parseCents(costText.typedNumber()) != null
-    val itemCount: Int get() = selected.size + customItems.size
+    val itemCount: Int get() = draft.itemCount
 
     /** True when the entered odometer is lower than a reading on or before [date]. Worth a warning, not a block. */
     val belowEarlierReading: Boolean
@@ -251,8 +260,7 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
             return ServiceLog.isBelowPreviousReading(data?.swap.toDash(odo, date), date, data?.readings.orEmpty())
         }
 
-    internal val selectedOptions: List<WorkOption>
-        get() = data?.categories.orEmpty().flatMap { it.options }.filter { it.id in selected }
+    internal val selectedOptions: List<WorkOption> get() = draft.selectedOptions(terms)
 
     /** Edit only: how reminders move if the form is saved as it stands. */
     val reminderChanges: List<ReminderChange>
@@ -276,32 +284,22 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     }
 
     fun toggle(optionId: String) {
-        selected = if (optionId in selected) selected - optionId else selected + optionId
-        if (optionId !in selected) keptLabels = keptLabels - optionId
+        draft = draft.toggle(optionId)
     }
 
     /** What a ticked line is saved as: its wording as written where it has one, otherwise its name. */
-    fun labelOf(option: WorkOption): String = keptLabels[option.id] ?: option.label
+    fun labelOf(option: WorkOption): String = draft.labelOf(option, terms)
 
     /**
      * The custom line [label] goes under [option], keeping its wording: the line decides which reminders it
      * counts for, and nothing else about it changes. A line already ticked keeps its own wording.
      */
     fun fileCustom(label: String, option: WorkOption) {
-        if (option.id in selected) return
-        // Its job, prices and all, goes with it to the line.
-        val from = customKey(label)
-        storedJobs = jobs.map { j -> j.copy(lines = j.lines.map { if (it == from) option.id else it }, rows = j.rows?.map { if (it.line == from) it.copy(line = option.id) else it }) }
-        if (from in unreadLabor) unreadLabor = unreadLabor - from + option.id
-        if (from in unreadParts) unreadParts = unreadParts - from + option.id
-        customItems = customItems - label
-        selected = selected + option.id
-        if (label != option.label) keptLabels = keptLabels + (option.id to label)
+        draft = draft.fileCustom(label, option, terms)
     }
 
     /** Set once an invoice has filled the form (#484); it fills a form once. */
-    var invoiceRead by mutableStateOf(false)
-        private set
+    val invoiceRead: Boolean get() = draft.invoiceRead
 
     /** What the invoice was read as, for "What was read"; null until one is. */
     var invoice by mutableStateOf<ReadInvoice?>(null)
@@ -320,96 +318,49 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
 
     /** Figures the invoice printed and no sum vouched for: outlined "Couldn't read" while left blank. */
     private var unreadFigures by mutableStateOf(emptySet<FilledFigure>())
-    private var unreadLabor by mutableStateOf(emptySet<String>())
-    private var unreadParts by mutableStateOf(emptySet<String>())
 
     val odometerUnread: Boolean get() = FilledFigure.ODOMETER in unreadFigures && odometerText.isBlank()
     val costUnread: Boolean get() = FilledFigure.TOTAL in unreadFigures && costText.isBlank()
-    fun laborUnread(job: JobDraft<String>): Boolean = job.labor.isBlank() && job.lines.any { it in unreadLabor }
-    fun partsUnread(job: JobDraft<String>): Boolean = job.rows == null && job.parts.isBlank() && job.lines.any { it in unreadParts }
+    fun laborUnread(job: JobDraft<String>): Boolean = draft.laborUnread(job)
+    fun partsUnread(job: JobDraft<String>): Boolean = draft.partsUnread(job)
 
     /**
      * What an invoice was read as goes on the form (#484), for the user to check against it; nothing is saved until
-     * they save. Each service is a line of the shop's wording: under the line the user's rule files it under, or a
-     * custom line, and its own job with the prices a sum vouched for. What was ticked stays. [notes] (the recommended
-     * work, odometer in) go after any already typed.
+     * they save. The lines and jobs are the draft's merge ([LogDraft.fill]); the visit's figures are written into
+     * their fields here. [notes] (the recommended work, odometer in) go after any already typed.
      */
     fun fill(fill: InvoiceFill, notes: String) {
-        if (invoiceRead) return
-        invoiceRead = true
-        fill.date?.takeIf { !it.isAfter(today()) }?.let { date = it }
+        val merge = draft.fill(fill, terms) ?: return
+        fill.dateOn(today())?.let { date = it }
         fill.odometer?.let { odometerText = it.asNumber() }
-        fill.shop?.let { shop ->
+        fill.shopAmong(shops)?.let { shop ->
             diy = false
-            shopName = shops.firstOrNull { it.name.equals(shop, ignoreCase = true) }?.name ?: shop
+            shopName = shop
         }
         fill.totalCents?.let { costText = editableCost(it) }
         if (notes.isNotEmpty()) this.notes = listOf(this.notes.trim(), notes).filter { it.isNotEmpty() }.joinToString("\n\n")
-
-        val options = data?.categories.orEmpty().flatMap { it.options }
-        var stored = jobs
-        var next = (stored.maxOfOrNull { it.id } ?: 0) + 1
-        val labor = mutableSetOf<String>()
-        val parts = mutableSetOf<String>()
-        val filled = mutableSetOf<String>()
-        val leftOut = fill.leftOut.toMutableList()
-        // A line is free for a service unless another service took it, or the user already typed a price on it.
-        fun free(key: String) = key !in filled && stored.none { s -> key in s.lines && (s.lines.size > 1 || s.labor.isNotBlank() || s.parts.isNotBlank() || s.rows != null) }
-        fill.jobs.forEach { j ->
-            val wording = j.wording.trim()
-            val option = j.filed?.let { id -> options.firstOrNull { it.id == id } }?.takeIf { free(it.id) }
-            val key = when {
-                option != null -> {
-                    if (option.id !in selected) {
-                        selected = selected + option.id
-                        if (wording != option.label) keptLabels = keptLabels + (option.id to wording)
-                    }
-                    option.id
-                }
-                wording.isNotEmpty() && free(customKey(wording)) -> {
-                    addCustom(wording)
-                    customKey(wording)
-                }
-                else -> {
-                    // Nowhere of its own to go: said so on the form, never dropped quietly.
-                    leftOut += j.wording
-                    return@forEach
-                }
-            }
-            filled += key
-            stored = stored.mapNotNull { s -> s.copy(lines = s.lines - key).takeIf { it.lines.isNotEmpty() } } +
-                JobDraft(next++, listOf(key), labor = j.laborCents?.let(::editableCost).orEmpty(), parts = j.partsCents?.let(::editableCost).orEmpty())
-            if (j.laborUnread) labor += key
-            if (j.partsUnread) parts += key
-        }
-        invoiceLeftOut = leftOut
-        storedJobs = stored
+        draft = merge.draft
+        invoiceLeftOut = merge.leftOut
         unreadFigures = fill.unread
-        unreadLabor = labor
-        unreadParts = parts
-        if (fill.jobs.any { it.laborCents != null || it.partsCents != null || it.laborUnread || it.partsUnread }) pricesOpen = true
+        if (merge.opensPrices) pricesOpen = true
     }
 
     fun addCustom(label: String) {
-        val trimmed = label.trim()
-        if (trimmed.isNotEmpty() && trimmed !in customItems) customItems = customItems + trimmed
+        draft = draft.addCustom(label)
     }
 
     fun removeCustom(label: String) {
-        customItems = customItems - label
+        draft = draft.removeCustom(label)
     }
 
     /**
      * The ticked lines as Work and prices lists them, by the form's own keys: a line's id, or [customKey] for a
      * custom one. Ticked lines in the catalog's order, then the custom ones.
      */
-    internal val lineKeys: List<String> get() = (selectedOptions.map { it.id } + customItems.map(::customKey)).distinct()
-
-    /** The jobs as last changed here; [jobs] is what the form shows, kept in line with the ticked lines. */
-    internal var storedJobs by mutableStateOf(emptyList<JobDraft<String>>())
+    internal val lineKeys: List<String> get() = draft.lineKeys(terms)
 
     /** Every ticked line in exactly one job (#481): its own until the user prices it together with another. */
-    val jobs: List<JobDraft<String>> get() = JobGroups.sync(storedJobs, lineKeys)
+    val jobs: List<JobDraft<String>> get() = draft.jobs(terms)
 
     /** "+ Add labor and parts" tapped. Once any job has a price the fields stay out whatever this says. */
     var pricesOpen by mutableStateOf(false)
@@ -428,51 +379,49 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     var openRows by mutableStateOf(emptySet<Int>())
         internal set
 
-    /** The form's next id for a part row; ids are its own, never a row's. */
-    internal var nextRowId = 1
-
     /** "Itemize parts": the job's parts become rows, a typed parts figure the first row's total. */
     fun itemize(jobId: Int) {
-        val row = nextRowId++
-        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.itemize(it, row) else it }
+        val row = draft.nextRowId
+        draft = draft.itemize(jobId, terms)
         openRows = openRows + row
     }
 
     fun addRow(jobId: Int) {
-        val row = nextRowId++
-        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.add(it, row) else it }
+        val row = draft.nextRowId
+        draft = draft.addRow(jobId, terms)
         openRows = openRows + row
     }
 
     fun removeRow(jobId: Int, rowId: Int) {
-        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.remove(it, rowId) else it }
+        draft = draft.removeRow(jobId, rowId, terms)
         openRows = openRows - rowId
     }
 
     /** [text] typed into one of a row's figures: two typed fill the third, only when it comes out exact. */
-    fun typeRow(jobId: Int, rowId: Int, field: PartField, text: String) = editRow(jobId, rowId) { PartRowDrafts.type(it, field, text, ::parsePart, ::formatPart) }
+    fun typeRow(jobId: Int, rowId: Int, field: PartField, text: String) {
+        draft = draft.typeRow(jobId, rowId, field, text, terms)
+    }
 
     /**
      * [text] typed into a row's Part: the part as the invoice prints it, keeping the line it is for. Typing one of
      * the job's lines by its name picks that line; clearing the box clears both.
      */
     fun nameRow(jobId: Int, rowId: Int, text: String) {
-        val line = jobs.firstOrNull { it.id == jobId }?.lines?.firstOrNull { lineName(it) == text }
-        when {
-            line != null -> pickPart(jobId, rowId, line)
-            text.isEmpty() -> editRow(jobId, rowId) { it.copy(wording = "", line = null) }
-            else -> editRow(jobId, rowId) { it.copy(wording = text) }
-        }
+        draft = draft.nameRow(jobId, rowId, text, terms)
     }
 
     /** One of the job's lines picked as the row's Part: the row is named by it and tagged to it. A label only. */
-    fun pickPart(jobId: Int, rowId: Int, line: String) = editRow(jobId, rowId) { it.copy(wording = "", line = line) }
+    fun pickPart(jobId: Int, rowId: Int, line: String) {
+        draft = draft.pickPart(jobId, rowId, line, terms)
+    }
 
     /** The job's line [line] is for; null for the whole job. Asked only of a row typed as printed. */
-    fun tagRow(jobId: Int, rowId: Int, line: String?) = editRow(jobId, rowId) { it.copy(line = line) }
+    fun tagRow(jobId: Int, rowId: Int, line: String?) {
+        draft = draft.tagRow(jobId, rowId, line, terms)
+    }
 
     /** What a row's Part box shows: its wording as printed, or the line picked for it. */
-    fun partText(row: PartRowDraft<String>): String = row.wording.ifEmpty { row.line?.let(::lineName).orEmpty() }
+    fun partText(row: PartRowDraft<String>): String = draft.partText(row, terms)
 
     fun toggleRow(rowId: Int) {
         openRows = if (rowId in openRows) openRows - rowId else openRows + rowId
@@ -484,48 +433,35 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         openRows = if (open) openRows + ids else openRows - ids
     }
 
-    private fun editRow(jobId: Int, rowId: Int, update: (PartRowDraft<String>) -> PartRowDraft<String>) {
-        storedJobs = jobs.map { if (it.id == jobId) PartRowDrafts.edit(it, rowId, update) else it }
-    }
-
     /** A row's figures as typed. */
-    fun amounts(row: PartRowDraft<String>): PartAmounts = PartRowDrafts.amounts(row, ::parsePart)
-
-    private fun parsePart(field: PartField, text: String): Long? =
-        if (field == PartField.QUANTITY) text.takeIf { it.isNotBlank() }?.let { PartQuantity.parseMilli(it.typedDecimal()) } else cents(text)
-
-    private fun formatPart(field: PartField, value: Long): String = if (field == PartField.QUANTITY) editableQuantity(value) else editableCost(value)
+    fun amounts(row: PartRowDraft<String>): PartAmounts = draft.amounts(row, terms)
 
     fun setLabor(id: Int, text: String) {
-        storedJobs = jobs.map { if (it.id == id) it.copy(labor = text) else it }
+        draft = draft.setLabor(id, text, terms)
     }
 
     fun setParts(id: Int, text: String) {
-        storedJobs = jobs.map { if (it.id == id) it.copy(parts = text) else it }
+        draft = draft.setParts(id, text, terms)
     }
 
     /** "Priced together with…": the one-line job [from] goes into [into], which keeps its prices. */
     fun join(from: Int, into: Int) {
-        storedJobs = JobGroups.join(jobs, from, into)
+        draft = draft.join(from, into, terms)
     }
 
     /** "Price separately": each of the job's lines its own job again, unpriced. */
     fun split(id: Int) {
-        storedJobs = JobGroups.split(jobs, id)
+        draft = draft.split(id, terms)
     }
 
     /**
      * A job's prices as typed; one that isn't an amount counts as not entered, and [pricesValid] says so. With part
      * rows, its parts are their totals added up.
      */
-    fun price(job: JobDraft<String>): JobPrice =
-        JobPrice(cents(job.labor), job.rows?.let { rows -> PartRows.partsCents(rows.map(::amounts)) } ?: cents(job.parts))
+    fun price(job: JobDraft<String>): JobPrice = draft.price(job, terms)
 
     val pricesValid: Boolean
-        get() = jobs.all { j ->
-            listOf(j.labor, j.parts).all { it.isBlank() || cents(it) != null } &&
-                j.rows.orEmpty().all { r -> PartField.entries.all { f -> r.text(f).isBlank() || parsePart(f, r.text(f)) != null } }
-        } && listOf(shopSuppliesText, taxText, feesText).all { it.isBlank() || cents(it) != null }
+        get() = draft.pricesValid(terms) && listOf(shopSuppliesText, taxText, feesText).all { it.isBlank() || cents(it) != null }
 
     val costCents: Long? get() = costText.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedNumber()) }
 
@@ -533,15 +469,14 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map(::price), costCents, charges)
 
     /** What a line is called on the form: as it will be saved. */
-    fun lineName(key: String): String =
-        selectedOptions.firstOrNull { it.id == key }?.let(::labelOf) ?: key.removePrefix(CUSTOM_KEY)
+    fun lineName(key: String): String = draft.lineName(key, terms)
 
     /** Which category a line came from; null for a custom line. */
     fun lineCategory(key: String): String? =
         data?.categories?.firstOrNull { c -> c.id != ServiceCatalog.YOUR_ITEMS && c.options.any { it.id == key } }?.label
             ?: data?.categories?.firstOrNull { c -> c.options.any { it.id == key } }?.label
 
-    private fun cents(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedDecimal()) }
+    private fun cents(text: String): Long? = AppFigures.cents(text)
 
     /** Whether the form can be saved; if not, from now on it says what is wrong. */
     fun check(): Boolean {
@@ -720,45 +655,7 @@ class LogServiceViewModel @Inject constructor(
                 form.feesText = r.charges.feesCents?.let(::editableCost).orEmpty()
                 form.notes = r.notes.orEmpty()
                 form.keptPhotos = original.photos
-                // The option each saved line is ticked as; null for a custom line.
-                val optionOf = r.lines.map { line -> options.firstOrNull { it.id == line.catalogId } ?: line.scheduleItemId?.let(optionFor::get) }
-                val ticked = mutableSetOf<String>()
-                val custom = mutableListOf<String>()
-                val kept = mutableMapOf<String, String>()
-                r.lines.zip(optionOf).forEach { (line, option) ->
-                    if (option == null) {
-                        custom += line.label
-                    } else if (ticked.add(option.id) && line.label != option.label) {
-                        // Saved as written; an edit doesn't put the line's name in its place.
-                        kept[option.id] = line.label
-                    }
-                }
-                form.selected = ticked
-                form.customItems = custom
-                form.keptLabels = kept
-                // Each line under the job it was priced in, by the key the form knows it by.
-                val keyOf = r.lines.mapIndexed { i, line -> optionOf[i]?.id ?: customKey(line.label) }
-                form.storedJobs = r.jobs.mapIndexed { j, job ->
-                    // Its part rows as saved, figures and all: nothing is filled in on opening.
-                    val rows = job.rows.map { row ->
-                        PartRowDraft(
-                            id = form.nextRowId++,
-                            wording = row.wording.orEmpty(),
-                            quantity = row.quantityMilli?.let(::editableQuantity).orEmpty(),
-                            each = row.eachCents?.let(::editableCost).orEmpty(),
-                            total = row.totalCents?.let(::editableCost).orEmpty(),
-                            line = row.line?.let(keyOf::getOrNull),
-                        )
-                    }
-                    JobDraft(
-                        id = j + 1,
-                        lines = r.linesOf(j).map(keyOf::get).distinct(),
-                        wording = job.wording,
-                        labor = job.laborCents?.let(::editableCost).orEmpty(),
-                        parts = job.partsCents?.let(::editableCost).orEmpty(),
-                        rows = rows.takeIf { it.isNotEmpty() },
-                    )
-                }.filter { it.lines.isNotEmpty() }
+                form.draft = LogDraft.of(r, optionFor, LogTerms(categories, { it.label }, AppFigures))
             }
 
             if (!editing) optionFor[route.scheduleItemId]?.let { form.selected = setOf(it.id) }
@@ -789,12 +686,7 @@ class LogServiceViewModel @Inject constructor(
         saving = true
         viewModelScope.launch {
             with(form) {
-                val catalogIds = d.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
-                // Each line by the key the form knows it by, so its job and its part rows can find it.
-                val keys = selectedOptions.map { it.id } + customItems.map(::customKey)
-                val lineIndex = keys.withIndex().associate { (i, key) -> key to i }
-                val jobIndex = jobs.withIndex().flatMap { (i, j) -> j.lines.map { it to i } }.toMap()
-                val edit = ServiceRecord(
+                val visit = ServiceRecord(
                     vehicleId = vehicleId,
                     date = date,
                     odometer = odo,
@@ -802,23 +694,9 @@ class LogServiceViewModel @Inject constructor(
                     shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
                     costCents = costCents,
                     notes = notes.trim().takeIf { it.isNotEmpty() },
-                    lines = selectedOptions.map { RecordLine(labelOf(it), it.id.takeIf { id -> id in catalogIds }, it.scheduleItemId, jobIndex[it.id]) } +
-                        customItems.map { RecordLine(it, job = jobIndex[customKey(it)]) },
-                    jobs = jobs.map { j ->
-                        // A job with part rows stores no parts figure: it is their totals, worked out on read.
-                        RecordJob(
-                            wording = j.wording,
-                            laborCents = price(j).laborCents,
-                            partsCents = if (j.rows == null) price(j).partsCents else null,
-                            rows = j.rows.orEmpty().map { r ->
-                                val a = amounts(r)
-                                RecordPartRow(r.wording.trim().ifEmpty { null }, a.quantityMilli, a.eachCents, a.totalCents, r.line?.let(lineIndex::get))
-                            },
-                            itemized = j.rows != null,
-                        )
-                    },
                     charges = charges,
-                ).withoutBareJobs()
+                )
+                val edit = draft.toRecord(visit, terms)
                 val (record, items, jobRows, partRows) = (d.original?.toModel()?.editedAs(edit) ?: edit).toRows()
                 val added = photoPicker.takeDraft(photoKey)
                 // A paper invoice's pages go with the record as its photos unless the user turned that off. They share
