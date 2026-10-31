@@ -11,6 +11,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   `toModel` and `toRows` (`:data`) are the only places that turn the saved rows into it and back, and own the
   numbering they point at each other by. Log service, the record's screen, exports and imports don't rebuild a
   record from `ServiceRecordWithItems` themselves.
+- **Log service's lines, jobs and prices are a `LogDraft`** (#578, `:domain`), made from a `ServiceRecord`
+  (`LogDraft.of`) and saved as one (`toRecord`). What an invoice puts on them is the draft's merge
+  (`LogDraft.fill`, `InvoiceMerge`). Figures stay as typed; the app reads and writes them in its locale
+  (`AppFigures`, a `TypedFigures`). `LogServiceForm` holds the draft and writes the visit's own fields.
 - **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the records as they
   would stand (`DraftRecord`s, readings as typed, new ones numbered below zero) and gives the changes and the
   entries after, in dash terms. A delete, an edit, re-filed lines and an import's file all go through it; a
