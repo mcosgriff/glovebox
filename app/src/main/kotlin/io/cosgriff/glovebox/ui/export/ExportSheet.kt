@@ -1,24 +1,16 @@
 package io.cosgriff.glovebox.ui.export
 
-import io.cosgriff.glovebox.data.log.VehicleLog
-import io.cosgriff.glovebox.data.log.VehicleLogs
-import androidx.compose.runtime.setValue
+import io.cosgriff.glovebox.data.export.ExportBuilder
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.RowsCard
 import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.GloveboxSheet
-import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.domain.ExportText
 import io.cosgriff.glovebox.ui.AppText
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.stringResource
-import io.cosgriff.glovebox.ui.service.recallComponent
 import io.cosgriff.glovebox.ui.service.photoCount
-import io.cosgriff.glovebox.ui.service.wordedLines
-import io.cosgriff.glovebox.ui.service.label
-import io.cosgriff.glovebox.ui.service.whatItTakes
-import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,8 +37,9 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -61,38 +54,21 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.data.nhtsa.toStored
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
 import io.cosgriff.glovebox.domain.ExportDates
 import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ExportOptions
-import io.cosgriff.glovebox.domain.ExportRecall
-import io.cosgriff.glovebox.data.db.toModel
-import io.cosgriff.glovebox.domain.ExportRecord
-import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
 import io.cosgriff.glovebox.domain.Exports
-import io.cosgriff.glovebox.domain.asReadOn
-import io.cosgriff.glovebox.domain.LicensePlates
-import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordPhotos
-import io.cosgriff.glovebox.domain.ServiceLog
-import io.cosgriff.glovebox.domain.VehicleText
 import io.cosgriff.glovebox.ui.components.DatePickerSheet
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.data.log.clusterSwap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import io.cosgriff.glovebox.data.db.DocumentDao
-import io.cosgriff.glovebox.domain.ExportPaper
-import io.cosgriff.glovebox.domain.VehicleDocuments
-import io.cosgriff.glovebox.ui.vehicle.toStored
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -119,8 +95,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import io.cosgriff.glovebox.domain.ServiceGroup
-import io.cosgriff.glovebox.domain.ReportFacts
 import io.cosgriff.glovebox.ui.components.ZoomableImage
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -142,10 +116,7 @@ sealed interface ExportPreview {
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class ExportViewModel @Inject constructor(
-    private val vehicles: VehicleDao,
-    private val logs: VehicleLogs,
-    private val recalls: RecallDao,
-    private val documents: DocumentDao,
+    private val builder: ExportBuilder,
     private val photos: RecordPhotoStore,
     private val saver: ExportSaver,
     fonts: ReportFonts,
@@ -208,64 +179,10 @@ class ExportViewModel @Inject constructor(
         options = ExportOptions(format = format)
         viewModelScope.launch {
             // A vehicle deleted meanwhile is left out.
-            val list = vehicles.all().mapNotNull { v -> logs.load(v.id)?.let { Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exportVehicle(it)) } }
+            val list = builder.all(AppExportNames, today).map { (v, exported) -> Exportable(v.id, v.nicknameOrModel(), v.archivedOn != null, exported) }
             all = list
             if (list.none { it.id == vehicleId }) vehicleId = list.firstOrNull()?.id
         }
-    }
-
-    private suspend fun exportVehicle(log: VehicleLog): ExportVehicle {
-        val v = log.vehicle
-        val records = log.records
-        val items = log.items
-        val swap = log.swap
-        val stored = recalls.recallsFor(v.id).associateBy { it.id }
-        val categories = items.associate { it.id to ServiceGroup.ofItem(it.templateKey, it.service) }
-        return ExportVehicle(
-            title = VehicleText.title(v.year, v.make, v.model, v.trim) ?: AppText.res.getString(R.string.unknown_vehicle),
-            nickname = v.nickname,
-            vin = v.vin,
-            plate = LicensePlates.label(v.plate, v.plateRegion),
-            unit = v.unit,
-            odometer = log.odometer,
-            soldOn = v.archivedOn,
-            clusterSwap = swap,
-            whatItTakes = v.whatItTakes().wordedLines(),
-            documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date, it.expiresOn) },
-            records = records.map { r ->
-                val work = r.toModel()
-                ExportRecord(
-                    date = r.record.date,
-                    odometer = r.record.odometer,
-                    items = r.items.map { it.label },
-                    doneBy = if (r.record.diy) AppText.res.getString(R.string.who_diy) else r.record.shopName ?: AppText.res.getString(R.string.export_a_shop),
-                    costCents = r.record.costCents,
-                    notes = r.record.notes,
-                    photoFiles = r.photos.map { it.fileName },
-                    enteredAsLastDone = r.record.enteredAsLastDone,
-                    imported = r.record.imported,
-                    visitId = r.record.visitId,
-                    diy = r.record.diy,
-                    categories = r.items.map { line ->
-                        line.catalogId?.let { ServiceGroup.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ServiceGroup.OTHER
-                    },
-                    jobs = work.exportJobs(),
-                    jobOf = if (work.jobs.isEmpty()) emptyList() else work.jobOf,
-                    charges = work.charges,
-                )
-            },
-            schedule = items.filter { it.tracked }.mapNotNull { item ->
-                val tracked = log.tracked(item.id) ?: return@mapNotNull null
-                // As the odometer read that day, to match the record it comes from.
-                ExportScheduleLine(item.name, tracked.text(v.unit), ServiceLog.lastDone(item.id, log.entries)?.let { swap.asReadOn(it) }, item.id)
-            },
-            recalls = Recalls.sorted(stored.values.map { it.toStored() }).map { r ->
-                val row = stored.getValue(r.id)
-                ExportRecall(Recalls.campaignLabel(r.notice.campaign), recallComponent(r.notice.component), row.completedOn, row.archivedOn)
-            },
-            specs = listOfNotNull(v.drivetrain?.substringBefore('/'), v.engine).joinToString(" · ").ifEmpty { null },
-            report = ReportFacts(log.statuses(today), categories, ServiceLog.readings(log.entries, log.updates)),
-        )
     }
 
     fun change(newOptions: ExportOptions) {

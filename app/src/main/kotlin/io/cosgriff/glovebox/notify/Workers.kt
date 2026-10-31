@@ -22,7 +22,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.VehicleDao
-import io.cosgriff.glovebox.ui.vehicle.toStored
+import io.cosgriff.glovebox.data.db.toStored
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
