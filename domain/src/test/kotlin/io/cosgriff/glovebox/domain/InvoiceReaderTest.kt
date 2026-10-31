@@ -183,6 +183,90 @@ class InvoiceReaderTest {
     }
 
     @Test
+    fun `a service's large number set a little below its title is still that title's`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 1)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Front Wheel Alignment", drop = 0.6f)
+                    row(right to "SUBTOTAL: $129.95")
+                    row(right to "Labor: $129.95")
+                    row(right to "Parts: $0.00")
+                    numbered("2", 260 to "Fluid Leak Dye Test", drop = 0.6f)
+                    row(right to "SUBTOTAL: $90.00")
+                    row(right to "Labor: $90.00")
+                    row(right to "Parts: $0.00")
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $219.95")
+                    row(right to "Total Labor: $219.95")
+                    row(right to "Total Parts: $0.00")
+                }
+            },
+        )
+        assertEquals(listOf(1, 2), r.jobs.map { it.number })
+        assertEquals(listOf("Front Wheel Alignment", "Fluid Leak Dye Test"), r.jobs.map { it.wording })
+        assertEquals(listOf(JobPrice(12_995, 0), JobPrice(9_000, 0)), r.jobs.map { it.price })
+    }
+
+    @Test
+    fun `words printed large with nothing beside them are lines of their own`() {
+        val r = read(
+            invoice {
+                page {
+                    numbered("INVOICE")
+                    numbered("PAID")
+                    header(1, 1)
+                }
+            },
+        )
+        assertEquals(listOf("INVOICE", "PAID"), r.lines.take(2).map { it.text })
+    }
+
+    @Test
+    fun `approved work in the inspection report is the invoice's service, not a recommendation, wrapped or not`() {
+        val r = read(
+            invoice {
+                page {
+                    header(1, 3)
+                    row(left to "SERVICES")
+                    numbered("1", 260 to "Remove & Replace Suspension Struts ( Front, Both Sides )", right to "SUBTOTAL: $900.00")
+                    row(right to "Labor: $400.00")
+                    row(right to "Parts: $500.00")
+                    numbered("2", 260 to "Four Wheel Alignment", right to "SUBTOTAL: $149.99")
+                    row(right to "Labor: $149.99")
+                    row(right to "Parts: $0.00")
+                    row(left to "Terms of Service", right to "GRAND TOTAL: $1,049.99")
+                    row(right to "Total Labor: $549.99")
+                    row(right to "Total Parts: $500.00")
+                }
+                page {
+                    header(2, 3)
+                    row(left to "INSPECTION REPORT")
+                    row(left to "Steering/Suspension")
+                    row(left to "Struts leaking, alignment out")
+                    row(left to "Four Wheel Alignment", 1100 to "$149.99 +tax", 1500 to "Approved by phone, 10:29am 11/24/25")
+                    row(left to "Remove & Replace Suspension Struts ( Front, Both", 1500 to "Approved by phone, 9:56am 11/24/25")
+                    row(left to "Sides )", 1100 to "$900.00 +tax")
+                    row(left to "Lights")
+                    row(left to "Fog lights not working")
+                    row(left to "Electrical Concern Testing and Analysis", 1100 to "$203.26 +tax")
+                }
+                page {
+                    header(3, 3)
+                    row(left to "Past Recommendations")
+                    row(left to "Synthetic Oil Change", 1100 to "$141.99 +tax")
+                    row(left to "Attached Images:")
+                    row(left to "IMG 2041")
+                }
+            },
+        )
+        assertEquals(
+            listOf("Electrical Concern Testing and Analysis" to 20_326L, "Synthetic Oil Change" to 14_199L),
+            r.recommendations.map { it.text to it.cents },
+        )
+    }
+
+    @Test
     fun `a recommendation's "+taxes and fees" is not its wording, even wrapped onto a line of its own`() {
         val r = read(
             invoice {

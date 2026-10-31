@@ -156,6 +156,8 @@ object LineGuess {
         "a/c" to " ac ", "air conditioning" to " ac ", "air conditioner" to " ac ", "w/" to " with ",
         "u-joint" to " ujoint ", "u joint" to " ujoint ", "multi-point" to " multipoint ", "multi point" to " multipoint ",
         "t-stat" to " thermostat ",
+        // The check engine light is a diagnosis, not the lights; a leak test is not a check of the fluid levels.
+        "check engine light" to " cel ", "check engine lamp" to " cel ", "fluid leak" to " leak ",
     )
 
     /** One word of shop shorthand, and what it is short for. */
