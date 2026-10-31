@@ -127,6 +127,17 @@ the real markup; the other `Recommended*` files only import them with a differen
 - Logging matching work, by any shop or the user, asks before closing ("Done with these?", ticked by default).
   Recommendations never change a reminder or make anything overdue.
 
+## Milestones continued (#568)
+
+`Milestones.dc.html` holds the markup; `MilestonesDark.dc.html` imports it with `theme` dark. No render yet
+(`screens/Milestones.png` comes with the next export and `design-pull`).
+
+- A table that came from a maker's list and doesn't repeat goes on past its last column. One block, once per
+  screen, sits between the maker's last milestone and the first continued one: a "CONTINUED BY GLOVEBOX" rule,
+  where the maker's table ends, "check your service manual", and the jobs it doesn't continue.
+- A continued milestone is the ordinary card; its line under the mileage says "continued by Glovebox".
+- The repeat row says Glovebox continues the table; a repeat set there replaces the continuation.
+
 ## UX rules (apply to every screen)
 
 - **Touch targets:** every tappable thing is at least 48×48dp, including text links (pad them). Chips and

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Milestones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 844px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <!-- Milestones from the maker's table (#568): the table as printed, then Glovebox's continuation past its last column. -->
+  <div style="display: flex; align-items: center; gap: 4px; padding: 12px 8px 0 8px">
+    <a href="Schedule.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 600">Milestones</span>
+      <span style="font-size: 12px; color: {{t.muted}}">2016 Silver hatchback · 131,200 mi</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 24px 20px">
+    <div style="font-size: 15px; line-height: 1.45; color: {{t.muted}}">From the Sample Motors Maintenance Guide, 2016 hatchback. It is shown with what your log says was done, and the jobs are in Glovebox's words. It's a guide: the Reminders tab is what tells you something is due. You can edit it like a table of your own.</div>
+
+    <div style="display: flex; gap: 8px">
+      <button style="flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid {{t.outline}}; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}">Expand all</button>
+      <button style="flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid {{t.outline}}; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}">Collapse all</button>
+    </div>
+
+    <sc-for list="{{before}}" as="m" hint-placeholder-count="2">
+      <div style="min-height: 56px; border-radius: 12px; background: {{t.surface}}; padding: 8px 12px 8px 16px; display: flex; align-items: center; gap: 8px; box-sizing: border-box">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 600; color: {{t.muted}}">{{m.at}}</span>
+          <span style="font-size: 12px; color: {{m.subColor}}">{{m.sub}}</span>
+        </span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+      </div>
+    </sc-for>
+
+    <!-- Once per screen: where the maker's table ends, what Glovebox continues, and the jobs it doesn't. -->
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 0 4px 0">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="flex: 1; height: 1px; background: {{t.line}}"></span>
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">CONTINUED BY GLOVEBOX</span>
+        <span style="flex: 1; height: 1px; background: {{t.line}}"></span>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8v.01"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; line-height: 1.45; color: {{t.ink}}">The maker's table ends at 120,000 mi. Past it, Glovebox carries on each job the table marks at an even spacing. These milestones aren't the maker's: check your service manual.</span>
+          <span style="font-size: 13px; line-height: 1.45; color: {{t.muted}}">Not continued, as the table shows no even spacing for them: Replace timing belt, Replace spark plugs (first time).</span>
+        </div>
+      </div>
+    </div>
+
+    <sc-for list="{{after}}" as="m" hint-placeholder-count="4">
+      <div style="border-radius: 12px; background: {{t.surface}}; border: {{m.border}}; box-sizing: border-box">
+        <div style="min-height: 56px; padding: 8px 12px 8px 16px; display: flex; align-items: center; gap: 8px; box-sizing: border-box">
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 600">{{m.at}}</span>
+            <span style="font-size: 12px; color: {{t.muted}}">{{m.sub}}</span>
+          </span>
+          <sc-if value="{{m.next}}" hint-placeholder-val="{{ false }}">
+            <span style="height: 24px; padding: 0 10px; border-radius: 12px; background: {{t.softBg}}; color: {{t.softFg}}; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; display: inline-flex; align-items: center">NEXT · IN 8,800 MI</span>
+          </sc-if>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="{{m.chevron}}"></path></svg>
+        </div>
+        <sc-if value="{{m.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 16px 8px 16px">
+            <sc-for list="{{m.jobs}}" as="j" hint-placeholder-count="3">
+              <div style="min-height: 48px; border-top: 1px solid {{t.line}}; display: flex; align-items: center; gap: 8px; padding-left: 30px; font-size: 16px">{{j}}</div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <button style="min-height: 52px; border-radius: 12px; border: 1px solid {{t.outline}}; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: {{t.ink}}">Add a milestone</button>
+    <div style="min-height: 56px; border-radius: 12px; background: {{t.surface}}; padding: 8px 16px; display: flex; align-items: center; gap: 8px; box-sizing: border-box">
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px">Doesn't repeat</span>
+        <span style="font-size: 12px; color: {{t.muted}}">Glovebox continues it past its last milestone from its own rows</span>
+      </span>
+      <span style="font-size: 14px; font-weight: 600; color: {{t.link}}">Change</span>
+    </div>
+    <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Continued milestones are a view: nothing is stored, and no reminder moves. They reach the car's mileage plus the table's length. Setting a repeat replaces the continuation with the table's own cycle.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1700}}'>
+class Component extends DCLogic {
+renderVals() {
+// A made-up maker, model and table.
+var dark = (this.props.theme || 'light') === 'dark';
+var t = dark ? {
+  bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', line: '#33373D', outline: '#5A5F66',
+  accent: '#F08A4B', link: '#FDBA74', ok: '#5EEAD4', softBg: '#3A2418', softFg: '#FDBA74'
+} : {
+  bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', line: '#DEDCD5', outline: '#B9B6AE',
+  accent: '#C2410C', link: '#9A3412', ok: '#0F766E', softBg: '#FBE9DF', softFg: '#9A3412'
+};
+var before = [
+  { at: '110,000 mi', sub: '3 jobs · 3 completed', subColor: t.ok },
+  { at: '120,000 mi', sub: '6 jobs · 5 completed · or 96 months', subColor: t.ok }
+];
+var up = 'M6 15l6-6 6 6', down = 'M6 9l6 6 6-6';
+var after = [
+  { at: '130,000 mi', sub: '3 jobs · continued by Glovebox', next: true, open: true, jobs: ['Change oil and filter', 'Inspect brakes', 'Rotate tires'] },
+  { at: '140,000 mi', sub: '3 jobs · continued by Glovebox', next: false, open: false, jobs: [] },
+  { at: '150,000 mi', sub: '3 jobs · continued by Glovebox', next: false, open: false, jobs: [] },
+  { at: '160,000 mi', sub: '6 jobs · continued by Glovebox', next: false, open: false, jobs: [] },
+  { at: '170,000 mi', sub: '3 jobs · continued by Glovebox', next: false, open: false, jobs: [] }
+].map(function (m) {
+  m.border = m.next ? '1.5px solid ' + t.accent : '0';
+  m.chevron = m.open ? up : down;
+  return m;
+});
+return { t: t, before: before, after: after };
+}
+}
+</script>
+</body>
+</html>
