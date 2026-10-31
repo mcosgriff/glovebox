@@ -170,13 +170,31 @@ no powertrain on record. A flex-fuel guide's shorter oil change for a truck run 
 wrong grade still is.
 
 **A sedan and a hatchback of one engine whose guides differ** are told apart by `"body"`, at the top level of
-the list: `sedan` or `hatchback` (#185, the owner's ruling of 2026-10-25). Set it only where two lists of one
+the list: `sedan`, `hatchback` or `convertible` (#185, the owner's ruling of 2026-10-25). Set it only where two lists of one
 model, years and engine differ by it and NHTSA gives both the same model name, as for the 2026 Corolla; a list
 without it is for every body. A vehicle's body style comes from vPIC's `BodyClass` only where it is plainly one
-of the two ("Sedan/Saloon", "Hatchback/Liftback/Notchback"), or from the owner on "Is this your vehicle?"
+of them ("Sedan/Saloon", "Hatchback/Liftback/Notchback", "Convertible/Cabriolet"), or from the owner on "Is this your vehicle?"
 (`vehicles.bodyStyle`). **A blank body matches no list that names one and is never guessed**: setup then asks
 "Which one is it?", offering each list's engine `label` with its body ("2.0L 4-cylinder, Hatchback"), and the
 pick is written to the vehicle if it had no body style on record.
+
+`convertible` joined them for **the 2014–2016 Beetle TDI and Beetle Convertible TDI** (#569), whose cards differ
+at 130K and which vPIC names "Beetle" alike: in pattern decodes the only field that differs is `BodyClass`,
+"Hatchback/Liftback/Notchback" for the Beetle and "Convertible/Cabriolet" for the convertible (`Turbo`,
+`EngineModel` "TDI", size, fuel, doors and power are the same). A pair like that is two lists, one `"body":
+"hatchback"` and one `"body": "convertible"`; a list without a body would match both.
+
+**Two cars of one engine size and fuel that only vPIC's `Trim` tells apart** are told apart by `"trim"` (#569),
+at the top level: `{ "names": "GLI" }` for a list whose cars' trim names that word, `{ "doesNotName": "GLI" }` for
+one whose cars' trim doesn't. One word of letters and digits, and only one of the two keys. The case it is for is
+**the 2011–2016 Jetta GLI (2.0L TSI) against the Jetta 2.0L 8-valve (MPI)**: both decode as a 2.0L 4-cylinder
+petrol "Jetta" sedan, `Turbo`, `EngineModel` and `Series` are blank for both, and only `Trim` ("GLI", "2.0T GLI
+SE, SEL" against "S", "Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS") and `EngineHP` (200–210 against 115,
+not kept) differ. So the GLI's list names "GLI" and the 8-valve's doesn't, and the two `engine` `label`s say which
+is which ("2.0L TSI (GLI)", "2.0L 8-valve"). The vehicle's trim (`vehicles.trim`, vPIC's or the owner's) is split
+into words ignoring case, so "2.0T GLI SE" names GLI and "GLIDER" doesn't. **A vehicle with no trim on record
+matches neither list**: setup asks "Which engine does it have?" with the two labels, and the list picked is kept
+on its schedule items as any is. A list without `trim` is for every trim.
 
 **`e85`** gives a flex-fuel guide's intervals for a vehicle run on E85 more than half the time, which Toyota's
 FFV guides print as an oil change every 2,500 miles / 3 months against the normal 5,000 / 6:

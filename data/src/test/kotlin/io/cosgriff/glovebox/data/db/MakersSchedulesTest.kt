@@ -13,6 +13,7 @@ import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.KnownSpecSource
+import io.cosgriff.glovebox.domain.KnownTrim
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.TableJob
 import kotlinx.coroutines.runBlocking
@@ -168,6 +169,21 @@ class MakersSchedulesTest {
         assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
         assertNull(writer.forVehicle(vehicle(blank)))
         assertEquals(listOf(list.id, v6.id), writer.choices(vehicle(blank)).map { it.id })
+    }
+
+    @Test
+    fun `a vehicle's trim on record picks between lists of one engine that name it (#569)`() = runBlocking {
+        val sport = list.copy(id = "madeup-truck-sport-2020-2024", trim = KnownTrim("Sport", named = true))
+        val plain = list.copy(trim = KnownTrim("Sport", named = false))
+        val byTrim = MakersSchedules({ listOf(plain, sport) }, db)
+        val sporty = db.vehicles().insert(truck("2.4L I4").copy(trim = "Sport, Sport Plus"))
+        val base = db.vehicles().insert(truck("2.4L I4").copy(trim = "Base"))
+        val unknown = db.vehicles().insert(truck("2.4L I4"))
+
+        assertEquals(sport.id, byTrim.forVehicle(vehicle(sporty))?.id)
+        assertEquals(plain.id, byTrim.forVehicle(vehicle(base))?.id)
+        assertNull(byTrim.forVehicle(vehicle(unknown)))
+        assertEquals(listOf(plain.id, sport.id), byTrim.choices(vehicle(unknown)).map { it.id })
     }
 
     @Test

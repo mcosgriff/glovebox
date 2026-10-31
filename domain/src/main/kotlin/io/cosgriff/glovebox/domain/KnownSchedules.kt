@@ -16,6 +16,26 @@ import kotlinx.serialization.json.JsonElement
  */
 data class KnownEngine(val label: String, val displacementL: Double, val fuel: String? = null, val powertrain: Powertrain? = null)
 
+/**
+ * A word a list holds the vehicle's trim to, where NHTSA gives two cars with different maker's cards the same make,
+ * model, year, engine size and fuel, and only vPIC's `Trim` tells them apart (#569): the 2011–2016 Jetta GLI's 2.0L
+ * TSI ("GLI", "2.0T GLI SE, SEL") and the Jetta's 2.0L 8-valve ("S", "Trendline", "2.0L"). [named] true is a list
+ * for a trim that names [word]; false, one for a trim that doesn't. A vehicle with no trim on record matches
+ * neither: setup asks.
+ */
+data class KnownTrim(val word: String, val named: Boolean) {
+    /** Null is "can't tell": no trim on record. Words are runs of letters and digits, compared ignoring case. */
+    fun fits(trim: String?): Boolean? {
+        val words = trim?.split(nonWord)?.filter { it.isNotEmpty() }.orEmpty()
+        if (words.isEmpty()) return null
+        return words.any { it.equals(word, ignoreCase = true) } == named
+    }
+
+    private companion object {
+        val nonWord = Regex("[^\\p{L}\\p{N}]+")
+    }
+}
+
 data class KnownScheduleList(
     override val id: String,
     /** "2017–2024 4Runner" */
@@ -75,6 +95,12 @@ data class KnownScheduleList(
      * record matches no list that names one; the owner is asked instead.
      */
     val body: BodyStyle? = null,
+    /**
+     * Null for a list that is for every trim. Set only where the maker's cards for one engine size and fuel differ
+     * and nothing but vPIC's `Trim` tells the cars apart ([KnownTrim]). A vehicle with no trim on record matches no
+     * list that names one; the owner is asked instead.
+     */
+    val trim: KnownTrim? = null,
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -114,7 +140,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones")
-    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body")
+    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body", "trim")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -164,6 +190,7 @@ object KnownSchedules {
                 if (it == null) check.fail("body", "must be one of ${BodyStyle.entries.joinToString { b -> b.fileName }}")
             }
         }
+        val trim = o["trim"]?.let { trim(it, check) }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
@@ -177,8 +204,26 @@ object KnownSchedules {
                 additional = additional,
                 e85 = e85,
                 body = body,
+                trim = trim,
             ),
         )
+    }
+
+    private val trimWord = Regex("[\\p{L}\\p{N}]{1,20}")
+
+    /** The `trim` field: `{ "names": "GLI" }` or `{ "doesNotName": "GLI" }`, one word, and only one of the two. */
+    private fun trim(e: JsonElement, check: ImportCheck): KnownTrim? {
+        val o = check.obj(e, "trim", setOf("names", "doesNotName")) ?: return null
+        val (key, value) = o.entries.singleOrNull() ?: run {
+            check.fail("trim", "must have one of \"names\" or \"doesNotName\"")
+            return null
+        }
+        val word = check.string(value, "trim.$key", 20) ?: return null
+        if (!trimWord.matches(word)) {
+            check.fail("trim.$key", "must be one word of letters and digits")
+            return null
+        }
+        return KnownTrim(word, named = key == "names")
     }
 
     private val e85Keys = ScheduleImport.intervalKeys + "name"
@@ -265,31 +310,39 @@ object KnownSchedules {
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
      * give that engine's size, [fuel] its fuel where the list says one, and [powertrain] its powertrain
-     * where the list says one, and [body] its body where the list says one: **an engine, powertrain or body
-     * that isn't known matches no list that needs it**, and the owner is asked instead ([engineChoices]).
+     * where the list says one, [body] its body where the list says one, and [trim] (vPIC's or the owner's) the word
+     * a list holds it to ([KnownTrim]): **an engine, powertrain, body or trim that isn't known matches no list that
+     * needs it**, and the owner is asked instead ([engineChoices]).
      */
     fun match(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null, trim: String? = null,
     ): KnownScheduleList? =
-        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
+        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { fits(it, body, trim) }
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
      * its fuel, isn't on record: every engine's list for the model and year that what is on record
      * doesn't rule out. Empty when nothing is offered for the model, or the vehicle has an engine none
-     * of them is for. A list that names a body is offered when the vehicle's body isn't on record. The pick is
-     * the owner's; nothing here chooses for them.
+     * of them is for. A list that names a body or a trim is offered when the vehicle's body or trim isn't on record.
+     * The pick is the owner's; nothing here chooses for them.
      */
     fun engineChoices(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null, trim: String? = null,
     ): List<KnownScheduleList> =
-        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
+        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { fits(it, body, trim) }
 
-    /** Null is "can't tell": the list names a body and none is on record. */
-    private fun bodyFits(list: KnownScheduleList, body: BodyStyle?): Boolean? =
-        if (list.body == null) true else body?.let { it == list.body }
+    /** False where the body or trim on record rules the list out; null ("can't tell") where one the list needs isn't on record. */
+    private fun fits(list: KnownScheduleList, body: BodyStyle?, trim: String?): Boolean? {
+        val byBody = if (list.body == null) true else body?.let { it == list.body }
+        val byTrim = if (list.trim == null) true else list.trim.fits(trim)
+        return when {
+            byBody == false || byTrim == false -> false
+            byBody == null || byTrim == null -> null
+            else -> true
+        }
+    }
 
     /**
      * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one

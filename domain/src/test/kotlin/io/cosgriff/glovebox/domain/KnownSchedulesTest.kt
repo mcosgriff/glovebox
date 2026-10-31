@@ -60,8 +60,10 @@ class KnownSchedulesTest {
         bundled.forEach { list ->
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
+            // A trim that names the list's word, or one that names nothing like it (#569).
+            val trim = list.trim?.let { if (it.named) it.word else "X${it.word}X" }
             (listOf(list.model) + list.modelAliases).forEach { model ->
-                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body)?.id) }
+                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)?.id) }
             }
         }
     }
@@ -201,6 +203,88 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a convertible and a hatchback of one engine are told apart by body`() {
+        fun bodyList(id: String, body: String) = (
+            KnownSchedules.parse(file(extra = "\"engine\": { \"label\": \"2.0L diesel\", \"displacementL\": 2.0, \"fuel\": \"Diesel\" }, \"body\": \"$body\",").replace("\"id\": \"made-up\"", "\"id\": \"$id\""))
+                as KnownScheduleFile.Ok
+            ).list
+        val lists = listOf(bodyList("hatch", "hatchback"), bodyList("open", "convertible"))
+        fun match(body: BodyStyle?) = KnownSchedules.match(lists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Diesel", null, body)?.id
+        assertEquals("hatch", match(BodyStyles.fromVpic("Hatchback/Liftback/Notchback")))
+        assertEquals("open", match(BodyStyles.fromVpic("Convertible/Cabriolet")))
+        assertNull(match(null))
+        assertEquals(listOf("hatch", "open"), KnownSchedules.engineChoices(lists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Diesel").map { it.id })
+    }
+
+    /** Two lists for one engine size and fuel, one for trims naming GLI and one for the rest, as #569's Jettas would be. */
+    private val trimLists by lazy {
+        fun trimList(id: String, label: String, trim: String) = (
+            KnownSchedules.parse(file(extra = "\"engine\": { \"label\": \"$label\", \"displacementL\": 2.0, \"fuel\": \"Gasoline\" }, \"trim\": $trim,").replace("\"id\": \"made-up\"", "\"id\": \"$id\""))
+                as KnownScheduleFile.Ok
+            ).list
+        listOf(trimList("eight-valve", "2.0L 8-valve", """{ "doesNotName": "GLI" }"""), trimList("tsi", "2.0L TSI", """{ "names": "GLI" }"""))
+    }
+
+    @Test
+    fun `two cars of one engine size are told apart by a word of the trim, as vPIC writes it`() {
+        assertEquals(KnownTrim("GLI", named = true), trimLists[1].trim)
+        assertEquals(KnownTrim("GLI", named = false), trimLists[0].trim)
+        fun match(trim: String?) = KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim)?.id
+        // Trims vPIC gave for the GLI and for the 2.0L 8-valve Jetta in pattern decodes (#569), and as an owner might type them.
+        listOf("GLI", "2.0T GLI SE, SEL", "gli autobahn").forEach { assertEquals(it, "tsi", match(it)) }
+        listOf("Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS", "S", "SE").forEach { assertEquals(it, "eight-valve", match(it)) }
+        // A word, not a part of one.
+        assertEquals("eight-valve", match("GLIDER"))
+        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = "GLI"))
+    }
+
+    @Test
+    fun `a trim that isn't on record matches neither trim list, and the owner is asked`() {
+        listOf(null, "", " ", ", /").forEach { trim ->
+            assertNull("[$trim]", KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim))
+            assertEquals("[$trim]", listOf("eight-valve", "tsi"), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id })
+        }
+        // With the engine unknown too, both are still offered; a body on record changes nothing for lists that name none.
+        assertEquals(listOf("eight-valve", "tsi"), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", body = BodyStyle.SEDAN).map { it.id })
+        // The trim alone is not enough where the engine is another: nothing matches, and nothing is offered.
+        assertNull(KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.5L 5-cyl", "Gasoline", trim = "GLI"))
+        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.5L 5-cyl", "Gasoline", trim = "S"))
+        // A list for every trim is for a vehicle with or without one.
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", trim = "GLI")?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster")?.id)
+    }
+
+    @Test
+    fun `a body and a trim on one list both have to fit`() {
+        val list = (KnownSchedules.parse(file(extra = "\"body\": \"convertible\", \"trim\": { \"names\": \"GLI\" },")) as KnownScheduleFile.Ok).list
+        fun match(body: BodyStyle?, trim: String?) = KnownSchedules.match(listOf(list), 2003, "Acme", "Roadster", body = body, trim = trim)?.id
+        fun offered(body: BodyStyle?, trim: String?) = KnownSchedules.engineChoices(listOf(list), 2003, "Acme", "Roadster", body = body, trim = trim).isNotEmpty()
+        assertEquals("made-up", match(BodyStyle.CONVERTIBLE, "GLI"))
+        assertNull(match(BodyStyle.CONVERTIBLE, null))
+        assertNull(match(null, "GLI"))
+        assertTrue(offered(BodyStyle.CONVERTIBLE, null))
+        assertTrue(offered(null, "GLI"))
+        // Either one ruling it out rules it out, even where the other isn't on record.
+        assertTrue(!offered(BodyStyle.SEDAN, "GLI") && !offered(BodyStyle.SEDAN, null))
+        assertTrue(!offered(BodyStyle.CONVERTIBLE, "SE") && !offered(null, "SE"))
+    }
+
+    @Test
+    fun `a list's trim is one word, in one of two forms`() {
+        listOf(
+            """{ }""" to "must have one of",
+            """{ "names": "GLI", "doesNotName": "GLI" }""" to "must have one of",
+            """{ "names": "GLI SE" }""" to "one word",
+            """{ "names": "" }""" to "",
+            """{ "has": "GLI" }""" to "",
+            """"GLI"""" to "",
+        ).forEach { (trim, message) ->
+            val errors = errors(file(extra = "\"trim\": $trim,"))
+            assertTrue("$trim: $errors", errors.isNotEmpty() && errors.any { it.contains(message) })
+        }
+    }
+
+    @Test
     fun `the 2026 Corolla gas lists go by body, and the earlier Corollas don't`() {
         fun match(year: Int, engine: String?, body: BodyStyle?) = KnownSchedules.match(bundled, year, "Toyota", "Corolla", engine, "Gasoline", null, body)?.id
         assertEquals("toyota-corolla-2026-sedan", match(2026, "2.0L 4-cyl", BodyStyle.SEDAN))
@@ -223,6 +307,9 @@ class KnownSchedulesTest {
     fun `a body is taken from vPIC only where it says so plainly`() {
         assertEquals(BodyStyle.SEDAN, BodyStyles.fromVpic("Sedan/Saloon"))
         assertEquals(BodyStyle.HATCHBACK, BodyStyles.fromVpic("Hatchback/Liftback/Notchback"))
+        // How vPIC tells a 2014 Beetle Convertible TDI from the Beetle TDI, both "Beetle" (#569).
+        assertEquals(BodyStyle.CONVERTIBLE, BodyStyles.fromVpic("Convertible/Cabriolet"))
+        assertEquals(BodyStyle.CONVERTIBLE, BodyStyles.fromFile("convertible"))
         assertNull(BodyStyles.fromVpic(null))
         assertNull(BodyStyles.fromVpic(""))
         assertNull(BodyStyles.fromVpic("Coupe"))
