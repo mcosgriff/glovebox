@@ -42,7 +42,8 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
   (it has "Golf", "Golf SportWagen", "GTI" and "e-Golf"), and a decode of the pattern `WVWVF7AU*FW` (model year 2015)
   gives the 292 HP 2.0L but no model. The list is for "Golf R", as the card and vPIC's 2016 and later lists name it,
   with no alias ("Golf" is not the Golf R). A 2015 Golf R that vPIC decodes as "Golf" finds no list (the 2015 Golf
-  list is for the 1.8T); one named "Golf R" by the owner finds this one.
+  lists are for the 1.8T and, with `"fuel": "Diesel"`, the [2.0L TDI](volkswagen-golf-2015-tdi.md)); one named
+  "Golf R" by the owner finds this one.
 
 ## Every Mk7 and Mk8 Golf R card read
 

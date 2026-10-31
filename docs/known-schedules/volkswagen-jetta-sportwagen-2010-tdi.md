@@ -32,10 +32,8 @@ rows. Read on 2026-10-28, as page images, by eye.
   rows, and the grey "Carefree Maintenance" shading.
 - **Not covered:**
   - **2011–2013**, as on the [2.5L's page](volkswagen-jetta-sportwagen-2010-2.5.md).
-  - **2014.** The Jetta SportWagen 2.0L TDI card (`2013/MC-10125864-9999`, posted June 2013; NHTSA's index also
-    files `MC-10242469`, "2.0L TDI Engine", under it, not fetched) was read in full. It is the
-    [2014 Golf TDI](volkswagen-golf-2010-tdi.md) card with the model's name: a grid of 13 columns to
-    130,000, where the 130,000 column has only "Timing Belt: Replace" and oil, rotation and every other job
-    stop at 120,000. With that column in the table rule 7 refuses the oil and rotation reminders; without
-    it, the timing belt is a job past the grid's end. It waits for the Golf's answer
-    ([#434](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244), question 2).
+  - **2014** has [a list of its own](volkswagen-jetta-sportwagen-2014-tdi.md), from the Jetta SportWagen
+    2.0L TDI card (`2013/MC-10125864-9999`, posted June 2013). It is the
+    [2014 Golf TDI](volkswagen-golf-2014-tdi.md) card with the model's name: a grid of 13 columns to
+    130,000, where the 130,000 column has only "Timing Belt: Replace"; that column is left out and the belt
+    is a reminder every 130,000 miles apart from the table (the owner's ruling of 2026-10-29 on [#551](https://github.com/mcosgriff/glovebox/issues/551), part A).

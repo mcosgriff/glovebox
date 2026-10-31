@@ -15,7 +15,8 @@ Every Passat NMS card read, and what isn't covered, is on the [2014 2.5L's page]
 | 2014, 2015 | Volkswagen's 2014 and 2015 reissues, for the oil change's time limit only, as read for the [2014 Golf 2.5L](volkswagen-golf-2014-2.5.md) and the [2015 Jetta Hybrid](volkswagen-jetta-2015-hybrid.md) (not read again here) | reissues `USA5R505521` and `USA5R505821` |
 
 - **A grid of 13 columns, 10,000 to 130,000**, no months printed, not repeated (rule 9). **Unlike the 2014
-  Golf and Jetta TDI cards** ([#434's question 2](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)),
+  Golf and Jetta TDI cards** (whose 130,000 column has only the timing belt, so their lists leave it out:
+  [#551](https://github.com/mcosgriff/glovebox/issues/551), part A; the [2014 Golf TDI's page](volkswagen-golf-2014-tdi.md)),
   the 130,000 column here is a whole service: the yearly airbag check, the oil change, tire rotation, brake pad check, brake fluid,
   AdBlue check, rear washer nozzle, service display and washer check are all drawn in it, with the timing
   belt. So every reminder falls on the table at every multiple of its interval, and nothing is past the grid.

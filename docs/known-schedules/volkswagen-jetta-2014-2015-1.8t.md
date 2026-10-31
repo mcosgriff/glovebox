@@ -17,7 +17,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | 2015 | Volkswagen's 2015 reissue, for the oil change's time limit only, as read for the [2015 Jetta Hybrid](volkswagen-jetta-2015-hybrid.md) (not read again here) | reissue `USA5R505821`, printed 11/24/2025 |
 
 NHTSA's index also files `MC-10125798` and `MC-10125799` under the 2014 Jetta (posted June 2013, both read):
-the 2.0L MPI and 2.0L TDI cards, below. The 2014 GLI's card, `MC-10125796`, is filed under the Jetta Hybrid
+the 2.0L MPI card, below, and the 2.0L TDI card, which has [a list of its own](volkswagen-jetta-2014-tdi.md). The 2014 GLI's card, `MC-10125796`, is filed under the Jetta Hybrid
 (below). `MC-10242462`, `MC-10242467` and `MC-10242468`, "2.0L TSI Engine", dated June 2013 and filed in 2023,
 weren't fetched.
 
@@ -70,10 +70,12 @@ weren't fetched.
   80,000 and 120,000. vPIC names both "Jetta" (it has no "GLI" model in these years), and both are 2.0L
   gasoline, so neither the engine's size nor its fuel tells them apart, and the format has nothing else that
   would. A list for either would be found for both, so neither is made; asked on #440.
-- **The 2.0L TDI, 2014–2016** (`2013/MC-10125799-9999` for 2014 and `2015/MC-10123066-9999` for 2016, both
-  read; the 2015 card, `MC-10121579`, wasn't fetched, and NHTSA's index says it runs to 130,000 too). The grid has 13 columns, to 130,000, and the 130,000
-  column has only "Timing Belt: Replace", as on the 2014 Golf TDI's card: this waits on
-  [#434's question 2](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244).
+- **The 2.0L TDI, 2014–2016** has a list per year: [2014](volkswagen-jetta-2014-tdi.md) (`2013/MC-10125799-9999`),
+  [2015](volkswagen-jetta-2015-tdi.md) (`2014/MC-10121579-9999`, fetched on 2026-10-29) and
+  [2016](volkswagen-jetta-2016-tdi.md) (`2015/MC-10123066-9999`). The 2014 card's 130,000 column has only
+  "Timing Belt: Replace", so it is left out and the belt is a reminder apart from the table (the owner's ruling of 2026-10-29 on [#551](https://github.com/mcosgriff/glovebox/issues/551), part A).
+  The 2015 and 2016 cards' 130,000 column is a service of its own (oil, AdBlue, brake pads and more), so
+  those lists keep it, as the Passat TDI's does.
 - **2017.** NHTSA's index has no Jetta card for 2017 (two "New Publication" filings under the 2017 Jetta,
   `MC-10107217` and `MC-10107218`, aren't at the usual address). Volkswagen's 2017 reissue (`USA5R506721`) would
   be the only source, and it differs from the cards either side: it gives "Jetta (163)" spark plugs every

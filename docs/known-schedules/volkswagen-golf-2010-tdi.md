@@ -42,12 +42,10 @@ as the model's own card for the "(if applicable)" rows. Read on 2026-10-28, as p
 - **Not covered:**
   - **2011–2013**, as on the 2.5L's page (asked on #434).
   - **2014.** The Golf 2.0L TDI card (`2013/MC-10155943-9999`, filed again as `2013/MC-10157534-9999` and
-    `2013/MC-10242463-9999`, byte for byte the same) was read in full. It is not in a list yet (asked on
-    #434): its grid has 13 columns, to 130,000, and the 130,000 column has only "Timing Belt: Replace". The
-    oil change, tire rotation and every other job stop at 120,000. Rule 7 holds a reminder to every
-    multiple of its interval up to the table's end, so with that column in the table the oil and rotation
-    reminders would be refused; without it, the timing belt is a job past the grid's end. Its other
-    differences from 2010: the timing belt at 130,000 (not 120,000), the particulate filter checked every
+    `2013/MC-10242463-9999`, byte for byte the same) has [a list of its own](volkswagen-golf-2014-tdi.md):
+    its grid has 13 columns, to 130,000, and the 130,000 column has only "Timing Belt: Replace", so that
+    column is left out and the belt is a reminder every 130,000 miles apart from the table
+    (the owner's ruling of 2026-10-29 on [#551](https://github.com/mcosgriff/glovebox/issues/551), part A). Its other differences from 2010: the timing belt at 130,000 (not 120,000), the particulate filter checked every
     20,000 after the first 120,000 (not 10,000), brake fluid named with the clutch unit, the ribbed belt
     check "(if applicable)", and only the DSG's fluid change, marked "(if applicable)", at 40,000, 80,000
     and 120,000.

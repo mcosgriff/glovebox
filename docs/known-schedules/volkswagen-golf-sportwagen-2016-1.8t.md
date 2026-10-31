@@ -12,7 +12,7 @@ Volkswagen's 2016 reissue (`USA5R506521`, printed 11/25/2025) for the oil change
   covered, is on the [2015 Golf 1.8T's page](volkswagen-golf-2015-1.8t.md).
 - vPIC's model list for Volkswagen, 2016 (`GetModelsForMakeYear`), names it "Golf SportWagen", apart from
   "Golf", so it has a list of its own (an alias is for another name of the same car).
-- **The engine**: `"engine": { "label": "1.8T", "displacementL": 1.8 }`. The 2.0L TDI's card has no list.
+- **The engine**: `"engine": { "label": "1.8T", "displacementL": 1.8 }`. The 2.0L TDI has [a list of its own](volkswagen-golf-sportwagen-2016-tdi.md).
 - No all-wheel-drive job: the card has none, and the 2016 SportWagen was sold with front-wheel drive only.
 - Reminders: engine oil 10,000 / 12 mo; dust and pollen filter 40,000 / 24 mo; spark plugs and air filter
   60,000 / 72 mo; automatic gearbox fluid 80,000 (not for a manual); brake fluid every 24 months by time
