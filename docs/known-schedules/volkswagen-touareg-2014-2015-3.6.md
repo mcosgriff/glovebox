@@ -12,9 +12,9 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 
 | Model year | What was read | Document | List |
 |---|---|---|---|
-| 2010 | The card for all models except the Routan (revised October 2012), as the [2010 Passat](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read) reads it | `2012/MC-10156104-9999` | [2010 3.6L](volkswagen-touareg-2010-3.6.md) |
+| 2010 | The card for all models except the Routan (revised October 2012), as the [2010 Passat](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read) reads it | `2012/MC-10156104-9999` | [2010 3.6L](volkswagen-touareg-2010-3.6.md) |
 | 2010 | The "Touareg 3.0L TDI Engine Only" card (revised October 2012), in full. NHTSA files it again as `MC-10157691` (not fetched) | `2012/MC-10156105-9999` | [2010 TDI](volkswagen-touareg-2010-tdi.md) |
-| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621` | 2010 |
+| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621` | 2010 |
 | 2014 | The Touareg 3.6L FSI Gasoline card (posted June 2013), in full; **this list was written from it**. NHTSA files it twice (`MC-10242479`, under 2014); the two files are byte for byte the same. `MC-10125856` was not fetched | `2013/MC-10125855-9999`, `2014/MC-10242479-9999` | this one |
 | 2014 | The Touareg 3.0L TDI card (posted June 2013), in full. NHTSA's index heads its row "3.0L Hybrid Engine"; the file is the TDI's | `2013/MC-10242478-9999` | [2014–2015 TDI](volkswagen-touareg-2014-2015-tdi.md) |
 | 2014 | The Touareg 3.0L Hybrid card (posted June 2013), in full. NHTSA files it twice; the two files are byte for byte the same | `2013/MC-10125857-9999`, `2013/MC-10242477-9999` | [2014 Hybrid](volkswagen-touareg-2014-hybrid.md) |

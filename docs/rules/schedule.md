@@ -44,7 +44,8 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   owner's choice). **Take an item's interval through `ActiveInterval`**, never from `useSevere` alone; a reminder
   counts by `ActiveInterval.counted` (`countedInterval(unit)`, `toTracked(rule, swap, unit)`). Import and export
   files don't carry it.
-- **Oil months (#517, [ADR-0015](../adr/0015-oil-months-worked-out.md)): the one time limit Glovebox works out.**
+- **Oil months (#517, [ADR-0015](../adr/0015-oil-months-worked-out.md)): the one time limit Glovebox works out,**
+  and the one exception to CLAUDE.md's "nothing is assumed or estimated for the user".
   An oil change (the typical `oil` item, or the owner's set to the `oil` line) whose interval in force has miles
   and no months, after the Severe and E85 choice, counts by `OilMonths`: miles ÷ 833, rounded, never more than 12
   (10,000 → 12, 7,500 → 9, 5,000 → 6; severe miles the same, no rate of their own). A kilometre figure is read

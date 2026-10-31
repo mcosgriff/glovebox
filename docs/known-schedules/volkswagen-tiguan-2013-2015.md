@@ -13,7 +13,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 | Model year | What was read | Document | List |
 |---|---|---|---|
 | 2010 | The card for all models except the Routan (revised October 2012), in full, read again as page images | `2012/MC-10156104-9999` | [2010](volkswagen-tiguan-2010.md) |
-| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), its spark plug and gearbox rows on page 5, and the oil change's time limit as read for the [2010 Passat](volkswagen-passat-2010.md) | reissue `USA5R503621` | [2010](volkswagen-tiguan-2010.md) |
+| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), its spark plug and gearbox rows on page 5, and the oil change's time limit as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md) | reissue `USA5R503621` | [2010](volkswagen-tiguan-2010.md) |
 | 2013 | The Tiguan 2.0TFSI card (revised October 2012), in full; **the list was written from it**. NHTSA files it again as `MC-10157692` (not fetched) | `2012/MC-10156107-9999` | this one |
 | 2014 | The Tiguan 2.0L TSI card (revised June 2013), in full. NHTSA files it twice; the two files are byte for byte the same | `2013/MC-10125858-9999`, `2013/MC-10242476-9999` | this one |
 | 2015 | The Tiguan 2.0L TSI card (revised June 2014), in full | `2014/MC-10120128-9999` | this one |

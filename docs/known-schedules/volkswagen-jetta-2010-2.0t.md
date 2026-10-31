@@ -9,7 +9,7 @@ the list was written, and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/2
 time limit and the engines. Read on 2026-10-28, as page images, by eye.
 
 - **The card is read as the 2.5L's page says**, which follows the
-  [Passat's](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read). The Passat's list is the card's
+  [Passat's](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read). The Passat's list is the card's
   2.0T reading, so this list has the same jobs in the same columns.
 - **The engine.** The card marks rows by engine, not by which model has it. The reissue's spark plug rows
   put "Jetta (1k2 - CCTA/CBFA/BPY)" and "Jetta Wag. (AJ5 - CCTA/CBFA)" with "Golf / GTI (5K-2.0T)" at every

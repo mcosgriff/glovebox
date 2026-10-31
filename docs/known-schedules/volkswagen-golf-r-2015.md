@@ -52,6 +52,7 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
 | 2016 | Golf R, 2.0TSI (292 HP), August 2015 | `2015/MC-10123073-9999` | [2016](volkswagen-golf-r-2016.md) |
 | 2018 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168646-0001` | [2018](volkswagen-golf-r-2018.md) |
 | 2019 | All models except e-Golf, revised 11/12/2020 | `2020/MC-10183295-0001` | [2019](volkswagen-golf-r-2019.md) |
+| 2020 | All models except e-Golf, revised 11/26/2019 | `2019/MC-10168643-0001` | [2020](volkswagen-golf-r-2020.md) |
 | 2022 | All model gasoline vehicles, revised 7/21/2021 | `2021/MC-10199495-0001` | [2022](volkswagen-golf-r-2022.md) |
 | 2023–2025 | Volkswagen's reissues `USA5R507521`, `USA5R505721`, `USA5R701521`, printed 12/03/2025 | owners' literature | [2023–2025](volkswagen-golf-r-2023-2025.md) |
 | 2026 | Volkswagen's reissue `USA5R506821`, printed 02/2026 | owners' literature | [2026](volkswagen-golf-r-2026.md) |
@@ -64,8 +65,6 @@ NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-29,
   [2017 GTI's page](volkswagen-gti-2017.md#how-far-the-reissue-matches-a-card-from-the-time) say how), so 2017 waits on
   [#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244). vPIC's model list
   has "Golf R" for 2017.
-- **2020 and 2021.** #437 covers 2015–2019 and 2022 on. vPIC's model list has "Golf R" for 2020 (not for 2021), and
-  the 2020 card (`2019/MC-10168643-0001`) names the Golf R on its 7-speed DSG row (the 2021 card,
-  `2020/MC-10177239-0001`, on its spark plug row too), but no 2020 list is made here: nothing on a card says a 2020 Golf R was sold, and that
-  is left for the owner ([asked on #437](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764), question 4).
+- **2021.** vPIC's model list for Volkswagen has no "Golf R" for 2021, so no list is made. (2020 has a
+  [list](volkswagen-golf-r-2020.md), by the owner's ruling on [#556](https://github.com/mcosgriff/glovebox/issues/556#issuecomment-6511734459), question 2.)
 - The Mk6 Golf R (2012–2013) is [#435's](volkswagen-golf-r-2013.md).

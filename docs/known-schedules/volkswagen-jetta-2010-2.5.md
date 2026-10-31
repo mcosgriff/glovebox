@@ -19,7 +19,7 @@ The Jetta's other two engines have lists of their own from the same card: the
 [2.0T](volkswagen-jetta-2010-2.0t.md) and the [2.0L TDI](volkswagen-jetta-2010-tdi.md). The Jetta
 SportWagen has [its own lists](volkswagen-jetta-sportwagen-2010-2.5.md).
 
-- **The card is read as the [Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+- **The card is read as the [Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
   says**: 12 columns to 120,000 with no months, not repeated; a row is the Jetta 2.5L's when it names the
   Jetta ("Jetta models"), the 2.5L, or no model or engine; the air filter is `engine-air` (60,000 / 72 mo),
   the dust and pollen filter `cabin-air` (20,000 / 24 mo), brake fluid time-only every 24 months (footnote 6

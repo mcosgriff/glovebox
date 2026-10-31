@@ -1,17 +1,17 @@
 {
-  "id": "volkswagen-atlas-cross-sport-2026",
-  "title": "2026 Atlas Cross Sport",
+  "id": "volkswagen-atlas-cross-sport-2023-2026",
+  "title": "2023–2026 Atlas Cross Sport",
   "make": "Volkswagen",
   "model": "Atlas Cross Sport",
   "years": {
-    "from": 2026,
+    "from": 2023,
     "to": 2026
   },
   "source": {
     "name": "Volkswagen maintenance schedule reissue",
-    "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/d063309f-f793-4d23-8799-a4ff5ffb3850",
+    "url": "https://ownersliterature.vw.com/owners-literature-service/v1/document/7f3ce02f-ee20-4e97-8747-fb18f14b9b66",
     "retrieved": "2026-10-29",
-    "note": "Read from Volkswagen's USA maintenance schedule for 2026, as reissued in 02/2026, in Glovebox's wording. Check it against the booklet that came with your car.",
+    "note": "Read from Volkswagen's USA maintenance schedules for 2023 to 2026, as reissued in 12/2025 and 02/2026, in Glovebox's wording. Check it against the booklet that came with your car.",
     "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for its gasoline models, as Volkswagen reissued them on its owners' literature site, for a car the owner maintains. Only the Atlas Cross Sport's facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
   "allWheelDriveOnly": [

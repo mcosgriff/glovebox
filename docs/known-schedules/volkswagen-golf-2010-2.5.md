@@ -18,7 +18,7 @@ all-model card from its owners-literature site
 
 The Golf's 2.0L TDI has [a list of its own](volkswagen-golf-2010-tdi.md) from the same card.
 
-- **The 2010 card is read as the [Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+- **The 2010 card is read as the [Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
   says**: 12 columns to 120,000 with no months, not repeated; a row is the Golf 2.5L's when it names the
   Golf, the 2.5L, or no model or engine; the air filter is `engine-air` (60,000 / 72 mo), the dust and
   pollen filter `cabin-air` (20,000 / 24 mo), brake fluid time-only every 24 months, oil 12 months from the

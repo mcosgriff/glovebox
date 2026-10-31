@@ -20,7 +20,7 @@ The Jetta SportWagen's other engines have lists of their own from the same card:
 [2.0T](volkswagen-jetta-sportwagen-2010-2.0t.md) and the [2.0L TDI](volkswagen-jetta-sportwagen-2010-tdi.md).
 The sedan has [its own lists](volkswagen-jetta-2010-2.5.md).
 
-- **The card is read as the [Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+- **The card is read as the [Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
   says**, and this list is the [2010 Golf 2.5L](volkswagen-golf-2010-2.5.md)'s reading for the Jetta
   SportWagen: the same rows in the same columns, in the same wording. The card marks no row for the Golf
   and not the Jetta or the other way round, apart from the automatic gearbox row, which names both ("2.5L

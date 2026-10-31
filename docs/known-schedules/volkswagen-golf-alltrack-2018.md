@@ -9,10 +9,10 @@ Golf Alltrack too), read in full on 2026-10-29, as page images, by eye.
 
 - **The list is the [2018 Golf](volkswagen-golf-2018.md)'s, row for row**, with the model's name; that page
   says how the card was read. Every Mk7 card read, and what isn't covered, is on the
-  [2015 Golf 1.8T's page](volkswagen-golf-2015-1.8t.md). The card names the Golf Alltrack on no row. One row is read
-  differently from the Golf's, and left out and asked on #436:
-  - **The hood latch.** "Hood latch: Lubricate (Does not apply to: Passat, Golf, Beetle, and Jetta)". Whether
-    "Golf" takes in the Golf Alltrack isn't said; it is left out, as on the [2018 GTI](volkswagen-gti-2018.md#needs-a-decision-left-out).
+  [2015 Golf 1.8T's page](volkswagen-golf-2015-1.8t.md). The card names the Golf Alltrack on no row. One row needed a
+  ruling:
+  - **The hood latch.** "Hood latch: Lubricate (Does not apply to: Passat, Golf, Beetle, and Jetta)". It is left
+    out, by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years (AWD only vehicles)",
   an additional item. The 2018 Golf Alltrack was sold with 4Motion all-wheel drive, so by
   [the 2018 card's reading](volkswagen-jetta-2018.md#how-the-2018-all-model-card-is-read) (point 8) it is

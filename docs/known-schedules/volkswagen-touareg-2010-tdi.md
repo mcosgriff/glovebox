@@ -8,7 +8,7 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
 |---|---|---|
 | 2010 | The "Touareg 3.0L TDI Engine Only" card (revised October 2012), in full, as page images; the list was written from it | `2012/MC-10156105-9999` |
 | 2010 | The card for all models except the Routan (revised October 2012), for comparison (below) | `2012/MC-10156104-9999` |
-| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; it names the Touareg (`7L`) | reissue `USA5R503621`, printed 11/24/2025 |
+| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; it names the Touareg (`7L`) | reissue `USA5R503621`, printed 11/24/2025 |
 
 - **A grid of 12 columns, 10,000 to 120,000**, no months printed for a column, not repeated (rule 9). No
   130,000 column and no timing belt row.

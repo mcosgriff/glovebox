@@ -9,7 +9,7 @@ the list was written, and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/2
 time limit only. Read on 2026-10-28, as page images, by eye.
 
 - **The card is read as the 2.5L's page says**, which follows the
-  [Passat's](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read). The TDI rows are those of the
+  [Passat's](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read). The TDI rows are those of the
   [2010 Golf TDI](volkswagen-golf-2010-tdi.md), from the same card.
 - **One list per engine** (the owner's ruling of 2026-10-23). This list takes the rows marked for the
   2.0L TDI and leaves out the rows marked for other engines only:
