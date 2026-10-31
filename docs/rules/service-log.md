@@ -7,6 +7,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   records, readings and settings, put together one way in dash terms. A screen, the widget or a worker doesn't
   gather those rows and call `log()` itself. Milestones is the one exception: it goes by actual mileage, with
   no swap, and builds its own on the same functions.
+- **A record's lines, jobs, part rows and charges are read and written as one `ServiceRecord`** (#574, `:domain`):
+  `toModel` and `toRows` (`:data`) are the only places that turn the saved rows into it and back, and own the
+  numbering they point at each other by. Log service, the record's screen, exports and imports don't rebuild a
+  record from `ServiceRecordWithItems` themselves.
 - **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the records as they
   would stand (`DraftRecord`s, readings as typed, new ones numbered below zero) and gives the changes and the
   entries after, in dash terms. A delete, an edit, re-filed lines and an import's file all go through it; a

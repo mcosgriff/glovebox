@@ -70,11 +70,7 @@ import io.cosgriff.glovebox.domain.ExportDocument
 import io.cosgriff.glovebox.domain.ExportFormat
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.ExportRecall
-import io.cosgriff.glovebox.domain.ExportJob
-import io.cosgriff.glovebox.domain.ExportPartRow
-import io.cosgriff.glovebox.data.db.charges
-import io.cosgriff.glovebox.data.db.priceOf
-import io.cosgriff.glovebox.data.db.rowsOf
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.domain.ExportRecord
 import io.cosgriff.glovebox.domain.ExportScheduleLine
 import io.cosgriff.glovebox.domain.ExportVehicle
@@ -237,8 +233,7 @@ class ExportViewModel @Inject constructor(
             whatItTakes = v.whatItTakes().wordedLines(),
             documents = VehicleDocuments.sorted(documents.documentsFor(v.id).map { it.toStored() }).map { ExportPaper(it.type.label, it.name, it.date, it.expiresOn) },
             records = records.map { r ->
-                val jobs = r.jobs.sortedBy { it.position }
-                val jobIndex = jobs.withIndex().associate { (i, j) -> j.id to i }
+                val work = r.toModel()
                 ExportRecord(
                     date = r.record.date,
                     odometer = r.record.odometer,
@@ -254,15 +249,9 @@ class ExportViewModel @Inject constructor(
                     categories = r.items.map { line ->
                         line.catalogId?.let { ServiceGroup.ofLine(it) } ?: line.scheduleItemId?.let(categories::get) ?: ServiceGroup.OTHER
                     },
-                    jobs = jobs.map { job ->
-                        val labels = r.items.associate { it.id to it.label }
-                        ExportJob(
-                            job.wording, job.laborCents, r.priceOf(job).partsCents,
-                            r.rowsOf(job).map { ExportPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.itemId?.let(labels::get)) },
-                        )
-                    },
-                    jobOf = if (jobs.isEmpty()) emptyList() else r.items.map { line -> line.jobId?.let(jobIndex::get) },
-                    charges = r.charges,
+                    jobs = work.exportJobs(),
+                    jobOf = if (work.jobs.isEmpty()) emptyList() else work.jobOf,
+                    charges = work.charges,
                 )
             },
             schedule = items.filter { it.tracked }.mapNotNull { item ->
