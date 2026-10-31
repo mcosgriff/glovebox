@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.35.0](https://github.com/mcosgriff/glovebox/compare/v0.34.0...v0.35.0) (2026-10-31)
+
+
+### Features
+
+* **schedule:** Volkswagen 2014–2016 Golf, Jetta and wagon TDI lists ([#551](https://github.com/mcosgriff/glovebox/issues/551)) ([2c0caa8](https://github.com/mcosgriff/glovebox/commit/2c0caa8a8ab53c0443d95423f5e66389f7c24852))
+* **schedule:** Volkswagen 2014–2016 Golf, Jetta and wagon TDI lists from the owner's ruling on [#551](https://github.com/mcosgriff/glovebox/issues/551) ([#561](https://github.com/mcosgriff/glovebox/issues/561)) ([2c0caa8](https://github.com/mcosgriff/glovebox/commit/2c0caa8a8ab53c0443d95423f5e66389f7c24852))
+* **schedule:** Volkswagen Haldex and 2026 Golf R diff from the owner's rulings on [#554](https://github.com/mcosgriff/glovebox/issues/554) ([#557](https://github.com/mcosgriff/glovebox/issues/557)) ([76d62f9](https://github.com/mcosgriff/glovebox/commit/76d62f96ba7bc2123ddc3c25e6f4515f9b4cb97f))
+* **schedule:** Volkswagen Haldex and Golf R diff from the owner's rulings on [#554](https://github.com/mcosgriff/glovebox/issues/554) ([76d62f9](https://github.com/mcosgriff/glovebox/commit/76d62f96ba7bc2123ddc3c25e6f4515f9b4cb97f))
+* **schedule:** Volkswagen ID.4 and ID. Buzz maker's schedules ([#456](https://github.com/mcosgriff/glovebox/issues/456)) ([#559](https://github.com/mcosgriff/glovebox/issues/559)) ([89dbd31](https://github.com/mcosgriff/glovebox/commit/89dbd311cdbf185895fdf6ef00743ecc6001b945))
+* **schedule:** Volkswagen lists from the owner's rulings on [#553](https://github.com/mcosgriff/glovebox/issues/553) ([#558](https://github.com/mcosgriff/glovebox/issues/558)) ([1ee1edf](https://github.com/mcosgriff/glovebox/commit/1ee1edfa3c7eed2596639512330c6a4512c8b914))
+* **schedule:** Volkswagen lists from the reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552)) ([#562](https://github.com/mcosgriff/glovebox/issues/562)) ([2b39c66](https://github.com/mcosgriff/glovebox/commit/2b39c66cc3fa90f925f0bf31168b46d5544f56e2))
+* **schedule:** Volkswagen sister-model lists from the owner's rulings on [#555](https://github.com/mcosgriff/glovebox/issues/555) and [#556](https://github.com/mcosgriff/glovebox/issues/556) ([#560](https://github.com/mcosgriff/glovebox/issues/560)) ([aab055f](https://github.com/mcosgriff/glovebox/commit/aab055f575eb0d13a115b0d389c7b2e3dd653d04))
+
+
+### Bug Fixes
+
+* **service-log:** read a service's one-line parts header as its parts ([#484](https://github.com/mcosgriff/glovebox/issues/484)) ([#570](https://github.com/mcosgriff/glovebox/issues/570)) ([582315e](https://github.com/mcosgriff/glovebox/commit/582315e9fdf2cfe9b13be60691fe3243ccbb5175))
+* **service-log:** read every Shop-Ware service and offer only open work ([#484](https://github.com/mcosgriff/glovebox/issues/484)) ([#571](https://github.com/mcosgriff/glovebox/issues/571)) ([9b113bc](https://github.com/mcosgriff/glovebox/commit/9b113bc772f85a34e870fc07d5b63f9800bf620e))
+
 ## [0.34.0](https://github.com/mcosgriff/glovebox/compare/v0.33.0...v0.34.0) (2026-10-29)
 
 
