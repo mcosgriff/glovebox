@@ -76,6 +76,18 @@ data class KnownScheduleList(
      * round from [manualExcluded]: a vehicle known to shift itself doesn't get them.
      */
     val manualOnly: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that are for a dual-clutch (DSG) gearbox only (#549): Volkswagen's "DSG: change fluid and
+     * filter". In the table and a reminder for a vehicle whose owner said Dual-clutch; in the table with no reminder
+     * while the owner hasn't said which ("Don't know"), since a wrong fluid is worse than an empty row; left out for
+     * any other gearbox ([KnownSchedules.applies]).
+     */
+    val dsgOnly: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that are for a conventional automatic only, not a dual-clutch ("Automatic (non-DSG):
+     * change fluid"). The same rule as [dsgOnly], for a vehicle whose owner said Automatic.
+     */
+    val automaticOnly: Set<String> = emptySet(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
     override val modelAliases: List<String> = emptyList(),
@@ -143,7 +155,7 @@ object KnownSchedules {
     const val ASSET_DIR = "known-schedules"
 
     private val required = KnownLists.headerKeys + setOf("milestones")
-    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body", "trim")
+    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "dsgOnly", "automaticOnly", "engine", "modelAliases", "additional", "e85", "body", "trim")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -182,6 +194,14 @@ object KnownSchedules {
         val notManual = jobs("manualExcluded")
         val manual = jobs("manualOnly")
         (notManual intersect manual).forEach { check.fail("manualOnly", "\"$it\" is also in manualExcluded") }
+        val dsg = jobs("dsgOnly")
+        val automatic = jobs("automaticOnly")
+        // A job for one gearbox that shifts itself is never a manual's, and is already left out for one.
+        (dsg intersect automatic).forEach { check.fail("automaticOnly", "\"$it\" is also in dsgOnly") }
+        for ((field, set) in listOf("dsgOnly" to dsg, "automaticOnly" to automatic)) {
+            (set intersect manual).forEach { check.fail(field, "\"$it\" is also in manualOnly") }
+            (set intersect notManual).forEach { check.fail(field, "\"$it\" is also in manualExcluded, which $field already covers") }
+        }
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
         if ("e85" in o && engine?.powertrain != Powertrain.FLEX_FUEL) check.fail("e85", "is only for a list whose engine is flex-fuel")
         val aliases = o["modelAliases"]?.let { e ->
@@ -202,6 +222,8 @@ object KnownSchedules {
                 allWheelDriveOnly = allWheel,
                 manualExcluded = notManual,
                 manualOnly = manual,
+                dsgOnly = dsg,
+                automaticOnly = automatic,
                 engine = engine,
                 modelAliases = aliases,
                 additional = additional,
@@ -348,35 +370,69 @@ object KnownSchedules {
     }
 
     /**
-     * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one
-     * picked when the vehicle was added). Only a vehicle **known** to drive two wheels loses the
+     * Whether a job of [list] is in the table for a vehicle with this [drivetrain] (vPIC's drive type, or the one
+     * picked when the vehicle was added) and [gearbox]. Only a vehicle **known** to drive two wheels loses the
      * jobs the guide marks "(4WD)" or "(AWD)". Anything else keeps them, with the mark in their
      * names: a vehicle with that drive because they are its jobs, and one on record as the other
      * kind or as nothing at all because the guide has no other line for it and leaving a job out is
      * the worse mistake. That is not a claim that all-wheel drive is four-wheel drive ([DriveKind]).
+     *
+     * The gearbox the same way: only a vehicle known to have a manual loses the jobs that aren't for one, only one
+     * known to shift itself loses the manual's own, and only one whose owner named the other kind loses a
+     * [KnownScheduleList.dsgOnly] or [KnownScheduleList.automaticOnly] job. Whether such a job is also a reminder is
+     * [reminds].
      */
-    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, transmission: String? = null): Boolean {
+    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): Boolean {
         val key = MilestoneImport.nameKey(jobName)
         val twoWheel = Drivetrains.kind(drivetrain) == DriveKind.TWO_WHEEL
-        // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one,
-        // and only one known to shift itself loses the manual's own.
+        val forOne = onlyFor(list, key)
         return !(twoWheel && (key in list.fourWheelDriveOnly || key in list.allWheelDriveOnly)) &&
-            !(Transmissions.isManual(transmission) && key in list.manualExcluded) &&
-            !(Transmissions.isAutomatic(transmission) && key in list.manualOnly)
+            !(gearbox.manual && (key in list.manualExcluded || forOne != null)) &&
+            !(gearbox.shiftsItself && key in list.manualOnly) &&
+            !(forOne != null && gearbox.gearbox != null && gearbox.gearbox != forOne)
     }
 
     /**
-     * [list]'s table and intervals for one vehicle: in [unit], which changes nothing when it is the
-     * list's own, and without the jobs that aren't for its [drivetrain]. Each interval carries its
-     * [KnownScheduleList.e85] interval, if it has one.
+     * Whether a job of [list] that [applies] is also a reminder: a [KnownScheduleList.dsgOnly] or
+     * [KnownScheduleList.automaticOnly] job only for a vehicle whose owner said that gearbox (#549). On "Don't know"
+     * it stays in the table with no reminder, as a wrong fluid is worse than an empty row. Every other job that
+     * applies is.
      */
-    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedMilestone> =
+    fun reminds(list: KnownScheduleList, jobName: String, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): Boolean =
+        applies(list, jobName, drivetrain, gearbox) && Gearboxes.reminds(onlyFor(list, MilestoneImport.nameKey(jobName)), gearbox.gearbox)
+
+    /** The one gearbox a job is for, by its name key; null for a job for any. */
+    private fun onlyFor(list: KnownScheduleList, key: String): Gearbox? = when (key) {
+        in list.dsgOnly -> Gearbox.DUAL_CLUTCH
+        in list.automaticOnly -> Gearbox.AUTOMATIC
+        else -> null
+    }
+
+    /**
+     * [list]'s table for one vehicle: in [unit], which changes nothing when it is the
+     * list's own, and without the jobs that aren't for its [drivetrain] or [gearbox] ([applies]).
+     */
+    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): List<ImportedMilestone> =
         FileDistances.milestones(list.milestones, null, list.unit, unit).first
-            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain, transmission) }) }
+            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain, gearbox) }) }
             .filter { it.work.isNotEmpty() }
 
-    fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedScheduleItem> =
-        FileDistances.schedule((list.intervals + list.additional).map { it.copy(e85 = list.e85[MilestoneImport.nameKey(it.name)]) }, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
+    /**
+     * [list]'s reminders for one vehicle ([reminds]), in [unit]. Each carries its [KnownScheduleList.e85] interval,
+     * if it has one, and the one gearbox it is for ([ImportedScheduleItem.gearbox]), so the item made from it keeps
+     * that. With [onTable], the jobs as the table shows them instead ([applies]): a one-gearbox job on "Don't know"
+     * too, for the Milestones view, which reminds of nothing.
+     */
+    fun intervalsIn(
+        list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null), onTable: Boolean = false,
+    ): List<ImportedScheduleItem> =
+        FileDistances.schedule(
+            (list.intervals + list.additional).map {
+                val key = MilestoneImport.nameKey(it.name)
+                it.copy(e85 = list.e85[key], gearbox = onlyFor(list, key))
+            },
+            list.unit, unit,
+        ).filter { if (onTable) applies(list, it.name, drivetrain, gearbox) else reminds(list, it.name, drivetrain, gearbox) }
 
     /**
      * What adding [intervals] (already in the vehicle's unit) would do. Each becomes an item of the

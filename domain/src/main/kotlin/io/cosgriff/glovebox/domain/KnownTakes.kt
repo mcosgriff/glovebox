@@ -10,13 +10,13 @@ import kotlinx.serialization.json.JsonObject
  */
 data class KnownTakesVariant(
     val drive: DriveKind? = null,
-    /** True for a manual gearbox, false for one that shifts itself ([Transmissions.isAutomatic]). */
+    /** True for a manual gearbox, false for one that shifts itself ([GearboxOnRecord.shiftsItself]). */
     val manual: Boolean? = null,
     val takes: WhatItTakes,
 ) {
-    fun fits(drivetrain: String?, transmission: String?): Boolean =
+    fun fits(drivetrain: String?, gearbox: GearboxOnRecord): Boolean =
         (drive == null || Drivetrains.kind(drivetrain) == drive) &&
-            (manual == null || if (manual) Transmissions.isManual(transmission) else Transmissions.isAutomatic(transmission))
+            (manual == null || if (manual) gearbox.manual else gearbox.shiftsItself)
 }
 
 /**
@@ -250,8 +250,8 @@ object KnownTakes {
         KnownLists.forEngine(lists.forModel(year, make, model), KnownTakesList::engine, engine, fuel)
 
     /** What [list] says for a vehicle with this drive and gearbox: the whole model's rows and the variants it is known to fit. */
-    fun forVehicle(list: KnownTakesList, drivetrain: String?, transmission: String?): WhatItTakes =
-        list.variants.filter { it.fits(drivetrain, transmission) }.fold(list.takes) { acc, v ->
+    fun forVehicle(list: KnownTakesList, drivetrain: String?, gearbox: GearboxOnRecord): WhatItTakes =
+        list.variants.filter { it.fits(drivetrain, gearbox) }.fold(list.takes) { acc, v ->
             TakesItem.entries.filter { v.takes.summary(it) != null }.fold(acc) { a, item -> a.with(item, v.takes) }
         }
 
