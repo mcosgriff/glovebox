@@ -29,6 +29,56 @@ data class InvoiceWord(
     val confidence: Float? = null,
 )
 
+/**
+ * A small filled shape on an invoice's page (#572), with its colour as 0xRRGGBB: a health report marks each item it
+ * looked at red, yellow or green this way, outside the text. The box is in the page's own units from its top left,
+ * as an [InvoiceWord]'s is. Only a PDF has them; a photo's or a scan's page gives none.
+ */
+data class InvoiceMark(
+    val page: Int,
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+    val rgb: Int,
+)
+
+/** How an inspection report marked an item (#572), read from its mark's hue and never its exact colour. */
+enum class FindingColour {
+    RED, AMBER, GREEN;
+
+    companion object {
+        /** Below this saturation or brightness a mark is grey, white or black: no finding's colour. */
+        private const val MIN_CHROMA = 0.25f
+        private const val SIXTH = 60f
+        private const val RED_UNTIL = 25f
+        private const val AMBER_UNTIL = 70f
+        private const val GREEN_UNTIL = 190f
+        private const val RED_FROM = 330f
+
+        /** The colour [rgb] (0xRRGGBB) reads as, by its hue; null for one that is none of the three. */
+        fun of(rgb: Int): FindingColour? {
+            val r = (rgb shr 16 and 0xFF) / 255f
+            val g = (rgb shr 8 and 0xFF) / 255f
+            val b = (rgb and 0xFF) / 255f
+            val max = maxOf(r, g, b)
+            val chroma = max - minOf(r, g, b)
+            if (max < MIN_CHROMA || chroma / max < MIN_CHROMA) return null
+            val hue = SIXTH * when (max) {
+                r -> ((g - b) / chroma).mod(6f)
+                g -> (b - r) / chroma + 2
+                else -> (r - g) / chroma + 4
+            }
+            return when {
+                hue < RED_UNTIL || hue >= RED_FROM -> RED
+                hue < AMBER_UNTIL -> AMBER
+                hue < GREEN_UNTIL -> GREEN
+                else -> null
+            }
+        }
+    }
+}
+
 /** One line of the invoice as the reader put it together: its [segments] are the pieces a wide gap separates. */
 data class InvoiceLine(val page: Int, val segments: List<String>) {
     val text: String get() = segments.joinToString("  ")
@@ -59,6 +109,9 @@ enum class InvoiceSection {
 
     /** Recommended, declined, deferred or suggested work: kept as text for notes, never a job. */
     RECOMMENDED,
+
+    /** An inspection or health report (#572): the items looked at, each with what was found and perhaps a mark. */
+    INSPECTION,
 
     /** The shop's terms, an authorization or a signature: nothing in it is read. */
     TERMS,
@@ -154,6 +207,9 @@ sealed interface InvoiceStep {
 
     data class RecommendationKept(val line: Int, val text: String, val cents: Long?) : InvoiceStep
 
+    /** An inspection report's item, what was found under it and the colour of its mark, if it had one (#572). */
+    data class InspectionItem(val line: Int, val area: String, val finding: String?, val colour: FindingColour?) : InvoiceStep
+
     /** The user's rule files the job under [catalogId]. */
     data class JobFiled(val job: Int, val catalogId: String) : InvoiceStep
 
@@ -187,8 +243,24 @@ data class InvoiceJob(
     val price: JobPrice get() = JobPrice(laborCents, partsCents)
 }
 
-/** Work the shop recommended, as text offered for the record's notes: never a job, since it wasn't done. */
-data class InvoiceRecommendation(val line: Int, val text: String, val cents: Long?)
+/**
+ * Work the shop recommended, offered to keep or note (#572): never a job, since it wasn't done. Under an inspection
+ * report's item it carries that item's [area], what was [finding] there and the item's [colour] (red or amber only).
+ */
+data class InvoiceRecommendation(
+    val line: Int,
+    val text: String,
+    val cents: Long?,
+    val area: String? = null,
+    val finding: String? = null,
+    val colour: FindingColour? = null,
+)
+
+/**
+ * An inspection report's red or yellow item with no recommended work under it (#572): its [area] ("Fluid leaks") and
+ * what was found ("Oil pan seeping"), null when nothing was written. [colour] is null when the report had no marks.
+ */
+data class InvoiceFinding(val line: Int, val area: String, val text: String?, val colour: FindingColour?)
 
 /**
  * What the reader made of an invoice. It only ever fills the form: every field is an offer, null where nothing was
@@ -205,6 +277,8 @@ data class InvoiceReading(
     val recommendations: List<InvoiceRecommendation>,
     val lines: List<InvoiceLine>,
     val trace: List<InvoiceStep>,
+    /** An inspection report's red and yellow items with no recommendation under them (#572). */
+    val findings: List<InvoiceFinding> = emptyList(),
 ) {
     /** The record's reading: out, or in when out wasn't read. */
     val odometer: Int? get() = odometerOut ?: odometerIn
@@ -220,8 +294,28 @@ data class InvoiceReading(
 object InvoiceWords {
     const val VERSION = 1
 
-    fun toJson(words: List<InvoiceWord>): String = buildJsonObject {
+    fun toJson(words: List<InvoiceWord>, marks: List<InvoiceMark> = emptyList()): String = buildJsonObject {
         put("version", VERSION)
+        // Optional, so a word list saved before marks were read (#572) is still a version-1 list.
+        if (marks.isNotEmpty()) {
+            put(
+                "marks",
+                buildJsonArray {
+                    marks.forEach { m ->
+                        add(
+                            buildJsonObject {
+                                put("page", m.page)
+                                put("left", m.left)
+                                put("top", m.top)
+                                put("right", m.right)
+                                put("bottom", m.bottom)
+                                put("rgb", m.rgb)
+                            },
+                        )
+                    }
+                },
+            )
+        }
         put(
             "words",
             buildJsonArray {
@@ -247,6 +341,21 @@ object InvoiceWords {
         val root = Json.parseToJsonElement(json).jsonObject
         require(root["version"]?.jsonPrimitive?.int == VERSION) { "not a version $VERSION word list" }
         return (root["words"] as JsonArray).map { it.jsonObject.word() }
+    }
+
+    /** The marks in [json]; none for a list saved without them. */
+    fun marksFromJson(json: String): List<InvoiceMark> {
+        val marks = Json.parseToJsonElement(json).jsonObject["marks"] as? JsonArray ?: return emptyList()
+        return marks.map { it.jsonObject }.map { m ->
+            InvoiceMark(
+                page = m.getValue("page").jsonPrimitive.int,
+                left = m.getValue("left").jsonPrimitive.float,
+                top = m.getValue("top").jsonPrimitive.float,
+                right = m.getValue("right").jsonPrimitive.float,
+                bottom = m.getValue("bottom").jsonPrimitive.float,
+                rgb = m.getValue("rgb").jsonPrimitive.int,
+            )
+        }
     }
 
     private fun JsonObject.word() = InvoiceWord(

@@ -3,7 +3,11 @@ package io.cosgriff.glovebox.ui.screens
 import io.cosgriff.glovebox.domain.InvoiceFill
 import io.cosgriff.glovebox.domain.FilledJob
 import io.cosgriff.glovebox.domain.FilledFigure
-import io.cosgriff.glovebox.domain.InvoiceRecommendationNote
+import io.cosgriff.glovebox.domain.RecommendedItem
+import io.cosgriff.glovebox.domain.FindingColour
+import io.cosgriff.glovebox.domain.ShopRecommendation
+import io.cosgriff.glovebox.ui.service.ShopRecommended
+import io.cosgriff.glovebox.ui.service.ClosedRecommendation
 import io.cosgriff.glovebox.domain.VinMismatch
 import io.cosgriff.glovebox.domain.InvoiceLine
 import io.cosgriff.glovebox.domain.LineRole
@@ -102,6 +106,7 @@ import io.cosgriff.glovebox.ui.schedule.MilestonesState
 import io.cosgriff.glovebox.ui.schedule.ScheduleState
 import io.cosgriff.glovebox.ui.service.DueSuggestion
 import io.cosgriff.glovebox.ui.service.LogServiceData
+import io.cosgriff.glovebox.domain.ShopUse
 import io.cosgriff.glovebox.ui.service.LogServiceForm
 import io.cosgriff.glovebox.ui.schedule.label
 import io.cosgriff.glovebox.ui.service.label
@@ -650,7 +655,7 @@ object Fixtures {
             FilledJob("Front Wheel Alignment", filed = null, guesses = listOf("alignment"), laborCents = 12_995, partsCents = 0, laborUnread = false, partsUnread = false),
             FilledJob("Brake Inspection", filed = null, guesses = emptyList(), laborCents = null, partsCents = 0, laborUnread = true, partsUnread = false),
         ),
-        recommendations = listOf(InvoiceRecommendationNote("Coolant Flush", 15_999)),
+        recommendations = listOf(RecommendedItem("Coolant Flush", 15_999)),
         odometerIn = null,
         vinMismatch = VinMismatch("4821", "1937"),
         unread = setOf(FilledFigure.TOTAL),
@@ -705,9 +710,88 @@ object Fixtures {
 
     /** A new service filled from [invoiceFill], nothing saved yet. */
     fun logServiceFromInvoice(): LogServiceForm = logService().apply {
-        fill(invoiceFill, notes = "Recommended on the invoice: Coolant Flush ($159.99)")
+        fill(invoiceFill, notes = "")
         invoice = readInvoice
     }
+
+    /** A made-up shop's kept recommendation (#572), from a made-up record. */
+    private fun kept(
+        id: Long,
+        text: String,
+        cents: Long?,
+        line: String?,
+        date: LocalDate,
+        shop: String? = "Cedar Hollow Auto & Truck",
+        area: String? = null,
+        finding: String? = null,
+        colour: FindingColour? = null,
+    ) = ShopRecommendation(id, recordId = 900 + id, date = date, shop = shop, item = RecommendedItem(text, cents, area, finding, colour), line = line)
+
+    /** The Coolant System Service this made-up shop recommended earlier, which a new invoice's replaces. */
+    private val earlierCoolant = kept(1, "Coolant System Service", 22_999, "coolant", LocalDate.of(2026, 3, 5))
+
+    /**
+     * An invoice with an inspection report read into a new service (#572, board RecommendedLog), made-up shop, work
+     * and prices: a red finding with the work for it, a red one under work no line fits, a yellow finding alone, work
+     * that replaces the shop's earlier recommendation, and some let go. Chosen row by row: three kept, one in the notes,
+     * one let go.
+     */
+    fun logServiceRecommended(): LogServiceForm = logService().apply {
+        toggle("oil")
+        shops = listOf(ShopUse("Cedar Hollow Auto & Truck", LocalDate.of(2026, 3, 5), 900))
+        data = data!!.copy(openRecommendations = listOf(earlierCoolant))
+        fill(
+            invoiceFill.copy(
+                shop = "Cedar Hollow Auto & Truck",
+                vinMismatch = null,
+                jobs = listOf(FilledJob("Replace Front Brake Pads & Rotors", filed = null, guesses = emptyList(), laborCents = 45_240, partsCents = 42_000, laborUnread = false, partsUnread = false)),
+                recommendations = listOf(
+                    RecommendedItem("Replace CV Axle Assembly", 57_420, "Axles", "Driver side axle boot torn", FindingColour.RED),
+                    RecommendedItem("Electrical Diagnosis", 18_900, "Lights", "Fog lights not working", FindingColour.RED),
+                    RecommendedItem("Oil pan seeping", null, "Fluid Leaks", colour = FindingColour.AMBER),
+                    RecommendedItem("Coolant System Service", 23_999),
+                    RecommendedItem("Wiper Blade Replacement", 4_999),
+                ),
+            ),
+            notes = "",
+        )
+        toggleKeep(2)
+        toggleNote(2)
+        toggleKeep(4)
+    }
+
+    /**
+     * Logging coolant and a battery done by the owner (#572, board RecommendedLogDone), with the made-up shop's open
+     * recommendations for both: done with these?
+     */
+    fun logServiceDone(): LogServiceForm = logService().apply {
+        toggle("oil")
+        toggle("coolant")
+        toggle("battery")
+        data = data!!.copy(
+            openRecommendations = listOf(
+                kept(2, "Coolant System Service", 23_999, "coolant", LocalDate.of(2026, 6, 2)),
+                kept(3, "Battery Replacement", 28_900, "battery", LocalDate.of(2026, 6, 2)),
+                kept(4, "Wiper Blade Replacement", 4_999, "wipers", LocalDate.of(2026, 6, 2)),
+            ),
+        )
+    }
+
+    /** The vehicle's kept recommendations (#572, board RecommendedList): made-up shops, work and prices. */
+    val shopRecommended = ShopRecommended(
+        vehicleName = "2019 Blue truck",
+        open = listOf(
+            kept(5, "Replace CV Axle Assembly", 57_420, "cv-axle", LocalDate.of(2026, 6, 2), area = "Axles", finding = "Driver side axle boot torn", colour = FindingColour.RED),
+            kept(6, "Electrical Diagnosis", 18_900, null, LocalDate.of(2026, 6, 2), area = "Lights", finding = "Fog lights not working", colour = FindingColour.RED),
+            kept(7, "Oil pan seeping", null, "oil-pan-gasket", LocalDate.of(2026, 6, 2), area = "Fluid Leaks", colour = FindingColour.AMBER),
+            kept(8, "Transmission Fluid Exchange", 38_999, "trans-fluid", LocalDate.of(2026, 6, 2)),
+            kept(9, "Power Steering Fluid Service", 21_999, "power-steering", LocalDate.of(2026, 1, 12), shop = "Pine Ridge Tire & Lube"),
+        ),
+        closed = listOf(
+            ClosedRecommendation(kept(10, "Coolant System Service", 23_999, "coolant", LocalDate.of(2026, 3, 5)).copy(doneBy = 120, doneOn = LocalDate.of(2026, 6, 10)), doneLine = "Engine coolant"),
+            ClosedRecommendation(kept(11, "Wiper Blade Replacement", 4_999, "wipers", LocalDate.of(2026, 3, 5)).copy(closedOn = LocalDate.of(2026, 6, 12))),
+        ),
+    )
 
     /**
      * A shop's invoice for plugs and coils priced as one job, its parts itemized (#502), made-up figures: the plug

@@ -54,6 +54,8 @@ import io.cosgriff.glovebox.domain.InvoiceFigure
 import io.cosgriff.glovebox.domain.InvoiceFill
 import io.cosgriff.glovebox.domain.InvoiceLine
 import io.cosgriff.glovebox.domain.InvoiceSection
+import io.cosgriff.glovebox.domain.FindingColour
+import io.cosgriff.glovebox.domain.RecommendedChoice
 import io.cosgriff.glovebox.domain.LineRole
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.OdometerRole
@@ -71,14 +73,30 @@ enum class InvoiceSource { PDF, PHOTOS }
 /** Why a picked invoice filled nothing. */
 enum class InvoiceProblem { NOT_A_PDF, UNREADABLE, NO_TEXT }
 
-/** The recommended work and odometer in, for the notes; empty when the invoice had neither. */
-internal fun invoiceNotes(fill: InvoiceFill, unit: DistanceUnit): String {
+/**
+ * Odometer in, for the notes; empty when the invoice had none. What the shop recommended is chosen item by item
+ * (#572) and goes in by [recommendedNotes].
+ */
+internal fun invoiceNotes(fill: InvoiceFill, unit: DistanceUnit): String =
+    fill.odometerIn?.let { AppText.res.getString(R.string.invoice_notes_odometer_in, it.asDistance(unit)) }.orEmpty()
+
+/** The items the user put in the notes (#572), one line each: the work with its price, and what was found. */
+internal fun recommendedNotes(choices: List<RecommendedChoice>): String {
     val res = AppText.res
-    val recommended = fill.recommendations.takeIf { it.isNotEmpty() }?.joinToString(res.getString(R.string.invoice_notes_separator)) { r ->
-        r.cents?.let { res.getString(R.string.invoice_notes_item_priced, r.text, Money.format(it)) } ?: r.text
-    }?.let { res.getString(R.string.invoice_notes_recommended, it) }
-    val odometerIn = fill.odometerIn?.let { res.getString(R.string.invoice_notes_odometer_in, it.asDistance(unit)) }
-    return listOfNotNull(recommended, odometerIn).joinToString("\n")
+    return choices.filter { it.note }.joinToString("\n") { c ->
+        val item = c.item
+        val area = item.area
+        when {
+            // A finding with no work under it.
+            item.cents == null && item.finding == null && area != null -> res.getString(R.string.invoice_notes_found, area, item.text)
+            else -> {
+                val work = item.cents?.let { res.getString(R.string.invoice_notes_item_priced, item.text, Money.format(it)) } ?: item.text
+                val said = res.getString(R.string.invoice_notes_recommended, work)
+                val found = item.finding?.let { f -> area?.let { res.getString(R.string.invoice_notes_found, it, f) } }
+                listOfNotNull(said, found).joinToString(" ")
+            }
+        }
+    }
 }
 
 /** A paper invoice's pages on the form (#513), and what can be done with them; the ViewModel's, or a test's. */
@@ -313,6 +331,15 @@ private fun roleText(role: LineRole): String = when (role) {
             InvoiceSection.TOTALS -> R.string.invoice_section_totals
             InvoiceSection.RECOMMENDED -> R.string.invoice_section_recommended
             InvoiceSection.TERMS -> R.string.invoice_section_terms
+            InvoiceSection.INSPECTION -> R.string.invoice_section_inspection
+        },
+    )
+    is LineRole.Inspected -> stringResource(
+        when (role.colour) {
+            FindingColour.RED -> R.string.invoice_role_inspected_red
+            FindingColour.AMBER -> R.string.invoice_role_inspected_amber
+            FindingColour.GREEN -> R.string.invoice_role_inspected_green
+            null -> R.string.invoice_role_inspected
         },
     )
     is LineRole.Work -> stringResource(R.string.invoice_role_work)

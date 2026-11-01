@@ -476,6 +476,53 @@ data class CatalogRuleEntity(
     val createdOn: LocalDate,
 )
 
+/**
+ * Work a shop recommended, or found, that the owner kept for later (#572, `ShopRecommendation` in `:domain`). Its shop
+ * and date are the record it was kept from ([recordId]), never stored again here, and deleting that record (Undo of a
+ * new one included) takes it with it. It never moves a reminder.
+ *
+ * Closed by the owner ([closedOn]), by a later record of the work ([doneByRecordId]; deleting that record opens it
+ * again), or by a newer recommendation of the same work from the same shop ([replacedById]; deleting the newer one, or
+ * its record, opens this again). Open while all three are null.
+ */
+@Entity(
+    tableName = "shop_recommendations",
+    foreignKeys = [
+        ForeignKey(VehicleEntity::class, ["id"], ["vehicleId"], onDelete = CASCADE),
+        ForeignKey(ServiceRecordEntity::class, ["id"], ["recordId"], onDelete = CASCADE),
+        ForeignKey(ServiceRecordEntity::class, ["id"], ["doneByRecordId"], onDelete = ForeignKey.SET_NULL),
+        ForeignKey(ShopRecommendationEntity::class, ["id"], ["replacedById"], onDelete = ForeignKey.SET_NULL),
+    ],
+    indices = [Index("vehicleId"), Index("recordId"), Index("doneByRecordId"), Index("replacedById")],
+)
+data class ShopRecommendationEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val vehicleId: Long,
+    val recordId: Long,
+    /** The shop's wording, as printed. */
+    val wording: String,
+    val cents: Long? = null,
+    /** The inspection item it was found under ("Axles"), what was found there, and the item's colour (a FindingColour name). */
+    val area: String? = null,
+    val finding: String? = null,
+    val colour: String? = null,
+    /** The catalog line whose logging offers to close it; null matches on its wording. */
+    val catalogId: String? = null,
+    val closedOn: LocalDate? = null,
+    val doneByRecordId: Long? = null,
+    val replacedById: Long? = null,
+    val position: Int = 0,
+)
+
+/** A kept recommendation with what it takes from its record, and the date of the record that did the work. */
+data class ShopRecommendationRow(
+    @Embedded val row: ShopRecommendationEntity,
+    val date: LocalDate,
+    val shopName: String?,
+    val diy: Boolean,
+    val doneOn: LocalDate?,
+)
+
 data class ServiceRecordWithItems(
     @Embedded val record: ServiceRecordEntity,
     @Relation(parentColumns = ["id"], entityColumns = ["recordId"]) val items: List<ServiceRecordItemEntity>,

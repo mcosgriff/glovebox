@@ -8,6 +8,16 @@ import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/** A recommendation a new record keeps for later (#572): its row, and the open one from the same shop it replaces. */
+data class KeptRecommendation(val row: ShopRecommendationEntity, val replaces: Long? = null)
+
+/** What a deleted record had kept, closed and replaced (#572), for its Undo to put back. */
+data class RecordRecommendations(
+    val kept: List<ShopRecommendationEntity> = emptyList(),
+    val done: List<Long> = emptyList(),
+    val replaced: List<ReplacedLink> = emptyList(),
+)
+
 /** A record as `Visits` sees it (#307). */
 fun ServiceRecordEntity.toVisit(): VisitRecord = VisitRecord(id, visitId, date, odometer, shopName.takeIf { !diy })
 
@@ -22,6 +32,7 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     private val service = db.service()
     private val recalls = db.recalls()
     private val vehicles = db.vehicles()
+    private val recommendations = db.recommendations()
 
     /** A recall marked done; [recordId] is the record added for the work, if there was one. */
     data class Completed(val recordId: Long?)
@@ -33,17 +44,38 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     internal suspend fun <T> transaction(block: suspend () -> T): T =
         db.useWriterConnection { it.immediateTransaction { block() } }
 
-    /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
+    /**
+     * [photoFiles] are already encrypted in the photo folder; this makes them the record's. [kept] are the shop's
+     * recommendations it keeps for later (#572), each replacing the open one it names; [done] are open ones the owner
+     * said this record is the work for, which it closes.
+     */
     suspend fun add(
         record: ServiceRecordEntity,
         items: List<ServiceRecordItemEntity>,
         photoFiles: List<String> = emptyList(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
         parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        kept: List<KeptRecommendation> = emptyList(),
+        done: List<Long> = emptyList(),
     ): Long = transaction {
         val id = service.insertWithItems(record, items, jobs, parts)
         service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
+        kept.forEachIndexed { i, k ->
+            val keptId = recommendations.insert(k.row.copy(id = 0, vehicleId = record.vehicleId, recordId = id, position = i))
+            k.replaces?.let { recommendations.setReplaced(it, keptId) }
+        }
+        if (done.isNotEmpty()) recommendations.setDone(done, id)
         id
+    }
+
+    /**
+     * Deletes [record]. What it kept goes with it, and what it closed or replaced opens again (#572), by the foreign
+     * keys; the rows say what was there, for [restore] to put back.
+     */
+    suspend fun delete(record: ServiceRecordEntity): RecordRecommendations = transaction {
+        val was = RecordRecommendations(recommendations.keptBy(record.id), recommendations.doneBy(record.id), recommendations.replacedBy(record.id))
+        service.deleteRecord(record)
+        was
     }
 
     /** [removedPhotoIds] lose their rows; their files are the caller's to keep for Undo or delete. */
@@ -59,6 +91,9 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         service.deletePhotos(removedPhotoIds.toList())
         service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
     }
+
+    /** A kept recommendation closed by the owner on [on], or open again with null (#572). Logs nothing. */
+    suspend fun closeRecommendation(id: Long, on: LocalDate?) = recommendations.setClosed(id, on)
 
     /** [previous] back as it was, photos included. False if its vehicle has gone. */
     suspend fun revertEdit(previous: ServiceRecordWithItems): Boolean = transaction {
@@ -107,8 +142,24 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
      * A deleted record back, with its photos and as the work for [recallIds]. Null if its vehicle has gone:
      * there is nothing to put it back on.
      */
-    suspend fun restore(record: ServiceRecordWithItems, recallIds: List<Long>): Long? = transaction {
-        restoreRows(record)?.also { id -> recalls.linkRecord(recallIds, id) }
+    suspend fun restore(record: ServiceRecordWithItems, recallIds: List<Long>, was: RecordRecommendations = RecordRecommendations()): Long? = transaction {
+        restoreRows(record)?.also { id ->
+            recalls.linkRecord(recallIds, id)
+            // What it kept, under their own ids so what they replaced points at them again, and what it closed.
+            // A link to a row that went meanwhile is dropped, not left pointing nowhere.
+            val rows = recommendations.existing(was.kept.mapNotNull { it.replacedById }).toSet()
+            recommendations.insertAll(
+                was.kept.map { k ->
+                    k.copy(
+                        recordId = id,
+                        replacedById = k.replacedById?.takeIf { it in rows },
+                        doneByRecordId = k.doneByRecordId?.takeIf { service.record(it) != null },
+                    )
+                },
+            )
+            was.replaced.forEach { recommendations.setReplaced(it.id, it.replacedById) }
+            if (was.done.isNotEmpty()) recommendations.setDone(was.done, id)
+        }
     }
 
     /**

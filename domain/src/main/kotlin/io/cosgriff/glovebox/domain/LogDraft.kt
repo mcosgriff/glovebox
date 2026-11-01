@@ -182,9 +182,10 @@ data class LogDraft(
      * What an invoice was read as merged into this draft (#484), for the user to check against it; nothing is saved
      * until they save. Each service is a line of the shop's wording: under the line the user's rule files it under,
      * or a custom line, and its own job with the prices a sum vouched for. What was ticked stays. Null once an
-     * invoice has filled it: a draft fills once.
+     * invoice has filled it: a draft fills once. What the shop recommended comes back as choices (#572), each kept
+     * under the line [rules] file it under, or a guess.
      */
-    fun fill(fill: InvoiceFill, terms: LogTerms): InvoiceMerge? {
+    fun fill(fill: InvoiceFill, terms: LogTerms, rules: List<CatalogRule> = emptyList()): InvoiceMerge? {
         if (invoiceRead) return null
         var draft = copy(invoiceRead = true)
         var stored = jobs(terms)
@@ -228,6 +229,7 @@ data class LogDraft(
             draft = draft.copy(storedJobs = stored, unreadLabor = labor, unreadParts = parts),
             leftOut = leftOut,
             opensPrices = fill.jobs.any { it.laborCents != null || it.partsCents != null || it.laborUnread || it.partsUnread },
+            recommended = ShopRecommendations.choices(fill.recommendations, rules),
         )
     }
 
@@ -332,6 +334,8 @@ data class InvoiceMerge(
     val draft: LogDraft,
     val leftOut: List<String>,
     val opensPrices: Boolean,
+    /** What the shop recommended or found (#572), each with the choice it starts with: kept, under its line. */
+    val recommended: List<RecommendedChoice> = emptyList(),
 )
 
 /** The invoice's date as the form takes it: never one after [today]. */

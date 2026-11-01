@@ -10,6 +10,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.RecallEntity
@@ -50,6 +51,9 @@ internal class ServiceTestDb {
     val invoices = InvoicePicker(context, appScope, documents)
     val invoicePhotos = InvoicePhotos(context, photos, appScope)
     val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
+
+    /** The vehicle's kept shop recommendations (#572), open and closed. */
+    suspend fun recommendations(vehicleId: Long) = db.recommendations().all(vehicleId).map { it.toModel() }
 
     /** The folder encrypted files live in; the tests only ever look at which names are there. */
     val photoDir: File get() = crypto.photoDir

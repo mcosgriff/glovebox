@@ -40,7 +40,8 @@ class PrivateInvoicesTest {
         assumeTrue("no private invoices in $folder", cases.isNotEmpty())
         val failures = cases.flatMap { case ->
             val expected = Json.parseToJsonElement(File(case, "expected.json").readText()).jsonObject
-            val words = InvoiceWords.fromJson(File(case, "words.json").readText())
+            val json = File(case, "words.json").readText()
+            val words = InvoiceWords.fromJson(json)
             val r = InvoiceReader.read(
                 words,
                 today = expected["today"]?.let { LocalDate.parse(it.jsonPrimitive.content) } ?: LocalDate.now(),
@@ -48,6 +49,7 @@ class PrivateInvoicesTest {
                     OdometerReading(LocalDate.parse(it.jsonObject.getValue("date").jsonPrimitive.content), it.jsonObject.getValue("odometer").jsonPrimitive.int)
                 },
                 unit = if (expected["unit"]?.jsonPrimitive?.content == "km") DistanceUnit.KILOMETERS else DistanceUnit.MILES,
+                marks = InvoiceWords.marksFromJson(json),
             )
             mismatches(expected, r).map { "${case.name}: $it" }.also { if (it.isNotEmpty()) println(r.trace.joinToString("\n") { s -> "  ${case.name} | $s" }) }
         }
@@ -68,6 +70,10 @@ class PrivateInvoicesTest {
         check("odometerOut", r.odometerOut) { it.jsonPrimitive.int }
         check("grandTotalCents", r.grandTotalCents) { it.jsonPrimitive.long }
         check("recommendations", r.recommendations.map { it.text }) { j -> (j as JsonArray).map { it.jsonPrimitive.content } }
+        // Each as "Area: what was found [COLOUR]", the colour only where the report marked it (#572).
+        check("findings", r.findings.map { f -> listOfNotNull("${f.area}: ${f.text.orEmpty()}".trimEnd(':', ' '), f.colour?.let { "[$it]" }).joinToString(" ") }) { j ->
+            (j as JsonArray).map { it.jsonPrimitive.content }
+        }
         (e["jobs"] as? JsonArray)?.let { jobs ->
             if (jobs.size != r.jobs.size) out += "jobs: expected ${jobs.size}, read ${r.jobs.size} (${r.jobs.map { it.wording }})"
             jobs.zip(r.jobs).forEachIndexed { i, (want, job) ->

@@ -33,8 +33,9 @@ class Converters {
         DocumentEntity::class,
         CatalogRuleEntity::class,
         RecallNameEntity::class,
+        ShopRecommendationEntity::class,
     ],
-    version = 39,
+    version = 40,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -75,6 +76,7 @@ class Converters {
         AutoMigration(from = 36, to = 37), // vehicles.bodyStyle
         AutoMigration(from = 37, to = 38), // service_record_job_parts, service_records.shopSuppliesCents, taxCents, feesCents
         AutoMigration(from = 38, to = 39), // vehicles.ownOilMiles, ownOilMonths
+        AutoMigration(from = 39, to = 40), // shop_recommendations
     ],
 )
 @ColumnTypeConverters(Converters::class)
@@ -89,6 +91,7 @@ abstract class GloveboxDatabase : RoomDatabase() {
     abstract fun units(): UnitDao
     abstract fun documents(): DocumentDao
     abstract fun catalogRules(): CatalogRuleDao
+    abstract fun recommendations(): ShopRecommendationDao
 
     companion object {
         const val FILE_NAME = "glovebox.db"

@@ -36,7 +36,7 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   check it against the invoice, never "detected". A figure printed and not vouched for is left blank and outlined
   "Couldn't read" until something is typed there. One invoice is one record: each service a line of the shop's wording
   (under the line the owner's rule files it under, otherwise custom, with guesses only through "File under…") in a job
-  of its own with its vouched labor and parts; what was already ticked stays. Recommended work and "odometer in" go to
+  of its own with its vouched labor and parts; what was already ticked stays. Recommended work is offered row by row (shop recommendations, below) and "odometer in" goes to
   the notes, never to the lines. A VIN that isn't the vehicle's is a question by its last four, never a block. The shop
   takes a saved shop's spelling. The read odometer is an offer from the invoice, so the never-prefilled rule doesn't
   cover it. "What was read" is viewing only. The PDF is held in memory and kept, encrypted, among the vehicle's
@@ -137,4 +137,21 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   `:domain` returns a typed trace of every decision; `app` words it. The honest figure is the unseen set in
   `InvoiceUnseenTest`. **Never commit a real invoice**: real ones go in the git-ignored
   `domain/src/test/private-invoices/` (`PrivateInvoicesTest`).
+- Shop recommendations (#572, `docs/adr/0016-shop-recommendations-kept-apart-from-the-schedule.md`,
+  `ShopRecommendations`, boards `Recommended*`): an invoice's recommended work and its inspection report's red and
+  yellow findings are **one row each on Log service, every row kept to start with** (a colourless finding standing
+  alone, from a report without marks, starts let go). Keep for later, Add to notes, both, or neither (let go: nothing
+  saved). **Nothing is saved until the record is**; the notes get each noted item on its own line at save, and the
+  whole "Recommended on the invoice" block is no longer written ("Odometer in" still is). Kept items live in
+  `shop_recommendations` under the record they came from, so **deleting that record (Undo included) takes them**, and
+  Undo of the delete puts them back. **Never a reminder and never "done"**: an open one moves nothing and closing one
+  logs nothing. The same shop and the same wording (case and spacing aside) **replace** the open one; another shop
+  never does. Logged work closes one only when the form asks and the owner leaves it ticked: by its catalog line,
+  whoever did it, else by similar wording (`LineGuess.similar`), only for records dated on or after it, on a new
+  record only. The list on the vehicle closes one by hand, with Undo through `RecordActions`.
+- Health-report marks (#572, `PdfWords`' second pass, `InvoiceMark`, `FindingColour`): small filled shapes with their
+  colour, read in `:domain` **by hue, never exact value**, and paired with the item on their line, only under an
+  inspection heading. Work under an item carries its area, what was found and its colour; approved work there was
+  done on the visit, so neither it nor its finding is open. Colours on screen are the theme's (`statusColors()`),
+  never the PDF's. A report without marks gives its findings uncoloured.
 - Clear service history deletes imported records only by default, or all; typed DELETE, no Undo.

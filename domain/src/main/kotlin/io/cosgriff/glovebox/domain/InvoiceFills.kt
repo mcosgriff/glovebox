@@ -20,8 +20,19 @@ data class FilledJob(
     val partsUnread: Boolean,
 )
 
-/** Work the shop recommended, for the notes. */
-data class InvoiceRecommendationNote(val text: String, val cents: Long?)
+/**
+ * Something the shop recommended or found (#572), as Log service offers it to keep, note or let go: work with its
+ * [text] and price, or an inspection report's red or yellow finding standing alone. Under an inspection item it
+ * carries the item ([area], "Axles"), what was found there ([finding], "Driver side axle boot torn") and the item's
+ * [colour]; a finding alone is its [text] ("Oil pan seeping"), or its area when nothing was written.
+ */
+data class RecommendedItem(
+    val text: String,
+    val cents: Long?,
+    val area: String? = null,
+    val finding: String? = null,
+    val colour: FindingColour? = null,
+)
 
 /** The invoice's VIN isn't the vehicle's: asked, never a block. Each is the VIN's last four characters. */
 data class VinMismatch(val invoiceEnd: String, val vehicleEnd: String)
@@ -36,7 +47,7 @@ data class InvoiceFill(
     val shop: String?,
     val totalCents: Long?,
     val jobs: List<FilledJob>,
-    val recommendations: List<InvoiceRecommendationNote>,
+    val recommendations: List<RecommendedItem>,
     val odometerIn: Int?,
     val vinMismatch: VinMismatch?,
     val unread: Set<FilledFigure>,
@@ -59,6 +70,9 @@ sealed interface LineRole {
 
     /** Recommended, declined or deferred work, offered for the notes. */
     data object Recommended : LineRole
+
+    /** An inspection report's item (#572), with its mark's colour if it had one. */
+    data class Inspected(val colour: FindingColour?) : LineRole
 
     data object Shop : LineRole
 
@@ -105,12 +119,24 @@ object InvoiceFills {
             shop = reading.shop,
             totalCents = reading.grandTotalCents,
             jobs = jobs,
-            recommendations = reading.recommendations.map { InvoiceRecommendationNote(it.text, it.cents) },
+            recommendations = recommended(reading),
             odometerIn = reading.odometerInForNotes,
             vinMismatch = if (mine != null && theirs != null && mine != theirs) VinMismatch(theirs.takeLast(VIN_END), mine.takeLast(VIN_END)) else null,
             unread = setOfNotNull(FilledFigure.ODOMETER.takeIf { odometerUnread }, FilledFigure.TOTAL.takeIf { totalUnread }),
             leftOut = leftOut,
         )
+    }
+
+    /**
+     * The recommendations and the findings standing alone, red first, then yellow, then the rest, each in the
+     * invoice's order (#572): what most needs a decision comes first.
+     */
+    fun recommended(reading: InvoiceReading): List<RecommendedItem> {
+        val work = reading.recommendations.map { RecommendedItem(it.text, it.cents, it.area, it.finding, it.colour) }
+        val found = reading.findings.map { f ->
+            if (f.text != null) RecommendedItem(f.text, null, f.area, null, f.colour) else RecommendedItem(f.area, null, colour = f.colour)
+        }
+        return (work + found).sortedBy { it.colour?.ordinal ?: FindingColour.entries.size }
     }
 
     /** One list for each of [InvoiceReading.lines], in order: what that line became. */
@@ -131,6 +157,7 @@ object InvoiceFills {
                     add(step.line, LineRole.Figure(step.figure, step.cents, step.job, if (key in taken) true else if (key in notTaken) false else null))
                 }
                 is InvoiceStep.RecommendationKept -> add(step.line, LineRole.Recommended)
+                is InvoiceStep.InspectionItem -> add(step.line, LineRole.Inspected(step.colour))
                 is InvoiceStep.ShopTaken -> add(step.line, LineRole.Shop)
                 is InvoiceStep.DateTaken -> add(step.line, LineRole.Date)
                 is InvoiceStep.VinTaken -> add(step.line, LineRole.Vin(taken = true))

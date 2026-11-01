@@ -14,6 +14,9 @@ import io.cosgriff.glovebox.domain.CatalogRules
 import io.cosgriff.glovebox.domain.DistanceConversion
 import io.cosgriff.glovebox.domain.DistanceKind
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.FindingColour
+import io.cosgriff.glovebox.domain.RecommendedItem
+import io.cosgriff.glovebox.domain.ShopRecommendation
 import io.cosgriff.glovebox.domain.TakesItem
 import io.cosgriff.glovebox.domain.WhatItTakes
 import java.time.LocalDate
@@ -813,6 +816,70 @@ interface CatalogRuleDao {
     @Query("DELETE FROM catalog_rules WHERE id = :id")
     suspend fun delete(id: Long)
 }
+
+/** A kept recommendation that a newer one from the same shop replaced (#572). */
+data class ReplacedLink(val id: Long, val replacedById: Long)
+
+/**
+ * Work a shop recommended that the owner kept (#572). Written with its record in `ServiceLogWriter`, which keeps a
+ * record, what it kept and what it closed together.
+ */
+@Dao
+interface ShopRecommendationDao {
+    @Query(
+        "SELECT r.*, s.date AS date, s.shopName AS shopName, s.diy AS diy, d.date AS doneOn FROM shop_recommendations r " +
+            "JOIN service_records s ON s.id = r.recordId LEFT JOIN service_records d ON d.id = r.doneByRecordId " +
+            "WHERE r.vehicleId = :vehicleId ORDER BY s.date, r.position, r.id",
+    )
+    fun observe(vehicleId: Long): Flow<List<ShopRecommendationRow>>
+
+    @Query(
+        "SELECT r.*, s.date AS date, s.shopName AS shopName, s.diy AS diy, d.date AS doneOn FROM shop_recommendations r " +
+            "JOIN service_records s ON s.id = r.recordId LEFT JOIN service_records d ON d.id = r.doneByRecordId " +
+            "WHERE r.vehicleId = :vehicleId ORDER BY s.date, r.position, r.id",
+    )
+    suspend fun all(vehicleId: Long): List<ShopRecommendationRow>
+
+    @Insert suspend fun insert(row: ShopRecommendationEntity): Long
+
+    @Insert suspend fun insertAll(rows: List<ShopRecommendationEntity>)
+
+    @Query("UPDATE shop_recommendations SET replacedById = :by WHERE id = :id")
+    suspend fun setReplaced(id: Long, by: Long?)
+
+    @Query("UPDATE shop_recommendations SET doneByRecordId = :recordId WHERE id IN (:ids)")
+    suspend fun setDone(ids: List<Long>, recordId: Long?)
+
+    /** Closed by the owner on [on], or open again with null. Logs nothing and moves no reminder. */
+    @Query("UPDATE shop_recommendations SET closedOn = :on WHERE id = :id")
+    suspend fun setClosed(id: Long, on: LocalDate?)
+
+    @Query("SELECT * FROM shop_recommendations WHERE recordId = :recordId ORDER BY position, id")
+    suspend fun keptBy(recordId: Long): List<ShopRecommendationEntity>
+
+    @Query("SELECT id FROM shop_recommendations WHERE id IN (:ids)")
+    suspend fun existing(ids: List<Long>): List<Long>
+
+    @Query("SELECT id FROM shop_recommendations WHERE doneByRecordId = :recordId")
+    suspend fun doneBy(recordId: Long): List<Long>
+
+    /** Older recommendations that what [recordId] kept replaced. */
+    @Query("SELECT id, replacedById FROM shop_recommendations WHERE replacedById IN (SELECT id FROM shop_recommendations WHERE recordId = :recordId)")
+    suspend fun replacedBy(recordId: Long): List<ReplacedLink>
+}
+
+fun ShopRecommendationRow.toModel(): ShopRecommendation = ShopRecommendation(
+    id = row.id,
+    recordId = row.recordId,
+    date = date,
+    shop = shopName.takeIf { !diy },
+    item = RecommendedItem(row.wording, row.cents, row.area, row.finding, row.colour?.let { c -> FindingColour.entries.firstOrNull { it.name == c } }),
+    line = row.catalogId,
+    closedOn = row.closedOn,
+    doneBy = row.doneByRecordId,
+    doneOn = doneOn,
+    replacedBy = row.replacedById,
+)
 
 fun CatalogRuleEntity.toRule(): CatalogRule = CatalogRule(text, catalogId)
 
