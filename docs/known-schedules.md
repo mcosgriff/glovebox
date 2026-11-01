@@ -192,9 +192,12 @@ petrol "Jetta" sedan, `Turbo`, `EngineModel` and `Series` are blank for both, an
 SE, SEL" against "S", "Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS") and `EngineHP` (200–210 against 115,
 not kept) differ. So the GLI's list names "GLI" and the 8-valve's doesn't, and the two `engine` `label`s say which
 is which ("2.0L TSI (GLI)", "2.0L 8-valve"). The vehicle's trim (`vehicles.trim`, vPIC's or the owner's) is split
-into words ignoring case, so "2.0T GLI SE" names GLI and "GLIDER" doesn't. **A vehicle with no trim on record
-matches neither list**: setup asks "Which engine does it have?" with the two labels, and the list picked is kept
-on its schedule items as any is. A list without `trim` is for every trim.
+into words ignoring case, so "2.0T GLI SE" names GLI and "GLIDER" doesn't. **Only a trim that names the word
+picks a list: `doesNotName` never picks one on its own** (#595, the owner's ruling of 2026-10-31). vPIC's "2.0T GLI
+SE, SEL" is offered in Add vehicle as "2.0T GLI SE" and "SEL", so a GLI can be stored as "SEL", which doesn't name
+GLI. **A vehicle with no trim on record, or one that doesn't name the word, matches neither list**: setup asks
+"Which engine does it have?" with the two labels, and the list picked is kept on its schedule items as any is (a
+vehicle already on a list keeps it, whatever its trim says). A list without `trim` is for every trim.
 
 **`e85`** gives a flex-fuel guide's intervals for a vehicle run on E85 more than half the time, which Toyota's
 FFV guides print as an oil change every 2,500 miles / 3 months against the normal 5,000 / 6:

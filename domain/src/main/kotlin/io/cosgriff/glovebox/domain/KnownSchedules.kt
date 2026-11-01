@@ -20,15 +20,18 @@ data class KnownEngine(val label: String, val displacementL: Double, val fuel: S
  * A word a list holds the vehicle's trim to, where NHTSA gives two cars with different maker's cards the same make,
  * model, year, engine size and fuel, and only vPIC's `Trim` tells them apart (#569): the 2011–2016 Jetta GLI's 2.0L
  * TSI ("GLI", "2.0T GLI SE, SEL") and the Jetta's 2.0L 8-valve ("S", "Trendline", "2.0L"). [named] true is a list
- * for a trim that names [word]; false, one for a trim that doesn't. A vehicle with no trim on record matches
- * neither: setup asks.
+ * for a trim that names [word]; false, one for a trim that doesn't. **Only a trim that names [word] tells:** it picks
+ * the list that names it and rules out the one that doesn't. A trim that doesn't name it picks neither (#595), since
+ * vPIC's "2.0T GLI SE, SEL" is offered as "SEL" alone, so setup asks, as it does for a vehicle with no trim on record.
  */
 data class KnownTrim(val word: String, val named: Boolean) {
-    /** Null is "can't tell": no trim on record. Words are runs of letters and digits, compared ignoring case. */
+    /**
+     * Null is "can't tell": no trim on record, or one that doesn't name [word]. Words are runs of letters and digits,
+     * compared ignoring case.
+     */
     fun fits(trim: String?): Boolean? {
         val words = trim?.split(nonWord)?.filter { it.isNotEmpty() }.orEmpty()
-        if (words.isEmpty()) return null
-        return words.any { it.equals(word, ignoreCase = true) } == named
+        return if (words.any { it.equals(word, ignoreCase = true) }) named else null
     }
 
     private companion object {
@@ -97,8 +100,8 @@ data class KnownScheduleList(
     val body: BodyStyle? = null,
     /**
      * Null for a list that is for every trim. Set only where the maker's cards for one engine size and fuel differ
-     * and nothing but vPIC's `Trim` tells the cars apart ([KnownTrim]). A vehicle with no trim on record matches no
-     * list that names one; the owner is asked instead.
+     * and nothing but vPIC's `Trim` tells the cars apart ([KnownTrim]). A vehicle with no trim on record, or one
+     * that doesn't name the word, matches no list that names one; the owner is asked instead.
      */
     val trim: KnownTrim? = null,
 ) : KnownList

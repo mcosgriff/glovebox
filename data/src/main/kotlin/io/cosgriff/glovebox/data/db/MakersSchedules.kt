@@ -46,7 +46,8 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
 
     /**
      * The lists the owner could pick between, one per engine (or body), when no list matches because the vehicle's
-     * engine, fuel, body or trim isn't on record ([KnownSchedules.engineChoices]).
+     * engine, fuel, body or trim isn't on record, or its trim doesn't name a list's word (#595,
+     * [KnownSchedules.engineChoices]).
      */
     suspend fun choices(vehicle: VehicleEntity): List<KnownScheduleList> =
         KnownSchedules.engineChoices(lists(), vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
