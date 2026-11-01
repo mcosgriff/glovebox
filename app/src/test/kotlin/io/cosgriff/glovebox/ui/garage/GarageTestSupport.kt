@@ -36,6 +36,7 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.toByteArray
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -52,14 +53,43 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.io.IOException
 import java.util.Collections
+import java.util.WeakHashMap
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 // Shared by the tests of the garage, recalls, torque and scan screens. Everything here is made up: the
 // VINs are the screenshot fixtures' (they pass the check digit and belong to no one), and NHTSA's answers
 // are invented and never come from the network.
 
-/** The app's database in memory, through Android's own driver as `:data`'s tests build it. */
-fun testDatabase(context: Context = ApplicationProvider.getApplicationContext()): GloveboxDatabase =
-    Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
+/**
+ * The app's database in memory, through Android's own driver as `:data`'s tests build it. Its queries run on a
+ * pool of its own threads, so [closeWhenIdle] can wait for them. Every `:app` test database is made here.
+ */
+fun testDatabase(context: Context = ApplicationProvider.getApplicationContext()): GloveboxDatabase {
+    val pool = Executors.newCachedThreadPool()
+    return Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java)
+        .setDriver(AndroidSQLiteDriver())
+        .setQueryCoroutineContext(pool.asCoroutineDispatcher())
+        .build()
+        .also { queryPools[it] = pool }
+}
+
+private val queryPools: MutableMap<GloveboxDatabase, ExecutorService> = Collections.synchronizedMap(WeakHashMap())
+
+/**
+ * Closes a [testDatabase] once no query is running on it. A ViewModel's or a scope's work can still be part way
+ * through a query when the test ends, and cancelling it only asks it to stop, so closing at once failed that query
+ * with "the connection pool has been closed", in whichever test was running by then. Shutting the pool lets the
+ * running queries finish; work that reaches the database afterwards is turned away and cancelled, not failed.
+ */
+fun GloveboxDatabase.closeWhenIdle() {
+    queryPools.remove(this)?.let { pool ->
+        pool.shutdown()
+        check(pool.awaitTermination(TIMEOUT, TimeUnit.MILLISECONDS)) { "A query was still running after $TIMEOUT ms" }
+    }
+    close()
+}
 
 /**
  * Settings put back to what each test expects. The DataStore behind [SettingsRepository] lives as long as the

@@ -43,7 +43,7 @@ class GarageScreenTest {
     private val db = testDatabase()
     private val settings = testSettings()
 
-    @After fun close() = db.close()
+    @After fun close() = db.closeWhenIdle()
 
     private val opened = mutableListOf<String>()
 

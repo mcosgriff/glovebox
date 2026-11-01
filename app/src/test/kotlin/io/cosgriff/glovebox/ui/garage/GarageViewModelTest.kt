@@ -33,7 +33,7 @@ class GarageViewModelTest {
     private val nhtsa = FakeNhtsa()
     private val today = LocalDate.now()
 
-    @After fun close() = db.close()
+    @After fun close() = db.closeWhenIdle()
 
     private fun overview() = GarageOverview(VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings), db.recalls())
 

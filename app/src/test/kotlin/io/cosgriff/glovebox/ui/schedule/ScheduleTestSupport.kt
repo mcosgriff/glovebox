@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
+import io.cosgriff.glovebox.ui.garage.testDatabase
 import android.content.Context
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
@@ -21,9 +23,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
-import androidx.room3.Room
 import androidx.savedstate.serialization.encodeToSavedState
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
@@ -61,7 +61,7 @@ fun routeHandle(key: NavKey): SavedStateHandle =
  */
 class ScheduleWorld {
     val context: Context = ApplicationProvider.getApplicationContext()
-    val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
+    val db: GloveboxDatabase = testDatabase(context)
     val settings = SettingsRepository(context)
     val catalog = KnownScheduleCatalog(context)
     val makers = MakersSchedules(catalog, db)
@@ -111,7 +111,7 @@ class ScheduleWorld {
         holders.cancel()
         appScope.cancel()
         idle()
-        db.close()
+        db.closeWhenIdle()
     }
 }
 

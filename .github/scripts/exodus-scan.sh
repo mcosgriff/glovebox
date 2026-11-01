@@ -28,7 +28,12 @@ trap 'rm -rf "$work"' EXIT
 cp "$apk" "$work/app.apk"
 
 # The exit code is the tracker count; the report decides below, so a count isn't taken for a failure to run.
-docker run --rm --platform linux/amd64 -v "$work:/app" "$IMAGE" -j -o /app/exodus.json /app/app.apk >/dev/null || true
+# No report usually means the signature list couldn't be fetched (the runner's network dropped), so try again.
+for attempt in 1 2 3; do
+  docker run --rm --platform linux/amd64 -v "$work:/app" "$IMAGE" -j -o /app/exodus.json /app/app.apk >/dev/null || true
+  [ -s "$work/exodus.json" ] && break
+  [ "$attempt" -lt 3 ] && { echo "::warning::The Exodus scanner wrote no report (attempt $attempt); trying again."; sleep $((attempt * 20)); }
+done
 if [ ! -s "$work/exodus.json" ]; then
   echo "::error::The Exodus scanner wrote no report."
   exit 1

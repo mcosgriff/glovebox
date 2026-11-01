@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
+import io.cosgriff.glovebox.ui.garage.testDatabase
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.app.Activity
 import android.app.Application
@@ -15,7 +17,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.components.ActivityRetainedComponent
@@ -96,9 +97,7 @@ class ShellTestApp : Application(), GeneratedComponentManager<Any> {
  * built through its `@Inject` constructor, once. ViewModels are made fresh, each with its own SavedStateHandle.
  */
 class ShellGraph(private val app: Application) {
-    val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(app, GloveboxDatabase::class.java)
-        .setDriver(androidSqliteDriver())
-        .build()
+    val db: GloveboxDatabase = testDatabase(app)
 
     /** As production's `@ApplicationScope`: on the main thread, one failure doesn't cancel the rest. */
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -305,7 +304,7 @@ class ShellGraph(private val app: Application) {
         val job = scope.coroutineContext[Job]!!
         job.cancel()
         idleMainUntil { job.children.none() }
-        db.close()
+        db.closeWhenIdle()
         // So the next test, whichever application it runs in, starts from the defaults.
         clearStore("io.cosgriff.glovebox.data.settings.SettingsRepositoryKt", "getDataStore")
         clearStore("io.cosgriff.glovebox.data.settings.NoticeLogStoreKt", "getNoticeLog")
@@ -335,10 +334,6 @@ fun idleMainUntil(timeoutMs: Long = 10_000, done: () -> Boolean) {
         Thread.sleep(5)
     }
 }
-
-/** Android's SQLite driver, as `:data`'s tests use; `:data` keeps the sqlite artifact to itself, so it is found by name. */
-private fun androidSqliteDriver(): androidx.sqlite.SQLiteDriver =
-    Class.forName("androidx.sqlite.driver.AndroidSQLiteDriver").getDeclaredConstructor().newInstance() as androidx.sqlite.SQLiteDriver
 
 /** Every request fails as if the phone were offline: the shell tests never reach NHTSA. */
 private class OfflineEngine : HttpClientEngineBase("offline") {
