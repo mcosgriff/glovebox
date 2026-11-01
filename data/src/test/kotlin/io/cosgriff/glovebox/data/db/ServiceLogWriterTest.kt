@@ -61,6 +61,70 @@ class ServiceLogWriterTest {
         assertEquals(1, service.recordsFor(car).size)
     }
 
+    private fun kept(wording: String, catalogId: String? = null) =
+        ShopRecommendationEntity(vehicleId = 0, recordId = 0, wording = wording, cents = 22_999, catalogId = catalogId)
+
+    private suspend fun open(car: Long) = db.recommendations().all(car).map { it.toModel() }.filter { it.open }
+
+    @Test
+    fun `a record keeps the shop's recommendations, replaces the shop's older one and closes what it did`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
+        val first = writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        val older = open(car)
+        assertEquals(listOf("Coolant System Service", "Battery Replacement"), older.map { it.item.text })
+        assertEquals("Cedar Hollow Auto & Truck", older[0].shop)
+        assertEquals(day, older[0].date)
+
+        // A later visit: the shop recommends the coolant again, and the owner did the battery.
+        val coolant = older.single { it.line == "coolant" }
+        val battery = older.single { it.line == "battery" }
+        val second = writer.add(
+            shop.copy(date = day.plusDays(30)),
+            listOf(line),
+            kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant").copy(cents = 23_999), replaces = coolant.id)),
+            done = listOf(battery.id),
+        )
+        val now = db.recommendations().all(car).map { it.toModel() }
+        assertEquals(listOf(23_999L), now.filter { it.open }.map { it.item.cents })
+        assertEquals(day.plusDays(30), now.single { it.id == battery.id }.doneOn)
+        assertTrue(now.single { it.id == coolant.id }.replacedBy != null)
+        assertTrue(first != second)
+    }
+
+    @Test
+    fun `deleting a record takes what it kept and opens what it closed, and its restore puts both back`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
+        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        val (coolant, battery) = open(car)
+        val id = writer.add(
+            shop.copy(date = day.plusDays(30)),
+            listOf(line),
+            kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant"), replaces = coolant.id)),
+            done = listOf(battery.id),
+        )
+        val saved = service.record(id)!!
+
+        val was = writer.delete(saved.record)
+        assertEquals(listOf(coolant.id, battery.id), open(car).map { it.id })
+
+        writer.restore(saved, emptyList(), was)
+        val back = db.recommendations().all(car).map { it.toModel() }
+        assertEquals(listOf("Coolant System Service"), back.filter { it.open }.map { it.item.text })
+        assertTrue(back.filter { it.open }.single().recordId == id)
+        assertEquals(id, back.single { it.id == battery.id }.doneBy)
+        assertTrue(back.single { it.id == coolant.id }.replacedBy != null)
+    }
+
+    @Test
+    fun `deleting the vehicle takes its recommendations`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        writer.add(record(car), listOf(line), kept = listOf(KeptRecommendation(kept("Wiper Blade Replacement"))))
+        db.vehicles().delete(db.vehicles().byId(car)!!)
+        assertEquals(emptyList<ShopRecommendationRow>(), db.recommendations().all(car))
+    }
+
     @Test
     fun `a record isn't put back on a vehicle that has gone`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())

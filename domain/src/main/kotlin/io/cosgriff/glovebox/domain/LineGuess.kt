@@ -60,6 +60,23 @@ object LineGuess {
         return real.mapNotNull { piece -> guess((if (action(piece) == Action.NONE) piece + actions else piece).joinToString(" ")) }.distinct()
     }
 
+    /**
+     * Whether [done] is worded like [recommended] (#572): most of what the recommendation names (two in three of its
+     * words, leaving out what was done to it and words like "and"), each the same word as one of [done]'s, give or
+     * take a plural or a typo, as [guess] compares them. "Electrical concern testing and analysis" is worded like
+     * "Electrical concern analysis done"; never like "Oil change".
+     */
+    fun similar(recommended: String, done: String): Boolean {
+        val named = words(recommended).filterNot { it in DONE || it in CHECKED || it in FILLER }.distinct()
+        if (named.isEmpty()) return false
+        val theirs = words(done)
+        val found = named.count { w -> theirs.any { same(it, w) || same(w, it) } }
+        return found * 3 >= named.size * 2
+    }
+
+    /** Words that name nothing. */
+    private val FILLER = setOf("and", "plus", "with", "the", "a", "an", "of", "for", "to", "on", "in", "at", "or", "both", "all", "system")
+
     private val SPLITTING = setOf("and", "plus")
 
     /** "and" (or "plus", "with") stands between the two sets of words. */
@@ -181,7 +198,7 @@ object LineGuess {
         "repaired", "repair", "serviced", "service", "flushed", "flush", "cleaned", "clean", "topped", "filled", "adjusted",
         "lubricated", "lubed", "greased", "rotated", "rotation", "balanced", "aligned", "alignment", "recharged", "resurfaced",
         "machined", "performed", "done", "fixed", "patched", "plugged", "mounted", "bled", "programmed", "reset",
-        "exchange", "exchanged", "rotate", "rotating", "lube",
+        "exchange", "exchanged", "rotate", "rotating", "lube", "replacement",
     )
 
     /** Words that say it was only looked at. */

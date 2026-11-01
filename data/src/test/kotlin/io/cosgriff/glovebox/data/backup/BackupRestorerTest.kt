@@ -11,6 +11,7 @@ import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
+import io.cosgriff.glovebox.data.db.ShopRecommendationEntity
 import io.cosgriff.glovebox.data.inMemoryDatabase
 import io.cosgriff.glovebox.data.resetDataStores
 import io.cosgriff.glovebox.data.settings.NoticeLogStore
@@ -83,6 +84,8 @@ class BackupRestorerTest {
         source.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = photo("receipt-a.jpg", "the receipt"))))
         source.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "99V000000", component = "Made-up", summary = "Made-up", firstSeenOn = day, completedOn = day, serviceRecordId = record, doNotDrive = true, parkOutside = true, overTheAir = true)))
         source.recalls().setNames(id, listOf("4RUNNER MADE-UP"))
+        // Work the shop recommended, kept for later (#572).
+        source.recommendations().insert(ShopRecommendationEntity(vehicleId = id, recordId = record, wording = "Made-up coolant service", cents = 22_999, area = "Made-up area", finding = "Made-up finding", colour = "RED", catalogId = "coolant"))
         return File(context.cacheDir, "backup.glovebox").also { f ->
             f.outputStream().use { BackupWriter(source, crypto, settings).write(it, password, day) }
         }
@@ -129,7 +132,7 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 39, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 40, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         // The owner's own oil change interval (#517) comes back with the vehicle.
@@ -143,6 +146,8 @@ class BackupRestorerTest {
         assertEquals(restoredRecord.items.single().id, restoredRecord.parts.single().itemId)
         assertEquals(source.recalls().recallsFor(id), target.recalls().recallsFor(id))
         assertEquals(listOf("4RUNNER MADE-UP"), target.recalls().namesFor(id))
+        assertEquals(source.recommendations().all(id), target.recommendations().all(id))
+        assertEquals(1, target.recommendations().all(id).size)
         assertEquals(listOf(60_000), target.odometer().readingsFor(id).map { it.odometer })
 
         // The replaced data's photo is gone; the backup's are in place and readable.
