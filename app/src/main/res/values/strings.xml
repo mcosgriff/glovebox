@@ -955,6 +955,9 @@
     <string name="catalog_blower_motor">Blower motor</string>
     <string name="catalog_fuses">Fuses / relays</string>
     <string name="catalog_horn">Horn</string>
+    <string name="catalog_ecu_update">Computer software update (ECU)</string>
+    <string name="catalog_hvac_check">A/C &amp; heating check</string>
+    <string name="catalog_sunroof">Sunroof (clean, lube, repair)</string>
     <string name="catalog_starter">Starter</string>
     <string name="catalog_alternator">Alternator</string>
     <string name="catalog_multi_point">Multi-point inspection</string>
@@ -962,8 +965,11 @@
     <string name="catalog_emissions">Emissions test</string>
     <string name="catalog_safety_inspection">Safety inspection</string>
     <string name="catalog_recall">Recall work</string>
+    <string name="catalog_pdi">Pre-delivery inspection</string>
+    <string name="catalog_diagnostic">Diagnostic scan (trouble codes)</string>
     <string name="catalog_accessory">Accessory install</string>
     <string name="catalog_body">Other body / glass</string>
+    <string name="catalog_body_lube">Hinges &amp; latches lubricated</string>
     <string name="catalog_windshield">Windshield</string>
     <string name="catalog_mirror">Mirror</string>
     <string name="catalog_door_handle">Door handle</string>

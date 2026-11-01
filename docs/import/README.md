@@ -231,9 +231,9 @@ count for a reminder. The values, by the category History files them under:
 | Exhaust | `oxygen-sensor`, `egr-valve`, `secondary-air-pump`, `catalytic-converter`, `muffler`, `exhaust` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |
 | Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `chassis-lube`, `suspension-check` |
-| Cabin & electrical | `cabin-air`, `wipers`, `wipers-check`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-flush`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
-| Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
-| Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body`, `detail` |
+| Cabin & electrical | `cabin-air`, `wipers`, `wipers-check`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `sunroof`, `door-lock-actuator`, `air-conditioning`, `ac-flush`, `ac-compressor`, `ac-condenser`, `hvac-check`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn`, `ecu-update` |
+| Inspection | `multi-point`, `pdi`, `diagnostic`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
+| Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body-lube`, `body`, `detail` |
 
 - **Reminders:** a line with a `service` resets the reminder that service resets, exactly as ticking
   it when you log a service does: `oil`, `engine-air`, `spark-plugs`, `rotation`, `brake-fluid`,
