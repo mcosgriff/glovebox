@@ -50,7 +50,7 @@ class LogServiceViewModelTest {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T = LogServiceViewModel(
                     routeHandle(route), VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings), t.db.service(),
-                    t.db.catalogRules(), t.actions, t.picker, t.invoices, t.invoicePhotos,
+                    t.db.catalogRules(), t.actions, t.picker, t.invoices, t.invoicePhotos, t.db.recommendations(),
                 ) as T
             },
         )[route.toString(), LogServiceViewModel::class]
@@ -133,6 +133,50 @@ class LogServiceViewModelTest {
             saved.items.map { Triple(it.scheduleItemId, it.label, it.catalogId) }.toSet(),
         )
         assertEquals(HistoryFocus(car, saved.record.id, RecordMark.ADDED), t.actions.focus.value)
+    }
+
+    /** #572: made-up shop, work and prices. */
+    @Test
+    fun `an invoice's recommendations are kept, noted or let go on save, and logged work closes an open one when left ticked`() = runBlocking {
+        val (car, _, _) = truck()
+        val vm = loaded(LogServiceRoute(car))
+        val form = vm.form
+        form.fill(
+            io.cosgriff.glovebox.domain.InvoiceFill(
+                date = today, odometer = 53_000, shop = "Made-up Motors", totalCents = null, jobs = emptyList(),
+                recommendations = listOf(
+                    io.cosgriff.glovebox.domain.RecommendedItem("Battery Replacement", 28_900),
+                    io.cosgriff.glovebox.domain.RecommendedItem("Oil pan seeping", null, "Fluid Leaks", colour = io.cosgriff.glovebox.domain.FindingColour.AMBER),
+                    io.cosgriff.glovebox.domain.RecommendedItem("Wiper Blade Replacement", 4_999),
+                ),
+                odometerIn = null, vinMismatch = null, unread = emptySet(), leftOut = emptyList(),
+            ),
+            notes = "",
+        )
+        form.toggle("oil")
+        form.toggleKeep(1)
+        form.toggleNote(1)
+        form.toggleKeep(2)
+        var done = false
+        vm.save { done = true }
+        awaitUntil("the save") { done }
+
+        val saved = t.db.service().recordsFor(car).maxBy { it.record.date }
+        assertEquals(t.recommendations(car).map { it.item.text }, listOf("Battery Replacement"))
+        assertEquals("battery", t.recommendations(car).single().line)
+        assertTrue(saved.record.notes!!.contains("Oil pan seeping"))
+        assertFalse(saved.record.notes!!.contains("Wiper"))
+
+        // The owner replaces the battery: the form asks, and saving with it ticked closes it.
+        store.clear()
+        val again = loaded(LogServiceRoute(car))
+        again.form.odometerText = "53,100"
+        again.form.toggle("battery")
+        assertEquals(listOf("Battery Replacement"), again.form.doneMatches.map { it.recommendation.item.text })
+        var saved2 = false
+        again.save { saved2 = true }
+        awaitUntil("the second save") { saved2 }
+        assertTrue(t.recommendations(car).none { it.open })
     }
 
     @Test

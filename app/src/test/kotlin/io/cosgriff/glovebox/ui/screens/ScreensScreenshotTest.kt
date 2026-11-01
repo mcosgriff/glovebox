@@ -31,6 +31,12 @@ import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.service.WorkAndPrices
+import io.cosgriff.glovebox.ui.service.RecommendedByShop
+import io.cosgriff.glovebox.ui.service.DoneWithThese
+import io.cosgriff.glovebox.ui.service.ShopRecommendedContent
+import io.cosgriff.glovebox.domain.OpenRecommendations
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import io.cosgriff.glovebox.ui.service.InvoiceCard
 import io.cosgriff.glovebox.ui.service.InvoicePages
 import io.cosgriff.glovebox.ui.service.WhatWasRead
@@ -260,6 +266,40 @@ class ScreensScreenshotTest(private val shade: Shade) {
         compose.shoot("log_service_charges", shade) {
             Column(Modifier.padding(20.dp)) { CostCard(form) }
         }
+    }
+
+    /** What the shop recommended, chosen row by row (#572, board RecommendedLog). */
+    @Test
+    fun logServiceRecommended() {
+        val form = Fixtures.logServiceRecommended()
+        compose.shoot("log_service_recommended", shade) {
+            Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { RecommendedByShop(form, onChangeLine = {}) }
+        }
+    }
+
+    /** Ticked lines that look like the work for open recommendations: done with these? (#572, board RecommendedLogDone). */
+    @Test
+    fun logServiceDone() {
+        val form = Fixtures.logServiceDone()
+        compose.shoot("log_service_done", shade) {
+            Column(Modifier.padding(20.dp)) { DoneWithThese(form) }
+        }
+    }
+
+    /** The vehicle's kept recommendations (#572, board RecommendedList). */
+    @Test
+    fun shopRecommended() = compose.shoot("shop_recommended", shade) {
+        ShopRecommendedContent(Fixtures.shopRecommended, onBack = {}, onClose = {})
+    }
+
+    /** Vehicle home's row for them (#572, board RecommendedHome). */
+    @Test
+    fun vehicleHomeRecommendations() = compose.shoot("vehicle_home_recommendations", shade) {
+        VehicleHomeContent(
+            Fixtures.vehicleHome, OpenRecalls(0, null),
+            onBack = {}, onLogService = {}, onLogItem = { _, _ -> }, onOpenRules = {}, onOpenRecalls = {}, onOpenDetails = {},
+            onEnterLastDone = {}, onUpdateMileage = {}, recommendations = OpenRecommendations(5, red = 2, amber = 1),
+        )
     }
 
     @Test

@@ -98,6 +98,7 @@ import io.cosgriff.glovebox.ui.vehicle.FluidsPartsScreen
 import io.cosgriff.glovebox.ui.vehicle.DocumentViewerScreen
 import io.cosgriff.glovebox.ui.vehicle.DocumentsScreen
 import io.cosgriff.glovebox.ui.service.LogServiceScreen
+import io.cosgriff.glovebox.ui.service.ShopRecommendedScreen
 import io.cosgriff.glovebox.ui.service.RecordEvent
 import io.cosgriff.glovebox.ui.service.RecordEventsViewModel
 import io.cosgriff.glovebox.ui.vehicle.VehicleDetailsScreen
@@ -146,6 +147,8 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 @Serializable data class LogServiceRoute(val vehicleId: Long, val recordId: Long = 0, val scheduleItemId: Long = 0) : NavKey
 @Serializable data class RecordDetailRoute(val recordId: Long) : NavKey
+/** A vehicle's shop recommendations kept for later (#572). */
+@Serializable data class ShopRecommendedRoute(val vehicleId: Long) : NavKey
 /** One of a record's photos, full screen; [start] is its place in the grid. */
 @Serializable data class PhotoViewerRoute(val recordId: Long, val start: Int) : NavKey
 @Serializable data class RecallsRoute(val vehicleId: Long) : NavKey
@@ -292,6 +295,7 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                     res.getString(if (event.record != null) R.string.event_recall_open_removed else R.string.event_recall_open) to res.getString(R.string.undo)
                 is RecordEvent.Filed ->
                     res.getQuantityString(R.plurals.event_lines_filed, event.lineIds.size, event.lineIds.size.asNumber()) to res.getString(R.string.undo)
+                is RecordEvent.RecommendationClosed -> res.getString(R.string.event_recommendation_closed, event.wording) to res.getString(R.string.undo)
             }
             val recordId = when (event) {
                 is RecordEvent.Saved -> event.recordId
@@ -471,8 +475,10 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                     onOpenDetails = { vehicleId -> nav.push(VehicleDetailsRoute(vehicleId)) },
                     onEnterLastDone = { vehicleId -> nav.push(LastDoneRoute(vehicleId)) },
                     onMessage = showMessage,
+                    onOpenRecommendations = { vehicleId -> nav.push(ShopRecommendedRoute(vehicleId)) },
                 )
             }
+            screen<ShopRecommendedRoute> { ShopRecommendedScreen(onBack = { nav.pop() }) }
             screen<VehicleDetailsRoute> {
                 VehicleDetailsScreen(
                     onBack = { nav.pop() },

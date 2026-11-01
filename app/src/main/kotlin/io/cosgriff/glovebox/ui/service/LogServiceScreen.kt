@@ -163,6 +163,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import io.cosgriff.glovebox.domain.ServiceLinks
+import io.cosgriff.glovebox.domain.RecommendedChoice
+import io.cosgriff.glovebox.domain.KeptLine
+import io.cosgriff.glovebox.domain.LoggedLine
+import io.cosgriff.glovebox.domain.DoneMatch
+import io.cosgriff.glovebox.domain.ShopRecommendation
+import io.cosgriff.glovebox.domain.ShopRecommendations
+import io.cosgriff.glovebox.data.db.ShopRecommendationDao
+import io.cosgriff.glovebox.data.db.ShopRecommendationEntity
+import io.cosgriff.glovebox.data.db.KeptRecommendation
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.domain.ShopUse
 import javax.inject.Inject
 
@@ -188,6 +198,8 @@ data class LogServiceData(
     val original: ServiceRecordWithItems?,
     /** The user's category rules (#310): a custom item worded as one is offered that rule's line first. */
     val rules: List<CatalogRule> = emptyList(),
+    /** The vehicle's kept shop recommendations (#572): a new one from the same shop replaces one, logged work closes one. */
+    val openRecommendations: List<ShopRecommendation> = emptyList(),
 ) {
     /**
      * Set when the cluster was replaced. [readings] and [lastOdometer] are in dash terms; what is typed belongs
@@ -328,10 +340,12 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     /**
      * What an invoice was read as goes on the form (#484), for the user to check against it; nothing is saved until
      * they save. The lines and jobs are the draft's merge ([LogDraft.fill]); the visit's figures are written into
-     * their fields here. [notes] (the recommended work, odometer in) go after any already typed.
+     * their fields here. [notes] (odometer in) go after any already typed. What the shop recommended or found becomes
+     * a choice each (#572), kept unless the user says otherwise; nothing of it is saved until the record is.
      */
     fun fill(fill: InvoiceFill, notes: String) {
-        val merge = draft.fill(fill, terms) ?: return
+        val merge = draft.fill(fill, terms, data?.rules.orEmpty()) ?: return
+        recommended = merge.recommended
         fill.dateOn(today())?.let { date = it }
         fill.odometer?.let { odometerText = it.asNumber() }
         fill.shopAmong(shops)?.let { shop ->
@@ -344,6 +358,58 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         invoiceLeftOut = merge.leftOut
         unreadFigures = fill.unread
         if (merge.opensPrices) pricesOpen = true
+    }
+
+    /** What the shop recommended or found on the invoice read here (#572), as the user chose for each. */
+    var recommended by mutableStateOf(emptyList<RecommendedChoice>())
+        internal set
+
+    fun toggleKeep(index: Int) {
+        recommended = recommended.mapIndexed { i, c -> if (i == index) c.copy(keep = !c.keep) else c }
+    }
+
+    fun toggleNote(index: Int) {
+        recommended = recommended.mapIndexed { i, c -> if (i == index) c.copy(note = !c.note) else c }
+    }
+
+    /** "Keep all", or "Keep none" once every one is kept. */
+    fun keepAll() {
+        val all = recommended.all { it.keep }
+        recommended = recommended.map { it.copy(keep = !all) }
+    }
+
+    /** The line [index] comes off with, as the user picked it: never a guess any more. */
+    fun lineFor(index: Int, catalogId: String) {
+        recommended = recommended.mapIndexed { i, c -> if (i == index) c.copy(line = KeptLine(catalogId, guessed = false)) else c }
+    }
+
+    /** The shop as it will be saved: none for work done by the owner. */
+    internal val savedShop: String? get() = shopName.trim().takeIf { !diy && it.isNotEmpty() }
+
+    /** The open recommendation of this shop's that keeping [choice] would replace (#572). */
+    fun replaces(choice: RecommendedChoice): ShopRecommendation? =
+        ShopRecommendations.replaced(savedShop, choice.item, data?.openRecommendations.orEmpty())
+
+    /** The lines ticked, as matching sees them: catalog lines by their id, the rest by their wording. */
+    internal val loggedLines: List<LoggedLine>
+        get() {
+            val catalog = terms.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
+            return selectedOptions.map { LoggedLine(it.id.takeIf { id -> id in catalog }, labelOf(it)) } + customItems.map { LoggedLine(null, it) }
+        }
+
+    /**
+     * Open recommendations the ticked lines look like the work for (#572): asked about, ticked unless the user unticks
+     * one, and closed only when the record is saved. Never on an edit.
+     */
+    val doneMatches: List<DoneMatch>
+        get() = if (editing) emptyList() else ShopRecommendations.matches(data?.openRecommendations.orEmpty(), date, loggedLines)
+
+    /** The matches the user unticked: they stay open. */
+    var notDone by mutableStateOf(emptySet<Long>())
+        private set
+
+    fun toggleDone(id: Long) {
+        notDone = if (id in notDone) notDone - id else notDone + id
     }
 
     fun addCustom(label: String) {
@@ -499,6 +565,7 @@ class LogServiceViewModel @Inject constructor(
     private val photoPicker: RecordPhotoPicker,
     private val invoices: InvoicePicker,
     private val invoicePhotos: InvoicePhotos,
+    private val recommendations: ShopRecommendationDao,
 ) : ViewModel() {
     /** Names this form to the photo picker, which holds its new photos until it is saved or left. */
     private val photoKey = UUID.randomUUID().toString()
@@ -678,6 +745,7 @@ class LogServiceViewModel @Inject constructor(
                 specs = vehicle.whatItTakes(),
                 original = original,
                 rules = catalogRules.all().map { it.toRule() },
+                openRecommendations = recommendations.all(vehicleId).map { it.toModel() }.filter { it.open },
             )
             // Only once the form has its vehicle, so an invoice picked meanwhile waits for it rather than going nowhere.
             if (!editing) invoices.picked.collect { if (it?.key == photoKey) invoices.take(photoKey)?.let { p -> onInvoice(p) } }
@@ -693,14 +761,16 @@ class LogServiceViewModel @Inject constructor(
         saving = true
         viewModelScope.launch {
             with(form) {
+                // What the user put in the notes of the shop's recommendations (#572), each its own line, after theirs.
+                val noted = if (editing) "" else recommendedNotes(recommended)
                 val visit = ServiceRecord(
                     vehicleId = vehicleId,
                     date = date,
                     odometer = odo,
                     diy = diy,
-                    shopName = shopName.trim().takeIf { !diy && it.isNotEmpty() },
+                    shopName = savedShop,
                     costCents = costCents,
-                    notes = notes.trim().takeIf { it.isNotEmpty() },
+                    notes = listOf(notes.trim(), noted).filter { it.isNotEmpty() }.joinToString("\n\n").takeIf { it.isNotEmpty() },
                     charges = charges,
                 )
                 val edit = draft.toRecord(visit, terms)
@@ -714,7 +784,19 @@ class LogServiceViewModel @Inject constructor(
                 if (d.original != null) {
                     actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
                 } else {
-                    actions.add(record, items, added + keptPages, jobRows, partRows)
+                    // Kept for later, each replacing this shop's open one for the same work, and the open ones the user
+                    // left ticked as done by this work (#572): saved with the record, and gone with it.
+                    val kept = recommended.filter { it.keep }.map { c ->
+                        KeptRecommendation(
+                            ShopRecommendationEntity(
+                                vehicleId = vehicleId, recordId = 0, wording = c.item.text, cents = c.item.cents, area = c.item.area,
+                                finding = c.item.finding, colour = c.item.colour?.name, catalogId = c.line?.catalogId,
+                            ),
+                            replaces = replaces(c)?.id,
+                        )
+                    }
+                    val done = doneMatches.map { it.recommendation.id }.filter { it !in notDone }
+                    actions.add(record, items, added + keptPages, jobRows, partRows, kept, done)
                     // Paperwork of the vehicle's, not the record's: an Undo of the record leaves it there.
                     invoicePdf?.takeIf { keepInvoice }?.let { pdf ->
                         val name = record.shopName?.let { AppText.res.getString(R.string.invoice_document_name, it) }
@@ -787,6 +869,8 @@ internal fun LogServiceContent(
     var addingCustom by remember { mutableStateOf(false) }
     // The custom line being filed under a line, while its picker is open.
     var filing by remember { mutableStateOf<String?>(null) }
+    // The shop's recommendation whose line is being changed, while its picker is open.
+    var changingLine by remember { mutableStateOf<Int?>(null) }
     val notesLabel = stringResource(R.string.log_notes)
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
@@ -1037,6 +1121,10 @@ internal fun LogServiceContent(
 
             WorkAndPrices(form)
 
+            // What the shop recommended on the invoice read here, and open recommendations this work may have done (#572).
+            RecommendedByShop(form, onChangeLine = { changingLine = it })
+            DoneWithThese(form)
+
             CostCard(form)
 
             Photos(form, newPhotos, invoicePages.strip.pages.size, photoProblem, onTakePhoto, onChoosePhotos, onRemoveNewPhoto)
@@ -1102,6 +1190,20 @@ internal fun LogServiceContent(
             },
             onDismiss = { filing = null },
         )
+    }
+    changingLine?.let { i ->
+        form.recommended.getOrNull(i)?.let { choice ->
+            RecommendedLineDialog(
+                text = choice.item.text,
+                categories = data.categories,
+                rules = data.rules,
+                onPick = {
+                    form.lineFor(i, it)
+                    changingLine = null
+                },
+                onDismiss = { changingLine = null },
+            )
+        }
     }
     if (addingCustom) {
         CustomItemDialog(
@@ -1368,12 +1470,20 @@ internal fun FileUnderDialog(label: String, lines: List<LineChoice>, onPick: (Li
  * closes them all.
  */
 @Composable
-internal fun LinePicker(label: String, lines: List<LineChoice>, onPick: (LineChoice) -> Unit, modifier: Modifier = Modifier, rules: List<CatalogRule> = emptyList()) {
+internal fun LinePicker(
+    label: String,
+    lines: List<LineChoice>,
+    onPick: (LineChoice) -> Unit,
+    modifier: Modifier = Modifier,
+    rules: List<CatalogRule> = emptyList(),
+    /** What picking a line means here, when it isn't filing [label] under it. */
+    about: String? = null,
+) {
     val categories = lines.groupBy { it.category.id }
     var open by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val allOpen = open.containsAll(categories.keys)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(stringResource(R.string.log_file_under_body, label), style = MaterialTheme.typography.bodyMedium)
+        Text(about ?: stringResource(R.string.log_file_under_body, label), style = MaterialTheme.typography.bodyMedium)
         LineMatches(label, lines, onPick, rules)
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
