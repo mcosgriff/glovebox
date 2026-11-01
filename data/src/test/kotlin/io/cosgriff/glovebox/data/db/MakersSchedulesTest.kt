@@ -181,9 +181,15 @@ class MakersSchedulesTest {
         val unknown = db.vehicles().insert(truck("2.4L I4"))
 
         assertEquals(sport.id, byTrim.forVehicle(vehicle(sporty))?.id)
+        assertEquals(emptyList<String>(), byTrim.choices(vehicle(sporty)).map { it.id })
+        // A trim that doesn't name the word picks neither list (#595): the owner is asked, as for no trim at all.
+        listOf(base, unknown).forEach { car ->
+            assertNull(byTrim.forVehicle(vehicle(car)))
+            assertEquals(listOf(plain.id, sport.id), byTrim.choices(vehicle(car)).map { it.id })
+        }
+        // One already on the list that doesn't name the word keeps it.
+        byTrim.adopt(base, items(base), plain)
         assertEquals(plain.id, byTrim.forVehicle(vehicle(base))?.id)
-        assertNull(byTrim.forVehicle(vehicle(unknown)))
-        assertEquals(listOf(plain.id, sport.id), byTrim.choices(vehicle(unknown)).map { it.id })
     }
 
     @Test

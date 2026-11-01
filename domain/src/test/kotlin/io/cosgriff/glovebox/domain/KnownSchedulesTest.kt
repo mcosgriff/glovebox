@@ -60,10 +60,18 @@ class KnownSchedulesTest {
         bundled.forEach { list ->
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
-            // A trim that names the list's word, or one that names nothing like it (#569).
+            // A trim that names the list's word (#569). One for a trim that doesn't name it is never picked, only offered (#595).
             val trim = list.trim?.let { if (it.named) it.word else "X${it.word}X" }
             (listOf(list.model) + list.modelAliases).forEach { model ->
-                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)?.id) }
+                list.years.forEach { year ->
+                    if (list.trim?.named == false) {
+                        assertNull(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim))
+                        val offered = KnownSchedules.engineChoices(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)
+                        assertTrue(list.id, list.id in offered.map { it.id })
+                    } else {
+                        assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)?.id)
+                    }
+                }
             }
         }
     }
@@ -230,12 +238,22 @@ class KnownSchedulesTest {
         assertEquals(KnownTrim("GLI", named = true), trimLists[1].trim)
         assertEquals(KnownTrim("GLI", named = false), trimLists[0].trim)
         fun match(trim: String?) = KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim)?.id
-        // Trims vPIC gave for the GLI and for the 2.0L 8-valve Jetta in pattern decodes (#569), and as an owner might type them.
-        listOf("GLI", "2.0T GLI SE, SEL", "gli autobahn").forEach { assertEquals(it, "tsi", match(it)) }
-        listOf("Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS", "S", "SE").forEach { assertEquals(it, "eight-valve", match(it)) }
-        // A word, not a part of one.
-        assertEquals("eight-valve", match("GLIDER"))
-        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = "GLI"))
+        fun offered(trim: String?) = KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id }
+        // Trims vPIC gave for the GLI in pattern decodes (#569), and as an owner might type them: a trim naming GLI picks its list.
+        listOf("GLI", "2.0T GLI SE, SEL", "2.0T GLI SE", "gli autobahn").forEach { assertEquals(it, "tsi", match(it)) }
+        assertEquals(emptyList<String>(), offered("GLI"))
+    }
+
+    @Test
+    fun `a trim that doesn't name the word picks neither list, and the owner is asked (#595)`() {
+        fun match(trim: String?) = KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim)?.id
+        fun offered(trim: String?) = KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id }
+        // "SEL" is half of vPIC's "2.0T GLI SE, SEL" for a GLI, so a trim without GLI doesn't say it is the 8-valve.
+        // The 8-valve's own trims (#569) are asked about the same way, with both lists offered, as for a blank trim.
+        listOf("SEL", "Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS", "S", "SE", "GLIDER", "").forEach {
+            assertNull(it, match(it))
+            assertEquals(it, listOf("eight-valve", "tsi"), offered(it))
+        }
     }
 
     @Test
@@ -266,7 +284,10 @@ class KnownSchedulesTest {
         assertTrue(offered(null, "GLI"))
         // Either one ruling it out rules it out, even where the other isn't on record.
         assertTrue(!offered(BodyStyle.SEDAN, "GLI") && !offered(BodyStyle.SEDAN, null))
-        assertTrue(!offered(BodyStyle.CONVERTIBLE, "SE") && !offered(null, "SE"))
+        assertTrue(!offered(BodyStyle.SEDAN, "SE"))
+        // A trim that doesn't name the word can't tell (#595): offered where the body doesn't rule it out, never matched.
+        assertTrue(offered(BodyStyle.CONVERTIBLE, "SE") && offered(null, "SE"))
+        assertNull(match(BodyStyle.CONVERTIBLE, "SE"))
     }
 
     @Test
