@@ -8,6 +8,8 @@ import io.cosgriff.glovebox.data.db.toStored
 import io.cosgriff.glovebox.data.log.VehicleLog
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.nhtsa.toStored
+import io.cosgriff.glovebox.domain.Gearbox
+import io.cosgriff.glovebox.domain.Gearboxes
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.ExportPaper
@@ -50,6 +52,9 @@ interface ExportNames {
 
     /** How often [item] comes round: "Every 5,000 mi or 6 months". */
     fun every(item: TrackedItem, unit: DistanceUnit): String
+
+    /** The owner's answer to which gearbox a vehicle has (#549): "Dual-clutch (DSG)". */
+    fun gearbox(gearbox: Gearbox): String
 }
 
 /**
@@ -107,6 +112,7 @@ class ExportBuilder @Inject constructor(
                 ExportRecall(Recalls.campaignLabel(r.notice.campaign), names.recallComponent(r.notice.component), row.completedOn, row.archivedOn)
             },
             specs = listOfNotNull(v.drivetrain?.substringBefore('/'), v.engine).joinToString(" · ").ifEmpty { null },
+            gearbox = Gearboxes.of(v.gearbox)?.let(names::gearbox),
             report = ReportFacts(log.statuses(today), log.itemGroups, ServiceLog.readings(log.entries, log.updates)),
         )
     }

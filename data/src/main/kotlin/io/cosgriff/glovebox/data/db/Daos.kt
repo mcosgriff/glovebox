@@ -92,6 +92,10 @@ interface VehicleDao {
     @Query("UPDATE vehicles SET ownOilMiles = :miles, ownOilMonths = :months WHERE id = :id")
     suspend fun setOwnOil(id: Long, miles: Int?, months: Int?)
 
+    /** The owner's answer to which gearbox the vehicle has (#549), a `Gearbox` name; null is "Don't know". */
+    @Query("UPDATE vehicles SET gearbox = :gearbox WHERE id = :id")
+    suspend fun setGearbox(id: Long, gearbox: String?)
+
     /** Fills in the engine for a vehicle that has none on record; one that has is left exactly as it is. */
     @Query("UPDATE vehicles SET engine = :engine WHERE id = :id AND (engine IS NULL OR TRIM(engine) = '')")
     suspend fun setEngineIfBlank(id: Long, engine: String)

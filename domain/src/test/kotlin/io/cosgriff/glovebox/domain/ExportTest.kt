@@ -95,6 +95,9 @@ class ExportTest {
         assertTrue(md.startsWith("# Service history: 2019 Toyota 4Runner SR5\n"))
         assertTrue("- VIN: `1M8GDM9AXKP042788`" in md)
         assertTrue("- License plate: `CO · ABC 1234`" in md)
+        // No gearbox given ("Don't know"), so no line for it.
+        assertTrue("Gearbox" !in md)
+        assertTrue("- Gearbox: Manual\n" in text.markdown(Exports.document(listOf(truck.copy(gearbox = "Manual")), ExportOptions(format = ExportFormat.MARKDOWN), today)))
         assertTrue("- 3 records · \$472.50 total" in md)
         assertTrue("- Exported from Glovebox on Oct 11, 2026" in md)
         // Newest first.

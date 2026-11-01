@@ -132,7 +132,7 @@ class BackupRestorerTest {
 
         val summary = restorer.restore(file, password) { done, total -> progress += done to total }
 
-        assertEquals(BackupSummary(createdOn = day, schemaVersion = 40, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
+        assertEquals(BackupSummary(createdOn = day, schemaVersion = 41, vehicles = 1, records = 1, photos = 2, documents = 0), summary)
         assertEquals(source.vehicles().all(), target.vehicles().all())
         val id = target.vehicles().all().single().id
         // The owner's own oil change interval (#517) comes back with the vehicle.

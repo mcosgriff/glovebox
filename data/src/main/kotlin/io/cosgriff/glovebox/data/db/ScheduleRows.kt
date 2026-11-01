@@ -38,4 +38,5 @@ fun ImportedScheduleItem.toEntity(vehicleId: Long, knownList: String? = null, us
     service = service,
     knownList = knownList,
     firstMiles = firstAt,
+    gearboxOnly = gearbox?.name,
 )

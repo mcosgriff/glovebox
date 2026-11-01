@@ -12,6 +12,8 @@ import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.GearboxOnRecord
+import io.cosgriff.glovebox.domain.Gearboxes
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.LeadTime
@@ -135,8 +137,13 @@ fun VehicleEntity.log(
 fun VehicleEntity.tracked(items: List<ScheduleItemEntity>, defaultRule: DueRule, swap: ClusterSwap? = clusterSwap()): List<TrackedItem> {
     val unit = DistanceUnit.of(distanceUnit)
     val own = ownOil()
-    return items.filter { it.tracked }.mapNotNull { it.toTracked(defaultRule, swap, unit, own) }
+    val gearbox = Gearboxes.of(this.gearbox)
+    // A job a maker's list gives one gearbox only reminds only while the vehicle has that one (#549).
+    return items.filter { it.tracked && Gearboxes.reminds(Gearboxes.of(it.gearboxOnly), gearbox) }.mapNotNull { it.toTracked(defaultRule, swap, unit, own) }
 }
+
+/** What is on record about the vehicle's gearbox for matching a maker's list: the owner's answer, and vPIC's text. */
+fun VehicleEntity.gearboxOnRecord(): GearboxOnRecord = GearboxOnRecord(Gearboxes.of(gearbox), transmission)
 
 /**
  * The oil change as its schedule gives it, without the owner's own interval: what the owner's would replace, with

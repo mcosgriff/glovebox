@@ -7,6 +7,9 @@ import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.ColumnTypeConverter
 import androidx.room3.ColumnTypeConverters
+import androidx.room3.migration.AutoMigrationSpec
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import net.zetetic.database.sqlcipher.driver.SQLCipherDriver
 import java.time.LocalDate
@@ -35,7 +38,7 @@ class Converters {
         RecallNameEntity::class,
         ShopRecommendationEntity::class,
     ],
-    version = 40,
+    version = 41,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // schedule_items.templateKey
@@ -77,6 +80,7 @@ class Converters {
         AutoMigration(from = 37, to = 38), // service_record_job_parts, service_records.shopSuppliesCents, taxCents, feesCents
         AutoMigration(from = 38, to = 39), // vehicles.ownOilMiles, ownOilMonths
         AutoMigration(from = 39, to = 40), // shop_recommendations
+        AutoMigration(from = 40, to = 41, spec = GearboxMigration::class), // vehicles.gearbox, schedule_items.gearboxOnly
     ],
 )
 @ColumnTypeConverters(Converters::class)
@@ -104,5 +108,17 @@ abstract class GloveboxDatabase : RoomDatabase() {
                 .setDriver(SQLCipherDriver(keys.passphrase(), null, null))
                 .build()
         }
+    }
+}
+
+/**
+ * Vehicles on record before the gearbox was asked (#549) start at "Don't know", except one whose stored transmission
+ * says Manual plainly (Gearboxes.fromStored, Transmissions.isManual: "Manual" and not "Automated").
+ */
+class GearboxMigration : AutoMigrationSpec {
+    override suspend fun onPostMigrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "UPDATE vehicles SET gearbox = 'MANUAL' WHERE UPPER(transmission) LIKE '%MANUAL%' AND UPPER(transmission) NOT LIKE '%AUTOMATED%'",
+        )
     }
 }
