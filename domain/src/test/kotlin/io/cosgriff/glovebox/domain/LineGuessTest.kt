@@ -158,7 +158,7 @@ class LineGuessTest {
         "door handle replaced" to "door-handle", "bumper repaired" to "body", "full detail" to "detail",
         // No guess: two jobs, vague, or only looked at.
         "brakes and rotors replaced" to null, "oil change and tire rotation" to null, "water pump and timing belt" to null,
-        "general maintenance" to null, "vehicle serviced" to null, "diagnosed noise" to null, "replaced parts" to null,
+        "general maintenance" to null, "vehicle serviced" to null, "diagnosed noise" to null, "electrical diagnosis" to null, "diagnostic performed" to null, "replaced parts" to null,
         "checked water pump" to null, "inspected starter" to null, "road tested" to null,
     )
 
