@@ -54,6 +54,7 @@ import io.cosgriff.glovebox.domain.InvoiceFigure
 import io.cosgriff.glovebox.domain.InvoiceFill
 import io.cosgriff.glovebox.domain.InvoiceLine
 import io.cosgriff.glovebox.domain.InvoiceSection
+import io.cosgriff.glovebox.domain.FindingColour
 import io.cosgriff.glovebox.domain.LineRole
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.OdometerRole
@@ -313,6 +314,15 @@ private fun roleText(role: LineRole): String = when (role) {
             InvoiceSection.TOTALS -> R.string.invoice_section_totals
             InvoiceSection.RECOMMENDED -> R.string.invoice_section_recommended
             InvoiceSection.TERMS -> R.string.invoice_section_terms
+            InvoiceSection.INSPECTION -> R.string.invoice_section_inspection
+        },
+    )
+    is LineRole.Inspected -> stringResource(
+        when (role.colour) {
+            FindingColour.RED -> R.string.invoice_role_inspected_red
+            FindingColour.AMBER -> R.string.invoice_role_inspected_amber
+            FindingColour.GREEN -> R.string.invoice_role_inspected_green
+            null -> R.string.invoice_role_inspected
         },
     )
     is LineRole.Work -> stringResource(R.string.invoice_role_work)

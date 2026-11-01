@@ -2815,6 +2815,12 @@
     <string name="invoice_section_totals">The totals</string>
     <string name="invoice_section_recommended">Recommended work begins</string>
     <string name="invoice_section_terms">The shop\'s terms: not read</string>
+    <string name="invoice_section_inspection">The inspection report begins</string>
+    <!-- An inspection report's item, by the colour of the mark the shop gave it. -->
+    <string name="invoice_role_inspected">An inspection item</string>
+    <string name="invoice_role_inspected_red">An inspection item, marked red</string>
+    <string name="invoice_role_inspected_amber">An inspection item, marked yellow</string>
+    <string name="invoice_role_inspected_green">An inspection item, marked green</string>
     <string name="invoice_figure_subtotal">Subtotal</string>
     <string name="invoice_figure_labor">Labor</string>
     <string name="invoice_figure_parts">Parts</string>

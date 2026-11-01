@@ -60,6 +60,9 @@ sealed interface LineRole {
     /** Recommended, declined or deferred work, offered for the notes. */
     data object Recommended : LineRole
 
+    /** An inspection report's item (#572), with its mark's colour if it had one. */
+    data class Inspected(val colour: FindingColour?) : LineRole
+
     data object Shop : LineRole
 
     data object Date : LineRole
@@ -131,6 +134,7 @@ object InvoiceFills {
                     add(step.line, LineRole.Figure(step.figure, step.cents, step.job, if (key in taken) true else if (key in notTaken) false else null))
                 }
                 is InvoiceStep.RecommendationKept -> add(step.line, LineRole.Recommended)
+                is InvoiceStep.InspectionItem -> add(step.line, LineRole.Inspected(step.colour))
                 is InvoiceStep.ShopTaken -> add(step.line, LineRole.Shop)
                 is InvoiceStep.DateTaken -> add(step.line, LineRole.Date)
                 is InvoiceStep.VinTaken -> add(step.line, LineRole.Vin(taken = true))

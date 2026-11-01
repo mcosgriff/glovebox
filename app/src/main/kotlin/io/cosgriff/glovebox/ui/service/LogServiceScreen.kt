@@ -112,6 +112,7 @@ import io.cosgriff.glovebox.domain.InvoiceFill
 import io.cosgriff.glovebox.domain.InvoiceFills
 import io.cosgriff.glovebox.domain.InvoiceReader
 import io.cosgriff.glovebox.domain.InvoiceWord
+import io.cosgriff.glovebox.domain.InvoiceMark
 import io.cosgriff.glovebox.ui.AppText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -545,12 +546,12 @@ class LogServiceViewModel @Inject constructor(
         }
         form.readingInvoice = true
         try {
-            val words = invoices.words(picked.bytes)
+            val pdf = invoices.words(picked.bytes)
             when {
-                words == null -> form.invoiceProblem = InvoiceProblem.UNREADABLE
+                pdf == null -> form.invoiceProblem = InvoiceProblem.UNREADABLE
                 // A scan has no text layer: it is photographed instead (#513).
-                words.isEmpty() -> form.invoiceProblem = InvoiceProblem.NO_TEXT
-                fillFrom(d, words, InvoiceSource.PDF) -> invoicePdf = picked.bytes
+                pdf.words.isEmpty() -> form.invoiceProblem = InvoiceProblem.NO_TEXT
+                fillFrom(d, pdf.words, InvoiceSource.PDF, marks = pdf.marks) -> invoicePdf = picked.bytes
                 else -> form.invoiceProblem = InvoiceProblem.UNREADABLE
             }
         } finally {
@@ -559,17 +560,23 @@ class LogServiceViewModel @Inject constructor(
     }
 
     /** The invoice's [words] read and put on the form; false if the reader tripped on them. [millis] go in the debug trace. */
-    private suspend fun fillFrom(d: LogServiceData, words: List<InvoiceWord>, source: InvoiceSource, millis: List<Long?> = emptyList()): Boolean {
+    private suspend fun fillFrom(
+        d: LogServiceData,
+        words: List<InvoiceWord>,
+        source: InvoiceSource,
+        millis: List<Long?> = emptyList(),
+        marks: List<InvoiceMark> = emptyList(),
+    ): Boolean {
         // The readings are in dash terms; an invoice after a cluster swap reads as the new cluster does.
         // An invoice laid out in a way the reader trips on is one it couldn't read, never a crash.
         val reading = withContext(Dispatchers.Default) {
             try {
-                InvoiceReader.read(words, LocalDate.now(), d.readings, d.unit, d.rules)
+                InvoiceReader.read(words, LocalDate.now(), d.readings, d.unit, d.rules, marks)
             } catch (_: RuntimeException) {
                 null
             }
         } ?: return false
-        invoices.writeTrace(words, reading, millis)
+        invoices.writeTrace(words, reading, millis, marks)
         val fill = InvoiceFills.of(reading, d.log.vehicle.vin)
         form.fill(fill, invoiceNotes(fill, d.unit))
         form.invoice = ReadInvoice(fill, reading.lines, InvoiceFills.lineRoles(reading), source)
