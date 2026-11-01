@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
+import io.cosgriff.glovebox.domain.Gearboxes
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.rule
@@ -115,6 +118,8 @@ data class DraftItem(
     val e85: Interval? = null,
     /** The vehicle runs mostly on E85. Changes nothing on an item without an [e85] interval. */
     val useE85: Boolean = false,
+    /** The one gearbox a maker's job is for (#549, `dsgOnly` / `automaticOnly`); null for any. */
+    val gearboxOnly: Gearbox? = null,
 ) {
     /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
     val dormant: Boolean get() = severeOnly && !useSevere
@@ -148,6 +153,7 @@ fun DraftItem.toEntity(vehicleId: Long): ScheduleItemEntity = ScheduleItemEntity
     e85Miles = e85?.miles,
     e85Months = e85?.months,
     useE85 = useE85 && e85 != null,
+    gearboxOnly = gearboxOnly?.name,
 )
 
 /** A saved row as the editor's draft, keyed by its id; null for one with no interval. [template] is the typical item it is, if any. */
@@ -169,6 +175,7 @@ fun ScheduleItemEntity.toDraft(template: ScheduleTemplateItem?): DraftItem? {
         severeOnly = severeOnly,
         e85 = interval(e85Miles, e85Months),
         useE85 = useE85,
+        gearboxOnly = Gearboxes.of(gearboxOnly),
     )
 }
 
@@ -245,10 +252,11 @@ class ScheduleSetupViewModel @Inject constructor(
     }
 
     private fun knownItems(list: KnownScheduleList, v: VehicleEntity): List<DraftItem> =
-        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
+        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.gearboxOnRecord()).mapIndexed { i, it ->
             DraftItem(
                 key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
                 own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly, e85 = it.e85,
+                gearboxOnly = it.gearbox,
             )
         }
 

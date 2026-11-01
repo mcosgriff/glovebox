@@ -19,6 +19,7 @@ import io.cosgriff.glovebox.data.testVehicle
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.ExportPartRow
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.domain.InvoiceCharges
 import io.cosgriff.glovebox.domain.RecordJob
 import io.cosgriff.glovebox.domain.RecordLine
@@ -55,6 +56,7 @@ class ExportBuilderTest {
         override fun documentType(type: DocumentType) = "TYPE ${type.name}"
         override fun recallComponent(component: String) = "PART $component"
         override fun every(item: TrackedItem, unit: DistanceUnit) = "EVERY ${item.interval.miles} ${unit.name}"
+        override fun gearbox(gearbox: Gearbox) = "GEARBOX ${gearbox.name}"
     }
 
     @Before fun open() {
@@ -135,5 +137,13 @@ class ExportBuilderTest {
         assertEquals("UNKNOWN", exported.title)
         assertEquals("A SHOP", exported.records.single().doneBy)
         assertNull(exported.records.single().summary.breakdown)
+        // "Don't know" says nothing.
+        assertNull(exported.gearbox)
+    }
+
+    @Test
+    fun `the owner's gearbox goes in the export, worded`() = runBlocking {
+        db.vehicles().insert(testVehicle().copy(gearbox = Gearbox.DUAL_CLUTCH.name))
+        assertEquals("GEARBOX DUAL_CLUTCH", builder.all(names, day).single().second.gearbox)
     }
 }

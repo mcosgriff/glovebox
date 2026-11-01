@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import android.content.Context
@@ -88,7 +89,7 @@ class KnownTakesRows @Inject constructor(private val catalog: KnownTakesCatalog,
     fun observe(vehicle: Flow<VehicleEntity?>): Flow<TakesKnown> = combine(vehicle, flow { emit(catalog.lists()) }) { v, lists ->
         if (v == null) return@combine TakesKnown()
         val list = KnownTakes.match(lists, v.year, v.make, v.model, v.engine, v.fuel)
-        val offer = list?.let { KnownTakes.plan(KnownTakes.forVehicle(it, v.drivetrain, v.transmission), v.whatItTakes()) }?.takeIf { it.filled.isNotEmpty() }
+        val offer = list?.let { KnownTakes.plan(KnownTakes.forVehicle(it, v.drivetrain, v.gearboxOnRecord()), v.whatItTakes()) }?.takeIf { it.filled.isNotEmpty() }
         val toCheck = v.takesToCheck()
         TakesKnown(list, offer, toCheck, v.takesKnownList?.let { id -> lists.firstOrNull { it.id == id } }.takeIf { toCheck.isNotEmpty() })
     }
@@ -96,7 +97,7 @@ class KnownTakesRows @Inject constructor(private val catalog: KnownTakesCatalog,
     /** Fills [v]'s empty rows from its list, as planned from what is stored now, and tags each to check. */
     suspend fun fill(v: VehicleEntity) {
         val list = KnownTakes.match(catalog.lists(), v.year, v.make, v.model, v.engine, v.fuel) ?: return
-        val plan = KnownTakes.plan(KnownTakes.forVehicle(list, v.drivetrain, v.transmission), v.whatItTakes())
+        val plan = KnownTakes.plan(KnownTakes.forVehicle(list, v.drivetrain, v.gearboxOnRecord()), v.whatItTakes())
         if (plan.filled.isEmpty()) return
         vehicles.fillTakes(v.id, plan.result, plan.filled, list.id, (v.takesToCheck() + plan.filled).stored())
     }

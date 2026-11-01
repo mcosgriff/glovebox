@@ -55,6 +55,7 @@ object AppExportWords : ExportWords {
             ExportPhrase.NICKNAME -> R.string.export_nickname
             ExportPhrase.VIN -> R.string.export_vin
             ExportPhrase.PLATE -> R.string.export_plate
+            ExportPhrase.GEARBOX -> R.string.export_gearbox
             ExportPhrase.ODOMETER -> R.string.export_odometer
             ExportPhrase.ODOMETER_HIGHEST -> R.string.export_odometer_highest
             ExportPhrase.ACTUAL_MILEAGE -> R.string.export_actual_mileage

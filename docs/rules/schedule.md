@@ -18,8 +18,13 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   applicable)" one is split (#33).
 - "(4WD)" and "(AWD)" jobs (`fourWheelDriveOnly`, `allWheelDriveOnly`) are left out only for a vehicle **known**
   to be two-wheel drive, `manualExcluded` jobs only for one known to be manual, and `manualOnly` jobs only for
-  one known to shift itself. **4WD and AWD are different systems** (`DriveKind`): a guide's "(4WD)" on a model
-  sold as AWD goes in `allWheelDriveOnly`, named "(AWD)".
+  one known to shift itself (the owner's gearbox answer first, else vPIC's transmission text, `GearboxOnRecord`).
+  `dsgOnly` and `automaticOnly` jobs (#549) follow the owner's answer alone: on that gearbox a reminder, on "Don't
+  know" in the table with no reminder (and on the Milestones view's continuation), on any other left out. An item
+  taken up from one keeps `schedule_items.gearboxOnly` and **`VehicleEntity.tracked` gives it no reminder while the
+  vehicle's gearbox is another or Don't know**, so a changed answer never reminds of the wrong fluid.
+  **4WD and AWD are different systems** (`DriveKind`): a guide's "(4WD)" on a model sold as AWD goes in
+  `allWheelDriveOnly`, named "(AWD)".
   An engine that isn't on record matches no per-engine list; only setup asks which engine. A list's
   `engine.powertrain` (#33's rulings) tells a hybrid or flex-fuel model from its petrol twin of one size;
   `vehicles.powertrain` is set from vPIC only where it says so plainly, **never "gas" from a blank**. A list's

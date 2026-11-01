@@ -29,6 +29,12 @@ data class ImportedScheduleItem(
      * leaves it null.
      */
     val e85: Interval? = null,
+    /**
+     * The one gearbox the job is for, from a maker's list's `dsgOnly` / `automaticOnly` (#549); null for any. The item
+     * made from it reminds only while the vehicle's gearbox is that one ([Gearboxes.reminds]). **An import file never
+     * carries one**, so the reader leaves it null.
+     */
+    val gearbox: Gearbox? = null,
 )
 
 /**

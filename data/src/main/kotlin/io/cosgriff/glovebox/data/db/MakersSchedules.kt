@@ -9,6 +9,7 @@ import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.Powertrains
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -93,7 +94,7 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
     /** The table as the vehicle is on record now: its unit, and the jobs for its drive and gearbox. */
     private suspend fun writeTable(vehicleId: Long, list: KnownScheduleList) {
         val vehicle = vehicles.byId(vehicleId) ?: return
-        val table = KnownSchedules.milestonesIn(list, DistanceUnit.of(vehicle.distanceUnit), vehicle.drivetrain, vehicle.transmission)
+        val table = KnownSchedules.milestonesIn(list, DistanceUnit.of(vehicle.distanceUnit), vehicle.drivetrain, vehicle.gearboxOnRecord())
         milestones.addKnown(vehicleId, list.id, table.map { m -> m.toRows(vehicleId) })
     }
 }

@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.domain.GearboxOnRecord
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -124,7 +126,8 @@ data class MilestonesState(
     val startedFrom: String? = null,
     /** The vehicle's drive type, which decides which of a maker's jobs are for it. */
     val drivetrain: String? = null,
-    val transmission: String? = null,
+    /** And its gearbox, the owner's answer with the transmission text behind it (#549). */
+    val gearbox: GearboxOnRecord = GearboxOnRecord(null),
     /** Where a maker's table ends when Glovebox carries it on past its last column (#568); null when it isn't. */
     val continuedAfter: Int? = null,
     /** The names of the maker's jobs that aren't carried on, as the table gives them no even spacing. */
@@ -188,7 +191,8 @@ class MilestonesViewModel @Inject constructor(
             val makers = vehicle.milestonesKnownList?.let { id -> lists.firstOrNull { it.id == id } }
             val laid = MilestoneContinuation.laidOut(
                 saved, every, fromMaker = vehicle.milestonesKnownList != null,
-                later = makers?.let { KnownSchedules.intervalsIn(it, vehicle.unit, vehicle.drivetrain, vehicle.transmission) }.orEmpty(),
+                // As the table shows them: a one-gearbox job on "Don't know" too, since the view reminds of nothing (#549).
+                later = makers?.let { KnownSchedules.intervalsIn(it, vehicle.unit, vehicle.drivetrain, vehicle.gearboxOnRecord(), onTable = true) }.orEmpty(),
                 current = current, more = count - Milestones.AHEAD,
             )
             return@combine MilestonesState(
@@ -221,7 +225,7 @@ class MilestonesViewModel @Inject constructor(
             fromTable = false,
             known = makers.forVehicle(vehicle),
             drivetrain = vehicle.drivetrain,
-            transmission = vehicle.transmission,
+            gearbox = vehicle.gearboxOnRecord(),
         )
     }.screenState(viewModelScope, null)
 

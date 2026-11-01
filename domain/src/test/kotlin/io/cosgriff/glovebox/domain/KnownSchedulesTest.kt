@@ -541,7 +541,7 @@ class KnownSchedulesTest {
             .replace("{ \"name\": \"Look at the belts\" }", "{ \"name\": \"Change the automatic's fluid\" }")
         val extra = "\"manualOnly\": [\"Change the manual gearbox oil\"], \"manualExcluded\": [\"Change the automatic's fluid\"],"
         val list = (KnownSchedules.parse(file(table, extra = extra)) as KnownScheduleFile.Ok).list
-        fun jobs(transmission: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, transmission).flatMap { m -> m.work.map { it.name } }
+        fun jobs(transmission: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, GearboxOnRecord.ofText(transmission)).flatMap { m -> m.work.map { it.name } }
         // As vPIC writes a gearbox, and as an owner might.
         listOf("6-speed Automatic", "CVT", "7-speed Dual-Clutch Transmission (DCT)", "Automated Manual").forEach { t ->
             assertTrue(t, "Change the manual gearbox oil" !in jobs(t))
@@ -558,6 +558,89 @@ class KnownSchedulesTest {
         }
         assertTrue(errors(file(extra = "\"manualOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
         assertTrue(errors(file(extra = "\"manualOnly\": [\"Change the oil\"], \"manualExcluded\": [\"Change the oil\"],")).single().contains("also in manualExcluded"))
+    }
+
+    /** A made-up list with a dual-clutch row in its table and a conventional automatic's job apart from it (#549). */
+    private val gearboxes: KnownScheduleList get() {
+        val table = someTable.replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the DSG fluid\", \"service\": \"trans-fluid\" }")
+        val intervals = someIntervals.replace(
+            "\"service\": \"rotation\" }",
+            "\"service\": \"rotation\" },\n{ \"name\": \"Change the DSG fluid\", \"everyMiles\": 12000, \"service\": \"trans-fluid\" }",
+        )
+        val extra = """"additional": [ { "name": "Change the automatic's fluid", "everyMiles": 30000 } ],
+            "dsgOnly": ["Change the DSG fluid"], "automaticOnly": ["Change the automatic's fluid"],"""
+        return (KnownSchedules.parse(file(table, intervals, extra)) as KnownScheduleFile.Ok).list
+    }
+
+    @Test
+    fun `a dual-clutch row is a reminder on a dual-clutch, absent on an automatic, and table-only on Don't know`() {
+        val list = gearboxes
+        fun table(g: GearboxOnRecord) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, g).flatMap { m -> m.work.map { it.name } }.toSet()
+        fun reminders(g: GearboxOnRecord) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, g).map { it.name }.toSet()
+        fun onTable(g: GearboxOnRecord) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, g, onTable = true).map { it.name }.toSet()
+        val dsg = "Change the DSG fluid"
+        val auto = "Change the automatic's fluid"
+
+        val dualClutch = GearboxOnRecord(Gearbox.DUAL_CLUTCH, "7-speed Automatic")
+        assertTrue(dsg in table(dualClutch))
+        assertTrue(dsg in reminders(dualClutch))
+        assertTrue(auto !in reminders(dualClutch))
+        assertTrue(auto !in onTable(dualClutch))
+
+        val automatic = GearboxOnRecord(Gearbox.AUTOMATIC, "8-speed Automatic")
+        assertTrue(dsg !in table(automatic))
+        assertTrue(dsg !in reminders(automatic))
+        assertTrue(auto in reminders(automatic))
+
+        // "Don't know", whatever the transmission text says: in the table, never a reminder (a wrong fluid is worse).
+        listOf(GearboxOnRecord(null), GearboxOnRecord.ofText("Automatic"), GearboxOnRecord.ofText("6-speed Automatic")).forEach { g ->
+            assertTrue("$g", dsg in table(g))
+            assertTrue("$g", dsg !in reminders(g))
+            assertTrue("$g", auto !in reminders(g))
+            assertTrue("$g", dsg in onTable(g) && auto in onTable(g))
+            // The rest of the list is untouched.
+            assertEquals("$g", setOf("Change the oil", "Swap the tires round"), reminders(g))
+        }
+
+        // A manual gets neither, whether the owner said so or the transmission text does.
+        listOf(GearboxOnRecord(Gearbox.MANUAL), GearboxOnRecord.ofText("6-speed Manual/Standard")).forEach { g ->
+            assertTrue("$g", dsg !in table(g) && dsg !in reminders(g) && auto !in onTable(g))
+        }
+
+        // Each reminder carries the one gearbox it is for, so the item made from it keeps it.
+        val carried = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, dualClutch).associate { it.name to it.gearbox }
+        assertEquals(Gearbox.DUAL_CLUTCH, carried[dsg])
+        assertNull(carried["Change the oil"])
+        assertEquals(Gearbox.AUTOMATIC, KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, automatic).single { it.name == auto }.gearbox)
+    }
+
+    @Test
+    fun `the owner's gearbox wins over the transmission text, and a manual's jobs are as before`() {
+        val table = someTable
+            .replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the manual gearbox oil\" }")
+            .replace("{ \"name\": \"Look at the belts\" }", "{ \"name\": \"Change the automatic's fluid\" }")
+        val extra = "\"manualOnly\": [\"Change the manual gearbox oil\"], \"manualExcluded\": [\"Change the automatic's fluid\"],"
+        val list = (KnownSchedules.parse(file(table, extra = extra)) as KnownScheduleFile.Ok).list
+        fun jobs(g: GearboxOnRecord) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, g).flatMap { m -> m.work.map { it.name } }
+        // vPIC said "Automatic", the owner said Manual.
+        assertTrue("Change the manual gearbox oil" in jobs(GearboxOnRecord(Gearbox.MANUAL, "Automatic")))
+        assertTrue("Change the automatic's fluid" !in jobs(GearboxOnRecord(Gearbox.MANUAL, "Automatic")))
+        listOf(Gearbox.AUTOMATIC, Gearbox.DUAL_CLUTCH).forEach { g ->
+            assertTrue("$g", "Change the manual gearbox oil" !in jobs(GearboxOnRecord(g, "Manual")))
+            assertTrue("$g", "Change the automatic's fluid" in jobs(GearboxOnRecord(g, "Manual")))
+        }
+    }
+
+    @Test
+    fun `dsgOnly and automaticOnly name jobs of the list and don't contradict each other or the manual's marks`() {
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+        assertTrue(errors(file(extra = "\"automaticOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Look at the belts\"], \"automaticOnly\": [\"Look at the belts\"],")).single().contains("also in dsgOnly"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Look at the belts\"], \"manualOnly\": [\"Look at the belts\"],")).single().contains("also in manualOnly"))
+        assertTrue(errors(file(extra = "\"automaticOnly\": [\"Look at the belts\"], \"manualExcluded\": [\"Look at the belts\"],")).single().contains("also in manualExcluded"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [],")).isNotEmpty())
+        val list = (KnownSchedules.parse(file(extra = "\"dsgOnly\": [\"Look at the belts\"],")) as KnownScheduleFile.Ok).list
+        assertEquals(setOf(MilestoneImport.nameKey("Look at the belts")), list.dsgOnly)
     }
 
     @Test
@@ -800,8 +883,8 @@ class KnownSchedulesTest {
     fun `a car known to have a manual gearbox doesn't get the dual-clutch fluid change`() {
         val list = KnownSchedules.match(bundled, 2011, "Volkswagen", "GTI")!!
         fun dsg(transmission: String?) =
-            KnownSchedules.intervalsIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { it.service == "trans-fluid" } to
-                KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { m -> m.work.any { it.service == "trans-fluid" } }
+            KnownSchedules.intervalsIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", GearboxOnRecord.ofText(transmission)).count { it.service == "trans-fluid" } to
+                KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", GearboxOnRecord.ofText(transmission)).count { m -> m.work.any { it.service == "trans-fluid" } }
         // As vPIC decodes a GTI: "Automatic" for the DSG, "Manual/Standard" for the six-speed.
         assertEquals(1 to 3, dsg("Automatic"))
         assertEquals(1 to 3, dsg("Dual-Clutch Transmission (DCT)"))

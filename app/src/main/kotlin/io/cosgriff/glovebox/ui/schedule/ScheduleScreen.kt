@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
@@ -221,7 +222,7 @@ class ScheduleViewModel @Inject constructor(
             notLogged = statuses.values.count { !it.counting },
             startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
             known = makers.forVehicle(vehicle)
-                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.transmission), items.map { it.toSaved() }) }
+                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.gearboxOnRecord()), items.map { it.toSaved() }) }
                 ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
         )
     }.screenState(viewModelScope, null)

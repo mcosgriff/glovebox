@@ -106,6 +106,25 @@ fluid change. The rule is the same shape: only a vehicle **known** to have a man
 vehicle **known** to shift itself (an automatic, a CVT, a dual-clutch or an automated manual) loses them;
 a manual or nothing on record keeps them. A job can't be in both.
 
+Both read the vehicle's gearbox (#549, `vehicles.gearbox`: Manual, Automatic, Dual-clutch (DSG) or Don't know)
+first. The owner's answer wins over the transmission text vPIC wrote; only on "Don't know" does the text still
+tell a manual from a gearbox that shifts itself, as before (`GearboxOnRecord`).
+
+`dsgOnly` names the jobs for a dual-clutch (DSG) gearbox only, such as Volkswagen's "DSG: change fluid and
+filter", and `automaticOnly` those for a conventional automatic only ("Automatic (non-DSG): change fluid").
+**They tell apart what vPIC can't** (it calls a DSG "Automatic"), so they follow the owner's answer alone:
+
+- that gearbox: in the table and a reminder;
+- **"Don't know": in the table with no reminder** (a wrong fluid is worse than an empty row,
+  [takes-and-torque](rules/takes-and-torque.md)), and on the Milestones view's continuation;
+- the other one, or a manual: left out of both.
+
+A job can't be in both, nor in `manualOnly` (it is never a manual's) or `manualExcluded` (they already leave it
+out for a manual). A row the guide prints for every gearbox that shifts itself, with one interval, stays in
+`manualExcluded` and is a reminder on "Don't know" too (the owner's ruling of 2026-10-29). A reminder taken up
+from one of these keeps the gearbox it is for (`schedule_items.gearboxOnly`), and reminds only while the
+vehicle's gearbox is that one, so changing the answer later stops it rather than reminding of the wrong fluid.
+
 A job a guide gives by time alone ("every 2 years regardless of mileage") is a reminder with months and
 no distance, marked `time-only`. The table shows it wherever the maker drew it, and the check doesn't hold
 its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the

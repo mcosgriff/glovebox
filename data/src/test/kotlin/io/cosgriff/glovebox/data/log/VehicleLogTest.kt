@@ -143,6 +143,21 @@ class VehicleLogTest {
     }
 
     @Test
+    fun `an item for one gearbox reminds only while the vehicle has that gearbox`() {
+        val dsg = ScheduleItemEntity(id = 5, vehicleId = 1, name = "DSG fluid", intervalMiles = 40_000, intervalMonths = null, gearboxOnly = "DUAL_CLUTCH")
+        assertEquals(5, dsg.reminder(vehicle().copy(gearbox = "DUAL_CLUTCH")).id)
+        // "Don't know", or the owner changed the answer after taking the list up: no reminder for the wrong fluid.
+        listOf(null, "AUTOMATIC", "MANUAL").forEach { g ->
+            assertTrue("$g", vehicle().copy(gearbox = g).tracked(listOf(dsg), DueRule.WHICHEVER_FIRST).isEmpty())
+        }
+        // An item for any gearbox doesn't care.
+        assertEquals(5, dsg.copy(gearboxOnly = null).reminder().id)
+        val log = vehicle().copy(gearbox = "AUTOMATIC").log(listOf(dsg), emptyList(), emptyList(), Settings())
+        assertNull(log.tracked(5))
+        assertEquals(listOf(dsg), log.items)
+    }
+
+    @Test
     fun `a first time reads back as typed, though the reminder counts it in dash terms`() {
         val belt = ScheduleItemEntity(id = 7, vehicleId = 1, name = "Timing belt", intervalMiles = 50_000, intervalMonths = null, firstMiles = 100_000)
         val t = belt.reminder(swap = swap)

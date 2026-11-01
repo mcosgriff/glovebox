@@ -772,6 +772,66 @@
       "w": 390,
       "x": 1880,
       "y": 2500
+    },
+    "GearboxAdd.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "title": "Is this your vehicle? — the gearbox question (#549)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "GearboxManual.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "title": "Add without a VIN — the gearbox question (#549)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "GearboxSheet.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "Vehicle details — Gearbox (sheet, #549)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "GearboxAddDark.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "h": 1000,
+      "title": "Is this your vehicle? — the gearbox question (#549) (dark)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "GearboxManualDark.dc.html": {
+      "x": 470,
+      "y": 1300,
+      "w": 390,
+      "h": 1000,
+      "title": "Add without a VIN — the gearbox question (#549) (dark)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "GearboxSheetDark.dc.html": {
+      "x": 940,
+      "y": 1300,
+      "w": 390,
+      "h": 900,
+      "title": "Vehicle details — Gearbox (sheet, #549) (dark)",
+      "page": "gearbox",
+      "is_interactive": true,
+      "radius": 28
     }
   },
   "createdOnFiles": {
@@ -870,6 +930,22 @@
       "kind": "title1",
       "maxW": 860,
       "page": "milestones"
+    },
+    "geartitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Gearbox: manual, automatic or dual-clutch (#549) — light",
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "gearbox"
+    },
+    "geardark": {
+      "x": 0,
+      "y": 1100,
+      "text": "Gearbox (#549) — dark",
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "gearbox"
     }
   },
   "order": [
@@ -953,7 +1029,13 @@
     "Milestones.dc.html",
     "MilestonesDark.dc.html",
     "ImportDone.dc.html",
-    "ImportDoneDark.dc.html"
+    "ImportDoneDark.dc.html",
+    "GearboxAdd.dc.html",
+    "GearboxManual.dc.html",
+    "GearboxSheet.dc.html",
+    "GearboxAddDark.dc.html",
+    "GearboxManualDark.dc.html",
+    "GearboxSheetDark.dc.html"
   ],
   "pages": [
     {
@@ -979,6 +1061,10 @@
     {
       "id": "milestones",
       "name": "Milestones continued (#568)"
+    },
+    {
+      "id": "gearbox",
+      "name": "Gearbox (#549)"
     }
   ],
   "title": "Glovebox"

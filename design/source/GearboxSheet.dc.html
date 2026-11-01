@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gearbox</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: {{ground}}; color: {{ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; position: relative; overflow: hidden">
+  <div aria-hidden="true" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="height: 44px; display: flex; align-items: center; font-size: 22px; font-weight: 700">Vehicle details</div>
+    <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: {{muted}}">FROM THE VIN</div>
+    <div style="border-radius: 16px; background: {{surface}}; border: 1px solid {{line}}; padding: 4px 16px">
+      <div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid {{line}}; font-size: 14px">
+        <span style="color: {{muted}}">Vehicle</span><span style="font-weight: 600">2019 Volkswagen Golf R</span>
+      </div>
+      <div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid {{line}}; font-size: 14px">
+        <span style="color: {{muted}}">Transmission</span><span style="font-weight: 600">7-speed Automatic</span>
+      </div>
+      <div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px">
+        <span style="color: {{muted}}">Gearbox</span>
+        <span style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: {{rowColor}}">{{rowValue}}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{muted}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+        </span>
+      </div>
+    </div>
+  </div>
+  <a href="VehicleDetails.dc.html" aria-label="Close" style="position: absolute; left: 0; top: 0; width: 390px; height: 900px; background: rgba(14,16,18,0.55)"></a>
+
+  <div role="dialog" aria-label="Gearbox" style="position: absolute; left: 0; right: 0; bottom: 0; background: {{ground}}; border-radius: 28px 28px 0 0; padding: 10px 20px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+    <div style="width: 40px; height: 4px; border-radius: 2px; background: {{handle}}; align-self: center"></div>
+    <div style="font-size: 20px; font-weight: 700">Gearbox</div>
+    <div style="font-size: 14px; line-height: 1.45; color: {{muted}}">Which gearbox this vehicle has. NHTSA calls a dual-clutch "Automatic", so the VIN can't always tell.</div>
+
+    <div role="radiogroup" aria-label="Gearbox" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{boxes}}" as="b" hint-placeholder-count="4">
+        <button role="radio" aria-checked="{{b.active}}" onClick="{{b.pick}}" style="height: 48px; border-radius: 12px; border: 1.5px solid {{b.border}}; font-family: inherit; font-size: 14px; font-weight: 600; color: {{b.fg}}; background: {{b.bg}}">{{b.label}}</button>
+      </sc-for>
+    </div>
+    <div style="font-size: 12px; line-height: 1.45; color: {{muted}}">Some maker's schedules have jobs for one gearbox only. Until you say which, they show in the maker's table with no reminder. Check your service manual.</div>
+
+    <div style="display: flex; gap: 8px">
+      <a href="VehicleDetails.dc.html" style="flex: 1; height: 52px; border-radius: 12px; border: 1.5px solid {{line}}; color: {{ink}}; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600">Cancel</a>
+      <button onClick="{{save}}" style="flex: 2; height: 52px; border-radius: 12px; border: 0; background: {{accent}}; color: {{onAccent}}; font-family: inherit; font-size: 14px; font-weight: 600">Save</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up vehicle, saved as "Don't know"; the owner is picking Dual-clutch.
+this.state = { saved: 'unknown', pick: 'dsg' };
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var names = { manual: 'Manual', automatic: 'Automatic', dsg: 'Dual-clutch (DSG)', unknown: 'Don’t know' };
+var t = {
+ground: dark ? '#121416' : '#F4F3EF',
+surface: dark ? '#1C1F23' : '#FFFFFF',
+ink: dark ? '#EDEBE6' : '#17191C',
+muted: dark ? '#A5A9AF' : '#5A5F66',
+line: dark ? '#2E3338' : '#DEDCD5',
+fieldLine: dark ? '#4A4F55' : '#B9B6AE',
+handle: dark ? '#5A5F66' : '#B9B6AE',
+selected: dark ? '#EDEBE6' : '#17191C',
+onSelected: dark ? '#17191C' : '#FFFFFF',
+accent: dark ? '#F08A4B' : '#C2410C',
+onAccent: dark ? '#17191C' : '#FFFFFF'
+};
+t.rowValue = names[s.saved];
+t.rowColor = s.saved === 'unknown' ? t.muted : t.ink;
+t.boxes = ['manual', 'automatic', 'dsg', 'unknown'].map(function (k) {
+var a = k === s.pick;
+return { label: names[k], active: a, bg: a ? t.selected : 'transparent', fg: a ? t.onSelected : t.ink, border: a ? t.selected : t.fieldLine,
+pick: function () { self.setState({ pick: k }); } };
+});
+t.save = function () { self.setState({ saved: self.state.pick }); };
+return t;
+}
+}
+</script>
+</body>
+</html>

@@ -138,6 +138,21 @@ the real markup; the other `Recommended*` files only import them with a differen
 - A continued milestone is the ordinary card; its line under the mileage says "continued by Glovebox".
 - The repeat row says Glovebox continues the table; a repeat set there replaces the continuation.
 
+## Gearbox (#549)
+
+`GearboxAdd.dc.html` (variants `vin`, `manual`) and `GearboxSheet.dc.html` hold the markup; `GearboxAddDark`,
+`GearboxManual`, `GearboxManualDark` and `GearboxSheetDark` import them with a different `variant` / `theme`. No
+render yet (the PNGs come with the next export and `design-pull`).
+
+- Adding a vehicle (by VIN or by hand) asks the gearbox next to the odometer: Manual, Automatic, Dual-clutch (DSG),
+  Don't know, as a 2×2 grid of 48dp segments (ink fill = selected).
+- By VIN it starts at what the decode settles: vPIC "Manual" is Manual, and a Volkswagen 7-speed starts at
+  Dual-clutch (8-speed at Automatic) with an info line saying so; anything else starts at Don't know. By hand it
+  starts at Don't know. The owner can always change it.
+- Vehicle details has a Gearbox row under Transmission; it opens a sheet with the same grid, Cancel and Save.
+- The note under the grid says why it is asked: rows for one gearbox show in the maker's table with no reminder
+  until the owner says which.
+
 ## UX rules (apply to every screen)
 
 - **Touch targets:** every tappable thing is at least 48×48dp, including text links (pad them). Chips and

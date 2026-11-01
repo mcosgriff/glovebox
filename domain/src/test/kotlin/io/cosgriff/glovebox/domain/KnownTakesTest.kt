@@ -63,7 +63,7 @@ class KnownTakesTest {
     fun `the 4Runner lists say what Toyota's owner's manuals say for each run of years`() {
         // Read out of Toyota's own documents (docs/known-takes.md has which, and the pages).
         fun takes(year: Int, drive: String? = "4WD/4-Wheel Drive/4x4") =
-            KnownTakes.forVehicle(KnownTakes.match(bundled, year, "TOYOTA", "4Runner", "4.0L 6-cyl")!!, drive, "Automatic")
+            KnownTakes.forVehicle(KnownTakes.match(bundled, year, "TOYOTA", "4Runner", "4.0L 6-cyl")!!, drive, GearboxOnRecord.ofText("Automatic"))
         for (year in 2017..2024) {
             val t = takes(year)
             assertEquals("0W-20", t.oilGrade)
@@ -96,7 +96,7 @@ class KnownTakesTest {
     @Test
     fun `the GTI lists say what Volkswagen's fluid charts say, and only where a chart was read`() {
         // Volkswagen's own documents filed with NHTSA (docs/known-takes.md has which).
-        fun takes(year: Int, gearbox: String?) = KnownTakes.forVehicle(KnownTakes.match(bundled, year, "VOLKSWAGEN", "GTI", "2.0L 4-cyl")!!, "FWD", gearbox)
+        fun takes(year: Int, gearbox: String?) = KnownTakes.forVehicle(KnownTakes.match(bundled, year, "VOLKSWAGEN", "GTI", "2.0L 4-cyl")!!, "FWD", GearboxOnRecord.ofText(gearbox))
         for (year in 2010..2014) assertEquals(4.9, takes(year, null).oilCapacity!!, 0.0)
         for (year in 2010..2012) {
             // Only the oil capacity table covers these years.
@@ -137,7 +137,7 @@ class KnownTakesTest {
 
     @Test
     fun `a variant is used only for a vehicle known to have that drive or gearbox`() {
-        fun t(drive: String?, gearbox: String?) = KnownTakes.forVehicle(roadster, drive, gearbox)
+        fun t(drive: String?, gearbox: String?) = KnownTakes.forVehicle(roadster, drive, GearboxOnRecord.ofText(gearbox))
         assertEquals("75W-90 GL-5", t("AWD/All-Wheel Drive", null).transferCaseOil)
         assertNull(t("4WD/4-Wheel Drive/4x4", null).transferCaseOil)
         assertNull(t(null, null).transferCaseOil)
@@ -174,7 +174,7 @@ class KnownTakesTest {
 
     @Test
     fun `filling takes only rows the owner left empty, each whole`() {
-        val known = KnownTakes.forVehicle(roadster, null, "Manual/Standard")
+        val known = KnownTakes.forVehicle(roadster, null, GearboxOnRecord.ofText("Manual/Standard"))
         val mine = WhatItTakes(oilGrade = "0W-20", coolant = "Mine")
         val plan = KnownTakes.plan(known, mine)
         assertEquals(listOf(TakesItem.TIRES, TakesItem.TRANSMISSION, TakesItem.BRAKE_FLUID, TakesItem.SPARK_PLUGS), plan.filled)

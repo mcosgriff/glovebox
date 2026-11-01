@@ -143,6 +143,11 @@ data class VehicleEntity(
     val ownOilMiles: Int? = null,
     /** Its months as typed; null while they follow [ownOilMiles] (OilMonths.forDistance), which is never stored. */
     val ownOilMonths: Int? = null,
+    /**
+     * A `Gearbox` name ("DUAL_CLUTCH"): the owner's answer when the vehicle was added or on Vehicle details (#549),
+     * started from a decode only where it settles it (Gearboxes.suggested). **Null is "Don't know"**, never guessed.
+     */
+    val gearbox: String? = null,
 )
 
 @Entity(
@@ -206,6 +211,11 @@ data class ScheduleItemEntity(
     val e85Months: Int? = null,
     /** The owner has said the vehicle runs mostly on E85. Changes nothing on an item without an E85 interval. */
     @ColumnInfo(defaultValue = "0") val useE85: Boolean = false,
+    /**
+     * A `Gearbox` name for a job a maker's list gives one gearbox only (`dsgOnly` / `automaticOnly`, #549); null for
+     * every other item. It reminds only while the vehicle's gearbox is that one (Gearboxes.reminds).
+     */
+    val gearboxOnly: String? = null,
     val snoozedUntilOdometer: Int? = null,
     val snoozedUntilDate: LocalDate? = null,
 )

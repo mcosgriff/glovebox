@@ -97,6 +97,8 @@ data class ExportVehicle(
     val documents: List<ExportPaper> = emptyList(),
     /** "4WD · 4.0L V6": the drive and engine as stored; null when neither is known. */
     val specs: String? = null,
+    /** The owner's answer to which gearbox it has (#549), worded: "Dual-clutch (DSG)"; null for "Don't know". */
+    val gearbox: String? = null,
     /** What only the PDF report uses; null leaves its charts and "due next" empty. */
     val report: ReportFacts? = null,
 ) {
@@ -172,7 +174,7 @@ enum class ExportPhrase {
     JOB_LABOR, JOB_PARTS, LINES_JOINED, LABOR_ON_LINES, PARTS_ON_LINES, TAX_AND_FEES, LESS_THAN_LINES,
     PART_QTY_EACH, PART_QTY, PART_EACH, SHOP_SUPPLIES, TAX, FEES, OTHER_CHARGES,
     RECALL_NOTE, LAST_DONE_NOTE, IMPORTED_NOTE, SCHEDULE_NOTE, TAKES_NOTE, DOCUMENTS_NOTE,
-    SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
+    SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, GEARBOX, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
     INSTRUMENT_CLUSTER, SOLD, PERIOD, RECORDS, EXPORTED_ON,
     WHAT_IT_TAKES, DOCUMENTS_ON_FILE, TYPE, NAME, DATE, EXPIRES, SERVICE_RECORDS, NO_RECORDS, DONE_BY, DONE_BY_LABELLED, COST,
     MAINTENANCE_SCHEDULE, ITEM, EVERY, LAST_DONE, RECALLS, CAMPAIGN, COMPONENT, STATUS, PHOTO_UNREADABLE, PAGE,
@@ -327,6 +329,7 @@ class ExportText(private val words: ExportWords) {
             v.nickname?.let { append("- ${labelled(ExportPhrase.NICKNAME, text(it))}\n") }
             v.vin?.let { append("- ${labelled(ExportPhrase.VIN, "`$it`")}\n") }
             v.plate?.let { append("- ${labelled(ExportPhrase.PLATE, "`$it`")}\n") }
+            v.gearbox?.let { append("- ${labelled(ExportPhrase.GEARBOX, text(it))}\n") }
             v.odometer?.let { append("- ${labelled(ExportPhrase.ODOMETER, phrase(ExportPhrase.ODOMETER_HIGHEST, distance(it, v.unit)))}\n") }
             Exports.actualMileage(v)?.let { append("- ${labelled(ExportPhrase.ACTUAL_MILEAGE, distance(it, v.unit))}\n") }
             v.clusterSwap?.let { append("- ${labelled(ExportPhrase.INSTRUMENT_CLUSTER, clusterNote(it, v.unit))}\n") }

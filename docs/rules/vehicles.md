@@ -20,6 +20,15 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   substitutions are tried (either would pass a wrong VIN about one time in eleven). The only repair is I/O/Q to
   1/0. A printed VIN needs two of five frames to agree. Frames are never stored. **Frames follow the display's
   rotation; never set the target rotation from an orientation listener** (a tipped phone then reads nothing).
+- **The gearbox is asked, never guessed** (#549, `vehicles.gearbox`, `Gearbox`): Manual, Automatic, Dual-clutch
+  (DSG) or Don't know (null), next to the odometer when a vehicle is added (by VIN or by hand) and from its row on
+  Vehicle details (`GearboxSheet`, `setGearbox` alone). vPIC calls a dual-clutch "Automatic", so a decode fills in
+  only what settles it (`Gearboxes.suggested`): "Manual" is Manual, and Volkswagen's 7-speed starts at Dual-clutch
+  and 8-speed at Automatic, saying so under the question; anything else starts at Don't know, and by hand it always
+  does. The owner sees the answer and can change it. The VIN lookup never fills it. A vehicle on record before the
+  question started at Don't know unless its stored transmission said Manual (migration 40 → 41). vPIC's
+  transmission text is kept as it was decoded, and the owner's answer wins over it wherever a list is matched
+  (`GearboxOnRecord`).
 - Vehicle details' fields are written one column at a time (`VehicleDao.setNickname` etc.), **never with a
   whole-row `@Update`**, which could undo a recall check that landed meanwhile. Rows with nowhere to go are left
   out, not shown dead.
