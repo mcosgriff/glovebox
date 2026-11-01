@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.domain.Gearbox
+import io.cosgriff.glovebox.ui.components.GearboxQuestion
+import io.cosgriff.glovebox.ui.vehicle.GearboxSheet
 import io.cosgriff.glovebox.ui.bulletins.BulletinsContent
 import io.cosgriff.glovebox.ui.settings.ImportContent
 import io.cosgriff.glovebox.ui.settings.DoneCard
@@ -501,6 +504,18 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun oilIntervalYours() = compose.shootScreen("oil_interval_yours", shade) {
         OilIntervalSheet(Fixtures.oilChange, own = Interval(5_000, null), unit = DistanceUnit.MILES, onSave = {}, onDismiss = {})
+    }
+
+    /** Which gearbox the vehicle has (#549), from its Vehicle details row: saved as "Don't know". */
+    @Test
+    fun gearbox() = compose.shootScreen("gearbox", shade) {
+        GearboxSheet(current = null, onSave = {}, onDismiss = {})
+    }
+
+    /** The gearbox question where a vehicle is added, started at Dual-clutch from a Volkswagen's 7-speed (#549). */
+    @Test
+    fun gearboxQuestion() = compose.shoot("gearbox_question", shade) {
+        GearboxQuestion(Gearbox.DUAL_CLUTCH, onPick = {}, Modifier.padding(20.dp), hintedFrom = "7-speed Automatic")
     }
 
     @Test

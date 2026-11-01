@@ -5,8 +5,10 @@ import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.export.ExportNames
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DocumentType
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.ui.AppText
+import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.whatItTakes
@@ -27,4 +29,6 @@ object AppExportNames : ExportNames {
     override fun recallComponent(component: String): String = io.cosgriff.glovebox.ui.service.recallComponent(component)
 
     override fun every(item: TrackedItem, unit: DistanceUnit): String = item.text(unit)
+
+    override fun gearbox(gearbox: Gearbox): String = AppText.res.getString(gearbox.label())
 }

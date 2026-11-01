@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.GearboxQuestion
+import io.cosgriff.glovebox.domain.Gearboxes
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -138,6 +141,12 @@ class AddVehicleViewModel @Inject constructor(
     var powertrain by mutableStateOf<Powertrain?>(null)
     /** Only what vPIC says plainly ([BodyStyles.fromVpic]), then the owner's pick; null is "not known". */
     var bodyStyle by mutableStateOf<BodyStyle?>(null)
+    /** The owner's answer (#549), started only where the decode settles it ([Gearboxes.suggested]); null is "Don't know". */
+    var gearbox by mutableStateOf<Gearbox?>(null)
+        private set
+    /** The decode's transmission while [gearbox] is still what Volkswagen's speeds started it at; null once the owner picks. */
+    var gearboxHintedFrom by mutableStateOf<String?>(null)
+        private set
     var trim by mutableStateOf("")
         private set
     var trimChoices by mutableStateOf(emptyList<String>())
@@ -193,6 +202,8 @@ class AddVehicleViewModel @Inject constructor(
         fields = d.storedFields()
         powertrain = Powertrains.fromVpic(d.electrification, d.fuel, d.fuelSecondary)
         bodyStyle = BodyStyles.fromVpic(d.bodyClass)
+        gearbox = Gearboxes.suggested(d.make, d.transmission)
+        gearboxHintedFrom = d.transmission.takeIf { gearbox != null && Gearboxes.volkswagenHint(d.make, d.transmission) == gearbox }
         trimChoices = VinDecode.trimChoices(d.trim)
         // More than one candidate is left for the user to choose between.
         trim = trimChoices.singleOrNull().orEmpty()
@@ -227,6 +238,11 @@ class AddVehicleViewModel @Inject constructor(
 
     fun onOdometerChange(value: String) {
         odometerText = OdometerInput.typed(value)
+    }
+
+    fun pickGearbox(value: Gearbox?) {
+        gearbox = value
+        gearboxHintedFrom = null
     }
 
     /** Only the year, make and model are sent. A failure here never blocks adding the vehicle. */
@@ -266,6 +282,7 @@ class AddVehicleViewModel @Inject constructor(
                     transmission = fields[DecodedField.TRANSMISSION],
                     bodyClass = fields[DecodedField.BODY],
                     bodyStyle = bodyStyle?.name,
+                    gearbox = gearbox?.name,
                     engineCode = fields[DecodedField.ENGINE_CODE],
                     tpms = fields[DecodedField.TPMS],
                     series = fields[DecodedField.SERIES],
@@ -645,6 +662,8 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     }
                 }
             }
+
+            GearboxQuestion(vm.gearbox, vm::pickGearbox, hintedFrom = vm.gearboxHintedFrom)
 
             PrimaryButton(
                 onClick = {

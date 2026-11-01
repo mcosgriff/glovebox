@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.garage
 
+import io.cosgriff.glovebox.ui.components.GearboxQuestion
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.ui.service.typedNumber
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.domain.OdometerInput
@@ -101,6 +103,8 @@ class ManualAddViewModel @Inject constructor(
 
     /** One of [VehiclePick.drivetrains], or null if the user hasn't said. */
     var drivetrain by mutableStateOf<String?>(null)
+    /** The owner's answer (#549); null is "Don't know", where it starts: nothing is filled in by hand. */
+    var gearbox by mutableStateOf<Gearbox?>(null)
     var odometerText by mutableStateOf("")
         private set
     var saving by mutableStateOf(false)
@@ -179,6 +183,7 @@ class ManualAddViewModel @Inject constructor(
                     trim = VehicleText.clean(trim, VehicleText.MAX_NICKNAME),
                     engine = VehicleText.clean(engine, VehicleText.MAX_SPEC),
                     drivetrain = drivetrain,
+                    gearbox = gearbox?.name,
                     createdOn = today,
                     distanceUnit = unit.name,
                 ),
@@ -305,6 +310,8 @@ fun ManualAddScreen(onSaved: (vehicleId: Long) -> Unit, onBack: () -> Unit, vm: 
             }
 
             OdometerField(vm.odometerText, vm::onOdometerChange, stringResource(R.string.odometer_in, vm.unit.symbolWord))
+
+            GearboxQuestion(vm.gearbox, onPick = { vm.gearbox = it })
 
             Surface(color = scheme.surfaceVariant, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth()) {
                 Text(

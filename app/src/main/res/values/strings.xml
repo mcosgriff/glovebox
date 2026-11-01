@@ -128,6 +128,17 @@
     <string name="body_style_hatchback">Hatchback</string>
     <string name="body_style_convertible">Convertible</string>
     <string name="add_vehicle_transmission">Transmission</string>
+    <!-- The gearbox question (#549): when a vehicle is added and on Vehicle details. -->
+    <string name="gearbox_title">Gearbox</string>
+    <string name="gearbox_manual">Manual</string>
+    <string name="gearbox_automatic">Automatic</string>
+    <string name="gearbox_dual_clutch">Dual-clutch (DSG)</string>
+    <string name="gearbox_unknown">Don\'t know</string>
+    <string name="gearbox_note">Some maker\'s schedules have jobs for one gearbox only. Until you say which, they show in the maker\'s table with no reminder.</string>
+    <!-- %1$s is the number of speeds the VIN decode gave, such as 7. -->
+    <string name="gearbox_from_speeds">Picked from the VIN\'s %1$s-speed. NHTSA calls a dual-clutch “Automatic”, so change it if it\'s wrong.</string>
+    <string name="gearbox_sheet_intro">Which gearbox this vehicle has. NHTSA calls a dual-clutch “Automatic”, so the VIN can\'t always tell.</string>
+    <string name="gearbox_sheet_note">Some maker\'s schedules have jobs for one gearbox only. Until you say which, they show in the maker\'s table with no reminder. Check your service manual.</string>
     <string name="add_vehicle_engine_code">Engine code</string>
     <string name="add_vehicle_tpms">Tire pressure sensors</string>
     <string name="add_vehicle_series">Chassis code</string>
@@ -2561,6 +2572,7 @@
     <string name="export_nickname">Nickname</string>
     <string name="export_vin">VIN</string>
     <string name="export_plate">License plate</string>
+    <string name="export_gearbox">Gearbox</string>
     <string name="export_odometer">Odometer</string>
     <string name="export_odometer_highest">%1$s (highest reading on record)</string>
     <string name="export_actual_mileage">Actual mileage</string>
