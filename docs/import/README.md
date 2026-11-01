@@ -230,7 +230,7 @@ count for a reminder. The values, by the category History files them under:
 | Fuel | `fuel-filter`, `fuel-system`, `throttle-body`, `fuel-injectors`, `fuel-pump`, `evap-system` |
 | Exhaust | `oxygen-sensor`, `egr-valve`, `secondary-air-pump`, `catalytic-converter`, `muffler`, `exhaust` |
 | Driveline | `diff-fluid`, `front-diff-check`, `front-diff`, `rear-diff-check`, `rear-diff`, `transfer-case-check`, `transfer-case`, `driveshaft`, `cv-axle`, `axle-seals`, `u-joints`, `clutch`, `clutch-hydraulics`, `flywheel`, `trans-pan-gasket`, `shift-cable` |
-| Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `suspension-check` |
+| Suspension & steering | `shocks`, `springs`, `control-arms`, `ball-joints`, `bushings`, `sway-bar-links`, `wheel-bearing`, `tie-rods`, `steering-rack`, `power-steering-pump`, `steering-parts`, `chassis-lube`, `suspension-check` |
 | Cabin & electrical | `cabin-air`, `wipers`, `wipers-check`, `battery`, `battery-check`, `key-fob-battery`, `bulbs`, `headlight-assembly`, `lights-check`, `windows-check`, `window-regulator`, `door-lock-actuator`, `air-conditioning`, `ac-flush`, `ac-compressor`, `ac-condenser`, `blower-motor`, `starter`, `alternator`, `fuses`, `horn` |
 | Inspection | `multi-point`, `scheduled-service`, `emissions`, `safety-inspection`, `recall` |
 | Other | `accessory`, `windshield`, `mirror`, `door-handle`, `body`, `detail` |

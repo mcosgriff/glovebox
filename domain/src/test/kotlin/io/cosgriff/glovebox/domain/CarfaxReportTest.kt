@@ -215,6 +215,8 @@ class CarfaxReportTest {
             "Transmission pan gasket replaced" to "trans-pan-gasket",
             "Shift cable replaced" to "shift-cable",
             "U-joint(s) replaced" to "u-joints",
+            "Chassis lubricated" to "chassis-lube",
+            "Lube chassis" to "chassis-lube",
             "Coil spring(s) replaced" to "springs",
             "Lower control arm(s) replaced" to "control-arms",
             "Control arm bushing(s) replaced" to "bushings",

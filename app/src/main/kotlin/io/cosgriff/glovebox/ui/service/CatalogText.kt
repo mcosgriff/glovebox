@@ -115,6 +115,7 @@ internal val catalogLines: Map<String, Int> = mapOf(
     "steering-rack" to R.string.catalog_steering_rack,
     "power-steering-pump" to R.string.catalog_power_steering_pump,
     "steering-parts" to R.string.catalog_steering_parts,
+    "chassis-lube" to R.string.catalog_chassis_lube,
     "suspension-check" to R.string.catalog_suspension_check,
     "cabin-air" to R.string.catalog_cabin_air,
     "wipers" to R.string.catalog_wipers,

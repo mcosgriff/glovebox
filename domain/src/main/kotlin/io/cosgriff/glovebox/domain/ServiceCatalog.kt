@@ -254,6 +254,9 @@ object ServiceCatalog {
                 CatalogItem("power-steering-pump"),
                 // Idler and pitman arms, the column, linkage: what the lines above don't name.
                 CatalogItem("steering-parts"),
+                // A grease gun on the suspension and steering's grease fittings (zerks); the driveshaft and
+                // u-joints have their own lines.
+                CatalogItem("chassis-lube"),
                 CatalogItem("suspension-check"),
             ),
         ),

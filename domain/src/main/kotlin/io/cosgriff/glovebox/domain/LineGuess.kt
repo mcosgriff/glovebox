@@ -307,6 +307,7 @@ object LineWords {
         "steering-rack" to line("steering rack", "rack and pinion", "steering gear", "steering box"),
         "power-steering-pump" to line("power steering pump"),
         "steering-parts" to line("idler arm", "pitman arm", "drag link", "center link", "steering column", "steering linkage"),
+        "chassis-lube" to line("chassis", "chassis lubrication", "grease fitting", "zerk", "zerk fitting", needsAction = true),
         "suspension-check" to line("suspension", "steering", "front end", check = true),
 
         "cabin-air" to line("cabin air filter", "cabin filter", "pollen filter"),

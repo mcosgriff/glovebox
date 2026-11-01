@@ -310,6 +310,7 @@ object CarfaxReport {
         """transmission( oil)? pan gaskets? replaced""" to "trans-pan-gasket",
         """shift(er)? (cables?|linkage) (replaced|adjusted|repaired)""" to "shift-cable",
         """(u-joints?|universal joints?) (replaced|installed|lubricated|greased)""" to "u-joints",
+        """chassis (lubricated|greased|lubed)|(lubricate|lube|grease)d? chassis|chassis lub(e|rication)( performed| serviced)?""" to "chassis-lube",
         """(suspension|steering)( and (suspension|steering))?( system)? (checked|inspected)""" to "suspension-check",
         // "Check engine light checked" is a diagnosis, not the lights.
         """(?<!engine )((head|exterior |interior )?lights|lighting)( system)? (checked|inspected)""" to "lights-check",
