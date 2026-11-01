@@ -254,6 +254,9 @@ object ServiceCatalog {
                 CatalogItem("power-steering-pump"),
                 // Idler and pitman arms, the column, linkage: what the lines above don't name.
                 CatalogItem("steering-parts"),
+                // A grease gun on the suspension and steering's grease fittings (zerks); the driveshaft and
+                // u-joints have their own lines.
+                CatalogItem("chassis-lube"),
                 CatalogItem("suspension-check"),
             ),
         ),
@@ -272,23 +275,33 @@ object ServiceCatalog {
                 CatalogItem("lights-check"),
                 CatalogItem("windows-check"),
                 CatalogItem("window-regulator"),
+                // Cleaning and lubing the rails, clearing the drains, or a repair.
+                CatalogItem("sunroof"),
                 CatalogItem("door-lock-actuator"),
                 CatalogItem("air-conditioning"),
                 // A flush ends with the system refilled, so it is the service too.
                 CatalogItem("ac-flush", covers = setOf("air-conditioning")),
                 CatalogItem("ac-compressor"),
                 CatalogItem("ac-condenser"),
+                // Looking at the heating and the A/C. An A/C service doesn't cover it: it says nothing of the heat.
+                CatalogItem("hvac-check"),
                 CatalogItem("blower-motor"),
                 CatalogItem("starter"),
                 CatalogItem("alternator"),
                 CatalogItem("fuses"),
                 CatalogItem("horn"),
+                // Software put on a control module (ECU, PCM, TCM); reading its codes is the diagnostic scan.
+                CatalogItem("ecu-update"),
             ),
         ),
         CatalogCategory(
             "inspection",
             listOf(
                 CatalogItem("multi-point"),
+                // The dealer's inspection of a new vehicle before it is handed over.
+                CatalogItem("pdi"),
+                // Reading the computer's trouble codes.
+                CatalogItem("diagnostic"),
                 // "The 30,000 mile service": it doesn't say which jobs, so it resets nothing.
                 CatalogItem("scheduled-service"),
                 CatalogItem("emissions"),
@@ -303,6 +316,8 @@ object ServiceCatalog {
                 CatalogItem("windshield"),
                 CatalogItem("mirror"),
                 CatalogItem("door-handle"),
+                // Door checks, hinges and the hood, trunk and door latches; the grease fittings are chassis lube.
+                CatalogItem("body-lube"),
                 // Body work and any other glass.
                 CatalogItem("body"),
                 CatalogItem("detail"),

@@ -170,7 +170,7 @@ object CarfaxReport {
 
     private val workWords = Regex(
         """(?i)\b(replaced|changed|rotated|serviced|inspected|inspection|repaired|flushed|installed|performed|checked|aligned|balanced|""" +
-            """adjusted|cleaned|lubricated|resurfaced|tested|mounted|recharged|topped off)\b""",
+            """adjusted|cleaned|lubricated|resurfaced|tested|mounted|recharged|topped off|updated|reprogrammed|reflashed)\b""",
     )
     private val notWork = Regex("""(?i)\b(title|titled|registration|registered|owner|odometer|sold|for sale|auction|damage|accident|lien|recall)\b""")
 
@@ -302,7 +302,8 @@ object CarfaxReport {
         """alternator (replaced|installed)""" to "alternator",
         // A flush before the service, which "A/C system flushed and recharged" would otherwise be.
         """(air conditioning|a/c)( system)? flush(ed| performed)""" to "ac-flush",
-        """(air conditioning|a/c)( system)?( refrigerant)? (recharged|serviced|evacuated|repaired|checked|inspected)|refrigerant (recharged|added|charged)""" to "air-conditioning",
+        """(air conditioning|a/c|heating|heater|hvac|climate control)( and (air conditioning|a/c|heating))?( systems?)? (checked|inspected|tested)""" to "hvac-check",
+        """(air conditioning|a/c)( system)?( refrigerant)? (recharged|serviced|evacuated|repaired)|refrigerant (recharged|added|charged)""" to "air-conditioning",
         """clutch( kit| assembly)? (replaced|installed)""" to "clutch",
         """clutch (master|slave)( and (master|slave))? cylinders? (replaced|installed)|slave cylinder (replaced|installed)""" to "clutch-hydraulics",
         """flywheel (replaced|resurfaced|machined)""" to "flywheel",
@@ -310,6 +311,11 @@ object CarfaxReport {
         """transmission( oil)? pan gaskets? replaced""" to "trans-pan-gasket",
         """shift(er)? (cables?|linkage) (replaced|adjusted|repaired)""" to "shift-cable",
         """(u-joints?|universal joints?) (replaced|installed|lubricated|greased)""" to "u-joints",
+        """((door|hood|trunk|tailgate|liftgate) )?(hinges?|latch(es)?|door checks?)( and (hinges?|latch(es)?|door checks?))? (lubricated|greased|lubed)|body lubricated""" to "body-lube",
+        """(sunroof|moonroof)( (drains?|tracks?|rails?|motor|glass|seals?))? (cleaned|lubricated|repaired|replaced|serviced|adjusted)""" to "sunroof",
+        """((engine|transmission|powertrain) )?(computer|ecu|ecm|pcm|tcm|control module)( software)? (updated|reprogrammed|reflashed|programmed)|software updated""" to "ecu-update",
+        """(computer|ecu|ecm|pcm|on-board) (diagnostics?|system) (checked|performed|tested)|(computer|ecu|ecm|pcm) (checked|tested)|diagnostics? (performed|checked|test performed)|(check engine light|trouble codes?) (checked|inspected)""" to "diagnostic",
+        """chassis (lubricated|greased|lubed)|(lubricate|lube|grease)d? chassis|chassis lub(e|rication)( performed| serviced)?""" to "chassis-lube",
         """(suspension|steering)( and (suspension|steering))?( system)? (checked|inspected)""" to "suspension-check",
         // "Check engine light checked" is a diagnosis, not the lights.
         """(?<!engine )((head|exterior |interior )?lights|lighting)( system)? (checked|inspected)""" to "lights-check",
@@ -319,6 +325,7 @@ object CarfaxReport {
         """((exterior|interior|outside|inside) )?door handles? (replaced|repaired)""" to "door-handle",
         """(windows?|glass) (replaced|repaired)""" to "body",
         """maintenance inspection completed|multi-point inspection""" to "multi-point",
+        """pre-?delivery inspection|\bpdi\b""" to "pdi",
         // Which jobs isn't said, so it stays a line of its own and resets nothing.
         """\d{1,3}(,\d{3}|k|000) (mile |mi |km )?(service|maintenance)|(recommended|scheduled|factory scheduled) maintenance (performed|completed)""" to "scheduled-service",
         """emissions? (inspection|test)""" to "emissions",

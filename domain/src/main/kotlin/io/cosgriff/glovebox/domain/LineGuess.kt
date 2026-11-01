@@ -198,11 +198,14 @@ object LineGuess {
         "repaired", "repair", "serviced", "service", "flushed", "flush", "cleaned", "clean", "topped", "filled", "adjusted",
         "lubricated", "lubed", "greased", "rotated", "rotation", "balanced", "aligned", "alignment", "recharged", "resurfaced",
         "machined", "performed", "done", "fixed", "patched", "plugged", "mounted", "bled", "programmed", "reset",
-        "exchange", "exchanged", "rotate", "rotating", "lube", "replacement",
+        "exchange", "exchanged", "rotate", "rotating", "lube", "replacement", "updated", "update", "reprogrammed", "reflashed", "flashed",
     )
 
     /** Words that say it was only looked at. */
-    private val CHECKED = setOf("checked", "check", "inspected", "inspect", "inspection", "tested", "test", "examined", "verified")
+    private val CHECKED = setOf(
+        "checked", "check", "inspected", "inspect", "inspection", "tested", "test", "examined", "verified",
+        "scanned", "scan", "diagnosed", "diagnose", "diagnosis", "diagnostic",
+    )
 }
 
 /** Each catalog line's words for [LineGuess]. English, like [CarfaxReport.service]'s wording; never shown. */
@@ -326,6 +329,7 @@ object LineWords {
         "steering-rack" to line("steering rack", "rack and pinion", "steering gear", "steering box"),
         "power-steering-pump" to line("power steering pump"),
         "steering-parts" to line("idler arm", "pitman arm", "drag link", "center link", "steering column", "steering linkage"),
+        "chassis-lube" to line("chassis", "chassis lubrication", "grease fitting", "zerk", "zerk fitting", needsAction = true),
         "suspension-check" to line("suspension", "steering", "front end", check = true),
 
         "cabin-air" to line("cabin air filter", "cabin filter", "pollen filter"),
@@ -338,20 +342,28 @@ object LineWords {
         "headlight-assembly" to line("headlight assembly", "headlight housing", "headlight lens"),
         "lights-check" to line("light", "lighting", check = true),
         "windows-check" to line("window", check = true),
+        "sunroof" to line("sunroof", "moonroof", "sunroof rail", "sunroof track", "sunroof drain"),
         "window-regulator" to line("window regulator", "window motor"),
         "door-lock-actuator" to line("door lock actuator", "lock actuator", "door lock"),
-        "air-conditioning" to line("ac", "refrigerant", "ac recharge"),
+        "air-conditioning" to line("ac", "refrigerant", "ac recharge", needsAction = true),
         "ac-flush" to line("ac flush", "ac system flush"),
         "ac-compressor" to line("ac compressor", "compressor"),
         "ac-condenser" to line("ac condenser", "condenser"),
+        "hvac-check" to line("ac", "heating", "heater", "hvac", "climate control", "heating and ac", check = true),
         "blower-motor" to line("blower motor", "blower", "heater fan"),
         "starter" to line("starter", "starter motor"),
         "alternator" to line("alternator"),
         "fuses" to line("fuse", "relay"),
         "horn" to line("horn"),
+        "ecu-update" to line("ecu", "ecm", "pcm", "tcm", "computer", "software", "software update", "control module", needsAction = true),
 
         // Inspections are looking by name: their own wording ("inspection", "test") is the check.
         "multi-point" to line("multipoint", "courtesy", "vehicle", check = true),
+        "pdi" to line("pre delivery", "predelivery", "pdi", "new vehicle", check = true),
+        "diagnostic" to line(
+            "diagnostic", "diagnosis", "code", "trouble code", "scan", "ecu", "ecm", "pcm", "computer", "check engine light", "obd",
+            check = true,
+        ),
         "scheduled-service" to line("scheduled maintenance", "scheduled service", "factory maintenance", "mile service"),
         "emissions" to line("emission", "smog", check = true),
         "safety-inspection" to line("safety", check = true),
@@ -361,6 +373,7 @@ object LineWords {
         "windshield" to line("windshield", "windscreen"),
         "mirror" to line("mirror", "side mirror"),
         "door-handle" to line("door handle"),
+        "body-lube" to line("hinge", "latch", "door check", "door hinge", "hood latch", "body lube", "body lubricated", "body lubrication", needsAction = true),
         "body" to line("body work", "bumper", "fender", "dent", "paint", "glass"),
         "detail" to line("detail", "car wash", "wash", "wax"),
     )
