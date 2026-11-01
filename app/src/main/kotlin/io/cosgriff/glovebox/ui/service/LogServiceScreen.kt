@@ -167,6 +167,7 @@ import io.cosgriff.glovebox.domain.RecommendedChoice
 import io.cosgriff.glovebox.domain.KeptLine
 import io.cosgriff.glovebox.domain.LoggedLine
 import io.cosgriff.glovebox.domain.DoneMatch
+import io.cosgriff.glovebox.domain.DoneChange
 import io.cosgriff.glovebox.domain.ShopRecommendation
 import io.cosgriff.glovebox.domain.ShopRecommendations
 import io.cosgriff.glovebox.data.db.ShopRecommendationDao
@@ -198,7 +199,10 @@ data class LogServiceData(
     val original: ServiceRecordWithItems?,
     /** The user's category rules (#310): a custom item worded as one is offered that rule's line first. */
     val rules: List<CatalogRule> = emptyList(),
-    /** The vehicle's kept shop recommendations (#572): a new one from the same shop replaces one, logged work closes one. */
+    /**
+     * The vehicle's open shop recommendations (#572): a new one from the same shop replaces one, logged work closes
+     * one. On an edit, also those the record closed already (#593), which it offers again.
+     */
     val openRecommendations: List<ShopRecommendation> = emptyList(),
 ) {
     /**
@@ -397,12 +401,20 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
             return selectedOptions.map { LoggedLine(it.id.takeIf { id -> id in catalog }, labelOf(it)) } + customItems.map { LoggedLine(null, it) }
         }
 
+    /** The record being edited; 0 for a new one. */
+    private val recordId: Long get() = data?.original?.record?.id ?: 0L
+
     /**
      * Open recommendations the ticked lines look like the work for (#572): asked about, ticked unless the user unticks
-     * one, and closed only when the record is saved. Never on an edit.
+     * one, and closed only when the record is saved. On an edit (#593), also those it closed already and still looks
+     * like the work for, ticked.
      */
     val doneMatches: List<DoneMatch>
-        get() = if (editing) emptyList() else ShopRecommendations.matches(data?.openRecommendations.orEmpty(), date, loggedLines)
+        get() = ShopRecommendations.offered(data?.openRecommendations.orEmpty(), recordId, date, loggedLines)
+
+    /** What saving closes, and on an edit opens again of what the record had closed (#593). */
+    internal val doneChange: DoneChange
+        get() = ShopRecommendations.onSave(data?.openRecommendations.orEmpty(), recordId, date, loggedLines, notDone)
 
     /** The matches the user unticked: they stay open. */
     var notDone by mutableStateOf(emptySet<Long>())
@@ -745,7 +757,7 @@ class LogServiceViewModel @Inject constructor(
                 specs = vehicle.whatItTakes(),
                 original = original,
                 rules = catalogRules.all().map { it.toRule() },
-                openRecommendations = recommendations.all(vehicleId).map { it.toModel() }.filter { it.open },
+                openRecommendations = recommendations.all(vehicleId).map { it.toModel() }.filter { it.open || (original != null && it.doneBy == original.record.id) },
             )
             // Only once the form has its vehicle, so an invoice picked meanwhile waits for it rather than going nowhere.
             if (!editing) invoices.picked.collect { if (it?.key == photoKey) invoices.take(photoKey)?.let { p -> onInvoice(p) } }
@@ -782,7 +794,7 @@ class LogServiceViewModel @Inject constructor(
                 val keptPages = if (keepInvoice) pages else emptyList()
                 invoicePhotos.drop(pages - keptPages.toSet())
                 if (d.original != null) {
-                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows)
+                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows, doneChange)
                 } else {
                     // Kept for later, each replacing this shop's open one for the same work, and the open ones the user
                     // left ticked as done by this work (#572): saved with the record, and gone with it.
@@ -795,7 +807,7 @@ class LogServiceViewModel @Inject constructor(
                             replaces = replaces(c)?.id,
                         )
                     }
-                    val done = doneMatches.map { it.recommendation.id }.filter { it !in notDone }
+                    val done = doneChange.close
                     actions.add(record, items, added + keptPages, jobRows, partRows, kept, done)
                     // Paperwork of the vehicle's, not the record's: an Undo of the record leaves it there.
                     invoicePdf?.takeIf { keepInvoice }?.let { pdf ->

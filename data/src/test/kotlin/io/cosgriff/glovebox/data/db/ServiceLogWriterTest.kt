@@ -118,6 +118,47 @@ class ServiceLogWriterTest {
     }
 
     @Test
+    fun `an edit closes and opens again what it says, and its revert undoes both`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
+        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        val (coolant, battery) = open(car)
+        val id = writer.add(record(car).copy(date = day.plusDays(30)), listOf(line), done = listOf(coolant.id))
+        val before = service.record(id)!!
+
+        val change = io.cosgriff.glovebox.domain.DoneChange(close = listOf(battery.id), reopen = listOf(coolant.id))
+        writer.replace(before.record.copy(odometer = 42_000), before.items.map { it.copy(id = 0) }, emptyList(), emptySet(), done = change)
+        assertEquals(listOf(coolant.id), open(car).map { it.id })
+        assertEquals(id, db.recommendations().all(car).map { it.toModel() }.single { it.id == battery.id }.doneBy)
+
+        writer.revertEdit(before, change)
+        assertEquals(listOf(battery.id), open(car).map { it.id })
+        assertEquals(id, db.recommendations().all(car).map { it.toModel() }.single { it.id == coolant.id }.doneBy)
+    }
+
+    @Test
+    fun `an import closes by the record each was offered for, added or replaced, and opens what a replaced one no longer did`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
+        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery")), KeptRecommendation(kept("Wipers", "wipers"))))
+        val (coolant, battery, wipers) = open(car)
+        val saved = writer.add(record(car).copy(date = day.plusDays(10)), listOf(line), done = listOf(wipers.id))
+        val replacing = service.record(saved)!!
+
+        writer.applyImport(
+            added = listOf(RecordRows(record(car).copy(date = day.plusDays(20), imported = true), listOf(line), emptyList(), emptyList())),
+            replaced = listOf(RecordRows(replacing.record.copy(imported = true), listOf(line), emptyList(), emptyList())),
+            done = listOf(ImportClose(coolant.id, added = 0), ImportClose(battery.id, savedId = saved)),
+            reopened = listOf(wipers.id),
+        )
+        val now = db.recommendations().all(car).map { it.toModel() }.associateBy { it.id }
+        val added = service.recordsFor(car).single { it.record.date == day.plusDays(20) }.record.id
+        assertEquals(added, now.getValue(coolant.id).doneBy)
+        assertEquals(saved, now.getValue(battery.id).doneBy)
+        assertTrue(now.getValue(wipers.id).open)
+    }
+
+    @Test
     fun `deleting the vehicle takes its recommendations`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         writer.add(record(car), listOf(line), kept = listOf(KeptRecommendation(kept("Wiper Blade Replacement"))))

@@ -47,7 +47,7 @@ class ImportViewModelTest {
 
     private fun vm(route: ImportRoute = ImportRoute()) = ImportViewModel(
         g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
-        g.db.catalogRules(), g.actions, picker, g.documents, routeHandle(route),
+        g.db.catalogRules(), g.db.recommendations(), g.actions, picker, g.documents, routeHandle(route),
     )
 
     private fun example(name: String) = File("../docs/import/examples/$name").readText()
@@ -318,6 +318,43 @@ class ImportViewModelTest {
         val result = vm.importAndWait(unticked, ImportMode.ADD_NEW)
         assertEquals(1, result.added)
         assertEquals(listOf(41_000), g.db.service().recordsFor(id).map { it.record.odometer })
+    }
+
+    /** #593: made-up shop and work. */
+    @Test
+    fun `an imported record that looks like a shop recommendation's work offers it, and only a ticked one closes`() = runTest {
+        val id = g.vehicle(firstReading = 30_000)
+        val visit = g.db.service().insertWithItems(
+            io.cosgriff.glovebox.data.db.ServiceRecordEntity(vehicleId = id, date = LocalDate.of(2024, 1, 10), odometer = 35_000, diy = false, shopName = "Made-up Motors"),
+            listOf(io.cosgriff.glovebox.data.db.ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Vehicle health report")),
+        )
+        val recs = g.db.recommendations()
+        val oil = recs.insert(io.cosgriff.glovebox.data.db.ShopRecommendationEntity(vehicleId = id, recordId = visit, wording = "Oil Service Due", catalogId = "oil"))
+        val rotation = recs.insert(io.cosgriff.glovebox.data.db.ShopRecommendationEntity(vehicleId = id, recordId = visit, wording = "Rotate Tires", catalogId = "rotation"))
+        // Before the recommendation: never offered for it.
+        val file = """
+            {"glovebox": "import", "version": 1, "kind": "service-history", "items": [
+              {"date": "2023-12-01", "odometer": 34000, "work": [{"label": "Oil & filter change", "service": "oil"}], "doneBy": {"type": "diy"}},
+              {"date": "2024-03-01", "odometer": 37000, "work": [{"label": "Oil & filter change", "service": "oil"}], "doneBy": {"type": "diy"}},
+              {"date": "2024-04-01", "odometer": 38000, "work": [{"label": "Tire rotation", "service": "rotation"}], "doneBy": {"type": "diy"}}
+            ]}
+        """.trimIndent()
+        val vm = vm()
+        pick(file)
+
+        val offered = vm.ready().view.done.getValue(ImportMode.ADD_NEW)
+        assertEquals(listOf(oil, rotation), offered.map { it.recommendation.id })
+        assertTrue("ticked to start with", offered.all { it.ticked })
+        assertTrue(offered[0].why.contains("Mar 1, 2024"))
+
+        vm.tickDone(rotation, false)
+        val ready = vm.preview.awaitValue { p -> (p as? ImportPreview.Ready)?.view?.done?.get(ImportMode.ADD_NEW)?.any { !it.ticked } == true } as ImportPreview.Ready
+        vm.importAndWait(ready, ImportMode.ADD_NEW)
+
+        val byId = recs.all(id).associateBy { it.row.id }
+        val march = g.db.service().recordsFor(id).single { it.record.date == LocalDate.of(2024, 3, 1) }.record.id
+        assertEquals(march, byId.getValue(oil).row.doneByRecordId)
+        assertNull("unticked: stays open", byId.getValue(rotation).row.doneByRecordId)
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.data.db
 
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
+import io.cosgriff.glovebox.domain.DoneChange
 import io.cosgriff.glovebox.domain.VisitRecord
 import io.cosgriff.glovebox.domain.Visits
 import java.time.LocalDate
@@ -10,6 +11,12 @@ import javax.inject.Singleton
 
 /** A recommendation a new record keeps for later (#572): its row, and the open one from the same shop it replaces. */
 data class KeptRecommendation(val row: ShopRecommendationEntity, val replaces: Long? = null)
+
+/**
+ * A recommendation an import closes (#593): by the record it was offered for, one of the import's [added] records by
+ * its place, or a saved record it replaces, by its id ([savedId]).
+ */
+data class ImportClose(val recommendationId: Long, val added: Int? = null, val savedId: Long? = null)
 
 /** What a deleted record had kept, closed and replaced (#572), for its Undo to put back. */
 data class RecordRecommendations(
@@ -78,7 +85,10 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         was
     }
 
-    /** [removedPhotoIds] lose their rows; their files are the caller's to keep for Undo or delete. */
+    /**
+     * [removedPhotoIds] lose their rows; their files are the caller's to keep for Undo or delete. [done] is what the
+     * edit closes of the shop's recommendations and opens again of what it had closed (#593).
+     */
     suspend fun replace(
         record: ServiceRecordEntity,
         items: List<ServiceRecordItemEntity>,
@@ -86,21 +96,49 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         removedPhotoIds: Set<Long>,
         jobs: List<ServiceRecordJobEntity> = emptyList(),
         parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        done: DoneChange = DoneChange(),
     ) = transaction {
         service.replaceWithItems(record, items, jobs, parts)
         service.deletePhotos(removedPhotoIds.toList())
         service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
+        closeAndReopen(record.id, done)
+    }
+
+    /**
+     * One import, applied whole or not at all (#593): [added] records, [replaced] ones under their own ids, the
+     * recommendations the owner left ticked closed by the record each was offered for, and [reopened] (closed by a
+     * replaced record that no longer looks like the work) open again.
+     */
+    suspend fun applyImport(
+        added: List<RecordRows>,
+        replaced: List<RecordRows>,
+        done: List<ImportClose> = emptyList(),
+        reopened: List<Long> = emptyList(),
+    ) = transaction {
+        val ids = added.map { (record, items, jobs, parts) -> service.insertWithItems(record, items, jobs, parts) }
+        replaced.forEach { (record, items, jobs, parts) -> service.replaceWithItems(record, items, jobs, parts) }
+        if (reopened.isNotEmpty()) recommendations.setDone(reopened, null)
+        done.groupBy({ it.savedId ?: ids[checkNotNull(it.added)] }, { it.recommendationId }).forEach { (id, closed) -> recommendations.setDone(closed, id) }
+    }
+
+    private suspend fun closeAndReopen(recordId: Long, done: DoneChange) {
+        if (done.reopen.isNotEmpty()) recommendations.setDone(done.reopen, null)
+        if (done.close.isNotEmpty()) recommendations.setDone(done.close, recordId)
     }
 
     /** A kept recommendation closed by the owner on [on], or open again with null (#572). Logs nothing. */
     suspend fun closeRecommendation(id: Long, on: LocalDate?) = recommendations.setClosed(id, on)
 
-    /** [previous] back as it was, photos included. False if its vehicle has gone. */
-    suspend fun revertEdit(previous: ServiceRecordWithItems): Boolean = transaction {
+    /**
+     * [previous] back as it was, photos included, and what the edit [done] to the recommendations undone (#593): what
+     * it closed opens, what it opened closes again. False if its vehicle has gone.
+     */
+    suspend fun revertEdit(previous: ServiceRecordWithItems, done: DoneChange = DoneChange()): Boolean = transaction {
         if (vehicles.byId(previous.record.vehicleId) == null) return@transaction false
         service.replaceWithItems(previous.record, previous.items, previous.jobs, previous.parts)
         service.clearPhotos(previous.record.id)
         service.insertPhotos(previous.photos.map { it.copy(id = 0) })
+        closeAndReopen(previous.record.id, DoneChange(close = done.reopen, reopen = done.close))
         true
     }
 

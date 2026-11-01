@@ -56,6 +56,7 @@ internal fun <I, E> ImportPlan<I, E>.toView(
     doubles: List<String> = emptyList(),
     moves: Map<ImportMode, List<String>> = emptyMap(),
     doubts: List<DoubtLine> = emptyList(),
+    done: Map<ImportMode, List<DoneLine>> = emptyMap(),
 ): PlanView = PlanView(
     kind = kind,
     noun = noun,
@@ -68,6 +69,7 @@ internal fun <I, E> ImportPlan<I, E>.toView(
     doubles = doubles,
     moves = moves,
     doubts = doubts,
+    done = done,
     note = note,
 )
 

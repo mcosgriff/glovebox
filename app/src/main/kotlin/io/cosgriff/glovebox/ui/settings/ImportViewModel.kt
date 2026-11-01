@@ -74,6 +74,10 @@ import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.data.db.CatalogRuleDao
+import io.cosgriff.glovebox.data.db.ImportClose
+import io.cosgriff.glovebox.data.db.ShopRecommendationDao
+import io.cosgriff.glovebox.domain.ShopRecommendation
+import io.cosgriff.glovebox.domain.ShopRecommendations
 import io.cosgriff.glovebox.data.db.toRule
 import io.cosgriff.glovebox.domain.CatalogRules
 import io.cosgriff.glovebox.domain.RuleFiling
@@ -87,6 +91,12 @@ data class PlanLine(val name: String, val file: String, val yours: String? = nul
  * anyway. [key] is its date and odometer, which no two records of a file share.
  */
 data class DoubtLine(val key: Pair<LocalDate, Int>, val title: String, val why: String, val included: Boolean)
+
+/**
+ * An open shop recommendation a record in the file looks like the work for (#593), [why] in words, and whether it
+ * closes on import: ticked unless the user unticked it.
+ */
+data class DoneLine(val recommendation: ShopRecommendation, val why: String, val ticked: Boolean)
 
 /**
  * A file set against the chosen vehicle, in words: what the page shows whichever kind the file is.
@@ -111,6 +121,8 @@ data class PlanView(
     val doubts: List<DoubtLine> = emptyList(),
     /** Something true of the file as a whole, said before the import and again after it. */
     val note: String? = null,
+    /** Service history only: open shop recommendations the records look like the work for, for each choice (#593). */
+    val done: Map<ImportMode, List<DoneLine>> = emptyMap(),
 ) {
     fun changes(mode: ImportMode): Int = new.size + fills.size + if (mode == ImportMode.REPLACE_MATCHING) differs.size else 0
     fun count(n: Int): String = noun.count(n)
@@ -159,6 +171,7 @@ class ImportViewModel @Inject constructor(
     private val logs: VehicleLogs,
     private val milestones: MilestoneDao,
     private val catalogRules: CatalogRuleDao,
+    private val recommendations: ShopRecommendationDao,
     private val actions: RecordActions,
     private val picker: ImportPicker,
     private val documents: DocumentStore,
@@ -180,6 +193,9 @@ class ImportViewModel @Inject constructor(
     /** Doubtful records ([PlanView.doubts]) the user has chosen to import anyway, by date and odometer. */
     private val included = MutableStateFlow<Set<Pair<LocalDate, Int>>>(emptySet())
 
+    /** Shop recommendations offered as done ([PlanView.done]) the user unticked, by id: they stay open (#593). */
+    private val unticked = MutableStateFlow<Set<Long>>(emptySet())
+
     /** The vehicle to import into: the one chosen, or the only one there is. */
     val vehicleId: StateFlow<Long?> = combine(this.vehicles, chosenVehicle) { list, chosen ->
         chosen?.takeIf { id -> list.orEmpty().any { it.id == id } } ?: list?.singleOrNull()?.id
@@ -191,15 +207,15 @@ class ImportViewModel @Inject constructor(
     val result: StateFlow<ImportResult?> = _result.asStateFlow()
 
     /** Null with no file picked. Worked out afresh for each file and vehicle; nothing is written by it. */
-    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, this.vehicles, settings.settings, included) { file, id, list, s, keep ->
-        Inputs(file, list.orEmpty().firstOrNull { it.id == id }, s, keep)
-    }.mapLatest { (file, vehicle, s, keep) ->
+    val preview: StateFlow<ImportPreview?> = combine(parsed, vehicleId, this.vehicles, settings.settings, combine(included, unticked, ::Pair)) { file, id, list, s, (keep, notDone) ->
+        Inputs(file, list.orEmpty().firstOrNull { it.id == id }, s, keep, notDone)
+    }.mapLatest { (file, vehicle, s, keep, notDone) ->
         when (file) {
             null -> null
             is ImportFile.Invalid -> ImportPreview.Invalid(file)
             else -> when {
                 vehicle == null -> ImportPreview.NeedsVehicle
-                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, keep)
+                file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, keep, notDone)
                 // A sold vehicle gets no reminders and isn't being worked on.
                 vehicle.archivedOn != null -> ImportPreview.Refused(AppText.res.getString(R.string.import_sold_only_history))
                 file is ImportFile.TorqueSpecs -> torquePreview(vehicle.id, file.items, s.torqueUnit)
@@ -221,9 +237,15 @@ class ImportViewModel @Inject constructor(
         included.value = if (yes) included.value + key else included.value - key
     }
 
+    /** A shop recommendation offered as done by the import ticked ([yes]: it closes) or not (it stays open). */
+    fun tickDone(id: Long, yes: Boolean) {
+        unticked.value = if (yes) unticked.value - id else unticked.value + id
+    }
+
     fun pick() {
         _result.value = null
         included.value = emptySet()
+        unticked.value = emptySet()
         picker.pick()
     }
 
@@ -375,7 +397,7 @@ class ImportViewModel @Inject constructor(
         return AppText.res.getQuantityString(R.plurals.import_guesses, guesses.size, guesses.size.asNumber(), list)
     }
 
-    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, keep: Set<Pair<LocalDate, Int>>): ImportPreview {
+    private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, keep: Set<Pair<LocalDate, Int>>, notDone: Set<Long>): ImportPreview {
         val unit = vehicle.unit
         // The user's rules file the lines the file leaves unsaid, and on a Carfax report (a PDF) win over the
         // wording Glovebox recognised, before anything is compared, so the plan and the write see the same lines.
@@ -396,6 +418,18 @@ class ImportViewModel @Inject constructor(
         val leftOut = doubts.map { (r, _) -> r.date to r.odometer }.filter { it !in keep }.toSet()
         val items = all.filter { (it.date to it.odometer) !in leftOut }
         val plan = HistoryImport.plan(items, saved, refs)
+        val added = plan.new.map { HistoryImport.added(it, vehicle.id, refs) }
+        // Same record, same id: its photos and any recall it was the work for stay with it.
+        fun replaced(mode: ImportMode) = plan.replaced(mode).mapNotNull { (item, mine) ->
+            byId[mine.id]?.let { HistoryImport.replacing(it.toModel(), item, refs) }
+        }
+        // The open shop recommendations these records look like the work for (#593), offered for each choice the
+        // user can make; nothing closes unless it is left ticked when they import.
+        val kept = recommendations.all(vehicle.id).map { it.toModel() }
+        val offers = ImportMode.entries.associateWith { mode ->
+            val records = added + replaced(mode)
+            records to ShopRecommendations.offeredOnImport(kept, records)
+        }
         val view = plan.toView(
             ImportKind.SERVICE_HISTORY, PlanNoun.RECORD, R.string.import_caution_history,
             name = { it.title(unit) }, describe = { it.describe() }, describeSaved = { it.describe() },
@@ -418,22 +452,37 @@ class ImportViewModel @Inject constructor(
                     included = (r.date to r.odometer) in keep,
                 )
             },
+            done = offers.mapValues { (_, offer) ->
+                val (records, offered) = offer
+                offered.map { o ->
+                    DoneLine(
+                        o.recommendation,
+                        AppText.res.getString(R.string.import_done_why, o.line.label, records[o.record].date.format(longDate)),
+                        ticked = o.recommendation.id !in notDone,
+                    )
+                }
+            },
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            val added = plan.new.map { HistoryImport.added(it, vehicle.id, refs).toRows() }
-            // Same record, same id: its photos and any recall it was the work for stay with it.
-            val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
-                val saved = byId[mine.id] ?: return@mapNotNull null
-                HistoryImport.replacing(saved.toModel(), item, refs).toRows()
+            val (records, offered) = offers.getValue(mode)
+            val replacing = records.drop(added.size)
+            val close = offered.filter { it.recommendation.id !in notDone }.map { o ->
+                if (o.record < added.size) ImportClose(o.recommendation.id, added = o.record) else ImportClose(o.recommendation.id, savedId = records[o.record].id)
             }
-            actions.applyImport(added, replaced)
+            actions.applyImport(added.map { it.toRows() }, replacing.map { it.toRows() }, close, ShopRecommendations.reopenedOnImport(kept, replacing))
             finish(view, vehicle.id, mode)
         }
     }
 
     private fun ImportedRecord.title(unit: DistanceUnit) = "${date.format(longDate)} · ${odometer.asDistance(unit)}"
 
-    private data class Inputs(val file: ImportFile?, val vehicle: VehicleEntity?, val settings: Settings, val keep: Set<Pair<LocalDate, Int>>)
+    private data class Inputs(
+        val file: ImportFile?,
+        val vehicle: VehicleEntity?,
+        val settings: Settings,
+        val keep: Set<Pair<LocalDate, Int>>,
+        val unticked: Set<Long>,
+    )
 }
 
 

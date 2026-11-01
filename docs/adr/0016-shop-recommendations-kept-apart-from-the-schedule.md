@@ -22,5 +22,7 @@ Reading an invoice (#484) put the shop's recommended work in the record's notes 
 ## Consequences
 
 - A kept item's line is the owner's rule for its wording, otherwise a guess the form labels as one and lets the owner change; a guessed line is stored as the line once kept.
-- Records only close items when logged new on Log service; an edit, an import or a recall's record never does.
+- Records close items when logged new on Log service, when edited there and when imported as history (#593, the
+  owner's ruling of 2026-10-31), always by asking; a recall's record never does. An edit that no longer looks like
+  the work opens again what it closed, as deleting the record does.
 - The export and the PDF report don't list open recommendations yet (open question on #572).

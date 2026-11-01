@@ -9,6 +9,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.KeptRecommendation
+import io.cosgriff.glovebox.data.db.ImportClose
+import io.cosgriff.glovebox.domain.DoneChange
 import io.cosgriff.glovebox.data.db.RecordRecommendations
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.RecordRows
@@ -41,11 +43,15 @@ data class HistoryFocus(val vehicleId: Long, val recordId: Long? = null, val mar
 
 sealed interface RecordEvent {
     data class Saved(val recordId: Long) : RecordEvent
-    /** [addedPhotos] and [removedPhotos] are file names; Undo takes the first away again and brings the second back. */
+    /**
+     * [addedPhotos] and [removedPhotos] are file names; Undo takes the first away again and brings the second back.
+     * [done] is what the edit closed and opened again of the shop's recommendations (#593); Undo puts them back.
+     */
     data class Edited(
         val previous: ServiceRecordWithItems,
         val addedPhotos: List<String> = emptyList(),
         val removedPhotos: List<String> = emptyList(),
+        val done: DoneChange = DoneChange(),
     ) : RecordEvent
     /**
      * [recallIds] are recalls this record was the work for; Undo links them again. [recommendations] are what it kept,
@@ -127,9 +133,12 @@ class RecordActions @Inject constructor(
 
     /**
      * An import of service history, in one transaction. Like [addLastDone] it announces nothing: the
-     * Import page shows its own result. [replaced] records keep their id, photos and recall links.
+     * Import page shows its own result. [replaced] records keep their id, photos and recall links. [done] are the
+     * shop's recommendations the owner left ticked in the preview, closed by their records, and [reopened] those a
+     * replaced record no longer looks like the work for (#593).
      */
-    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) = service.applyImport(added, replaced)
+    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>, done: List<ImportClose> = emptyList(), reopened: List<Long> = emptyList()) =
+        writer.applyImport(added, replaced, done, reopened)
 
     /** Points History at [vehicleId], for a screen that sends the user there. */
     fun showIn(vehicleId: Long) {
@@ -148,10 +157,11 @@ class RecordActions @Inject constructor(
         removedPhotoIds: Set<Long> = emptySet(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
         parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        done: DoneChange = DoneChange(),
     ) {
-        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts)
+        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts, done)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
-        _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
+        _events.send(RecordEvent.Edited(previous, addedPhotos, removed, done))
     }
 
     suspend fun delete(record: ServiceRecordWithItems) {
@@ -215,7 +225,7 @@ class RecordActions @Inject constructor(
     /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */
     suspend fun undo(event: RecordEvent): Boolean = when (event) {
         is RecordEvent.Edited ->
-            writer.revertEdit(event.previous).also { if (it) photos.delete(event.addedPhotos) }
+            writer.revertEdit(event.previous, event.done).also { if (it) photos.delete(event.addedPhotos) }
         is RecordEvent.Deleted -> {
             val id = writer.restore(event.record, event.recallIds, event.recommendations)
             if (id != null) {

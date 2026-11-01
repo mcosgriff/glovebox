@@ -2,6 +2,7 @@ package io.cosgriff.glovebox.ui.screens
 
 import io.cosgriff.glovebox.ui.bulletins.BulletinsContent
 import io.cosgriff.glovebox.ui.settings.ImportContent
+import io.cosgriff.glovebox.ui.settings.DoneCard
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -442,6 +443,12 @@ class ScreensScreenshotTest(private val shade: Shade) {
             onBack = {}, onPick = {}, onChooseVehicle = {}, onInclude = { _, _ -> }, onImport = { _, _, _, _ -> },
             onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> },
         )
+    }
+
+    /** A history import offering open recommendations as done (#593, board ImportDone). */
+    @Test
+    fun importDone() = compose.shoot("import_history_done", shade) {
+        Column(Modifier.padding(20.dp)) { DoneCard(Fixtures.importDone, onTick = { _, _ -> }) }
     }
 
     @Test

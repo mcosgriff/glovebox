@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +30,8 @@ import io.cosgriff.glovebox.domain.FindingColour
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.RecommendedItem
+import io.cosgriff.glovebox.domain.ShopRecommendation
+import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 
@@ -86,6 +92,35 @@ internal fun RecommendationHead(item: RecommendedItem) {
         }
         item.finding?.let {
             Text(stringResource(R.string.recommended_finding, it), style = MaterialTheme.typography.bodyMedium, color = statusColors().soon)
+        }
+    }
+}
+
+/**
+ * One open recommendation offered as done by the work (#572, #593), on Log service and the history import's preview:
+ * ticked to close it, its wording, who recommended it when and for how much, and [why] it is offered.
+ */
+@Composable
+internal fun RecommendedDoneRow(recommendation: ShopRecommendation, why: String, ticked: Boolean, onToggle: () -> Unit) {
+    val r = recommendation
+    val date = r.date.format(longDate)
+    val price = r.item.cents?.let { Money.format(it) }
+    val shop = r.shop
+    val from = when {
+        shop != null && price != null -> stringResource(R.string.log_done_from, shop, date, price)
+        shop != null -> stringResource(R.string.log_done_from_unpriced, shop, date)
+        price != null -> stringResource(R.string.log_done_from_no_shop, date, price)
+        else -> stringResource(R.string.log_done_from_no_shop_unpriced, date)
+    }
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(ticked, role = Role.Checkbox, onValueChange = { onToggle() }).padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Checkbox(checked = ticked, onCheckedChange = null, modifier = Modifier.size(24.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(r.item.text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(from, style = MaterialTheme.typography.bodyMedium, color = statusColors().soon)
+            Text(why, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

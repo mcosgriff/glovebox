@@ -752,6 +752,26 @@
       "page": "milestones",
       "is_interactive": true,
       "radius": 28
+    },
+    "ImportDone.dc.html": {
+      "h": 1100,
+      "is_interactive": true,
+      "page": "recommended",
+      "radius": 28,
+      "title": "Import history — an imported record matches an open recommendation: done with these? (#593)",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "ImportDoneDark.dc.html": {
+      "h": 1100,
+      "is_interactive": true,
+      "page": "recommended",
+      "radius": 28,
+      "title": "Import history — an imported record matches an open recommendation: done with these? (#593) (dark)",
+      "w": 390,
+      "x": 1880,
+      "y": 2500
     }
   },
   "createdOnFiles": {
@@ -931,7 +951,9 @@
     "RecommendedList.dc.html",
     "RecommendedListDark.dc.html",
     "Milestones.dc.html",
-    "MilestonesDark.dc.html"
+    "MilestonesDark.dc.html",
+    "ImportDone.dc.html",
+    "ImportDoneDark.dc.html"
   ],
   "pages": [
     {

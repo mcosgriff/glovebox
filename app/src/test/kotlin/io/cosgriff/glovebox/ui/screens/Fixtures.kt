@@ -33,6 +33,7 @@ import io.cosgriff.glovebox.ui.settings.PlanView
 import io.cosgriff.glovebox.ui.settings.PlanLine
 import io.cosgriff.glovebox.ui.settings.PlanNoun
 import io.cosgriff.glovebox.ui.settings.DoubtLine
+import io.cosgriff.glovebox.ui.settings.DoneLine
 import io.cosgriff.glovebox.domain.ImportKind
 import io.cosgriff.glovebox.domain.ImportMode
 import io.cosgriff.glovebox.R
@@ -776,6 +777,15 @@ object Fixtures {
             ),
         )
     }
+
+    /**
+     * A history import's records look like the work for two open recommendations (#593, board ImportDone): made-up
+     * shop, work, prices and dates; the second unticked.
+     */
+    val importDone = listOf(
+        DoneLine(kept(12, "Coolant System Service", 23_999, "coolant", LocalDate.of(2026, 3, 5)), "Matches Engine coolant, in the record of Apr 1, 2026.", ticked = true),
+        DoneLine(kept(13, "Wiper Blade Replacement", 4_999, "wipers", LocalDate.of(2026, 3, 5)), "Matches Wiper blades, in the record of Sep 1, 2026.", ticked = false),
+    )
 
     /** The vehicle's kept recommendations (#572, board RecommendedList): made-up shops, work and prices. */
     val shopRecommended = ShopRecommended(
