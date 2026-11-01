@@ -8,7 +8,7 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
 |---|---|---|
 | 2010 | The "Touareg 3.0L TDI Engine Only" card (revised October 2012), in full, as page images; the list was written from it | `2012/MC-10156105-9999` |
 | 2010 | The card for all models except the Routan (revised October 2012), for comparison (below) | `2012/MC-10156104-9999` |
-| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; it names the Touareg (`7L`) | reissue `USA5R503621`, printed 11/24/2025 |
+| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; it names the Touareg (`7L`) | reissue `USA5R503621`, printed 11/24/2025 |
 
 - **A grid of 12 columns, 10,000 to 120,000**, no months printed for a column, not repeated (rule 9). No
   130,000 column and no timing belt row.
@@ -30,10 +30,10 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
     the air filter's row with the same note is (60,000 / 72).
   - "Diesel particle filter", at 120,000 (after 120,000 miles, then every 10,000 until it is replaced): table-only,
     the "every 10,000" in its name.
-  - "Haldex Clutch: Change oil (if applicable)" at 40,000, 80,000 and 120,000: table-only, "Change Haldex clutch
-    oil (if applicable)", as on the 2010 Passat list; the "(if applicable)" rule holds although every Touareg
-    has 4Motion (the open question on [#446](https://github.com/mcosgriff/glovebox/issues/446#issuecomment-6490065640)
-    is whether such a row should be an all-wheel-drive reminder).
+  - "Haldex Clutch: Change oil (if applicable)" at 40,000, 80,000 and 120,000: "Change Haldex clutch oil, every 3
+    years (AWD)", in `allWheelDriveOnly`, a reminder every 36 months by time alone with no `service`, as on the 2010
+    Passat list, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)). The card prints no time for the row; the 3 years is the ruling's. Every Touareg has
+    4Motion.
   - "Second battery: Check (if applicable)" and "Transmission: Automatic: Check fluid" (40,000, 80,000, 120,000):
     inspections, table-only.
 - **The all-model card differs** on the Touareg TDI's rows and isn't used for this list (the Touareg TDI's own
@@ -46,7 +46,7 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
 - `"engine": { "label": "3.0L TDI", "displacementL": 3.0, "fuel": "Diesel" }`. No 2010 Touareg had a 3.0L
   hybrid, but the fuel is set as on the later TDI lists.
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000; fuel filter 40,000;
-  air filter and tire pressure sensors 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says
-  at 3 years first, then every 2).
+  air filter and tire pressure sensors 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD);
+  brake fluid every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from the 2010 reissue (the owner's ruling of 2026-10-28, #517). The table has none.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first three columns.

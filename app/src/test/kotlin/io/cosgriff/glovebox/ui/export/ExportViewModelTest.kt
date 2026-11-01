@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.data.export.ExportBuilder
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -52,7 +53,7 @@ class ExportViewModelTest {
     private val day = LocalDate.of(2025, 5, 4)
 
     private fun vm() = ExportViewModel(
-        g.db.vehicles(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.recalls(), g.db.documents(), g.photos, saver, ReportFonts(g.context),
+        ExportBuilder(g.db.vehicles(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.recalls(), g.db.documents()), g.photos, saver, ReportFonts(g.context),
     )
 
     /** A made-up vehicle with a record, a schedule item, a recall and a document on file. */

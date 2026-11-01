@@ -69,7 +69,7 @@ class InvoiceFillsTest {
     @Test
     fun `recommended work and odometer in go to the notes, never to the jobs`() {
         val f = fill()
-        assertEquals(listOf(InvoiceRecommendationNote("Coolant Flush", 15_999)), f.recommendations)
+        assertEquals(listOf(RecommendedItem("Coolant Flush", 15_999)), f.recommendations)
         assertEquals(52_340, f.odometerIn)
         assertTrue(f.jobs.none { "Coolant" in it.wording })
     }

@@ -1,14 +1,17 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.components.labelOrUnknown
+import io.cosgriff.glovebox.domain.Gearboxes
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.domain.VehicleBulletins
 import io.cosgriff.glovebox.ui.bulletins.BulletinCatalog
 import io.cosgriff.glovebox.ui.components.BackToTop
 import io.cosgriff.glovebox.ui.components.BackToTopRoom
 import io.cosgriff.glovebox.ui.service.editableDecimal
 import io.cosgriff.glovebox.ui.screenState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import io.cosgriff.glovebox.data.log.highestReading
+import androidx.compose.runtime.getValue
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.nicknameOrModel
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -129,11 +132,8 @@ import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.DocumentDao
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.TorqueDao
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
@@ -210,10 +210,8 @@ sealed interface VinLookup {
 class VehicleDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
-    schedule: ScheduleDao,
+    logs: VehicleLogs,
     recalls: RecallDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
     torque: TorqueDao,
     documents: DocumentDao,
     private val photos: VehiclePhotoStore,
@@ -249,15 +247,18 @@ class VehicleDetailsViewModel @Inject constructor(
         knownTakes.save(v, item, change(v.whatItTakes()), checked)
     }
 
+    private val log = logs.observe(vehicleId)
+
     /** Null while loading, and if the vehicle no longer exists. */
     val details: StateFlow<VehicleDetails?> = combine(
-        vehicles.observe(vehicleId),
-        schedule.observeAll(vehicleId),
+        log,
         recalls.observe(vehicleId),
         torque.observe(vehicleId),
         documents.observe(vehicleId),
-    ) { vehicle, items, list, specs, docs ->
-        if (vehicle == null) return@combine null
+    ) { log, list, specs, docs ->
+        if (log == null) return@combine null
+        val vehicle = log.vehicle
+        val items = log.items
         VehicleDetails(
             vehicle = vehicle,
             schedule = items.takeIf { it.isNotEmpty() }?.let { all -> ScheduleSummaries.of(all.map { it.tracked to it.useSevere }) },
@@ -280,13 +281,7 @@ class VehicleDetailsViewModel @Inject constructor(
         .screenState(viewModelScope, false)
 
     /** The highest reading so far, which a sale's final odometer starts from. */
-    val lastOdometer: StateFlow<Int?> = combine(
-        vehicles.observe(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
-    ) { vehicle, records, readings ->
-        vehicle?.highestReading(records, readings)
-    }.screenState(viewModelScope, null)
+    val lastOdometer: StateFlow<Int?> = log.map { it?.odometer }.screenState(viewModelScope, null)
 
     private val nicknameEdits = MutableStateFlow<String?>(null)
 
@@ -333,6 +328,9 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** The owner's own oil change interval (#517), as typed in the vehicle's unit; null is "Use the maker's". */
     fun setOwnOil(own: Interval?) = viewModelScope.launch { vehicles.setOwnOil(vehicleId, own?.miles, own?.months) }
+
+    /** The owner's answer to which gearbox it has (#549), written alone; null is "Don't know". */
+    fun setGearbox(gearbox: Gearbox?) = viewModelScope.launch { vehicles.setGearbox(vehicleId, gearbox?.name) }
 
     fun setClusterSwap(swap: ClusterSwap?) = viewModelScope.launch {
         vehicles.setClusterSwap(vehicleId, swap?.offset ?: 0, swap?.on, swap?.startReading)
@@ -436,6 +434,7 @@ fun VehicleDetailsScreen(
     val noticePrefs by vm.noticePrefs.collectAsStateWithLifecycle()
     var settingOffset by rememberSaveable { mutableStateOf(false) }
     var settingOil by rememberSaveable { mutableStateOf(false) }
+    var settingGearbox by rememberSaveable { mutableStateOf(false) }
     var changingUnit by rememberSaveable { mutableStateOf(false) }
     val swap = v.clusterSwap()
 
@@ -490,6 +489,17 @@ fun VehicleDetailsScreen(
                 settingOil = false
             },
             onDismiss = { settingOil = false },
+        )
+    }
+
+    if (settingGearbox) {
+        GearboxSheet(
+            current = Gearboxes.of(v.gearbox),
+            onSave = {
+                vm.setGearbox(it)
+                settingGearbox = false
+            },
+            onDismiss = { settingGearbox = false },
         )
     }
 
@@ -577,7 +587,7 @@ fun VehicleDetailsScreen(
         onEditTakes = { editing = it }, onFillKnown = vm::fillKnown, onEditPlate = { editingPlate = true },
         onEditCheckIn = { editingCheckIn = true }, onEditVin = { editingVin = true }, onLookUpVin = vm::lookUpVin, onSetOffset = { settingOffset = true }, onSetOil = { settingOil = true }, onChangeUnit = { changingUnit = true },
         onSell = { selling = true }, onPickPhoto = vm::pickPhoto, onRemovePhoto = vm::removePhoto,
-        bulletins = bulletins, onOpenBulletins = onOpenBulletins,
+        bulletins = bulletins, onOpenBulletins = onOpenBulletins, onSetGearbox = { settingGearbox = true },
     )
 }
 
@@ -621,6 +631,8 @@ internal fun VehicleDetailsContent(
     /** Null for a model Glovebox has no bulletins for; then there is no row. */
     bulletins: VehicleBulletins? = null,
     onOpenBulletins: (vehicleId: Long) -> Unit = {},
+    /** Which gearbox it has (#549): manual, automatic, dual-clutch or "Don't know". */
+    onSetGearbox: () -> Unit = {},
 ) {
     val v = details.vehicle
     val swap = v.clusterSwap()
@@ -680,10 +692,14 @@ internal fun VehicleDetailsContent(
                             onLongClick = v.vin?.let { vin -> { copyText(context, vinLabel, vin, sensitive = true); haptics.performHapticFeedback(HapticFeedbackType.LongPress) } },
                         )
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        val gearboxLabel = stringResource(R.string.gearbox_title)
                         val rows = listOfNotNull(
                             stringResource(R.string.details_vehicle) to (VehicleText.title(v.year, v.make, v.model, v.trim) ?: stringResource(R.string.unknown_vehicle)),
                             v.drivetrain?.let { stringResource(R.string.details_drivetrain) to it },
                             v.transmission?.let { stringResource(R.string.add_vehicle_transmission) to it },
+                            // The owner's answer, not the decode's (#549), under vPIC's transmission: asked because vPIC
+                            // calls a dual-clutch "Automatic". The one row here that opens something.
+                            gearboxLabel to stringResource(Gearboxes.of(v.gearbox).labelOrUnknown()),
                             v.engine?.let { stringResource(R.string.add_vehicle_engine) to it },
                             v.engineCode?.let { stringResource(R.string.add_vehicle_engine_code) to it },
                             Powertrains.of(v.powertrain)?.let { stringResource(R.string.add_vehicle_powertrain) to stringResource(it.label()) },
@@ -693,7 +709,7 @@ internal fun VehicleDetailsContent(
                             v.tpms?.let { stringResource(R.string.add_vehicle_tpms) to it },
                         )
                         rows.forEach { (label, value) ->
-                            DetailRow(label, value)
+                            DetailRow(label, value, onClick = onSetGearbox.takeIf { label === gearboxLabel })
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                         if (v.vin != null) {

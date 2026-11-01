@@ -8,11 +8,13 @@ import io.cosgriff.glovebox.BuildConfig
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.data.readCapped
 import io.cosgriff.glovebox.domain.DocumentType
+import io.cosgriff.glovebox.domain.InvoiceMark
 import io.cosgriff.glovebox.domain.InvoiceReading
 import io.cosgriff.glovebox.domain.InvoiceWord
 import io.cosgriff.glovebox.domain.InvoiceWords
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.ui.LauncherSlot
+import io.cosgriff.glovebox.ui.settings.PdfInvoice
 import io.cosgriff.glovebox.ui.settings.PdfWords
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -87,8 +89,8 @@ class InvoicePicker @Inject constructor(
     /** The form [key] took what was picked for it. */
     fun take(key: String): PickedInvoice? = _picked.value?.takeIf { it.key == key }?.also { _picked.value = null }
 
-    /** The PDF's words with their boxes, off the main thread; null if it can't be read, empty for a scan. */
-    suspend fun words(bytes: ByteArray): List<InvoiceWord>? = withContext(Dispatchers.Default) { PdfWords.readInvoice(context, bytes) }
+    /** The PDF's words with their boxes and its marks, off the main thread; null if it can't be read, no words for a scan. */
+    suspend fun words(bytes: ByteArray): PdfInvoice? = withContext(Dispatchers.Default) { PdfWords.readInvoice(context, bytes) }
 
     /** The invoice kept, encrypted, among the vehicle's documents as the user asked on saving. */
     suspend fun keep(vehicleId: Long, bytes: ByteArray, name: String, date: LocalDate?) {
@@ -101,12 +103,12 @@ class InvoicePicker @Inject constructor(
      * writes it; the PDF itself is never written. [millis] is how long each photographed page took to read (#513), to
      * measure on a phone.
      */
-    suspend fun writeTrace(words: List<InvoiceWord>, reading: InvoiceReading, millis: List<Long?> = emptyList()) {
+    suspend fun writeTrace(words: List<InvoiceWord>, reading: InvoiceReading, millis: List<Long?> = emptyList(), marks: List<InvoiceMark> = emptyList()) {
         if (!BuildConfig.DEBUG) return
         withContext(Dispatchers.IO) {
             val json = JsonObject(
                 mapOf(
-                    "words" to Json.parseToJsonElement(InvoiceWords.toJson(words)),
+                    "words" to Json.parseToJsonElement(InvoiceWords.toJson(words, marks)),
                     "lines" to JsonArray(reading.lines.map { JsonPrimitive(it.text) }),
                     "trace" to JsonArray(reading.trace.map { JsonPrimitive(it.toString()) }),
                     "millis" to JsonArray(millis.map { JsonPrimitive(it) }),

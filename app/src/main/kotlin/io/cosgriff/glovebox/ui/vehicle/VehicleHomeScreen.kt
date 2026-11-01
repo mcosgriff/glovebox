@@ -43,6 +43,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Assignment
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import io.cosgriff.glovebox.data.db.ShopRecommendationDao
+import io.cosgriff.glovebox.data.db.toModel
+import io.cosgriff.glovebox.domain.FindingColour
+import io.cosgriff.glovebox.domain.OpenRecommendations
+import io.cosgriff.glovebox.domain.ShopRecommendations
+import io.cosgriff.glovebox.ui.components.FindingTag
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -121,6 +130,7 @@ class VehicleHomeViewModel @Inject constructor(
     private val odometer: OdometerDao,
     recalls: RecallDao,
     recallRepository: RecallRepository,
+    recommendations: ShopRecommendationDao,
 ) : ViewModel() {
     private val route = savedStateHandle.route<VehicleHomeRoute>()
     private val vehicleId = route.vehicleId
@@ -136,6 +146,11 @@ class VehicleHomeViewModel @Inject constructor(
     val openRecalls: StateFlow<OpenRecalls> = recalls.observe(vehicleId)
         .map { list -> Recalls.open(list.map { it.toStored() }) }
         .screenState(viewModelScope, OpenRecalls(0, null))
+
+    /** The shop's recommendations kept for later and still open (#572), for their row. */
+    val openRecommendations: StateFlow<OpenRecommendations> = recommendations.observe(vehicleId)
+        .map { rows -> ShopRecommendations.summary(rows.map { it.toModel() }) }
+        .screenState(viewModelScope, OpenRecommendations())
 
     /** Null while loading, and if the vehicle no longer exists. Recomputed whenever the log changes. */
     val home: StateFlow<VehicleHome?> = logs.observe(vehicleId).map { log ->
@@ -179,6 +194,8 @@ fun VehicleHomeScreen(
     onDashReadingUsed: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
+    /** The shop's recommendations kept for later (#572). */
+    onOpenRecommendations: (vehicleId: Long) -> Unit = {},
     vm: VehicleHomeViewModel = hiltViewModel(),
 ) {
     val home = vm.home.collectAsStateWithLifecycle().value ?: return // first frame while loading
@@ -188,6 +205,7 @@ fun VehicleHomeScreen(
     val v = home.vehicle
     val unit = v.unit
     val openRecalls by vm.openRecalls.collectAsStateWithLifecycle()
+    val openRecommendations by vm.openRecommendations.collectAsStateWithLifecycle()
     var updatingMileage by rememberSaveable { mutableStateOf(vm.startWithMileage) }
     val res = LocalResources.current
 
@@ -210,6 +228,8 @@ fun VehicleHomeScreen(
     VehicleHomeContent(
         home, openRecalls, onBack, onLogService, onLogItem, onOpenRules, onOpenRecalls, onOpenDetails, onEnterLastDone,
         onUpdateMileage = { updatingMileage = true },
+        recommendations = openRecommendations,
+        onOpenRecommendations = onOpenRecommendations,
     )
 }
 
@@ -226,6 +246,8 @@ internal fun VehicleHomeContent(
     onOpenDetails: (vehicleId: Long) -> Unit,
     onEnterLastDone: (vehicleId: Long) -> Unit,
     onUpdateMileage: () -> Unit,
+    recommendations: OpenRecommendations = OpenRecommendations(),
+    onOpenRecommendations: (vehicleId: Long) -> Unit = {},
 ) {
     val v = home.vehicle
     val unit = v.unit
@@ -259,6 +281,9 @@ internal fun VehicleHomeContent(
                 HeaderCard(v, home.odometer, up, onUpdateMileage = onUpdateMileage)
 
                 if (openRecalls.count > 0) RecallBanner(openRecalls, onClick = { onOpenRecalls(v.id) })
+
+                // Only while something is open; apart from the schedule, it never makes anything overdue (#572).
+                if (recommendations.count > 0) RecommendationsRow(recommendations, onClick = { onOpenRecommendations(v.id) })
 
                 // Three groups, each row one tap from Log service with that job ticked. Not logged yet comes
                 // first: these have nothing to count from, so they are what needs doing first.
@@ -398,6 +423,38 @@ private fun HeaderCard(v: VehicleEntity, odometer: Int?, up: ComingUp, onUpdateM
                     Text(stringResource(R.string.update_mileage_title))
                 }
             }
+        }
+    }
+}
+
+/** Board RecommendedHome (#572): the shop's open recommendations, counted, with how many are red and yellow. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RecommendationsRow(open: OpenRecommendations, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = scheme.surface,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, scheme.outlineVariant),
+    ) {
+        Row(
+            Modifier.heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Icon(Icons.AutoMirrored.Outlined.Assignment, contentDescription = null, tint = scheme.onSurface)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(pluralStringResource(R.plurals.home_recommendations, open.count, open.count.asNumber()), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                if (open.red > 0 || open.amber > 0) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (open.red > 0) FindingTag(FindingColour.RED, pluralStringResource(R.plurals.home_recommendations_red, open.red, open.red.asNumber()))
+                        if (open.amber > 0) FindingTag(FindingColour.AMBER, pluralStringResource(R.plurals.home_recommendations_amber, open.amber, open.amber.asNumber()))
+                    }
+                }
+            }
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = scheme.onSurfaceVariant)
         }
     }
 }

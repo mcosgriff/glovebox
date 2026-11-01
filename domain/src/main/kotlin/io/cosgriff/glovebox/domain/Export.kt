@@ -35,10 +35,10 @@ data class ExportOptions(
 data class ExportRecord(
     val date: LocalDate,
     val odometer: Int,
-    val items: List<String>,
+    /** Its lines and their groups, jobs, part rows, charges and cost: what both writers lay out of its work (#579). */
+    val summary: RecordSummary,
     /** "DIY", or the shop's name. */
     val doneBy: String,
-    val costCents: Long?,
     val notes: String?,
     val photoFiles: List<String> = emptyList(),
     /** A bare date and mileage the owner gave afterwards; [doneBy] means nothing for it. */
@@ -49,30 +49,9 @@ data class ExportRecord(
     val visitId: Long? = null,
     /** The owner did the work; [doneBy] says it in words. */
     val diy: Boolean = false,
-    /** Each of [items]' group in the PDF report, in the same order. */
-    val categories: List<ServiceGroup> = emptyList(),
-    /** The record's jobs (#481), in their order. */
-    val jobs: List<ExportJob> = emptyList(),
-    /** Each of [items]' index in [jobs], in the same order; null for a line in no job. Empty when there are none. */
-    val jobOf: List<Int?> = emptyList(),
-    /** What the invoice charged for the whole visit (#502). */
-    val charges: InvoiceCharges = InvoiceCharges.NONE,
 ) {
-    /**
-     * The labor and parts on its lines, its charges and the gap to its cost; null when nothing is priced, as on the
-     * record's screen.
-     */
-    val breakdown: CostBreakdown? get() = JobPrices.breakdown(jobs.map { JobPrice(it.laborCents, it.partsCents) }, costCents, charges)
-
-    /**
-     * Line [index]'s own price, labor and parts together: only when its job is priced and covers that line alone.
-     * A job of several lines gives none of them a price, since it is never split between them.
-     */
-    fun lineTotal(index: Int): Long? {
-        val j = jobOf.getOrNull(index) ?: return null
-        if (jobOf.count { it == j } != 1) return null
-        return jobs.getOrNull(j)?.let { JobPrice(it.laborCents, it.partsCents).totalCents }
-    }
+    /** The total as typed ([RecordSummary.costCents]). */
+    val costCents: Long? get() = summary.costCents
 }
 
 /**
@@ -118,6 +97,8 @@ data class ExportVehicle(
     val documents: List<ExportPaper> = emptyList(),
     /** "4WD · 4.0L V6": the drive and engine as stored; null when neither is known. */
     val specs: String? = null,
+    /** The owner's answer to which gearbox it has (#549), worded: "Dual-clutch (DSG)"; null for "Don't know". */
+    val gearbox: String? = null,
     /** What only the PDF report uses; null leaves its charts and "due next" empty. */
     val report: ReportFacts? = null,
 ) {
@@ -158,15 +139,9 @@ object Exports {
                     .sortedWith(compareByDescending<ExportRecord> { it.date }.thenByDescending { it.odometer })
                     .map { r ->
                         r.copy(
-                            costCents = r.costCents.takeIf { options.costsAndNotes },
                             // A job's prices are costs; its wording is what the shop called the work, and stays.
                             // A part row's quantity and wording say what was fitted, and stay; its prices go.
-                            jobs = if (options.costsAndNotes) {
-                                r.jobs
-                            } else {
-                                r.jobs.map { j -> j.copy(laborCents = null, partsCents = null, rows = j.rows.map { it.copy(eachCents = null, totalCents = null) }) }
-                            },
-                            charges = r.charges.takeIf { options.costsAndNotes } ?: InvoiceCharges.NONE,
+                            summary = if (options.costsAndNotes) r.summary else r.summary.withoutCosts(),
                             notes = r.notes.takeIf { options.costsAndNotes },
                             photoFiles = r.photoFiles.takeIf { options.includesPhotos }.orEmpty(),
                         )
@@ -199,7 +174,7 @@ enum class ExportPhrase {
     JOB_LABOR, JOB_PARTS, LINES_JOINED, LABOR_ON_LINES, PARTS_ON_LINES, TAX_AND_FEES, LESS_THAN_LINES,
     PART_QTY_EACH, PART_QTY, PART_EACH, SHOP_SUPPLIES, TAX, FEES, OTHER_CHARGES,
     RECALL_NOTE, LAST_DONE_NOTE, IMPORTED_NOTE, SCHEDULE_NOTE, TAKES_NOTE, DOCUMENTS_NOTE,
-    SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
+    SERVICE_HISTORY, SERVICE_HISTORY_OF, LABELLED, NICKNAME, VIN, PLATE, GEARBOX, ODOMETER, ODOMETER_HIGHEST, ACTUAL_MILEAGE,
     INSTRUMENT_CLUSTER, SOLD, PERIOD, RECORDS, EXPORTED_ON,
     WHAT_IT_TAKES, DOCUMENTS_ON_FILE, TYPE, NAME, DATE, EXPIRES, SERVICE_RECORDS, NO_RECORDS, DONE_BY, DONE_BY_LABELLED, COST,
     MAINTENANCE_SCHEDULE, ITEM, EVERY, LAST_DONE, RECALLS, CAMPAIGN, COMPONENT, STATUS, PHOTO_UNREADABLE, PAGE,
@@ -302,16 +277,17 @@ class ExportText(private val words: ExportWords) {
      * unless it has no wording and is named by them. Any other line is listed as it is.
      */
     private fun StringBuilder.lines(r: ExportRecord) {
+        val s = r.summary
         val done = mutableSetOf<Int>()
-        for ((i, item) in r.items.withIndex()) {
-            val j = r.jobOf.getOrNull(i)
-            val job = j?.let { r.jobs.getOrNull(it) }
+        for ((i, item) in s.items.withIndex()) {
+            val j = s.jobOf.getOrNull(i)
+            val job = j?.let { s.jobs.getOrNull(it) }
             if (job == null) {
                 append("- ${text(item)}\n")
                 continue
             }
             if (!done.add(j)) continue
-            val lines = r.items.filterIndexed { k, _ -> r.jobOf.getOrNull(k) == j }
+            val lines = s.items.filterIndexed { k, _ -> s.jobOf.getOrNull(k) == j }
             val prices = listOfNotNull(job.laborCents?.let { phrase(ExportPhrase.JOB_LABOR, money(it)) }, job.partsCents?.let { phrase(ExportPhrase.JOB_PARTS, money(it)) })
             val wording = job.wording?.takeUnless { lines.size == 1 && Names.key(it) == Names.key(lines.single()) }
             if (prices.isEmpty() && wording == null && job.rows.isEmpty()) {
@@ -334,7 +310,7 @@ class ExportText(private val words: ExportWords) {
      * only when something is priced, each charge only when entered.
      */
     private fun StringBuilder.breakdown(r: ExportRecord) {
-        val b = r.breakdown ?: return
+        val b = r.summary.breakdown ?: return
         val gap = b.gapKind?.let { labelled(gapPhrase(it), money(kotlin.math.abs(b.gapCents!!))) }
         val charges = listOfNotNull(
             b.charges.shopSuppliesCents?.let { labelled(ExportPhrase.SHOP_SUPPLIES, money(it)) },
@@ -353,6 +329,7 @@ class ExportText(private val words: ExportWords) {
             v.nickname?.let { append("- ${labelled(ExportPhrase.NICKNAME, text(it))}\n") }
             v.vin?.let { append("- ${labelled(ExportPhrase.VIN, "`$it`")}\n") }
             v.plate?.let { append("- ${labelled(ExportPhrase.PLATE, "`$it`")}\n") }
+            v.gearbox?.let { append("- ${labelled(ExportPhrase.GEARBOX, text(it))}\n") }
             v.odometer?.let { append("- ${labelled(ExportPhrase.ODOMETER, phrase(ExportPhrase.ODOMETER_HIGHEST, distance(it, v.unit)))}\n") }
             Exports.actualMileage(v)?.let { append("- ${labelled(ExportPhrase.ACTUAL_MILEAGE, distance(it, v.unit))}\n") }
             v.clusterSwap?.let { append("- ${labelled(ExportPhrase.INSTRUMENT_CLUSTER, clusterNote(it, v.unit))}\n") }

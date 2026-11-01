@@ -77,7 +77,7 @@ the AWD clutch fluid in `allWheelDriveOnly`.
   [#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)). vPIC's 8-speed
   "Automatic" for 2020 is recorded, not used to pick a row.
 - **The AWD clutch fluid on 2022 and 2023**, printed "(if equipped)" (2022) and "All Applicable Vehicles" (2023):
-  read as an AWD job, as the Tiguan's, Atlas's and Golf R's lists do; that reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  read as an AWD job, as the Tiguan's, Atlas's and Golf R's lists do; that reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **2024 on**: vPIC names no Arteon after 2023, though the 2024 reissue (`USA5R505721`) still names it on the same
   rows as 2023's.

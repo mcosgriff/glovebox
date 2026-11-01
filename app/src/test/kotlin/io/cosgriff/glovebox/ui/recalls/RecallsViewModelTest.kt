@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
@@ -70,7 +71,7 @@ internal class RecallsHarness(cadence: RecallCadence = RecallCadence.WEEKLY) {
         val photos = RecordPhotoStore(context, PhotoCrypto(context), db.service(), db.vehicles(), db.documents())
         return viewModels.make {
             RecallsViewModel(
-                routeHandle(RecallsRoute(vehicleId)), db.vehicles(), db.recalls(), db.service(), db.odometer(),
+                routeHandle(RecallsRoute(vehicleId)), VehicleLogs(db.vehicles(), db.schedule(), db.service(), db.odometer(), settings), db.recalls(),
                 nhtsa.repository(db, settings), RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos),
             )
         }

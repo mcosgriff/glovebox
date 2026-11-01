@@ -1,0 +1,765 @@
+{
+  "id": "volkswagen-id4-2021",
+  "title": "2021 ID.4",
+  "make": "Volkswagen",
+  "model": "ID.4",
+  "years": {
+    "from": 2021,
+    "to": 2021
+  },
+  "source": {
+    "name": "Volkswagen maintenance schedule",
+    "url": "https://static.nhtsa.gov/odi/tsbs/2021/MC-10185652-0001.pdf",
+    "retrieved": "2026-10-29",
+    "note": "Read from Volkswagen's 2021 USA maintenance schedule for its electric models, in Glovebox's wording. Check it against the maintenance booklet that came with your own car.",
+    "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for its electric models, as filed with NHTSA, for a car the owner maintains. Only those facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
+  },
+  "milestones": [
+    {
+      "atMiles": 10000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 20000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 30000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 40000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 50000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 60000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 70000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 80000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 90000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 100000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    },
+    {
+      "atMiles": 110000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        }
+      ]
+    },
+    {
+      "atMiles": 120000,
+      "work": [
+        {
+          "name": "Test 12-volt battery with a tester",
+          "service": "battery-check"
+        },
+        {
+          "name": "Reset service interval display"
+        },
+        {
+          "name": "Check tire condition and wear pattern; record tread depth",
+          "service": "tire-check"
+        },
+        {
+          "name": "Check for and clear fault codes with the diagnostic tester"
+        },
+        {
+          "name": "Check high-voltage battery charge level; charge if needed"
+        },
+        {
+          "name": "Inspect body inside and out for corrosion"
+        },
+        {
+          "name": "Check brake fluid level against brake pad wear",
+          "service": "brake-fluid-check"
+        },
+        {
+          "name": "Check front and rear brake pad thickness and brake disc condition",
+          "service": "brake-inspect"
+        },
+        {
+          "name": "Inspect brake system and shock absorbers for leaks and damage"
+        },
+        {
+          "name": "Check the charging cable is there and in good condition"
+        },
+        {
+          "name": "Inspect coil springs and rubber buffers"
+        },
+        {
+          "name": "Check coolant level and freeze protection",
+          "service": "cooling-check"
+        },
+        {
+          "name": "Check exterior, cornering and hazard lights and auto headlights; aim headlights",
+          "service": "lights-check"
+        },
+        {
+          "name": "Check headlight washers (if fitted)"
+        },
+        {
+          "name": "Inspect high-voltage charging sockets for dirt and damage"
+        },
+        {
+          "name": "Inspect high-voltage parts and cables for damage, routing and mounting"
+        },
+        {
+          "name": "Check horn"
+        },
+        {
+          "name": "Check interior lights in headliner, luggage and glove compartments"
+        },
+        {
+          "name": "Check electric motor bay from above for leaks and damage"
+        },
+        {
+          "name": "Check electric motor, transmission, final drive and axle boots from below"
+        },
+        {
+          "name": "Check ball joints, wheel bearings, axles, coupling rods, tie rods and bushings",
+          "service": "suspension-check"
+        },
+        {
+          "name": "Road test: brakes, steering, electrics, climate, handling and parking brake"
+        },
+        {
+          "name": "Check tire pressures, including the spare"
+        },
+        {
+          "name": "Check tire repair kit for damage and use"
+        },
+        {
+          "name": "Calibrate tire pressure monitoring system"
+        },
+        {
+          "name": "Inspect underbody protection, trim panels, wiring and plugs"
+        },
+        {
+          "name": "Check high-voltage warning labels are there"
+        },
+        {
+          "name": "Inspect windshield for damage"
+        },
+        {
+          "name": "Check windshield washers, nozzle aim, fluid level and freeze protection"
+        },
+        {
+          "name": "Check wiper blades and their park position",
+          "service": "wipers-check"
+        }
+      ]
+    }
+  ],
+  "additional": [
+    {
+      "name": "Change brake fluid (at 3 years, then every 2 years)",
+      "everyMonths": 24,
+      "rule": "time-only",
+      "service": "brake-fluid"
+    },
+    {
+      "name": "Replace dust and pollen filter",
+      "everyMiles": 40000,
+      "everyMonths": 24,
+      "service": "cabin-air"
+    }
+  ]
+}

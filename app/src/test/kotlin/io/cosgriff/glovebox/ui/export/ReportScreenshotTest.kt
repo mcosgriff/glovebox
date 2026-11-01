@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.domain.ExportJob
 import io.cosgriff.glovebox.domain.ExportOptions
 import io.cosgriff.glovebox.domain.Exports
 import io.cosgriff.glovebox.domain.ServiceGroup
+import io.cosgriff.glovebox.domain.SummaryLine
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import io.cosgriff.glovebox.ui.screens.shoot
 import org.junit.Test
@@ -29,9 +30,9 @@ class ReportScreenshotTest {
         // carries it; in October the owner's oil change is priced alone, on its chip, and the rotation not at all.
         val records = SampleReport.records.mapIndexed { i, r ->
             when (i) {
-                1 -> r.copy(items = r.items + more.map { it.first }, categories = r.categories + more.map { it.second })
-                2 -> r.copy(costCents = 9_850, jobs = listOf(ExportJob("Oil change and tire rotation", 4_000, 5_120)), jobOf = listOf(0, 0))
-                3 -> r.copy(jobs = listOf(ExportJob(null, null, 3_890)), jobOf = listOf(0, null))
+                1 -> r.copy(summary = r.summary.copy(lines = r.summary.lines + more.map { SummaryLine(it.first, it.second) }))
+                2 -> r.withJobs(listOf(ExportJob("Oil change and tire rotation", 4_000, 5_120)), listOf(0, 0), costCents = 9_850)
+                3 -> r.withJobs(listOf(ExportJob(null, null, 3_890)), listOf(0, null))
                 else -> r
             }
         }

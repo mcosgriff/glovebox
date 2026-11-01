@@ -348,6 +348,62 @@ object HistoryImport {
      */
     fun keptCharges(record: ImportedRecord, saved: InvoiceCharges): InvoiceCharges = if (record.charges.entered) record.charges else saved
 
+    /** [record] as a new record on [vehicleId], marked imported, its lines filed against [schedule]. */
+    fun added(record: ImportedRecord, vehicleId: Long, schedule: List<ScheduleRef>): ServiceRecord =
+        ServiceRecord(
+            vehicleId = vehicleId,
+            date = record.date,
+            odometer = record.odometer,
+            diy = record.diy,
+            shopName = record.shopName,
+            costCents = record.costCents,
+            notes = record.notes,
+            imported = true,
+        ).let { withWork(it, record, schedule) }
+
+    /**
+     * [saved] replaced from [record]: the same record, so its photos, visit and any recall it was the work for stay
+     * with it, now imported and no longer a bare "last done". A file that says nothing about prices leaves the saved
+     * jobs, and their part rows, on the same lines ([keptJobs]); one that names no charge keeps the saved charges.
+     */
+    fun replacing(saved: ServiceRecord, record: ImportedRecord, schedule: List<ScheduleRef>): ServiceRecord {
+        val base = saved.copy(
+            diy = record.diy,
+            shopName = record.shopName,
+            costCents = record.costCents,
+            notes = record.notes,
+            enteredAsLastDone = false,
+            imported = true,
+        )
+        val kept = keptJobs(record, saved.lines.mapIndexed { i, line -> line.label to (line.job to i) })
+            ?: return withWork(base, record, schedule).copy(charges = keptCharges(record, saved.charges))
+        // Each saved line has one file line taking its job; a part row follows its line there.
+        val moved = kept.withIndex().associate { (i, k) -> checkNotNull(k).second to i }
+        return base.copy(
+            lines = record.work.mapIndexed { i, line -> filed(line, schedule).copy(job = kept[i]?.first) },
+            jobs = saved.jobs.map { j -> j.copy(rows = j.rows.map { it.copy(line = it.line?.let(moved::get)) }) },
+            charges = keptCharges(record, saved.charges),
+        )
+    }
+
+    /** [base] with [record]'s lines, jobs and charges as the file gives them. */
+    private fun withWork(base: ServiceRecord, record: ImportedRecord, schedule: List<ScheduleRef>): ServiceRecord =
+        base.copy(
+            lines = record.work.map { filed(it, schedule).copy(job = it.job) },
+            jobs = record.jobs.mapIndexed { j, job ->
+                // A row's line is its index among its own job's lines; in the record it is the line's place among all of them.
+                val own = record.work.indices.filter { record.work[it].job == j }
+                RecordJob(
+                    job.wording, job.laborCents, job.partsCents,
+                    job.rows.map { RecordPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.line?.let(own::getOrNull)) },
+                )
+            },
+            charges = record.charges,
+        )
+
+    private fun filed(line: ImportedWork, schedule: List<ScheduleRef>): RecordLine =
+        resolve(line, schedule).let { RecordLine(it.label, it.catalogId, it.scheduleItemId) }
+
     /**
      * The file against the vehicle's log. A record matches a saved one with the same date and
      * odometer. A saved one that is only a bare "last done" is filled in whatever the mode, as long

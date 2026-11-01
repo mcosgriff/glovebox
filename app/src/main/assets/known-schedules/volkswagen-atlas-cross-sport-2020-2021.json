@@ -79,6 +79,9 @@
           "name": "Check horn"
         },
         {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
           "name": "Reset service interval display"
         },
         {
@@ -165,6 +168,9 @@
         },
         {
           "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
         },
         {
           "name": "Reset service interval display"
@@ -284,6 +290,9 @@
           "name": "Check horn"
         },
         {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
           "name": "Reset service interval display"
         },
         {
@@ -370,6 +379,9 @@
         },
         {
           "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
         },
         {
           "name": "Reset service interval display"
@@ -489,6 +501,9 @@
           "name": "Check horn"
         },
         {
+          "name": "Check removable trailer hitch (if fitted)"
+        },
+        {
           "name": "Reset service interval display"
         },
         {
@@ -575,6 +590,9 @@
         },
         {
           "name": "Check horn"
+        },
+        {
+          "name": "Check removable trailer hitch (if fitted)"
         },
         {
           "name": "Reset service interval display"

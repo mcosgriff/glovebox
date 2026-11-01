@@ -57,7 +57,7 @@ class MileageReadingsScreenTest {
 
     /** Shows the screen, once [until] is on it. */
     private fun show(until: String = 61_000.asDistance(unit)) {
-        val vm = g.viewModel { MileageReadingsViewModel(routeHandle(MileageReadingsRoute(vehicleId)), g.db.vehicles(), g.db.service(), g.db.odometer(), g.readingUndo) }
+        val vm = g.viewModel { MileageReadingsViewModel(routeHandle(MileageReadingsRoute(vehicleId)), g.logs, g.db.odometer(), g.readingUndo) }
         compose.setContent {
             GloveboxTheme {
                 MileageReadingsScreen(onBack = {}, onOpenRecord = { openedRecords += it }, onMessage = { m, a, undo -> messages += Triple(m, a, undo) }, vm = vm)

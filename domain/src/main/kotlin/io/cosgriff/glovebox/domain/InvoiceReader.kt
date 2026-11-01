@@ -46,13 +46,18 @@ object InvoiceReader {
     /** How many look-alike characters a VIN may have folded before it passes its check digit. */
     private const val MAX_FOLDS = 2
 
+    /**
+     * [marks] are the small filled shapes on the PDF's pages (#572): an inspection report's red, yellow and green
+     * marks, read by hue and paired with the item on their line. None (photos, a scan) gives the findings uncoloured.
+     */
     fun read(
         words: List<InvoiceWord>,
         today: LocalDate,
         readings: List<OdometerReading>,
         unit: DistanceUnit,
         rules: List<CatalogRule> = emptyList(),
-    ): InvoiceReading = Reading(words, today, readings, unit, rules).run()
+        marks: List<InvoiceMark> = emptyList(),
+    ): InvoiceReading = Reading(words, today, readings, unit, rules, marks).run()
 
     // ---- Lines -------------------------------------------------------------------------------------------------
 
@@ -75,7 +80,9 @@ object InvoiceReader {
             val rows = mutableListOf<MutableList<InvoiceWord>>()
             var centre = 0f
             onPage.sortedBy(::middle).forEach { w ->
-                if (rows.isNotEmpty() && abs(middle(w) - centre) <= h * SAME_LINE) {
+                // A word printed taller than the page's lines (a service's number) may sit further off its line's middle.
+                val reach = maxOf(h, w.bottom - w.top) * SAME_LINE
+                if (rows.isNotEmpty() && abs(middle(w) - centre) <= reach) {
                     rows.last() += w
                     centre = rows.last().map(::middle).average().toFloat()
                 } else {
@@ -235,7 +242,30 @@ object InvoiceReader {
             """suggested( services| work| maintenance)?|future (work|services|recommendations)|past recommendations|needs attention|""" +
             """items? needing attention|advised (work|services))$""",
     )
-    private val TERMS_HEADING = Regex("""(?i)^(terms( of service| and conditions| & conditions)?|authorization|customer authorization|warranty|disclaimer)$""")
+    private val ATTACHMENTS_HEADING = Regex("""(?i)^(attached )?(images|photos|pictures|attachments)$""")
+
+    /** "Approved by phone, 1:44pm 1/7/26": work the owner said yes to, which the invoice has as a service. */
+    private val APPROVED = Regex("""(?i)^approved\b""")
+
+    /**
+     * An inspection or health report (#572). "Vehicle health report" is also a service's name, so outside an explicit
+     * "inspection" heading it starts a report only after the totals.
+     */
+    private val INSPECTION_HEADING = Regex(
+        """(?i)^(inspection (report|results)|(vehicle |multi-?point |digital (vehicle )?|courtesy )inspection( report| results)?|""" +
+            """(vehicle )?health (report|check))$""",
+    )
+
+    /** "Written by … at 01/07/2026 08:16 PM": who wrote an inspection item up, not what was found. */
+    private val WRITTEN_BY = Regex("""(?i)^(written|inspected|performed|completed) by\b""")
+
+    /** A note in brackets after an item's name ("Axles (Driveshaft if equipped)"): what it covers, not its name. */
+    private val TRAILING_NOTE = Regex("""\s*\([^()]*\)\s*$""")
+
+    /** An icon font's glyph (a private-use character) printed before an item's name. */
+    private fun plain(text: String): String = text.filterNot { it in ''..'' }.trim()
+
+    private val TERMS_HEADING =Regex("""(?i)^(terms( of service| and conditions| & conditions)?|authorization|customer authorization|warranty|disclaimer)$""")
 
     private fun heading(text: String): String = text.trim().trimEnd(':').trim()
 
@@ -274,6 +304,16 @@ object InvoiceReader {
 
     private class Column(val figure: InvoiceFigure, val centre: Float)
 
+    private class Held(val text: String, val approved: Boolean, val kept: Boolean)
+
+    /** An inspection report's item being read: its name, its mark's colour, what was found and the work under it. */
+    private class Item(val line: Int, val area: String, val colour: FindingColour?) {
+        val found = mutableListOf<String>()
+        val recommendations = mutableListOf<Int>()
+        var approved = false
+        var foundIndent: Float? = null
+    }
+
     private class Check(val kind: InvoiceCheck, val job: Int?, val terms: List<Fig>, val total: Fig) {
         val sum: Long get() = terms.sumOf { it.signed }
         val agrees: Boolean get() = sum == total.cents
@@ -285,7 +325,16 @@ object InvoiceReader {
         val readings: List<OdometerReading>,
         val unit: DistanceUnit,
         val rules: List<CatalogRule>,
+        marks: List<InvoiceMark>,
     ) {
+        /** The marks that read as a colour; a report with none is read without colours. */
+        val coloured = marks.mapNotNull { m -> FindingColour.of(m.rgb)?.let { m to it } }
+        val findings = mutableListOf<InvoiceFinding>()
+        var inspecting = false
+        var item: Item? = null
+
+        /** Where an inspection report's items start on their lines, once one is read. */
+        var itemIndent: Float? = null
         val trace = mutableListOf<InvoiceStep>()
         val jobs = mutableListOf<JobB>()
         val totals = mutableMapOf<InvoiceFigure, MutableList<Fig>>()
@@ -302,6 +351,9 @@ object InvoiceReader {
         var nextNumber = 1
         var sawServices = false
         var numberStyle: NumberStyle? = null
+
+        /** The line just read after the services, unpriced, in case the next line finishes its wrapped title. */
+        var held: Held? = null
 
         /** Before any services: lines of text with one price beside them, and whether the totals have begun. */
         val loose = mutableListOf<Pair<Line, String>>()
@@ -325,6 +377,7 @@ object InvoiceReader {
                 zoneOf[line.index] = zone
                 take(line)
             }
+            finishItem()
             if (!sawServices) looseJobs()
             if (!sawServices) trace += InvoiceStep.NoServices
 
@@ -346,12 +399,15 @@ object InvoiceReader {
                 recommendations = recommendations,
                 lines = all.map { l -> InvoiceLine(l.page, l.segs.map { it.text }) },
                 trace = trace,
+                findings = findings,
             )
         }
 
         // -- One line, through the sections --
 
         fun take(line: Line) {
+            val previous = held
+            held = null
             val (rest, labelled) = peelLine(line)
             val restText = rest.map { ws -> ws.joinToString(" ") { it.text } }
             val only = restText.singleOrNull()?.let(::heading)
@@ -362,7 +418,25 @@ object InvoiceReader {
             // The totals end a list of recommendations too.
             if (endsServices) recommending = false
 
+            val heading = only?.let(::plain)
+            val inspection = heading != null && INSPECTION_HEADING.matches(heading) &&
+                (zone == Zone.AFTER || heading.contains("inspection", ignoreCase = true))
+            // Any other heading ends an inspection report, and so does the end of the services.
+            val endsReport = heading != null && listOf(SERVICES_HEADING, RECOMMENDED_HEADING, ATTACHMENTS_HEADING, TERMS_HEADING).any { it.matches(heading) }
+            if (inspecting && (endsReport || endsServices)) {
+                finishItem()
+                inspecting = false
+            }
             when {
+                inspection -> {
+                    if (zone == Zone.SERVICES) endServices(line, null)
+                    finishItem()
+                    inspecting = true
+                    recommending = false
+                    inTerms = false
+                    trace += InvoiceStep.SectionStarted(line.index, InvoiceSection.INSPECTION)
+                    return figuresOnly(line, labelled)
+                }
                 only != null && SERVICES_HEADING.matches(only) && !sawServices -> {
                     recommending = false
                     inTerms = false
@@ -376,6 +450,13 @@ object InvoiceReader {
                     trace += InvoiceStep.SectionStarted(line.index, InvoiceSection.RECOMMENDED)
                     return figuresOnly(line, labelled)
                 }
+                // Photos attached after the recommendations end them: their captions are no work.
+                only != null && ATTACHMENTS_HEADING.matches(only) -> {
+                    if (zone == Zone.SERVICES) endServices(line, null)
+                    recommending = false
+                    inTerms = true
+                    return figuresOnly(line, labelled)
+                }
                 only != null && TERMS_HEADING.matches(only) -> {
                     if (zone == Zone.SERVICES) endServices(line, null)
                     if (zone == Zone.BEFORE && sawServices) zone = Zone.AFTER
@@ -385,8 +466,10 @@ object InvoiceReader {
                     return figuresOnly(line, labelled)
                 }
             }
+            // Inside a numbered service, "PARTS  QTY  EACH  TOTAL" is that service's parts table, read as part rows.
+            val partsOfService = job != null && table == null
             if (labelled.isEmpty() && (zone == Zone.SERVICES || (zone == Zone.BEFORE && !recommending && !inTerms))) {
-                tableHeader(line)?.let { columns ->
+                tableHeader(line)?.takeUnless { cols -> partsOfService && cols.none { it.figure == InvoiceFigure.LABOR } }?.let { columns ->
                     if (zone == Zone.BEFORE) startServices(line, InvoiceSection.LINE_TABLE) else trace += InvoiceStep.SectionStarted(line.index, InvoiceSection.LINE_TABLE)
                     job = null
                     table = columns
@@ -398,16 +481,104 @@ object InvoiceReader {
 
             when (zone) {
                 // Recommendations or terms before any services (a summary box on the first page) are read as they are after.
-                Zone.BEFORE -> if (recommending || inTerms) {
-                    afterLine(line, rest, labelled)
+                Zone.BEFORE -> if (inspecting) {
+                    inspectionLine(line, rest, labelled, previous)
+                } else if (recommending || inTerms) {
+                    afterLine(line, rest, labelled, previous)
                 } else {
                     figuresOnly(line, labelled)
                     if (labelled.any { it.label in ENDING || it.label == Label.SUBTOTAL }) totalsBegun = true
                     if (!totalsBegun && labelled.isEmpty()) looseLine(line, rest)
                 }
                 Zone.SERVICES -> if (table != null) tableLine(line, rest, labelled) else serviceLine(line, rest, labelled)
-                Zone.AFTER -> afterLine(line, rest, labelled)
+                Zone.AFTER -> if (inspecting) inspectionLine(line, rest, labelled, previous) else afterLine(line, rest, labelled, previous)
             }
+        }
+
+        // -- An inspection report (#572) --
+
+        /** The colour of the mark at the start of [line], if it has one: the item's on that line. */
+        fun markOf(line: Line): FindingColour? {
+            val ws = line.words
+            val top = ws.minOf { it.top } - line.height / 2
+            val bottom = ws.maxOf { it.bottom } + line.height / 2
+            val start = ws.minOf { it.left } + 2 * line.height
+            return coloured.firstOrNull { (m, _) ->
+                val size = maxOf(m.right - m.left, m.bottom - m.top)
+                m.page == line.page && (m.top + m.bottom) / 2 in top..bottom && m.left <= start && size <= 3 * line.height
+            }?.second
+        }
+
+        /**
+         * A line of an inspection report. With marks, a line with one is an item ("Axles"); without, a line where the
+         * items start is. Under an item, what is in line with its first indented line is what was found ("Dr side axle
+         * boot torn"); priced or approved work, further in, is a recommendation as anywhere after the totals.
+         */
+        fun inspectionLine(line: Line, rest: List<List<InvoiceWord>>, labelled: List<Labelled>, previous: Held?) {
+            val ws = rest.flatten().filter { plain(it.text).isNotEmpty() }
+            val text = plain(ws.joinToString(" ") { it.text })
+            if (ws.isEmpty() || WRITTEN_BY.containsMatchIn(text)) return figuresOnly(line, labelled)
+            val left = ws.first().left
+            val priced = ws.any { money(it.text) != null }
+            val approved = APPROVED.containsMatchIn(text) || rest.any { seg -> APPROVED.containsMatchIn(seg.joinToString(" ") { it.text }) }
+            val atItems = itemIndent?.let { abs(left - it) <= line.height / 2 } ?: true
+            val mark = markOf(line)
+            val isItem = if (coloured.isNotEmpty()) mark != null else atItems && !priced && !approved && labelled.isEmpty()
+            if (isItem) {
+                finishItem()
+                if (itemIndent == null) itemIndent = left
+                val area = text.replace(TRAILING_NOTE, "").trim().ifEmpty { text }
+                item = Item(line.index, area, mark)
+                return figuresOnly(line, labelled)
+            }
+            // A line where the items start with no mark beside it, in a report with marks, or one further out than the
+            // items: a heading of its own.
+            val outside = itemIndent?.let { left < it - line.height / 2 } ?: false
+            if (((atItems && itemIndent != null) || outside) && !priced && !approved) {
+                finishItem()
+                return figuresOnly(line, labelled)
+            }
+            val current = item
+            if (current != null && !priced && !approved && hasLetters(text)) {
+                val indent = current.foundIndent ?: left.also { current.foundIndent = it }
+                if (abs(left - indent) <= line.height / 2) {
+                    current.found += text
+                    held = null
+                    return figuresOnly(line, labelled)
+                }
+            }
+            if (current != null && approved) current.approved = true
+            val before = recommendations.size
+            // A title wrapped above its price ("Remove & Replace Spark Plugs" over "$739.96 +tax"): the price's wording.
+            val wording = ws.filter { money(it.text) == null && norm(it.text) !in PRICE_WORDS && it.text != "$" }.joinToString(" ") { it.text }
+            if (priced && !hasLetters(wording) && previous != null && !previous.approved && !approved) {
+                val cents = ws.firstNotNullOf { money(it.text) }
+                recommendations += InvoiceRecommendation(line.index, previous.text, cents)
+                trace += InvoiceStep.RecommendationKept(line.index, previous.text, cents)
+            } else {
+                afterLine(line, rest, labelled, previous)
+            }
+            if (current != null) current.recommendations += (before until recommendations.size)
+        }
+
+        /** The item being read is done: its finding goes on the work under it, or stands as a finding of its own. */
+        fun finishItem() {
+            val done = item ?: return
+            item = null
+            val found = done.found.fold("") { acc, t ->
+                when {
+                    acc.isEmpty() -> t
+                    acc.last() in ".!?;:," || !t.first().isUpperCase() -> "$acc $t"
+                    else -> "$acc. $t"
+                }
+            }.ifEmpty { null }
+            trace += InvoiceStep.InspectionItem(done.line, done.area, found, done.colour)
+            val flagged = done.colour?.takeIf { it != FindingColour.GREEN }
+            done.recommendations.forEach { i -> recommendations[i] = recommendations[i].copy(area = done.area, finding = found, colour = flagged) }
+            // Approved work under it was done on this visit: what it was found for is no longer open.
+            if (done.recommendations.isNotEmpty() || done.approved) return
+            val listed = if (coloured.isNotEmpty()) flagged != null else found != null
+            if (listed) findings += InvoiceFinding(done.line, done.area, found, flagged)
         }
 
         fun startServices(line: Line, section: InvoiceSection) {
@@ -633,19 +804,40 @@ object InvoiceReader {
 
         // -- After the services --
 
-        fun afterLine(line: Line, rest: List<List<InvoiceWord>>, labelled: List<Labelled>) {
+        fun afterLine(line: Line, rest: List<List<InvoiceWord>>, labelled: List<Labelled>, previous: Held?) {
             figuresOnly(line, labelled)
             if (inTerms) return
-            val ws = rest.flatten()
+            val approved = rest.any { seg -> APPROVED.containsMatchIn(seg.joinToString(" ") { it.text }) }
+            val ws = rest.filterNot { seg -> APPROVED.containsMatchIn(seg.joinToString(" ") { it.text }) }.flatten()
             val priced = ws.mapNotNull { money(it.text) }
-            val text = ws.filter { money(it.text) == null && norm(it.text) !in PRICE_WORDS && it.text != "$" }.joinToString(" ") { it.text }.trim()
+            fun wording(of: List<InvoiceWord>) = of.filter { money(it.text) == null && norm(it.text) !in PRICE_WORDS && it.text != "$" }.joinToString(" ") { it.text }.trim()
+            // What follows the price is the price's ("$58.33 +taxes and fees"); the wording is what comes before it.
+            val beforePrice = wording(ws.takeWhile { money(it.text) == null })
+            val text = if (priced.isNotEmpty() && hasLetters(beforePrice)) beforePrice else wording(ws)
             if (!hasLetters(text)) return
-            // Under a recommendations heading, every line; after the totals with none, the priced ones (an inspection report's).
-            if (recommending || priced.isNotEmpty()) {
-                val cents = priced.firstOrNull()
-                recommendations += InvoiceRecommendation(line.index, text, cents)
-                trace += InvoiceStep.RecommendationKept(line.index, text, cents)
+            // "and fees" wrapped from the price on the line above is that price's, not a recommendation.
+            if (priced.isEmpty() && recommendations.isNotEmpty() && PRICE_WRAP.matches(text)) return
+            // A title wrapped onto this line ("Sides )" under "… ( Front, Both") finishes the line above, which takes
+            // this line's price and keeps its own approval.
+            val wraps = previous != null && priced.isNotEmpty() && text.count { it == ')' } > text.count { it == '(' }
+            if (wraps && previous.kept) {
+                recommendations.removeAt(recommendations.lastIndex)
+                trace.removeAt(trace.indexOfLast { it is InvoiceStep.RecommendationKept })
             }
+            val whole = if (wraps) "${previous.text} $text" else text
+            // Approved work is the invoice's own service: the owner said yes to it, so it is no recommendation.
+            if (approved || (wraps && previous.approved)) {
+                if (priced.isEmpty()) held = Held(text, approved = true, kept = false)
+                return
+            }
+            // Under a recommendations heading, every line; after the totals with none, the priced ones (an inspection report's).
+            val keep = recommending || priced.isNotEmpty()
+            if (keep) {
+                val cents = priced.firstOrNull()
+                recommendations += InvoiceRecommendation(line.index, whole, cents)
+                trace += InvoiceStep.RecommendationKept(line.index, whole, cents)
+            }
+            if (priced.isEmpty()) held = Held(text, approved = false, kept = keep)
         }
 
         // -- The sums --
@@ -860,6 +1052,9 @@ object InvoiceReader {
 
     /** Words beside a recommendation's price that are not its wording ("$141.99 +tax"). */
     private val PRICE_WORDS = setOf("+tax", "+ tax", "plus", "tax", "+", "ea", "each")
+
+    /** The rest of a price's "+taxes and fees" wrapped onto a line of its own. */
+    private val PRICE_WRAP = Regex("""(?i)^((and|&|\+|plus)\s*)?(tax(es)?|fees?)(\s*(and|&|\+)\s*(tax(es)?|fees?))?$""")
 
     /** Year-month-day, or month/day/year as a US shop prints it. A two-digit year is left out: which century is a guess. */
     private val DATE = Regex("""\b(\d{4})-(\d{1,2})-(\d{1,2})\b|\b(\d{1,2})/(\d{1,2})/(\d{4})\b""")

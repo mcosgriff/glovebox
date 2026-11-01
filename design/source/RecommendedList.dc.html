@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shop recommended</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 844px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column; position: relative">
+
+  <!-- Variant home: where the list is reached from, under the vehicle's hero card. -->
+  <sc-if value="{{isHome}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 24px 20px">
+      <a href="Garage.dc.html" style="min-height: 48px; display: flex; align-items: center; gap: 6px; color: {{t.ink}}; text-decoration: none; font-size: 15px; font-weight: 500">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{t.accent}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>All vehicles
+      </a>
+      <div aria-hidden="true" style="border-radius: 20px; background: {{t.surface}}; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 26px; font-weight: 700">2019 Blue truck</span>
+        <span style="font-size: 13px; color: {{t.muted}}">SR5 · 4WD · 4.0L V6</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 30px; font-weight: 600">63,480 mi</span>
+      </div>
+      <a href="RecommendedList.dc.html" style="min-height: 72px; border-radius: 16px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 12px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: {{t.ink}}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.ink}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4h6v3H9z"></path><path d="M9 12h6M9 16h4"></path></svg>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 16px; font-weight: 600">{{openCount}} shop recommendations</span>
+          <span style="display: flex; gap: 6px; flex-wrap: wrap">
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 6px; background: {{t.needBg}}; color: {{t.needFg}}; font-size: 11px; font-weight: 600; letter-spacing: 0.04em"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: {{t.needFg}}"></span>2 NEED WORK</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 6px; background: {{t.watchBg}}; color: {{t.watchFg}}; font-size: 11px; font-weight: 600; letter-spacing: 0.04em"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: {{t.watchFg}}"></span>1 TO WATCH</span>
+          </span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+      <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 10px; opacity: 0.5">
+        <span style="font-size: 18px; font-weight: 700">Overdue</span>
+        <div style="height: 120px; border-radius: 16px; background: {{t.surface}}"></div>
+        <span style="font-size: 18px; font-weight: 700">Coming up</span>
+        <div style="height: 200px; border-radius: 16px; background: {{t.surface}}"></div>
+      </div>
+      <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">The row shows only while something is open. Shop recommendations sit apart from the schedule: they never make anything overdue.</div>
+    </div>
+  </sc-if>
+
+  <!-- Variant list: the vehicle's open recommendations. -->
+  <sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: center; gap: 4px; padding: 12px 8px 0 8px">
+      <a href="RecommendedHome.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      </a>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <span style="font-size: 20px; font-weight: 600">Shop recommended</span>
+        <span style="font-size: 12px; color: {{t.muted}}">2019 Blue truck</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 18px; padding: 12px 20px 96px 20px">
+      <div style="font-size: 14px; line-height: 1.45; color: {{t.muted}}">Work a shop recommended that you kept. Each stays here until you log that work, by any shop or yourself, or close it. They never change a reminder.</div>
+
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">{{g.title}}</span>
+          <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 0 16px">
+            <sc-for list="{{g.items}}" as="r" hint-placeholder-count="3">
+              <div style="padding: 14px 0 6px 0; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid {{t.line}}">
+                <sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 6px; background: {{r.tagBg}}; color: {{r.tagFg}}; font-size: 11px; font-weight: 600; letter-spacing: 0.04em">
+                      <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: {{r.tagFg}}"></span>{{r.tag}}
+                    </span>
+                    <span style="font-size: 12px; color: {{t.muted}}">{{r.area}}</span>
+                  </div>
+                </sc-if>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+                  <span style="font-size: 15px; font-weight: 600; line-height: 1.35">{{r.name}}</span>
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; white-space: nowrap">{{r.price}}</span>
+                </div>
+                <sc-if value="{{r.hasFinding}}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size: 13px; line-height: 1.45; color: {{t.sub}}">“{{r.finding}}”</div>
+                </sc-if>
+                <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{r.from}}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+                  <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{r.match}}</span>
+                  <button onClick="{{r.close}}" aria-label="{{r.closeLabel}}" style="min-height: 48px; padding: 0 4px; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.link}}; white-space: nowrap">Close</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{hasClosed}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <button onClick="{{toggleClosed}}" aria-expanded="{{showClosed}}" style="min-height: 48px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: space-between; font-family: inherit; color: {{t.muted}}">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em">CLOSED · {{closedCount}}</span>
+            <span style="font-size: 13px; font-weight: 600; color: {{t.link}}">{{closedToggle}}</span>
+          </button>
+          <sc-if value="{{showClosed}}" hint-placeholder-val="{{ false }}">
+            <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+              <sc-for list="{{closed}}" as="c" hint-placeholder-count="2">
+                <div style="min-height: 56px; padding: 8px 0; display: flex; flex-direction: column; justify-content: center; gap: 2px; border-bottom: 1px solid {{t.line}}">
+                  <span style="font-size: 15px; font-weight: 600; color: {{t.sub}}">{{c.name}}</span>
+                  <span style="font-size: 12px; color: {{c.howColor}}">{{c.how}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{snack}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 20px; min-height: 52px; border-radius: 12px; background: {{t.snackBg}}; color: {{t.snackFg}}; display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 16px; font-size: 14px">
+        <span>{{snackText}}</span>
+        <button onClick="{{undo}}" style="min-height: 48px; padding: 0 12px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: {{t.snackLink}}">Undo</button>
+      </div>
+    </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["list","home"],"default":"list"},"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up shops, work and prices.
+this.state = { closedIds: [], showClosed: false, last: null };
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var home = this.props.variant === 'home';
+var t = dark ? {
+  bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', sub: '#C4C1BA', muted: '#A5A9AF', line: '#33373D',
+  accent: '#F08A4B', link: '#FDBA74', ok: '#5EEAD4',
+  needBg: '#3B1A19', needFg: '#F97066', watchBg: '#3A2E12', watchFg: '#FBBF24',
+  snackBg: '#EDEBE6', snackFg: '#17191C', snackLink: '#9A3412'
+} : {
+  bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', sub: '#3A3E44', muted: '#5A5F66', line: '#DEDCD5',
+  accent: '#C2410C', link: '#9A3412', ok: '#0F766E',
+  needBg: '#FDECEA', needFg: '#B42318', watchBg: '#FEF3C7', watchFg: '#92400E',
+  snackBg: '#17191C', snackFg: '#FFFFFF', snackLink: '#FDBA74'
+};
+var all = [
+  { id: 1, tag: 'need', area: 'Axles', name: 'Replace CV Axle Assembly', price: '$574.20', finding: 'Driver side axle boot torn', from: 'Cedar Hollow Auto & Truck · Oct 29, 2026', match: 'Comes off when you log: CV axle' },
+  { id: 2, tag: 'need', area: 'Lights', name: 'Electrical Diagnosis', price: '$189.00', finding: 'Fog lights not working', from: 'Cedar Hollow Auto & Truck · Oct 29, 2026', match: 'Comes off when you log work worded like it' },
+  { id: 3, tag: 'watch', area: 'Fluid leaks', name: 'Oil pan seeping', price: '', finding: '', from: 'Cedar Hollow Auto & Truck · Oct 29, 2026', match: 'Comes off when you log: Oil pan gasket' },
+  { id: 4, tag: '', area: '', name: 'Transmission Fluid Exchange', price: '$389.99', finding: '', from: 'Cedar Hollow Auto & Truck · Oct 29, 2026', match: 'Comes off when you log: Transmission fluid' },
+  { id: 5, tag: '', area: '', name: 'Power Steering Fluid Service', price: '$219.99', finding: '', from: 'Pine Ridge Tire & Lube · Jun 12, 2026', match: 'Comes off when you log: Power steering fluid' }
+];
+var open = all.filter(function (r) { return s.closedIds.indexOf(r.id) < 0; });
+var view = function (r) {
+  return {
+    name: r.name, price: r.price, area: r.area, finding: r.finding, from: r.from, match: r.match,
+    hasTag: !!r.tag, hasFinding: !!r.finding,
+    tag: r.tag === 'need' ? 'NEEDS WORK' : 'WATCH',
+    tagBg: r.tag === 'need' ? t.needBg : t.watchBg, tagFg: r.tag === 'need' ? t.needFg : t.watchFg,
+    closeLabel: 'Close ' + r.name,
+    close: function () { self.setState({ closedIds: s.closedIds.concat([r.id]), last: r.id }); }
+  };
+};
+var flagged = open.filter(function (r) { return r.tag; });
+var rest = open.filter(function (r) { return !r.tag; });
+var groups = [];
+if (flagged.length) groups.push({ title: 'FROM INSPECTIONS · ' + flagged.length, items: flagged.map(view) });
+if (rest.length) groups.push({ title: 'RECOMMENDED WORK · ' + rest.length, items: rest.map(view) });
+var closed = s.closedIds.slice().reverse().map(function (id) {
+  var r = all.filter(function (x) { return x.id === id; })[0];
+  return { name: r.name, how: 'Closed by you · Oct 31, 2026', howColor: t.muted };
+}).concat([
+  { name: 'Coolant System Service', how: 'Done · logged Nov 2, 2026 (Engine coolant, by you)', howColor: t.ok },
+  { name: 'Battery Replacement', how: 'Done · logged Nov 2, 2026 (Battery, by you)', howColor: t.ok }
+]);
+var lastItem = all.filter(function (x) { return x.id === s.last; })[0];
+return {
+  t: t, isHome: home, isList: !home,
+  openCount: String(all.length),
+  groups: groups,
+  hasClosed: closed.length > 0, closed: closed, closedCount: String(closed.length),
+  showClosed: s.showClosed, closedToggle: s.showClosed ? 'Hide' : 'Show',
+  toggleClosed: function () { self.setState({ showClosed: !s.showClosed }); },
+  snack: !!lastItem, snackText: lastItem ? 'Closed ' + lastItem.name : '',
+  undo: function () { self.setState({ closedIds: s.closedIds.filter(function (id) { return id !== s.last; }), last: null }); }
+};
+}
+}
+</script>
+</body>
+</html>

@@ -12,14 +12,16 @@ revision) and 2021 `2020/MC-10177239-0001` (7/9/2020, the only one; the list's s
   apart from "Atlas" from 2020 to 2026, and the cards name the two apart too. So this list is for "Atlas Cross
   Sport", with no alias, and the Atlas's lists are for "Atlas": Glovebox matches the model name whole, so neither is
   offered for the other's car.
-- **The list is the [2020–2021 Atlas](volkswagen-atlas-2020-2021.md)'s without the trailer hitch check.** The two
-  cards agree for it, read as that page says:
+- **The list is the [2020–2021 Atlas](volkswagen-atlas-2020-2021.md)'s, row for row**, with the model's name. The
+  two cards agree for it, read as that page says:
   - **Spark plugs every 80,000 miles or 6 years** (80,000 / 72 months): "Only: Golf 1.4L, GTI, Jetta 1.4L, Jetta
     GLI, Tiguan, Atlas, Atlas Cross Sport" on both cards. No engine is named, so the list names none.
-  - **The trailer hitch row is left out, by its own words**: "Removable trailer hitch: Check function and inspect for
-    damage (Tiguan and Atlas only if equipped)". The same cards name "Atlas Cross Sport" apart from "Atlas" on the
-    spark plug rows, so the hitch row isn't read as the Cross Sport's. (The 2022 card's hitch row names no model, so
-    the [2022 list](volkswagen-atlas-cross-sport-2022.md) has it.) Asked on #453.
+  - **The trailer hitch check**: "Removable trailer hitch: Check function and inspect for damage (Tiguan and Atlas
+    only if equipped)". The same cards name "Atlas Cross Sport" apart from "Atlas" on the spark plug rows; by the
+    owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335) (part A, the Atlas Cross Sport's question 3), "Atlas" on this row is read as
+    covering the Cross Sport. So "Check removable trailer hitch (if fitted)" is in the Standard service, at every
+    20,000, table-only, as on the Atlas's list. (The 2022 card's hitch row names no model, so the
+    [2022 list](volkswagen-atlas-cross-sport-2022.md) has it too.)
   - **The AWD clutch fluid** "(if equipped)", "Every 3 years": "Change AWD clutch fluid (AWD)", every 36 months by
     time alone, no service line, in `allWheelDriveOnly`. The Atlas Cross Sport was sold with front-wheel drive and
     with 4Motion: NHTSA's safety-rating list (`api.nhtsa.gov/SafetyRatings`, 2020, read 2026-10-29) has "2020
@@ -41,20 +43,15 @@ The Atlas Cross Sport was sold in the USA from 2020. The cards are the all-model
 | 2020 | `2019/MC-10168643-0001`, revised 11/26/2019 | both spark plug rows | [2020–2021](volkswagen-atlas-cross-sport-2020-2021.md) |
 | 2021 | `2020/MC-10177239-0001`, 7/9/2020 | the 80,000-mile spark plug row | [2020–2021](volkswagen-atlas-cross-sport-2020-2021.md) |
 | 2022 | `2021/MC-10199495-0001`, revised 7/21/2021 | the 80,000-mile spark plug row | [2022](volkswagen-atlas-cross-sport-2022.md) |
-| 2023 | reissue `USA5R507521`, printed 12/03/2025 | nothing ("Atlas Sport" on the 80,000-mile spark plug row) | none |
-| 2024 | reissue `USA5R505721`, printed 12/03/2025 | nothing | none |
-| 2025 | reissue `USA5R701521`, printed 12/03/2025 | the 80,000-mile spark plug row | [2025](volkswagen-atlas-cross-sport-2025.md) |
-| 2026 | reissue `USA5R506821`, printed 02/2026 | the spark plug row and "09H: Atlas, Atlas Cross Sport, Tiguan (RM1)" | [2026](volkswagen-atlas-cross-sport-2026.md) |
+| 2023 | reissue `USA5R507521`, printed 12/03/2025 | nothing ("Atlas Sport" on the 80,000-mile spark plug row) | [2023–2026](volkswagen-atlas-cross-sport-2023-2026.md) |
+| 2024 | reissue `USA5R505721`, printed 12/03/2025 | nothing | [2023–2026](volkswagen-atlas-cross-sport-2023-2026.md) |
+| 2025 | reissue `USA5R701521`, printed 12/03/2025 | the 80,000-mile spark plug row | [2023–2026](volkswagen-atlas-cross-sport-2023-2026.md) |
+| 2026 | reissue `USA5R506821`, printed 02/2026 | the spark plug row and "09H: Atlas, Atlas Cross Sport, Tiguan (RM1)" | [2023–2026](volkswagen-atlas-cross-sport-2023-2026.md) |
 
 ## What isn't covered
 
-- **2023 and 2024.** The only sources are Volkswagen's reissues, and neither names the Atlas Cross Sport: the 2023
-  card's spark plug row says "Atlas, Atlas Sport" and its automatic row "09P: Atlas, Tiguan"; the 2024 card's say
-  "Atlas" and "09P: Atlas, Tiguan". Whether those rows (and so the card) are the Cross Sport's would be a guess, so no
-  list is made and a 2023 or 2024 Atlas Cross Sport is offered none. Asked on #453.
-- **The 2020–2021 trailer hitch check** (above), asked on #453.
 - **The non-DSG automatic on 2020–2022**: [#444's question 3](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514).
-- **The 2025 automatic**: the 2025 card's gearbox line names "09H: Atlas, Tiguan (RM1)", not the Cross Sport, so the
-  [2025 list](volkswagen-atlas-cross-sport-2025.md) has no gearbox reminder; asked on #453.
-- **The AWD clutch fluid on 2022, 2025 and 2026** ("(if equipped)", "All Applicable Vehicles"): read as an AWD job,
-  waiting on [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+- **The AWD clutch fluid on 2022 and 2023–2026** ("(if equipped)", "All Applicable Vehicles"): read as an AWD job,
+  confirmed by the owner on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
+- What #453 asked about 2023–2024, the 2025 automatic and the 2020–2021 trailer hitch is settled by the owner's
+  ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335); the [2023–2026 page](volkswagen-atlas-cross-sport-2023-2026.md) says how.

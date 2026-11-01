@@ -56,7 +56,17 @@ of the lists; how each one was made is recorded on its own page, `known-schedule
    are never edited; on a vehicle that has them, the ones that would double a new reminder are listed,
    ticked, and are removed when the schedule is taken, so each job is on the list once. One that has a
    service logged against it is kept, untracked, so that record keeps its link.
-9. **A table doesn't repeat unless the guide says it does.**
+9. **A table doesn't repeat unless the guide says it does**, but maintenance doesn't stop at its last
+   column (the owner, 2026-10-31, #568). Past it, the Milestones view continues each **regular** row: a
+   job the table marks at least twice, at one even spacing, on to its last column (10K, 20K … 120K is every
+   10,000; 40K/80K/120K every 40,000). A job whose marks follow no single cycle (a one-off, a "first at
+   100,000, then every 50,000" the table shows once, a row that differs between columns or stops early) is
+   not continued, and the view says the maker's table ends there for it. A job the guide starts past the
+   last column (`firstAtMiles`) comes in from its first time. The continued milestones are marked as
+   Glovebox's, once per screen with "check your service manual" (rule 5), never as the maker's; they reach
+   the car's mileage plus the table's length. The list file is unchanged: nothing is written for the
+   continuation. The guide's own repeat statement, where there is one (a table's repeat), still wins.
+   `MilestoneContinuation` in `:domain`.
 
 ## The file
 
@@ -96,6 +106,25 @@ fluid change. The rule is the same shape: only a vehicle **known** to have a man
 vehicle **known** to shift itself (an automatic, a CVT, a dual-clutch or an automated manual) loses them;
 a manual or nothing on record keeps them. A job can't be in both.
 
+Both read the vehicle's gearbox (#549, `vehicles.gearbox`: Manual, Automatic, Dual-clutch (DSG) or Don't know)
+first. The owner's answer wins over the transmission text vPIC wrote; only on "Don't know" does the text still
+tell a manual from a gearbox that shifts itself, as before (`GearboxOnRecord`).
+
+`dsgOnly` names the jobs for a dual-clutch (DSG) gearbox only, such as Volkswagen's "DSG: change fluid and
+filter", and `automaticOnly` those for a conventional automatic only ("Automatic (non-DSG): change fluid").
+**They tell apart what vPIC can't** (it calls a DSG "Automatic"), so they follow the owner's answer alone:
+
+- that gearbox: in the table and a reminder;
+- **"Don't know": in the table with no reminder** (a wrong fluid is worse than an empty row,
+  [takes-and-torque](rules/takes-and-torque.md)), and on the Milestones view's continuation;
+- the other one, or a manual: left out of both.
+
+A job can't be in both, nor in `manualOnly` (it is never a manual's) or `manualExcluded` (they already leave it
+out for a manual). A row the guide prints for every gearbox that shifts itself, with one interval, stays in
+`manualExcluded` and is a reminder on "Don't know" too (the owner's ruling of 2026-10-29). A reminder taken up
+from one of these keeps the gearbox it is for (`schedule_items.gearboxOnly`), and reminds only while the
+vehicle's gearbox is that one, so changing the answer later stops it rather than reminding of the wrong fluid.
+
 A job a guide gives by time alone ("every 2 years regardless of mileage") is a reminder with months and
 no distance, marked `time-only`. The table shows it wherever the maker drew it, and the check doesn't hold
 its mileages against it. Where the first time differs ("at 3 years, then every 2"), the reminder is the
@@ -108,6 +137,12 @@ placed on the table**, so rule 7 has nothing to hold it to; the owner's ruling o
 that is also in the table, or among `intervals`, by its line or its name, is refused: a guide that prints
 one job both ways has to be settled on the list's page first. The drive and gearbox fields name these
 jobs as they do any other.
+
+**A list may have no `intervals`** (the field left out, or `[]`) when its `additional` has at least one job: a
+guide whose table is all inspections, such as Volkswagen's battery-electric schedule, gives its only
+reminders apart from the table (the owner's ruling on #456). A list with neither is refused, since it would
+remind of nothing. This is only for a bundled list: an `interval-schedule` import file still needs at least
+one item.
 
 Toyota's footnotes give some jobs' intervals past the end of the table, such as the inverter coolant of a
 2016–2024 hybrid (first at 150,000 miles, then every 50,000, on a table that ends at 120,000). Such a job is
@@ -154,13 +189,34 @@ no powertrain on record. A flex-fuel guide's shorter oil change for a truck run 
 wrong grade still is.
 
 **A sedan and a hatchback of one engine whose guides differ** are told apart by `"body"`, at the top level of
-the list: `sedan` or `hatchback` (#185, the owner's ruling of 2026-10-25). Set it only where two lists of one
+the list: `sedan`, `hatchback` or `convertible` (#185, the owner's ruling of 2026-10-25). Set it only where two lists of one
 model, years and engine differ by it and NHTSA gives both the same model name, as for the 2026 Corolla; a list
 without it is for every body. A vehicle's body style comes from vPIC's `BodyClass` only where it is plainly one
-of the two ("Sedan/Saloon", "Hatchback/Liftback/Notchback"), or from the owner on "Is this your vehicle?"
+of them ("Sedan/Saloon", "Hatchback/Liftback/Notchback", "Convertible/Cabriolet"), or from the owner on "Is this your vehicle?"
 (`vehicles.bodyStyle`). **A blank body matches no list that names one and is never guessed**: setup then asks
 "Which one is it?", offering each list's engine `label` with its body ("2.0L 4-cylinder, Hatchback"), and the
 pick is written to the vehicle if it had no body style on record.
+
+`convertible` joined them for **the 2014–2016 Beetle TDI and Beetle Convertible TDI** (#569), whose cards differ
+at 130K and which vPIC names "Beetle" alike: in pattern decodes the only field that differs is `BodyClass`,
+"Hatchback/Liftback/Notchback" for the Beetle and "Convertible/Cabriolet" for the convertible (`Turbo`,
+`EngineModel` "TDI", size, fuel, doors and power are the same). A pair like that is two lists, one `"body":
+"hatchback"` and one `"body": "convertible"`; a list without a body would match both.
+
+**Two cars of one engine size and fuel that only vPIC's `Trim` tells apart** are told apart by `"trim"` (#569),
+at the top level: `{ "names": "GLI" }` for a list whose cars' trim names that word, `{ "doesNotName": "GLI" }` for
+one whose cars' trim doesn't. One word of letters and digits, and only one of the two keys. The case it is for is
+**the 2011–2016 Jetta GLI (2.0L TSI) against the Jetta 2.0L 8-valve (MPI)**: both decode as a 2.0L 4-cylinder
+petrol "Jetta" sedan, `Turbo`, `EngineModel` and `Series` are blank for both, and only `Trim` ("GLI", "2.0T GLI
+SE, SEL" against "S", "Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS") and `EngineHP` (200–210 against 115,
+not kept) differ. So the GLI's list names "GLI" and the 8-valve's doesn't, and the two `engine` `label`s say which
+is which ("2.0L TSI (GLI)", "2.0L 8-valve"). The vehicle's trim (`vehicles.trim`, vPIC's or the owner's) is split
+into words ignoring case, so "2.0T GLI SE" names GLI and "GLIDER" doesn't. **Only a trim that names the word
+picks a list: `doesNotName` never picks one on its own** (#595, the owner's ruling of 2026-10-31). vPIC's "2.0T GLI
+SE, SEL" is offered in Add vehicle as "2.0T GLI SE" and "SEL", so a GLI can be stored as "SEL", which doesn't name
+GLI. **A vehicle with no trim on record, or one that doesn't name the word, matches neither list**: setup asks
+"Which engine does it have?" with the two labels, and the list picked is kept on its schedule items as any is (a
+vehicle already on a list keeps it, whatever its trim says). A list without `trim` is for every trim.
 
 **`e85`** gives a flex-fuel guide's intervals for a vehicle run on E85 more than half the time, which Toyota's
 FFV guides print as an oil change every 2,500 miles / 3 months against the normal 5,000 / 6:
@@ -354,24 +410,34 @@ One page per list, named by its `id`:
 - [Volkswagen Atlas 3.6L, 2018](known-schedules/volkswagen-atlas-2018-3.6.md) (`volkswagen-atlas-2018-3.6`)
 - [Volkswagen Atlas Cross Sport, 2020–2021](known-schedules/volkswagen-atlas-cross-sport-2020-2021.md) (`volkswagen-atlas-cross-sport-2020-2021`)
 - [Volkswagen Atlas Cross Sport, 2022](known-schedules/volkswagen-atlas-cross-sport-2022.md) (`volkswagen-atlas-cross-sport-2022`)
-- [Volkswagen Atlas Cross Sport, 2025](known-schedules/volkswagen-atlas-cross-sport-2025.md) (`volkswagen-atlas-cross-sport-2025`)
-- [Volkswagen Atlas Cross Sport, 2026](known-schedules/volkswagen-atlas-cross-sport-2026.md) (`volkswagen-atlas-cross-sport-2026`)
+- [Volkswagen Atlas Cross Sport, 2023–2026](known-schedules/volkswagen-atlas-cross-sport-2023-2026.md) (`volkswagen-atlas-cross-sport-2023-2026`)
 - [Volkswagen Atlas, 2019](known-schedules/volkswagen-atlas-2019.md) (`volkswagen-atlas-2019`)
 - [Volkswagen Atlas, 2020–2021](known-schedules/volkswagen-atlas-2020-2021.md) (`volkswagen-atlas-2020-2021`)
 - [Volkswagen Atlas, 2022](known-schedules/volkswagen-atlas-2022.md) (`volkswagen-atlas-2022`)
 - [Volkswagen Atlas, 2023–2026](known-schedules/volkswagen-atlas-2023-2026.md) (`volkswagen-atlas-2023-2026`)
-- [Volkswagen Beetle 1.8T, 2014 (A5)](known-schedules/volkswagen-beetle-2014-1.8t.md) (`volkswagen-beetle-2014-1.8t`)
+- [Volkswagen Beetle 1.8T, 2014–2015 (A5)](known-schedules/volkswagen-beetle-2014-2015-1.8t.md) (`volkswagen-beetle-2014-2015-1.8t`)
+- [Volkswagen Beetle 1.8T, 2016 (A5)](known-schedules/volkswagen-beetle-2016-1.8t.md) (`volkswagen-beetle-2016-1.8t`)
+- [Volkswagen Beetle 2.0T, 2012–2013 (A5)](known-schedules/volkswagen-beetle-2012-2013-2.0t.md) (`volkswagen-beetle-2012-2013-2.0t`)
 - [Volkswagen Beetle 2.0T, 2014 (A5)](known-schedules/volkswagen-beetle-2014-2.0t.md) (`volkswagen-beetle-2014-2.0t`)
+- [Volkswagen Beetle 2.5L, 2012–2013 (A5)](known-schedules/volkswagen-beetle-2012-2013-2.5.md) (`volkswagen-beetle-2012-2013-2.5`)
 - [Volkswagen Beetle 2.5L, 2014 (A5)](known-schedules/volkswagen-beetle-2014-2.5.md) (`volkswagen-beetle-2014-2.5`)
+- [Volkswagen Beetle TDI, 2012–2013 (A5)](known-schedules/volkswagen-beetle-2012-2013-tdi.md) (`volkswagen-beetle-2012-2013-tdi`)
+- [Volkswagen Beetle, 2017 (A5)](known-schedules/volkswagen-beetle-2017.md) (`volkswagen-beetle-2017`)
 - [Volkswagen Beetle, 2018 (A5)](known-schedules/volkswagen-beetle-2018.md) (`volkswagen-beetle-2018`)
 - [Volkswagen Beetle, 2019 (A5)](known-schedules/volkswagen-beetle-2019.md) (`volkswagen-beetle-2019`)
+- [Volkswagen CC 2.0T, 2011](known-schedules/volkswagen-cc-2011-2.0t.md) (`volkswagen-cc-2011-2.0t`)
+- [Volkswagen CC 2.0T, 2012–2013](known-schedules/volkswagen-cc-2012-2013-2.0t.md) (`volkswagen-cc-2012-2013-2.0t`)
 - [Volkswagen CC 2.0T, 2014–2015](known-schedules/volkswagen-cc-2014-2015-2.0t.md) (`volkswagen-cc-2014-2015-2.0t`)
 - [Volkswagen CC 2.0T, 2016](known-schedules/volkswagen-cc-2016-2.0t.md) (`volkswagen-cc-2016-2.0t`)
+- [Volkswagen CC 2.0T, 2017](known-schedules/volkswagen-cc-2017-2.0t.md) (`volkswagen-cc-2017-2.0t`)
+- [Volkswagen CC 3.6L, 2011](known-schedules/volkswagen-cc-2011-3.6.md) (`volkswagen-cc-2011-3.6`)
+- [Volkswagen CC 3.6L, 2012–2013](known-schedules/volkswagen-cc-2012-2013-3.6.md) (`volkswagen-cc-2012-2013-3.6`)
 - [Volkswagen CC 3.6L, 2014–2015](known-schedules/volkswagen-cc-2014-2015-3.6.md) (`volkswagen-cc-2014-2015-3.6`)
 - [Volkswagen CC 3.6L, 2016](known-schedules/volkswagen-cc-2016-3.6.md) (`volkswagen-cc-2016-3.6`)
 - [Volkswagen e-Golf, 2015](known-schedules/volkswagen-e-golf-2015.md) (`volkswagen-e-golf-2015`)
 - [Volkswagen e-Golf, 2016–2017](known-schedules/volkswagen-e-golf-2016-2017.md) (`volkswagen-e-golf-2016-2017`)
 - [Volkswagen Eos, 2010](known-schedules/volkswagen-eos-2010.md) (`volkswagen-eos-2010`)
+- [Volkswagen Eos, 2011–2013](known-schedules/volkswagen-eos-2011-2013.md) (`volkswagen-eos-2011-2013`)
 - [Volkswagen Eos, 2014–2015](known-schedules/volkswagen-eos-2014-2015.md) (`volkswagen-eos-2014-2015`)
 - [Volkswagen Eos, 2016](known-schedules/volkswagen-eos-2016.md) (`volkswagen-eos-2016`)
 - [Volkswagen Golf 1.4T, 2019 (Mk7)](known-schedules/volkswagen-golf-2019-1.4t.md) (`volkswagen-golf-2019-1.4t`)
@@ -379,23 +445,38 @@ One page per list, named by its `id`:
 - [Volkswagen Golf 1.8T, 2015 (Mk7)](known-schedules/volkswagen-golf-2015-1.8t.md) (`volkswagen-golf-2015-1.8t`)
 - [Volkswagen Golf 1.8T, 2016 (Mk7)](known-schedules/volkswagen-golf-2016-1.8t.md) (`volkswagen-golf-2016-1.8t`)
 - [Volkswagen Golf 2.5L, 2010 (Mk6)](known-schedules/volkswagen-golf-2010-2.5.md) (`volkswagen-golf-2010-2.5`)
+- [Volkswagen Golf 2.5L, 2011–2013 (Mk6)](known-schedules/volkswagen-golf-2011-2013-2.5.md) (`volkswagen-golf-2011-2013-2.5`)
 - [Volkswagen Golf 2.5L, 2014 (Mk6)](known-schedules/volkswagen-golf-2014-2.5.md) (`volkswagen-golf-2014-2.5`)
 - [Volkswagen Golf Alltrack, 2018 (Mk7)](known-schedules/volkswagen-golf-alltrack-2018.md) (`volkswagen-golf-alltrack-2018`)
 - [Volkswagen Golf Alltrack, 2019 (Mk7)](known-schedules/volkswagen-golf-alltrack-2019.md) (`volkswagen-golf-alltrack-2019`)
+- [Volkswagen Golf Alltrack, 2020 (Mk7)](known-schedules/volkswagen-golf-alltrack-2020.md) (`volkswagen-golf-alltrack-2020`)
+- [Volkswagen Golf R, 2012 (Mk6)](known-schedules/volkswagen-golf-r-2012.md) (`volkswagen-golf-r-2012`)
 - [Volkswagen Golf R, 2013 (Mk6)](known-schedules/volkswagen-golf-r-2013.md) (`volkswagen-golf-r-2013`)
 - [Volkswagen Golf R, 2015 (Mk7)](known-schedules/volkswagen-golf-r-2015.md) (`volkswagen-golf-r-2015`)
 - [Volkswagen Golf R, 2016 (Mk7)](known-schedules/volkswagen-golf-r-2016.md) (`volkswagen-golf-r-2016`)
+- [Volkswagen Golf R, 2017 (Mk7)](known-schedules/volkswagen-golf-r-2017.md) (`volkswagen-golf-r-2017`)
 - [Volkswagen Golf R, 2018 (Mk7)](known-schedules/volkswagen-golf-r-2018.md) (`volkswagen-golf-r-2018`)
 - [Volkswagen Golf R, 2019 (Mk7)](known-schedules/volkswagen-golf-r-2019.md) (`volkswagen-golf-r-2019`)
+- [Volkswagen Golf R, 2020 (Mk7)](known-schedules/volkswagen-golf-r-2020.md) (`volkswagen-golf-r-2020`)
 - [Volkswagen Golf R, 2022 (Mk8)](known-schedules/volkswagen-golf-r-2022.md) (`volkswagen-golf-r-2022`)
 - [Volkswagen Golf R, 2023–2025 (Mk8)](known-schedules/volkswagen-golf-r-2023-2025.md) (`volkswagen-golf-r-2023-2025`)
 - [Volkswagen Golf R, 2026 (Mk8)](known-schedules/volkswagen-golf-r-2026.md) (`volkswagen-golf-r-2026`)
 - [Volkswagen Golf SportWagen 1.4T, 2019 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2019-1.4t.md) (`volkswagen-golf-sportwagen-2019-1.4t`)
+- [Volkswagen Golf SportWagen 1.4T, 2020 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2020-1.4t.md) (`volkswagen-golf-sportwagen-2020-1.4t`)
 - [Volkswagen Golf SportWagen 1.8T, 2015 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2015-1.8t.md) (`volkswagen-golf-sportwagen-2015-1.8t`)
 - [Volkswagen Golf SportWagen 1.8T, 2016 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2016-1.8t.md) (`volkswagen-golf-sportwagen-2016-1.8t`)
 - [Volkswagen Golf SportWagen 1.8T, 2019 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2019-1.8t.md) (`volkswagen-golf-sportwagen-2019-1.8t`)
+- [Volkswagen Golf SportWagen 1.8T, 2020 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2020-1.8t.md) (`volkswagen-golf-sportwagen-2020-1.8t`)
+- [Volkswagen Golf SportWagen, 2017 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2017.md) (`volkswagen-golf-sportwagen-2017`)
 - [Volkswagen Golf SportWagen, 2018 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2018.md) (`volkswagen-golf-sportwagen-2018`)
+- [Volkswagen Golf SportWagen TDI, 2015 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2015-tdi.md) (`volkswagen-golf-sportwagen-2015-tdi`)
+- [Volkswagen Golf SportWagen TDI, 2016 (Mk7)](known-schedules/volkswagen-golf-sportwagen-2016-tdi.md) (`volkswagen-golf-sportwagen-2016-tdi`)
 - [Volkswagen Golf TDI, 2010 (Mk6)](known-schedules/volkswagen-golf-2010-tdi.md) (`volkswagen-golf-2010-tdi`)
+- [Volkswagen Golf TDI, 2011–2013 (Mk6)](known-schedules/volkswagen-golf-2011-2013-tdi.md) (`volkswagen-golf-2011-2013-tdi`)
+- [Volkswagen Golf TDI, 2014 (Mk6)](known-schedules/volkswagen-golf-2014-tdi.md) (`volkswagen-golf-2014-tdi`)
+- [Volkswagen Golf TDI, 2015 (Mk7)](known-schedules/volkswagen-golf-2015-tdi.md) (`volkswagen-golf-2015-tdi`)
+- [Volkswagen Golf TDI, 2016 (Mk7)](known-schedules/volkswagen-golf-2016-tdi.md) (`volkswagen-golf-2016-tdi`)
+- [Volkswagen Golf, 2017 (Mk7)](known-schedules/volkswagen-golf-2017.md) (`volkswagen-golf-2017`)
 - [Volkswagen Golf, 2018 (Mk7)](known-schedules/volkswagen-golf-2018.md) (`volkswagen-golf-2018`)
 - [Volkswagen GTI, 2006 (Mk5)](known-schedules/volkswagen-gti-2006.md) (`volkswagen-gti-2006`)
 - [Volkswagen GTI, 2007 (Mk5)](known-schedules/volkswagen-gti-2007.md) (`volkswagen-gti-2007`)
@@ -410,15 +491,27 @@ One page per list, named by its `id`:
 - [Volkswagen GTI, 2020–2021 (Mk7)](known-schedules/volkswagen-gti-2020-2021.md) (`volkswagen-gti-2020-2021`)
 - [Volkswagen GTI, 2022 (Mk8)](known-schedules/volkswagen-gti-2022.md) (`volkswagen-gti-2022`)
 - [Volkswagen GTI, 2023–2026 (Mk8)](known-schedules/volkswagen-gti-2023-2026.md) (`volkswagen-gti-2023-2026`)
+- [Volkswagen ID. Buzz, 2025](known-schedules/volkswagen-id-buzz-2025.md) (`volkswagen-id-buzz-2025`)
+- [Volkswagen ID.4, 2021](known-schedules/volkswagen-id4-2021.md) (`volkswagen-id4-2021`)
+- [Volkswagen ID.4, 2022](known-schedules/volkswagen-id4-2022.md) (`volkswagen-id4-2022`)
+- [Volkswagen ID.4, 2023–2026](known-schedules/volkswagen-id4-2023-2026.md) (`volkswagen-id4-2023-2026`)
 - [Volkswagen Jetta 1.4T, 2016 (Mk6)](known-schedules/volkswagen-jetta-2016-1.4t.md) (`volkswagen-jetta-2016-1.4t`)
 - [Volkswagen Jetta 1.4T, 2019 (Mk7)](known-schedules/volkswagen-jetta-2019-1.4t.md) (`volkswagen-jetta-2019-1.4t`)
 - [Volkswagen Jetta 1.4T, 2020–2021 (Mk7)](known-schedules/volkswagen-jetta-2020-2021-1.4t.md) (`volkswagen-jetta-2020-2021-1.4t`)
-- [Volkswagen Jetta 1.8T, 2014 (Mk6)](known-schedules/volkswagen-jetta-2014-1.8t.md) (`volkswagen-jetta-2014-1.8t`)
-- [Volkswagen Jetta 1.8T, 2015 (Mk6)](known-schedules/volkswagen-jetta-2015-1.8t.md) (`volkswagen-jetta-2015-1.8t`)
+- [Volkswagen Jetta 1.8T, 2014–2015 (Mk6)](known-schedules/volkswagen-jetta-2014-2015-1.8t.md) (`volkswagen-jetta-2014-2015-1.8t`)
 - [Volkswagen Jetta 1.8T, 2016 (Mk6)](known-schedules/volkswagen-jetta-2016-1.8t.md) (`volkswagen-jetta-2016-1.8t`)
 - [Volkswagen Jetta 2.0T, 2010 (Mk5)](known-schedules/volkswagen-jetta-2010-2.0t.md) (`volkswagen-jetta-2010-2.0t`)
 - [Volkswagen Jetta 2.5L, 2010 (Mk5)](known-schedules/volkswagen-jetta-2010-2.5.md) (`volkswagen-jetta-2010-2.5`)
+- [Volkswagen Jetta 2.5L, 2011–2013 (Mk6)](known-schedules/volkswagen-jetta-2011-2013-2.5.md) (`volkswagen-jetta-2011-2013-2.5`)
+- [Volkswagen Jetta Hybrid, 2014 (Mk6)](known-schedules/volkswagen-jetta-2014-hybrid.md) (`volkswagen-jetta-2014-hybrid`)
+- [Volkswagen Jetta SportWagen 2.5L, 2011–2012 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2011-2012-2.5.md) (`volkswagen-jetta-sportwagen-2011-2012-2.5`)
+- [Volkswagen Jetta SportWagen TDI, 2011–2013 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2011-2013-tdi.md) (`volkswagen-jetta-sportwagen-2011-2013-tdi`)
 - [Volkswagen Jetta TDI, 2010 (Mk5)](known-schedules/volkswagen-jetta-2010-tdi.md) (`volkswagen-jetta-2010-tdi`)
+- [Volkswagen Jetta TDI, 2011–2013 (Mk6)](known-schedules/volkswagen-jetta-2011-2013-tdi.md) (`volkswagen-jetta-2011-2013-tdi`)
+- [Volkswagen Jetta TDI, 2014 (Mk6)](known-schedules/volkswagen-jetta-2014-tdi.md) (`volkswagen-jetta-2014-tdi`)
+- [Volkswagen Jetta TDI, 2015 (Mk6)](known-schedules/volkswagen-jetta-2015-tdi.md) (`volkswagen-jetta-2015-tdi`)
+- [Volkswagen Jetta TDI, 2016 (Mk6)](known-schedules/volkswagen-jetta-2016-tdi.md) (`volkswagen-jetta-2016-tdi`)
+- [Volkswagen Jetta, 2017 (Mk6)](known-schedules/volkswagen-jetta-2017.md) (`volkswagen-jetta-2017`)
 - [Volkswagen Jetta, 2018 (Mk6)](known-schedules/volkswagen-jetta-2018.md) (`volkswagen-jetta-2018`)
 - [Volkswagen Jetta, 2022 (Mk7)](known-schedules/volkswagen-jetta-2022.md) (`volkswagen-jetta-2022`)
 - [Volkswagen Jetta, 2023 (Mk7)](known-schedules/volkswagen-jetta-2023.md) (`volkswagen-jetta-2023`)
@@ -427,22 +520,31 @@ One page per list, named by its `id`:
 - [Volkswagen Jetta GLI, 2020–2021 (Mk7)](known-schedules/volkswagen-jetta-gli-2020-2021.md) (`volkswagen-jetta-gli-2020-2021`)
 - [Volkswagen Jetta GLI, 2022 (Mk7)](known-schedules/volkswagen-jetta-gli-2022.md) (`volkswagen-jetta-gli-2022`)
 - [Volkswagen Jetta GLI, 2023–2026 (Mk7)](known-schedules/volkswagen-jetta-gli-2023-2026.md) (`volkswagen-jetta-gli-2023-2026`)
+- [Volkswagen Jetta Hybrid, 2013](known-schedules/volkswagen-jetta-2013-hybrid.md) (`volkswagen-jetta-2013-hybrid`)
 - [Volkswagen Jetta Hybrid, 2015](known-schedules/volkswagen-jetta-2015-hybrid.md) (`volkswagen-jetta-2015-hybrid`)
 - [Volkswagen Jetta Hybrid, 2016](known-schedules/volkswagen-jetta-2016-hybrid.md) (`volkswagen-jetta-2016-hybrid`)
 - [Volkswagen Jetta SportWagen 2.0T, 2010 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2010-2.0t.md) (`volkswagen-jetta-sportwagen-2010-2.0t`)
 - [Volkswagen Jetta SportWagen 2.5L, 2010 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2010-2.5.md) (`volkswagen-jetta-sportwagen-2010-2.5`)
 - [Volkswagen Jetta SportWagen 2.5L, 2014 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2014-2.5.md) (`volkswagen-jetta-sportwagen-2014-2.5`)
 - [Volkswagen Jetta SportWagen TDI, 2010 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2010-tdi.md) (`volkswagen-jetta-sportwagen-2010-tdi`)
-- [Volkswagen Passat 1.8T, 2014 (NMS)](known-schedules/volkswagen-passat-2014-1.8t.md) (`volkswagen-passat-2014-1.8t`)
-- [Volkswagen Passat 1.8T, 2015 (NMS)](known-schedules/volkswagen-passat-2015-1.8t.md) (`volkswagen-passat-2015-1.8t`)
+- [Volkswagen Jetta SportWagen TDI, 2014 (Mk5)](known-schedules/volkswagen-jetta-sportwagen-2014-tdi.md) (`volkswagen-jetta-sportwagen-2014-tdi`)
+- [Volkswagen Passat 1.8T, 2014–2015 (NMS)](known-schedules/volkswagen-passat-2014-2015-1.8t.md) (`volkswagen-passat-2014-2015-1.8t`)
 - [Volkswagen Passat 1.8T, 2016 (NMS)](known-schedules/volkswagen-passat-2016-1.8t.md) (`volkswagen-passat-2016-1.8t`)
+- [Volkswagen Passat 1.8T, 2017 (NMS)](known-schedules/volkswagen-passat-2017-1.8t.md) (`volkswagen-passat-2017-1.8t`)
+- [Volkswagen Passat 2.0T, 2010 (B6)](known-schedules/volkswagen-passat-2010-2.0t.md) (`volkswagen-passat-2010-2.0t`)
 - [Volkswagen Passat 2.0T, 2018 (NMS)](known-schedules/volkswagen-passat-2018-2.0t.md) (`volkswagen-passat-2018-2.0t`)
+- [Volkswagen Passat 2.5L, 2012–2013 (NMS)](known-schedules/volkswagen-passat-2012-2013-2.5.md) (`volkswagen-passat-2012-2013-2.5`)
 - [Volkswagen Passat 2.5L, 2014 (NMS)](known-schedules/volkswagen-passat-2014-2.5.md) (`volkswagen-passat-2014-2.5`)
-- [Volkswagen Passat 3.6L, 2014 (NMS)](known-schedules/volkswagen-passat-2014-3.6.md) (`volkswagen-passat-2014-3.6`)
+- [Volkswagen Passat 3.6L, 2010 (B6)](known-schedules/volkswagen-passat-2010-3.6.md) (`volkswagen-passat-2010-3.6`)
+- [Volkswagen Passat 3.6L, 2012–2013 (NMS)](known-schedules/volkswagen-passat-2012-2013-3.6.md) (`volkswagen-passat-2012-2013-3.6`)
+- [Volkswagen Passat 3.6L, 2014–2015 (NMS)](known-schedules/volkswagen-passat-2014-2015-3.6.md) (`volkswagen-passat-2014-2015-3.6`)
+- [Volkswagen Passat 3.6L, 2016 (NMS)](known-schedules/volkswagen-passat-2016-3.6.md) (`volkswagen-passat-2016-3.6`)
+- [Volkswagen Passat 3.6L, 2017 (NMS)](known-schedules/volkswagen-passat-2017-3.6.md) (`volkswagen-passat-2017-3.6`)
 - [Volkswagen Passat 3.6L, 2018 (NMS)](known-schedules/volkswagen-passat-2018-3.6.md) (`volkswagen-passat-2018-3.6`)
+- [Volkswagen Passat TDI, 2012 (NMS)](known-schedules/volkswagen-passat-2012-tdi.md) (`volkswagen-passat-2012-tdi`)
+- [Volkswagen Passat TDI, 2013 (NMS)](known-schedules/volkswagen-passat-2013-tdi.md) (`volkswagen-passat-2013-tdi`)
 - [Volkswagen Passat TDI, 2014–2015 (NMS)](known-schedules/volkswagen-passat-2014-2015-tdi.md) (`volkswagen-passat-2014-2015-tdi`)
 - [Volkswagen Passat TDI, 2016 (NMS)](known-schedules/volkswagen-passat-2016-tdi.md) (`volkswagen-passat-2016-tdi`)
-- [Volkswagen Passat, 2010 (B6)](known-schedules/volkswagen-passat-2010.md) (`volkswagen-passat-2010`)
 - [Volkswagen Passat, 2019 (NMS)](known-schedules/volkswagen-passat-2019.md) (`volkswagen-passat-2019`)
 - [Volkswagen Passat, 2020–2021 (NMS)](known-schedules/volkswagen-passat-2020-2021.md) (`volkswagen-passat-2020-2021`)
 - [Volkswagen Passat, 2022 (NMS)](known-schedules/volkswagen-passat-2022.md) (`volkswagen-passat-2022`)
@@ -456,17 +558,23 @@ One page per list, named by its `id`:
 - [Volkswagen Taos, 2025–2026](known-schedules/volkswagen-taos-2025-2026.md) (`volkswagen-taos-2025-2026`)
 - [Volkswagen Tiguan Limited, 2018 (1st generation)](known-schedules/volkswagen-tiguan-limited-2018.md) (`volkswagen-tiguan-limited-2018`)
 - [Volkswagen Tiguan, 2010 (1st generation)](known-schedules/volkswagen-tiguan-2010.md) (`volkswagen-tiguan-2010`)
+- [Volkswagen Tiguan, 2011–2012 (1st generation)](known-schedules/volkswagen-tiguan-2011-2012.md) (`volkswagen-tiguan-2011-2012`)
 - [Volkswagen Tiguan, 2013–2015 (1st generation)](known-schedules/volkswagen-tiguan-2013-2015.md) (`volkswagen-tiguan-2013-2015`)
 - [Volkswagen Tiguan, 2016 (1st generation)](known-schedules/volkswagen-tiguan-2016.md) (`volkswagen-tiguan-2016`)
+- [Volkswagen Tiguan, 2017 (1st generation)](known-schedules/volkswagen-tiguan-2017.md) (`volkswagen-tiguan-2017`)
 - [Volkswagen Tiguan, 2018 (2nd generation)](known-schedules/volkswagen-tiguan-2018.md) (`volkswagen-tiguan-2018`)
 - [Volkswagen Tiguan, 2019 (2nd generation)](known-schedules/volkswagen-tiguan-2019.md) (`volkswagen-tiguan-2019`)
 - [Volkswagen Tiguan, 2020–2021 (2nd generation)](known-schedules/volkswagen-tiguan-2020-2021.md) (`volkswagen-tiguan-2020-2021`)
 - [Volkswagen Tiguan, 2022 (2nd generation)](known-schedules/volkswagen-tiguan-2022.md) (`volkswagen-tiguan-2022`)
 - [Volkswagen Tiguan, 2023–2024 (2nd generation)](known-schedules/volkswagen-tiguan-2023-2024.md) (`volkswagen-tiguan-2023-2024`)
 - [Volkswagen Touareg 3.6L, 2010 (1st generation)](known-schedules/volkswagen-touareg-2010-3.6.md) (`volkswagen-touareg-2010-3.6`)
+- [Volkswagen Touareg 3.6L, 2011–2013 (2nd generation)](known-schedules/volkswagen-touareg-2011-2013-3.6.md) (`volkswagen-touareg-2011-2013-3.6`)
 - [Volkswagen Touareg 3.6L, 2014–2015 (2nd generation)](known-schedules/volkswagen-touareg-2014-2015-3.6.md) (`volkswagen-touareg-2014-2015-3.6`)
 - [Volkswagen Touareg 3.6L, 2016 (2nd generation)](known-schedules/volkswagen-touareg-2016-3.6.md) (`volkswagen-touareg-2016-3.6`)
+- [Volkswagen Touareg 3.6L, 2017 (2nd generation)](known-schedules/volkswagen-touareg-2017.md) (`volkswagen-touareg-2017`)
+- [Volkswagen Touareg Hybrid, 2011–2013 (2nd generation)](known-schedules/volkswagen-touareg-2011-2013-hybrid.md) (`volkswagen-touareg-2011-2013-hybrid`)
 - [Volkswagen Touareg Hybrid, 2014 (2nd generation)](known-schedules/volkswagen-touareg-2014-hybrid.md) (`volkswagen-touareg-2014-hybrid`)
 - [Volkswagen Touareg TDI, 2010 (1st generation)](known-schedules/volkswagen-touareg-2010-tdi.md) (`volkswagen-touareg-2010-tdi`)
+- [Volkswagen Touareg TDI, 2011–2013 (2nd generation)](known-schedules/volkswagen-touareg-2011-2013-tdi.md) (`volkswagen-touareg-2011-2013-tdi`)
 - [Volkswagen Touareg TDI, 2014–2015 (2nd generation)](known-schedules/volkswagen-touareg-2014-2015-tdi.md) (`volkswagen-touareg-2014-2015-tdi`)
 - [Volkswagen Touareg TDI, 2016 (2nd generation)](known-schedules/volkswagen-touareg-2016-tdi.md) (`volkswagen-touareg-2016-tdi`)

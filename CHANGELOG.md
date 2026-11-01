@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.36.0](https://github.com/mcosgriff/glovebox/compare/v0.35.0...v0.36.0) (2026-11-01)
+
+
+### Features
+
+* **milestones:** continue the maker's table past its last column ([#568](https://github.com/mcosgriff/glovebox/issues/568)) ([#587](https://github.com/mcosgriff/glovebox/issues/587)) ([9b63590](https://github.com/mcosgriff/glovebox/commit/9b63590fdb106ce26b3416fe6d8ea4b5186a1249))
+* **schedule:** tell apart cars vPIC names alike ([#569](https://github.com/mcosgriff/glovebox/issues/569)) ([#590](https://github.com/mcosgriff/glovebox/issues/590)) ([4efe4e0](https://github.com/mcosgriff/glovebox/commit/4efe4e0cea8ea92d5165ed260ada210afe6f6daa))
+* **service-log:** offer "Done with these?" on edit and import ([#593](https://github.com/mcosgriff/glovebox/issues/593)) ([#598](https://github.com/mcosgriff/glovebox/issues/598)) ([aff06ec](https://github.com/mcosgriff/glovebox/commit/aff06ec380b522fddc6838fb858676087c072968))
+* **service-log:** shop-recommended work as items to keep, note or let go ([#572](https://github.com/mcosgriff/glovebox/issues/572)) ([#592](https://github.com/mcosgriff/glovebox/issues/592)) ([dabbcf9](https://github.com/mcosgriff/glovebox/commit/dabbcf9ea04cbb6d7706f74104a9a84d7dd79844))
+* **vehicles:** ask which gearbox a vehicle has, so maker's lists can split DSG and automatic rows ([#549](https://github.com/mcosgriff/glovebox/issues/549)) ([#599](https://github.com/mcosgriff/glovebox/issues/599)) ([1dc6af6](https://github.com/mcosgriff/glovebox/commit/1dc6af6fa88a2b821f16c840ae83d1dd7c63ab57))
+
+
+### Bug Fixes
+
+* **export:** one record summary for the report, Markdown and timeline ([#579](https://github.com/mcosgriff/glovebox/issues/579)) ([#591](https://github.com/mcosgriff/glovebox/issues/591)) ([d39ea9d](https://github.com/mcosgriff/glovebox/commit/d39ea9d4770b1afde2c6e74fad27242f5bdaf27c))
+* **schedule:** a trim that doesn't name a list never picks it on its own ([#595](https://github.com/mcosgriff/glovebox/issues/595)) ([#596](https://github.com/mcosgriff/glovebox/issues/596)) ([3db81a4](https://github.com/mcosgriff/glovebox/commit/3db81a4fba20204bcc62e0f1002996c03062fb55))
+* **schedule:** one answer to what interval an item counts by ([#575](https://github.com/mcosgriff/glovebox/issues/575)) ([#581](https://github.com/mcosgriff/glovebox/issues/581)) ([b121975](https://github.com/mcosgriff/glovebox/commit/b1219756abe260ce91881af8ee3d12513b9fdd9d))
+* **service-log:** say what happened to recommended work in "What was read" ([#594](https://github.com/mcosgriff/glovebox/issues/594)) ([#597](https://github.com/mcosgriff/glovebox/issues/597)) ([12bbb76](https://github.com/mcosgriff/glovebox/commit/12bbb769177d3d7d1edcbea2ea5a465d6d1a14f5))
+
+
+### Code Refactoring
+
+* **app:** screens read a vehicle through VehicleLog ([#577](https://github.com/mcosgriff/glovebox/issues/577)) ([#586](https://github.com/mcosgriff/glovebox/issues/586)) ([e746666](https://github.com/mcosgriff/glovebox/commit/e7466668c6cd8f00e996d4688642a5e34f6d3659))
+* **schedule:** one place that knows a vehicle's maker's schedule ([#576](https://github.com/mcosgriff/glovebox/issues/576)) ([#583](https://github.com/mcosgriff/glovebox/issues/583)) ([c989efa](https://github.com/mcosgriff/glovebox/commit/c989efafb76195e74592d830377f60363b90aa61))
+* **service-log:** Log service's draft and invoice merge in :domain ([#578](https://github.com/mcosgriff/glovebox/issues/578)) ([#589](https://github.com/mcosgriff/glovebox/issues/589)) ([a849e06](https://github.com/mcosgriff/glovebox/commit/a849e0606a988683b00cba860bb056e8c132c520))
+* **service-log:** one service record model ([#574](https://github.com/mcosgriff/glovebox/issues/574)) ([#582](https://github.com/mcosgriff/glovebox/issues/582)) ([aac73c8](https://github.com/mcosgriff/glovebox/commit/aac73c858a27b41a7429bbf5de8977ce8c0f5f2f))
+
+## [0.35.0](https://github.com/mcosgriff/glovebox/compare/v0.34.0...v0.35.0) (2026-10-31)
+
+
+### Features
+
+* **schedule:** Volkswagen 2014–2016 Golf, Jetta and wagon TDI lists ([#551](https://github.com/mcosgriff/glovebox/issues/551)) ([2c0caa8](https://github.com/mcosgriff/glovebox/commit/2c0caa8a8ab53c0443d95423f5e66389f7c24852))
+* **schedule:** Volkswagen 2014–2016 Golf, Jetta and wagon TDI lists from the owner's ruling on [#551](https://github.com/mcosgriff/glovebox/issues/551) ([#561](https://github.com/mcosgriff/glovebox/issues/561)) ([2c0caa8](https://github.com/mcosgriff/glovebox/commit/2c0caa8a8ab53c0443d95423f5e66389f7c24852))
+* **schedule:** Volkswagen Haldex and 2026 Golf R diff from the owner's rulings on [#554](https://github.com/mcosgriff/glovebox/issues/554) ([#557](https://github.com/mcosgriff/glovebox/issues/557)) ([76d62f9](https://github.com/mcosgriff/glovebox/commit/76d62f96ba7bc2123ddc3c25e6f4515f9b4cb97f))
+* **schedule:** Volkswagen Haldex and Golf R diff from the owner's rulings on [#554](https://github.com/mcosgriff/glovebox/issues/554) ([76d62f9](https://github.com/mcosgriff/glovebox/commit/76d62f96ba7bc2123ddc3c25e6f4515f9b4cb97f))
+* **schedule:** Volkswagen ID.4 and ID. Buzz maker's schedules ([#456](https://github.com/mcosgriff/glovebox/issues/456)) ([#559](https://github.com/mcosgriff/glovebox/issues/559)) ([89dbd31](https://github.com/mcosgriff/glovebox/commit/89dbd311cdbf185895fdf6ef00743ecc6001b945))
+* **schedule:** Volkswagen lists from the owner's rulings on [#553](https://github.com/mcosgriff/glovebox/issues/553) ([#558](https://github.com/mcosgriff/glovebox/issues/558)) ([1ee1edf](https://github.com/mcosgriff/glovebox/commit/1ee1edfa3c7eed2596639512330c6a4512c8b914))
+* **schedule:** Volkswagen lists from the reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552)) ([#562](https://github.com/mcosgriff/glovebox/issues/562)) ([2b39c66](https://github.com/mcosgriff/glovebox/commit/2b39c66cc3fa90f925f0bf31168b46d5544f56e2))
+* **schedule:** Volkswagen sister-model lists from the owner's rulings on [#555](https://github.com/mcosgriff/glovebox/issues/555) and [#556](https://github.com/mcosgriff/glovebox/issues/556) ([#560](https://github.com/mcosgriff/glovebox/issues/560)) ([aab055f](https://github.com/mcosgriff/glovebox/commit/aab055f575eb0d13a115b0d389c7b2e3dd653d04))
+
+
+### Bug Fixes
+
+* **service-log:** read a service's one-line parts header as its parts ([#484](https://github.com/mcosgriff/glovebox/issues/484)) ([#570](https://github.com/mcosgriff/glovebox/issues/570)) ([582315e](https://github.com/mcosgriff/glovebox/commit/582315e9fdf2cfe9b13be60691fe3243ccbb5175))
+* **service-log:** read every Shop-Ware service and offer only open work ([#484](https://github.com/mcosgriff/glovebox/issues/484)) ([#571](https://github.com/mcosgriff/glovebox/issues/571)) ([9b113bc](https://github.com/mcosgriff/glovebox/commit/9b113bc772f85a34e870fc07d5b63f9800bf620e))
+
 ## [0.34.0](https://github.com/mcosgriff/glovebox/compare/v0.33.0...v0.34.0) (2026-10-29)
 
 

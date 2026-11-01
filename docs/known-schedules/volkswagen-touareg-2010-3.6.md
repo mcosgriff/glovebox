@@ -7,9 +7,9 @@ in [known-schedules.md](../known-schedules.md). Every Touareg card read, and wha
 | Model year | What was read | Document |
 |---|---|---|
 | 2010 | The card for all models except the Routan (revised October 2012), in full, read again on 2026-10-29 as page images; the list was written from it | `2012/MC-10156104-9999` |
-| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621`, printed 11/24/2025 |
+| 2010 | Volkswagen's 2010 reissue, as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621`, printed 11/24/2025 |
 
-The card is read as the [2010 Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+The card is read as the [2010 Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
 says, and the list is the 2010 Passat list's, in its wording, with these differences:
 
 - **Left out on the evidence of the Touareg's own cards**: the timing belt "(if applicable, except 2.0L TDI)".
@@ -17,8 +17,11 @@ says, and the list is the 2010 Passat list's, in its wording, with these differe
   has a timing belt row, as the [2010 Tiguan](volkswagen-tiguan-2010.md) left it out on its own cards' evidence.
 - **The tire pressure sensors stay "(if applicable)"**, table-only, as on the Passat list: the 2010 TDI card
   has them for the TDI, but the 2014–2016 3.6L cards have no such row, so nothing shows they are every 3.6L's.
-- **The Haldex row stays**, table-only, "Change Haldex clutch oil (if applicable)", at 40,000, 80,000 and
-  120,000 (the open question on [#446](https://github.com/mcosgriff/glovebox/issues/446#issuecomment-6490065640)).
+- **The Haldex row**, "Haldex Clutch: Change oil (if applicable)", drawn at 40,000, 80,000 and 120,000, is
+  read as the [CC 3.6L](volkswagen-cc-2014-2015-3.6.md) reads it, by the owner's ruling on [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part A, confirmed for every list in [the second round](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511795038)): named "Change Haldex clutch oil, every 3 years (AWD)", in
+  `allWheelDriveOnly`, and a reminder every 36 months by time alone, with no `service` (no catalog line names the
+  job). This card prints no time for the row; the 3 years is the ruling's. The table keeps the card's columns. A
+  vehicle known to drive two wheels loses it. Every Touareg has 4Motion.
 - **No gearbox row.** The card's "Transmission: DSG (non automatic)" row isn't the Touareg's: the reissue's
   gearbox rows (page 5) name the Touareg only under the conventional automatic `0C8`, never under a DSG. The
   card's automatic row names other models only (2.5L Jetta, New Beetle and convertible, Golf). The reissue's
@@ -33,8 +36,8 @@ says, and the list is the 2010 Passat list's, in its wording, with these differe
   Golf, Tiguan, and CC").
 - **The model.** vPIC's 2010 model list for Volkswagen (`GetModelsForMakeYear`, read 2026-10-28) names it "Touareg".
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air filter
-  and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years first,
-  then every 2).
+  and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid every 24
+  months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from the reissue (the owner's ruling of 2026-10-28, #517). The table has none.
 - Left out as not the 3.6L's, by the card's own marks: AdBlue, the diesel particulate filter, the fuel filter
   rows and the 2.0L TDI timing belt (TDI), the New Beetle's brake fluid, the 2.5L / 3.2L spark plugs, the

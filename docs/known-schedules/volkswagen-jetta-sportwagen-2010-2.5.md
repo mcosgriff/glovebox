@@ -20,7 +20,7 @@ The Jetta SportWagen's other engines have lists of their own from the same card:
 [2.0T](volkswagen-jetta-sportwagen-2010-2.0t.md) and the [2.0L TDI](volkswagen-jetta-sportwagen-2010-tdi.md).
 The sedan has [its own lists](volkswagen-jetta-2010-2.5.md).
 
-- **The card is read as the [Passat's page](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read)
+- **The card is read as the [Passat's page](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read)
   says**, and this list is the [2010 Golf 2.5L](volkswagen-golf-2010-2.5.md)'s reading for the Jetta
   SportWagen: the same rows in the same columns, in the same wording. The card marks no row for the Golf
   and not the Jetta or the other way round, apart from the automatic gearbox row, which names both ("2.5L
@@ -52,8 +52,9 @@ The sedan has [its own lists](volkswagen-jetta-2010-2.5.md).
   - **2011–2013.** NHTSA's index files no Jetta SportWagen card for these years. One 2.5L card filed under
     2014 (`2013/MC-10125863-9999`, posted June 2013) is headed "2013 Volkswagen Jetta SportWagen" on every
     page; whether it is a 2013 card is asked on #439 (see the
-    [2014 list's page](volkswagen-jetta-sportwagen-2014-2.5.md)). Volkswagen's 2011–2013 reissues weren't
-    read for this list; whether to build years from reissues alone is the Golf's question 3 on #434.
+    [2014 list's page](volkswagen-jetta-sportwagen-2014-2.5.md)). 2011–2012 have
+    [a list from Volkswagen's reissues alone](volkswagen-jetta-sportwagen-2011-2012-2.5.md) ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)); 2013 is left to
+    that card.
   - **2014** has [its own list](volkswagen-jetta-sportwagen-2014-2.5.md).
   - Years before 2010 (NHTSA's index has no Volkswagen card before 2010), and the Golf SportWagen from 2015,
     which has an issue of its own (#147).

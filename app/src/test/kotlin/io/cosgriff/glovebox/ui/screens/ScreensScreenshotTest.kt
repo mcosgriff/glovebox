@@ -1,7 +1,11 @@
 package io.cosgriff.glovebox.ui.screens
 
+import io.cosgriff.glovebox.domain.Gearbox
+import io.cosgriff.glovebox.ui.components.GearboxQuestion
+import io.cosgriff.glovebox.ui.vehicle.GearboxSheet
 import io.cosgriff.glovebox.ui.bulletins.BulletinsContent
 import io.cosgriff.glovebox.ui.settings.ImportContent
+import io.cosgriff.glovebox.ui.settings.DoneCard
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -31,6 +35,12 @@ import io.cosgriff.glovebox.ui.service.LinePicker
 import io.cosgriff.glovebox.ui.service.LineChoice
 import io.cosgriff.glovebox.ui.service.LogServiceContent
 import io.cosgriff.glovebox.ui.service.WorkAndPrices
+import io.cosgriff.glovebox.ui.service.RecommendedByShop
+import io.cosgriff.glovebox.ui.service.DoneWithThese
+import io.cosgriff.glovebox.ui.service.ShopRecommendedContent
+import io.cosgriff.glovebox.domain.OpenRecommendations
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import io.cosgriff.glovebox.ui.service.InvoiceCard
 import io.cosgriff.glovebox.ui.service.InvoicePages
 import io.cosgriff.glovebox.ui.service.WhatWasRead
@@ -262,6 +272,40 @@ class ScreensScreenshotTest(private val shade: Shade) {
         }
     }
 
+    /** What the shop recommended, chosen row by row (#572, board RecommendedLog). */
+    @Test
+    fun logServiceRecommended() {
+        val form = Fixtures.logServiceRecommended()
+        compose.shoot("log_service_recommended", shade) {
+            Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { RecommendedByShop(form, onChangeLine = {}) }
+        }
+    }
+
+    /** Ticked lines that look like the work for open recommendations: done with these? (#572, board RecommendedLogDone). */
+    @Test
+    fun logServiceDone() {
+        val form = Fixtures.logServiceDone()
+        compose.shoot("log_service_done", shade) {
+            Column(Modifier.padding(20.dp)) { DoneWithThese(form) }
+        }
+    }
+
+    /** The vehicle's kept recommendations (#572, board RecommendedList). */
+    @Test
+    fun shopRecommended() = compose.shoot("shop_recommended", shade) {
+        ShopRecommendedContent(Fixtures.shopRecommended, onBack = {}, onClose = {})
+    }
+
+    /** Vehicle home's row for them (#572, board RecommendedHome). */
+    @Test
+    fun vehicleHomeRecommendations() = compose.shoot("vehicle_home_recommendations", shade) {
+        VehicleHomeContent(
+            Fixtures.vehicleHome, OpenRecalls(0, null),
+            onBack = {}, onLogService = {}, onLogItem = { _, _ -> }, onOpenRules = {}, onOpenRecalls = {}, onOpenDetails = {},
+            onEnterLastDone = {}, onUpdateMileage = {}, recommendations = OpenRecommendations(5, red = 2, amber = 1),
+        )
+    }
+
     @Test
     fun logServiceAddPrices() {
         val form = Fixtures.logService()
@@ -404,6 +448,12 @@ class ScreensScreenshotTest(private val shade: Shade) {
         )
     }
 
+    /** A history import offering open recommendations as done (#593, board ImportDone). */
+    @Test
+    fun importDone() = compose.shoot("import_history_done", shade) {
+        Column(Modifier.padding(20.dp)) { DoneCard(Fixtures.importDone, onTick = { _, _ -> }) }
+    }
+
     @Test
     fun record() = compose.shoot("record", shade) {
         RecordDetailContent(
@@ -454,6 +504,18 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun oilIntervalYours() = compose.shootScreen("oil_interval_yours", shade) {
         OilIntervalSheet(Fixtures.oilChange, own = Interval(5_000, null), unit = DistanceUnit.MILES, onSave = {}, onDismiss = {})
+    }
+
+    /** Which gearbox the vehicle has (#549), from its Vehicle details row: saved as "Don't know". */
+    @Test
+    fun gearbox() = compose.shootScreen("gearbox", shade) {
+        GearboxSheet(current = null, onSave = {}, onDismiss = {})
+    }
+
+    /** The gearbox question where a vehicle is added, started at Dual-clutch from a Volkswagen's 7-speed (#549). */
+    @Test
+    fun gearboxQuestion() = compose.shoot("gearbox_question", shade) {
+        GearboxQuestion(Gearbox.DUAL_CLUTCH, onPick = {}, Modifier.padding(20.dp), hintedFrom = "7-speed Automatic")
     }
 
     @Test
@@ -528,6 +590,14 @@ class ScreensScreenshotTest(private val shade: Shade) {
     fun milestones() = compose.shoot("milestones", shade) {
         MilestonesContent(
             Fixtures.milestones, onBack = {}, onOpenRecord = {},
+            onEdit = {}, onShowMore = {}, onAddMilestone = {}, onChangeRepeat = {}, onSaveFile = {}, onRemove = {}, onAddKnown = {},
+        )
+    }
+
+    @Test
+    fun milestonesContinued() = compose.shoot("milestones_continued", shade) {
+        MilestonesContent(
+            Fixtures.milestonesContinued, onBack = {}, onOpenRecord = {},
             onEdit = {}, onShowMore = {}, onAddMilestone = {}, onChangeRepeat = {}, onSaveFile = {}, onRemove = {}, onAddKnown = {},
         )
     }

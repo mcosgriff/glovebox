@@ -27,6 +27,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
@@ -63,6 +64,7 @@ class ScheduleWorld {
     val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
     val settings = SettingsRepository(context)
     val catalog = KnownScheduleCatalog(context)
+    val makers = MakersSchedules(catalog, db)
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val saver = ExportSaver(context, appScope)
     val actions by lazy {
@@ -137,7 +139,7 @@ object ScheduleFixtures {
     fun fourRunner(engine: String? = "4.0L V6") = VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", engine = engine, drivetrain = "4WD", createdOn = ADDED)
 
     /** A model with no maker's list: the typical list. */
-    fun hatch() = VehicleEntity(vin = null, year = 2013, make = "Volkswagen", model = "Golf", drivetrain = "FWD", fuel = "Gasoline", createdOn = ADDED)
+    fun hatch() = VehicleEntity(vin = null, year = 2008, make = "Volkswagen", model = "Golf", drivetrain = "FWD", fuel = "Gasoline", createdOn = ADDED)
 }
 
 /** Draws [content] as the app does, in the light theme on the page colour. */

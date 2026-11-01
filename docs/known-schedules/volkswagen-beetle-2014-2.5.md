@@ -15,13 +15,13 @@ Volkswagen prints one card per model and engine: a "Beetle" card and a "Beetle C
 | Model year | Engine | Beetle card | Beetle Convertible card | List |
 |---|---|---|---|---|
 | 2014 | 2.5L | Posted June 2013, `2013/MC-10125790-9999`; the list was written from it | Posted June 2013, `2013/MC-10125866-9999` | this one |
-| 2014 | 1.8T | Posted February 2014, `2014/MC-10122260-9999` | Posted February 2014, `2014/MC-10122259-9999` | [2014 1.8T](volkswagen-beetle-2014-1.8t.md) |
+| 2014 | 1.8T | Posted February 2014, `2014/MC-10122260-9999` | Posted February 2014, `2014/MC-10122259-9999` | [2014 1.8T](volkswagen-beetle-2014-2015-1.8t.md) |
 | 2014 | 2.0L TSI | Posted June 2013, `2013/MC-10125789-9999` | Posted June 2013, `2013/MC-10125792-9999` | [2014 2.0T](volkswagen-beetle-2014-2.0t.md) |
 | 2014 | 2.0L TDI | Posted June 2013, `2013/MC-10125788-9999` | Posted June 2013, `2013/MC-10125791-9999` | none (below) |
-| 2015 | 1.8T | Posted June 2014, `2014/MC-10120108-9999`, and its revision posted November 2017, `2017/MC-10133454-9999` | Posted June 2014, `2014/MC-10120111-9999` | none (below) |
+| 2015 | 1.8T | Posted June 2014, `2014/MC-10120108-9999`, and its revision posted November 2017, `2017/MC-10133454-9999` | Posted June 2014, `2014/MC-10120111-9999` | [2014–2015 1.8T](volkswagen-beetle-2014-2015-1.8t.md), from the revision (#553) |
 | 2015 | 2.0L TSI | Posted June 2014, `2014/MC-10120110-9999`, and a second card headed 2015, posted August 2015, `2015/MC-10123057-9999` | Posted June 2014, `2014/MC-10120113-9999` | none (below) |
 | 2015 | 2.0L TDI | Posted June 2014, `2014/MC-10120109-9999` | Posted June 2014, `2014/MC-10120112-9999` | none (below) |
-| 2016 | 1.8T | Posted August 2015, `2015/MC-10123056-9999` | Posted August 2015, `2015/MC-10123081-9999` | none (below) |
+| 2016 | 1.8T | Posted August 2015, `2015/MC-10123056-9999` | Posted August 2015, `2015/MC-10123081-9999` | [2016 1.8T](volkswagen-beetle-2016-1.8t.md) (#553) |
 | 2016 | 2.0L TSI | None headed 2016 (see 2015) | Posted August 2015, `2015/MC-10123059-9999` | none (below) |
 | 2016 | 2.0L TDI | Posted August 2015, `2015/MC-10128137-9999` | Posted August 2015, `2015/MC-10123058-9999` | none (below) |
 | 2018 | all models | The newest revision of the all-model card, `2019/MC-10168646-0001` | the same card | [2018](volkswagen-beetle-2018.md) |
@@ -83,18 +83,16 @@ Asked on [#448](https://github.com/mcosgriff/glovebox/issues/448); nothing below
   holds only the timing belt ([#434's question 2](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244));
   on its 2015 card it lacks the yearly airbag check and the brake fluid; on its 2016 card, the brake fluid. One
   "Beetle" list can't be both.
-- **The 1.8T, 2015 and 2016.** The Beetle's June 2014 and August 2015 cards draw "Sunroof: Open sunroof and
-  check front water drains" at 20,000 as well as at 40,000, 80,000 and 120,000; the convertible's cards don't.
-  Volkswagen's November 2017 revision of the 2015 Beetle 1.8T card (`2017/MC-10133454-9999`, "Removed
-  maintenance check at 20K for 'Sunroof: Open sunroof and check water drains…'") takes the 20,000 mark out,
-  and is then row for row the 2014 1.8T card. No revision of the 2016 card was found.
+- The 1.8T's 20,000 sunroof drain mark on the 2015 and 2016 Beetle cards was settled by the owner on
+  2026-10-29 (#553, [part A](https://github.com/mcosgriff/glovebox/issues/553#issuecomment-6511794772)): the [2014–2015 1.8T](volkswagen-beetle-2014-2015-1.8t.md) and
+  [2016 1.8T](volkswagen-beetle-2016-1.8t.md) pages say how.
 - **The 2.0L TSI, 2015 and 2016.** Two Beetle cards are headed "2015 … 2.0L TSI": the June 2014 one, row for row
   the 2014 card, and one posted August 2015 in the 2016 layout (no yearly airbag check, rotation, door checks,
   rear nozzle or sticker; the dust and pollen filter every 40,000 or 2 years), which is row for row the 2016
   Beetle Convertible 2.0T card without the roof rows. No Beetle card is headed 2016 for the 2.0L TSI. The same
   case as the Passat 3.6L ([#444's question 2](https://github.com/mcosgriff/glovebox/issues/444#issuecomment-6489685514)).
-- **2012, 2013 and 2017.** NHTSA's index has no Beetle card for those years. Volkswagen's 2025 reissues would be
-  the only source; they weren't read for the Beetle, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+- **2012, 2013 and 2017.** NHTSA's index has no Beetle card for those years. They have lists from Volkswagen's
+  reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): [2.5L](volkswagen-beetle-2012-2013-2.5.md), [2.0T](volkswagen-beetle-2012-2013-2.0t.md)
+  and [TDI](volkswagen-beetle-2012-2013-tdi.md) for 2012–2013, and [2017](volkswagen-beetle-2017.md).
 - **The 2010 New Beetle** is on the 2010 card for all models except the Routan; it is the older generation and
   outside #448.

@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.export
 
+import io.cosgriff.glovebox.data.export.ExportBuilder
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import android.os.Looper
 import androidx.compose.ui.test.assertIsDisplayed
@@ -53,7 +54,7 @@ class ExportSheetTest {
 
     private val saver = ExportSaver(g.context, g.appScope)
 
-    private fun vm() = ExportViewModel(g.db.vehicles(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.recalls(), g.db.documents(), g.photos, saver, ReportFonts(g.context))
+    private fun vm() = ExportViewModel(ExportBuilder(g.db.vehicles(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.recalls(), g.db.documents()), g.photos, saver, ReportFonts(g.context))
 
     private fun record(id: Long, date: LocalDate) = runBlocking {
         g.db.service().insertWithItems(

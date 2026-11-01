@@ -14,12 +14,13 @@ on 2026-10-29, as page images, by eye.
   columns to 100,000, no months on them; oil 10,000 or 12 months, #517).
 - **Spark plugs** every 80,000 miles or 6 years, "GLI" on all four cards ("Jetta, GLI, Taos" in 2023 and 2024; "Jetta",
   "GLI, GTI" in 2025; "GLI" on its own line in 2026): 80,000 / 72 mo.
-- **The DSG is left out**, asked on [#442](https://github.com/mcosgriff/glovebox/issues/442#issuecomment-6491794904) (question 2). The cards' automatic row ("Transmission, Automatic - Change Fluid & filter
-  (if applicable)", every 80,000 miles) gives the DSG as "0GC (DSG): Arteon, GTI, Golf R, Jetta, Taos" (2023, 2024),
-  "GTI, Golf R, Jetta, Taos" (2025), "GTI, Golf R, Jetta" (2026). It names the "Jetta", not the "GLI", while the spark
-  plug row on the same cards names the two apart, and vPIC has "Jetta" and "Jetta GLI" apart for these years. The
-  2019–2022 cards name the "Jetta GLI" on their DSG row. Whether the reissues' "Jetta" there is the GLI isn't on the
-  card, so it isn't taken.
+- **The DSG.** The cards' automatic row ("Transmission, Automatic - Change Fluid & filter (if applicable)", every
+  80,000 miles) gives the DSG as "0GC (DSG): Arteon, GTI, Golf R, Jetta, Taos" (2023, 2024), "GTI, Golf R, Jetta,
+  Taos" (2025), "GTI, Golf R, Jetta" (2026). It names the "Jetta", not the "GLI", while the spark plug row on the
+  same cards names the two apart. By the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335) (part A), that "Jetta" is read as the GLI
+  (the 2019–2022 cards name the "Jetta GLI" on their DSG row): "Change DSG transmission fluid and filter (DSG
+  only)", every 80,000 miles, `trans-fluid`, in `manualExcluded`, as on the
+  [2023–2026 GTI](volkswagen-gti-2023-2026.md).
 - Left out, as on the GTI's list: the AWD clutch fluid and front axle differential lock fluid ("All Applicable
   Vehicles"; the GLI is front-wheel drive), the belt starter-generator belt (110,000, past the grid's end), the tire
   mobility kit bottle, and the inspections (sunroof drains; camshaft and coolant pump toothed belts, 180,000 or 15
@@ -31,4 +32,4 @@ on 2026-10-29, as page images, by eye.
   from "Jetta" for 2023 to 2026. One engine, the 2.0T, so the list names none.
 - Reminders: engine oil 10,000 / 12 mo; additional items: air filter 60,000 / 72 mo; brake fluid every 24 months by
   time alone (3 years after registration first, in its name); dust and pollen filter 40,000 / 24 mo; spark plugs
-  80,000 / 72 mo.
+  80,000 / 72 mo; DSG fluid and filter 80,000 (not for a manual).

@@ -16,8 +16,7 @@ for 2014 from its owners-literature site
 | 2014 | Volkswagen's 2014 reissue, for the oil change's time limit only | reissue `USA5R505521`, printed 11/24/2025, `…/v1/document/033ff2d5-58e3-4663-97cf-1bbdb864258d` |
 
 NHTSA's index files seven documents under the 2014 Golf. The other four: `2013/MC-10155943-9999`,
-`2013/MC-10157534-9999` and `2013/MC-10242463-9999` are the Golf 2.0L TDI card (see the
-[2010 TDI's page](volkswagen-golf-2010-tdi.md) for why it has no list yet), and `2013/MC-10242465-9999` is
+`2013/MC-10157534-9999` and `2013/MC-10242463-9999` are the Golf 2.0L TDI card ([its own list](volkswagen-golf-2014-tdi.md)), and `2013/MC-10242465-9999` is
 the 2014 GTI 2.0TFSI card.
 
 - **The card is a grid**: 12 columns, 10,000 to 120,000 miles, with no months printed for a column.
@@ -46,5 +45,5 @@ the 2014 GTI 2.0TFSI card.
   Nothing else is taken from the reissue, which is a later layout.
 - Left out: the dealer's service sticker, and the grey "Carefree Maintenance" shading of the first two
   columns.
-- **Not covered:** the 2.0L TDI for 2014 (asked on #434), 2011–2013 (see the
-  [2010 2.5L's page](volkswagen-golf-2010-2.5.md)), and the Mk7 from 2015.
+- **Not covered:** 2011–2013 ([their own list](volkswagen-golf-2011-2013-2.5.md), from the reissues), and the Mk7
+  from 2015.

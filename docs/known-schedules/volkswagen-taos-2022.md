@@ -16,8 +16,8 @@ from the time wins (the owner's ruling of 2026-10-23).
   card names the Tiguan alone, so the two read the same.
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years", read as on the 2022 Tiguan and
   Arteon: "Change AWD clutch fluid (AWD)", every 36 months by time alone, no service line, in `allWheelDriveOnly`.
-  The Taos was sold with front-wheel drive and with 4Motion (below). That reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  The Taos was sold with front-wheel drive and with 4Motion (below). That reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).
 - **No gearbox row.** "Transmission, 7-Speed DSG Automatic Transmission: Change fluid", every 80,000 miles, is
   "Only: Golf R, Golf GTI, Jetta GLI", which leaves the Taos out; "Transmission, automatic: Change fluid (excluding
   Canada) (only non-DSG Automatic Transmission)", every 80,000 miles, names no model
@@ -70,5 +70,5 @@ so no list names one.
   ([2025–2026's page](volkswagen-taos-2025-2026.md)); asked on
   [#455](https://github.com/mcosgriff/glovebox/issues/455#issuecomment-6493694589).
 - **The AWD clutch fluid on 2022 on**, printed "(if equipped)" (2022) and "All Applicable Vehicles" (2023 on): read as
-  an AWD job, as the Tiguan's, Atlas's and Arteon's lists do; that reading waits on
-  [#437's question 5](https://github.com/mcosgriff/glovebox/issues/437#issuecomment-6491507764).
+  an AWD job, as the Tiguan's, Atlas's and Arteon's lists do; that reading is confirmed by the owner on
+  [#554](https://github.com/mcosgriff/glovebox/issues/554#issuecomment-6511733883) (part B, 2026-10-29).

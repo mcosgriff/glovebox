@@ -16,6 +16,29 @@ import kotlinx.serialization.json.JsonElement
  */
 data class KnownEngine(val label: String, val displacementL: Double, val fuel: String? = null, val powertrain: Powertrain? = null)
 
+/**
+ * A word a list holds the vehicle's trim to, where NHTSA gives two cars with different maker's cards the same make,
+ * model, year, engine size and fuel, and only vPIC's `Trim` tells them apart (#569): the 2011–2016 Jetta GLI's 2.0L
+ * TSI ("GLI", "2.0T GLI SE, SEL") and the Jetta's 2.0L 8-valve ("S", "Trendline", "2.0L"). [named] true is a list
+ * for a trim that names [word]; false, one for a trim that doesn't. **Only a trim that names [word] tells:** it picks
+ * the list that names it and rules out the one that doesn't. A trim that doesn't name it picks neither (#595), since
+ * vPIC's "2.0T GLI SE, SEL" is offered as "SEL" alone, so setup asks, as it does for a vehicle with no trim on record.
+ */
+data class KnownTrim(val word: String, val named: Boolean) {
+    /**
+     * Null is "can't tell": no trim on record, or one that doesn't name [word]. Words are runs of letters and digits,
+     * compared ignoring case.
+     */
+    fun fits(trim: String?): Boolean? {
+        val words = trim?.split(nonWord)?.filter { it.isNotEmpty() }.orEmpty()
+        return if (words.any { it.equals(word, ignoreCase = true) }) named else null
+    }
+
+    private companion object {
+        val nonWord = Regex("[^\\p{L}\\p{N}]+")
+    }
+}
+
 data class KnownScheduleList(
     override val id: String,
     /** "2017–2024 4Runner" */
@@ -28,7 +51,10 @@ data class KnownScheduleList(
     val unit: DistanceUnit,
     /** The guide's table, every line of it, in mileage order. */
     val milestones: List<ImportedMilestone>,
-    /** The jobs of the table that come round evenly, as reminders. Never anything the table doesn't say. */
+    /**
+     * The jobs of the table that come round evenly, as reminders. Never anything the table doesn't say. Empty
+     * only where the table is all inspections and every reminder is in [additional] (a battery-electric guide, #456).
+     */
     val intervals: List<ImportedScheduleItem>,
     /**
      * The names of the jobs the guide marks as for four-wheel drive only, in the table or among the
@@ -50,6 +76,18 @@ data class KnownScheduleList(
      * round from [manualExcluded]: a vehicle known to shift itself doesn't get them.
      */
     val manualOnly: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that are for a dual-clutch (DSG) gearbox only (#549): Volkswagen's "DSG: change fluid and
+     * filter". In the table and a reminder for a vehicle whose owner said Dual-clutch; in the table with no reminder
+     * while the owner hasn't said which ("Don't know"), since a wrong fluid is worse than an empty row; left out for
+     * any other gearbox ([KnownSchedules.applies]).
+     */
+    val dsgOnly: Set<String> = emptySet(),
+    /**
+     * The names of the jobs that are for a conventional automatic only, not a dual-clutch ("Automatic (non-DSG):
+     * change fluid"). The same rule as [dsgOnly], for a vehicle whose owner said Automatic.
+     */
+    val automaticOnly: Set<String> = emptySet(),
     /** Null for a list that is for every engine the model had in those years. */
     val engine: KnownEngine? = null,
     override val modelAliases: List<String> = emptyList(),
@@ -72,6 +110,12 @@ data class KnownScheduleList(
      * record matches no list that names one; the owner is asked instead.
      */
     val body: BodyStyle? = null,
+    /**
+     * Null for a list that is for every trim. Set only where the maker's cards for one engine size and fuel differ
+     * and nothing but vPIC's `Trim` tells the cars apart ([KnownTrim]). A vehicle with no trim on record, or one
+     * that doesn't name the word, matches no list that names one; the owner is asked instead.
+     */
+    val trim: KnownTrim? = null,
 ) : KnownList
 
 sealed interface KnownScheduleFile {
@@ -110,8 +154,8 @@ object KnownSchedules {
     /** The folder in the app's assets the lists live in. */
     const val ASSET_DIR = "known-schedules"
 
-    private val required = KnownLists.headerKeys + setOf("milestones", "intervals")
-    private val keys = required + setOf("fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "engine", "modelAliases", "additional", "e85", "body")
+    private val required = KnownLists.headerKeys + setOf("milestones")
+    private val keys = required + setOf("intervals", "fourWheelDriveOnly", "allWheelDriveOnly", "manualExcluded", "manualOnly", "dsgOnly", "automaticOnly", "engine", "modelAliases", "additional", "e85", "body", "trim")
 
     fun parse(text: String): KnownScheduleFile {
         val (o, check) = KnownLists.root(text, keys, required = required)
@@ -120,7 +164,8 @@ object KnownSchedules {
         // Both readers report under "items", as they do for an import file; the two errors lists are kept apart.
         val milestones = o["milestones"]?.let { MilestoneImport.read(it, check) }.orEmpty()
         val tableFailed = check.failed
-        val intervals = o["intervals"]?.let { ScheduleImport.read(it, check) }.orEmpty()
+        // Empty or left out only where every reminder is a job apart from the table (checked below, #456).
+        val intervals = o["intervals"]?.let { ScheduleImport.read(it, check, min = 0) }.orEmpty()
         val intervalsFailed = check.failed
         val e85 = o["e85"]?.let { e85(it, milestones, intervals, held = !intervalsFailed, check) }.orEmpty()
         if (!intervalsFailed) {
@@ -129,6 +174,9 @@ object KnownSchedules {
             (contradictions(milestones, plain) + fuelled.mapNotNull { onTable(milestones, it) }).forEach { check.fail("intervals", it) }
         }
         val additional = o["additional"]?.let { ScheduleImport.read(it, check) }.orEmpty()
+        if (intervals.isEmpty() && "additional" !in o && !intervalsFailed) {
+            check.fail("intervals", "must have at least one entry, unless \"additional\" has one")
+        }
         val tableJobs = milestones.flatMap { m -> m.work.map { MilestoneImport.jobKey(it) } }.toSet() +
             intervals.map { MilestoneImport.jobKey(TableJob(it.name, it.service)) }
         additional.filter { MilestoneImport.jobKey(TableJob(it.name, it.service)) in tableJobs }
@@ -146,6 +194,14 @@ object KnownSchedules {
         val notManual = jobs("manualExcluded")
         val manual = jobs("manualOnly")
         (notManual intersect manual).forEach { check.fail("manualOnly", "\"$it\" is also in manualExcluded") }
+        val dsg = jobs("dsgOnly")
+        val automatic = jobs("automaticOnly")
+        // A job for one gearbox that shifts itself is never a manual's, and is already left out for one.
+        (dsg intersect automatic).forEach { check.fail("automaticOnly", "\"$it\" is also in dsgOnly") }
+        for ((field, set) in listOf("dsgOnly" to dsg, "automaticOnly" to automatic)) {
+            (set intersect manual).forEach { check.fail(field, "\"$it\" is also in manualOnly") }
+            (set intersect notManual).forEach { check.fail(field, "\"$it\" is also in manualExcluded, which $field already covers") }
+        }
         val engine = o["engine"]?.let { KnownLists.engine(it, check) }
         if ("e85" in o && engine?.powertrain != Powertrain.FLEX_FUEL) check.fail("e85", "is only for a list whose engine is flex-fuel")
         val aliases = o["modelAliases"]?.let { e ->
@@ -157,6 +213,7 @@ object KnownSchedules {
                 if (it == null) check.fail("body", "must be one of ${BodyStyle.entries.joinToString { b -> b.fileName }}")
             }
         }
+        val trim = o["trim"]?.let { trim(it, check) }
         if (check.failed || header == null) return KnownScheduleFile.Invalid(check.invalid().errors)
         return KnownScheduleFile.Ok(
             KnownScheduleList(
@@ -165,13 +222,33 @@ object KnownSchedules {
                 allWheelDriveOnly = allWheel,
                 manualExcluded = notManual,
                 manualOnly = manual,
+                dsgOnly = dsg,
+                automaticOnly = automatic,
                 engine = engine,
                 modelAliases = aliases,
                 additional = additional,
                 e85 = e85,
                 body = body,
+                trim = trim,
             ),
         )
+    }
+
+    private val trimWord = Regex("[\\p{L}\\p{N}]{1,20}")
+
+    /** The `trim` field: `{ "names": "GLI" }` or `{ "doesNotName": "GLI" }`, one word, and only one of the two. */
+    private fun trim(e: JsonElement, check: ImportCheck): KnownTrim? {
+        val o = check.obj(e, "trim", setOf("names", "doesNotName")) ?: return null
+        val (key, value) = o.entries.singleOrNull() ?: run {
+            check.fail("trim", "must have one of \"names\" or \"doesNotName\"")
+            return null
+        }
+        val word = check.string(value, "trim.$key", 20) ?: return null
+        if (!trimWord.matches(word)) {
+            check.fail("trim.$key", "must be one word of letters and digits")
+            return null
+        }
+        return KnownTrim(word, named = key == "names")
     }
 
     private val e85Keys = ScheduleImport.intervalKeys + "name"
@@ -258,62 +335,104 @@ object KnownSchedules {
      * The list for a vehicle, or null. As for torque: the make, model and a year whose guide was read;
      * no near misses. Where a model has a list per engine, [engine] (the vehicle's engine text) has to
      * give that engine's size, [fuel] its fuel where the list says one, and [powertrain] its powertrain
-     * where the list says one, and [body] its body where the list says one: **an engine, powertrain or body
-     * that isn't known matches no list that needs it**, and the owner is asked instead ([engineChoices]).
+     * where the list says one, [body] its body where the list says one, and [trim] (vPIC's or the owner's) the word
+     * a list holds it to ([KnownTrim]): **an engine, powertrain, body or trim that isn't known matches no list that
+     * needs it**, and the owner is asked instead ([engineChoices]).
      */
     fun match(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null, trim: String? = null,
     ): KnownScheduleList? =
-        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
+        KnownLists.forEngine(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { fits(it, body, trim) }
 
     /**
      * The lists the owner could pick between when [match] finds none because the vehicle's engine, or
      * its fuel, isn't on record: every engine's list for the model and year that what is on record
      * doesn't rule out. Empty when nothing is offered for the model, or the vehicle has an engine none
-     * of them is for. A list that names a body is offered when the vehicle's body isn't on record. The pick is
-     * the owner's; nothing here chooses for them.
+     * of them is for. A list that names a body or a trim is offered when the vehicle's body or trim isn't on record.
+     * The pick is the owner's; nothing here chooses for them.
      */
     fun engineChoices(
         lists: List<KnownScheduleList>, year: Int, make: String, model: String,
-        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null,
+        engine: String? = null, fuel: String? = null, powertrain: Powertrain? = null, body: BodyStyle? = null, trim: String? = null,
     ): List<KnownScheduleList> =
-        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { bodyFits(it, body) }
+        KnownLists.engineChoices(lists.forModel(year, make, model), KnownScheduleList::engine, engine, fuel, powertrain) { fits(it, body, trim) }
 
-    /** Null is "can't tell": the list names a body and none is on record. */
-    private fun bodyFits(list: KnownScheduleList, body: BodyStyle?): Boolean? =
-        if (list.body == null) true else body?.let { it == list.body }
+    /** False where the body or trim on record rules the list out; null ("can't tell") where one the list needs isn't on record. */
+    private fun fits(list: KnownScheduleList, body: BodyStyle?, trim: String?): Boolean? {
+        val byBody = if (list.body == null) true else body?.let { it == list.body }
+        val byTrim = if (list.trim == null) true else list.trim.fits(trim)
+        return when {
+            byBody == false || byTrim == false -> false
+            byBody == null || byTrim == null -> null
+            else -> true
+        }
+    }
 
     /**
-     * Whether a job of [list] is for a vehicle with this [drivetrain] (vPIC's drive type, or the one
-     * picked when the vehicle was added). Only a vehicle **known** to drive two wheels loses the
+     * Whether a job of [list] is in the table for a vehicle with this [drivetrain] (vPIC's drive type, or the one
+     * picked when the vehicle was added) and [gearbox]. Only a vehicle **known** to drive two wheels loses the
      * jobs the guide marks "(4WD)" or "(AWD)". Anything else keeps them, with the mark in their
      * names: a vehicle with that drive because they are its jobs, and one on record as the other
      * kind or as nothing at all because the guide has no other line for it and leaving a job out is
      * the worse mistake. That is not a claim that all-wheel drive is four-wheel drive ([DriveKind]).
+     *
+     * The gearbox the same way: only a vehicle known to have a manual loses the jobs that aren't for one, only one
+     * known to shift itself loses the manual's own, and only one whose owner named the other kind loses a
+     * [KnownScheduleList.dsgOnly] or [KnownScheduleList.automaticOnly] job. Whether such a job is also a reminder is
+     * [reminds].
      */
-    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, transmission: String? = null): Boolean {
+    fun applies(list: KnownScheduleList, jobName: String, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): Boolean {
         val key = MilestoneImport.nameKey(jobName)
         val twoWheel = Drivetrains.kind(drivetrain) == DriveKind.TWO_WHEEL
-        // The same rule for the gearbox: only a vehicle known to have a manual loses the jobs that aren't for one,
-        // and only one known to shift itself loses the manual's own.
+        val forOne = onlyFor(list, key)
         return !(twoWheel && (key in list.fourWheelDriveOnly || key in list.allWheelDriveOnly)) &&
-            !(Transmissions.isManual(transmission) && key in list.manualExcluded) &&
-            !(Transmissions.isAutomatic(transmission) && key in list.manualOnly)
+            !(gearbox.manual && (key in list.manualExcluded || forOne != null)) &&
+            !(gearbox.shiftsItself && key in list.manualOnly) &&
+            !(forOne != null && gearbox.gearbox != null && gearbox.gearbox != forOne)
     }
 
     /**
-     * [list]'s table and intervals for one vehicle: in [unit], which changes nothing when it is the
-     * list's own, and without the jobs that aren't for its [drivetrain]. Each interval carries its
-     * [KnownScheduleList.e85] interval, if it has one.
+     * Whether a job of [list] that [applies] is also a reminder: a [KnownScheduleList.dsgOnly] or
+     * [KnownScheduleList.automaticOnly] job only for a vehicle whose owner said that gearbox (#549). On "Don't know"
+     * it stays in the table with no reminder, as a wrong fluid is worse than an empty row. Every other job that
+     * applies is.
      */
-    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedMilestone> =
+    fun reminds(list: KnownScheduleList, jobName: String, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): Boolean =
+        applies(list, jobName, drivetrain, gearbox) && Gearboxes.reminds(onlyFor(list, MilestoneImport.nameKey(jobName)), gearbox.gearbox)
+
+    /** The one gearbox a job is for, by its name key; null for a job for any. */
+    private fun onlyFor(list: KnownScheduleList, key: String): Gearbox? = when (key) {
+        in list.dsgOnly -> Gearbox.DUAL_CLUTCH
+        in list.automaticOnly -> Gearbox.AUTOMATIC
+        else -> null
+    }
+
+    /**
+     * [list]'s table for one vehicle: in [unit], which changes nothing when it is the
+     * list's own, and without the jobs that aren't for its [drivetrain] or [gearbox] ([applies]).
+     */
+    fun milestonesIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null)): List<ImportedMilestone> =
         FileDistances.milestones(list.milestones, null, list.unit, unit).first
-            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain, transmission) }) }
+            .map { m -> m.copy(work = m.work.filter { applies(list, it.name, drivetrain, gearbox) }) }
             .filter { it.work.isNotEmpty() }
 
-    fun intervalsIn(list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, transmission: String? = null): List<ImportedScheduleItem> =
-        FileDistances.schedule((list.intervals + list.additional).map { it.copy(e85 = list.e85[MilestoneImport.nameKey(it.name)]) }, list.unit, unit).filter { applies(list, it.name, drivetrain, transmission) }
+    /**
+     * [list]'s reminders for one vehicle ([reminds]), in [unit]. Each carries its [KnownScheduleList.e85] interval,
+     * if it has one, and the one gearbox it is for ([ImportedScheduleItem.gearbox]), so the item made from it keeps
+     * that. With [onTable], the jobs as the table shows them instead ([applies]): a one-gearbox job on "Don't know"
+     * too, for the Milestones view, which reminds of nothing.
+     */
+    fun intervalsIn(
+        list: KnownScheduleList, unit: DistanceUnit, drivetrain: String?, gearbox: GearboxOnRecord = GearboxOnRecord(null), onTable: Boolean = false,
+    ): List<ImportedScheduleItem> =
+        FileDistances.schedule(
+            (list.intervals + list.additional).map {
+                val key = MilestoneImport.nameKey(it.name)
+                it.copy(e85 = list.e85[key], gearbox = onlyFor(list, key))
+            },
+            list.unit, unit,
+        ).filter { if (onTable) applies(list, it.name, drivetrain, gearbox) else reminds(list, it.name, drivetrain, gearbox) }
 
     /**
      * What adding [intervals] (already in the vehicle's unit) would do. Each becomes an item of the

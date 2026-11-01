@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ApplicationScope
 import io.cosgriff.glovebox.ui.service.shortName
@@ -43,11 +44,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -64,7 +65,6 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.OdometerReadingEntity
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.LoggedReading
@@ -76,12 +76,11 @@ import io.cosgriff.glovebox.domain.ReadingRow
 import io.cosgriff.glovebox.ui.MileageReadingsRoute
 import io.cosgriff.glovebox.ui.components.SectionLabel
 import io.cosgriff.glovebox.ui.service.asDistance
-import io.cosgriff.glovebox.data.log.clusterSwap
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -110,8 +109,7 @@ class MileageReadingUndo @Inject constructor(private val odometer: OdometerDao, 
 @HiltViewModel
 class MileageReadingsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
-    service: ServiceDao,
+    logs: VehicleLogs,
     private val odometer: OdometerDao,
     private val undo: MileageReadingUndo,
 ) : ViewModel() {
@@ -120,25 +118,20 @@ class MileageReadingsViewModel @Inject constructor(
     private var entities: Map<Long, OdometerReadingEntity> = emptyMap()
 
     /** Null while loading, and if the vehicle no longer exists. */
-    val state: StateFlow<MileageReadingsState?> = combine(
-        vehicles.observe(vehicleId),
-        odometer.observe(vehicleId),
-        service.observeRecords(vehicleId),
-    ) { vehicle, readings, records ->
-        if (vehicle == null) return@combine null
-        entities = readings.associateBy { it.id }
-        val swap = vehicle.clusterSwap()
+    val state: StateFlow<MileageReadingsState?> = logs.observe(vehicleId).map { log ->
+        if (log == null) return@map null
+        entities = log.readings.associateBy { it.id }
         MileageReadingsState(
-            vehicleName = vehicle.shortName(),
+            vehicleName = log.vehicle.shortName(),
             // Everything as typed; MileageReadings puts it in dash terms to compare.
             rows = MileageReadings.rows(
-                readings.map { LoggedReading(it.id, it.date, it.odometer) } +
-                    records.map { LoggedReading(it.record.id, it.record.date, it.record.odometer, fromRecord = true) },
-                swap,
-                vehicle.unit,
+                log.readings.map { LoggedReading(it.id, it.date, it.odometer) } +
+                    log.records.map { LoggedReading(it.record.id, it.record.date, it.record.odometer, fromRecord = true) },
+                log.swap,
+                log.unit,
             ),
-            swap = swap,
-            unit = vehicle.unit,
+            swap = log.swap,
+            unit = log.unit,
         )
     }.screenState(viewModelScope, null)
 

@@ -21,7 +21,8 @@ Read on 2026-10-29, as page images, by eye.
   40,000 miles or 2 years, drawn at 40,000, 80,000 and 120,000; "Transmission: Automatic (non DSG): Change
   fluid" at 80,000 only.
 - Spark plugs at 60,000 and 120,000, footnote 5, "every 6 years regardless of mileage": 60,000 / 72 mo.
-- **The engine.** `"engine": { "label": "1.8T", "displacementL": 1.8 }`. vPIC's model list for Volkswagen,
+- **The engine.** `"engine": { "label": "1.8T", "displacementL": 1.8 }`. The [2016 Golf TDI](volkswagen-golf-2016-tdi.md) has a list
+  too, so a Golf with no engine on record is asked, with "1.8T", "2.0L TDI" or "Neither". vPIC's model list for Volkswagen,
   2016 (`GetModelsForMakeYear`), has "Golf", "Golf SportWagen", "Golf GTI", "Golf R" and "e-Golf" apart.
 - Reminders: engine oil 10,000 / 12 mo; dust and pollen filter 40,000 / 24 mo; spark plugs and air filter
   60,000 / 72 mo; automatic gearbox fluid 80,000 (not for a manual); brake fluid every 24 months by time

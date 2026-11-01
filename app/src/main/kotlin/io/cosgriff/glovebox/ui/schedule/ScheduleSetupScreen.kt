@@ -1,5 +1,8 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.log.gearboxOnRecord
+import io.cosgriff.glovebox.domain.Gearboxes
+import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.data.db.rule
@@ -15,13 +18,11 @@ import io.cosgriff.glovebox.R
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.data.db.ScheduleWriter
+import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.BodyStyle
-import io.cosgriff.glovebox.domain.BodyStyles
-import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.ui.theme.PlexMono
@@ -117,6 +118,8 @@ data class DraftItem(
     val e85: Interval? = null,
     /** The vehicle runs mostly on E85. Changes nothing on an item without an [e85] interval. */
     val useE85: Boolean = false,
+    /** The one gearbox a maker's job is for (#549, `dsgOnly` / `automaticOnly`); null for any. */
+    val gearboxOnly: Gearbox? = null,
 ) {
     /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
     val dormant: Boolean get() = severeOnly && !useSevere
@@ -150,6 +153,7 @@ fun DraftItem.toEntity(vehicleId: Long): ScheduleItemEntity = ScheduleItemEntity
     e85Miles = e85?.miles,
     e85Months = e85?.months,
     useE85 = useE85 && e85 != null,
+    gearboxOnly = gearboxOnly?.name,
 )
 
 /** A saved row as the editor's draft, keyed by its id; null for one with no interval. [template] is the typical item it is, if any. */
@@ -171,6 +175,7 @@ fun ScheduleItemEntity.toDraft(template: ScheduleTemplateItem?): DraftItem? {
         severeOnly = severeOnly,
         e85 = interval(e85Miles, e85Months),
         useE85 = useE85,
+        gearboxOnly = Gearboxes.of(gearboxOnly),
     )
 }
 
@@ -181,8 +186,7 @@ class ScheduleSetupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val vehicles: VehicleDao,
     settings: SettingsRepository,
-    private val catalog: KnownScheduleCatalog,
-    private val writer: ScheduleWriter,
+    private val makers: MakersSchedules,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<ScheduleSetupRoute>().vehicleId
 
@@ -233,11 +237,10 @@ class ScheduleSetupViewModel @Inject constructor(
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
             val unit = v?.unit ?: DistanceUnit.MILES
-            val lists = catalog.lists()
-            val list = v?.let { KnownSchedules.match(lists, it.year, it.make, it.model, it.engine, it.fuel, Powertrains.of(it.powertrain), BodyStyles.of(it.bodyStyle)) }
+            val list = v?.let { makers.forVehicle(it) }
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
-            if (list == null && v != null) engineChoices = KnownSchedules.engineChoices(lists, v.year, v.make, v.model, v.engine, v.fuel, Powertrains.of(v.powertrain), BodyStyles.of(v.bodyStyle))
+            if (list == null && v != null) engineChoices = makers.choices(v)
             items = if (list != null) {
                 knownItems(list, v)
             } else {
@@ -249,10 +252,11 @@ class ScheduleSetupViewModel @Inject constructor(
     }
 
     private fun knownItems(list: KnownScheduleList, v: VehicleEntity): List<DraftItem> =
-        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.transmission).mapIndexed { i, it ->
+        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.gearboxOnRecord()).mapIndexed { i, it ->
             DraftItem(
                 key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
                 own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly, e85 = it.e85,
+                gearboxOnly = it.gearbox,
             )
         }
 
@@ -327,7 +331,7 @@ class ScheduleSetupViewModel @Inject constructor(
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
         // One write: the items, the engine chosen, and the maker's table, which goes with its schedule.
-        writer.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
+        makers.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
         onDone(vehicleId)
     }
 }

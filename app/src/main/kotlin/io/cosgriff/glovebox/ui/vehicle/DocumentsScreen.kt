@@ -58,11 +58,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -82,6 +82,7 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.DocumentDao
 import io.cosgriff.glovebox.data.db.DocumentEntity
+import io.cosgriff.glovebox.data.db.toStored
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.photo.DocumentStore
@@ -151,16 +152,6 @@ class DocumentsViewModel @Inject constructor(
     suspend fun copy(document: DocumentEntity): File? = store.openCopy(document)
 
 }
-
-fun DocumentEntity.toStored() = StoredDocument(
-    id = id,
-    type = VehicleDocuments.type(type),
-    name = name,
-    date = date,
-    format = VehicleDocuments.format(format),
-    sizeBytes = sizeBytes,
-    expiresOn = expiresOn,
-)
 
 /** A vehicle's paperwork: a history report, the title, the registration. Opened from Vehicle details. */
 @Composable

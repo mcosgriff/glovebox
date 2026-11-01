@@ -70,8 +70,7 @@ class DeleteVehicleScreenTest {
     private fun show(id: Long, loaded: Boolean = true) {
         vm = g.viewModel {
             DeleteVehicleViewModel(
-                routeHandle(DeleteVehicleRoute(id)), g.db.vehicles(), g.db.service(), g.db.schedule(), g.db.torque(), g.db.recalls(),
-                g.db.odometer(), g.db.documents(), g.wipe, g.archiver,
+                routeHandle(DeleteVehicleRoute(id)), g.logs, g.db.torque(), g.db.recalls(), g.db.documents(), g.wipe, g.archiver,
             )
         }
         compose.setContent {

@@ -30,10 +30,11 @@ class KnownSchedulesTest {
         { "name": "Swap the tires round", "everyMiles": 8000, "everyMonths": 8, "service": "rotation" }
     ]"""
 
-    private fun file(table: String = someTable, intervals: String = someIntervals, extra: String = "", model: String = "Roadster") = """
+    /** [intervals] null leaves the field out. */
+    private fun file(table: String = someTable, intervals: String? = someIntervals, extra: String = "", model: String = "Roadster") = """
         { "id": "made-up", "title": "Made-up Roadster", "make": "Acme", "model": "$model", "years": { "from": 2001, "to": 2005 },
           "source": { "name": "Acme service booklet", "url": "https://example.test/booklet", "retrieved": "2026-01-02", "note": "A made-up booklet.", "basis": "Made up for the tests." },
-          $extra "milestones": $table, "intervals": $intervals }
+          $extra "milestones": $table${intervals?.let { ", \"intervals\": $it" }.orEmpty()} }
     """.trimIndent()
 
     private val roadster get() = (KnownSchedules.parse(file()) as KnownScheduleFile.Ok).list
@@ -59,8 +60,18 @@ class KnownSchedulesTest {
         bundled.forEach { list ->
             // A list for one engine is found by that engine; one for every engine, by the model alone.
             val engine = list.engine?.let { "${it.displacementL}L" }
+            // A trim that names the list's word (#569). One for a trim that doesn't name it is never picked, only offered (#595).
+            val trim = list.trim?.let { if (it.named) it.word else "X${it.word}X" }
             (listOf(list.model) + list.modelAliases).forEach { model ->
-                list.years.forEach { year -> assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body)?.id) }
+                list.years.forEach { year ->
+                    if (list.trim?.named == false) {
+                        assertNull(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim))
+                        val offered = KnownSchedules.engineChoices(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)
+                        assertTrue(list.id, list.id in offered.map { it.id })
+                    } else {
+                        assertEquals(list.id, KnownSchedules.match(bundled, year, list.make, model, engine, list.engine?.fuel, list.engine?.powertrain, list.body, trim)?.id)
+                    }
+                }
             }
         }
     }
@@ -200,6 +211,101 @@ class KnownSchedulesTest {
     }
 
     @Test
+    fun `a convertible and a hatchback of one engine are told apart by body`() {
+        fun bodyList(id: String, body: String) = (
+            KnownSchedules.parse(file(extra = "\"engine\": { \"label\": \"2.0L diesel\", \"displacementL\": 2.0, \"fuel\": \"Diesel\" }, \"body\": \"$body\",").replace("\"id\": \"made-up\"", "\"id\": \"$id\""))
+                as KnownScheduleFile.Ok
+            ).list
+        val lists = listOf(bodyList("hatch", "hatchback"), bodyList("open", "convertible"))
+        fun match(body: BodyStyle?) = KnownSchedules.match(lists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Diesel", null, body)?.id
+        assertEquals("hatch", match(BodyStyles.fromVpic("Hatchback/Liftback/Notchback")))
+        assertEquals("open", match(BodyStyles.fromVpic("Convertible/Cabriolet")))
+        assertNull(match(null))
+        assertEquals(listOf("hatch", "open"), KnownSchedules.engineChoices(lists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Diesel").map { it.id })
+    }
+
+    /** Two lists for one engine size and fuel, one for trims naming GLI and one for the rest, as #569's Jettas would be. */
+    private val trimLists by lazy {
+        fun trimList(id: String, label: String, trim: String) = (
+            KnownSchedules.parse(file(extra = "\"engine\": { \"label\": \"$label\", \"displacementL\": 2.0, \"fuel\": \"Gasoline\" }, \"trim\": $trim,").replace("\"id\": \"made-up\"", "\"id\": \"$id\""))
+                as KnownScheduleFile.Ok
+            ).list
+        listOf(trimList("eight-valve", "2.0L 8-valve", """{ "doesNotName": "GLI" }"""), trimList("tsi", "2.0L TSI", """{ "names": "GLI" }"""))
+    }
+
+    @Test
+    fun `two cars of one engine size are told apart by a word of the trim, as vPIC writes it`() {
+        assertEquals(KnownTrim("GLI", named = true), trimLists[1].trim)
+        assertEquals(KnownTrim("GLI", named = false), trimLists[0].trim)
+        fun match(trim: String?) = KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim)?.id
+        fun offered(trim: String?) = KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id }
+        // Trims vPIC gave for the GLI in pattern decodes (#569), and as an owner might type them: a trim naming GLI picks its list.
+        listOf("GLI", "2.0T GLI SE, SEL", "2.0T GLI SE", "gli autobahn").forEach { assertEquals(it, "tsi", match(it)) }
+        assertEquals(emptyList<String>(), offered("GLI"))
+    }
+
+    @Test
+    fun `a trim that doesn't name the word picks neither list, and the owner is asked (#595)`() {
+        fun match(trim: String?) = KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim)?.id
+        fun offered(trim: String?) = KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id }
+        // "SEL" is half of vPIC's "2.0T GLI SE, SEL" for a GLI, so a trim without GLI doesn't say it is the 8-valve.
+        // The 8-valve's own trims (#569) are asked about the same way, with both lists offered, as for a blank trim.
+        listOf("SEL", "Jetta, S", "Trendline, Trendline +", "2.0L, 2.0LS", "S", "SE", "GLIDER", "").forEach {
+            assertNull(it, match(it))
+            assertEquals(it, listOf("eight-valve", "tsi"), offered(it))
+        }
+    }
+
+    @Test
+    fun `a trim that isn't on record matches neither trim list, and the owner is asked`() {
+        listOf(null, "", " ", ", /").forEach { trim ->
+            assertNull("[$trim]", KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim))
+            assertEquals("[$trim]", listOf("eight-valve", "tsi"), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.0L 4-cyl", "Gasoline", trim = trim).map { it.id })
+        }
+        // With the engine unknown too, both are still offered; a body on record changes nothing for lists that name none.
+        assertEquals(listOf("eight-valve", "tsi"), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", body = BodyStyle.SEDAN).map { it.id })
+        // The trim alone is not enough where the engine is another: nothing matches, and nothing is offered.
+        assertNull(KnownSchedules.match(trimLists, 2003, "Acme", "Roadster", "2.5L 5-cyl", "Gasoline", trim = "GLI"))
+        assertEquals(emptyList<String>(), KnownSchedules.engineChoices(trimLists, 2003, "Acme", "Roadster", "2.5L 5-cyl", "Gasoline", trim = "S"))
+        // A list for every trim is for a vehicle with or without one.
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster", trim = "GLI")?.id)
+        assertEquals("made-up", KnownSchedules.match(listOf(roadster), 2003, "Acme", "Roadster")?.id)
+    }
+
+    @Test
+    fun `a body and a trim on one list both have to fit`() {
+        val list = (KnownSchedules.parse(file(extra = "\"body\": \"convertible\", \"trim\": { \"names\": \"GLI\" },")) as KnownScheduleFile.Ok).list
+        fun match(body: BodyStyle?, trim: String?) = KnownSchedules.match(listOf(list), 2003, "Acme", "Roadster", body = body, trim = trim)?.id
+        fun offered(body: BodyStyle?, trim: String?) = KnownSchedules.engineChoices(listOf(list), 2003, "Acme", "Roadster", body = body, trim = trim).isNotEmpty()
+        assertEquals("made-up", match(BodyStyle.CONVERTIBLE, "GLI"))
+        assertNull(match(BodyStyle.CONVERTIBLE, null))
+        assertNull(match(null, "GLI"))
+        assertTrue(offered(BodyStyle.CONVERTIBLE, null))
+        assertTrue(offered(null, "GLI"))
+        // Either one ruling it out rules it out, even where the other isn't on record.
+        assertTrue(!offered(BodyStyle.SEDAN, "GLI") && !offered(BodyStyle.SEDAN, null))
+        assertTrue(!offered(BodyStyle.SEDAN, "SE"))
+        // A trim that doesn't name the word can't tell (#595): offered where the body doesn't rule it out, never matched.
+        assertTrue(offered(BodyStyle.CONVERTIBLE, "SE") && offered(null, "SE"))
+        assertNull(match(BodyStyle.CONVERTIBLE, "SE"))
+    }
+
+    @Test
+    fun `a list's trim is one word, in one of two forms`() {
+        listOf(
+            """{ }""" to "must have one of",
+            """{ "names": "GLI", "doesNotName": "GLI" }""" to "must have one of",
+            """{ "names": "GLI SE" }""" to "one word",
+            """{ "names": "" }""" to "",
+            """{ "has": "GLI" }""" to "",
+            """"GLI"""" to "",
+        ).forEach { (trim, message) ->
+            val errors = errors(file(extra = "\"trim\": $trim,"))
+            assertTrue("$trim: $errors", errors.isNotEmpty() && errors.any { it.contains(message) })
+        }
+    }
+
+    @Test
     fun `the 2026 Corolla gas lists go by body, and the earlier Corollas don't`() {
         fun match(year: Int, engine: String?, body: BodyStyle?) = KnownSchedules.match(bundled, year, "Toyota", "Corolla", engine, "Gasoline", null, body)?.id
         assertEquals("toyota-corolla-2026-sedan", match(2026, "2.0L 4-cyl", BodyStyle.SEDAN))
@@ -222,6 +328,9 @@ class KnownSchedulesTest {
     fun `a body is taken from vPIC only where it says so plainly`() {
         assertEquals(BodyStyle.SEDAN, BodyStyles.fromVpic("Sedan/Saloon"))
         assertEquals(BodyStyle.HATCHBACK, BodyStyles.fromVpic("Hatchback/Liftback/Notchback"))
+        // How vPIC tells a 2014 Beetle Convertible TDI from the Beetle TDI, both "Beetle" (#569).
+        assertEquals(BodyStyle.CONVERTIBLE, BodyStyles.fromVpic("Convertible/Cabriolet"))
+        assertEquals(BodyStyle.CONVERTIBLE, BodyStyles.fromFile("convertible"))
         assertNull(BodyStyles.fromVpic(null))
         assertNull(BodyStyles.fromVpic(""))
         assertNull(BodyStyles.fromVpic("Coupe"))
@@ -432,7 +541,7 @@ class KnownSchedulesTest {
             .replace("{ \"name\": \"Look at the belts\" }", "{ \"name\": \"Change the automatic's fluid\" }")
         val extra = "\"manualOnly\": [\"Change the manual gearbox oil\"], \"manualExcluded\": [\"Change the automatic's fluid\"],"
         val list = (KnownSchedules.parse(file(table, extra = extra)) as KnownScheduleFile.Ok).list
-        fun jobs(transmission: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, transmission).flatMap { m -> m.work.map { it.name } }
+        fun jobs(transmission: String?) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, GearboxOnRecord.ofText(transmission)).flatMap { m -> m.work.map { it.name } }
         // As vPIC writes a gearbox, and as an owner might.
         listOf("6-speed Automatic", "CVT", "7-speed Dual-Clutch Transmission (DCT)", "Automated Manual").forEach { t ->
             assertTrue(t, "Change the manual gearbox oil" !in jobs(t))
@@ -449,6 +558,89 @@ class KnownSchedulesTest {
         }
         assertTrue(errors(file(extra = "\"manualOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
         assertTrue(errors(file(extra = "\"manualOnly\": [\"Change the oil\"], \"manualExcluded\": [\"Change the oil\"],")).single().contains("also in manualExcluded"))
+    }
+
+    /** A made-up list with a dual-clutch row in its table and a conventional automatic's job apart from it (#549). */
+    private val gearboxes: KnownScheduleList get() {
+        val table = someTable.replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the DSG fluid\", \"service\": \"trans-fluid\" }")
+        val intervals = someIntervals.replace(
+            "\"service\": \"rotation\" }",
+            "\"service\": \"rotation\" },\n{ \"name\": \"Change the DSG fluid\", \"everyMiles\": 12000, \"service\": \"trans-fluid\" }",
+        )
+        val extra = """"additional": [ { "name": "Change the automatic's fluid", "everyMiles": 30000 } ],
+            "dsgOnly": ["Change the DSG fluid"], "automaticOnly": ["Change the automatic's fluid"],"""
+        return (KnownSchedules.parse(file(table, intervals, extra)) as KnownScheduleFile.Ok).list
+    }
+
+    @Test
+    fun `a dual-clutch row is a reminder on a dual-clutch, absent on an automatic, and table-only on Don't know`() {
+        val list = gearboxes
+        fun table(g: GearboxOnRecord) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, g).flatMap { m -> m.work.map { it.name } }.toSet()
+        fun reminders(g: GearboxOnRecord) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, g).map { it.name }.toSet()
+        fun onTable(g: GearboxOnRecord) = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, g, onTable = true).map { it.name }.toSet()
+        val dsg = "Change the DSG fluid"
+        val auto = "Change the automatic's fluid"
+
+        val dualClutch = GearboxOnRecord(Gearbox.DUAL_CLUTCH, "7-speed Automatic")
+        assertTrue(dsg in table(dualClutch))
+        assertTrue(dsg in reminders(dualClutch))
+        assertTrue(auto !in reminders(dualClutch))
+        assertTrue(auto !in onTable(dualClutch))
+
+        val automatic = GearboxOnRecord(Gearbox.AUTOMATIC, "8-speed Automatic")
+        assertTrue(dsg !in table(automatic))
+        assertTrue(dsg !in reminders(automatic))
+        assertTrue(auto in reminders(automatic))
+
+        // "Don't know", whatever the transmission text says: in the table, never a reminder (a wrong fluid is worse).
+        listOf(GearboxOnRecord(null), GearboxOnRecord.ofText("Automatic"), GearboxOnRecord.ofText("6-speed Automatic")).forEach { g ->
+            assertTrue("$g", dsg in table(g))
+            assertTrue("$g", dsg !in reminders(g))
+            assertTrue("$g", auto !in reminders(g))
+            assertTrue("$g", dsg in onTable(g) && auto in onTable(g))
+            // The rest of the list is untouched.
+            assertEquals("$g", setOf("Change the oil", "Swap the tires round"), reminders(g))
+        }
+
+        // A manual gets neither, whether the owner said so or the transmission text does.
+        listOf(GearboxOnRecord(Gearbox.MANUAL), GearboxOnRecord.ofText("6-speed Manual/Standard")).forEach { g ->
+            assertTrue("$g", dsg !in table(g) && dsg !in reminders(g) && auto !in onTable(g))
+        }
+
+        // Each reminder carries the one gearbox it is for, so the item made from it keeps it.
+        val carried = KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, dualClutch).associate { it.name to it.gearbox }
+        assertEquals(Gearbox.DUAL_CLUTCH, carried[dsg])
+        assertNull(carried["Change the oil"])
+        assertEquals(Gearbox.AUTOMATIC, KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null, automatic).single { it.name == auto }.gearbox)
+    }
+
+    @Test
+    fun `the owner's gearbox wins over the transmission text, and a manual's jobs are as before`() {
+        val table = someTable
+            .replace("{ \"name\": \"Grease the hinges\" }", "{ \"name\": \"Change the manual gearbox oil\" }")
+            .replace("{ \"name\": \"Look at the belts\" }", "{ \"name\": \"Change the automatic's fluid\" }")
+        val extra = "\"manualOnly\": [\"Change the manual gearbox oil\"], \"manualExcluded\": [\"Change the automatic's fluid\"],"
+        val list = (KnownSchedules.parse(file(table, extra = extra)) as KnownScheduleFile.Ok).list
+        fun jobs(g: GearboxOnRecord) = KnownSchedules.milestonesIn(list, DistanceUnit.MILES, null, g).flatMap { m -> m.work.map { it.name } }
+        // vPIC said "Automatic", the owner said Manual.
+        assertTrue("Change the manual gearbox oil" in jobs(GearboxOnRecord(Gearbox.MANUAL, "Automatic")))
+        assertTrue("Change the automatic's fluid" !in jobs(GearboxOnRecord(Gearbox.MANUAL, "Automatic")))
+        listOf(Gearbox.AUTOMATIC, Gearbox.DUAL_CLUTCH).forEach { g ->
+            assertTrue("$g", "Change the manual gearbox oil" !in jobs(GearboxOnRecord(g, "Manual")))
+            assertTrue("$g", "Change the automatic's fluid" in jobs(GearboxOnRecord(g, "Manual")))
+        }
+    }
+
+    @Test
+    fun `dsgOnly and automaticOnly name jobs of the list and don't contradict each other or the manual's marks`() {
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+        assertTrue(errors(file(extra = "\"automaticOnly\": [\"Rebuild the gearbox\"],")).single().contains("isn't a job in this list"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Look at the belts\"], \"automaticOnly\": [\"Look at the belts\"],")).single().contains("also in dsgOnly"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [\"Look at the belts\"], \"manualOnly\": [\"Look at the belts\"],")).single().contains("also in manualOnly"))
+        assertTrue(errors(file(extra = "\"automaticOnly\": [\"Look at the belts\"], \"manualExcluded\": [\"Look at the belts\"],")).single().contains("also in manualExcluded"))
+        assertTrue(errors(file(extra = "\"dsgOnly\": [],")).isNotEmpty())
+        val list = (KnownSchedules.parse(file(extra = "\"dsgOnly\": [\"Look at the belts\"],")) as KnownScheduleFile.Ok).list
+        assertEquals(setOf(MilestoneImport.nameKey("Look at the belts")), list.dsgOnly)
     }
 
     @Test
@@ -468,6 +660,28 @@ class KnownSchedulesTest {
         // A job of the table can't be one apart from it as well, by its line or its name.
         assertTrue(errors(file(extra = """"additional": [ { "name": "Oil again", "everyMiles": 3000, "service": "oil" } ],""")).single().contains("is a job of the table"))
         assertTrue(errors(file(extra = """"additional": [ { "name": "Look at the belts", "everyMiles": 3000 } ],""")).single().contains("is a job of the table"))
+    }
+
+    @Test
+    fun `a list whose table is all inspections may have only jobs apart from it`() {
+        // A made-up guide whose table only looks things over, and whose reminders are all apart from it (#456).
+        val looks = """[
+            { "atMiles": 4000, "work": [ { "name": "Look at the belts" } ] },
+            { "atMiles": 8000, "work": [ { "name": "Look at the belts" }, { "name": "Look at the hinges" } ] }
+        ]"""
+        val apart = """"additional": [ { "name": "Replace the brake fluid", "everyMonths": 24, "rule": "time-only", "service": "brake-fluid" } ],"""
+        listOf(file(table = looks, intervals = null, extra = apart), file(table = looks, intervals = "[]", extra = apart)).forEach { text ->
+            val list = (KnownSchedules.parse(text) as KnownScheduleFile.Ok).list
+            assertEquals(emptyList<ImportedScheduleItem>(), list.intervals)
+            assertEquals(listOf("Replace the brake fluid"), KnownSchedules.intervalsIn(list, DistanceUnit.MILES, null).map { it.name })
+        }
+        // With nothing apart from the table either, there would be no reminder at all.
+        assertTrue(errors(file(table = looks, intervals = null)).single().contains("intervals"))
+        assertTrue(errors(file(table = looks, intervals = "[]")).single().contains("intervals"))
+        assertTrue(errors(file(table = looks, intervals = "[]", extra = """"additional": [],""")).isNotEmpty())
+        // An import file is unchanged: it still needs at least one item.
+        val import = ImportFormat.parse("""{ "glovebox": "import", "version": 1, "kind": "interval-schedule", "items": [] }""")
+        assertTrue("$import", import is ImportFile.Invalid)
     }
 
     @Test
@@ -547,6 +761,27 @@ class KnownSchedulesTest {
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind(null))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("6x4"))
         assertEquals(DriveKind.UNKNOWN, Drivetrains.kind("Other"))
+    }
+
+    @Test
+    fun `the battery-electric Volkswagens remind only of the jobs apart from the table`() {
+        fun list(year: Int, model: String = "ID.4") = KnownSchedules.match(bundled, year, "Volkswagen", model)!!
+        assertEquals(listOf("volkswagen-id4-2021", "volkswagen-id4-2022", "volkswagen-id4-2023-2026"), (2021..2026).map { list(it).id }.distinct())
+        assertEquals("volkswagen-id-buzz-2025", list(2025, "ID. Buzz").id)
+        assertEquals("volkswagen-id-buzz-2025", list(2025, "id.buzz").id)
+        assertNull(KnownSchedules.match(bundled, 2026, "Volkswagen", "ID. Buzz"))
+        fun reminders(l: KnownScheduleList) = KnownSchedules.intervalsIn(l, DistanceUnit.MILES, "AWD").associate { it.service to (it.normal to it.rule) }
+        listOf(list(2021), list(2022), list(2023), list(2025, "ID. Buzz")).forEach { l ->
+            // The table is all inspections; nothing on it is a reminder.
+            assertTrue(l.id, l.intervals.isEmpty())
+            assertEquals(l.id, Interval(null, 24) to DueRule.TIME_ONLY, reminders(l)["brake-fluid"])
+        }
+        assertEquals((10_000..120_000 step 10_000).toList(), list(2021).milestones.map { it.atMiles })
+        assertEquals((10_000..100_000 step 10_000).toList(), list(2022).milestones.map { it.atMiles })
+        // The 1/5/2021 card's filter is 40,000 or 2 years (its 11/13/2020 printing said 2 years); from 2023, 2 years alone.
+        assertEquals(Interval(40_000, 24) to null, reminders(list(2021))["cabin-air"])
+        assertEquals(Interval(40_000, 24) to null, reminders(list(2022))["cabin-air"])
+        assertEquals(Interval(null, 24) to DueRule.TIME_ONLY, reminders(list(2024))["cabin-air"])
     }
 
     @Test
@@ -648,8 +883,8 @@ class KnownSchedulesTest {
     fun `a car known to have a manual gearbox doesn't get the dual-clutch fluid change`() {
         val list = KnownSchedules.match(bundled, 2011, "Volkswagen", "GTI")!!
         fun dsg(transmission: String?) =
-            KnownSchedules.intervalsIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { it.service == "trans-fluid" } to
-                KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", transmission).count { m -> m.work.any { it.service == "trans-fluid" } }
+            KnownSchedules.intervalsIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", GearboxOnRecord.ofText(transmission)).count { it.service == "trans-fluid" } to
+                KnownSchedules.milestonesIn(list, DistanceUnit.MILES, "FWD/Front-Wheel Drive", GearboxOnRecord.ofText(transmission)).count { m -> m.work.any { it.service == "trans-fluid" } }
         // As vPIC decodes a GTI: "Automatic" for the DSG, "Manual/Standard" for the six-speed.
         assertEquals(1 to 3, dsg("Automatic"))
         assertEquals(1 to 3, dsg("Dual-Clutch Transmission (DCT)"))

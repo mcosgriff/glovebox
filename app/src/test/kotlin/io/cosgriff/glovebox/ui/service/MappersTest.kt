@@ -6,6 +6,8 @@ import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.ClusterSwap
+import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DocumentProblem
 import io.cosgriff.glovebox.domain.DocumentType
@@ -84,8 +86,21 @@ class MappersTest {
         val oil = TrackedItem(1, "Oil change", Interval(10_000, 12), DueRule.WHICHEVER_FIRST, monthsWorkedOut = true)
         assertEquals(string(R.string.interval_every, string(R.string.either_or, 10_000.asDistance(mi), ours)), oil.every(mi))
         assertEquals(string(R.string.interval_slash, 10_000.asDistance(mi), ours), oil.interval.text(mi, monthsOurs = true))
+        // The item words itself, with nothing passed in (#575).
+        assertEquals(oil.interval.text(mi, monthsOurs = true), oil.slashText(mi))
+        assertEquals(oil.slashText(mi), oil.text(mi))
+        assertEquals(oil.every(mi), CountedInterval(Interval(10_000, 12), monthsWorkedOut = true).every(mi))
+        assertEquals(string(R.string.either_or, 10_000.asDistance(mi), ours), CountedInterval(Interval(10_000, 12), monthsWorkedOut = true).orText(mi))
         // The maker's months are said as they are.
         assertEquals(Interval(10_000, 12).every(mi), oil.copy(monthsWorkedOut = false).every(mi))
+    }
+
+    @Test
+    fun `a reminder's first time reads as the distance really covered, though it counts in dash terms`() {
+        // A cluster swapped 130,000 in: the reminder counts from -130,000 on the dash.
+        val belt = TrackedItem.of(7, "Timing belt", Interval(50_000, null), DueRule.MILEAGE_ONLY, null, 100_000, false, false, ClusterSwap(LocalDate.of(2026, 5, 4), 130_000, 20_000))!!
+        assertEquals(string(R.string.interval_first_then_every, 100_000.asDistance(mi), 50_000.asDistance(mi)), belt.text(mi))
+        assertEquals(50_000.asDistance(mi), belt.slashText(mi))
     }
 
     @Test

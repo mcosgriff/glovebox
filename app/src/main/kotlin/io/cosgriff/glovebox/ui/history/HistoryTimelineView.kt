@@ -38,6 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +68,8 @@ import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.ReminderProgress
 import io.cosgriff.glovebox.domain.ServiceGroup
+import io.cosgriff.glovebox.domain.RecordSummary
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.domain.TimelineRow
 import io.cosgriff.glovebox.domain.Visits
 import io.cosgriff.glovebox.ui.components.Chevron
@@ -124,6 +127,8 @@ internal fun HistoryViewToggle(view: HistoryView, onChoose: (HistoryView) -> Uni
 internal fun HistoryTimelineList(
     vehicle: VehicleEntity,
     groups: List<List<ServiceRecordWithItems>>,
+    /** Each of the vehicle's schedule items' group, by id, so a line is in the group the report puts it in. */
+    itemGroups: Map<Long, ServiceGroup>,
     next: Pair<ItemStatus, ReminderProgress>?,
     since: LocalDate?,
     fresh: HistoryFocus?,
@@ -136,7 +141,9 @@ internal fun HistoryTimelineList(
 ) {
     val unit = vehicle.unit
     val rows = HistoryTimeline.rows(groups) { it.first().record.date }
-    val shown = groups.flatten().flatMap { r -> r.items.map { ServiceGroup.ofLine(it.catalogId) } }.toSet()
+    // Each record read the one way the export reads it (#579), so a line is in the same group in both.
+    val summaries = remember(groups, itemGroups) { groups.flatten().associate { it.record.id to RecordSummary.of(it.toModel(), itemGroups) } }
+    val shown = summaries.values.flatMap { it.groups }.toSet()
     // Everything drawn on the line, in order; the key comes after it, off the line.
     val onLine: List<LineRow> =
         listOfNotNull(next?.let { LineRow.Next(it.first, it.second) }) + rows.map(LineRow::Past) + listOfNotNull(since?.let(LineRow::Since))
@@ -172,9 +179,9 @@ internal fun HistoryTimelineList(
                         val g = past.entry
                         if (g.size == 1) {
                             val r = g.single()
-                            TimelineCard(r, unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
+                            TimelineCard(r, summaries.getValue(r.record.id), unit, mark = fresh?.mark?.takeIf { r.record.id == fresh.recordId }, onClick = { onOpenRecord(r.record.id) })
                         } else {
-                            TimelineVisitCard(g, unit, fresh, onOpenRecord)
+                            TimelineVisitCard(g, summaries, unit, fresh, onOpenRecord)
                         }
                     }
                 }
@@ -331,7 +338,7 @@ private fun ComingUpCard(status: ItemStatus, progress: ReminderProgress, unit: D
 }
 
 @Composable
-private fun TimelineCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: io.cosgriff.glovebox.domain.RecordMark?, onClick: () -> Unit) {
+private fun TimelineCard(r: ServiceRecordWithItems, summary: RecordSummary, unit: DistanceUnit, mark: io.cosgriff.glovebox.domain.RecordMark?, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val fresh = mark != null
     Card(
@@ -346,7 +353,7 @@ private fun TimelineCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: io
                 Text(r.record.date.format(longDate), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                 Text(r.record.odometer.asDistance(unit), style = MaterialTheme.typography.bodyMedium, fontFamily = PlexMono, fontWeight = FontWeight.SemiBold)
             }
-            Lines(r)
+            Lines(summary)
             Text(
                 LogEdits.who(r.record.diy, r.record.shopName, mark, r.record.enteredAsLastDone, r.record.imported).text,
                 style = MaterialTheme.typography.bodySmall,
@@ -358,7 +365,7 @@ private fun TimelineCard(r: ServiceRecordWithItems, unit: DistanceUnit, mark: io
 
 /** A visit (#307) on the line: its date, and its reading when its records agree; then each record, opening that record. */
 @Composable
-private fun TimelineVisitCard(records: List<ServiceRecordWithItems>, unit: DistanceUnit, fresh: HistoryFocus?, onOpenRecord: (Long) -> Unit) {
+private fun TimelineVisitCard(records: List<ServiceRecordWithItems>, summaries: Map<Long, RecordSummary>, unit: DistanceUnit, fresh: HistoryFocus?, onOpenRecord: (Long) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val first = records.first().record
     val readings = Visits.readings(records.map { it.record.odometer })
@@ -395,7 +402,7 @@ private fun TimelineVisitCard(records: List<ServiceRecordWithItems>, unit: Dista
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Lines(r)
+                        Lines(summaries.getValue(r.record.id))
                         Text(own, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                     }
                     Chevron()
@@ -405,18 +412,18 @@ private fun TimelineVisitCard(records: List<ServiceRecordWithItems>, unit: Dista
     }
 }
 
-/** A record's lines as written, each with its category's colour. */
+/** A record's lines as written, each with its group's colour ([RecordSummary], as the report has them). */
 @Composable
-private fun Lines(r: ServiceRecordWithItems) {
+private fun Lines(summary: RecordSummary) {
     val scheme = MaterialTheme.colorScheme
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        r.items.forEach { line ->
+        summary.lines.forEach { line ->
             Row(
                 Modifier.background(scheme.background, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Swatch(ServiceGroup.ofLine(line.catalogId))
+                Swatch(line.group)
                 Text(line.label, style = MaterialTheme.typography.bodyMedium)
             }
         }

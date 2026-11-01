@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.VehicleDao
+import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -40,16 +41,21 @@ class VehicleLogs @Inject constructor(
     }
 
     /** Every active vehicle's log, in [VehicleDao.observeActive]'s order. Sold vehicles get no reminders. */
-    fun observeGarage(): Flow<List<VehicleLog>> = combine(
-        vehicles.observeActive(),
+    fun observeGarage(): Flow<List<VehicleLog>> = observeEach(vehicles.observeActive())
+
+    /** Every sold vehicle's log, in [VehicleDao.observeArchived]'s order, most recently sold first. */
+    fun observeArchived(): Flow<List<VehicleLog>> = observeEach(vehicles.observeArchived())
+
+    private fun observeEach(these: Flow<List<VehicleEntity>>): Flow<List<VehicleLog>> = combine(
+        these,
         schedule.observeEvery(),
         service.observeAllRecords(),
         odometer.observeAll(),
         settings.settings,
-    ) { active, items, records, readings, s ->
+    ) { list, items, records, readings, s ->
         val itemsBy = items.groupBy { it.vehicleId }
         val recordsBy = records.groupBy { it.record.vehicleId }
         val readingsBy = readings.groupBy { it.vehicleId }
-        active.map { v -> v.log(itemsBy[v.id].orEmpty(), recordsBy[v.id].orEmpty(), readingsBy[v.id].orEmpty(), s) }
+        list.map { v -> v.log(itemsBy[v.id].orEmpty(), recordsBy[v.id].orEmpty(), readingsBy[v.id].orEmpty(), s) }
     }
 }

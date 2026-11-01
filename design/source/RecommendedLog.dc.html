@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log service with shop recommendations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Garage.dc.html" aria-label="Close" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 600">Log service</span>
+      <span style="font-size: 12px; color: {{t.muted}}">2019 Blue truck</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px; padding: 12px 20px 24px 20px">
+
+    <!-- The form above the new card, as built today; shown dimmed for context only. -->
+    <sc-if value="{{isRead}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 16px; background: {{t.softBg}}; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+        <div style="font-size: 15px; font-weight: 700; color: {{t.softFg}}">Filled from the invoice</div>
+        <div style="font-size: 14px; line-height: 1.45">Check every figure against the invoice before you save. A figure left blank couldn't be read.</div>
+      </div>
+    </sc-if>
+
+    <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 10px; opacity: 0.55">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">WORK AND PRICES · {{lineCount}}</span>
+        <span style="font-size: 12px; color: {{t.muted}}">Prices are optional</span>
+      </div>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{lines}}" as="l" hint-placeholder-count="3">
+          <div style="min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid {{t.line}}">
+            <div style="display: flex; flex-direction: column">
+              <span style="font-size: 15px; font-weight: 600">{{l.name}}</span>
+              <span style="font-size: 12px; color: {{t.muted}}">{{l.group}}</span>
+            </div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600">{{l.price}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- State: an invoice was read. Each recommendation and red or yellow finding is a row to decide on. -->
+    <sc-if value="{{isRead}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECOMMENDED BY THE SHOP · {{recCount}}</span>
+          <button onClick="{{keepAll}}" style="min-height: 48px; padding: 0 4px; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.link}}">{{keepAllLabel}}</button>
+        </div>
+        <div style="font-size: 13px; line-height: 1.45; color: {{t.muted}}">From the invoice and its inspection report. Keep what you want to come back to; it waits on the vehicle until the work is logged. Anything you don't keep or note is let go.</div>
+
+        <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 0 16px">
+          <sc-for list="{{recs}}" as="r" hint-placeholder-count="7">
+            <div style="padding: 14px 0; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid {{t.line}}">
+              <sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 6px; background: {{r.tagBg}}; color: {{r.tagFg}}; font-size: 11px; font-weight: 600; letter-spacing: 0.04em">
+                    <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: {{r.tagFg}}"></span>{{r.tag}}
+                  </span>
+                  <span style="font-size: 12px; color: {{t.muted}}">{{r.area}}</span>
+                </div>
+              </sc-if>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+                <span style="font-size: 15px; font-weight: 600; line-height: 1.35">{{r.name}}</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; white-space: nowrap">{{r.price}}</span>
+              </div>
+              <sc-if value="{{r.hasFinding}}" hint-placeholder-val="{{ true }}">
+                <div style="font-size: 13px; line-height: 1.45; color: {{t.sub}}">“{{r.finding}}”</div>
+              </sc-if>
+              <sc-if value="{{r.replaces}}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{r.replacesText}}</div>
+              </sc-if>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button onClick="{{r.toggleKeep}}" aria-pressed="{{r.keep}}" style="min-height: 48px; padding: 4px 0; border: 0; background: transparent; font-family: inherit">
+                  <span style="height: 40px; padding: 0 14px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; border: 1.5px solid {{r.keepBorder}}; background: {{r.keepBg}}; color: {{r.keepFg}}">{{r.keepMark}}Keep for later</span>
+                </button>
+                <button onClick="{{r.toggleNote}}" aria-pressed="{{r.note}}" style="min-height: 48px; padding: 4px 0; border: 0; background: transparent; font-family: inherit">
+                  <span style="height: 40px; padding: 0 14px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; border: 1.5px solid {{r.noteBorder}}; background: {{r.noteBg}}; color: {{r.noteFg}}">{{r.noteMark}}Add to notes</span>
+                </button>
+              </div>
+              <sc-if value="{{r.keep}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+                  <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{r.matchText}}</span>
+                  <button style="min-height: 48px; padding: 0 4px; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: {{t.link}}; white-space: nowrap">Change</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{r.letGo}}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 12px; color: {{t.muted}}">Let go: not kept and not in the notes.</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{summary}}</div>
+      </div>
+    </sc-if>
+
+    <!-- State: a line being logged matches work a shop recommended earlier. The form asks; it never closes it on its own. -->
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECOMMENDED EARLIER · DONE WITH THESE?</span>
+        <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+          <sc-for list="{{done}}" as="d" hint-placeholder-count="2">
+            <label style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; min-height: 48px; border-bottom: 1px solid {{t.line}}">
+              <input type="checkbox" checked="{{d.on}}" onChange="{{d.toggle}}" style="width: 20px; height: 20px; margin: 2px 0 0 0; accent-color: {{t.accent}}; flex: none">
+              <span style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 15px; font-weight: 600">{{d.name}}</span>
+                <span style="font-size: 13px; line-height: 1.45; color: {{t.sub}}">{{d.from}}</span>
+                <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{d.why}}</span>
+              </span>
+            </label>
+          </sc-for>
+        </div>
+        <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Ticked ones close when you save. Untick any that wasn't this work; it stays open on the vehicle.</div>
+      </div>
+    </sc-if>
+
+    <button style="height: 56px; border: 0; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; font-family: inherit; font-size: 16px; font-weight: 600">Save</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["read","done"],"default":"read"},"$preview":{"width":390,"height":2100}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up shop, work and prices. In the app every item starts kept, so a quick save loses nothing;
+// this sample shows choices already made row by row: 4 kept, 1 in the notes, 2 let go.
+this.state = {
+  keep: [true, true, false, true, false, true, false],
+  note: [false, false, true, false, false, false, false],
+  done: [true, true]
+};
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var read = (this.props.variant || 'read') !== 'done';
+var t = dark ? {
+  bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', sub: '#C4C1BA', muted: '#A5A9AF', line: '#33373D', field: '#5A5F66',
+  accent: '#F08A4B', onAccent: '#17191C', link: '#FDBA74', softBg: '#3A2418', softFg: '#FDBA74',
+  selBg: '#EDEBE6', selFg: '#17191C', chipLine: '#5A5F66',
+  needBg: '#3B1A19', needFg: '#F97066', watchBg: '#3A2E12', watchFg: '#FBBF24'
+} : {
+  bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', sub: '#3A3E44', muted: '#5A5F66', line: '#DEDCD5', field: '#B9B6AE',
+  accent: '#C2410C', onAccent: '#FFFFFF', link: '#9A3412', softBg: '#FBE9DF', softFg: '#9A3412',
+  selBg: '#17191C', selFg: '#FFFFFF', chipLine: '#B9B6AE',
+  needBg: '#FDECEA', needFg: '#B42318', watchBg: '#FEF3C7', watchFg: '#92400E'
+};
+var items = [
+  { tag: 'need', area: 'Axles', name: 'Replace CV Axle Assembly', price: '$574.20', finding: 'Driver side axle boot torn', match: 'Comes off when you log: CV axle (a guess)' },
+  { tag: 'need', area: 'Lights', name: 'Electrical Diagnosis', price: '$189.00', finding: 'Fog lights not working', match: 'No line fits: comes off when you log work worded like it' },
+  { tag: 'watch', area: 'Fluid leaks', name: 'Oil pan seeping', price: '', finding: '', match: 'Comes off when you log: Oil pan gasket (a guess)' },
+  { tag: '', area: '', name: 'Coolant System Service', price: '$239.99', finding: '', match: 'Comes off when you log: Engine coolant', replaces: 'Replaces the one this shop recommended on Mar 5, 2026 at $229.99.' },
+  { tag: '', area: '', name: 'Transmission Fluid Exchange', price: '$389.99', finding: '', match: 'Comes off when you log: Transmission fluid' },
+  { tag: '', area: '', name: 'Battery Replacement', price: '$289.00', finding: '', match: 'Comes off when you log: Battery' },
+  { tag: '', area: '', name: 'Wiper Blade Replacement', price: '$49.99', finding: '', match: 'Comes off when you log: Wiper blades' }
+];
+var chip = function (on) {
+  return on ? { bg: t.selBg, fg: t.selFg, border: t.selBg, mark: '✓ ' } : { bg: 'transparent', fg: t.ink, border: t.chipLine, mark: '' };
+};
+var flip = function (key, i) { return function () { var a = s[key].slice(); a[i] = !a[i]; var o = {}; o[key] = a; self.setState(o); }; };
+var recs = items.map(function (it, i) {
+  var k = chip(s.keep[i]), n = chip(s.note[i]);
+  return {
+    name: it.name, price: it.price || '', area: it.area, finding: it.finding,
+    hasTag: !!it.tag, hasFinding: !!it.finding,
+    tag: it.tag === 'need' ? 'NEEDS WORK' : 'WATCH',
+    tagBg: it.tag === 'need' ? t.needBg : t.watchBg, tagFg: it.tag === 'need' ? t.needFg : t.watchFg,
+    replaces: !!it.replaces, replacesText: it.replaces || '',
+    keep: s.keep[i], note: s.note[i], letGo: !s.keep[i] && !s.note[i],
+    keepBg: k.bg, keepFg: k.fg, keepBorder: k.border, keepMark: k.mark,
+    noteBg: n.bg, noteFg: n.fg, noteBorder: n.border, noteMark: n.mark,
+    matchText: it.match,
+    toggleKeep: flip('keep', i), toggleNote: flip('note', i)
+  };
+});
+var kept = s.keep.filter(Boolean).length, noted = s.note.filter(Boolean).length;
+var gone = items.filter(function (_, i) { return !s.keep[i] && !s.note[i]; }).length;
+var parts = [kept + ' kept for later', noted + ' in the notes'];
+if (gone) parts.push(gone + ' let go');
+var allKept = kept === items.length;
+var lines = read ? [
+  { name: 'Replace Front Brake Pads & Rotors', group: 'Custom', price: '$872.40' },
+  { name: 'Brake Fluid Service', group: 'Custom', price: '$171.50' },
+  { name: 'Vehicle Health Report', group: 'Custom', price: '$0.00' }
+] : [
+  { name: 'Engine coolant', group: 'Fluids · done by me', price: '' },
+  { name: 'Battery', group: 'Electrical · done by me', price: '' }
+];
+var doneItems = [
+  { name: 'Coolant System Service', from: 'Recommended by Cedar Hollow Auto & Truck on Oct 29, 2026 · $239.99', why: 'Matches Engine coolant, ticked above.' },
+  { name: 'Battery Replacement', from: 'Recommended by Cedar Hollow Auto & Truck on Oct 29, 2026 · $289.00', why: 'Matches Battery, ticked above.' }
+];
+return {
+  t: t, isRead: read, isDone: !read,
+  lines: lines, lineCount: lines.length + ' LINES',
+  recs: recs, recCount: String(items.length),
+  keepAll: function () { self.setState({ keep: items.map(function () { return !allKept; }) }); },
+  keepAllLabel: allKept ? 'Keep none' : 'Keep all',
+  summary: 'On save: ' + parts.join(' · ') + '. Nothing here changes a reminder.',
+  done: doneItems.map(function (d, i) { return { name: d.name, from: d.from, why: d.why, on: s.done[i], toggle: flip('done', i) }; })
+};
+}
+}
+</script>
+</body>
+</html>

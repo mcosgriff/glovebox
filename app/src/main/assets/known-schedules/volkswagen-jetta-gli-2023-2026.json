@@ -14,6 +14,9 @@
     "note": "Read from Volkswagen's USA maintenance schedules for 2023–2026, as reissued in 12/2025 and 02/2026, in Glovebox's wording. Check it against the booklet that came with your car.",
     "basis": "The mileages and jobs of Volkswagen's own USA maintenance schedule for its gasoline models, as Volkswagen reissued them on its owners' literature site, for a car the owner maintains. Only the Jetta GLI's facts are taken; jobs are named in Glovebox's words and no text or layout is copied."
   },
+  "manualExcluded": [
+    "Change DSG transmission fluid and filter (DSG only)"
+  ],
   "milestones": [
     {
       "atMiles": 10000,
@@ -671,6 +674,11 @@
       "everyMiles": 80000,
       "everyMonths": 72,
       "service": "spark-plugs"
+    },
+    {
+      "name": "Change DSG transmission fluid and filter (DSG only)",
+      "everyMiles": 80000,
+      "service": "trans-fluid"
     }
   ]
 }

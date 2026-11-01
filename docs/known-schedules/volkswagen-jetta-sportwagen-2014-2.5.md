@@ -36,6 +36,6 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
   NHTSA's index files it under model year 2014, and its description begins "2013 Volkswagen Jetta
   SportWagen". Its jobs and columns are the 2014 card's. It may be the 2013 card or a 2014 card misheaded
   and posted again, corrected, in September 2013; nothing on it says which, so the list stays 2014.
-- **Not covered:** the 2.0L TDI for 2014 (see the [2010 TDI's page](volkswagen-jetta-sportwagen-2010-tdi.md);
-  it waits on #434's question 2), 2011–2013 (see the
-  [2010 2.5L's page](volkswagen-jetta-sportwagen-2010-2.5.md)), and the Golf SportWagen from 2015.
+- The 2.0L TDI for 2014 has [a list of its own](volkswagen-jetta-sportwagen-2014-tdi.md).
+- **Not covered:** 2013 (the card headed "2013", asked on #553), and the Golf SportWagen from 2015. 2011–2012
+  have [their own list](volkswagen-jetta-sportwagen-2011-2012-2.5.md), from the reissues.

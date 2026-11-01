@@ -168,10 +168,10 @@ class ReportRendererTest {
     private val priced = record(
         LocalDate.of(2026, 10, 10), 68_412, false,
         "Spark plugs" to ServiceGroup.OIL_ENGINE, "Tire rotation" to ServiceGroup.TIRES, "Ignition coils" to ServiceGroup.OIL_ENGINE, "Oil & filter change" to ServiceGroup.OIL_ENGINE,
-    ).copy(
+    ).withJobs(
+        listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
+        listOf(0, null, 0, 1),
         costCents = 49_731,
-        jobs = listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
-        jobOf = listOf(0, null, 0, 1),
     )
 
     @Test
@@ -198,7 +198,7 @@ class ReportRendererTest {
 
     @Test
     fun `a record with parts priced and no labor entered shows no labor`() {
-        val partsOnly = priced.copy(jobs = listOf(ExportJob(null, null, 21_240), ExportJob(null, null, 2_850)))
+        val partsOnly = priced.withJobs(listOf(ExportJob(null, null, 21_240), ExportJob(null, null, 2_850)))
         val drawn = write(doc(vehicle(records.take(3) + partsOnly)))[1]
         assertTrue(drawn.contains(res.getString(R.string.export_job_parts, "$240.90")))
         assertTrue(drawn.contains("$28.50"))

@@ -39,7 +39,7 @@ class ReportTest {
     )
 
     private fun record(date: LocalDate, odometer: Int, diy: Boolean, vararg categories: ServiceGroup) =
-        ExportRecord(date, odometer, categories.map { it.name }, if (diy) "DIY" else "Shop", null, null, diy = diy, categories = categories.toList())
+        ExportRecord(date, odometer, summary(*categories.map { it.name }.toTypedArray(), groups = categories.toList()), if (diy) "DIY" else "Shop", null, diy = diy)
 
     private fun vehicle(
         records: List<ExportRecord> = this.records,
@@ -181,7 +181,7 @@ class ReportTest {
 
     @Test
     fun `who did the work leaves out a bare last done`() {
-        val lastDone = ExportRecord(LocalDate.of(2025, 1, 1), 40_000, listOf("Oil"), "", null, null, enteredAsLastDone = true)
+        val lastDone = ExportRecord(LocalDate.of(2025, 1, 1), 40_000, summary("Oil"), "", null, enteredAsLastDone = true)
         val m = model(vehicle(records = records + lastDone))
         assertEquals(2, m.diy)
         assertEquals(2, m.shop)

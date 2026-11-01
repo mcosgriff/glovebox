@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.CheckRow
 import io.cosgriff.glovebox.ui.components.LabelledCard
 import io.cosgriff.glovebox.ui.components.RowsCard
+import io.cosgriff.glovebox.ui.components.RecommendedDoneRow
 import io.cosgriff.glovebox.domain.CarfaxRefusal
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.AppText
@@ -236,6 +237,23 @@ internal fun Choice(title: String, detail: String?, selected: Boolean, onClick: 
         Column(Modifier.weight(1f).padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+    }
+}
+
+/**
+ * "Recommended earlier · done with these?" in a history import's preview (#593, board ImportDone): open shop
+ * recommendations a record in the file looks like the work for. Each starts ticked and closes only when the user
+ * imports; unticked, it stays open.
+ */
+@Composable
+internal fun DoneCard(done: List<DoneLine>, onTick: (id: Long, yes: Boolean) -> Unit) {
+    LabelledCard(stringResource(R.string.import_done_section), note = stringResource(R.string.import_done_about)) {
+        Column {
+            done.forEachIndexed { i, d ->
+                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                RecommendedDoneRow(d.recommendation, d.why, d.ticked) { onTick(d.recommendation.id, !d.ticked) }
+            }
         }
     }
 }

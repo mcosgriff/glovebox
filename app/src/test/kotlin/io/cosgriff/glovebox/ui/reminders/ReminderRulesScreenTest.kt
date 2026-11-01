@@ -16,6 +16,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.LeadTime
 import io.cosgriff.glovebox.domain.LeadTimeInput
 import io.cosgriff.glovebox.ui.schedule.ScheduleFixtures
@@ -144,6 +145,34 @@ class ReminderRulesScreenTest {
         assertEquals(40_000 - 40_400, preview.last.odometer)
         assertEquals(40_000, preview.lastRead.odometer)
         assertEquals(600, preview.odometer)
+    }
+
+    /** What the preview's example counts by, for an oil change every 10,000 mi and [intervalMonths] on [vehicle]. */
+    private fun previewOf(vehicle: VehicleEntity, intervalMonths: Int?): PreviewSource {
+        val id = world.vehicle(vehicle)
+        val oil = world.item(ScheduleItemEntity(vehicleId = id, name = "Change oil", templateKey = "oil", intervalMiles = 10_000, intervalMonths = intervalMonths))
+        world.record(id, today.minusDays(30), 40_000, line("Change oil", itemId = oil))
+        world.reading(id, today, 41_000)
+        open()
+        world.keep(vm.rules)
+        eventually { vm.rules.value?.preview != null }
+        return vm.rules.value!!.preview!!
+    }
+
+    @Test
+    fun `the example counts by the owner's own oil interval, as the reminder does`() {
+        val preview = previewOf(ScheduleFixtures.hatch().copy(ownOilMiles = 6_000, ownOilMonths = 6), intervalMonths = 12)
+        assertEquals(Interval(6_000, 6), preview.interval)
+        assertEquals(false, preview.monthsWorkedOut)
+    }
+
+    @Test
+    fun `an oil change in miles alone is an example, with Glovebox's months said to be theirs`() {
+        val preview = previewOf(ScheduleFixtures.hatch(), intervalMonths = null)
+        assertEquals(Interval(10_000, 12), preview.interval)
+        assertEquals(true, preview.monthsWorkedOut)
+        compose.show { ReminderRulesScreen(onBack = {}, vm = vm) }
+        shows(text(R.string.interval_months_ours, plural(R.plurals.months, 12, "12")), substring = true)
     }
 
     @Test

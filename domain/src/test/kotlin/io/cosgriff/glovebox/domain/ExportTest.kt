@@ -13,9 +13,9 @@ class ExportTest {
     private val today = LocalDate.of(2026, 10, 11)
 
     // Made-up vehicle and records.
-    private val oil = ExportRecord(LocalDate.of(2026, 8, 1), 66_000, listOf("Oil & filter change", "Tire rotation"), "DIY", 6_250, "0W-20, 6.2 qt\nNew gasket", listOf("a.jpg"))
-    private val brakes = ExportRecord(LocalDate.of(2025, 3, 15), 52_300, listOf("Front brake pads"), "Corner Garage", 41_000, null, listOf("b.jpg", "c.jpg"))
-    private val wipers = ExportRecord(LocalDate.of(2026, 1, 9), 60_100, listOf("Wiper blades"), "DIY", null, null)
+    private val oil = ExportRecord(LocalDate.of(2026, 8, 1), 66_000, summary("Oil & filter change", "Tire rotation", costCents = 6_250), "DIY", "0W-20, 6.2 qt\nNew gasket", listOf("a.jpg"))
+    private val brakes = ExportRecord(LocalDate.of(2025, 3, 15), 52_300, summary("Front brake pads", costCents = 41_000), "Corner Garage", null, listOf("b.jpg", "c.jpg"))
+    private val wipers = ExportRecord(LocalDate.of(2026, 1, 9), 60_100, summary("Wiper blades"), "DIY", null)
     private val truck = ExportVehicle(
         unit = DistanceUnit.MILES,
         title = "2019 Toyota 4Runner SR5",
@@ -95,6 +95,9 @@ class ExportTest {
         assertTrue(md.startsWith("# Service history: 2019 Toyota 4Runner SR5\n"))
         assertTrue("- VIN: `1M8GDM9AXKP042788`" in md)
         assertTrue("- License plate: `CO · ABC 1234`" in md)
+        // No gearbox given ("Don't know"), so no line for it.
+        assertTrue("Gearbox" !in md)
+        assertTrue("- Gearbox: Manual\n" in text.markdown(Exports.document(listOf(truck.copy(gearbox = "Manual")), ExportOptions(format = ExportFormat.MARKDOWN), today)))
         assertTrue("- 3 records · \$472.50 total" in md)
         assertTrue("- Exported from Glovebox on Oct 11, 2026" in md)
         // Newest first.
@@ -126,7 +129,7 @@ class ExportTest {
 
     @Test
     fun `a last done entered afterwards is not passed off as a logged service`() {
-        val entered = ExportRecord(LocalDate.of(2024, 3, 1), 41_000, listOf("Coolant"), "DIY", null, null, enteredAsLastDone = true)
+        val entered = ExportRecord(LocalDate.of(2024, 3, 1), 41_000, summary("Coolant"), "DIY", null, enteredAsLastDone = true)
         val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(entered, oil))), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertTrue(md.contains("### Mar 1, 2024 · 41,000 mi\n\n- Coolant\n\n${text.phrase(ExportPhrase.LAST_DONE_NOTE)}\n"))
         assertTrue(md.contains("Done by: DIY"))
@@ -135,7 +138,7 @@ class ExportTest {
     @Test
     fun `a visit is one entry, each record with its own source, lines and cost`() {
         val imported = oil.copy(doneBy = "Corner Garage", notes = null, photoFiles = emptyList(), imported = true, visitId = 4)
-        val recall = ExportRecord(oil.date, 66_000, listOf("Recall 20V-682 · Fuel pump"), "Corner Garage", null, null, visitId = 4)
+        val recall = ExportRecord(oil.date, 66_000, summary("Recall 20V-682 · Fuel pump"), "Corner Garage", null, visitId = 4)
         val md = text.markdown(Exports.document(listOf(truck.copy(records = listOf(imported, recall, wipers))), ExportOptions(format = ExportFormat.MARKDOWN), today))
         assertEquals(
             "### Aug 1, 2026 · 66,000 mi\n\nOne visit · 2 records\n\n" +
@@ -151,8 +154,8 @@ class ExportTest {
 
     @Test
     fun `a visit whose records disagree says each one's own reading, and adds up its costs`() {
-        val a = wipers.copy(costCents = 2_000, visitId = 1)
-        val b = wipers.copy(odometer = 60_112, items = listOf("Cabin air filter"), costCents = 3_500, visitId = 1)
+        val a = wipers.costing(2_000).copy(visitId = 1)
+        val b = wipers.copy(odometer = 60_112, summary = summary("Cabin air filter", costCents = 3_500), visitId = 1)
         val doc = Exports.document(listOf(truck.copy(records = listOf(a, b))), ExportOptions(format = ExportFormat.MARKDOWN), today)
         val visit = doc.vehicles.single().entries.single()
         assertEquals("Jan 9, 2026", text.visitHeading(visit, DistanceUnit.MILES))
@@ -170,9 +173,13 @@ class ExportTest {
 
     // Made-up shop invoice: plugs and coils priced as one job, the oil change priced alone, the rotation free.
     private val priced = ExportRecord(
-        LocalDate.of(2026, 6, 14), 64_000, listOf("Spark plugs", "Tire rotation", "Ignition coils", "Oil & filter change"), "Corner Garage", 49_731, null,
-        jobs = listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
-        jobOf = listOf(0, null, 0, 1),
+        LocalDate.of(2026, 6, 14), 64_000,
+        summary(
+            "Spark plugs", "Tire rotation", "Ignition coils", "Oil & filter change", costCents = 49_731,
+            jobs = listOf(ExportJob("Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240), ExportJob("Oil & filter change", 3_995, 2_850)),
+            jobOf = listOf(0, null, 0, 1),
+        ),
+        "Corner Garage", null,
     )
 
     private fun records(vararg r: ExportRecord, options: ExportOptions = ExportOptions(format = ExportFormat.MARKDOWN)) =
@@ -194,33 +201,33 @@ class ExportTest {
 
     @Test
     fun `a total below the line prices names no cause, and with no total there is no gap`() {
-        assertTrue(records(priced.copy(costCents = 40_000)).contains("Parts on lines: $240.90 · Less than the line prices (worked out): $60.85\n"))
-        assertTrue(records(priced.copy(costCents = 46_085)).contains("Parts on lines: $240.90\n"))
-        assertTrue(records(priced.copy(costCents = null)).contains("Done by: Corner Garage\n\nLabor on lines: $219.95 · Parts on lines: $240.90\n"))
+        assertTrue(records(priced.costing(40_000)).contains("Parts on lines: $240.90 · Less than the line prices (worked out): $60.85\n"))
+        assertTrue(records(priced.costing(46_085)).contains("Parts on lines: $240.90\n"))
+        assertTrue(records(priced.costing(null)).contains("Done by: Corner Garage\n\nLabor on lines: $219.95 · Parts on lines: $240.90\n"))
     }
 
     @Test
     fun `only a priced job of one line gives that line a price of its own`() {
         // Plugs and coils share one job, so neither gets its price; the rotation has none; the oil change is alone.
-        assertEquals(listOf(null, null, null, 6_845L), priced.items.indices.map(priced::lineTotal))
-        val laborOnly = priced.copy(jobs = listOf(priced.jobs[0], ExportJob(null, 3_995, null)))
-        assertEquals(3_995L, laborOnly.lineTotal(3))
-        val unpriced = priced.copy(jobs = listOf(priced.jobs[0], ExportJob("Oil & filter change", null, null)))
-        assertNull(unpriced.lineTotal(3))
-        assertNull(priced.copy(jobs = emptyList(), jobOf = emptyList()).lineTotal(3))
+        assertEquals(listOf(null, null, null, 6_845L), priced.summary.items.indices.map(priced.summary::lineTotal))
+        val laborOnly = priced.withJobs(listOf(priced.summary.jobs[0], ExportJob(null, 3_995, null)))
+        assertEquals(3_995L, laborOnly.summary.lineTotal(3))
+        val unpriced = priced.withJobs(listOf(priced.summary.jobs[0], ExportJob("Oil & filter change", null, null)))
+        assertNull(unpriced.summary.lineTotal(3))
+        assertNull(priced.withJobs(emptyList(), emptyList()).summary.lineTotal(3))
     }
 
     @Test
     fun `a job with no wording is named by its lines, and one that says nothing is just its lines`() {
-        val joined = priced.copy(jobs = listOf(ExportJob(null, 18_000, null)), jobOf = listOf(0, null, 0, null))
+        val joined = priced.withJobs(listOf(ExportJob(null, 18_000, null)), listOf(0, null, 0, null))
         assertTrue(records(joined).contains("- Spark plugs + Ignition coils · Labor $180.00\n- Tire rotation\n- Oil & filter change\n\n"))
-        val bare = joined.copy(jobs = listOf(ExportJob(null, null, null)))
+        val bare = joined.withJobs(listOf(ExportJob(null, null, null)))
         assertTrue(records(bare).startsWith("### Jun 14, 2026 · 64,000 mi\n\n- Spark plugs\n- Ignition coils\n- Tire rotation\n- Oil & filter change\n\nDone by: Corner Garage · Cost: $497.31\n\n"))
     }
 
     // The same invoice with the plugs and coils job's parts itemized and its charges entered (#502), made-up figures.
-    private val itemized = priced.copy(
-        jobs = listOf(
+    private val itemized = priced.withJobs(
+        listOf(
             ExportJob(
                 "Remove & Replace Spark Plugs and Ignition Coils", 18_000, 21_240,
                 listOf(
@@ -229,10 +236,9 @@ class ExportTest {
                     ExportPartRow("Dielectric grease", 4_500, null, 240),
                 ),
             ),
-            priced.jobs[1],
+            priced.summary.jobs[1],
         ),
-        charges = InvoiceCharges(shopSuppliesCents = 1_850, taxCents = 1_796),
-    )
+    ).let { it.copy(summary = it.summary.copy(charges = InvoiceCharges(shopSuppliesCents = 1_850, taxCents = 1_796))) }
 
     @Test
     fun `a job's part rows go under it, and the invoice's charges in the breakdown`() {
@@ -245,7 +251,7 @@ class ExportTest {
                 "Done by: Corner Garage · Cost: $500.00\n\n" +
                 // Tax is entered, so what is left isn't tax and fees.
                 "Labor on lines: $219.95 · Parts on lines: $240.90 · Shop supplies: $18.50 · Tax: $17.96 · Other charges (worked out): $2.69\n\n",
-            records(itemized.copy(costCents = 50_000)),
+            records(itemized.costing(50_000)),
         )
         // Adding up to the total exactly, there is nothing left to name.
         assertTrue(records(itemized).contains("Tax: $17.96\n"))
@@ -303,7 +309,7 @@ class ExportTest {
     fun `text the user typed can't break the markdown`() {
         val odd = truck.copy(
             nickname = "# *Blue*",
-            records = listOf(oil.copy(items = listOf("Pads | rotors"), notes = "see [receipt]")),
+            records = listOf(oil.copy(summary = summary("Pads | rotors"), notes = "see [receipt]")),
             schedule = listOf(ExportScheduleLine("Belt | tensioner", "60,000 mi", null)),
         )
         val md = text.markdown(Exports.document(listOf(odd), ExportOptions(format = ExportFormat.MARKDOWN), today))

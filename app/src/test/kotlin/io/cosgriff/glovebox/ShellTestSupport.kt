@@ -138,13 +138,14 @@ class ShellGraph(private val app: Application) {
     /** A ViewModel as `hiltViewModel()` would make it, never shared. */
     fun <T : ViewModel> viewModel(type: Class<T>, handle: SavedStateHandle): T = construct(type, handle)
 
-    /** What `DataModule` provides, made by its own method. */
+    /** What `DataModule` or `AppModule` provides, made by its own method. */
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any> provided(type: Class<T>): T? {
-        val method = DataModule::class.java.methods.firstOrNull { it.returnType == type && it.declaringClass == DataModule::class.java }
-            ?: return null
+        val (module, method) = listOf<Any>(DataModule, AppModule).firstNotNullOfOrNull { module ->
+            module.javaClass.methods.firstOrNull { it.returnType == type && it.declaringClass == module.javaClass }?.let { module to it }
+        } ?: return null
         val args = method.genericParameterTypes.map { arg(it, handle = null) }.toTypedArray()
-        return method.invoke(DataModule, *args) as T
+        return method.invoke(module, *args) as T
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -591,9 +591,10 @@ class ReportRenderer(private val fonts: ReportFonts) {
         val placed = mutableListOf<Chip>()
         var cx = 0f
         var cy = 0f
-        r.items.forEachIndexed { i, item ->
-            val category = r.categories.getOrNull(i) ?: ServiceGroup.OTHER
-            val price = r.lineTotal(i)?.let { words.money(it) }
+        r.summary.lines.forEachIndexed { i, line ->
+            val item = line.label
+            val category = line.group
+            val price = r.summary.lineTotal(i)?.let { words.money(it) }
             val priceW = price?.let { priceP.measureText(it) + 6f } ?: 0f
             val text = TextUtils.ellipsize(item, p, width - 30f - priceW, TextUtils.TruncateAt.END).toString()
             val w = 8f + 8f + 6f + p.measureText(text) + priceW + 8f
@@ -623,7 +624,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
      * visit, the record's own date and reading where they differ. One line, wrapped to [width] when it runs over.
      */
     private fun meta(r: ExportRecord, entry: List<ExportRecord>, unit: DistanceUnit, width: Float): Block {
-        val b = r.breakdown
+        val b = r.summary.breakdown
         val parts = listOfNotNull(
             when {
                 r.enteredAsLastDone -> s(R.string.report_last_done_only)
@@ -633,12 +634,12 @@ class ReportRenderer(private val fonts: ReportFonts) {
             if (entry.size > 1) words.visitOwn(r, entry, unit) else null,
             r.costCents?.let { words.money(it) },
             // Each only when some job has it: a labor never entered isn't a labor of $0.00.
-            b?.takeIf { r.jobs.any { it.laborCents != null } }?.let { words.phrase(ExportPhrase.JOB_LABOR, words.money(it.laborCents)) },
-            b?.takeIf { r.jobs.any { it.partsCents != null } }?.let { words.phrase(ExportPhrase.JOB_PARTS, words.money(it.partsCents)) },
+            b?.takeIf { r.summary.jobs.any { it.laborCents != null } }?.let { words.phrase(ExportPhrase.JOB_LABOR, words.money(it.laborCents)) },
+            b?.takeIf { r.summary.jobs.any { it.partsCents != null } }?.let { words.phrase(ExportPhrase.JOB_PARTS, words.money(it.partsCents)) },
             // The invoice's own charges (#502), each only when entered.
-            r.charges.shopSuppliesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.SHOP_SUPPLIES), words.money(it)) },
-            r.charges.taxCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.TAX), words.money(it)) },
-            r.charges.feesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.FEES), words.money(it)) },
+            r.summary.charges.shopSuppliesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.SHOP_SUPPLIES), words.money(it)) },
+            r.summary.charges.taxCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.TAX), words.money(it)) },
+            r.summary.charges.feesCents?.let { words.phrase(ExportPhrase.LABELLED, words.phrase(ExportPhrase.FEES), words.money(it)) },
             photoCount(r.photoFiles.size),
         )
         val p = paint(12f, fonts.sans, INK2)
@@ -778,7 +779,7 @@ class ReportRenderer(private val fonts: ReportFonts) {
         val r = page.record
         val unit = page.model.vehicle.unit
         logHeader(c, page.model, continued = false)
-        val caption = s(R.string.report_caption, r.date.format(longDate), r.odometer.asDistance(unit), r.items.firstOrNull() ?: r.doneBy)
+        val caption = s(R.string.report_caption, r.date.format(longDate), r.odometer.asDistance(unit), r.summary.items.firstOrNull() ?: r.doneBy)
         val captionP = paint(13f, fonts.sans, INK2)
         val area = RectF(PHOTO_MARGIN, CONTENT_TOP, WIDTH - PHOTO_MARGIN, CONTENT_BOTTOM - 40f)
         if (photo == null) {

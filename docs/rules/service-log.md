@@ -5,12 +5,23 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
 - **All service-log writes go through `RecordActions`**, which drives the snackbar and its Undo.
 - **A vehicle's reminders are read through `VehicleLogs`** (#420, `:data`): the vehicle, all its schedule items,
   records, readings and settings, put together one way in dash terms. A screen, the widget or a worker doesn't
-  gather those rows and call `log()` itself. Milestones is the one exception: it goes by actual mileage, with
+  gather those rows and call `log()` itself. Milestones reads the log too; for its tracked items it goes by actual mileage, with
   no swap, and builds its own on the same functions.
+- **A record's lines, jobs, part rows and charges are read and written as one `ServiceRecord`** (#574, `:domain`):
+  `toModel` and `toRows` (`:data`) are the only places that turn the saved rows into it and back, and own the
+  numbering they point at each other by. Log service, the record's screen, exports and imports don't rebuild a
+  record from `ServiceRecordWithItems` themselves.
+- **Log service's lines, jobs and prices are a `LogDraft`** (#578, `:domain`), made from a `ServiceRecord`
+  (`LogDraft.of`) and saved as one (`toRecord`). What an invoice puts on them is the draft's merge
+  (`LogDraft.fill`, `InvoiceMerge`). Figures stay as typed; the app reads and writes them in its locale
+  (`AppFigures`, a `TypedFigures`). `LogServiceForm` holds the draft and writes the visit's own fields.
 - **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the records as they
   would stand (`DraftRecord`s, readings as typed, new ones numbered below zero) and gives the changes and the
   entries after, in dash terms. A delete, an edit, re-filed lines and an import's file all go through it; a
   screen doesn't rebuild the before and after itself. A sold vehicle moves no reminders.
+- **Screens read a vehicle through the log, not the DAOs** (#577): its unit, swap, records and readings as saved,
+  and the odometer in dash terms (`odometer`) and as miles really covered (`actualOdometer`). A screen doesn't
+  gather the vehicle's rows or work the highest reading out again itself.
 - **A write that takes more than one step is one transaction** (#419): it goes in `ServiceLogWriter` (`:data`),
   which writes rows only. `RecordActions` calls it and keeps the events, focus, Undo and photo files. A process
   that dies part-way must leave the log as it was, never a record without its photos or a recall's record with
@@ -25,7 +36,7 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   check it against the invoice, never "detected". A figure printed and not vouched for is left blank and outlined
   "Couldn't read" until something is typed there. One invoice is one record: each service a line of the shop's wording
   (under the line the owner's rule files it under, otherwise custom, with guesses only through "File under…") in a job
-  of its own with its vouched labor and parts; what was already ticked stays. Recommended work and "odometer in" go to
+  of its own with its vouched labor and parts; what was already ticked stays. Recommended work is offered row by row (shop recommendations, below) and "odometer in" goes to
   the notes, never to the lines. A VIN that isn't the vehicle's is a question by its last four, never a block. The shop
   takes a saved shop's spelling. The read odometer is an offer from the invoice, so the never-prefilled rule doesn't
   cover it. "What was read" is viewing only. The PDF is held in memory and kept, encrypted, among the vehicle's
@@ -70,7 +81,9 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   **no more** (small marks past seven aren't told apart). `groupColor` (`Theme.kt`) has a light and a dark step for
   each, chosen as a set with the dataviz palette validator (every pair ΔE ≥ 15, ≥ 6 for red-green colour blindness,
   3:1 on the card and the page ground); **change one only by checking the whole set again.** Every coloured mark
-  sits beside its name, and Other's grey is an outline, not a fill.
+  sits beside its name, and Other's grey is an outline, not a fill. **A line's group has one answer,
+  `ServiceGroup.of`** (#579), read through `RecordSummary` by both: its catalog line's group, else its schedule
+  item's (the owner's own items save no catalog line), else Other.
 - "Add custom item" (#309) only offers lines, never ticks one; filing a custom line under a line **keeps its
   wording**. So Custom stays rare.
 - Custom lines and category rules (#310): **a line is Custom only when it has no home** (no `catalogId`, no
@@ -109,12 +122,14 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   figures; the gap counts them, and is "Tax and fees" only while neither tax nor fees is entered, "Other charges" once
   either is. An import or a saved record is never filled in: only the form does that.
 - Reading an invoice (#483, `InvoiceReader`, `:domain`; the screens are #484): **it only fills the form.** No
-  per-shop templates: services come from a heading, a table whose header names labor and parts, a line carrying a
-  subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when
+  per-shop templates: services come from a heading, a table whose header names labor and parts (inside a service, a
+  header without labor is that service's parts table), a line carrying a subtotal, or (with none of those) priced lines whose prices add up to the subtotal. **A figure is taken only when
   a sum the invoice prints agrees** (parts rows, a service's subtotal, every service's labor, parts, fees and sublet
   against the totals block, the totals block or the subtotals against the grand total); otherwise it is left out,
   never guessed or worked out from the others. **Jobs come only from the services, up to the totals**: recommended,
-  declined or deferred work and an inspection report's priced items are text offered for notes, never a job. A VIN
+  declined or deferred work and an inspection report's priced items are text offered for notes, never a job; what follows a price ("+taxes and fees",
+  wrapped or not) is the price's, not the wording. Work marked approved there ("Approved by phone") is the invoice's
+  own service, never a recommendation, nor is a title wrapped onto the next line on its own; attached photos end them. A VIN
   must pass its check digit; on a line labelled VIN, at most two look-alikes (S/5, B/8, Z/2, G/6) are folded, and
   only when exactly one way passes. The odometer follows Read dash's range from the last reading on or before the
   invoice's date; out below in, or more than 1,000 past it, leaves both out. A date after today is left out. Wording
@@ -122,4 +137,26 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   `:domain` returns a typed trace of every decision; `app` words it. The honest figure is the unseen set in
   `InvoiceUnseenTest`. **Never commit a real invoice**: real ones go in the git-ignored
   `domain/src/test/private-invoices/` (`PrivateInvoicesTest`).
+- Shop recommendations (#572, `docs/adr/0016-shop-recommendations-kept-apart-from-the-schedule.md`,
+  `ShopRecommendations`, boards `Recommended*`): an invoice's recommended work and its inspection report's red and
+  yellow findings are **one row each on Log service, every row kept to start with** (a colourless finding standing
+  alone, from a report without marks, starts let go). Keep for later, Add to notes, both, or neither (let go: nothing
+  saved). **Nothing is saved until the record is**; the notes get each noted item on its own line at save, and the
+  whole "Recommended on the invoice" block is no longer written ("Odometer in" still is). Kept items live in
+  `shop_recommendations` under the record they came from, so **deleting that record (Undo included) takes them**, and
+  Undo of the delete puts them back. **Never a reminder and never "done"**: an open one moves nothing and closing one
+  logs nothing. The same shop and the same wording (case and spacing aside) **replace** the open one; another shop
+  never does. Logged work closes one only when the form asks and the owner leaves it ticked: by its catalog line,
+  whoever did it, else by similar wording (`LineGuess.similar`), only for records dated on or after it, never by
+  the record that kept it. **Asked on a new record, on an edit and in a history import's preview** (#593,
+  `ShopRecommendations.offered` / `onSave` / `offeredOnImport`, board ImportDone): an edit offers again, ticked,
+  what the record closed and still matches; **an edit that no longer matches (lines or date), or unticks one, opens
+  it again**, and Undo of the edit puts both back (`RecordEvent.Edited.done`). An import offers each for the earliest
+  matching record and closes it only if left ticked when the owner imports; a replaced record that no longer
+  matches opens what it closed. The list on the vehicle closes one by hand, with Undo through `RecordActions`.
+- Health-report marks (#572, `PdfWords`' second pass, `InvoiceMark`, `FindingColour`): small filled shapes with their
+  colour, read in `:domain` **by hue, never exact value**, and paired with the item on their line, only under an
+  inspection heading. Work under an item carries its area, what was found and its colour; approved work there was
+  done on the visit, so neither it nor its finding is open. Colours on screen are the theme's (`statusColors()`),
+  never the PDF's. A report without marks gives its findings uncoloured.
 - Clear service history deletes imported records only by default, or all; typed DELETE, no Undo.

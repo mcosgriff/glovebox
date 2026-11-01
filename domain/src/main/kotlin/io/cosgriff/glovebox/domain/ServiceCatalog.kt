@@ -378,6 +378,9 @@ data class TrackedItem(
     /** Whether [interval]'s months are Glovebox's, worked out for an oil change that has none ([OilMonths]); `app` says so. */
     val monthsWorkedOut: Boolean = false,
 ) {
+    /** [firstAt] as distance really covered, the figure the schedule gives (#575): what a first time reads as. */
+    val firstMiles: Int? get() = firstAt?.let { it - zeroAt }
+
     companion object {
         /**
          * A schedule item as a reminder; null when it is none: it has no usable [interval], or it is a job only

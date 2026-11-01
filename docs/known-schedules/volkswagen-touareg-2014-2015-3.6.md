@@ -12,9 +12,9 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 
 | Model year | What was read | Document | List |
 |---|---|---|---|
-| 2010 | The card for all models except the Routan (revised October 2012), as the [2010 Passat](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read) reads it | `2012/MC-10156104-9999` | [2010 3.6L](volkswagen-touareg-2010-3.6.md) |
+| 2010 | The card for all models except the Routan (revised October 2012), as the [2010 Passat](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read) reads it | `2012/MC-10156104-9999` | [2010 3.6L](volkswagen-touareg-2010-3.6.md) |
 | 2010 | The "Touareg 3.0L TDI Engine Only" card (revised October 2012), in full. NHTSA files it again as `MC-10157691` (not fetched) | `2012/MC-10156105-9999` | [2010 TDI](volkswagen-touareg-2010-tdi.md) |
-| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), as read for the [2010 Passat](volkswagen-passat-2010.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621` | 2010 |
+| 2010 | Volkswagen's 2010 reissue (printed 11/24/2025), as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), for the oil change's time limit; its rows name the first-generation Touareg as `7L` | reissue `USA5R503621` | 2010 |
 | 2014 | The Touareg 3.6L FSI Gasoline card (posted June 2013), in full; **this list was written from it**. NHTSA files it twice (`MC-10242479`, under 2014); the two files are byte for byte the same. `MC-10125856` was not fetched | `2013/MC-10125855-9999`, `2014/MC-10242479-9999` | this one |
 | 2014 | The Touareg 3.0L TDI card (posted June 2013), in full. NHTSA's index heads its row "3.0L Hybrid Engine"; the file is the TDI's | `2013/MC-10242478-9999` | [2014–2015 TDI](volkswagen-touareg-2014-2015-tdi.md) |
 | 2014 | The Touareg 3.0L Hybrid card (posted June 2013), in full. NHTSA files it twice; the two files are byte for byte the same | `2013/MC-10125857-9999`, `2013/MC-10242477-9999` | [2014 Hybrid](volkswagen-touareg-2014-hybrid.md) |
@@ -45,7 +45,7 @@ every list is for "Touareg".
 
 **All-wheel drive.** The Touareg was sold in the USA with 4Motion only. None of the 2014–2016 cards prints an
 all-wheel-drive row (no Haldex, transfer case or differential job), so these lists have no `allWheelDriveOnly`.
-The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is table-only (see the 2010 pages).
+The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is an all-wheel-drive reminder (#554; see the 2010 pages).
 
 ## This list
 
@@ -65,10 +65,10 @@ The 2010 cards' "Haldex Clutch: Change oil (if applicable)" row is table-only (s
 
 ## What isn't covered
 
-- **2011, 2012, 2013 and 2017.** NHTSA's index has no Touareg card for those years. Volkswagen's 2025 reissues
-  would be the only source; they weren't read for the Touareg, and for the Golf they differ from the cards from
-  the time ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)). The
-  2010 and 2014 cards aren't stretched over them.
+- **2011, 2012, 2013 and 2017.** NHTSA's index has no Touareg card for those years. They have lists from
+  Volkswagen's reissues alone ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)): 2011–2013 [3.6L](volkswagen-touareg-2011-2013-3.6.md),
+  [TDI](volkswagen-touareg-2011-2013-tdi.md) and [Hybrid](volkswagen-touareg-2011-2013-hybrid.md), and
+  [2017 3.6L](volkswagen-touareg-2017.md).
 - **The 2015 and 2016 Hybrid.** Two different cards are headed "2015 … 3.0L Hybrid": the June 2014 card
   (`MC-10240829`, row for row the 2014 Hybrid card) and the August 2015 card (`MC-10123062`, in the 2016
   layout: no yearly airbag check, tire rotation, door checks, rear nozzle or sticker, and the dust and pollen

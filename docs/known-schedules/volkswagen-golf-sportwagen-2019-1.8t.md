@@ -13,7 +13,7 @@ images, by eye.
   spark plugs 40,000 / 48 mo, and `"engine": { "label": "1.8T", "displacementL": 1.8 }`. How the card was
   read is on the [2019 Golf 1.4T's page](volkswagen-golf-2019-1.4t.md); every Mk7 card read, and what isn't
   covered, on the [2015 Golf 1.8T's page](volkswagen-golf-2015-1.8t.md).
-- **Left out and asked on #436**, as on the 1.4T: the hood latch.
+- **Left out: the hood latch**, by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years", an additional item. The
   2019 Golf SportWagen's 4Motion came with the 1.8T, so it is read as on the [2018 SportWagen](volkswagen-golf-sportwagen-2018.md):
   "Change AWD clutch fluid (AWD)", an `additional` reminder by time alone, every 36 months, no service line, in

@@ -1,6 +1,5 @@
 package io.cosgriff.glovebox.ui.schedule
 
-import io.cosgriff.glovebox.data.db.ScheduleWriter
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -37,7 +36,7 @@ class ScheduleViewModelTest {
         val vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
                 routeHandle(ScheduleRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
-                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
+                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), world.makers, world.saver,
             )
         }
         world.keep(vm.state)
@@ -275,9 +274,9 @@ class ScheduleViewModelTest {
 
         var asked: Pair<String, String>? = null
         world.saver.attach { mime, name -> asked = mime to name }
-        vm.saveAsFile(file.text!!, "2013-volkswagen-golf")
+        vm.saveAsFile(file.text!!, "2008-volkswagen-golf")
         eventually { asked != null }
-        assertEquals(ScheduleExport.fileName("2013-volkswagen-golf"), asked!!.second)
+        assertEquals(ScheduleExport.fileName("2008-volkswagen-golf"), asked!!.second)
     }
 
     @Test
@@ -299,7 +298,7 @@ class ScheduleViewModelTest {
         val vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
                 routeHandle(ScheduleRoute(404)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
-                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), ScheduleWriter(world.db), world.saver, world.catalog,
+                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), world.makers, world.saver,
             )
         }
         world.keep(vm.state)

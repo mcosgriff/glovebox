@@ -19,8 +19,9 @@ Source: Volkswagen's "Maintenance Schedule For USA" cards, filed with NHTSA as m
   lubrication, rear window washer nozzle check or service sticker; the dust and pollen filter every 40,000 miles or
   2 years, drawn at 40,000, 80,000 and 120,000.
 - **"Haldex Clutch: Change oil (if applicable)"** at 30,000, 60,000, 90,000 and 120,000, footnote 4, "Every 3 years,
-  regardless of mileage": table-only, with no `service`, as on the [2015](volkswagen-golf-r-2015.md) and
-  [2013](volkswagen-golf-r-2013.md) lists.
+  regardless of mileage": "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`, a reminder every 36 months by time
+  alone with no `service`, as on the [2015](volkswagen-golf-r-2015.md) and [2013](volkswagen-golf-r-2013.md) lists
+  (#554).
 - "Transmission: DSG (non Automatic): Change fluid and filter" at 40,000, 80,000 and 120,000: "Change DSG
   transmission fluid and filter (DSG only)", a reminder every 40,000 miles in `manualExcluded`. No row for a
   conventional automatic.
@@ -29,7 +30,7 @@ Source: Volkswagen's "Maintenance Schedule For USA" cards, filed with NHTSA as m
 - **Model name.** vPIC's model list for Volkswagen, 2016 (`GetModelsForMakeYear`), has "Golf R" apart from "Golf",
   "Golf SportWagen", "Golf GTI" and "e-Golf".
 - Reminders: engine oil 10,000 / 12 mo; dust and pollen filter 40,000 / 24 mo; DSG fluid and filter 40,000 (not for
-  a manual); air filter and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at
-  3 years first, then every 2).
+  a manual); air filter and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake
+  fluid every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Oil 12 months**, from Volkswagen's 2016 reissue (the owner's ruling of 2026-10-28, #517). The table has none.
 - No special operating conditions are given on the card.

@@ -8,6 +8,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
+import io.cosgriff.glovebox.data.db.KeptRecommendation
+import io.cosgriff.glovebox.data.db.ImportClose
+import io.cosgriff.glovebox.domain.DoneChange
+import io.cosgriff.glovebox.data.db.RecordRecommendations
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.RecordRows
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
@@ -39,14 +43,28 @@ data class HistoryFocus(val vehicleId: Long, val recordId: Long? = null, val mar
 
 sealed interface RecordEvent {
     data class Saved(val recordId: Long) : RecordEvent
-    /** [addedPhotos] and [removedPhotos] are file names; Undo takes the first away again and brings the second back. */
+    /**
+     * [addedPhotos] and [removedPhotos] are file names; Undo takes the first away again and brings the second back.
+     * [done] is what the edit closed and opened again of the shop's recommendations (#593); Undo puts them back.
+     */
     data class Edited(
         val previous: ServiceRecordWithItems,
         val addedPhotos: List<String> = emptyList(),
         val removedPhotos: List<String> = emptyList(),
+        val done: DoneChange = DoneChange(),
     ) : RecordEvent
-    /** [recallIds] are recalls this record was the work for; Undo links them again. */
-    data class Deleted(val record: ServiceRecordWithItems, val recallIds: List<Long> = emptyList()) : RecordEvent
+    /**
+     * [recallIds] are recalls this record was the work for; Undo links them again. [recommendations] are what it kept,
+     * closed and replaced of the shop's recommendations (#572); Undo puts those back too.
+     */
+    data class Deleted(
+        val record: ServiceRecordWithItems,
+        val recallIds: List<Long> = emptyList(),
+        val recommendations: RecordRecommendations = RecordRecommendations(),
+    ) : RecordEvent
+
+    /** A kept recommendation closed by hand (#572), named by its [wording]; Undo opens it again. */
+    data class RecommendationClosed(val id: Long, val wording: String) : RecordEvent
 
     /** A recall marked done; [recordId] is the record added for the work, if the user wanted one. */
     data class RecallDone(val recallId: Long, val recordId: Long?) : RecordEvent
@@ -92,8 +110,10 @@ class RecordActions @Inject constructor(
         photoFiles: List<String> = emptyList(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
         parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        kept: List<KeptRecommendation> = emptyList(),
+        done: List<Long> = emptyList(),
     ) {
-        val id = writer.add(record, items, photoFiles, jobs, parts)
+        val id = writer.add(record, items, photoFiles, jobs, parts, kept, done)
         _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
@@ -113,9 +133,12 @@ class RecordActions @Inject constructor(
 
     /**
      * An import of service history, in one transaction. Like [addLastDone] it announces nothing: the
-     * Import page shows its own result. [replaced] records keep their id, photos and recall links.
+     * Import page shows its own result. [replaced] records keep their id, photos and recall links. [done] are the
+     * shop's recommendations the owner left ticked in the preview, closed by their records, and [reopened] those a
+     * replaced record no longer looks like the work for (#593).
      */
-    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) = service.applyImport(added, replaced)
+    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>, done: List<ImportClose> = emptyList(), reopened: List<Long> = emptyList()) =
+        writer.applyImport(added, replaced, done, reopened)
 
     /** Points History at [vehicleId], for a screen that sends the user there. */
     fun showIn(vehicleId: Long) {
@@ -134,18 +157,28 @@ class RecordActions @Inject constructor(
         removedPhotoIds: Set<Long> = emptySet(),
         jobs: List<ServiceRecordJobEntity> = emptyList(),
         parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        done: DoneChange = DoneChange(),
     ) {
-        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts)
+        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts, done)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
-        _events.send(RecordEvent.Edited(previous, addedPhotos, removed))
+        _events.send(RecordEvent.Edited(previous, addedPhotos, removed, done))
     }
 
     suspend fun delete(record: ServiceRecordWithItems) {
         // The recall stays marked done; only its link to this record goes.
         val recallIds = recalls.idsLinkedTo(record.record.id)
-        service.deleteRecord(record.record)
+        val was = writer.delete(record.record)
         _focus.value = HistoryFocus(record.record.vehicleId)
-        _events.send(RecordEvent.Deleted(record, recallIds))
+        _events.send(RecordEvent.Deleted(record, recallIds, was))
+    }
+
+    /**
+     * A kept recommendation closed by the owner (#572): it leaves the open list, logs nothing and moves no reminder.
+     * Undo opens it again.
+     */
+    suspend fun closeRecommendation(id: Long, wording: String, today: LocalDate) {
+        writer.closeRecommendation(id, today)
+        _events.send(RecordEvent.RecommendationClosed(id, wording))
     }
 
     /**
@@ -192,9 +225,9 @@ class RecordActions @Inject constructor(
     /** False if there was nothing left to undo it on: the vehicle was deleted while the bar was up. */
     suspend fun undo(event: RecordEvent): Boolean = when (event) {
         is RecordEvent.Edited ->
-            writer.revertEdit(event.previous).also { if (it) photos.delete(event.addedPhotos) }
+            writer.revertEdit(event.previous, event.done).also { if (it) photos.delete(event.addedPhotos) }
         is RecordEvent.Deleted -> {
-            val id = writer.restore(event.record, event.recallIds)
+            val id = writer.restore(event.record, event.recallIds, event.recommendations)
             if (id != null) {
                 _focus.value = HistoryFocus(event.record.record.vehicleId, id, RecordMark.RESTORED)
             }
@@ -213,6 +246,10 @@ class RecordActions @Inject constructor(
             service.unfileLines(event.lineIds, event.ruleKeys, event.replaced)
             true
         }
+        is RecordEvent.RecommendationClosed -> {
+            writer.closeRecommendation(event.id, null)
+            true
+        }
         is RecordEvent.Saved -> true
     }
 
@@ -227,7 +264,7 @@ class RecordActions @Inject constructor(
                 is RecordEvent.Deleted -> event.record.photos.map { it.fileName }
                 is RecordEvent.Edited -> event.removedPhotos
                 is RecordEvent.RecallReopened -> event.record?.photos.orEmpty().map { it.fileName }
-                is RecordEvent.Saved, is RecordEvent.RecallDone, is RecordEvent.Filed -> emptyList()
+                is RecordEvent.Saved, is RecordEvent.RecallDone, is RecordEvent.Filed, is RecordEvent.RecommendationClosed -> emptyList()
             },
         )
     }

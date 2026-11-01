@@ -29,6 +29,12 @@ data class ImportedScheduleItem(
      * leaves it null.
      */
     val e85: Interval? = null,
+    /**
+     * The one gearbox the job is for, from a maker's list's `dsgOnly` / `automaticOnly` (#549); null for any. The item
+     * made from it reminds only while the vehicle's gearbox is that one ([Gearboxes.reminds]). **An import file never
+     * carries one**, so the reader leaves it null.
+     */
+    val gearbox: Gearbox? = null,
 )
 
 /**
@@ -79,8 +85,12 @@ object ScheduleImport {
 
     private val itemKeys = intervalKeys + setOf("name", "severe", "rule", "service", SEVERE_ONLY) + FIRST_AT.names
 
-    fun read(items: JsonElement, check: ImportCheck): List<ImportedScheduleItem> {
-        val list = check.array(items, "items", 1, MAX_ITEMS) ?: return emptyList()
+    /**
+     * The items of an `interval-schedule` file. An import file needs at least one; a maker's list may pass
+     * [min] 0 for its `intervals`, since its reminders can all be jobs apart from its table ([KnownSchedules]).
+     */
+    fun read(items: JsonElement, check: ImportCheck, min: Int = 1): List<ImportedScheduleItem> {
+        val list = check.array(items, "items", min, MAX_ITEMS) ?: return emptyList()
         val seen = Repeats<String>()
         return list.mapIndexedNotNull { i, e ->
             val path = ImportCheck.at("items", i)

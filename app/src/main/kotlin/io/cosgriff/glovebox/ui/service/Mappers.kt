@@ -1,6 +1,9 @@
 package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.domain.enumOrNull
+import io.cosgriff.glovebox.domain.Money
+import io.cosgriff.glovebox.domain.PartQuantity
+import io.cosgriff.glovebox.domain.TypedFigures
 import java.text.DecimalFormatSymbols
 import io.cosgriff.glovebox.domain.RecallNotice
 import io.cosgriff.glovebox.domain.Recalls
@@ -17,6 +20,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
@@ -110,6 +114,18 @@ fun Interval.text(unit: DistanceUnit, firstAt: Int?, monthsOurs: Boolean = false
 
 /** "Every 10,000 mi or 12 mo", saying so when the months are Glovebox's. A reminder's interval, as it counts. */
 fun TrackedItem.every(unit: DistanceUnit): String = interval.every(unit, monthsWorkedOut)
+
+/** "10,000 mi / 12 mo", saying so when the months are Glovebox's: a reminder's interval, without its first time. */
+fun TrackedItem.slashText(unit: DistanceUnit): String = interval.text(unit, monthsWorkedOut)
+
+/** "First at 100,000 mi, then every 50,000 mi / 60 mo", or [slashText] for a job with no first time of its own. */
+fun TrackedItem.text(unit: DistanceUnit): String = interval.text(unit, firstMiles, monthsWorkedOut)
+
+/** "Every 7,500 mi or 9 mo", saying so when the months are Glovebox's. */
+fun CountedInterval.every(unit: DistanceUnit): String = interval.every(unit, monthsWorkedOut)
+
+/** "7,500 mi or 9 mo", saying so when the months are Glovebox's. */
+fun CountedInterval.orText(unit: DistanceUnit): String = interval.orText(unit, monthsWorkedOut)
 
 private fun Interval.parts(unit: DistanceUnit, join: Int, monthsOurs: Boolean): String {
     val distance = miles?.asDistance(unit)
@@ -380,3 +396,14 @@ fun editableQuantity(milli: Long): String =
 /** A cost to edit, "45.99", with the app's decimal mark and no grouping, which [typedNumber] reads back. */
 fun editableCost(cents: Long): String =
     "${cents / 100}${DecimalFormatSymbols.getInstance(AppText.locale).decimalSeparator}${(cents % 100).toString().padStart(2, '0')}"
+
+/** The forms' figures as typed in the app's locale (#578): what a draft in `:domain` asks to read and write them. */
+object AppFigures : TypedFigures {
+    override fun cents(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { Money.parseCents(it.typedDecimal()) }
+
+    override fun milli(text: String): Long? = text.takeIf { it.isNotBlank() }?.let { PartQuantity.parseMilli(it.typedDecimal()) }
+
+    override fun costText(cents: Long): String = editableCost(cents)
+
+    override fun quantityText(milli: Long): String = editableQuantity(milli)
+}

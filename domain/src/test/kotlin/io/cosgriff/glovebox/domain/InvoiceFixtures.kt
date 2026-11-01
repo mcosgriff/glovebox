@@ -7,16 +7,26 @@ package io.cosgriff.glovebox.domain
  */
 class InvoiceBuilder {
     val words = mutableListOf<InvoiceWord>()
+
+    /** The small filled shapes a PDF's pages draw (#572), as `PdfWords` gives them. */
+    val marks = mutableListOf<InvoiceMark>()
     private var pages = 0
 
     fun page(build: InvoicePage.() -> Unit) {
         pages++
-        InvoicePage(pages, words).build()
+        InvoicePage(pages, words, marks).build()
     }
 }
 
-class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWord>) {
+class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWord>, private val marks: MutableList<InvoiceMark> = mutableListOf()) {
     private var y = 120f
+
+    /** A line with a round mark of colour [rgb] (0xRRGGBB) at its left, as a health report marks an item. */
+    fun marked(rgb: Int, vararg cells: Pair<Int, String>) {
+        val middle = y + HEIGHT / 2
+        marks += InvoiceMark(page, 60f, middle - HEIGHT * 0.6f, 60f + HEIGHT * 1.2f, middle + HEIGHT * 0.6f, rgb)
+        row(*cells)
+    }
 
     /** One line: each cell's text from its left edge, as words. */
     fun row(vararg cells: Pair<Int, String>, conf: Float = 93f) {
@@ -24,9 +34,12 @@ class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWor
         y += HEIGHT * 1.6f
     }
 
-    /** A service's title line with its number printed large at the left, as Shop-Ware prints it. */
-    fun numbered(number: String, vararg cells: Pair<Int, String>) {
-        place(60f, number, HEIGHT * 2, 90f)
+    /**
+     * A service's title line with its number printed large at the left, as Shop-Ware prints it. [drop] moves the
+     * number's middle down by that many line heights, as Shop-Ware's sits a little below its title's.
+     */
+    fun numbered(number: String, vararg cells: Pair<Int, String>, drop: Float = 0f) {
+        place(60f, number, HEIGHT * 2, 90f, HEIGHT * drop)
         row(*cells)
         y += HEIGHT * 0.6f
     }
@@ -35,8 +48,8 @@ class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWor
         y += HEIGHT * 1.6f * lines
     }
 
-    private fun place(x: Float, text: String, height: Float, conf: Float) {
-        val middle = y + HEIGHT / 2
+    private fun place(x: Float, text: String, height: Float, conf: Float, drop: Float = 0f) {
+        val middle = y + HEIGHT / 2 + drop
         var left = x
         text.split(' ').filter { it.isNotEmpty() }.forEach { w ->
             val width = w.length * height / 2
@@ -51,6 +64,10 @@ class InvoicePage(private val page: Int, private val out: MutableList<InvoiceWor
 }
 
 fun invoice(build: InvoiceBuilder.() -> Unit): List<InvoiceWord> = InvoiceBuilder().apply(build).words
+
+/** A made-up invoice's words and its pages' marks. */
+fun invoiceWithMarks(build: InvoiceBuilder.() -> Unit): Pair<List<InvoiceWord>, List<InvoiceMark>> =
+    InvoiceBuilder().apply(build).let { it.words to it.marks }
 
 /** [base] with its '?' replaced by the check digit that makes it a valid VIN. */
 fun madeUpVin(base: String): String = ("0123456789X").map { base.replace('?', it) }.single { Vin.hasValidCheckDigit(it) }

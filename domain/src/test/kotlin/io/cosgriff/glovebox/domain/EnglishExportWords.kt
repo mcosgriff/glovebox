@@ -63,6 +63,7 @@ object EnglishExportWords : ExportWords {
         ExportPhrase.NICKNAME to "Nickname",
         ExportPhrase.VIN to "VIN",
         ExportPhrase.PLATE to "License plate",
+        ExportPhrase.GEARBOX to "Gearbox",
         ExportPhrase.ODOMETER to "Odometer",
         ExportPhrase.ODOMETER_HIGHEST to "%1\$s (highest reading on record)",
         ExportPhrase.ACTUAL_MILEAGE to "Actual mileage",

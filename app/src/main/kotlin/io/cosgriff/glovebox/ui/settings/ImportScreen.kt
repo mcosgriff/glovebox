@@ -70,6 +70,7 @@ fun ImportScreen(
         onPick = vm::pick,
         onChooseVehicle = vm::chooseVehicle,
         onInclude = vm::include,
+        onTickDone = vm::tickDone,
         onImport = { ready, mode, stop, keep -> vm.import(ready, mode, stop, keep) },
         onOpenTorqueSpecs = onOpenTorqueSpecs,
         onOpenSchedule = onOpenSchedule,
@@ -100,6 +101,8 @@ internal fun ImportContent(
     onPick: () -> Unit,
     onChooseVehicle: (Long) -> Unit,
     onInclude: (Pair<LocalDate, Int>, Boolean) -> Unit,
+    /** A shop recommendation offered as done by the import ticked or unticked (#593). */
+    onTickDone: (id: Long, yes: Boolean) -> Unit = { _, _ -> },
     onImport: (ImportPreview.Ready, ImportMode, stopDoubles: Boolean, keepCopy: Boolean) -> Unit,
     onOpenTorqueSpecs: (vehicleId: Long) -> Unit,
     onOpenSchedule: (vehicleId: Long) -> Unit,
@@ -244,6 +247,7 @@ internal fun ImportContent(
                             }
                         }
                     }
+                    view.done[mode].orEmpty().takeIf { it.isNotEmpty() }?.let { DoneCard(it, onTickDone) }
                     if (view.doubles.isNotEmpty()) DoublesCard(view.doubles, stopDoubles) { stopDoubles = it }
                     view.moves[mode].orEmpty().takeIf { it.isNotEmpty() }?.let { MovesCard(it) }
                     val changes = view.changes(mode)

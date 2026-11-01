@@ -56,7 +56,7 @@ class MigrationTest {
     private val order = listOf(
         "vehicles", "odometer_readings", "schedule_items", "service_records", "service_record_jobs", "service_record_items", "service_record_job_parts",
         "photos", "torque_specs", "recalls", "milestones", "milestone_jobs", "documents", "catalog_rules",
-        "recall_names",
+        "recall_names", "shop_recommendations",
     )
 
     private data class Column(val name: String, val type: String)
@@ -189,7 +189,30 @@ class MigrationTest {
             // Nor any part rows or invoice charges (#502): not entered, never zero.
             assertEquals(emptyList<ServiceRecordJobPartEntity>(), db.service().record(1)!!.parts)
             db.service().record(1)!!.record.let { assertEquals(listOf(null, null, null), listOf(it.shopSuppliesCents, it.taxCents, it.feesCents)) }
+            // Nobody was asked the gearbox (#549), and no item was for one gearbox only.
+            assertEquals(null, vehicle.gearbox)
+            assertEquals(null, item.gearboxOnly)
         }
         db.close()
+    }
+
+    @Test
+    fun `a vehicle on record before the gearbox was asked starts at Manual only where its transmission says so`() {
+        mapOf(
+            "6-speed Manual/Standard" to "MANUAL",
+            "manual" to "MANUAL",
+            "7-speed Automatic" to null,
+            "Automated Manual" to null,
+            "CVT" to null,
+        ).entries.forEachIndexed { i, (transmission, gearbox) ->
+            val name = "gearbox-$i"
+            create(name, 40) { c ->
+                seed(c)
+                c.prepare("UPDATE vehicles SET transmission = ?").use { it.bindText(1, transmission); it.step() }
+            }
+            val db = migrated(name)
+            runBlocking { assertEquals(transmission, gearbox, db.vehicles().byId(1)!!.gearbox) }
+            db.close()
+        }
     }
 }

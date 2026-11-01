@@ -12,7 +12,7 @@ in NHTSA's index at `https://static.nhtsa.gov/odi/ffdd/tsbs/`). Read on 2026-10-
 
 | Model year | What was read | Document | List |
 |---|---|---|---|
-| 2010 | The card for all models except the Routan (revised October 2012), as read for the [2010 Passat](volkswagen-passat-2010.md), and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/24/2025), whose model codes include the Eos (`1F7`) | `2012/MC-10156104-9999` | [2010](volkswagen-eos-2010.md) |
+| 2010 | The card for all models except the Routan (revised October 2012), as read for the [2010 Passat](volkswagen-passat-2010-2.0t.md), and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/24/2025), whose model codes include the Eos (`1F7`) | `2012/MC-10156104-9999` | [2010](volkswagen-eos-2010.md) |
 | 2014 | The Eos 2.0L TSI card, posted June 2013, in full; the list was written from it. NHTSA's index also lists `MC-10242461` for the 2014 Eos ("2.0L TSI Engine", dated 2013-06-01, filed in 2023; not fetched) | `2013/MC-10125795-9999` | this one |
 | 2015 | The Eos 2.0L TSI card, posted June 2014, in full; NHTSA's index also lists `MC-10240817` for the 2015 Eos ("Maintenance Schedule For USA", dated 2014-06-01, filed in 2023; not fetched) | `2014/MC-10120117-9999` | this one |
 | 2016 | The Eos 2.0L TSI card, posted August 2015, in full | `2015/MC-10123076-9999` | [2016](volkswagen-eos-2016.md) |
@@ -53,7 +53,6 @@ and lubricate seals", and it is table-only: no catalog line names it, and it is 
 
 ## What isn't covered
 
-- **2011, 2012 and 2013.** NHTSA's index has no Eos card for those years. Volkswagen's 2025 reissues would be
-  the only source; they weren't read for the Eos, and for the Golf they differ from the cards from the time
-  ([#434's question 3](https://github.com/mcosgriff/glovebox/issues/434#issuecomment-6488760244)).
+- **2011, 2012 and 2013.** NHTSA's index has no Eos card for those years; they have
+  [a list from Volkswagen's reissues alone](volkswagen-eos-2011-2013.md) ([#552](https://github.com/mcosgriff/glovebox/issues/552#issuecomment-6511733274)).
 - **2007–2009** (outside #447): NHTSA's index has no Volkswagen card before 2010.

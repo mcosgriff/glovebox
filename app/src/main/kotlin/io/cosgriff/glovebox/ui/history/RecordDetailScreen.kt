@@ -19,6 +19,7 @@ import io.cosgriff.glovebox.ui.photo.PhotoThumb
 import io.cosgriff.glovebox.ui.photo.PhotoTarget
 import io.cosgriff.glovebox.ui.photo.AttachMenu
 import io.cosgriff.glovebox.domain.RecordPhotos
+import io.cosgriff.glovebox.domain.ServiceRecord
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.PaddingValues
@@ -66,8 +67,7 @@ import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.charges
 import io.cosgriff.glovebox.data.db.jobPrices
-import io.cosgriff.glovebox.data.db.priceOf
-import io.cosgriff.glovebox.data.db.rowsOf
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.LastDone
@@ -135,7 +135,7 @@ data class RecordDetail(
     val choices: List<VisitRow> = emptyList(),
 ) {
     /** [lines] under the jobs they were priced in (#481), in the record's order; a line with no job stands alone. */
-    val work: List<WorkJob> get() = workOf(record, lines)
+    val work: List<WorkJob> get() = workOf(record.toModel(), lines)
 
     /** Null while nothing is priced: then the record shows no breakdown at all. */
     val breakdown: CostBreakdown? get() = JobPrices.breakdown(record.jobPrices, record.record.costCents, record.charges)
@@ -160,21 +160,15 @@ data class WorkJob(
     val totalCents: Long? get() = JobPrice(laborCents, partsCents).totalCents
 }
 
-/** [lines] are [record]'s items worded, one for one. */
-internal fun workOf(record: ServiceRecordWithItems, lines: List<WorkLine>): List<WorkJob> {
-    val jobs = record.jobs.associateBy { it.id }
-    val items = record.items.zip(lines)
-    val placed = mutableSetOf<Long>()
-    return items.mapNotNull { (item, line) ->
-        val job = item.jobId?.let(jobs::get) ?: return@mapNotNull WorkJob(null, null, null, listOf(line))
-        if (!placed.add(job.id)) return@mapNotNull null
-        val own = items.filter { it.first.jobId == job.id }.map { it.second }
+/** [lines] are [record]'s lines worded, one for one. */
+internal fun workOf(record: ServiceRecord, lines: List<WorkLine>): List<WorkJob> =
+    record.work.map { entry ->
+        val own = entry.lines.map(lines::get)
+        val job = entry.job?.let(record.jobs::get) ?: return@map WorkJob(null, null, null, own)
         val heading = job.wording?.takeIf { own.size > 1 || it != own.single().label }
-        val labels = record.items.zip(lines).associate { (item, line) -> item.id to line.label }
-        val rows = record.rowsOf(job).map { WorkPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.itemId?.let(labels::get)) }
-        WorkJob(heading, job.laborCents, record.priceOf(job).partsCents, own, rows)
+        val rows = job.rows.map { WorkPartRow(it.wording, it.quantityMilli, it.eachCents, it.totalCents, it.line?.let(lines::getOrNull)?.label) }
+        WorkJob(heading, job.laborCents, job.price.partsCents, own, rows)
     }
-}
 
 /** One part row as the record shows it (#502): as typed, with the name of the line it is for, if any. */
 data class WorkPartRow(val wording: String?, val quantityMilli: Long?, val eachCents: Long?, val totalCents: Long?, val line: String?)

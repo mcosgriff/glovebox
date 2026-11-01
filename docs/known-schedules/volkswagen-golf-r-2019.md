@@ -23,7 +23,6 @@ too), read in full on 2026-10-29, as page images, by eye. The earlier revisions 
   (AWD)", every 36 months by time alone, no service line, in `allWheelDriveOnly`, as on the 2018 Golf R. vPIC decodes
   the pattern `WVWVA7AU*KW` (model year 2019, read 2026-10-29) as "Golf R", 2.0L, with no drive type; the Golf R was
   sold with 4Motion only, and a car with no drive on record keeps the job.
-- **Left out and asked**, as on the 2018 Golf R: the hood latch ("Does not apply to: Passat, Golf, Beetle, and
-  Jetta").
+- **Left out: the hood latch** ("Does not apply to: Passat, Golf, Beetle, and Jetta"), by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - vPIC's model list for Volkswagen, 2019 (`GetModelsForMakeYear`), names it "Golf R".
 - Reminders: engine oil 10,000 / 12 mo; additional items as on the 2018 Golf R's list.

@@ -128,7 +128,17 @@ private val GloveboxTypography = Typography().run {
 
 /** Status colors that Material's scheme doesn't name. */
 @Immutable
-data class StatusColors(val overdue: Color, val soon: Color, val ok: Color)
+data class StatusColors(
+    val overdue: Color,
+    val soon: Color,
+    val ok: Color,
+    /** A shop's red finding's tag (#572, "NEEDS WORK"): its tint and its text and dot. */
+    val needsWorkTint: Color = Color(0xFFFDECEA),
+    val needsWork: Color = Color(0xFFB42318),
+    /** A shop's yellow finding's tag ("WATCH"). */
+    val watchTint: Color = Color(0xFFFEF3C7),
+    val watch: Color = Color(0xFF92400E),
+)
 
 val LocalStatusColors = staticCompositionLocalOf {
     StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
@@ -163,7 +173,10 @@ fun statusColors(): StatusColors = statusColors(dark = MaterialTheme.colorScheme
 /** The same, outside composition: the home-screen widget picks by the phone's own light or dark. */
 fun statusColors(dark: Boolean): StatusColors =
     if (dark) {
-        StatusColors(overdue = Color(0xFFF59E6B), soon = Color(0xFFC4C1BA), ok = Color(0xFF5EEAD4))
+        StatusColors(
+            overdue = Color(0xFFF59E6B), soon = Color(0xFFC4C1BA), ok = Color(0xFF5EEAD4),
+            needsWorkTint = Color(0xFF3B1A19), needsWork = Color(0xFFF97066), watchTint = Color(0xFF3A2E12), watch = Color(0xFFFBBF24),
+        )
     } else {
         StatusColors(overdue = Color(0xFFC2410C), soon = Color(0xFF3A3E44), ok = Color(0xFF0F766E))
     }

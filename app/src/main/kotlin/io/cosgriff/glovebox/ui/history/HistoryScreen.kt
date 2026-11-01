@@ -105,7 +105,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -132,6 +131,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.semantics.Role
 import io.cosgriff.glovebox.domain.Visits
+import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.ui.components.Chevron
 import io.cosgriff.glovebox.domain.ItemStatus
 import io.cosgriff.glovebox.domain.ReminderProgress
@@ -153,6 +153,8 @@ data class HistoryState(
     val next: Pair<ItemStatus, ReminderProgress>? = null,
     /** The vehicle's odometer now, in its own unit (`VehicleLog.odometer`); null before any reading. */
     val odometer: Int? = null,
+    /** Each of the vehicle's schedule items' group (`VehicleLog.itemGroups`), for the timeline's record summaries. */
+    val itemGroups: Map<Long, ServiceGroup> = emptyMap(),
 ) {
     /** Categories that actually appear in this vehicle's records, in catalog order. */
     val categories: List<CatalogCategory>
@@ -171,7 +173,6 @@ data class HistoryState(
 class HistoryViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
-    service: ServiceDao,
     recalls: RecallDao,
     private val actions: RecordActions,
     overview: GarageOverview,
@@ -239,8 +240,8 @@ class HistoryViewModel @Inject constructor(
 
     private val source: Flow<HistoryState> =
         if (archivedId != null) {
-            combine(vehicles.observe(archivedId), service.observeRecords(archivedId), logs.observe(archivedId)) { vehicle, records, log ->
-                HistoryState(listOfNotNull(vehicle), vehicle, records, odometer = log?.odometer)
+            logs.observe(archivedId).map { log ->
+                HistoryState(listOfNotNull(log?.vehicle), log?.vehicle, log?.records.orEmpty(), odometer = log?.odometer, itemGroups = log?.itemGroups.orEmpty())
             }
         } else {
             combine(vehicles.observeActive(), chosenVehicle) { list, chosen ->
@@ -249,12 +250,14 @@ class HistoryViewModel @Inject constructor(
                 if (vehicle == null) {
                     flowOf(HistoryState(list, null, emptyList()))
                 } else {
-                    combine(service.observeRecords(vehicle.id), recalls.observe(vehicle.id), overview.garage) { records, recallRows, garage ->
+                    combine(logs.observe(vehicle.id), recalls.observe(vehicle.id), overview.garage) { log, recallRows, garage ->
+                        val records = log?.records.orEmpty()
                         val shown = garage.vehicles.firstOrNull { it.vehicle.id == vehicle.id }
                         HistoryState(
                             list, vehicle, records, CustomLines.count(records.savedLines(recallRows.recordIds())),
                             next = shown?.comingUp?.next,
                             odometer = shown?.odometer,
+                            itemGroups = log?.itemGroups.orEmpty(),
                         )
                     }
                 }
@@ -510,6 +513,7 @@ internal fun HistoryContent(
                 HistoryTimelineList(
                     vehicle = state.vehicle,
                     groups = Visits.grouped(byDate) { it.record.visitId }.filter { g -> g.any(::matches) },
+                    itemGroups = state.itemGroups,
                     // Like the spending line, the next reminder is about the whole vehicle, so it goes while a filter or search is on.
                     next = state.next.takeIf { filter == null && !searching },
                     since = state.records.minOfOrNull { it.record.date },

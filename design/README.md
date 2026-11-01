@@ -106,6 +106,53 @@ where they differ from `Parts*`, `Parts*` wins. Undo after delete is on `DeleteR
   thousands separators.
 - Record: work lines come before "Parts as printed". Breakdown bar segments are at least 4dp wide.
 
+## Shop recommended (#572)
+
+`RecommendedLog.dc.html` (variants `read`, `done`) and `RecommendedList.dc.html` (variants `list`, `home`) hold
+the real markup; the other `Recommended*` files only import them with a different `variant` / `theme`.
+
+| Board | Render | Source |
+|---|---|---|
+| Log service — invoice read: recommended by the shop (keep, note or let go) | `screens/RecommendedLog.png` · `screens/RecommendedLogDark.png` | `source/RecommendedLog.dc.html` (+ `Dark`) |
+| Log service — a ticked line matches an open recommendation: done with these? | `screens/RecommendedLogDone.png` · `screens/RecommendedLogDoneDark.png` | `source/RecommendedLogDone.dc.html` (+ `Dark`) → imports `RecommendedLog` |
+| Vehicle home — the shop recommendations row | `screens/RecommendedHome.png` · `screens/RecommendedHomeDark.png` | `source/RecommendedHome.dc.html` (+ `Dark`) → imports `RecommendedList` |
+| Shop recommended — the vehicle's open list, close and undo | `screens/RecommendedList.png` · `screens/RecommendedListDark.png` | `source/RecommendedList.dc.html` (+ `Dark`) |
+
+- Each recommendation and red or yellow finding is its own row with **Keep for later** and **Add to notes**.
+  Every row starts kept; **Keep all / Keep none** sets the whole list; neither chip means it is let go.
+  The sample shows a list already chosen row by row (4 kept, 1 in the notes, 2 let go).
+- NEEDS WORK (red) and WATCH (amber) tags carry a dot as well as colour. A kept row names the line whose log
+  closes it, as a guess the user can change.
+- A new recommendation from the same shop for the same work replaces the open one.
+- Logging matching work, by any shop or the user, asks before closing ("Done with these?", ticked by default).
+  Recommendations never change a reminder or make anything overdue.
+
+## Milestones continued (#568)
+
+`Milestones.dc.html` holds the markup; `MilestonesDark.dc.html` imports it with `theme` dark. No render yet
+(`screens/Milestones.png` comes with the next export and `design-pull`).
+
+- A table that came from a maker's list and doesn't repeat goes on past its last column. One block, once per
+  screen, sits between the maker's last milestone and the first continued one: a "CONTINUED BY GLOVEBOX" rule,
+  where the maker's table ends, "check your service manual", and the jobs it doesn't continue.
+- A continued milestone is the ordinary card; its line under the mileage says "continued by Glovebox".
+- The repeat row says Glovebox continues the table; a repeat set there replaces the continuation.
+
+## Gearbox (#549)
+
+`GearboxAdd.dc.html` (variants `vin`, `manual`) and `GearboxSheet.dc.html` hold the markup; `GearboxAddDark`,
+`GearboxManual`, `GearboxManualDark` and `GearboxSheetDark` import them with a different `variant` / `theme`. No
+render yet (the PNGs come with the next export and `design-pull`).
+
+- Adding a vehicle (by VIN or by hand) asks the gearbox next to the odometer: Manual, Automatic, Dual-clutch (DSG),
+  Don't know, as a 2×2 grid of 48dp segments (ink fill = selected).
+- By VIN it starts at what the decode settles: vPIC "Manual" is Manual, and a Volkswagen 7-speed starts at
+  Dual-clutch (8-speed at Automatic) with an info line saying so; anything else starts at Don't know. By hand it
+  starts at Don't know. The owner can always change it.
+- Vehicle details has a Gearbox row under Transmission; it opens a sheet with the same grid, Cancel and Save.
+- The note under the grid says why it is asked: rows for one gearbox show in the maker's table with no reminder
+  until the owner says which.
+
 ## UX rules (apply to every screen)
 
 - **Touch targets:** every tappable thing is at least 48×48dp, including text links (pad them). Chips and

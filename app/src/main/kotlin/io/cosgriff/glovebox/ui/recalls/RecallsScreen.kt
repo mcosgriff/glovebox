@@ -12,7 +12,7 @@ import io.cosgriff.glovebox.ui.components.SheetActions
 import io.cosgriff.glovebox.domain.RecallNames
 import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.verticalScroll
-import io.cosgriff.glovebox.data.log.highestReading
+import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.domain.RecallView
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
@@ -92,12 +92,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.OdometerDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
-import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
@@ -173,10 +170,8 @@ data class RecallCompletion(val date: LocalDate, val odometer: Int?, val shopNam
 @HiltViewModel
 class RecallsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    vehicles: VehicleDao,
+    logs: VehicleLogs,
     private val recalls: RecallDao,
-    service: ServiceDao,
-    odometer: OdometerDao,
     private val repository: RecallRepository,
     private val actions: RecordActions,
 ) : ViewModel() {
@@ -184,19 +179,17 @@ class RecallsViewModel @Inject constructor(
 
     /** Null while loading, and if the vehicle no longer exists. */
     val state: StateFlow<RecallsState?> = combine(
-        vehicles.observe(vehicleId),
+        logs.observe(vehicleId),
         recalls.observe(vehicleId),
-        service.observeRecords(vehicleId),
-        odometer.observe(vehicleId),
         recalls.observeNames(vehicleId),
-    ) { vehicle, list, records, readings, names ->
-        if (vehicle == null) return@combine null
+    ) { log, list, names ->
+        if (log == null) return@combine null
         val byId = list.associateBy { it.id }
         RecallsState(
-            vehicle = vehicle,
+            vehicle = log.vehicle,
             recalls = Recalls.sorted(list.map { it.toStored() }).map { byId.getValue(it.id) },
-            odometer = vehicle.highestReading(records, readings),
-            records = records,
+            odometer = log.odometer,
+            records = log.records,
             names = names,
         )
     }.screenState(viewModelScope, null)

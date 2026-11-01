@@ -12,8 +12,7 @@ Alltrack too), read in full on 2026-10-29, as page images, by eye.
   every Mk7 card read, and what isn't covered, on the [2015 Golf 1.8T's page](volkswagen-golf-2015-1.8t.md).
 - **Spark plugs** 40,000 / 48 mo: the 40,000-mile or 4-year row is "Except" models among which the Alltrack
   isn't, and the 80,000-mile row is "Only" those. No row names an Alltrack engine, so the list names none.
-- **Left out and asked on #436**, as on the [2018 Alltrack](volkswagen-golf-alltrack-2018.md): the hood latch
-  ("Does not apply to: Passat, Golf, Beetle, and Jetta").
+- **Left out: the hood latch** ("Does not apply to: Passat, Golf, Beetle, and Jetta"), by the owner's ruling on [#555](https://github.com/mcosgriff/glovebox/issues/555#issuecomment-6511795335): "Golf" covers the whole Golf family (SportWagen, Alltrack, Golf R).
 - **The AWD clutch fluid.** "AWD clutch: Change fluid (if equipped)", "Every 3 years", an additional item. The
   2019 Golf Alltrack was sold with 4Motion all-wheel drive, so it is read as on the [2018 Alltrack](volkswagen-golf-alltrack-2018.md):
   "Change AWD clutch fluid (AWD)", an `additional` reminder by time alone, every 36 months, no service line, in

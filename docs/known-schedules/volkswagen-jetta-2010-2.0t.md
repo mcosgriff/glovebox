@@ -9,7 +9,7 @@ the list was written, and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/2
 time limit and the engines. Read on 2026-10-28, as page images, by eye.
 
 - **The card is read as the 2.5L's page says**, which follows the
-  [Passat's](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read). The Passat's list is the card's
+  [Passat's](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read). The Passat's list is the card's
   2.0T reading, so this list has the same jobs in the same columns.
 - **The engine.** The card marks rows by engine, not by which model has it. The reissue's spark plug rows
   put "Jetta (1k2 - CCTA/CBFA/BPY)" and "Jetta Wag. (AJ5 - CCTA/CBFA)" with "Golf / GTI (5K-2.0T)" at every
@@ -21,11 +21,12 @@ time limit and the engines. Read on 2026-10-28, as page images, by eye.
   It has `"engine": { "label": "2.0T", "displacementL": 2.0, "fuel": "Gasoline" }`: the
   [TDI's list](volkswagen-jetta-2010-tdi.md) is 2.0L too, so the two are told apart by fuel, as vPIC spells
   it. A Jetta with no engine or no fuel on record is asked which it has.
-- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: Haldex clutch oil, tire pressure
-  sensors, and the timing belt "(if applicable, except 2.0L TDI)" at 110,000.
+- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: tire pressure sensors, and the
+  timing belt "(if applicable, except 2.0L TDI)" at 110,000. The Haldex row is read as on the 2.5L's list:
+  "Change Haldex clutch oil, every 3 years (AWD)", in `allWheelDriveOnly`, every 36 months by time alone (#554).
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; air
-  filter and spark plugs 60,000 / 72 mo; brake fluid every 24 months by time alone (the card says at 3 years
-  first, then every 2).
+  filter and spark plugs 60,000 / 72 mo; Haldex clutch oil every 36 months by time alone (AWD); brake fluid
+  every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Left out, asked on #439: the DSG fluid change.** The automatic row is marked "2.5L Jetta models, NB and
   NBC, and Golf", so it isn't this engine's. The row "Transmission: DSG (non automatic): Change fluid and
   filter", at 40,000, 80,000 and 120,000, names no model, so read as printed it is the 2.0T Jetta's, and the

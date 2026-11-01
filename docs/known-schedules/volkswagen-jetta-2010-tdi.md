@@ -9,7 +9,7 @@ the list was written, and Volkswagen's 2010 reissue (`USA5R503621`, printed 11/2
 time limit only. Read on 2026-10-28, as page images, by eye.
 
 - **The card is read as the 2.5L's page says**, which follows the
-  [Passat's](volkswagen-passat-2010.md#how-the-2010-all-model-card-is-read). The TDI rows are those of the
+  [Passat's](volkswagen-passat-2010-2.0t.md#how-the-2010-all-model-card-is-read). The TDI rows are those of the
   [2010 Golf TDI](volkswagen-golf-2010-tdi.md), from the same card.
 - **One list per engine** (the owner's ruling of 2026-10-23). This list takes the rows marked for the
   2.0L TDI and leaves out the rows marked for other engines only:
@@ -26,11 +26,12 @@ time limit only. Read on 2026-10-28, as page images, by eye.
   It has `"engine": { "label": "2.0L TDI", "displacementL": 2.0, "fuel": "Diesel" }`: the
   [2.0T's list](volkswagen-jetta-2010-2.0t.md) is 2.0L too, so the two are told apart by fuel, as vPIC
   spells it. A Jetta with no engine or no fuel on record is asked which it has.
-- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: Haldex clutch oil and the tire
-  pressure sensors.
+- **"(if applicable)" rows are in the table only**, as on the 2.5L's list: the tire pressure sensors. The
+  Haldex row is read as on the 2.5L's list: "Change Haldex clutch oil, every 3 years (AWD)", in
+  `allWheelDriveOnly`, every 36 months by time alone (#554).
 - Reminders: engine oil 10,000 / 12 mo; tire rotation 10,000; dust and pollen filter 20,000 / 24 mo; fuel
-  filter 20,000; air filter 60,000 / 72 mo; timing belt 120,000; brake fluid every 24 months by time alone
-  (the card says at 3 years first, then every 2).
+  filter 20,000; air filter 60,000 / 72 mo; timing belt 120,000; Haldex clutch oil every 36 months by time
+  alone (AWD); brake fluid every 24 months by time alone (the card says at 3 years first, then every 2).
 - **Left out, asked on #439: the DSG fluid change**, for the reason on the
   [2.0T's page](volkswagen-jetta-2010-2.0t.md): the automatic row is marked for the 2.5L Jetta only and the
   DSG row names no model, but the reissue's gearbox table names the Jetta under conventional automatics as

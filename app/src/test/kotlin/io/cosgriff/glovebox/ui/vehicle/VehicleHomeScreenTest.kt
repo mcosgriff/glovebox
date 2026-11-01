@@ -50,7 +50,7 @@ class VehicleHomeScreenTest {
         val vm = g.viewModel {
             VehicleHomeViewModel(
                 routeHandle(VehicleHomeRoute(id, updateMileage)), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings),
-                g.db.odometer(), g.db.recalls(), g.recallRepository,
+                g.db.odometer(), g.db.recalls(), g.recallRepository, g.db.recommendations(),
             )
         }
         compose.setContent {
