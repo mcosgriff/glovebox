@@ -361,7 +361,7 @@ object LineWords {
         "multi-point" to line("multipoint", "courtesy", "vehicle", check = true),
         "pdi" to line("pre delivery", "predelivery", "pdi", "new vehicle", check = true),
         "diagnostic" to line(
-            "diagnostic", "diagnosis", "code", "trouble code", "scan", "ecu", "ecm", "pcm", "computer", "check engine light", "obd",
+            "code", "trouble code", "scan", "ecu", "ecm", "pcm", "computer", "check engine light", "obd",
             check = true,
         ),
         "scheduled-service" to line("scheduled maintenance", "scheduled service", "factory maintenance", "mile service"),
