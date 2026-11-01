@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.37.0](https://github.com/mcosgriff/glovebox/compare/v0.36.0...v0.37.0) (2026-11-01)
+
+
+### Features
+
+* **service:** chassis lube and six more catalog lines ([#600](https://github.com/mcosgriff/glovebox/issues/600)) ([2b200f5](https://github.com/mcosgriff/glovebox/commit/2b200f5568d35fed55cd9d1cc58c3d2db1c2f34b))
+
+
+### Bug Fixes
+
+* **service:** "diagnosis" alone no longer guesses a diagnostic scan ([#602](https://github.com/mcosgriff/glovebox/issues/602)) ([f9f5843](https://github.com/mcosgriff/glovebox/commit/f9f584310ef6d5d816b1136a991350267660bedb))
+
 ## [0.36.0](https://github.com/mcosgriff/glovebox/compare/v0.35.0...v0.36.0) (2026-11-01)
 
 
