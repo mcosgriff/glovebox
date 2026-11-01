@@ -15,6 +15,7 @@ class SourceRulesTest {
 
     private val app = listOf("src/main/kotlin")
     private val appAndData = app + "../data/src/main/kotlin"
+    private val appTests = listOf("src/test/kotlin")
 
     private val rules = listOf(
         Rule("Use PlexMono, never FontFamily.Monospace", Regex("""\bFontFamily\.Monospace\b"""), app),
@@ -37,6 +38,14 @@ class SourceRulesTest {
         Rule(
             "Composables use stringResource, never LocalContext.current.getString",
             Regex("""\bLocalContext\.current\.getString\b"""), app,
+        ),
+        Rule(
+            "Tests make their database with testDatabase(), so closeWhenIdle() can wait for its queries",
+            Regex("""\binMemoryDatabaseBuilder\b"""), appTests, allowedIn = setOf("GarageTestSupport.kt"),
+        ),
+        Rule(
+            "Close a test database with closeWhenIdle(), never close(): a query still running fails at random",
+            Regex("""\b(db|database)\.close\(\)"""), appTests,
         ),
     )
 

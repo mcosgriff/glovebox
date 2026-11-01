@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.torque
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
@@ -71,7 +72,7 @@ internal class TorqueHarness(unit: TorqueUnit = TorqueUnit.NEWTON_METER) {
     fun close() {
         viewModels.clear()
         scope.cancel()
-        db.close()
+        db.closeWhenIdle()
     }
 }
 

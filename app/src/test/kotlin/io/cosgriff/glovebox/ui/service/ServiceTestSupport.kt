@@ -1,13 +1,13 @@
 package io.cosgriff.glovebox.ui.service
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
+import io.cosgriff.glovebox.ui.garage.testDatabase
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import org.robolectric.Shadows.shadowOf
 import java.io.ByteArrayOutputStream
-import androidx.room3.Room
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.toModel
@@ -37,7 +37,7 @@ import java.time.LocalDate
  */
 internal class ServiceTestDb {
     val context: Context = ApplicationProvider.getApplicationContext()
-    val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
+    val db: GloveboxDatabase = testDatabase(context)
     val crypto = PhotoCrypto(context)
     val photos = RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents())
 
@@ -101,7 +101,7 @@ internal class ServiceTestDb {
 
     fun close() {
         viewModels.clear()
-        db.close()
+        db.closeWhenIdle()
         photoDir.deleteRecursively()
     }
 

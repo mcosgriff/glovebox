@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.settings
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
+import io.cosgriff.glovebox.ui.garage.testDatabase
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -7,9 +9,7 @@ import androidx.datastore.preferences.core.edit
 import kotlin.properties.ReadOnlyProperty
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.runtime.NavKey
-import androidx.room3.Room
 import androidx.savedstate.serialization.encodeToSavedState
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
@@ -48,7 +48,7 @@ import java.time.LocalDate
  */
 class TestGraph : org.junit.rules.ExternalResource(), Closeable {
     val context: Context = ApplicationProvider.getApplicationContext()
-    val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
+    val db: GloveboxDatabase = testDatabase(context)
     val settings = SettingsRepository(context)
     val crypto = PhotoCrypto(context)
     val photos = RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents())
@@ -86,7 +86,7 @@ class TestGraph : org.junit.rules.ExternalResource(), Closeable {
 
     override fun close() {
         appScope.cancel()
-        db.close()
+        db.closeWhenIdle()
     }
 }
 

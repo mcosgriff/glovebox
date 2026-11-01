@@ -29,7 +29,7 @@ class AddVehicleViewModelTest {
     private val nhtsa = FakeNhtsa().apply { decode = truckDecode }
     private val vin = Fixtures.truck.vin!!
 
-    @After fun close() = db.close()
+    @After fun close() = db.closeWhenIdle()
 
     private fun viewModel(unit: DistanceUnit = DistanceUnit.MILES): AddVehicleViewModel {
         val settings = testSettings(distance = unit)

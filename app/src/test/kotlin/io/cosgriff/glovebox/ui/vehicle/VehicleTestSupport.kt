@@ -1,5 +1,7 @@
 package io.cosgriff.glovebox.ui.vehicle
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
+import io.cosgriff.glovebox.ui.garage.testDatabase
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.bulletins.BulletinCatalog
 import android.app.Application
@@ -15,9 +17,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.serialization.NavKeySerializer
-import androidx.room3.Room
 import androidx.savedstate.serialization.encodeToSavedState
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.DataWipe
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class VehicleTestGarage : ExternalResource() {
     val context: Application = ApplicationProvider.getApplicationContext()
-    val db: GloveboxDatabase = Room.inMemoryDatabaseBuilder(context, GloveboxDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
+    val db: GloveboxDatabase = testDatabase(context)
 
     /** Stands in for `@ApplicationScope`: work that outlives a screen, such as an Undo. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> appErrors += e; e.printStackTrace() })
@@ -118,7 +118,7 @@ class VehicleTestGarage : ExternalResource() {
     override fun after() {
         store.clear()
         appScope.cancel()
-        db.close()
+        db.closeWhenIdle()
     }
 }
 

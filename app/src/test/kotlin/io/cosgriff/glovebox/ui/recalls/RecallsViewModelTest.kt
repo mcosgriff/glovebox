@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.recalls
 
+import io.cosgriff.glovebox.ui.garage.closeWhenIdle
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
@@ -50,7 +51,7 @@ internal class RecallsHarness(cadence: RecallCadence = RecallCadence.WEEKLY) {
     /** Stops the ViewModels, then closes the database. */
     fun close() {
         viewModels.clear()
-        db.close()
+        db.closeWhenIdle()
     }
 
     fun addTruck(checkedOn: LocalDate? = today, make: String = "Toyota", year: Int = 2019): Long = runBlocking {

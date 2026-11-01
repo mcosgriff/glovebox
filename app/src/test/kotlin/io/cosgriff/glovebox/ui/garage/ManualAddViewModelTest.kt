@@ -25,7 +25,7 @@ class ManualAddViewModelTest {
         models = listOf("Tacoma", "4Runner", "4Runner")
     }
 
-    @After fun close() = db.close()
+    @After fun close() = db.closeWhenIdle()
 
     private fun viewModel(unit: DistanceUnit = DistanceUnit.MILES) = ManualAddViewModel(nhtsa.client, db.vehicles(), testSettings(distance = unit))
 

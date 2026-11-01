@@ -50,7 +50,7 @@ class ManualAddScreenTest {
     }
     private val events = mutableListOf<String>()
 
-    @After fun close() = db.close()
+    @After fun close() = db.closeWhenIdle()
 
     private fun str(@StringRes id: Int, vararg args: Any) = context.getString(id, *args)
 
