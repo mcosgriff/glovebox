@@ -2795,7 +2795,8 @@
     <string name="invoice_role_ignored">Not used</string>
     <string name="invoice_role_repeated">The header every page repeats: skipped</string>
     <string name="invoice_role_work">A line of work</string>
-    <string name="invoice_role_recommended">Recommended work: to the notes</string>
+    <!-- Each recommendation is chosen on the form's "Recommended by the shop" card (log_recommended_section). -->
+    <string name="invoice_role_recommended">Recommended work: keep it, note it or let it go under Recommended by the shop</string>
     <string name="invoice_role_shop">The shop</string>
     <string name="invoice_role_date">The date</string>
     <string name="invoice_role_vin">The VIN</string>
