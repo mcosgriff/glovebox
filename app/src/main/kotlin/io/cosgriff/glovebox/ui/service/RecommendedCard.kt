@@ -12,14 +12,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,22 +30,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.domain.CatalogRule
-import io.cosgriff.glovebox.domain.DoneMatch
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.RecommendedChoice
 import io.cosgriff.glovebox.domain.ServiceCatalog
 import io.cosgriff.glovebox.domain.WorkCategory
 import io.cosgriff.glovebox.ui.components.RecommendationHead
+import io.cosgriff.glovebox.ui.components.RecommendedDoneRow
 import io.cosgriff.glovebox.ui.components.SectionLabel
-import io.cosgriff.glovebox.ui.theme.statusColors
 
 /**
  * "Recommended by the shop" on Log service (#572, board RecommendedLog): one row for each piece of work the invoice
@@ -198,36 +194,14 @@ internal fun DoneWithThese(form: LogServiceForm) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                 matches.forEachIndexed { i, m ->
                     if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    DoneRow(m, ticked = m.recommendation.id !in form.notDone, onToggle = { form.toggleDone(m.recommendation.id) })
+                    RecommendedDoneRow(
+                        m.recommendation, stringResource(R.string.log_done_why, m.line.label),
+                        ticked = m.recommendation.id !in form.notDone, onToggle = { form.toggleDone(m.recommendation.id) },
+                    )
                 }
             }
         }
         Text(stringResource(R.string.log_done_about), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-private fun DoneRow(match: DoneMatch, ticked: Boolean, onToggle: () -> Unit) {
-    val r = match.recommendation
-    val date = r.date.format(longDate)
-    val price = r.item.cents?.let { Money.format(it) }
-    val shop = r.shop
-    val from = when {
-        shop != null && price != null -> stringResource(R.string.log_done_from, shop, date, price)
-        shop != null -> stringResource(R.string.log_done_from_unpriced, shop, date)
-        price != null -> stringResource(R.string.log_done_from_no_shop, date, price)
-        else -> stringResource(R.string.log_done_from_no_shop_unpriced, date)
-    }
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(ticked, role = Role.Checkbox, onValueChange = { onToggle() }).padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Checkbox(checked = ticked, onCheckedChange = null, modifier = Modifier.size(24.dp))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(r.item.text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(from, style = MaterialTheme.typography.bodyMedium, color = statusColors().soon)
-            Text(stringResource(R.string.log_done_why, match.line.label), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
     }
 }
 

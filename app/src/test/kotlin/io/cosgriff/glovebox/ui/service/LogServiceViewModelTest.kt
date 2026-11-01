@@ -13,6 +13,7 @@ import io.cosgriff.glovebox.ui.LogServiceRoute
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -177,6 +178,44 @@ class LogServiceViewModelTest {
         again.save { saved2 = true }
         awaitUntil("the second save") { saved2 }
         assertTrue(t.recommendations(car).none { it.open })
+    }
+
+    /** #593: made-up shop and work. */
+    @Test
+    fun `editing a record offers what it now looks like the work for, opens again what it no longer does, and Undo puts it back`() = runBlocking {
+        val (car, _, _) = truck()
+        val shopVisit = t.record(car, date = today.minusDays(10), odometer = 52_000, lines = listOf(line("Vehicle health report")), shop = "Made-up Motors")
+        val battery = t.db.recommendations().insert(
+            io.cosgriff.glovebox.data.db.ShopRecommendationEntity(vehicleId = car, recordId = shopVisit, wording = "Battery Replacement", cents = 28_900, catalogId = "battery"),
+        )
+        val later = t.record(car, date = today.minusDays(5), odometer = 52_400, lines = listOf(line("Oil changed", "oil")))
+
+        // The battery line added on an edit: offered, ticked, and closed on save.
+        val edit = loaded(LogServiceRoute(car, recordId = later))
+        assertTrue(edit.form.doneMatches.isEmpty())
+        edit.form.toggle("battery")
+        assertEquals(listOf(battery), edit.form.doneMatches.map { it.recommendation.id })
+        var saved = false
+        edit.save { saved = true }
+        awaitUntil("the edit") { saved }
+        assertEquals(later, t.recommendations(car).single().doneBy)
+        assertEquals(io.cosgriff.glovebox.domain.DoneChange(close = listOf(battery)), (t.actions.events.first() as RecordEvent.Edited).done)
+
+        // Edited again: offered ticked, as it closed it; the line taken off opens it again.
+        store.clear()
+        val again = loaded(LogServiceRoute(car, recordId = later))
+        assertEquals(listOf(battery), again.form.doneMatches.map { it.recommendation.id })
+        again.form.toggle("battery")
+        assertTrue(again.form.doneMatches.isEmpty())
+        var saved2 = false
+        again.save { saved2 = true }
+        awaitUntil("the second edit") { saved2 }
+        assertTrue(t.recommendations(car).single().open)
+
+        // Undo of that edit: the line back, and the recommendation closed by it again.
+        val event = t.actions.events.first() as RecordEvent.Edited
+        assertTrue(t.actions.undo(event))
+        assertEquals(later, t.recommendations(car).single().doneBy)
     }
 
     @Test

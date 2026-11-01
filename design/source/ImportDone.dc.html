@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Import history: done with these?</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Settings.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <span style="font-size: 22px; font-weight: 600">Import</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px; padding: 8px 20px 24px 20px">
+
+    <!-- The import page as built today, above the new card; dimmed for context only. -->
+    <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 18px; opacity: 0.55">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">IMPORT INTO</span>
+        <span style="font-size: 16px; font-weight: 500">2019 Blue truck</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">FILE</span>
+        <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 0 16px; min-height: 56px; display: flex; align-items: center; justify-content: space-between">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px">history.json</span>
+          <span style="font-size: 14px; font-weight: 600; color: {{t.link}}">Change</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">SERVICE HISTORY · 3 IN THE FILE</span>
+        <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 600">3 new</span>
+          <span style="font-size: 12px; color: {{t.muted}}">Added to the vehicle</span>
+          <sc-for list="{{records}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column">
+              <span style="font-size: 14px">{{r.title}}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">{{r.work}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- New (#593): an imported record looks like the work for an open shop recommendation. The preview asks; nothing closes unless the owner imports with it ticked. -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">RECOMMENDED EARLIER · DONE WITH THESE?</span>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 4px 16px">
+        <sc-for list="{{done}}" as="d" hint-placeholder-count="2">
+          <label style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; min-height: 48px; border-bottom: 1px solid {{t.line}}">
+            <input type="checkbox" checked="{{d.on}}" onChange="{{d.toggle}}" style="width: 20px; height: 20px; margin: 2px 0 0 0; accent-color: {{t.accent}}; flex: none">
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 15px; font-weight: 600">{{d.name}}</span>
+              <span style="font-size: 13px; line-height: 1.45; color: {{t.sub}}">{{d.from}}</span>
+              <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{d.why}}</span>
+            </span>
+          </label>
+        </sc-for>
+      </div>
+      <div style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Ticked ones close when you import. Untick any that wasn't this work; it stays open on the vehicle.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <button style="height: 56px; border: 0; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; font-family: inherit; font-size: 16px; font-weight: 600">Import 3 records</button>
+      <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Nothing on the vehicle is deleted. There is no Undo, so check the list above.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up shop, records and prices. Every offer starts ticked, as on Log service.
+this.state = { done: [true, true] };
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var t = dark ? {
+  bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', sub: '#C4C1BA', muted: '#A5A9AF', line: '#33373D',
+  accent: '#F08A4B', onAccent: '#17191C', link: '#FDBA74'
+} : {
+  bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', sub: '#3A3E44', muted: '#5A5F66', line: '#DEDCD5',
+  accent: '#C2410C', onAccent: '#FFFFFF', link: '#9A3412'
+};
+var items = [
+  { name: 'Coolant System Service', from: 'Recommended by Cedar Hollow Auto & Truck on Mar 5, 2026 · $239.99', why: 'Matches Engine coolant, in the record of Apr 1, 2026.' },
+  { name: 'Wiper Blade Replacement', from: 'Recommended by Cedar Hollow Auto & Truck on Mar 5, 2026 · $49.99', why: 'Matches Wiper blades, in the record of Sep 1, 2026.' }
+];
+var flip = function (i) { return function () { var a = s.done.slice(); a[i] = !a[i]; self.setState({ done: a }); }; };
+return {
+  t: t,
+  records: [
+    { title: 'Sep 1, 2026 · 58,200 mi', work: 'Wiper blades · Main Street Auto' },
+    { title: 'Jun 1, 2026 · 55,900 mi', work: 'Tire rotation · Main Street Auto' },
+    { title: 'Apr 1, 2026 · 54,100 mi', work: 'Engine coolant · Main Street Auto' }
+  ],
+  done: items.map(function (d, i) { return { name: d.name, from: d.from, why: d.why, on: s.done[i], toggle: flip(i) }; })
+};
+}
+}
+</script>
+</body>
+</html>

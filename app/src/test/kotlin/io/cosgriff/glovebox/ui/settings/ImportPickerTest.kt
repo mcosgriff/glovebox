@@ -130,7 +130,7 @@ class ImportPickerTest {
         val id = g.vehicle()
         val vm = ImportViewModel(
             g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), g.db.service(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
-            g.db.catalogRules(), g.actions, picker, g.documents, routeHandle(ImportRoute(id)),
+            g.db.catalogRules(), g.db.recommendations(), g.actions, picker, g.documents, routeHandle(ImportRoute(id)),
         )
         picker.onPicked(file(carfax()))
         picker.picked.awaitValue { it != null }

@@ -96,4 +96,78 @@ class ShopRecommendationsTest {
         )
         assertEquals(listOf(4L, 3L, 2L, 1L), ShopRecommendations.ordered(list).map { it.id })
     }
+
+    private val coolant = listOf(LoggedLine("coolant", "Engine coolant"))
+    private val battery = listOf(LoggedLine("battery", "Battery"))
+
+    @Test
+    fun `an edit offers what it closed already, ticked again, and never what it kept itself`() {
+        val list = listOf(
+            kept(1, "Coolant System Service", "coolant").copy(doneBy = 7, doneOn = oct29),
+            kept(2, "Battery Replacement", "battery"),
+            // Kept by record 7 itself: never closed by it.
+            ShopRecommendation(3, recordId = 7, date = oct29, shop = cedar, item = RecommendedItem("Coolant Flush", null), line = "coolant"),
+        )
+        assertEquals(listOf(1L, 2L), ShopRecommendations.offered(list, 7, oct29, coolant + battery).map { it.recommendation.id })
+        // A new record isn't offered one another record closed.
+        assertEquals(listOf(2L, 3L), ShopRecommendations.offered(list, 0, oct29, coolant + battery).map { it.recommendation.id })
+    }
+
+    @Test
+    fun `saving an edit closes a newly ticked one and opens again what it no longer looks like the work for`() {
+        val list = listOf(
+            kept(1, "Coolant System Service", "coolant").copy(doneBy = 7, doneOn = oct29),
+            kept(2, "Battery Replacement", "battery"),
+        )
+        // The battery line newly ticked: offered and closed; coolant stays closed.
+        assertEquals(DoneChange(close = listOf(2L)), ShopRecommendations.onSave(list, 7, oct29, coolant + battery, emptySet()))
+        // The coolant line taken off the record: what it closed opens again.
+        assertEquals(DoneChange(close = listOf(2L), reopen = listOf(1L)), ShopRecommendations.onSave(list, 7, oct29, battery, emptySet()))
+        // Dated before the recommendation now: open again.
+        assertEquals(DoneChange(reopen = listOf(1L)), ShopRecommendations.onSave(list, 7, mar5.minusDays(1), coolant, emptySet()))
+        // Unticked by the owner: open again, and nothing else closes.
+        assertEquals(DoneChange(reopen = listOf(1L)), ShopRecommendations.onSave(list, 7, oct29, coolant + battery, setOf(1L, 2L)))
+        // An edit that touches neither changes nothing.
+        assertTrue(ShopRecommendations.onSave(list, 7, oct29, coolant, setOf(2L)).none)
+    }
+
+    @Test
+    fun `one closed by an edited record and replaced since stays as it is while the record still matches`() {
+        val list = listOf(kept(1, "Coolant System Service", "coolant").copy(doneBy = 7, doneOn = oct29, replacedBy = 9))
+        assertTrue(ShopRecommendations.offered(list, 7, oct29, coolant).isEmpty())
+        assertTrue(ShopRecommendations.onSave(list, 7, oct29, coolant, emptySet()).none)
+        assertEquals(DoneChange(reopen = listOf(1L)), ShopRecommendations.onSave(list, 7, oct29, battery, emptySet()))
+    }
+
+    private fun record(id: Long, date: LocalDate, vararg lines: RecordLine) =
+        ServiceRecord(id = id, vehicleId = 1, date = date, odometer = 50_000, diy = false, lines = lines.toList())
+
+    @Test
+    fun `an import offers each open one for the earliest record on or after it that looks like the work`() {
+        val list = listOf(
+            kept(1, "Coolant System Service", "coolant"),
+            kept(2, "Electrical Concern Testing and Analysis", null),
+            kept(3, "Battery Replacement", "battery", date = oct29),
+            kept(4, "Wiper Blade Replacement", "wipers").copy(closedOn = oct29),
+        )
+        val records = listOf(
+            record(0, LocalDate.of(2026, 9, 1), RecordLine("Coolant flushed", "coolant"), RecordLine("Wipers", "wipers")),
+            record(0, LocalDate.of(2026, 4, 1), RecordLine("Coolant top-up", "coolant")),
+            record(0, LocalDate.of(2026, 6, 1), RecordLine("Electrical concern analysis")),
+            // Before the battery was recommended.
+            record(0, LocalDate.of(2026, 10, 1), RecordLine("Battery", "battery")),
+        )
+        val offered = ShopRecommendations.offeredOnImport(list, records)
+        assertEquals(listOf(1L to 1, 2L to 2), offered.map { it.recommendation.id to it.record })
+        assertEquals("Coolant top-up", offered[0].line.label)
+    }
+
+    @Test
+    fun `an import never offers one for the record that kept it, and a replaced record that no longer matches opens what it closed`() {
+        val own = kept(1, "Coolant System Service", "coolant")
+        assertTrue(ShopRecommendations.offeredOnImport(listOf(own), listOf(record(own.recordId, mar5, RecordLine("Coolant", "coolant")))).isEmpty())
+        val closed = listOf(kept(2, "Battery Replacement", "battery").copy(doneBy = 7, doneOn = oct29))
+        assertEquals(listOf(2L), ShopRecommendations.reopenedOnImport(closed, listOf(record(7, oct29, RecordLine("Oil change", "oil")))))
+        assertTrue(ShopRecommendations.reopenedOnImport(closed, listOf(record(7, oct29, RecordLine("Battery", "battery")))).isEmpty())
+    }
 }

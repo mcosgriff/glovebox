@@ -2436,6 +2436,9 @@
         <item quantity="one">Glovebox\'s typical schedule already has this, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
         <item quantity="other">Glovebox\'s typical schedule already has these, so you\'d get two reminders for one job. Unticked here, both stay, and work logged for one that shares a service line counts for both. A stopped item keeps its history and can be ticked again on the schedule.</item>
     </plurals>
+    <string name="import_done_section">RECOMMENDED EARLIER · DONE WITH THESE?</string>
+    <string name="import_done_why">Matches %1$s, in the record of %2$s.</string>
+    <string name="import_done_about">Ticked ones close when you import. Untick any that wasn\'t this work; it stays open on the vehicle.</string>
     <string name="import_readings_to_check">READINGS TO CHECK</string>
     <string name="import_readings_note">These readings don\'t look right, so they are left out. Your odometer is the highest reading on record: one wrong reading would become it, and every mileage reminder would count from it. Tick one to import it as it is, or leave it out and log that visit yourself with the right mileage.</string>
     <string name="import_moves">REMINDERS THAT WILL MOVE</string>

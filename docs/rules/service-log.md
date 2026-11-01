@@ -147,8 +147,13 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   Undo of the delete puts them back. **Never a reminder and never "done"**: an open one moves nothing and closing one
   logs nothing. The same shop and the same wording (case and spacing aside) **replace** the open one; another shop
   never does. Logged work closes one only when the form asks and the owner leaves it ticked: by its catalog line,
-  whoever did it, else by similar wording (`LineGuess.similar`), only for records dated on or after it, on a new
-  record only. The list on the vehicle closes one by hand, with Undo through `RecordActions`.
+  whoever did it, else by similar wording (`LineGuess.similar`), only for records dated on or after it, never by
+  the record that kept it. **Asked on a new record, on an edit and in a history import's preview** (#593,
+  `ShopRecommendations.offered` / `onSave` / `offeredOnImport`, board ImportDone): an edit offers again, ticked,
+  what the record closed and still matches; **an edit that no longer matches (lines or date), or unticks one, opens
+  it again**, and Undo of the edit puts both back (`RecordEvent.Edited.done`). An import offers each for the earliest
+  matching record and closes it only if left ticked when the owner imports; a replaced record that no longer
+  matches opens what it closed. The list on the vehicle closes one by hand, with Undo through `RecordActions`.
 - Health-report marks (#572, `PdfWords`' second pass, `InvoiceMark`, `FindingColour`): small filled shapes with their
   colour, read in `:domain` **by hue, never exact value**, and paired with the item on their line, only under an
   inspection heading. Work under an item carries its area, what was found and its colour; approved work there was
