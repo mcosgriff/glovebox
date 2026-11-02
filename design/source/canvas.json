@@ -272,7 +272,7 @@
       "y": 5340
     },
     "Specs.dc.html": {
-      "h": 1260,
+      "h": 1480,
       "is_interactive": true,
       "radius": 28,
       "title": "4e · Torque & fastener specs",
@@ -832,6 +832,36 @@
       "page": "gearbox",
       "is_interactive": true,
       "radius": 28
+    },
+    "SpecsFiles.dc.html": {
+      "h": 1480,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Torque & fastener specs — Import a file, and Save as an import file once there are rows (#604)",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "ImportTorque.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Import torque specs — opened from the torque page; this vehicle and torque files only (#604)",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "ImportTorqueDark.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Import torque specs — opened from the torque page; this vehicle and torque files only (#604) (dark)",
+      "w": 390,
+      "x": 470,
+      "y": 2500
     }
   },
   "createdOnFiles": {
@@ -946,6 +976,22 @@
       "kind": "title1",
       "maxW": 1330,
       "page": "gearbox"
+    },
+    "torquetitle": {
+      "x": 0,
+      "y": -280,
+      "text": "Torque import (#604) — light",
+      "kind": "title1",
+      "maxW": 860,
+      "page": "torque"
+    },
+    "torquedark": {
+      "x": 0,
+      "y": 2220,
+      "text": "Torque import (#604) — dark",
+      "kind": "title1",
+      "maxW": 860,
+      "page": "torque"
     }
   },
   "order": [
@@ -1035,7 +1081,10 @@
     "GearboxSheet.dc.html",
     "GearboxAddDark.dc.html",
     "GearboxManualDark.dc.html",
-    "GearboxSheetDark.dc.html"
+    "GearboxSheetDark.dc.html",
+    "SpecsFiles.dc.html",
+    "ImportTorque.dc.html",
+    "ImportTorqueDark.dc.html"
   ],
   "pages": [
     {
@@ -1065,6 +1114,10 @@
     {
       "id": "gearbox",
       "name": "Gearbox (#549)"
+    },
+    {
+      "id": "torque",
+      "name": "Torque import (#604)"
     }
   ],
   "title": "Glovebox"
