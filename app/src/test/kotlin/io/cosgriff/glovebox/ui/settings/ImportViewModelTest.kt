@@ -72,7 +72,7 @@ class ImportViewModelTest {
         // A row that is only a name is filled; one the user typed differently is left as it is unless they choose to replace.
         g.db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "Oil drain plug", category = "ENGINE"))
         g.db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "Lug nuts", category = "WHEELS", newtonMeters = 123.0))
-        val vm = vm()
+        val vm = vm(ImportRoute(id, torqueOnly = true))
         pick(example("torque-specs.json"))
 
         val view = vm.ready().view
@@ -107,7 +107,7 @@ class ImportViewModelTest {
     fun `replace matching overwrites the rows it listed and keeps their names`() = runTest {
         val id = g.vehicle()
         val lug = g.db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "LUG NUTS", category = "WHEELS", newtonMeters = 123.0, note = "Mine"))
-        val vm = vm()
+        val vm = vm(ImportRoute(id, torqueOnly = true))
         pick(example("torque-specs.json"))
 
         val result = vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING)
@@ -126,12 +126,12 @@ class ImportViewModelTest {
         val second = g.vehicle(make = "Volkswagen", model = "GTI")
         val vm = vm()
         assertFalse(vm.vehicleFixed)
-        pick(example("torque-specs.json"))
+        pick(example("interval-schedule.json"))
         assertEquals(ImportPreview.NeedsVehicle, vm.preview.awaitValue { it != null })
 
         vm.chooseVehicle(second)
         assertEquals(second, vm.vehicleId.awaitValue { it != null })
-        assertEquals(4, vm.ready().view.new.size)
+        assertEquals(ImportKind.INTERVAL_SCHEDULE, vm.ready().view.kind)
     }
 
     @Test
@@ -141,6 +141,21 @@ class ImportViewModelTest {
         val vm = vm(ImportRoute(second))
         assertTrue(vm.vehicleFixed)
         assertEquals(second, vm.vehicleId.awaitValue { it != null })
+    }
+
+    @Test
+    fun `torque specs come in only from the torque page, which takes nothing else`() = runTest {
+        val id = g.vehicle()
+        val settings = vm()
+        pick(example("torque-specs.json"))
+        assertEquals(ImportPreview.Refused(res.getString(R.string.import_torque_elsewhere)), settings.preview.awaitValue { it is ImportPreview.Refused })
+
+        val torquePage = vm(ImportRoute(id, torqueOnly = true))
+        assertTrue(torquePage.torqueOnly)
+        pick(example("interval-schedule.json"))
+        assertEquals(ImportPreview.Refused(res.getString(R.string.import_torque_only)), torquePage.preview.awaitValue { it is ImportPreview.Refused })
+        pick(example("torque-specs.json"))
+        assertEquals(ImportKind.TORQUE_SPECS, torquePage.ready().view.kind)
     }
 
     @Test
@@ -158,7 +173,7 @@ class ImportViewModelTest {
         val id = g.vehicle()
         g.db.vehicles().setArchived(id, LocalDate.of(2025, 1, 1))
         val vm = vm()
-        pick(example("torque-specs.json"))
+        pick(example("interval-schedule.json"))
         assertEquals(ImportPreview.Refused(res.getString(R.string.import_sold_only_history)), vm.preview.awaitValue { it is ImportPreview.Refused })
 
         pick(example("service-history.json"))
@@ -359,8 +374,8 @@ class ImportViewModelTest {
 
     @Test
     fun `picking another file starts again with nothing ticked and no result`() = runTest {
-        g.vehicle()
-        val vm = vm()
+        val id = g.vehicle()
+        val vm = vm(ImportRoute(id, torqueOnly = true))
         pick(example("torque-specs.json"))
         vm.importAndWait(vm.ready(), ImportMode.ADD_NEW)
         vm.pick()

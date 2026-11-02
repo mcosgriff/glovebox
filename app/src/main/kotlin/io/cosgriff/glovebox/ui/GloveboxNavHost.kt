@@ -125,8 +125,11 @@ import kotlin.time.Duration.Companion.milliseconds
 @Serializable data object NotificationsRoute : NavKey
 @Serializable data object BackupRoute : NavKey
 /** Adds data from a JSON file the user picks to one vehicle. */
-/** [vehicleId] starts the page with that vehicle chosen, as Vehicle details opens it. */
-@Serializable data class ImportRoute(val vehicleId: Long? = null) : NavKey
+/**
+ * [vehicleId] starts the page with that vehicle chosen, as Vehicle details opens it. [torqueOnly] is the
+ * Torque & fastener specs page's import (#604): only a torque specs file, and torque specs come in no other way.
+ */
+@Serializable data class ImportRoute(val vehicleId: Long? = null, val torqueOnly: Boolean = false) : NavKey
 @Serializable data object DeleteAllRoute : NavKey
 @Serializable data object AboutRoute : NavKey
 @Serializable data object PrivacyRoute : NavKey
@@ -516,7 +519,13 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
                 DocumentsScreen(onBack = { nav.pop() }, onView = { documentId -> nav.push(DocumentViewerRoute(documentId)) })
             }
             screen<DocumentViewerRoute> { DocumentViewerScreen(onClose = { nav.pop() }) }
-            screen<TorqueSpecsRoute> { TorqueSpecsScreen(onBack = { nav.pop() }, onMessage = showMessage) }
+            screen<TorqueSpecsRoute> { route ->
+                TorqueSpecsScreen(
+                    onBack = { nav.pop() },
+                    onMessage = showMessage,
+                    onImport = { nav.push(ImportRoute(route.vehicleId, torqueOnly = true)) },
+                )
+            }
             screen<DeleteVehicleRoute> {
                 DeleteVehicleScreen(
                     onCancel = { nav.pop() },
@@ -676,10 +685,11 @@ fun GloveboxNavHost(screenModels: List<ViewModelStoreProvider>) {
             screen<DeleteAllRoute> {
                 DeleteAllScreen(onCancel = { nav.pop() }, onBackupFirst = { nav.push(BackupRoute) })
             }
-            screen<ImportRoute> {
+            screen<ImportRoute> { route ->
                 ImportScreen(
                     onBack = { nav.pop() },
-                    onOpenTorqueSpecs = { vehicleId -> nav.push(TorqueSpecsRoute(vehicleId)) },
+                    // Opened from the torque page: back to it, rather than a second copy on top.
+                    onOpenTorqueSpecs = { vehicleId -> if (route.torqueOnly) nav.pop() else nav.push(TorqueSpecsRoute(vehicleId)) },
                     onOpenSchedule = { vehicleId -> nav.push(ScheduleRoute(vehicleId)) },
                     onEnterLastDone = { vehicleId -> nav.push(LastDoneRoute(vehicleId)) },
                     onOpenMilestones = { vehicleId -> nav.push(MilestonesRoute(vehicleId)) },

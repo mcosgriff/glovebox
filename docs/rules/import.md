@@ -15,6 +15,9 @@ Rules for the import format and schemas, schedule and history imports, the Carfa
 - **An import never deletes, is one transaction, has no Undo, and only writes the user's own rows**; nothing
   Glovebox supplies may be changed by one. "Add new only" is the default; "Replace matching" lists what it will
   overwrite first. The picked file is read into memory (2 MB cap) and never written to disk.
+- **Torque specs are imported only from the Torque & fastener specs page** (#604, `ImportRoute.torqueOnly`):
+  Settings → Import and Vehicle details refuse a torque file, and that page's import refuses every other kind.
+  Settings holds what is global, not one vehicle's rows.
 - Schedule import: a typical item is never matched or replaced; the only thing an import may change on one is to
   stop tracking it, unticked by default.
 - Versions are per kind (`ImportKind.version`); only `service-history` has more than version 1: version 2 adds

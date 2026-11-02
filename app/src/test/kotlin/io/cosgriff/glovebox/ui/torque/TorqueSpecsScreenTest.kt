@@ -66,6 +66,7 @@ class TorqueSpecsScreenTest {
                 onAddKnown = { events += "known" },
                 onWriteFile = { events += "write"; WrittenFile("{}", 1) },
                 onSaveFile = { events += "save file" },
+                onImport = { events += "import" },
             )
         }
     }
@@ -84,6 +85,24 @@ class TorqueSpecsScreenTest {
         compose.onNodeWithText(str(R.string.torque_start_common)).performClick()
         assertEquals(listOf("common"), events)
         compose.onAllNodesWithText(str(R.string.torque_search)).assertCountEquals(0)
+    }
+
+    @Test
+    fun `import is offered with no rows yet, and saving a file only once there are rows`() {
+        content(TorqueSpecsState(Fixtures.truck, emptyList(), TorqueUnit.NEWTON_METER))
+        compose.onAllNodesWithText(str(R.string.torque_export_button)).assertCountEquals(0)
+        compose.onNodeWithText(str(R.string.torque_import_caption)).assertExists()
+        compose.onNodeWithText(str(R.string.torque_import_button)).performClick()
+        assertEquals(listOf("import"), events)
+    }
+
+    @Test
+    fun `with rows, the page imports and saves a file`() {
+        content(TorqueSpecsState(Fixtures.truck, specs, TorqueUnit.NEWTON_METER))
+        compose.onNodeWithText(str(R.string.torque_import_button)).performClick()
+        compose.onNodeWithText(str(R.string.torque_export_button)).performClick()
+        compose.onNodeWithText(str(R.string.torque_files_caption)).assertExists()
+        assertEquals(listOf("import", "write", "save file"), events)
     }
 
     @Test
@@ -154,7 +173,7 @@ class TorqueSpecsScreenTest {
         var undo: (() -> Unit)? = null
         compose.setContent {
             GloveboxTheme {
-                TorqueSpecsScreen(onBack = {}, onMessage = { message, action, onAction -> events += "$message|$action"; undo = onAction }, vm = vm)
+                TorqueSpecsScreen(onBack = {}, onMessage = { message, action, onAction -> events += "$message|$action"; undo = onAction }, onImport = {}, vm = vm)
             }
         }
         compose.waitUntil(TIMEOUT) { compose.onAllNodesWithText("Drain plug").fetchSemanticsNodes().isNotEmpty() }

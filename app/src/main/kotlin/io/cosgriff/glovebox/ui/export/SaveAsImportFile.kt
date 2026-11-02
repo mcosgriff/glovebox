@@ -37,6 +37,22 @@ import io.cosgriff.glovebox.domain.WrittenFile
 @Composable
 fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: String) -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
+    val save = rememberSaveImportFile(write, onSave)
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        TextButton(onClick = save, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.save_file_button), fontWeight = FontWeight.SemiBold)
+        }
+        Text(caption, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * What tapping "Save as an import file" does, for a screen that draws its own button: saves, or first
+ * lists what the file can't hold, as [SaveAsImportFile] does. Holds that dialog while it is open.
+ */
+@Composable
+fun rememberSaveImportFile(write: () -> WrittenFile, onSave: (text: String) -> Unit): () -> Unit {
+    val scheme = MaterialTheme.colorScheme
     var asking by remember { mutableStateOf<WrittenFile?>(null) }
 
     asking?.let { file ->
@@ -77,17 +93,9 @@ fun SaveAsImportFile(caption: String, write: () -> WrittenFile, onSave: (text: S
         )
     }
 
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        TextButton(
-            onClick = {
-                val file = write()
-                val text = file.text
-                if (text != null && file.leftOut.isEmpty()) onSave(text) else asking = file
-            },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        ) {
-            Text(stringResource(R.string.save_file_button), fontWeight = FontWeight.SemiBold)
-        }
-        Text(caption, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+    return {
+        val file = write()
+        val text = file.text
+        if (text != null && file.leftOut.isEmpty()) onSave(text) else asking = file
     }
 }

@@ -45,7 +45,7 @@ import io.cosgriff.glovebox.ui.theme.PlexMono
 
 private const val README = "https://github.com/mcosgriff/glovebox/blob/main/docs/import/README.md"
 
-/** Settings → Import. The format, and what an import may and may not change, are in `docs/import/README.md`. */
+/** Settings → Import, and the Torque & fastener specs page's import. The format, and what an import may and may not change, are in `docs/import/README.md`. */
 @Composable
 fun ImportScreen(
     onBack: () -> Unit,
@@ -65,7 +65,7 @@ fun ImportScreen(
     val preview by vm.preview.collectAsStateWithLifecycle()
     val result by vm.result.collectAsStateWithLifecycle()
     ImportContent(
-        vehicles, vehicleId, vm.vehicleFixed, picked?.name, picked?.pdf != null, problem, preview, result,
+        vehicles, vehicleId, vm.vehicleFixed, vm.torqueOnly, picked?.name, picked?.pdf != null, problem, preview, result,
         onBack = onBack,
         onPick = vm::pick,
         onChooseVehicle = vm::chooseVehicle,
@@ -90,6 +90,8 @@ internal fun ImportContent(
     vehicleId: Long?,
     /** Opened from one vehicle's "Import service history": that vehicle, and no choice of another. */
     vehicleFixed: Boolean,
+    /** Opened from the Torque & fastener specs page, which is the only way torque specs come in (#604). */
+    torqueOnly: Boolean,
     /** The name of the file picked; null before one is. */
     pickedName: String?,
     /** The file picked is a PDF (a Carfax report), which can be kept with the vehicle's documents. */
@@ -131,7 +133,7 @@ internal fun ImportContent(
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ScreenHeader(stringResource(R.string.settings_import), onBack)
+        ScreenHeader(stringResource(if (torqueOnly) R.string.import_torque_title else R.string.settings_import), onBack)
 
         Column(
             Modifier.padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 24.dp),
@@ -139,7 +141,7 @@ internal fun ImportContent(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    stringResource(R.string.import_intro),
+                    stringResource(if (torqueOnly) R.string.import_torque_intro else R.string.import_intro),
                     color = scheme.onSurfaceVariant,
                 )
                 TextButton(onClick = { uriHandler.openUri(README) }, modifier = Modifier.heightIn(min = 48.dp), contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
