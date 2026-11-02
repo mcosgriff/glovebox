@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.0](https://github.com/mcosgriff/glovebox/compare/v0.37.0...v0.38.0) (2026-11-02)
+
+
+### Features
+
+* **torque:** import and export torque specs from the vehicle's torque page ([#606](https://github.com/mcosgriff/glovebox/issues/606)) ([2db53dd](https://github.com/mcosgriff/glovebox/commit/2db53dd66d820a0e5c43c5efa2fe1d7b45d86fc1))
+
 ## [0.37.0](https://github.com/mcosgriff/glovebox/compare/v0.36.0...v0.37.0) (2026-11-01)
 
 
