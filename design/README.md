@@ -155,8 +155,8 @@ render yet (the PNGs come with the next export and `design-pull`).
 
 ## Torque import (#604)
 
-`SpecsFiles` imports `Specs` as it stands on App screens, and `ImportTorqueDark` imports `ImportTorque` with
-`theme="dark"`. `Specs.png` on App screens predates the Import / Export group and is stale until the next export.
+`SpecsFiles` imports `Specs` unchanged, and `ImportTorqueDark` imports `ImportTorque` with
+`theme="dark"`. All four sit on the canvas page "6 · Torque & fastener specs". `Specs.png` predates the Import / Export group and is stale until the next export.
 
 | Screen | Render | Source |
 |---|---|---|
