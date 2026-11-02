@@ -1994,7 +1994,10 @@
     <string name="torque_add">+ Add a spec</string>
     <string name="torque_add_missing">Add the common fasteners that are missing</string>
     <string name="torque_note">Enter torque in any unit — it converts automatically. Always check the factory service manual; a wrong torque on lug nuts or drain plugs can cause damage.</string>
-    <string name="torque_save_caption">A copy to keep, or to pass to someone with the same model. It holds these rows and nothing else about your vehicle, and it isn\'t encrypted. Every value in it is the one you entered: whoever uses the file should check each against their own service manual.</string>
+    <string name="torque_import_button">Import a file</string>
+    <string name="torque_export_button">Export a file</string>
+    <string name="torque_files_caption">Import adds rows from a JSON file, or fills in ones with no value yet; you see what it would change before anything is saved. Export saves these rows as a file to keep or pass to someone with the same model. It holds nothing else about your vehicle and isn\'t encrypted; whoever uses it should check each value against their own service manual.</string>
+    <string name="torque_import_caption">Import adds rows from a JSON file; you see what it would change before anything is saved.</string>
     <string name="torque_tag_needs_value">NEEDS VALUE</string>
     <string name="torque_tag_double_check">DOUBLE-CHECK</string>
     <string name="torque_tag_factory">FACTORY MANUAL</string>
@@ -2192,7 +2195,7 @@
     <string name="export_markdown">Markdown</string>
     <string name="export_markdown_note">Plain text, .md</string>
     <string name="settings_import">Import</string>
-    <string name="settings_import_note">History, schedules or torque specs from a JSON file · nothing of yours changes unless you say so</string>
+    <string name="settings_import_note">History or schedules from a JSON file · nothing of yours changes unless you say so</string>
     <string name="settings_delete_all">Delete all data</string>
     <string name="settings_privacy_line">Only a VIN, or a year, make and model, is sent to NHTSA, to decode it and look up recalls. Nothing else leaves your phone.</string>
     <string name="about_title">About Glovebox</string>
@@ -2399,7 +2402,7 @@
     <string name="import_severe">severe %1$s</string>
     <string name="import_reset_by">reset by \"%1$s\"</string>
     <string name="import_severe_only">only for severe use</string>
-    <string name="import_intro">Add service history, a maintenance schedule, milestones or torque specs to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.</string>
+    <string name="import_intro">Add service history, a maintenance schedule or milestones to a vehicle from a JSON file, or the service visits from a Carfax report saved as a PDF. The file is checked first, and you see what it would do before anything is saved.</string>
     <string name="import_how_to">How to write a file (opens in your browser)</string>
     <string name="import_no_vehicle">Add a vehicle first: an import goes into one of your vehicles.</string>
     <string name="import_last_done_note">New items start as \"Not logged yet\". If you know when any were last done, say so and their reminders start counting.</string>
@@ -2412,6 +2415,10 @@
     <string name="import_sold">Sold</string>
     <string name="import_file_section">FILE</string>
     <string name="import_choose">Choose a file</string>
+    <string name="import_torque_title">Import torque specs</string>
+    <string name="import_torque_intro">Add rows to this vehicle\'s torque specs from a JSON file, or fill in ones that have no value yet. The file is checked first, and you see what it would do before anything is saved.</string>
+    <string name="import_torque_only">This file isn\'t torque specs. Other files are imported from Settings → Import or the vehicle\'s details.</string>
+    <string name="import_torque_elsewhere">This is a torque specs file. Import it from the vehicle\'s Torque &amp; fastener specs page.</string>
     <string name="import_needs_vehicle">The file is fine. Choose which vehicle it goes into.</string>
     <string name="import_add_new">Add new only</string>
     <string name="import_add_new_note">Yours stay exactly as they are</string>

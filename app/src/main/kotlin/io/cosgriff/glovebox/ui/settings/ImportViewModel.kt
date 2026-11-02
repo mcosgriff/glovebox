@@ -190,6 +190,9 @@ class ImportViewModel @Inject constructor(
     /** Opened from a vehicle (Vehicle details), so there is nothing to choose. */
     val vehicleFixed: Boolean = route.vehicleId != null
 
+    /** Opened from the Torque & fastener specs page: torque specs only, and only from there (#604). */
+    val torqueOnly: Boolean = route.torqueOnly
+
     /** Doubtful records ([PlanView.doubts]) the user has chosen to import anyway, by date and odometer. */
     private val included = MutableStateFlow<Set<Pair<LocalDate, Int>>>(emptySet())
 
@@ -214,6 +217,9 @@ class ImportViewModel @Inject constructor(
             null -> null
             is ImportFile.Invalid -> ImportPreview.Invalid(file)
             else -> when {
+                // Torque specs belong to their own page; every other kind to this one.
+                torqueOnly && file !is ImportFile.TorqueSpecs -> ImportPreview.Refused(AppText.res.getString(R.string.import_torque_only))
+                !torqueOnly && file is ImportFile.TorqueSpecs -> ImportPreview.Refused(AppText.res.getString(R.string.import_torque_elsewhere))
                 vehicle == null -> ImportPreview.NeedsVehicle
                 file is ImportFile.ServiceHistory -> historyPreview(vehicle, file, keep, notDone)
                 // A sold vehicle gets no reminders and isn't being worked on.

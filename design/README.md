@@ -153,6 +153,21 @@ render yet (the PNGs come with the next export and `design-pull`).
 - The note under the grid says why it is asked: rows for one gearbox show in the maker's table with no reminder
   until the owner says which.
 
+## Torque import (#604)
+
+`SpecsFiles` imports `Specs` unchanged, and `ImportTorqueDark` imports `ImportTorque` with
+`theme="dark"`. All four sit on the canvas page "6 · Torque & fastener specs". `Specs.png` is a copy of `SpecsFiles.png`, since the wrapper draws the same board.
+
+| Screen | Render | Source |
+|---|---|---|
+| Torque & fastener specs — Import / Export group and its caption | `screens/SpecsFiles.png` | `source/SpecsFiles.dc.html` (→ `Specs`) |
+| Import torque specs — this vehicle only, torque files only | `screens/ImportTorque.png` · `screens/ImportTorqueDark.png` | `source/ImportTorque.dc.html` (+ `Dark`) |
+
+- The Torque & fastener specs page puts Import a file | Export a file side by side as one joined group under its
+  list; with no rows yet, only Import shows.
+- Import opens "Import torque specs", set to that vehicle. It takes only a torque specs file; Settings → Import
+  and Vehicle details turn one away.
+
 ## UX rules (apply to every screen)
 
 - **Touch targets:** every tappable thing is at least 48×48dp, including text links (pad them). Chips and

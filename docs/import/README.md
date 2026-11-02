@@ -1,7 +1,7 @@
 # Importing data into Glovebox
 
 Glovebox can read a JSON file you write (or someone shares with you) and add its contents to one of
-your vehicles: **Settings → Import**. This folder is the specification of those files.
+your vehicles: **Settings → Import**, or for torque specs the vehicle's Torque & fastener specs page. This folder is the specification of those files.
 
 - `schema/` — one [JSON Schema](https://json-schema.org/) per kind of import. The schema is the rule
   book: if a file passes it, its shape is right.
@@ -152,6 +152,9 @@ record, and the PDF / Markdown export and the backup are for it.
 
 [`schema/torque-specs.schema.json`](schema/torque-specs.schema.json) ·
 [`examples/torque-specs.json`](examples/torque-specs.json) · up to 500 items
+
+A torque file is imported from the vehicle's own **Torque & fastener specs** page ("Import a file"),
+not from Settings → Import, which turns one away. That page's import takes nothing but a torque file.
 
 ```json
 {

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Import torque specs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#C2410C}a:hover{color:#9A3412}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1240px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
+    <a href="Specs.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+    </a>
+    <span style="font-size: 22px; font-weight: 600">Import torque specs</span>
+  </div>
+
+  <!-- #604: opened from Torque & fastener specs ("Import a file"). This vehicle only, torque files only; Settings → Import turns a torque file away. -->
+  <div style="display: flex; flex-direction: column; gap: 18px; padding: 8px 20px 24px 20px">
+
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 15px; line-height: 1.5; color: {{t.muted}}">Add rows to this vehicle's torque specs from a JSON file, or fill in ones that have no value yet. The file is checked first, and you see what it would do before anything is saved.</span>
+      <a href="#" style="min-height: 48px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: {{t.link}}; text-decoration: none">How to write a file (opens in your browser)</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">IMPORT INTO</span>
+      <span style="font-size: 16px; font-weight: 500">2019 Blue truck</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">FILE</span>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 0 16px; min-height: 56px; display: flex; align-items: center; justify-content: space-between">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px">torque-specs.json</span>
+        <button style="min-height: 48px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: {{t.link}}">Change</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">TORQUE SPECS · 4 IN THE FILE</span>
+      <div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 600">2 new</span>
+            <span style="font-size: 12px; color: {{t.muted}}">Added to the vehicle</span>
+          </span>
+          <sc-for list="{{added}}" as="r" hint-placeholder-count="2">
+            <span style="display: flex; flex-direction: column">
+              <span style="font-size: 14px">{{r.name}}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">{{r.file}}</span>
+            </span>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 600">1 fill in a row you left empty</span>
+            <span style="font-size: 12px; color: {{t.muted}}">Yours has only a name so far</span>
+          </span>
+          <span style="display: flex; flex-direction: column">
+            <span style="font-size: 14px">Oil drain plug</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">{{drain}}</span>
+          </span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 600; color: {{t.attention}}">1 different from yours</span>
+            <span style="font-size: 12px; color: {{t.muted}}">Left alone unless you choose to replace them</span>
+          </span>
+          <span style="display: flex; flex-direction: column">
+            <span style="font-size: 14px">Lug nuts</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">Yours: {{lugYours}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">File: {{lugFile}}</span>
+          </span>
+        </div>
+        <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Check every value against your service manual, whoever wrote the file.</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: {{t.muted}}">ROWS THAT DIFFER FROM YOURS</span>
+      <div role="radiogroup" aria-label="Rows that differ from yours" style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 0 16px">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+          <button role="radio" aria-checked="{{m.on}}" onClick="{{m.pick}}" style="width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 10px 0; border: 0; border-bottom: 1px solid {{m.rule}}; background: transparent; font-family: inherit; color: {{t.ink}}; text-align: left">
+            <span style="flex: none; width: 20px; height: 20px; border-radius: 10px; box-sizing: border-box; border: 2px solid {{m.ring}}; display: flex; align-items: center; justify-content: center">
+              <span style="width: 10px; height: 10px; border-radius: 5px; background: {{m.dot}}"></span>
+            </span>
+            <span style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; font-weight: 600">{{m.title}}</span>
+              <span style="font-size: 13px; color: {{t.muted}}">{{m.note}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <button style="height: 56px; border: 0; border-radius: 12px; background: {{t.accent}}; color: {{t.onAccent}}; font-family: inherit; font-size: 16px; font-weight: 600">{{button}}</button>
+      <span style="font-size: 12px; line-height: 1.45; color: {{t.muted}}">Nothing on the vehicle is deleted. There is no Undo, so check the list above.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+// Made-up rows, as in docs/import/examples/torque-specs.json; figures are samples, not from any manual.
+this.state = { replace: false };
+}
+renderVals() {
+var self = this, s = this.state;
+var dark = (this.props.theme || 'light') === 'dark';
+var t = dark ? {
+  bg: '#121416', surface: '#1C1F23', ink: '#EDEBE6', muted: '#A5A9AF', line: '#33373D',
+  accent: '#F08A4B', onAccent: '#17191C', link: '#FDBA74', attention: '#FDBA74'
+} : {
+  bg: '#F4F3EF', surface: '#FFFFFF', ink: '#17191C', muted: '#5A5F66', line: '#DEDCD5',
+  accent: '#C2410C', onAccent: '#FFFFFF', link: '#9A3412', attention: '#9A3412'
+};
+var mode = function (on, title, note, last, value) {
+  return {
+    on: on, title: title, note: note,
+    ring: on ? t.accent : t.muted, dot: on ? t.accent : 'transparent',
+    rule: last ? 'transparent' : t.line,
+    pick: function () { self.setState({ replace: value }); }
+  };
+};
+return {
+  t: t,
+  added: [
+    { name: 'Valve cover bolts', file: '7 ft-lb' },
+    { name: 'Skid plate bolts', file: '12 mm' }
+  ],
+  drain: '30 ft-lb · 14 mm',
+  lugYours: '91 ft-lb',
+  lugFile: '100 ft-lb · 21 mm · Star pattern, re-check after 50 mi · factory manual',
+  modes: [
+    mode(!s.replace, 'Add new only', 'Yours stay exactly as they are', false, false),
+    mode(s.replace, 'Replace matching', '1 of yours takes the file\'s values', true, true)
+  ],
+  button: s.replace ? 'Import 4 rows' : 'Import 3 rows'
+};
+}
+}
+</script>
+</body>
+</html>

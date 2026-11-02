@@ -441,7 +441,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
     @Test
     fun importPreview() = compose.shoot("import_history", shade) {
         ImportContent(
-            vehicles = listOf(Fixtures.history.vehicles.first()), vehicleId = Fixtures.history.vehicles.first().id, vehicleFixed = true,
+            vehicles = listOf(Fixtures.history.vehicles.first()), vehicleId = Fixtures.history.vehicles.first().id, vehicleFixed = true, torqueOnly = false,
             pickedName = "history.json", pickedPdf = false, problem = null, preview = Fixtures.importPreview, result = null,
             onBack = {}, onPick = {}, onChooseVehicle = {}, onInclude = { _, _ -> }, onImport = { _, _, _, _ -> },
             onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> },
@@ -616,7 +616,7 @@ class ScreensScreenshotTest(private val shade: Shade) {
     fun torqueSpecs() = compose.shoot("torque_specs", shade) {
         TorqueSpecsContent(
             Fixtures.torque, onBack = {}, onSave = {}, onDelete = {}, onAddCommon = {}, onAddKnown = {},
-            onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {},
+            onWriteFile = { WrittenFile(null, 0) }, onSaveFile = {}, onImport = {},
         )
     }
 

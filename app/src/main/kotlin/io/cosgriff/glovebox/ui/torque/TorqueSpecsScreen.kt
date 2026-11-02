@@ -6,6 +6,8 @@ import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.ui.components.EmptyState
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
+import io.cosgriff.glovebox.ui.components.ActionButtonGroup
+import io.cosgriff.glovebox.ui.components.GroupAction
 import io.cosgriff.glovebox.ui.components.DoubleCheckTag
 import io.cosgriff.glovebox.ui.components.Tag
 import io.cosgriff.glovebox.ui.components.InkChip
@@ -22,7 +24,7 @@ import io.cosgriff.glovebox.domain.ImportedTorqueSpec
 import io.cosgriff.glovebox.domain.TorqueExport
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.ui.export.ExportSaver
-import io.cosgriff.glovebox.ui.export.SaveAsImportFile
+import io.cosgriff.glovebox.ui.export.rememberSaveImportFile
 import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.layout.Arrangement
@@ -212,6 +214,8 @@ fun TorqueSpecsScreen(
     onBack: () -> Unit,
     /** Shows a message with one action on the app's snackbar. */
     onMessage: (message: String, actionLabel: String, onAction: () -> Unit) -> Unit,
+    /** Opens Import for this vehicle, taking only a torque specs file (#604). */
+    onImport: () -> Unit,
     vm: TorqueSpecsViewModel = hiltViewModel(),
 ) {
     val res = LocalResources.current
@@ -220,7 +224,7 @@ fun TorqueSpecsScreen(
         state, onBack,
         onSave = { vm.save(it) },
         onDelete = { s -> vm.delete(s) { undo -> onMessage(res.getString(R.string.torque_deleted, s.name), res.getString(R.string.undo), undo) } },
-        onAddCommon = { vm.addCommon() }, onAddKnown = { vm.addKnown() }, onWriteFile = vm::written, onSaveFile = vm::saveAsFile,
+        onAddCommon = { vm.addCommon() }, onAddKnown = { vm.addKnown() }, onWriteFile = vm::written, onSaveFile = vm::saveAsFile, onImport = onImport,
     )
 }
 
@@ -235,6 +239,7 @@ internal fun TorqueSpecsContent(
     onAddKnown: () -> Unit,
     onWriteFile: () -> WrittenFile,
     onSaveFile: (text: String) -> Unit,
+    onImport: () -> Unit,
 ) {
     val v = state.vehicle
     val scheme = MaterialTheme.colorScheme
@@ -358,11 +363,19 @@ internal fun TorqueSpecsContent(
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
-                if (state.specs.isNotEmpty()) {
-                    SaveAsImportFile(
-                        caption = stringResource(R.string.torque_save_caption),
-                        write = onWriteFile,
-                        onSave = onSaveFile,
+                val saveFile = rememberSaveImportFile(onWriteFile, onSaveFile)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ActionButtonGroup(
+                        listOfNotNull(
+                            GroupAction(stringResource(R.string.torque_import_button), onImport),
+                            GroupAction(stringResource(R.string.torque_export_button), saveFile).takeIf { state.specs.isNotEmpty() },
+                        ),
+                    )
+                    // Says what each button does; with no rows there is only Import to explain.
+                    Text(
+                        stringResource(if (state.specs.isNotEmpty()) R.string.torque_files_caption else R.string.torque_import_caption),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
                     )
                 }
             }

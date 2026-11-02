@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -97,5 +100,31 @@ internal fun SheetActions(
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         InkOutlinedButton(onSecondary, Modifier.weight(1f).height(52.dp), enabled = secondaryEnabled, quiet = quiet, contentPadding = padding, content = secondary)
         Button(onConfirm, Modifier.weight(2f).height(52.dp), enabled = enabled, shape = MaterialTheme.shapes.small, colors = colors, contentPadding = padding, content = confirm)
+    }
+}
+
+/** One button of an [ActionButtonGroup]. */
+data class GroupAction(val label: String, val onClick: () -> Unit)
+
+/**
+ * Related actions side by side as one joined group (Import / Export), sharing the row's width. Drawn like the
+ * torque unit switch (`SegmentedButtonDefaults.itemShape`, a 1dp outline, edges joined) but made of plain
+ * buttons: a segmented button is read out as a choice, "selected" or not, and these are actions. One action
+ * is a whole pill on its own.
+ */
+@Composable
+internal fun ActionButtonGroup(actions: List<GroupAction>, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Row(modifier.fillMaxWidth()) {
+        actions.forEachIndexed { i, action ->
+            OutlinedButton(
+                onClick = action.onClick,
+                // Each overlaps the one before by its border, so two borders meet as one line.
+                modifier = Modifier.weight(1f).heightIn(min = 48.dp).offset(x = (-i).dp),
+                shape = SegmentedButtonDefaults.itemShape(i, actions.size),
+                border = BorderStroke(1.dp, scheme.outline),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.onSurface),
+            ) { Text(action.label, maxLines = 1) }
+        }
     }
 }

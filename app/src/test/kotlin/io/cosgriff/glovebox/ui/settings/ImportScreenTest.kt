@@ -60,10 +60,13 @@ class ImportScreenTest {
         var opened: Long? = null
         var asked = 0
         picker.attach { asked++ }
-        val screenVm = vm()
+        val screenVm = vm(ImportRoute(id, torqueOnly = true))
         compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = { opened = it }, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = screenVm) }
 
         compose.waitForText(text(R.string.import_choose))
+        // Opened from the torque page: its own title and words.
+        compose.onNodeWithText(text(R.string.import_torque_title)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.import_torque_intro)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.import_choose)).performClick()
         assertEquals(1, asked)
 
@@ -119,7 +122,7 @@ class ImportScreenTest {
         val screenVm = vm()
         compose.show { ImportScreen(onBack = {}, onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> }, vm = screenVm) }
         compose.waitForText(text(R.string.import_sold))
-        pick("torque-specs.json")
+        pick("interval-schedule.json")
         compose.waitForText(text(R.string.import_needs_vehicle))
         compose.onNodeWithText("GTI", substring = true).performClick()
         compose.waitForText(text(R.string.import_sold_only_history))
@@ -141,7 +144,7 @@ class ImportScreenTest {
         val list = (1..vehicles).map { io.cosgriff.glovebox.data.db.VehicleEntity(id = it.toLong(), vin = null, year = 2019, make = "Toyota", model = "Model $it", createdOn = LocalDate.of(2023, 1, 1)) }
         compose.show {
             ImportContent(
-                list, list.firstOrNull()?.id, vehicleFixed = false, pickedName = pickedName, pickedPdf = pickedPdf, problem = problem, preview = preview, result = result,
+                list, list.firstOrNull()?.id, vehicleFixed = false, torqueOnly = false, pickedName = pickedName, pickedPdf = pickedPdf, problem = problem, preview = preview, result = result,
                 onBack = {}, onPick = onPick, onChooseVehicle = {}, onInclude = { _, _ -> }, onImport = onImport,
                 onOpenTorqueSpecs = {}, onOpenSchedule = onSchedule, onEnterLastDone = onLastDone, onOpenMilestones = onMilestones, onOpenHistory = { _, _ -> },
             )
@@ -286,7 +289,7 @@ class ImportScreenTest {
         compose.show {
             ImportContent(
                 emptyList<io.cosgriff.glovebox.data.db.VehicleEntity>().plus(io.cosgriff.glovebox.data.db.VehicleEntity(id = 1, vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = LocalDate.of(2023, 1, 1))),
-                1L, vehicleFixed = false, pickedName = "report.pdf", pickedPdf = true, problem = null, preview = ready, result = null,
+                1L, vehicleFixed = false, torqueOnly = false, pickedName = "report.pdf", pickedPdf = true, problem = null, preview = ready, result = null,
                 onBack = {}, onPick = {}, onChooseVehicle = {}, onInclude = { _, yes -> included = yes }, onImport = { _, mode, stop, keep -> imported = Triple(mode, stop, keep) },
                 onOpenTorqueSpecs = {}, onOpenSchedule = {}, onEnterLastDone = {}, onOpenMilestones = {}, onOpenHistory = { _, _ -> },
             )

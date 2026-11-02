@@ -8,8 +8,9 @@
       "radius": 28,
       "title": "9c · About",
       "w": 390,
-      "x": 2820,
-      "y": 5340
+      "x": 1410,
+      "y": 0,
+      "page": "settings"
     },
     "Archived.dc.html": {
       "h": 844,
@@ -17,8 +18,9 @@
       "radius": 28,
       "title": "4f · Archived vehicles",
       "w": 390,
-      "x": 470,
-      "y": 5340
+      "x": 3290,
+      "y": 0,
+      "page": "garage"
     },
     "BackupCreate.dc.html": {
       "h": 960,
@@ -26,8 +28,9 @@
       "radius": 28,
       "title": "9b · Create encrypted backup",
       "w": 390,
-      "x": 2350,
-      "y": 5340
+      "x": 940,
+      "y": 0,
+      "page": "settings"
     },
     "Decoded.dc.html": {
       "h": 844,
@@ -35,8 +38,9 @@
       "radius": 28,
       "title": "3 · NHTSA decode result",
       "w": 390,
-      "x": 940,
-      "y": 0
+      "x": 1880,
+      "y": 0,
+      "page": "setup"
     },
     "DeleteAll.dc.html": {
       "h": 940,
@@ -44,8 +48,9 @@
       "radius": 28,
       "title": "9d · Delete all data",
       "w": 390,
-      "x": 3760,
-      "y": 5340
+      "x": 1880,
+      "y": 0,
+      "page": "settings"
     },
     "DeleteRecord.dc.html": {
       "h": 844,
@@ -53,8 +58,9 @@
       "radius": 28,
       "title": "6d · Delete record + undo",
       "w": 390,
-      "x": 4230,
-      "y": 5340
+      "x": 2350,
+      "y": 0,
+      "page": "records"
     },
     "DeleteVehicle.dc.html": {
       "h": 900,
@@ -62,8 +68,9 @@
       "radius": 28,
       "title": "4g · Delete vehicle + its data",
       "w": 390,
-      "x": 3290,
-      "y": 5340
+      "x": 3760,
+      "y": 0,
+      "page": "garage"
     },
     "EditInterval.dc.html": {
       "h": 1080,
@@ -71,8 +78,9 @@
       "radius": 28,
       "title": "3c · Edit schedule item",
       "w": 390,
-      "x": 7520,
-      "y": 0
+      "x": 470,
+      "y": 0,
+      "page": "schedule"
     },
     "ExportSheet.dc.html": {
       "h": 844,
@@ -80,8 +88,9 @@
       "radius": 28,
       "title": "6b · Export sheet",
       "w": 390,
-      "x": 940,
-      "y": 5340
+      "x": 0,
+      "y": 0,
+      "page": "report"
     },
     "Garage.dc.html": {
       "h": 844,
@@ -89,8 +98,9 @@
       "radius": 28,
       "title": "4 · Garage / vehicle home",
       "w": 390,
-      "x": 1410,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "garage"
     },
     "GarageDark.dc.html": {
       "h": 844,
@@ -98,8 +108,9 @@
       "radius": 28,
       "title": "4 · Garage — dark",
       "w": 390,
-      "x": 1410,
-      "y": 1900
+      "x": 0,
+      "y": 1780,
+      "page": "garage"
     },
     "GarageEmpty.dc.html": {
       "h": 844,
@@ -107,8 +118,9 @@
       "radius": 28,
       "title": "4c · Garage — empty",
       "w": 390,
-      "x": 6580,
-      "y": 0
+      "x": 940,
+      "y": 0,
+      "page": "garage"
     },
     "GarageMulti.dc.html": {
       "h": 844,
@@ -116,8 +128,9 @@
       "radius": 28,
       "title": "4a · Garage — two vehicles",
       "w": 390,
-      "x": 4700,
-      "y": 0
+      "x": 470,
+      "y": 0,
+      "page": "garage"
     },
     "History.dc.html": {
       "h": 844,
@@ -125,8 +138,9 @@
       "radius": 28,
       "title": "6 · Service history",
       "w": 390,
-      "x": 1880,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "records"
     },
     "HistoryDark.dc.html": {
       "h": 844,
@@ -134,8 +148,9 @@
       "radius": 28,
       "title": "6 · History — dark",
       "w": 390,
-      "x": 1880,
-      "y": 1900
+      "x": 0,
+      "y": 2040,
+      "page": "records"
     },
     "Lock.dc.html": {
       "h": 844,
@@ -143,8 +158,9 @@
       "radius": 28,
       "title": "0 · Biometric unlock",
       "w": 390,
-      "x": 4230,
-      "y": 0
+      "x": 470,
+      "y": 0,
+      "page": "setup"
     },
     "LockDark.dc.html": {
       "h": 844,
@@ -152,8 +168,9 @@
       "radius": 28,
       "title": "0 · Unlock — dark",
       "w": 390,
-      "x": 4230,
-      "y": 1900
+      "x": 470,
+      "y": 1480,
+      "page": "setup"
     },
     "Main.dc.html": {
       "h": 844,
@@ -161,8 +178,9 @@
       "radius": 28,
       "title": "1 · Add vehicle (VIN)",
       "w": 390,
-      "x": 0,
-      "y": 0
+      "x": 940,
+      "y": 0,
+      "page": "setup"
     },
     "ManualAdd.dc.html": {
       "h": 980,
@@ -170,8 +188,9 @@
       "radius": 28,
       "title": "1a · Add without a VIN",
       "w": 390,
-      "x": 0,
-      "y": 5340
+      "x": 2820,
+      "y": 0,
+      "page": "setup"
     },
     "NavMap.dc.html": {
       "h": 1120,
@@ -179,7 +198,8 @@
       "title": "Navigation map",
       "w": 1440,
       "x": 0,
-      "y": 3840
+      "y": 0,
+      "page": "app"
     },
     "Notifications.dc.html": {
       "h": 960,
@@ -187,8 +207,9 @@
       "radius": 28,
       "title": "9a · Notifications",
       "w": 390,
-      "x": 1880,
-      "y": 5340
+      "x": 470,
+      "y": 0,
+      "page": "settings"
     },
     "Recalls.dc.html": {
       "h": 980,
@@ -196,8 +217,9 @@
       "radius": 28,
       "title": "8 · Recalls (scrolls)",
       "w": 390,
-      "x": 2820,
-      "y": 0
+      "x": 3290,
+      "y": 0,
+      "page": "schedule"
     },
     "Reminders.dc.html": {
       "h": 1060,
@@ -205,8 +227,9 @@
       "radius": 28,
       "title": "7 · Reminder rules (scrolls)",
       "w": 390,
-      "x": 2350,
-      "y": 0
+      "x": 1880,
+      "y": 0,
+      "page": "schedule"
     },
     "ReportPage1.dc.html": {
       "h": 1056,
@@ -214,7 +237,7 @@
       "paper": "letter",
       "title": "PDF report · page 1 (infographic)",
       "w": 816,
-      "x": 0,
+      "x": 470,
       "y": 0
     },
     "ReportPage2.dc.html": {
@@ -223,7 +246,7 @@
       "paper": "letter",
       "title": "PDF report · page 2 (service log)",
       "w": 816,
-      "x": 896,
+      "x": 1366,
       "y": 0
     },
     "Scan.dc.html": {
@@ -232,8 +255,9 @@
       "radius": 28,
       "title": "2 · Scan VIN",
       "w": 390,
-      "x": 470,
-      "y": 0
+      "x": 1410,
+      "y": 0,
+      "page": "setup"
     },
     "Schedule.dc.html": {
       "h": 1180,
@@ -241,8 +265,9 @@
       "radius": 28,
       "title": "3b · Recommended schedule (after decode)",
       "w": 390,
-      "x": 3290,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "schedule"
     },
     "Settings.dc.html": {
       "h": 1520,
@@ -250,8 +275,9 @@
       "radius": 28,
       "title": "9 · Settings — theme toggle is live",
       "w": 390,
-      "x": 3760,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "settings"
     },
     "SettingsDark.dc.html": {
       "h": 1520,
@@ -259,8 +285,9 @@
       "radius": 28,
       "title": "9 · Settings — dark",
       "w": 390,
-      "x": 3760,
-      "y": 1900
+      "x": 0,
+      "y": 2000,
+      "page": "settings"
     },
     "Snooze.dc.html": {
       "h": 844,
@@ -268,17 +295,19 @@
       "radius": 28,
       "title": "10a · Snooze sheet",
       "w": 390,
-      "x": 1410,
-      "y": 5340
+      "x": 2820,
+      "y": 0,
+      "page": "schedule"
     },
     "Specs.dc.html": {
-      "h": 1260,
+      "h": 1480,
       "is_interactive": true,
       "radius": 28,
       "title": "4e · Torque & fastener specs",
       "w": 390,
-      "x": 7990,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "torque"
     },
     "Timeline.dc.html": {
       "h": 1560,
@@ -286,8 +315,9 @@
       "radius": 28,
       "title": "6e · History — timeline view",
       "w": 390,
-      "x": 4700,
-      "y": 5340
+      "x": 470,
+      "y": 0,
+      "page": "records"
     },
     "Upcoming.dc.html": {
       "h": 844,
@@ -295,8 +325,9 @@
       "radius": 28,
       "title": "10 · Reminders tab (all vehicles)",
       "w": 390,
-      "x": 5170,
-      "y": 0
+      "x": 2350,
+      "y": 0,
+      "page": "schedule"
     },
     "UpdateMileage.dc.html": {
       "h": 844,
@@ -304,8 +335,9 @@
       "radius": 28,
       "title": "4b · Update mileage (sheet)",
       "w": 390,
-      "x": 5640,
-      "y": 0
+      "x": 1410,
+      "y": 0,
+      "page": "garage"
     },
     "VehicleDetails.dc.html": {
       "h": 1300,
@@ -313,8 +345,9 @@
       "radius": 28,
       "title": "4d · Vehicle details + mark as sold",
       "w": 390,
-      "x": 7050,
-      "y": 0
+      "x": 1880,
+      "y": 0,
+      "page": "garage"
     },
     "Welcome.dc.html": {
       "h": 844,
@@ -322,8 +355,9 @@
       "radius": 28,
       "title": "0a · First-run welcome / restore",
       "w": 390,
-      "x": 6110,
-      "y": 0
+      "x": 0,
+      "y": 0,
+      "page": "setup"
     },
     "PricesLog.dc.html": {
       "x": 0,
@@ -511,17 +545,17 @@
       "w": 390,
       "h": 2985,
       "title": "Log service — full screen: part rows, supplies, tax and fees",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogBlanks.dc.html": {
-      "x": 470,
+      "x": 940,
       "y": 0,
       "w": 390,
       "h": 3260,
       "title": "Log service — a figure left blank, a row with no total",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
@@ -531,7 +565,7 @@
       "w": 390,
       "h": 1250,
       "title": "Service record — part rows and charges",
-      "page": "parts",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
@@ -541,97 +575,97 @@
       "w": 390,
       "h": 1345,
       "title": "Service record — other charges worked out",
-      "page": "parts",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogDark.dc.html": {
       "x": 0,
-      "y": 3660,
+      "y": 3740,
       "w": 390,
       "h": 2985,
       "title": "Log service — full screen: part rows, supplies, tax and fees (dark)",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogBlanksDark.dc.html": {
-      "x": 470,
-      "y": 3660,
+      "x": 940,
+      "y": 3740,
       "w": 390,
       "h": 3260,
       "title": "Log service — a figure left blank, a row with no total (dark)",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "PartsRecordDark.dc.html": {
       "x": 940,
-      "y": 3660,
+      "y": 2040,
       "w": 390,
       "h": 1250,
       "title": "Service record — part rows and charges (dark)",
-      "page": "parts",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "PartsRecordOtherDark.dc.html": {
       "x": 1410,
-      "y": 3660,
+      "y": 2040,
       "w": 390,
       "h": 1345,
       "title": "Service record — other charges worked out (dark)",
-      "page": "parts",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "PartsEdit.dc.html": {
-      "x": 1880,
+      "x": 1410,
       "y": 0,
       "w": 390,
       "h": 3085,
       "title": "Edit service — odometer changed, what this changes",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "PartsEditDark.dc.html": {
-      "x": 1880,
-      "y": 3660,
+      "x": 1410,
+      "y": 3740,
       "w": 390,
       "h": 3085,
       "title": "Edit service — odometer changed, what this changes (dark)",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "ReceiptViewer.dc.html": {
-      "x": 2350,
+      "x": 1880,
       "y": 0,
       "w": 390,
       "h": 844,
       "title": "Receipt viewer (tap a photo on a record)",
-      "page": "parts",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogPick.dc.html": {
-      "x": 2820,
+      "x": 470,
       "y": 0,
       "w": 390,
       "h": 3060,
       "title": "Log service — picking a part: the job's lines, or type it as printed",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "PartsLogPickDark.dc.html": {
-      "x": 2820,
-      "y": 3660,
+      "x": 470,
+      "y": 3740,
       "w": 390,
       "h": 3060,
       "title": "Log service — picking a part (dark)",
-      "page": "parts",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
@@ -641,8 +675,9 @@
       "radius": 28,
       "title": "4h · Oil change interval (sheet)",
       "w": 390,
-      "x": 5170,
-      "y": 5340
+      "x": 940,
+      "y": 0,
+      "page": "schedule"
     },
     "OilIntervalDark.dc.html": {
       "h": 900,
@@ -650,188 +685,219 @@
       "radius": 28,
       "title": "4h · Oil change interval (sheet) — dark",
       "w": 390,
-      "x": 5640,
-      "y": 5340
+      "x": 940,
+      "y": 2180,
+      "page": "schedule"
     },
     "RecommendedLog.dc.html": {
-      "x": 0,
+      "x": 1880,
       "y": 0,
       "w": 390,
       "h": 2100,
       "title": "Log service — invoice read: recommended by the shop (keep, note or let go)",
-      "page": "recommended",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedLogDark.dc.html": {
-      "x": 0,
-      "y": 2500,
+      "x": 1880,
+      "y": 3740,
       "w": 390,
       "h": 2100,
       "title": "Log service — invoice read: recommended by the shop (keep, note or let go) (dark)",
-      "page": "recommended",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedLogDone.dc.html": {
-      "x": 470,
+      "x": 2350,
       "y": 0,
       "w": 390,
       "h": 1000,
       "title": "Log service — a ticked line matches an open recommendation: done with these?",
-      "page": "recommended",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedLogDoneDark.dc.html": {
-      "x": 470,
-      "y": 2500,
+      "x": 2350,
+      "y": 3740,
       "w": 390,
       "h": 1000,
       "title": "Log service — a ticked line matches an open recommendation: done with these? (dark)",
-      "page": "recommended",
+      "page": "log",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedHome.dc.html": {
-      "x": 940,
+      "x": 2820,
       "y": 0,
       "w": 390,
       "h": 844,
       "title": "Vehicle home — the shop recommendations row",
-      "page": "recommended",
+      "page": "garage",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedHomeDark.dc.html": {
-      "x": 940,
-      "y": 2500,
+      "x": 2820,
+      "y": 1780,
       "w": 390,
       "h": 844,
       "title": "Vehicle home — the shop recommendations row (dark)",
-      "page": "recommended",
+      "page": "garage",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedList.dc.html": {
-      "x": 1410,
+      "x": 2820,
       "y": 0,
       "w": 390,
       "h": 1500,
       "title": "Shop recommended — the vehicle's open list, close and undo",
-      "page": "recommended",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "RecommendedListDark.dc.html": {
-      "x": 1410,
-      "y": 2500,
+      "x": 2820,
+      "y": 2040,
       "w": 390,
       "h": 1500,
       "title": "Shop recommended — the vehicle's open list, close and undo (dark)",
-      "page": "recommended",
+      "page": "records",
       "is_interactive": true,
       "radius": 28
     },
     "Milestones.dc.html": {
-      "x": 0,
+      "x": 1410,
       "y": 0,
       "w": 390,
       "h": 1700,
       "title": "Milestones — the maker's table continued past its last column (#568)",
-      "page": "milestones",
+      "page": "schedule",
       "is_interactive": true,
       "radius": 28
     },
     "MilestonesDark.dc.html": {
-      "x": 470,
-      "y": 0,
+      "x": 1410,
+      "y": 2180,
       "w": 390,
       "h": 1700,
       "title": "Milestones — the maker's table continued past its last column (#568) (dark)",
-      "page": "milestones",
+      "page": "schedule",
       "is_interactive": true,
       "radius": 28
     },
     "ImportDone.dc.html": {
       "h": 1100,
       "is_interactive": true,
-      "page": "recommended",
+      "page": "records",
       "radius": 28,
       "title": "Import history — an imported record matches an open recommendation: done with these? (#593)",
       "w": 390,
-      "x": 1880,
+      "x": 3290,
       "y": 0
     },
     "ImportDoneDark.dc.html": {
       "h": 1100,
       "is_interactive": true,
-      "page": "recommended",
+      "page": "records",
       "radius": 28,
       "title": "Import history — an imported record matches an open recommendation: done with these? (#593) (dark)",
       "w": 390,
-      "x": 1880,
-      "y": 2500
+      "x": 3290,
+      "y": 2040
     },
     "GearboxAdd.dc.html": {
-      "x": 0,
+      "x": 2350,
       "y": 0,
       "w": 390,
       "h": 1000,
       "title": "Is this your vehicle? — the gearbox question (#549)",
-      "page": "gearbox",
+      "page": "setup",
       "is_interactive": true,
       "radius": 28
     },
     "GearboxManual.dc.html": {
-      "x": 470,
+      "x": 3290,
       "y": 0,
       "w": 390,
       "h": 1000,
       "title": "Add without a VIN — the gearbox question (#549)",
-      "page": "gearbox",
+      "page": "setup",
       "is_interactive": true,
       "radius": 28
     },
     "GearboxSheet.dc.html": {
-      "x": 940,
+      "x": 2350,
       "y": 0,
       "w": 390,
       "h": 900,
       "title": "Vehicle details — Gearbox (sheet, #549)",
-      "page": "gearbox",
+      "page": "garage",
       "is_interactive": true,
       "radius": 28
     },
     "GearboxAddDark.dc.html": {
-      "x": 0,
-      "y": 1300,
+      "x": 2350,
+      "y": 1480,
       "w": 390,
       "h": 1000,
       "title": "Is this your vehicle? — the gearbox question (#549) (dark)",
-      "page": "gearbox",
+      "page": "setup",
       "is_interactive": true,
       "radius": 28
     },
     "GearboxManualDark.dc.html": {
-      "x": 470,
-      "y": 1300,
+      "x": 3290,
+      "y": 1480,
       "w": 390,
       "h": 1000,
       "title": "Add without a VIN — the gearbox question (#549) (dark)",
-      "page": "gearbox",
+      "page": "setup",
       "is_interactive": true,
       "radius": 28
     },
     "GearboxSheetDark.dc.html": {
-      "x": 940,
-      "y": 1300,
+      "x": 2350,
+      "y": 1780,
       "w": 390,
       "h": 900,
       "title": "Vehicle details — Gearbox (sheet, #549) (dark)",
-      "page": "gearbox",
+      "page": "garage",
       "is_interactive": true,
       "radius": 28
+    },
+    "SpecsFiles.dc.html": {
+      "h": 1480,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Torque & fastener specs — Import a file, and Save as an import file once there are rows (#604)",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "ImportTorque.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Import torque specs — opened from the torque page; this vehicle and torque files only (#604)",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "ImportTorqueDark.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "page": "torque",
+      "radius": 28,
+      "title": "Import torque specs — opened from the torque page; this vehicle and torque files only (#604) (dark)",
+      "w": 390,
+      "x": 940,
+      "y": 1960
     }
   },
   "createdOnFiles": {
@@ -843,42 +909,138 @@
     "view": "canvas"
   },
   "notes": {
-    "darktitle": {
-      "kind": "title1",
-      "maxW": 3680,
-      "text": "Dark mode",
-      "w": 240,
-      "x": 1410,
-      "y": 1620
-    },
-    "flowtitle": {
-      "kind": "title1",
-      "maxW": 8000,
-      "text": "Glovebox — Android flow (2019 Toyota 4Runner)",
-      "w": 240,
+    "app-t": {
       "x": 0,
-      "y": -280
-    },
-    "moretitle": {
-      "kind": "title1",
-      "maxW": 5560,
-      "text": "Supporting screens & delete flows",
-      "w": 240,
-      "x": 0,
-      "y": 5060
-    },
-    "navtitle": {
+      "y": -280,
+      "text": "Overview · navigation map",
       "kind": "title1",
       "maxW": 1440,
-      "text": "Navigation map",
-      "w": 240,
+      "page": "app"
+    },
+    "setup-t": {
       "x": 0,
-      "y": 3560
+      "y": -280,
+      "text": "1 · Setup & unlock — light",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "setup"
+    },
+    "setup-d": {
+      "x": 0,
+      "y": 1200,
+      "text": "1 · Setup & unlock — dark",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "setup"
+    },
+    "garage-t": {
+      "x": 0,
+      "y": -280,
+      "text": "2 · Garage & vehicle — light",
+      "kind": "title1",
+      "maxW": 4150,
+      "page": "garage"
+    },
+    "garage-d": {
+      "x": 0,
+      "y": 1500,
+      "text": "2 · Garage & vehicle — dark",
+      "kind": "title1",
+      "maxW": 4150,
+      "page": "garage"
+    },
+    "schedule-t": {
+      "x": 0,
+      "y": -280,
+      "text": "3 · Schedule, reminders & recalls — light",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "schedule"
+    },
+    "schedule-d": {
+      "x": 0,
+      "y": 1900,
+      "text": "3 · Schedule, reminders & recalls — dark",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "schedule"
+    },
+    "log-t": {
+      "x": 0,
+      "y": -280,
+      "text": "4 · Log & edit service — light",
+      "kind": "title1",
+      "maxW": 2740,
+      "page": "log"
+    },
+    "log-d": {
+      "x": 0,
+      "y": 3460,
+      "text": "4 · Log & edit service — dark",
+      "kind": "title1",
+      "maxW": 2740,
+      "page": "log"
+    },
+    "records-t": {
+      "x": 0,
+      "y": -280,
+      "text": "5 · Records & history — light",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "records"
+    },
+    "records-d": {
+      "x": 0,
+      "y": 1760,
+      "text": "5 · Records & history — dark",
+      "kind": "title1",
+      "maxW": 3680,
+      "page": "records"
+    },
+    "torque-t": {
+      "x": 0,
+      "y": -280,
+      "text": "6 · Torque & fastener specs — light",
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "torque"
+    },
+    "torque-d": {
+      "x": 0,
+      "y": 1680,
+      "text": "6 · Torque & fastener specs — dark",
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "torque"
+    },
+    "report-t": {
+      "x": 0,
+      "y": -280,
+      "text": "7 · Export & PDF report",
+      "kind": "title1",
+      "maxW": 2182,
+      "page": "report"
+    },
+    "settings-t": {
+      "x": 0,
+      "y": -280,
+      "text": "8 · Settings & your data — light",
+      "kind": "title1",
+      "maxW": 2270,
+      "page": "settings"
+    },
+    "settings-d": {
+      "x": 0,
+      "y": 1720,
+      "text": "8 · Settings & your data — dark",
+      "kind": "title1",
+      "maxW": 2270,
+      "page": "settings"
     },
     "pricestitle": {
       "x": 0,
       "y": -280,
-      "text": "Labor & parts — states (full screens are on the Part rows page) — light",
+      "text": "Price states — reference only (full screens are on 4 · Log & edit service and 5 · Records & history) — light",
       "kind": "title1",
       "maxW": 4150,
       "page": "prices"
@@ -886,105 +1048,85 @@
     "pricesdark": {
       "x": 0,
       "y": 2420,
-      "text": "Labor & parts per job — dark",
+      "text": "Price states — dark",
       "kind": "title1",
       "maxW": 4150,
       "page": "prices"
-    },
-    "partstitle": {
-      "x": 0,
-      "y": -280,
-      "text": "Log service, edit & record — the screens to build (#502) — light",
-      "kind": "title1",
-      "maxW": 3210,
-      "page": "parts"
-    },
-    "partsdark": {
-      "x": 0,
-      "y": 3380,
-      "text": "Log service, edit & record — dark",
-      "kind": "title1",
-      "maxW": 3210,
-      "page": "parts"
-    },
-    "rectitle": {
-      "x": 0,
-      "y": -280,
-      "text": "Shop recommended (#572) — light",
-      "kind": "title1",
-      "maxW": 1800,
-      "page": "recommended"
-    },
-    "recdark": {
-      "x": 0,
-      "y": 2220,
-      "text": "Shop recommended (#572) — dark",
-      "kind": "title1",
-      "maxW": 1800,
-      "page": "recommended"
-    },
-    "miletitle": {
-      "x": 0,
-      "y": -280,
-      "text": "Milestones: the maker's table continued (#568) — light and dark",
-      "kind": "title1",
-      "maxW": 860,
-      "page": "milestones"
-    },
-    "geartitle": {
-      "x": 0,
-      "y": -280,
-      "text": "Gearbox: manual, automatic or dual-clutch (#549) — light",
-      "kind": "title1",
-      "maxW": 1330,
-      "page": "gearbox"
-    },
-    "geardark": {
-      "x": 0,
-      "y": 1100,
-      "text": "Gearbox (#549) — dark",
-      "kind": "title1",
-      "maxW": 1330,
-      "page": "gearbox"
     }
   },
   "order": [
+    "NavMap.dc.html",
+    "Welcome.dc.html",
+    "Lock.dc.html",
     "Main.dc.html",
     "Scan.dc.html",
     "Decoded.dc.html",
-    "Garage.dc.html",
-    "History.dc.html",
-    "Reminders.dc.html",
-    "Recalls.dc.html",
-    "Schedule.dc.html",
-    "Settings.dc.html",
-    "Lock.dc.html",
-    "GarageMulti.dc.html",
-    "Upcoming.dc.html",
-    "UpdateMileage.dc.html",
-    "Welcome.dc.html",
-    "GarageEmpty.dc.html",
-    "VehicleDetails.dc.html",
-    "EditInterval.dc.html",
-    "Specs.dc.html",
-    "GarageDark.dc.html",
-    "HistoryDark.dc.html",
-    "SettingsDark.dc.html",
-    "LockDark.dc.html",
-    "NavMap.dc.html",
+    "GearboxAdd.dc.html",
     "ManualAdd.dc.html",
+    "GearboxManual.dc.html",
+    "LockDark.dc.html",
+    "GearboxAddDark.dc.html",
+    "GearboxManualDark.dc.html",
+    "Garage.dc.html",
+    "GarageMulti.dc.html",
+    "GarageEmpty.dc.html",
+    "UpdateMileage.dc.html",
+    "VehicleDetails.dc.html",
+    "GearboxSheet.dc.html",
+    "RecommendedHome.dc.html",
     "Archived.dc.html",
-    "ExportSheet.dc.html",
+    "DeleteVehicle.dc.html",
+    "GarageDark.dc.html",
+    "GearboxSheetDark.dc.html",
+    "RecommendedHomeDark.dc.html",
+    "Schedule.dc.html",
+    "EditInterval.dc.html",
+    "OilInterval.dc.html",
+    "Milestones.dc.html",
+    "Reminders.dc.html",
+    "Upcoming.dc.html",
     "Snooze.dc.html",
+    "Recalls.dc.html",
+    "OilIntervalDark.dc.html",
+    "MilestonesDark.dc.html",
+    "PartsLog.dc.html",
+    "PartsLogPick.dc.html",
+    "PartsLogBlanks.dc.html",
+    "PartsEdit.dc.html",
+    "RecommendedLog.dc.html",
+    "RecommendedLogDone.dc.html",
+    "PartsLogDark.dc.html",
+    "PartsLogPickDark.dc.html",
+    "PartsLogBlanksDark.dc.html",
+    "PartsEditDark.dc.html",
+    "RecommendedLogDark.dc.html",
+    "RecommendedLogDoneDark.dc.html",
+    "History.dc.html",
+    "Timeline.dc.html",
+    "PartsRecord.dc.html",
+    "PartsRecordOther.dc.html",
+    "ReceiptViewer.dc.html",
+    "DeleteRecord.dc.html",
+    "RecommendedList.dc.html",
+    "ImportDone.dc.html",
+    "HistoryDark.dc.html",
+    "PartsRecordDark.dc.html",
+    "PartsRecordOtherDark.dc.html",
+    "RecommendedListDark.dc.html",
+    "ImportDoneDark.dc.html",
+    "Specs.dc.html",
+    "SpecsFiles.dc.html",
+    "ImportTorque.dc.html",
+    "ImportTorqueDark.dc.html",
+    "ExportSheet.dc.html",
+    "ReportPage1.dc.html",
+    "ReportPage2.dc.html",
+    "Settings.dc.html",
     "Notifications.dc.html",
     "BackupCreate.dc.html",
     "About.dc.html",
-    "DeleteVehicle.dc.html",
     "DeleteAll.dc.html",
-    "DeleteRecord.dc.html",
-    "Timeline.dc.html",
-    "ReportPage1.dc.html",
-    "ReportPage2.dc.html",
+    "SettingsDark.dc.html",
     "PricesLog.dc.html",
     "PricesLogDiy.dc.html",
     "PricesEdit.dc.html",
@@ -1002,69 +1144,48 @@
     "PricesLogUnder.dc.html",
     "PricesLogUnderDark.dc.html",
     "PricesRecordUnder.dc.html",
-    "PricesRecordUnderDark.dc.html",
-    "PartsLog.dc.html",
-    "PartsLogBlanks.dc.html",
-    "PartsRecord.dc.html",
-    "PartsRecordOther.dc.html",
-    "PartsLogDark.dc.html",
-    "PartsLogBlanksDark.dc.html",
-    "PartsRecordDark.dc.html",
-    "PartsRecordOtherDark.dc.html",
-    "PartsEdit.dc.html",
-    "PartsEditDark.dc.html",
-    "ReceiptViewer.dc.html",
-    "PartsLogPick.dc.html",
-    "PartsLogPickDark.dc.html",
-    "OilInterval.dc.html",
-    "OilIntervalDark.dc.html",
-    "RecommendedLog.dc.html",
-    "RecommendedLogDark.dc.html",
-    "RecommendedLogDone.dc.html",
-    "RecommendedLogDoneDark.dc.html",
-    "RecommendedHome.dc.html",
-    "RecommendedHomeDark.dc.html",
-    "RecommendedList.dc.html",
-    "RecommendedListDark.dc.html",
-    "Milestones.dc.html",
-    "MilestonesDark.dc.html",
-    "ImportDone.dc.html",
-    "ImportDoneDark.dc.html",
-    "GearboxAdd.dc.html",
-    "GearboxManual.dc.html",
-    "GearboxSheet.dc.html",
-    "GearboxAddDark.dc.html",
-    "GearboxManualDark.dc.html",
-    "GearboxSheetDark.dc.html"
+    "PricesRecordUnderDark.dc.html"
   ],
   "pages": [
     {
       "id": "app",
-      "name": "App screens"
+      "name": "Overview · navigation map"
+    },
+    {
+      "id": "setup",
+      "name": "1 · Setup & unlock"
+    },
+    {
+      "id": "garage",
+      "name": "2 · Garage & vehicle"
+    },
+    {
+      "id": "schedule",
+      "name": "3 · Schedule, reminders & recalls"
+    },
+    {
+      "id": "log",
+      "name": "4 · Log & edit service"
+    },
+    {
+      "id": "records",
+      "name": "5 · Records & history"
+    },
+    {
+      "id": "torque",
+      "name": "6 · Torque & fastener specs"
     },
     {
       "id": "report",
-      "name": "PDF report"
+      "name": "7 · Export & PDF report"
+    },
+    {
+      "id": "settings",
+      "name": "8 · Settings & your data"
     },
     {
       "id": "prices",
-      "name": "Labor & parts prices"
-    },
-    {
-      "id": "parts",
-      "name": "Log, edit & record"
-    },
-    {
-      "id": "recommended",
-      "name": "Shop recommended (#572)"
-    },
-    {
-      "id": "milestones",
-      "name": "Milestones continued (#568)"
-    },
-    {
-      "id": "gearbox",
-      "name": "Gearbox (#549)"
+      "name": "Reference · price states"
     }
   ],
   "title": "Glovebox"

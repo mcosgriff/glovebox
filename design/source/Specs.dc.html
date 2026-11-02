@@ -15,7 +15,7 @@ a{color:#C2410C}a:hover{color:#9A3412}
 input::placeholder{color:#6A6F76}
 </style>
 </helmet>
-<div style="width: 390px; min-height: 1260px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+<div style="width: 390px; min-height: 1480px; box-sizing: border-box; background: #F4F3EF; color: #17191C; font-family: 'IBM Plex Sans', system-ui, sans-serif; display: flex; flex-direction: column">
   <div style="display: flex; align-items: center; gap: 8px; padding: 12px 8px 0 8px">
     <a href="VehicleDetails.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #17191C">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
@@ -72,10 +72,20 @@ input::placeholder{color:#6A6F76}
 
     <button style="height: 52px; border-radius: 12px; border: 1.5px dashed #8A8E94; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: #17191C">+ Add a spec</button>
     <div style="font-size: 12px; line-height: 1.45; color: #5A5F66">Enter torque in any unit — it converts automatically. Always check the factory service manual; a wrong torque on lug nuts or drain plugs can cause damage.</div>
+
+    <!-- #604: torque specs are imported here, not from Settings. Export shows only once there are rows. -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <!-- ActionButtonGroup: shaped like the app's unit switch (pill ends, 1px outline, joined edges), but two actions. With no rows yet, Import is a whole pill on its own. -->
+      <div role="group" aria-label="Import or export a file" style="display: flex">
+        <button style="flex: 1; min-height: 48px; border-radius: 999px 0 0 999px; border: 1px solid #B9B6AE; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: #17191C">Import a file</button>
+        <button style="flex: 1; min-height: 48px; margin-left: -1px; border-radius: 0 999px 999px 0; border: 1px solid #B9B6AE; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: #17191C">Export a file</button>
+      </div>
+      <div style="font-size: 12px; line-height: 1.45; color: #5A5F66">Import adds rows from a JSON file, or fills in ones with no value yet; you see what it would change before anything is saved. Export saves these rows as a file to keep or pass to someone with the same model. It holds nothing else about your vehicle and isn't encrypted; whoever uses it should check each value against their own service manual.</div>
+    </div>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1260}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1480}}'>
 class Component extends DCLogic {
 constructor(props) {
 super(props);
