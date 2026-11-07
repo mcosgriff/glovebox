@@ -1,6 +1,6 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
-agp = "9.4.1"
+agp = "9.5.1"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 coroutines = "1.11.0"
@@ -19,9 +19,9 @@ glance = "1.2.0"
 
 room = "3.0.3"
 sqlite = "2.7.1"
-sqlcipher = "4.19.1"
-tink = "1.23.0"
-ktor = "3.6.0"
+sqlcipher = "4.20.0"
+tink = "1.24.0"
+ktor = "3.6.1"
 camerax = "1.6.2"
 pdf = "1.0.0-beta01"
 # Barcode reading. Pure Java with no network code; ML Kit was ruled out because it uploads usage logs.
@@ -51,10 +51,10 @@ junit = "4.13.2"
 # Gradle resolves, caches and verifies them instead (#585). Each Robolectric release names its own builds of
 # them, so these move together: on a Robolectric upgrade, take the versions from its `AndroidSdk` list.
 robolectric = "4.17"
-robolectric-androidAll-sdk35 = "15-robolectric-13954326-i7"
-robolectric-androidAll-sdk29 = "10-robolectric-5803371-i7"
+robolectric-androidAll-sdk35 = "17-robolectric-15733970-i7"
+robolectric-androidAll-sdk29 = "17-robolectric-15733970-i7"
 # Screenshot tests (#233) on the JVM through Robolectric: test only, nothing of it ships.
-roborazzi = "1.76.0"
+roborazzi = "1.77.0"
 # Test coverage for Codecov (CI only; nothing of it ships).
 kover = "0.9.11"
 jsonSchemaValidator = "3.0.8"
