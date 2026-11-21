@@ -1,5 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
+import io.cosgriff.glovebox.data.db.DraftItem
 import io.cosgriff.glovebox.domain.OdometerInput
 import io.cosgriff.glovebox.ui.components.BorderedCard
 import io.cosgriff.glovebox.ui.components.SectionLabel

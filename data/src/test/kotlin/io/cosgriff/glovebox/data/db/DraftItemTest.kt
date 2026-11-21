@@ -1,4 +1,4 @@
-package io.cosgriff.glovebox.ui.schedule
+package io.cosgriff.glovebox.data.db
 
 import io.cosgriff.glovebox.domain.Interval
 import org.junit.Assert.assertEquals

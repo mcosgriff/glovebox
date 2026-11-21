@@ -16,7 +16,6 @@ import io.cosgriff.glovebox.domain.DocumentProblem
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.WhatItTakes
-import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -26,7 +25,6 @@ import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
-import io.cosgriff.glovebox.domain.SavedScheduleItem
 import io.cosgriff.glovebox.domain.SavedTorqueSpec
 import io.cosgriff.glovebox.domain.Torque
 import io.cosgriff.glovebox.domain.TorqueCategory
@@ -239,22 +237,6 @@ fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
     source = TorqueSource.of(source),
     note = note,
 )
-
-/** A schedule item as an import or a file written from the vehicle sees it. */
-fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
-    id = id,
-    name = name,
-    normal = savedInterval(intervalMiles, intervalMonths),
-    severe = savedInterval(severeMiles, severeMonths),
-    rule = this.rule,
-    templateKey = templateKey,
-    tracked = tracked,
-    service = service,
-    firstAt = firstMiles,
-    severeOnly = severeOnly,
-)
-
-private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 
 /** Everything entered under "What it takes", as `:domain` reads it. */
 fun VehicleEntity.whatItTakes(): WhatItTakes = WhatItTakes(

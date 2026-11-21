@@ -25,8 +25,9 @@ import io.cosgriff.glovebox.domain.actual
 import io.cosgriff.glovebox.domain.asReadOn
 
 /**
- * Where a table added from a maker's list started (`vehicles.milestonesKnownList`): [credit] is that list's
- * ([KnownSchedules.credit]), null once the list no longer ships.
+ * Where a table added from a maker's list started (`vehicles.milestonesKnownList`), or a vehicle's schedule items
+ * (`schedule_items.knownList`, [ScheduleItems.startedFrom][io.cosgriff.glovebox.data.db.ScheduleItems.startedFrom]):
+ * [credit] is that list's ([KnownSchedules.credit]), null once the list no longer ships.
  */
 data class StartedFrom(val credit: String?)
 

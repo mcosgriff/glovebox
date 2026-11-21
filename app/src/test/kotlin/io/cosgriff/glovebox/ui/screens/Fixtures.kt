@@ -101,7 +101,7 @@ import io.cosgriff.glovebox.ui.history.HistoryState
 import io.cosgriff.glovebox.ui.history.SortPreview
 import io.cosgriff.glovebox.ui.history.RecordDetail
 import io.cosgriff.glovebox.ui.history.WorkLine
-import io.cosgriff.glovebox.ui.schedule.DraftItem
+import io.cosgriff.glovebox.data.db.DraftItem
 import io.cosgriff.glovebox.ui.schedule.ItemLog
 import io.cosgriff.glovebox.ui.schedule.MilestonesState
 import io.cosgriff.glovebox.ui.schedule.ScheduleState

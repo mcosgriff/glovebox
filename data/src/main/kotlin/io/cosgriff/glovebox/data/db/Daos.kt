@@ -441,6 +441,43 @@ interface ScheduleDao {
     @Query("UPDATE schedule_items SET tracked = 0 WHERE id IN (:ids)")
     suspend fun stopTracking(ids: List<Long>)
 
+    @Query("UPDATE schedule_items SET tracked = :tracked WHERE id = :id")
+    suspend fun setTracked(id: Long, tracked: Boolean)
+
+    @Query("UPDATE schedule_items SET tracked = :tracked WHERE vehicleId = :vehicleId")
+    suspend fun setTrackedFor(vehicleId: Long, tracked: Boolean)
+
+    @Query("UPDATE schedule_items SET useSevere = :on WHERE vehicleId = :vehicleId")
+    suspend fun setSevereUseFor(vehicleId: Long, on: Boolean)
+
+    /** Only items with an E85 interval: on any other, the switch changes nothing and stays off. */
+    @Query("UPDATE schedule_items SET useE85 = :on WHERE vehicleId = :vehicleId AND (e85Miles IS NOT NULL OR e85Months IS NOT NULL)")
+    suspend fun setE85UseFor(vehicleId: Long, on: Boolean)
+
+    /** What the item editor saves, and nothing else: a snooze, the template key and the list it came from stay. */
+    @Query(
+        "UPDATE schedule_items SET name = :name, intervalMiles = :intervalMiles, intervalMonths = :intervalMonths, " +
+            "severeMiles = :severeMiles, severeMonths = :severeMonths, useSevere = :useSevere, e85Miles = :e85Miles, " +
+            "e85Months = :e85Months, useE85 = :useE85, ruleOverride = :ruleOverride, tracked = :tracked, " +
+            "firstMiles = :firstMiles, service = :service WHERE id = :id",
+    )
+    suspend fun edit(
+        id: Long,
+        name: String,
+        intervalMiles: Int?,
+        intervalMonths: Int?,
+        severeMiles: Int?,
+        severeMonths: Int?,
+        useSevere: Boolean,
+        e85Miles: Int?,
+        e85Months: Int?,
+        useE85: Boolean,
+        ruleOverride: String?,
+        tracked: Boolean,
+        firstMiles: Int?,
+        service: String?,
+    )
+
     /** Typical items only, and only those no logged line was ever saved against. */
     @Query(
         "DELETE FROM schedule_items WHERE id IN (:ids) AND templateKey IS NOT NULL " +
