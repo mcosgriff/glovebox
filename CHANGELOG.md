@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.38.0](https://github.com/mcosgriff/glovebox/compare/v0.37.0...v0.38.0) (2026-11-21)
+
+
+### Features
+
+* **torque:** import and export torque specs from the vehicle's torque page ([#606](https://github.com/mcosgriff/glovebox/issues/606)) ([2db53dd](https://github.com/mcosgriff/glovebox/commit/2db53dd66d820a0e5c43c5efa2fe1d7b45d86fc1))
+* **vehicles:** Delete vehicle lists milestones, shop recommendations and recall names ([#635](https://github.com/mcosgriff/glovebox/issues/635)) ([b61de3a](https://github.com/mcosgriff/glovebox/commit/b61de3a4f9212c91eb14d05956fb43812b3be400))
+* **vehicles:** Delete vehicle lists milestones, shop recommendations and recall names ([#652](https://github.com/mcosgriff/glovebox/issues/652)) ([b61de3a](https://github.com/mcosgriff/glovebox/commit/b61de3a4f9212c91eb14d05956fb43812b3be400))
+* **vehicles:** looking a VIN up again fills a blank body style and powertrain ([#644](https://github.com/mcosgriff/glovebox/issues/644)) ([#651](https://github.com/mcosgriff/glovebox/issues/651)) ([d13ef3f](https://github.com/mcosgriff/glovebox/commit/d13ef3ffbd84c7f13790846a60f99eca291948ed))
+
+
+### Bug Fixes
+
+* **schedule:** a severe interval with miles only shows the normal months on setup and in the editor ([#616](https://github.com/mcosgriff/glovebox/issues/616)) ([#626](https://github.com/mcosgriff/glovebox/issues/626)) ([cb9eb5f](https://github.com/mcosgriff/glovebox/commit/cb9eb5faba24d08710ad70ecf53ca86f6b7091b1))
+
+
+### Code Refactoring
+
+* **import:** a history-import planner, out of ImportViewModel ([#618](https://github.com/mcosgriff/glovebox/issues/618)) ([#648](https://github.com/mcosgriff/glovebox/issues/648)) ([7934ee5](https://github.com/mcosgriff/glovebox/commit/7934ee59fa575dc7943a7dcc8d99eba15dfe3048))
+* **milestones:** the milestones view built in :data, not in its ViewModel ([#621](https://github.com/mcosgriff/glovebox/issues/621)) ([#625](https://github.com/mcosgriff/glovebox/issues/625)) ([caccdb2](https://github.com/mcosgriff/glovebox/commit/caccdb22537bd5b596729f6fe56a0c3790b9f245))
+* **schedule:** one module that builds and writes a vehicle's schedule items ([#620](https://github.com/mcosgriff/glovebox/issues/620)) ([#632](https://github.com/mcosgriff/glovebox/issues/632)) ([80ef8a3](https://github.com/mcosgriff/glovebox/commit/80ef8a355e946c7d8889ce882c02fd5f4457e101))
+* **service-log:** "what would move" takes the records that will be saved ([#627](https://github.com/mcosgriff/glovebox/issues/627)) ([80b25cc](https://github.com/mcosgriff/glovebox/commit/80b25cc491c572825db0da650e16b3c383086389))
+* **service-log:** Log service options say whether they are catalog lines ([#622](https://github.com/mcosgriff/glovebox/issues/622)) ([#647](https://github.com/mcosgriff/glovebox/issues/647)) ([851e312](https://github.com/mcosgriff/glovebox/commit/851e31238d41ea6194d2d2bfd3eb95307fcc4466))
+* **service-log:** the service log writer takes a service record ([#617](https://github.com/mcosgriff/glovebox/issues/617)) ([#628](https://github.com/mcosgriff/glovebox/issues/628)) ([c819ac9](https://github.com/mcosgriff/glovebox/commit/c819ac9e95204256de7a153888523eebecdf967e))
+* **vehicles:** one answer to what a vehicle owns, for Delete vehicle ([#624](https://github.com/mcosgriff/glovebox/issues/624)) ([#629](https://github.com/mcosgriff/glovebox/issues/629)) ([fa3f8d2](https://github.com/mcosgriff/glovebox/commit/fa3f8d2f4b78f815b635d82143fd5d3529e4f23d))
+* **vehicles:** one module that refreshes a vehicle from its VIN ([#623](https://github.com/mcosgriff/glovebox/issues/623)) ([#630](https://github.com/mcosgriff/glovebox/issues/630)) ([9d51ddb](https://github.com/mcosgriff/glovebox/commit/9d51ddb5545bbef15e70ed47895e28da22e5fac2))
+
+
+### Build System
+
+* **deps:** lifecycle 2.11.1 and the other versions lint asks for ([#631](https://github.com/mcosgriff/glovebox/issues/631)) ([e3d158d](https://github.com/mcosgriff/glovebox/commit/e3d158da73836a2d1eadf6d4d4ffb61b05736fd1))
+
 ## [0.37.0](https://github.com/mcosgriff/glovebox/compare/v0.36.0...v0.37.0) (2026-11-01)
 
 
