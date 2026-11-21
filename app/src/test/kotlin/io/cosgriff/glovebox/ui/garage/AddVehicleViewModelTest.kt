@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
-import io.cosgriff.glovebox.ui.components.DecodedField
+import io.cosgriff.glovebox.data.nhtsa.DecodedField
 import io.cosgriff.glovebox.domain.DecodeQuality
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.BodyStyle

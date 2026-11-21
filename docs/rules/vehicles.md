@@ -6,13 +6,16 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   can be corrected. **A vehicle is never saved without a real year, make and model** (`VinDecode.quality`), so an
   unidentified VIN is fixed or filled in by hand. The drivetrain is picked, never preselected. The vehicle is
   saved before the schedule screen, so Back from there keeps it.
+- **A vPIC decode becomes a vehicle's columns in one place, `VehicleFromVin` (`:data`, #623)**, for both adding by
+  VIN (`start`, `withDecoded`) and the lookup below (`lookUp`, `fill`). A new decoded field goes in its
+  `DecodedField` and mappings there, in `fillFromVin` if the lookup fills it, and in `:app`'s label.
 - Adding without a VIN (`ManualAddScreen`): makes and models from vPIC (`makes` sends nothing about the vehicle,
   `models` only make and year); every picker also takes typed text. A VIN added later from Vehicle details isn't
   decoded on its own; only the owner's lookup below fills anything from it.
 - Looking a saved VIN up again (Vehicle details, #462) happens only on the owner's tap. **It sends the VIN alone,
   never `modelyear`:** vPIC answers with whatever year it is sent, which would hide a VIN that is another vehicle's.
   It offers only fields that are empty here (`VinRefresh.additions`), never the drivetrain (picked, as above), and
-  fills them with `VehicleDao.fillFromVin`, which writes a column only while it is still null or blank. **It never
+  fills them with `VehicleFromVin.fill` through `VehicleDao.fillFromVin` (its one caller), which writes a column only while it is still null or blank. **It never
   replaces a value**, and it fills nothing when the decode's year or make differ from the vehicle's
   (`VinRefresh.sameVehicle`).
 - VIN scanning (`ScanVinScreen`, `CameraFeed.kt`): barcodes through zxing-cpp, printed VINs through Tesseract.

@@ -1,6 +1,6 @@
 package io.cosgriff.glovebox.ui.garage
 
-import io.cosgriff.glovebox.ui.components.DecodedField
+import io.cosgriff.glovebox.data.nhtsa.DecodedField
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.ui.test.SemanticsNodeInteraction

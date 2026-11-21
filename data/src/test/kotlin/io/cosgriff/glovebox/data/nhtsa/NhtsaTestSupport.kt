@@ -32,6 +32,10 @@ class FakeNhtsa {
 fun MockRequestHandleScope.json(body: String, status: HttpStatusCode = HttpStatusCode.OK): HttpResponseData =
     respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
 
+/** vPIC's DecodeVinValues answer with [fields], in vPIC's names ("ModelYear" to "2019"); every value made up. */
+fun decodeJson(vararg fields: Pair<String, String>) =
+    """{"Count":1,"Message":"Results returned successfully","Results":[{${fields.joinToString(",") { (k, v) -> "\"$k\":\"$v\"" }}}]}"""
+
 /** A recall as NHTSA's recallsByVehicle lists it; every figure made up. */
 fun recallJson(
     campaign: String,

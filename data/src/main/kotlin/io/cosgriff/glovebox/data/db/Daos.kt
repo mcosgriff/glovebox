@@ -56,7 +56,8 @@ interface VehicleDao {
     /**
      * The VIN looked up again (#462): each column is filled only while it is empty (null or blank), in the one
      * statement, so nothing the owner typed or corrected is replaced, not even an edit saved while the lookup was
-     * out. The drivetrain isn't here: it is the owner's pick, never filled for them.
+     * out. The drivetrain isn't here: it is the owner's pick, never filled for them. Written only through
+     * `VehicleFromVin.fill`, which maps the lookup's fields to these columns.
      */
     @Query(
         """UPDATE vehicles SET bodyClass = COALESCE(NULLIF(TRIM(bodyClass), ''), :bodyClass),

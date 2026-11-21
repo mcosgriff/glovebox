@@ -17,12 +17,9 @@ class NhtsaClientTest {
     /** Made up, with a check digit that works out; it belongs to no one. */
     private val vin = "1M8GDM9AXKP042788"
 
-    private fun decodeAnswer(vararg fields: Pair<String, String>) =
-        """{"Count":1,"Message":"Results returned successfully","Results":[{${fields.joinToString(",") { (k, v) -> "\"$k\":\"$v\"" }}}]}"""
-
     @Test
     fun `a decode sends the VIN and nothing else, to vPIC`() = runBlocking {
-        nhtsa.answer = { json(decodeAnswer("ModelYear" to "2019", "Make" to "TOYOTA", "Model" to "4Runner")) }
+        nhtsa.answer = { json(decodeJson("ModelYear" to "2019", "Make" to "TOYOTA", "Model" to "4Runner")) }
         nhtsa.client.decodeVin(vin)
 
         val url = nhtsa.requests.single().url
@@ -35,7 +32,7 @@ class NhtsaClientTest {
     fun `a decode keeps vPIC's values, with blanks as nothing and figures said the way people say them`() = runBlocking {
         nhtsa.answer = {
             json(
-                decodeAnswer(
+                decodeJson(
                     "ModelYear" to "2019", "Make" to "TOYOTA", "Model" to "4Runner", "Trim" to " SR5 ", "BodyClass" to "Sport Utility Vehicle (SUV)",
                     "DriveType" to "4WD/4-Wheel Drive/4x4", "DisplacementL" to "3.956", "EngineCylinders" to "6", "EngineModel" to "",
                     "EngineHP" to "270", "FuelTypePrimary" to "Gasoline", "FuelTypeSecondary" to "", "ElectrificationLevel" to "",
@@ -60,7 +57,7 @@ class NhtsaClientTest {
 
     @Test
     fun `a decode keeps the engine code, the tire pressure sensors and the chassis code`() = runBlocking {
-        nhtsa.answer = { json(decodeAnswer("ModelYear" to "2019", "EngineModel" to "1GR-FE", "TPMS" to "Direct", "Series" to "GRN280L/GRN285L")) }
+        nhtsa.answer = { json(decodeJson("ModelYear" to "2019", "EngineModel" to "1GR-FE", "TPMS" to "Direct", "Series" to "GRN280L/GRN285L")) }
 
         val decoded = nhtsa.client.decodeVin(vin)
 
@@ -71,7 +68,7 @@ class NhtsaClientTest {
 
     @Test
     fun `a partial decode leaves what vPIC didn't say empty`() = runBlocking {
-        nhtsa.answer = { json(decodeAnswer("ModelYear" to "", "DisplacementL" to "about two", "TransmissionStyle" to "Manual/Standard", "PlantCountry" to "MEXICO", "ErrorCode" to "6")) }
+        nhtsa.answer = { json(decodeJson("ModelYear" to "", "DisplacementL" to "about two", "TransmissionStyle" to "Manual/Standard", "PlantCountry" to "MEXICO", "ErrorCode" to "6")) }
 
         val decoded = nhtsa.client.decodeVin(vin)
 
@@ -85,7 +82,7 @@ class NhtsaClientTest {
 
     @Test
     fun `a decode with no transmission or plant leaves them out`() = runBlocking {
-        nhtsa.answer = { json(decodeAnswer("ModelYear" to "2013")) }
+        nhtsa.answer = { json(decodeJson("ModelYear" to "2013")) }
         val decoded = nhtsa.client.decodeVin(vin)
         assertNull(decoded.transmission)
         assertNull(decoded.plant)
