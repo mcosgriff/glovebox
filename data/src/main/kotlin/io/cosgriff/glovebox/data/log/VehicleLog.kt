@@ -132,9 +132,9 @@ fun VehicleEntity.log(
 /**
  * The tracked ones of [items] as reminders ([TrackedItem.of]): what each counts by, with the vehicle's own oil interval
  * ([ownOil]) and Glovebox's oil months in it (#517, ADR-0015). Read it through [VehicleLog.tracked]; this is for a
- * caller that needs another [swap], such as milestones (by actual mileage, so none).
+ * caller that needs another [swap]: only `VehicleMilestones` (by actual mileage, so none, #621).
  */
-fun VehicleEntity.tracked(items: List<ScheduleItemEntity>, defaultRule: DueRule, swap: ClusterSwap? = clusterSwap()): List<TrackedItem> {
+internal fun VehicleEntity.tracked(items: List<ScheduleItemEntity>, defaultRule: DueRule, swap: ClusterSwap? = clusterSwap()): List<TrackedItem> {
     val unit = DistanceUnit.of(distanceUnit)
     val own = ownOil()
     val gearbox = Gearboxes.of(this.gearbox)

@@ -12,7 +12,6 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
@@ -34,7 +33,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,8 +41,9 @@ import org.robolectric.annotation.Config
 import java.time.LocalDate
 
 /**
- * The Milestones screen over a real database, through its ViewModel. On the default screen size, since the
- * repeat dialog's text field never settles on the tall one under Robolectric.
+ * The Milestones screen over a real database, through its ViewModel: what reaches the screen and what its buttons
+ * write. Which milestones there are, and which of their jobs are done, is `VehicleMilestonesTest`'s (#621). On the
+ * default screen size, since the repeat dialog's text field never settles on the tall one under Robolectric.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
@@ -156,13 +155,9 @@ class MilestonesScreenTest {
     fun `the user's table is edited, repeated, saved as a file and removed`() {
         val id = world.vehicle(ScheduleFixtures.hatch(), firstReading = 12_000)
         table(id, 15_000 to listOf("Replace cabin filter"), 30_000 to listOf("Inspect brakes", "Replace engine air filter"))
-        // Logged under the job's own name, so it completes the job.
-        val record = world.record(id, LocalDate.of(2025, 3, 1), 14_000, line("Replace cabin filter"))
         show(id)
         scrollTo(text(R.string.milestones_intro_table))
 
-        // The next milestone is open: its job is done, from that record.
-        compose.onNodeWithContentDescription(text(R.string.milestones_all_completed)).assertExists()
         compose.onAllNodesWithText(text(R.string.milestones_edit)).onFirst().performClick()
         compose.onNodeWithText(text(R.string.milestone_edit_title)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.milestone_or_months)).performTextInput("12")
@@ -207,7 +202,6 @@ class MilestonesScreenTest {
         compose.until { tableRows(id).isEmpty() }
         compose.until { vm.state.value?.fromTable == false }
         scrollTo(text(R.string.milestones_intro_generated))
-        assertTrue(record > 0)
     }
 
     @Test
