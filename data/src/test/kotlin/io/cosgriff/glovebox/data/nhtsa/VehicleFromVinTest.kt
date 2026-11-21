@@ -68,7 +68,8 @@ class VehicleFromVinTest {
         assertEquals(Powertrain.HYBRID, start.powertrain)
         assertEquals(BodyStyle.HATCHBACK, start.bodyStyle)
 
-        val v = saved(testVehicle(vin = vin).withDecoded(start.fields))
+        // As adding a vehicle saves it, with the body style and powertrain the owner kept.
+        val v = saved(testVehicle(vin = vin).withDecoded(start.fields).copy(bodyStyle = start.bodyStyle?.name, powertrain = start.powertrain?.name))
         assertEquals(
             listOf("Hatchback/Liftback/Notchback", "4WD/4-Wheel Drive/4x4", "4.0L 6-cyl", "1GR-XX", "Gasoline", "5-speed Automatic", "Direct", "XYZ100L"),
             listOf(v.bodyClass, v.drivetrain, v.engine, v.engineCode, v.fuel, v.transmission, v.tpms, v.series),
@@ -149,9 +150,16 @@ class VehicleFromVinTest {
 
         // Setup writes the owner's pick of engine while the dialog is open.
         vehicles.setEngineIfBlank(v.id, "4.0L V6")
-        fromVin.fill(v.id, found.additions)
+        fromVin.fill(v.id, found)
         // A second fill finds nothing empty to write.
-        fromVin.fill(v.id, mapOf(DecodedField.BODY to "Pickup", DecodedField.TPMS to "Indirect", DecodedField.SERIES to "OTHER"))
+        fromVin.fill(
+            v.id,
+            VinLookupResult.Found(
+                mapOf(DecodedField.BODY to "Pickup", DecodedField.TPMS to "Indirect", DecodedField.SERIES to "OTHER"),
+                bodyStyle = BodyStyle.SEDAN,
+                powertrain = Powertrain.PLUG_IN,
+            ),
+        )
 
         val after = vehicles.byId(v.id)!!
         assertEquals("4.0L V6", after.engine)
@@ -161,12 +169,54 @@ class VehicleFromVinTest {
         assertEquals("5-speed Automatic", after.transmission)
         assertEquals("Direct", after.tpms)
         assertEquals("XYZ100L", after.series)
-        // Only the body class is filled: no body style or powertrain is derived from it, as adding a vehicle
-        // does (VehicleFromVin.start). Whether a lookup should is an open question (#623); this is how it is.
-        assertNull(after.bodyStyle)
-        assertNull(after.powertrain)
+        // The body style and powertrain vPIC says plainly, as adding a vehicle sets them (#644).
+        assertEquals(BodyStyle.HATCHBACK.name, after.bodyStyle)
+        assertEquals(Powertrain.HYBRID.name, after.powertrain)
         // The drivetrain is the owner's pick, never filled from a lookup, even when handed one.
-        fromVin.fill(v.id, mapOf(DecodedField.DRIVE to "4WD/4-Wheel Drive/4x4"))
+        fromVin.fill(v.id, VinLookupResult.Found(mapOf(DecodedField.DRIVE to "4WD/4-Wheel Drive/4x4")))
         assertNull(vehicles.byId(v.id)!!.drivetrain)
+    }
+
+    @Test
+    fun `a blank body style or powertrain is offered from the decode even when the body class is already here`() = runBlocking {
+        answer(decode + mapOf("BodyClass" to "Convertible/Cabriolet", "FuelTypePrimary" to "Gasoline", "FuelTypeSecondary" to "Ethanol (E85)"))
+        val v = saved(testVehicle(vin = vin).copy(bodyClass = "Convertible/Cabriolet", fuel = "Gasoline"))
+
+        val found = fromVin.lookUp(v) as VinLookupResult.Found
+        assertNull(found.additions[DecodedField.BODY])
+        assertEquals(BodyStyle.CONVERTIBLE, found.bodyStyle)
+        assertEquals(Powertrain.FLEX_FUEL, found.powertrain)
+
+        fromVin.fill(v.id, found)
+        val after = vehicles.byId(v.id)!!
+        assertEquals(BodyStyle.CONVERTIBLE.name, after.bodyStyle)
+        assertEquals(Powertrain.FLEX_FUEL.name, after.powertrain)
+        // Then there is nothing left to offer.
+        val again = fromVin.lookUp(after) as VinLookupResult.Found
+        assertNull(again.bodyStyle)
+        assertNull(again.powertrain)
+    }
+
+    @Test
+    fun `the owner's body style and powertrain are never offered over, nor replaced by a fill`() = runBlocking {
+        answer(decode + mapOf("BodyClass" to "Hatchback/Liftback/Notchback", "ElectrificationLevel" to "Strong HEV (Hybrid Electric Vehicle)"))
+        // Picked when the vehicle was added: not what vPIC says.
+        val picked = saved(testVehicle(vin = vin).copy(bodyStyle = BodyStyle.SEDAN.name, powertrain = Powertrain.GAS.name))
+        val offered = fromVin.lookUp(picked) as VinLookupResult.Found
+        assertNull(offered.bodyStyle)
+        assertNull(offered.powertrain)
+
+        // Blank when looked up; setup writes the owner's pick while the dialog is open, and the fill leaves it.
+        val blank = saved(testVehicle(vin = vin))
+        val found = fromVin.lookUp(blank) as VinLookupResult.Found
+        assertEquals(BodyStyle.HATCHBACK, found.bodyStyle)
+        assertEquals(Powertrain.HYBRID, found.powertrain)
+        vehicles.setBodyStyleIfBlank(blank.id, BodyStyle.SEDAN.name)
+        vehicles.setPowertrainIfBlank(blank.id, Powertrain.PLUG_IN.name)
+        fromVin.fill(blank.id, found)
+
+        val after = vehicles.byId(blank.id)!!
+        assertEquals(BodyStyle.SEDAN.name, after.bodyStyle)
+        assertEquals(Powertrain.PLUG_IN.name, after.powertrain)
     }
 }

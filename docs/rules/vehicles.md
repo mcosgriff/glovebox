@@ -17,7 +17,9 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
   It offers only fields that are empty here (`VinRefresh.additions`), never the drivetrain (picked, as above), and
   fills them with `VehicleFromVin.fill` through `VehicleDao.fillFromVin` (its one caller), which writes a column only while it is still null or blank. **It never
   replaces a value**, and it fills nothing when the decode's year or make differ from the vehicle's
-  (`VinRefresh.sameVehicle`).
+  (`VinRefresh.sameVehicle`). It also offers a body style and powertrain while the vehicle has none (#644), by the
+  same rules as adding by VIN (`VehicleFromVin.start`: only what vPIC says plainly), listed in the dialog with the
+  rest and written with `setBodyStyleIfBlank` / `setPowertrainIfBlank`, so the owner's pick is never replaced.
 - VIN scanning (`ScanVinScreen`, `CameraFeed.kt`): barcodes through zxing-cpp, printed VINs through Tesseract.
   **A VIN is only ever a 17-character run that passes the check digit;** nothing slides along longer text and no
   substitutions are tried (either would pass a wrong VIN about one time in eleven). The only repair is I/O/Q to

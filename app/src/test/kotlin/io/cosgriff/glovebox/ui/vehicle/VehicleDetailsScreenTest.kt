@@ -32,6 +32,7 @@ import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.LicensePlates
 import io.cosgriff.glovebox.domain.MakerDocuments
+import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.TakesItem
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.ui.VehicleDetailsRoute
@@ -108,16 +109,20 @@ class VehicleDetailsScreenTest {
     /** What is offered, sent and filled is VehicleFromVin's (VehicleFromVinTest); this is the screen's wiring to it. */
     @Test
     fun `looking the VIN up again shows what it would add, and fills it when confirmed`() {
+        // A powertrain vPIC says plainly is offered and filled with the rest (#644).
+        nhtsa.decode = truckDecode + ("FuelTypeSecondary" to "Ethanol (E85)")
         val id = g.add(VehicleFixtures.truck)
         show(id)
         tap(g.string(R.string.details_vin_lookup))
         compose.awaitThat { compose.onAllNodes(hasText(g.string(R.string.details_vin_lookup_add))).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("1GR-XX").assertExists()
         compose.onNodeWithText("XYZ100L").assertExists()
+        text(R.string.powertrain_flex_fuel).assertExists()
 
         text(R.string.details_vin_lookup_add).click()
         compose.awaitThat { g.vehicle(id)?.engineCode == "1GR-XX" }
         assertEquals("XYZ100L", g.vehicle(id)!!.series)
+        assertEquals(Powertrain.FLEX_FUEL.name, g.vehicle(id)!!.powertrain)
     }
 
     @Test
