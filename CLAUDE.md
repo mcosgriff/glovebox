@@ -22,6 +22,8 @@ the issue numbers lead to the discussion.
 `./gradlew build` and `./gradlew :domain:test` are green (Gradle 9.8.1, AGP 9.4.1, lint included).
 Keep them green; lint fails the build on a warning as on an error (`warningsAsErrors`, in `:app` and `:data`),
 and there is no baseline: fix a warning, or suppress that one case with a comment saying why (`app/lint.xml`).
+The one exception is `GradleDependency` (a newer library version): only the weekly `newer-versions.yml` runs it
+(`-Pglovebox.newerVersions`), keeping one issue open that lists what is newer (#639).
 
 ## Commands
 
