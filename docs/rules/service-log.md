@@ -15,10 +15,13 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   (`LogDraft.of`) and saved as one (`toRecord`). What an invoice puts on them is the draft's merge
   (`LogDraft.fill`, `InvoiceMerge`). Figures stay as typed; the app reads and writes them in its locale
   (`AppFigures`, a `TypedFigures`). `LogServiceForm` holds the draft and writes the visit's own fields.
-- **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the records as they
-  would stand (`DraftRecord`s, readings as typed, new ones numbered below zero) and gives the changes and the
-  entries after, in dash terms. A delete, an edit, re-filed lines and an import's file all go through it; a
-  screen doesn't rebuild the before and after itself. A sold vehicle moves no reminders.
+- **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the `ServiceRecord`s
+  exactly as they would be written (#619: a saved one with its changes, new ones numbered below zero by
+  `numberedAsNew`) and the ids of any deleted, and gives the changes and the entries after, in dash terms. A
+  delete, an edit, re-filed lines and an import's file all go through it, each passing the records its save
+  writes (Log service's `LogServiceForm.toRecord`, which `toSave` writes, and an import's `added` and replaced
+  records), not a shape of its own, so the preview and the save can't disagree; a screen doesn't rebuild the before and after itself. A sold
+  vehicle moves no reminders.
 - **Screens read a vehicle through the log, not the DAOs** (#577): its unit, swap, records and readings as saved,
   and the odometer in dash terms (`odometer`) and as miles really covered (`actualOdometer`). A screen doesn't
   gather the vehicle's rows or work the highest reading out again itself.
@@ -28,7 +31,7 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   the recall still open. **The writer takes a `ServiceRecord`** (#617) with its photos, kept recommendations and
   done change, and builds every row itself (`toRows`, dropping a save's bare jobs, the last-done and recall
   lines); a caller builds no row. What saving Log service writes is the form's (`LogServiceForm.toSave`, a
-  `LogSave`); the ViewModel adds the photos and pages it holds and hands it on.
+  `LogSave`, its record from `toRecord`, the one place the visit is put together); the ViewModel adds the photos and pages it holds and hands it on.
 - Log service: **the odometer is never prefilled** (a prefilled reading gets saved untouched and miscounts every
   reminder); "Use current" fills it on a tap. Future dates are refused. "Due" chips only for reminders that have
   a log entry. Category buttons are tabs, not ticks (the user found the solid "open" button read as chosen).

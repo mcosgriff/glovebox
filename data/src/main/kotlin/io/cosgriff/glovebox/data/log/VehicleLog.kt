@@ -22,11 +22,13 @@ import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OilMonths
 import io.cosgriff.glovebox.domain.OwnOil
 import io.cosgriff.glovebox.domain.RecordSummary
+import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ReminderInputs
 import io.cosgriff.glovebox.domain.ScheduleRef
 import io.cosgriff.glovebox.domain.ServiceEntry
 import io.cosgriff.glovebox.domain.ServiceGroup
 import io.cosgriff.glovebox.domain.ServiceLinks
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.domain.Snooze
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.VehicleReminders
@@ -94,16 +96,30 @@ class VehicleLog(
     fun tracked(itemId: Long): TrackedItem? = tracked.firstOrNull { it.id == itemId }
 
     /**
-     * How reminders would move if the vehicle's records were [records] instead (#430): a delete, an edit, re-filed
-     * lines or a file's records. [records] are the whole log after the change, readings as typed; what comes back is
-     * in dash terms. A sold vehicle moves no reminders.
+     * How reminders would move if [changed] were saved and [deleted] gone (#430): an edit, re-filed lines, a delete or
+     * a file's records. [changed] are the records exactly as they would be written, readings as typed: a saved one
+     * (by its id) with its changes applied, and new ones numbered below zero ([numberedAsNew]), so an entry leads back
+     * to the record it came from. What comes back is in dash terms, the rest of the log as it stands. A sold vehicle
+     * moves no reminders.
      */
-    fun whatIf(records: List<DraftRecord>): WhatIf {
-        val after = records.map { it.toEntry(swap, answering) }
+    fun whatIf(changed: List<ServiceRecord> = emptyList(), deleted: Set<Long> = emptySet()): WhatIf {
+        val byId = changed.associateBy { it.id }
+        val saved = entries.map { it.id }.toSet()
+        val after = entries.filter { it.id !in deleted }.map { e -> byId[e.id]?.toEntry(swap, answering) ?: e } +
+            changed.filter { it.id !in saved }.map { it.toEntry(swap, answering) }
         val moving = if (vehicle.archivedOn != null) emptyList() else tracked
         return WhatIf(LogEdits.reminderChanges(moving, entries, after), after)
     }
 }
+
+/** What [VehicleLog.whatIf] found: the reminders that move, and the log's entries after the change, in dash terms. */
+data class WhatIf(val changes: List<ReminderChange>, val entries: List<ServiceEntry>)
+
+/** [this], records not saved yet, numbered -1, -2, … in their order for [VehicleLog.whatIf]. */
+fun List<ServiceRecord>.numberedAsNew(): List<ServiceRecord> = mapIndexed { i, r -> r.copy(id = -1L - i) }
+
+/** Which of the records given [numberedAsNew] the entry [id] is; null for a saved record. */
+fun newIndexOf(id: Long): Int? = if (id < 0) (-1L - id).toInt() else null
 
 /** [items] may be every schedule item or only the tracked ones: only tracked items get a reminder either way. */
 fun VehicleEntity.log(
@@ -213,11 +229,12 @@ val NoLinks: Map<String, Set<Long>> = emptyMap()
  * [answering] is the vehicle's own ([answering] above): a line counts for the item it was saved
  * against and for every item that answers to the catalog line it was picked from.
  */
-fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry = toDraft().toEntry(swap, answering)
+fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
+    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
 
-/** As [ServiceRecordWithItems.toEntry]. */
-fun DraftRecord.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
-    swap.toDash(ServiceEntry(id, date, odometer, ServiceLinks.itemIds(lines, answering)))
+/** As [ServiceRecordWithItems.toEntry], for a record as it would be written. */
+private fun ServiceRecord.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
+    swap.toDash(ServiceEntry(id, date, odometer, ServiceLinks.itemIds(lines.map { it.scheduleItemId to it.catalogId }, answering)))
 
 /** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
 fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =

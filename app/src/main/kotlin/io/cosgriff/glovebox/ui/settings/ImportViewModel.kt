@@ -37,7 +37,9 @@ import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
+import io.cosgriff.glovebox.domain.ImportPlan
 import io.cosgriff.glovebox.domain.ImportedRecord
+import io.cosgriff.glovebox.domain.SavedRecord
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
 import io.cosgriff.glovebox.domain.TableJob
@@ -69,8 +71,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.data.log.toRef
 import io.cosgriff.glovebox.data.log.VehicleLogs
-import io.cosgriff.glovebox.data.log.afterImport
 import io.cosgriff.glovebox.data.log.newIndexOf
+import io.cosgriff.glovebox.data.log.numberedAsNew
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleDocuments
@@ -418,23 +420,26 @@ class ImportViewModel @Inject constructor(
         val byId = records.associateBy { it.record.id }
         val refs = log.items.map { it.toRef() }
         val saved = records.map { it.toModel().toSaved() }
+        fun added(plan: ImportPlan<ImportedRecord, SavedRecord>) = plan.new.map { HistoryImport.added(it, vehicle.id, refs) }
+        // Same record, same id: its photos and any recall it was the work for stay with it.
+        fun replaced(plan: ImportPlan<ImportedRecord, SavedRecord>, mode: ImportMode) = plan.replaced(mode).mapNotNull { (item, mine) ->
+            byId[mine.id]?.let { HistoryImport.replacing(it.toModel(), item, refs) }
+        }
+        // What moves is read from the records the import would write, the new ones numbered so an entry leads back.
+        fun whatIf(plan: ImportPlan<ImportedRecord, SavedRecord>, mode: ImportMode) = log.whatIf(replaced(plan, mode) + added(plan).numberedAsNew())
         // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
         // the odometer is the highest reading on record, so one wrong one would put every mileage reminder out.
         val whole = HistoryImport.plan(all, saved, refs)
-        val doubts = HistoryImport.doubtful(log.whatIf(log.afterImport(whole, ImportMode.ADD_NEW)).entries, log.updates, unit).map { d -> whole.new[checkNotNull(newIndexOf(d.entry.id))] to d }
+        val doubts = HistoryImport.doubtful(whatIf(whole, ImportMode.ADD_NEW).entries, log.updates, unit).map { d -> whole.new[checkNotNull(newIndexOf(d.entry.id))] to d }
         val leftOut = doubts.map { (r, _) -> r.date to r.odometer }.filter { it !in keep }.toSet()
         val items = all.filter { (it.date to it.odometer) !in leftOut }
         val plan = HistoryImport.plan(items, saved, refs)
-        val added = plan.new.map { HistoryImport.added(it, vehicle.id, refs) }
-        // Same record, same id: its photos and any recall it was the work for stay with it.
-        fun replaced(mode: ImportMode) = plan.replaced(mode).mapNotNull { (item, mine) ->
-            byId[mine.id]?.let { HistoryImport.replacing(it.toModel(), item, refs) }
-        }
+        val added = added(plan)
         // The open shop recommendations these records look like the work for (#593), offered for each choice the
         // user can make; nothing closes unless it is left ticked when they import.
         val kept = recommendations.all(vehicle.id).map { it.toModel() }
         val offers = ImportMode.entries.associateWith { mode ->
-            val records = added + replaced(mode)
+            val records = added + replaced(plan, mode)
             records to ShopRecommendations.offeredOnImport(kept, records)
         }
         val view = plan.toView(
@@ -442,7 +447,7 @@ class ImportViewModel @Inject constructor(
             name = { it.title(unit) }, describe = { it.describe() }, describeSaved = { it.describe() },
             note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules), guessesNote(CustomLines.guessesFor(items, refs)))
                 .joinToString(" ").ifEmpty { null },
-            moves = ImportMode.entries.associateWith { mode -> log.whatIf(log.afterImport(plan, mode)).changes.map { it.text(unit) } },
+            moves = ImportMode.entries.associateWith { mode -> whatIf(plan, mode).changes.map { it.text(unit) } },
             doubts = doubts.map { (r, d) ->
                 DoubtLine(
                     key = r.date to r.odometer,
