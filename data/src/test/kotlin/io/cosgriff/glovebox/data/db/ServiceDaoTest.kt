@@ -83,34 +83,6 @@ class ServiceDaoTest {
     }
 
     @Test
-    fun `an import adds and replaces records as one, and a replaced record keeps its id`() = runBlocking {
-        val v = db.vehicles().add(testVehicle(), firstReading = null)
-        val kept = record(v, day, 60_000, lines = arrayOf(line("Oil change", "oil_change")))
-        val existing = service.record(kept)!!.record
-
-        service.applyImport(
-            added = listOf(
-                RecordRows(
-                    ServiceRecordEntity(vehicleId = v, date = day.minusDays(90), odometer = 55_000, diy = false, imported = true),
-                    listOf(line("Brake pads", "brake_pads_front").copy(jobId = 1)),
-                    listOf(ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 9_000, partsCents = 6_000)),
-                ),
-            ),
-            replaced = listOf(RecordRows(existing.copy(imported = true, shopName = "Made-up Motors"), listOf(line("Oil change", "oil_change"), line("Oil filter")))),
-        )
-
-        val records = service.recordsFor(v).associateBy { it.record.odometer }
-        assertEquals(kept, records.getValue(60_000).record.id)
-        assertEquals("Made-up Motors", records.getValue(60_000).record.shopName)
-        assertEquals(2, records.getValue(60_000).items.size)
-        assertEquals(listOf("Brake pads"), records.getValue(55_000).items.map { it.label })
-        // An imported job is written with its record, and its line points at it.
-        val job = records.getValue(55_000).jobs.single()
-        assertEquals(9_000L to 6_000L, job.laborCents to job.partsCents)
-        assertEquals(job.id, records.getValue(55_000).items.single().jobId)
-    }
-
-    @Test
     fun `photos are added, removed one by one or all at once`() = runBlocking {
         val v = db.vehicles().add(testVehicle(), firstReading = null)
         val id = record(v, day, 60_000)

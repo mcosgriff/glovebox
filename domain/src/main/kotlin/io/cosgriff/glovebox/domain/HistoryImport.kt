@@ -315,7 +315,7 @@ object HistoryImport {
 
     /** Every schedule item [record] would count for once imported. */
     fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
-        ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
+        ServiceLinks.itemIds(record.work.map { filed(it, schedule) }, ServiceLinks.answering(schedule))
 
     private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 

@@ -21,6 +21,7 @@ import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.OdometerReading
 import io.cosgriff.glovebox.domain.OilMonths
 import io.cosgriff.glovebox.domain.OwnOil
+import io.cosgriff.glovebox.domain.RecordLine
 import io.cosgriff.glovebox.domain.RecordSummary
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.ReminderInputs
@@ -230,11 +231,11 @@ val NoLinks: Map<String, Set<Long>> = emptyMap()
  * against and for every item that answers to the catalog line it was picked from.
  */
 fun ServiceRecordWithItems.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
-    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { it.scheduleItemId to it.catalogId }, answering)))
+    swap.toDash(ServiceEntry(record.id, record.date, record.odometer, ServiceLinks.itemIds(items.map { RecordLine(it.label, it.catalogId, it.scheduleItemId) }, answering)))
 
 /** As [ServiceRecordWithItems.toEntry], for a record as it would be written. */
 private fun ServiceRecord.toEntry(swap: ClusterSwap?, answering: Map<String, Set<Long>>): ServiceEntry =
-    swap.toDash(ServiceEntry(id, date, odometer, ServiceLinks.itemIds(lines.map { it.scheduleItemId to it.catalogId }, answering)))
+    swap.toDash(ServiceEntry(id, date, odometer, ServiceLinks.itemIds(lines, answering)))
 
 /** Standalone readings in dash terms, plus the replacement cluster's first reading if there is one. */
 fun List<OdometerReadingEntity>.toReadings(swap: ClusterSwap?): List<OdometerReading> =

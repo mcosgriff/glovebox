@@ -364,16 +364,6 @@ interface ServiceDao {
         ids.chunked(IN_LIMIT).forEach { setVisit(it, null) }
     }
 
-    /**
-     * One import, applied whole or not at all. [replaced] records keep their id, and so their photos
-     * and any recall they were the work for; nothing is deleted.
-     */
-    @Transaction
-    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>) {
-        added.forEach { (record, items, jobs, parts) -> insertWithItems(record, items, jobs, parts) }
-        replaced.forEach { (record, items, jobs, parts) -> replaceWithItems(record, items, jobs, parts) }
-    }
-
     @Insert suspend fun insertPhotos(photos: List<PhotoEntity>)
 
     @Query("DELETE FROM photos WHERE id IN (:ids)")
