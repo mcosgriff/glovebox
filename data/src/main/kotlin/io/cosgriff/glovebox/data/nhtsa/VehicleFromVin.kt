@@ -28,8 +28,19 @@ data class DecodedStart(
 
 /** What looking a saved vehicle's VIN up again found. */
 sealed interface VinLookupResult {
-    /** What NHTSA has that is empty here; nothing else is ever offered, and never the drivetrain. */
-    data class Found(val additions: Map<DecodedField, String>) : VinLookupResult
+    /**
+     * What NHTSA has that is empty here; nothing else is ever offered, and never the drivetrain. [bodyStyle] and
+     * [powertrain] are what vPIC says plainly, by the rules adding a vehicle starts them with ([VehicleFromVin.start]),
+     * and only while the vehicle has none (#644).
+     */
+    data class Found(
+        val additions: Map<DecodedField, String>,
+        val bodyStyle: BodyStyle? = null,
+        val powertrain: Powertrain? = null,
+    ) : VinLookupResult {
+        /** Nothing to fill. */
+        val isEmpty: Boolean get() = additions.isEmpty() && bodyStyle == null && powertrain == null
+    }
 
     /** NHTSA decodes the VIN as another year or make; this is what it says it is, each null where it couldn't say. */
     data class NotThisVehicle(val year: Int?, val make: String?, val model: String?) : VinLookupResult
@@ -48,7 +59,8 @@ class VehicleFromVin @Inject constructor(private val nhtsa: NhtsaClient, private
     /**
      * Asks vPIC about [vehicle]'s VIN alone, never its year: vPIC answers with whatever year it is sent, which
      * would hide a VIN that is another vehicle's. Offers only what is empty on [vehicle], never the drivetrain (the
-     * owner's pick), and nothing when the decode's year or make differ ([VinRefresh.sameVehicle]).
+     * owner's pick), and nothing when the decode's year or make differ ([VinRefresh.sameVehicle]). The body style and
+     * powertrain come from the decode by [start]'s rules, offered only while the vehicle's is null.
      */
     suspend fun lookUp(vehicle: VehicleEntity): VinLookupResult {
         val vin = vehicle.vin ?: return VinLookupResult.Failed
@@ -60,18 +72,25 @@ class VehicleFromVin @Inject constructor(private val nhtsa: NhtsaClient, private
             return VinLookupResult.Failed
         }
         return if (VinRefresh.sameVehicle(vehicle.year, vehicle.make, decoded.year, decoded.make)) {
-            VinLookupResult.Found(VinRefresh.additions(vehicle.savedFields(), decoded.fields() - DecodedField.DRIVE))
+            val asNew = start(decoded)
+            VinLookupResult.Found(
+                additions = VinRefresh.additions(vehicle.savedFields(), asNew.fields - DecodedField.DRIVE),
+                bodyStyle = asNew.bodyStyle.takeIf { vehicle.bodyStyle == null },
+                powertrain = asNew.powertrain.takeIf { vehicle.powertrain == null },
+            )
         } else {
             VinLookupResult.NotThisVehicle(decoded.year, decoded.make, decoded.model)
         }
     }
 
     /**
-     * Fills [additions] (a [lookUp]'s) into the vehicle, each column only while it is still empty, so an edit saved
-     * while the lookup was out stands ([VehicleDao.fillFromVin]). The drivetrain is never written. It fills the body
-     * class but derives no body style or powertrain from what it fills, which adding a vehicle does ([start]).
+     * Fills what [found] (a [lookUp]'s) offers into the vehicle, each column only while it is still empty, so an edit
+     * saved while the lookup was out stands ([VehicleDao.fillFromVin], [VehicleDao.setBodyStyleIfBlank],
+     * [VehicleDao.setPowertrainIfBlank]): the owner's pick of body style or powertrain is never replaced. The
+     * drivetrain is never written.
      */
-    suspend fun fill(vehicleId: Long, additions: Map<DecodedField, String>) {
+    suspend fun fill(vehicleId: Long, found: VinLookupResult.Found) {
+        val additions = found.additions
         vehicles.fillFromVin(
             vehicleId,
             bodyClass = additions[DecodedField.BODY],
@@ -82,6 +101,8 @@ class VehicleFromVin @Inject constructor(private val nhtsa: NhtsaClient, private
             tpms = additions[DecodedField.TPMS],
             series = additions[DecodedField.SERIES],
         )
+        found.bodyStyle?.let { vehicles.setBodyStyleIfBlank(vehicleId, it.name) }
+        found.powertrain?.let { vehicles.setPowertrainIfBlank(vehicleId, it.name) }
     }
 
     companion object {

@@ -136,7 +136,6 @@ import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.data.nhtsa.DecodedField
 import io.cosgriff.glovebox.data.nhtsa.VehicleFromVin
 import io.cosgriff.glovebox.data.nhtsa.VinLookupResult
 import io.cosgriff.glovebox.data.nhtsa.toStored
@@ -197,8 +196,8 @@ sealed interface VinLookup {
     /** NHTSA decodes the VIN as another year or make; [title] is what it says, null if it couldn't say. */
     data class NotThisVehicle(val title: String?) : VinLookup
 
-    /** What NHTSA has that is empty here; nothing else is ever offered. */
-    data class Found(val additions: Map<DecodedField, String>) : VinLookup
+    /** What NHTSA has that is empty here, with the body style and powertrain it says plainly (#644); nothing else is ever offered. */
+    data class Found(val found: VinLookupResult.Found) : VinLookup
 }
 
 /** The user-entered rows under "What it takes". */
@@ -349,7 +348,7 @@ class VehicleDetailsViewModel @Inject constructor(
         _vinLookup.value = VinLookup.Asking
         viewModelScope.launch {
             _vinLookup.value = when (val found = fromVin.lookUp(v)) {
-                is VinLookupResult.Found -> VinLookup.Found(found.additions)
+                is VinLookupResult.Found -> VinLookup.Found(found)
                 is VinLookupResult.NotThisVehicle ->
                     VinLookup.NotThisVehicle(found.year?.let { VehicleText.title(it, found.make.orEmpty(), found.model.orEmpty(), trim = null) })
                 VinLookupResult.Failed -> VinLookup.Failed
@@ -359,7 +358,7 @@ class VehicleDetailsViewModel @Inject constructor(
 
     /** Fills only what is still empty, so an edit made while the dialog was open stands. */
     fun fillFromVin() {
-        val found = (_vinLookup.value as? VinLookup.Found)?.additions ?: return
+        val found = (_vinLookup.value as? VinLookup.Found)?.found ?: return
         _vinLookup.value = VinLookup.Idle
         viewModelScope.launch { fromVin.fill(vehicleId, found) }
     }
@@ -1381,7 +1380,8 @@ private val VehicleSpecEntry.Pressure.word: Int
 /** What looking the VIN up again found, and the one way to use it: fill what is empty. */
 @Composable
 private fun VinLookupDialog(lookup: VinLookup, onAdd: () -> Unit, onDismiss: () -> Unit) {
-    val additions = (lookup as? VinLookup.Found)?.additions.orEmpty()
+    val found = (lookup as? VinLookup.Found)?.found
+    val canAdd = found != null && !found.isEmpty
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.details_vin_lookup_title)) },
@@ -1393,13 +1393,17 @@ private fun VinLookupDialog(lookup: VinLookup, onAdd: () -> Unit, onDismiss: () 
                     is VinLookup.NotThisVehicle -> Text(
                         lookup.title?.let { stringResource(R.string.details_vin_lookup_other, it) } ?: stringResource(R.string.details_vin_lookup_unidentified),
                     )
-                    is VinLookup.Found -> if (additions.isEmpty()) {
+                    is VinLookup.Found -> if (!canAdd) {
                         Text(stringResource(R.string.details_vin_lookup_nothing))
                     } else {
                         Text(stringResource(R.string.details_vin_lookup_found))
-                        additions.forEach { (field, value) ->
+                        val rows = lookup.found.additions.map { (field, value) -> stringResource(field.label()) to value } + listOfNotNull(
+                            lookup.found.powertrain?.let { stringResource(R.string.add_vehicle_powertrain) to stringResource(it.label()) },
+                            lookup.found.bodyStyle?.let { stringResource(R.string.add_vehicle_body_style) to stringResource(it.label()) },
+                        )
+                        rows.forEach { (label, value) ->
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(stringResource(field.label()), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(value, Modifier.weight(1f), fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
                             }
                         }
@@ -1409,13 +1413,13 @@ private fun VinLookupDialog(lookup: VinLookup, onAdd: () -> Unit, onDismiss: () 
             }
         },
         confirmButton = {
-            if (additions.isNotEmpty()) {
+            if (canAdd) {
                 TextButton(onClick = onAdd) { Text(stringResource(R.string.details_vin_lookup_add)) }
             } else if (lookup != VinLookup.Asking) {
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
             }
         },
-        dismissButton = if (additions.isNotEmpty() || lookup == VinLookup.Asking) {
+        dismissButton = if (canAdd || lookup == VinLookup.Asking) {
             { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
         } else {
             null
