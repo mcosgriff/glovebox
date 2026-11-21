@@ -192,14 +192,6 @@ class VehicleDaoInteractionTest {
     }
 
     @Test
-    fun `a whole-row update writes every column`() = runBlocking {
-        val id = add()
-        val changed = row(id).copy(trim = "SR5", trimConfirmed = true, fuel = "Gasoline", drivetrain = "4WD", transmission = "5-speed Automatic", bodyClass = "SUV", enteredByHand = true)
-        vehicles.update(changed)
-        assertEquals(changed, row(id))
-    }
-
-    @Test
     fun `a vehicle with every column filled reads back whole through every query`() = runBlocking {
         val full = VehicleEntity(
             vin = "1M8GDM9AXKP042788", enteredByHand = true, year = 2019, make = "Toyota", model = "4Runner", trim = "SR5", trimConfirmed = true,

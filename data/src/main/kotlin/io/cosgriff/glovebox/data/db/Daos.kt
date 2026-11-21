@@ -224,9 +224,20 @@ interface VehicleDao {
         firstReading?.let { insertReading(OdometerReadingEntity(vehicleId = id, date = vehicle.createdOn, odometer = it)) }
         return id
     }
-    @Update suspend fun update(vehicle: VehicleEntity)
 
-    /** Cascades to readings, schedule, records, record items, photos rows, torque specs and recalls. */
+    /** How many of the rows Delete vehicle lists [delete] would cascade to (#624); `DataWipe.whatGoes` answers with it. */
+    @Query(
+        "SELECT (SELECT COUNT(*) FROM service_records WHERE vehicleId = :vehicleId) AS records, " +
+            "(SELECT COUNT(*) FROM photos WHERE recordId IN (SELECT id FROM service_records WHERE vehicleId = :vehicleId)) AS photos, " +
+            "(SELECT COUNT(*) FROM schedule_items WHERE vehicleId = :vehicleId) AS scheduleItems, " +
+            "(SELECT COUNT(*) FROM torque_specs WHERE vehicleId = :vehicleId) AS torqueSpecs, " +
+            "(SELECT COUNT(*) FROM recalls WHERE vehicleId = :vehicleId) AS recalls, " +
+            "(SELECT COUNT(*) FROM odometer_readings WHERE vehicleId = :vehicleId) AS mileageReadings, " +
+            "(SELECT COUNT(*) FROM documents WHERE vehicleId = :vehicleId) AS documents",
+    )
+    suspend fun rowCounts(vehicleId: Long): VehicleRowCounts
+
+    /** Cascades to every row that names the vehicle; its files are `DataWipe.deleteVehicle`'s to delete. */
     @Delete suspend fun delete(vehicle: VehicleEntity)
 }
 
@@ -689,6 +700,18 @@ data class RecordRows(
     val parts: List<ServiceRecordJobPartEntity> = emptyList(),
 )
 
+/** How many of each row deleting a vehicle takes with it, as Delete vehicle lists them. */
+data class VehicleRowCounts(
+    val records: Int,
+    /** Receipt and parts photos; the vehicle's own photo is `VehicleEntity.photoFile`. */
+    val photos: Int,
+    val scheduleItems: Int,
+    val torqueSpecs: Int,
+    val recalls: Int,
+    val mileageReadings: Int,
+    val documents: Int,
+)
+
 /** A shop as one record names it. */
 data class ShopRow(val name: String, val date: LocalDate, val id: Long)
 
@@ -721,14 +744,20 @@ interface DocumentDao {
     suspend fun allFiles(): List<String>
 
     /**
-     * Every encrypted file a row points at: receipt and parts photos, vehicle photos and documents, all in
-     * `PhotoCrypto.photoDir`. The backup, the restore and the orphan sweep all go by this, so a new kind of
-     * file is added here once and none of them can miss it.
+     * Every encrypted file a row points at, or with [vehicleId] only that vehicle's: receipt and parts photos,
+     * vehicle photos and documents, all in `PhotoCrypto.photoDir`. The backup, the restore, the orphan sweep
+     * ([allEncryptedFiles]) and Delete vehicle (#624) all go by this one query, so a new kind of file is added
+     * here once and none of them can miss it.
      */
     @Query(
-        "SELECT fileName FROM photos UNION SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL UNION SELECT fileName FROM documents",
+        "SELECT fileName FROM photos WHERE :vehicleId IS NULL OR recordId IN (SELECT id FROM service_records WHERE vehicleId = :vehicleId) " +
+            "UNION SELECT photoFile FROM vehicles WHERE photoFile IS NOT NULL AND (:vehicleId IS NULL OR id = :vehicleId) " +
+            "UNION SELECT fileName FROM documents WHERE :vehicleId IS NULL OR vehicleId = :vehicleId",
     )
-    suspend fun allEncryptedFiles(): List<String>
+    suspend fun encryptedFiles(vehicleId: Long?): List<String>
+
+    /** Every encrypted file a row points at, archived vehicles' included. */
+    suspend fun allEncryptedFiles(): List<String> = encryptedFiles(vehicleId = null)
 }
 
 /**

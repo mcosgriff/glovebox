@@ -53,27 +53,18 @@ import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.DataWipe
-import io.cosgriff.glovebox.data.db.DocumentDao
-import io.cosgriff.glovebox.data.db.RecallDao
-import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import io.cosgriff.glovebox.domain.Sale
 import io.cosgriff.glovebox.domain.TypedConfirmation
 import io.cosgriff.glovebox.ui.DeleteVehicleRoute
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** What deleting the vehicle takes with it, counted when the screen opens. */
+/** What deleting the vehicle takes with it ([DataWipe.whatGoes]), counted when the screen opens. */
 data class DeleteVehicleData(
     val vehicle: VehicleEntity,
-    val records: Int,
-    val photos: Int,
-    val scheduleItems: Int,
-    val torqueSpecs: Int,
-    val recalls: Int,
-    val mileageReadings: Int,
-    val documents: Int = 0,
+    val rows: VehicleRowCounts,
     /** For "Archive instead": the highest reading so far. */
     val lastOdometer: Int?,
 ) {
@@ -85,9 +76,6 @@ data class DeleteVehicleData(
 class DeleteVehicleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val logs: VehicleLogs,
-    private val torque: TorqueDao,
-    private val recalls: RecallDao,
-    private val documents: DocumentDao,
     private val wipe: DataWipe,
     private val archiver: VehicleArchiver,
 ) : ViewModel() {
@@ -101,18 +89,9 @@ class DeleteVehicleViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val goes = wipe.whatGoes(vehicleId) ?: return@launch
             val log = logs.load(vehicleId) ?: return@launch
-            data = DeleteVehicleData(
-                vehicle = log.vehicle,
-                records = log.records.size,
-                photos = log.records.sumOf { it.photos.size },
-                scheduleItems = log.items.size,
-                torqueSpecs = torque.observe(vehicleId).first().size,
-                recalls = recalls.recallsFor(vehicleId).size,
-                mileageReadings = log.readings.size,
-                documents = documents.documentsFor(vehicleId).size,
-                lastOdometer = log.odometer,
-            )
+            data = DeleteVehicleData(vehicle = goes.vehicle, rows = goes.rows, lastOdometer = log.odometer)
         }
     }
 
@@ -122,7 +101,7 @@ class DeleteVehicleViewModel @Inject constructor(
         if (deleting) return
         deleting = true
         viewModelScope.launch {
-            wipe.deleteVehicle(d.vehicle)
+            wipe.deleteVehicle(d.vehicle.id)
             onDeleted(d.name)
         }
     }
@@ -190,14 +169,15 @@ fun DeleteVehicleScreen(
 
             BorderedCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    val rows = d.rows
                     listOf(
-                        stringResource(R.string.delete_vehicle_records) to d.records.asNumber(),
-                        stringResource(R.string.delete_vehicle_photos) to d.photos.asNumber(),
-                        stringResource(R.string.delete_vehicle_schedule) to d.scheduleItems.asNumber(),
-                        stringResource(R.string.delete_vehicle_torque) to d.torqueSpecs.asNumber(),
-                        stringResource(R.string.delete_vehicle_recalls) to d.recalls.asNumber(),
-                        stringResource(R.string.readings_title) to d.mileageReadings.asNumber(),
-                        stringResource(R.string.documents_title) to d.documents.asNumber(),
+                        stringResource(R.string.delete_vehicle_records) to rows.records.asNumber(),
+                        stringResource(R.string.delete_vehicle_photos) to rows.photos.asNumber(),
+                        stringResource(R.string.delete_vehicle_schedule) to rows.scheduleItems.asNumber(),
+                        stringResource(R.string.delete_vehicle_torque) to rows.torqueSpecs.asNumber(),
+                        stringResource(R.string.delete_vehicle_recalls) to rows.recalls.asNumber(),
+                        stringResource(R.string.readings_title) to rows.mileageReadings.asNumber(),
+                        stringResource(R.string.documents_title) to rows.documents.asNumber(),
                         stringResource(R.string.delete_vehicle_details) to
                             if (d.vehicle.photoFile != null) pluralStringResource(R.plurals.photos, 1, 1.asNumber()) else stringResource(R.string.delete_vehicle_no_photo),
                     ).forEach { (label, value) ->
