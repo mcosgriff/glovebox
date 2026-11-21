@@ -313,13 +313,9 @@ object HistoryImport {
         return ResolvedWork(line.label, line.service, target?.id)
     }
 
-    /** [record]'s lines as they would be saved: each one's (`scheduleItemId`, `catalogId`). */
-    fun lines(record: ImportedRecord, schedule: List<ScheduleRef>): List<Pair<Long?, String?>> =
-        record.work.map { resolve(it, schedule).scheduleItemId to it.service }
-
     /** Every schedule item [record] would count for once imported. */
     fun itemIds(record: ImportedRecord, schedule: List<ScheduleRef>): Set<Long> =
-        ServiceLinks.itemIds(lines(record, schedule), ServiceLinks.answering(schedule))
+        ServiceLinks.itemIds(record.work.map { resolve(it, schedule).scheduleItemId to it.service }, ServiceLinks.answering(schedule))
 
     private fun labels(labels: List<String>): List<String> = labels.map(Names::key).sorted()
 

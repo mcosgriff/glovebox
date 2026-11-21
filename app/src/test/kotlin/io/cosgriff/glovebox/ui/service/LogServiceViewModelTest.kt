@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModelStore
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.domain.DistanceUnit
+import io.cosgriff.glovebox.domain.LogEdits
 import io.cosgriff.glovebox.domain.RecordMark
 import io.cosgriff.glovebox.ui.LogServiceRoute
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
@@ -423,6 +425,33 @@ class LogServiceViewModelTest {
         assertTrue(saved.photos.isEmpty())
         // Kept until the Undo bar ends.
         assertTrue(t.hasFile(photo))
+    }
+
+    @Test
+    fun `an edit's preview reads the very record its save writes`() = runBlocking {
+        val (car, oil, _) = truck()
+        t.db.schedule().applyImport(listOf(ScheduleItemEntity(vehicleId = car, name = "Hitch greased", intervalMiles = 10_000, intervalMonths = 12)), emptyList(), emptyList())
+        val hitch = t.db.schedule().allFor(car).single { it.name == "Hitch greased" }.id
+        val id = t.record(car, date = today.minusDays(10), odometer = 52_000, lines = listOf(line("Oil changed", "oil", oil)))
+        val vm = loaded(LogServiceRoute(car, recordId = id))
+        val form = vm.form
+        val before = form.data!!.log
+
+        form.odometerText = "52,100"
+        form.toggle("rotation")
+        // One of the user's own items, offered as "schedule-…": no catalog line, in the preview as in the save.
+        form.toggle("schedule-$hitch")
+        val previewed = form.toRecord(form.data!!, form.odometer!!)
+        val moves = form.reminderChanges
+        assertEquals(3, moves.size)
+        var done = false
+        vm.save { done = true }
+        awaitUntil("the save") { done }
+
+        assertEquals(previewed, t.db.service().record(id)!!.toModel())
+        assertEquals(setOf(null, "oil", "rotation"), previewed.lines.map { it.catalogId }.toSet())
+        val after = VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings).load(car)!!
+        assertEquals(LogEdits.reminderChanges(before.tracked, before.entries, after.entries), moves)
     }
 
     @Test

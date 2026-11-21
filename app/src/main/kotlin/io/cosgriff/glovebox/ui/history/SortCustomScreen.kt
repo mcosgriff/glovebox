@@ -27,10 +27,10 @@ import io.cosgriff.glovebox.data.db.CatalogRuleDao
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.db.toRule
 import io.cosgriff.glovebox.data.log.VehicleLog
 import io.cosgriff.glovebox.data.log.VehicleLogs
-import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.CustomGroup
 import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.domain.SavedLine
@@ -139,8 +139,9 @@ class SortCustomViewModel @Inject constructor(
     /** What saving would do as the picks stand. Reminders come only from the log. */
     fun preview(state: SortCustomState): SortPreview {
         val lines = CustomLines.assignments(state.groups, chosen).toMap()
-        val after = state.log.records.map { r ->
-            r.toDraft().copy(lines = r.items.map { item -> item.scheduleItemId to (lines[item.id] ?: item.catalogId) })
+        // Each re-filed record as it would be written: its lines are its rows, in their order.
+        val after = state.log.records.filter { r -> r.items.any { it.id in lines } }.map { r ->
+            r.toModel().let { m -> m.copy(lines = m.lines.zip(r.items) { line, item -> line.copy(catalogId = lines[item.id] ?: item.catalogId) }) }
         }
         return SortPreview(
             lines = lines.size,

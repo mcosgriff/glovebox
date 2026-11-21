@@ -69,7 +69,6 @@ import io.cosgriff.glovebox.data.db.charges
 import io.cosgriff.glovebox.data.db.jobPrices
 import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.log.VehicleLogs
-import io.cosgriff.glovebox.data.log.toDraft
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.CostBreakdown
 import io.cosgriff.glovebox.domain.JobPrice
@@ -230,7 +229,7 @@ class RecordDetailViewModel @Inject constructor(
                     current = latest,
                 )
             },
-            deleteImpact = log.whatIf(all.filter { it.record.id != recordId }.map { it.toDraft() }).changes.map { it.text(unit) },
+            deleteImpact = log.whatIf(deleted = setOf(recordId)).changes.map { it.text(unit) },
             visit = rows(Visits.others(me, visits)),
             offers = rows(Visits.offers(me, visits)),
             choices = rows(Visits.choices(me, visits)),

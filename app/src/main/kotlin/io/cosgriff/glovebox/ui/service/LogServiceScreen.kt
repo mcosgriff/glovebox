@@ -3,8 +3,6 @@ package io.cosgriff.glovebox.ui.service
 import io.cosgriff.glovebox.data.log.toRef
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.data.log.VehicleLog
-import io.cosgriff.glovebox.data.log.DraftRecord
-import io.cosgriff.glovebox.data.log.toDraft
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.domain.ReminderPresentation
@@ -276,15 +274,34 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
 
     internal val selectedOptions: List<WorkOption> get() = draft.selectedOptions(terms)
 
-    /** Edit only: how reminders move if the form is saved as it stands. */
+    /** Edit only: how reminders move if the form is saved as it stands, read from the record [toRecord] gives. */
     val reminderChanges: List<ReminderChange>
         get() {
             val d = data ?: return emptyList()
             val original = d.original ?: return emptyList()
-            // As it would be saved: each line against one item, and counting for every item that answers to it.
-            val edited = DraftRecord(original.record.id, date, odometer ?: original.record.odometer, selectedOptions.map { it.scheduleItemId to it.id })
-            return d.log.whatIf(d.log.records.map { if (it.record.id == edited.id) edited else it.toDraft() }).changes
+            return d.log.whatIf(listOf(toRecord(d, odometer ?: original.record.odometer))).changes
         }
+
+    /**
+     * The form as saving writes it, with [odometer] as its reading: on an edit, over the record being edited, which
+     * keeps its id, visit and marks ([ServiceRecord.editedAs]). What [reminderChanges] previews.
+     */
+    internal fun toRecord(d: LogServiceData, odometer: Int): ServiceRecord {
+        // What the user put in the notes of the shop's recommendations (#572), each its own line, after theirs.
+        val noted = if (editing) "" else recommendedNotes(recommended)
+        val visit = ServiceRecord(
+            vehicleId = d.log.vehicle.id,
+            date = date,
+            odometer = odometer,
+            diy = diy,
+            shopName = savedShop,
+            costCents = costCents,
+            notes = listOf(notes.trim(), noted).filter { it.isNotEmpty() }.joinToString("\n\n").takeIf { it.isNotEmpty() },
+            charges = charges,
+        )
+        val edit = draft.toRecord(visit, terms)
+        return d.original?.toModel()?.editedAs(edit) ?: edit
+    }
 
     /** Photos the record being edited already has, less any taken off on this form. */
     var keptPhotos by mutableStateOf(emptyList<PhotoEntity>())
