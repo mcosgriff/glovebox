@@ -139,6 +139,30 @@ class ScheduleItemEditorTest {
     }
 
     @Test
+    fun `a severe interval with miles only opens with the normal months, and saving it unchanged keeps them the normal ones`() {
+        val item = DraftItem(key = "6", name = "Replace engine oil", normal = Interval(10_000, 12), severe = Interval(5_000, null), useSevere = true, own = true)
+        open(item)
+        // As the reminder counts it (#616): the severe miles, and the normal months.
+        distanceBoxes().onFirst().assert(hasText("5,000"))
+        compose.onNodeWithText(text(R.string.item_months)).assert(hasText("12"))
+        save()
+        assertEquals(Interval(5_000, null), saved.last().severe)
+        assertEquals(Interval(10_000, 12), saved.last().normal)
+
+        // Switching to normal use and back shows the same.
+        compose.onNodeWithText(text(R.string.item_severe_interval)).performScrollTo()
+        compose.onAllNodes(androidx.compose.ui.test.isToggleable()).onFirst().performClick()
+        compose.onNodeWithText(text(R.string.item_months)).assert(hasText("12"))
+        distanceBoxes().onFirst().assert(hasText("10,000"))
+        compose.onAllNodes(androidx.compose.ui.test.isToggleable()).onFirst().performClick()
+        distanceBoxes().onFirst().assert(hasText("5,000"))
+        compose.onNodeWithText(text(R.string.item_months)).performTextReplacement("6")
+        save()
+        assertEquals(Interval(5_000, 6), saved.last().severe)
+        assertEquals(Interval(10_000, 12), saved.last().normal)
+    }
+
+    @Test
     fun `a flex-fuel item's E85 interval is edited while it is on`() {
         val item = DraftItem(key = "2", name = "Replace engine oil", normal = Interval(10_000, 12), severe = null, own = true, e85 = Interval(5_000, 6))
         open(item)

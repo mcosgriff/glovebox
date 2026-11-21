@@ -66,6 +66,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import io.cosgriff.glovebox.domain.ActiveInterval
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.Interval
@@ -125,13 +126,13 @@ fun ScheduleItemEditor(
         val t = typed ?: return
         when {
             useE85 -> e85 = t
-            useSevere -> severe = t
+            useSevere -> severe = ActiveInterval.severeTyped(t, normal, severe)
             else -> normal = t
         }
     }
 
-    /** What the boxes show: the interval in force for these switches. */
-    fun shown(): Interval = if (useE85) e85 ?: normal else if (useSevere) severe ?: normal else normal
+    /** What the boxes show: the interval in force for these switches, as the reminder counts it. */
+    fun shown(): Interval = ActiveInterval.of(normal, severe, useSevere, e85, useE85) ?: normal
 
     Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 8.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -151,7 +152,8 @@ fun ScheduleItemEditor(
                             item.copy(
                                 name = name.trim(),
                                 normal = if (useE85 || useSevere) normal else interval,
-                                severe = if (!useE85 && useSevere) interval else severe,
+                                // A figure the severe interval leaves to the normal one, saved as shown, stays left to it.
+                                severe = if (!useE85 && useSevere) ActiveInterval.severeTyped(interval, normal, severe) else severe,
                                 e85 = if (useE85) interval else e85,
                                 useE85 = useE85,
                                 // A job only for severe use has no second interval to switch to here; whether it is on follows the schedule.

@@ -82,6 +82,7 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
+import io.cosgriff.glovebox.domain.ActiveInterval
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
@@ -123,8 +124,10 @@ data class DraftItem(
 ) {
     /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
     val dormant: Boolean get() = severeOnly && !useSevere
-    val active: Interval get() = if (showsE85) e85 ?: normal else if (useSevere) severe ?: normal else normal
-    val showsSevere: Boolean get() = !showsE85 && useSevere && severe != null && severe != normal
+    /** The interval its reminder counts by, as [ActiveInterval.of] works it out: on severe use, figure by figure (#616). */
+    val active: Interval get() = ActiveInterval.of(normal, severe, useSevere, e85, useE85) ?: normal
+    /** On severe use, with a severe interval that changes a figure in force. */
+    val showsSevere: Boolean get() = !showsE85 && useSevere && active != normal
     /** On its E85 interval. */
     val showsE85: Boolean get() = useE85 && e85 != null
 
