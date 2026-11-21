@@ -2,10 +2,7 @@ package io.cosgriff.glovebox.ui.settings
 
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
-import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.data.db.toModel
-import io.cosgriff.glovebox.data.db.jobRows
-import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.AppText
@@ -26,7 +23,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.TorqueDao
-import io.cosgriff.glovebox.data.db.TorqueSpecEntity
+import io.cosgriff.glovebox.data.db.TorqueSpecWriter
+import io.cosgriff.glovebox.data.db.MilestoneWriter
+import io.cosgriff.glovebox.data.db.ScheduleItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.Settings
@@ -34,8 +33,6 @@ import io.cosgriff.glovebox.data.settings.SettingsRepository
 import io.cosgriff.glovebox.domain.ImportFile
 import io.cosgriff.glovebox.domain.ImportedRecord
 import io.cosgriff.glovebox.domain.MilestoneImport
-import io.cosgriff.glovebox.domain.SavedMilestone
-import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.ImportFormat
 import io.cosgriff.glovebox.domain.ImportKind
@@ -48,7 +45,6 @@ import io.cosgriff.glovebox.ui.service.RecordActions
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.ui.service.toSaved
 import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.ui.ImportRoute
 import kotlinx.coroutines.Dispatchers
@@ -157,9 +153,12 @@ class ImportViewModel @Inject constructor(
     vehicles: VehicleDao,
     settings: SettingsRepository,
     private val torque: TorqueDao,
+    private val torqueWriter: TorqueSpecWriter,
     private val schedule: ScheduleDao,
+    private val scheduleItems: ScheduleItems,
     private val logs: VehicleLogs,
     private val milestones: MilestoneDao,
+    private val milestoneWriter: MilestoneWriter,
     private val catalogRules: CatalogRuleDao,
     private val recommendations: ShopRecommendationDao,
     private val actions: RecordActions,
@@ -284,31 +283,13 @@ class ImportViewModel @Inject constructor(
     }
 
     private suspend fun torquePreview(vehicleId: Long, items: List<ImportedTorqueSpec>, unit: TorqueUnit): ImportPreview {
-        val rows = torque.specsFor(vehicleId)
-        // As they stood when the preview was worked out; what a replace writes over.
-        val byId = rows.associateBy { it.id }
-        val plan = TorqueImport.plan(items, rows.map { it.toSaved() })
+        val plan = TorqueImport.plan(items, torque.specsFor(vehicleId).map { it.toSaved() })
         val view = plan.toView(
             ImportKind.TORQUE_SPECS, PlanNoun.ROW, R.string.import_caution_torque,
             name = { it.name }, describe = { it.describe(unit) }, describeSaved = { it.describe(unit) }, differName = { _, saved -> saved.name },
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            val added = plan.new.map {
-                TorqueSpecEntity(
-                    vehicleId = vehicleId,
-                    name = it.name,
-                    category = it.category.name,
-                    socketSize = it.socket,
-                    newtonMeters = it.torque?.newtonMeters,
-                    source = it.source.name,
-                    note = it.note,
-                )
-            }
-            // The saved row keeps its own name and category: they are what matched, give or take capitals.
-            val replaced = plan.replaced(mode).mapNotNull { (item, saved) ->
-                byId[saved.id]?.copy(socketSize = item.socket, newtonMeters = item.torque?.newtonMeters, source = item.source.name, note = item.note)
-            }
-            torque.applyImport(added, replaced)
+            torqueWriter.import(vehicleId, plan, mode)
             finish(view, vehicleId, mode)
         }
     }
@@ -318,9 +299,7 @@ class ImportViewModel @Inject constructor(
         val unit = vehicle.unit
         // The file says which unit it is in; everything from here on is in the vehicle's.
         val items = FileDistances.schedule(file.items, file.unit, unit)
-        val rows = schedule.allFor(vehicleId)
-        val byId = rows.associateBy { it.id }
-        val saved = rows.map { it.toSaved() }
+        val saved = schedule.allFor(vehicleId).map { it.toSaved() }
         val plan = ScheduleImport.plan(items, saved)
         val doubles = ScheduleImport.doubles(items, saved)
         val view = plan.toView(
@@ -330,24 +309,8 @@ class ImportViewModel @Inject constructor(
             doubles = doubles.map { it.name },
         )
         return ImportPreview.Ready(view) { mode, stopDoubles ->
-            // The user's own items, tracked from the start, exactly like "+ Add your own item".
-            val added = plan.new.map { it.toEntity(vehicleId) }
-            // Only what the file describes changes. Tracked or not, a snooze, which interval is in use and
-            // every record linked to the item stay as they are.
-            val replaced = plan.replaced(mode).mapNotNull { (item, mine) ->
-                byId[mine.id]?.copy(
-                    intervalMiles = item.normal.miles,
-                    intervalMonths = item.normal.months,
-                    severeMiles = item.severe?.miles,
-                    severeMonths = item.severe?.months,
-                    ruleOverride = item.rule?.name,
-                    service = item.service,
-                    firstMiles = item.firstAt,
-                    severeOnly = item.severeOnly,
-                )
-            }
             val stop = if (stopDoubles) doubles.map { it.id } else emptyList()
-            schedule.applyImport(added, replaced, stop)
+            scheduleItems.import(vehicleId, plan, mode, stop)
             finish(view, vehicleId, mode, stop.size)
         }
     }
@@ -357,9 +320,7 @@ class ImportViewModel @Inject constructor(
         val unit = vehicle.unit
         // The file says which unit it is in; the table, and how it repeats, are kept in the vehicle's.
         val (items, repeats) = FileDistances.milestones(file.items, file.repeatsEveryMiles, file.unit, unit)
-        val rows = milestones.tableFor(vehicleId)
-        val byId = rows.associateBy { it.milestone.id }
-        val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
+        val saved = milestones.tableFor(vehicleId).map { it.toSaved() }
         // A table repeats one way or not at all; a file that says otherwise goes no further.
         MilestoneImport.repeatConflict(repeats, saved, vehicle.milestonesRepeatEveryMiles)?.let { return ImportPreview.Refused(it.text(unit)) }
         val plan = MilestoneImport.plan(items, saved)
@@ -369,10 +330,8 @@ class ImportViewModel @Inject constructor(
             note = listOfNotNull(repeatNote(repeats, unit), convertedNote(file.unit, unit)).joinToString(" "),
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            val added = plan.new.map { it.toRows(vehicleId) }
-            val replaced = plan.replaced(mode).mapNotNull { (item, mine) -> byId[mine.id]?.milestone?.copy(orMonths = item.orMonths)?.let { it to item.jobRows() } }
-            milestones.applyImport(vehicleId, repeats, added, replaced)
-            finish(view, vehicleId, mode)
+            // Refused only if the table's repeat changed since the preview, which then says so itself.
+            if (milestoneWriter.import(vehicleId, repeats, plan, mode)) finish(view, vehicleId, mode)
         }
     }
 

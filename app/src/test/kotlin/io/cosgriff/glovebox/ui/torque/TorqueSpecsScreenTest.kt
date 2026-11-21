@@ -23,7 +23,7 @@ import io.cosgriff.glovebox.ui.garage.UnconfinedMainRule
 import io.cosgriff.glovebox.ui.garage.waitFor
 import io.cosgriff.glovebox.ui.screens.Fixtures
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
-import io.cosgriff.glovebox.ui.service.toSaved
+import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.ui.theme.GloveboxTheme
 import kotlinx.coroutines.runBlocking
 import org.junit.After

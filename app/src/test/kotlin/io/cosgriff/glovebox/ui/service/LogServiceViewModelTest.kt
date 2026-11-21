@@ -65,12 +65,11 @@ class LogServiceViewModelTest {
     /** A vehicle with an oil change logged two years ago (overdue now) and a rotation never logged. */
     private suspend fun truck(unit: String = "MILES"): Triple<Long, Long, Long> {
         val car = t.vehicle(model = "Tacoma", unit = unit, firstReading = 30_000, nickname = "Blue truck")
-        t.db.schedule().applyImport(
+        t.db.schedule().insertAll(
             listOf(
                 ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6),
                 ScheduleItemEntity(vehicleId = car, name = "Tire rotation", templateKey = "rotation", intervalMiles = 5_000, intervalMonths = 6),
             ),
-            emptyList(), emptyList(),
         )
         val items = t.db.schedule().allFor(car)
         val oil = items.single { it.templateKey == "oil" }.id
@@ -430,7 +429,7 @@ class LogServiceViewModelTest {
     @Test
     fun `an edit's preview reads the very record its save writes`() = runBlocking {
         val (car, oil, _) = truck()
-        t.db.schedule().applyImport(listOf(ScheduleItemEntity(vehicleId = car, name = "Hitch greased", intervalMiles = 10_000, intervalMonths = 12)), emptyList(), emptyList())
+        t.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Hitch greased", intervalMiles = 10_000, intervalMonths = 12)))
         val hitch = t.db.schedule().allFor(car).single { it.name == "Hitch greased" }.id
         val id = t.record(car, date = today.minusDays(10), odometer = 52_000, lines = listOf(line("Oil changed", "oil", oil)))
         val vm = loaded(LogServiceRoute(car, recordId = id))

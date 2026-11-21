@@ -40,7 +40,9 @@ class UnitDaoTest {
                 ScheduleItemEntity(vehicleId = v, name = "Wipers", intervalMiles = null, intervalMonths = 12),
             ),
         )
-        db.milestones().applyImport(v, 30_000, listOf(MilestoneEntity(vehicleId = v, atMiles = 15_000) to emptyList(), MilestoneEntity(vehicleId = v, atMiles = 30_000) to emptyList()), emptyList())
+        db.milestones().save(MilestoneEntity(vehicleId = v, atMiles = 15_000), emptyList())
+        db.milestones().save(MilestoneEntity(vehicleId = v, atMiles = 30_000), emptyList())
+        db.milestones().setRepeat(v, 30_000)
         return v
     }
 

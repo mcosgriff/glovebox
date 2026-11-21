@@ -62,9 +62,8 @@ class RecordActionsTest {
     @Test
     fun `a bare last done announces nothing and leaves History where it was`() = runBlocking {
         val car = t.vehicle()
-        t.db.schedule().applyImport(
+        t.db.schedule().insertAll(
             listOf(ScheduleItemEntity(vehicleId = car, name = "Engine oil", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6)),
-            emptyList(), emptyList(),
         )
 
         actions.addLastDone(car, t.db.schedule().allFor(car).single(), day, 38_000)

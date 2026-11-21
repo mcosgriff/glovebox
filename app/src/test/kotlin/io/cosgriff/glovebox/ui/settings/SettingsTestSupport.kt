@@ -12,6 +12,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.encodeToSavedState
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
+import io.cosgriff.glovebox.data.db.MakersSchedules
+import io.cosgriff.glovebox.data.db.MilestoneWriter
+import io.cosgriff.glovebox.data.db.ScheduleItems
+import io.cosgriff.glovebox.data.db.TorqueSpecWriter
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.VehicleEntity
@@ -54,6 +58,11 @@ class TestGraph : org.junit.rules.ExternalResource(), Closeable {
     val photos = RecordPhotoStore(context, crypto, db.service(), db.vehicles(), db.documents())
     val documents = DocumentStore(context, crypto, db.documents(), photos)
     val actions = RecordActions(db.service(), db.recalls(), ServiceLogWriter(db), photos)
+
+    /** The writers an import hands its plan to; no maker's list ships here. */
+    val scheduleItems = ScheduleItems(MakersSchedules({ emptyList() }, db), db)
+    val torqueWriter = TorqueSpecWriter(db)
+    val milestoneWriter = MilestoneWriter(db)
 
     /** For the singletons that launch on the application's scope. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

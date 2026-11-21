@@ -20,12 +20,12 @@ import kotlinx.coroutines.flow.flow
 import io.cosgriff.glovebox.domain.KnownSpecs
 import io.cosgriff.glovebox.domain.KnownSpecPlan
 import io.cosgriff.glovebox.domain.KnownSpecList
-import io.cosgriff.glovebox.domain.ImportedTorqueSpec
 import io.cosgriff.glovebox.domain.TorqueExport
 import io.cosgriff.glovebox.domain.WrittenFile
 import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.export.rememberSaveImportFile
-import io.cosgriff.glovebox.ui.service.toSaved
+import io.cosgriff.glovebox.data.db.toSaved
+import io.cosgriff.glovebox.data.db.TorqueSpecWriter
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -117,6 +117,7 @@ class TorqueSpecsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     vehicles: VehicleDao,
     private val torque: TorqueDao,
+    private val writer: TorqueSpecWriter,
     settings: SettingsRepository,
     private val undo: TorqueSpecUndo,
     private val saver: ExportSaver,
@@ -153,18 +154,17 @@ class TorqueSpecsViewModel @Inject constructor(
         viewModelScope.launch { saver.saveImportFile(text, TorqueExport.fileName(v.fileStem())) }
     }
 
-    /** [draft] with id 0 is a new spec. An edit keeps what the editor doesn't show: that the row came from a bundled list. */
+    /**
+     * [draft] with id 0 is a new spec. An edit writes only what the editor shows, so the bundled list a row came from
+     * stays with it, whatever was read before.
+     */
     fun save(draft: SpecDraft) = viewModelScope.launch {
-        val before = state.value?.specs?.firstOrNull { it.id == draft.id && draft.id != 0L }
-        val entity = (before ?: TorqueSpecEntity(vehicleId = vehicleId, name = draft.name, category = draft.category.name)).copy(
-            name = draft.name,
-            category = draft.category.name,
-            socketSize = draft.socketSize,
-            newtonMeters = draft.torque?.newtonMeters,
-            source = draft.source.name,
-            note = draft.note,
-        )
-        if (before == null) torque.insert(entity) else torque.update(entity)
+        val nm = draft.torque?.newtonMeters
+        if (draft.id == 0L) {
+            torque.insert(TorqueSpecEntity(vehicleId = vehicleId, name = draft.name, category = draft.category.name, socketSize = draft.socketSize, newtonMeters = nm, source = draft.source.name, note = draft.note))
+        } else {
+            torque.edit(draft.id, draft.name, draft.category.name, draft.socketSize, nm, draft.source.name, draft.note)
+        }
     }
 
     /**
@@ -173,22 +173,9 @@ class TorqueSpecsViewModel @Inject constructor(
      * anything in is never touched.
      */
     fun addKnown() = viewModelScope.launch {
+        // Worked out again inside the write from what is saved then, in case the list on screen was stale.
         val (list, _) = state.value?.known ?: return@launch
-        val rows = torque.specsFor(vehicleId)
-        // Worked out again from what is saved now, in case the list on screen was stale.
-        val plan = KnownSpecs.plan(list, rows.map { it.toSaved() })
-        val byId = rows.associateBy { it.id }
-        fun TorqueSpecEntity.from(item: ImportedTorqueSpec) = copy(
-            socketSize = item.socket,
-            newtonMeters = item.torque?.newtonMeters,
-            source = TorqueSource.REFERENCE.name,
-            note = item.note,
-            knownList = list.id,
-        )
-        torque.applyImport(
-            plan.new.map { TorqueSpecEntity(vehicleId = vehicleId, name = it.name, category = it.category.name).from(it) },
-            plan.fills.mapNotNull { (item, saved) -> byId[saved.id]?.from(item) },
-        )
+        writer.addKnown(vehicleId, list)
     }
 
     /** [onDeleted] gets the Undo. */

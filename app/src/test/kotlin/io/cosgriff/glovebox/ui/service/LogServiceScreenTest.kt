@@ -65,12 +65,11 @@ class LogServiceScreenTest {
     /** A truck with an oil change two years overdue, a rotation never logged, and a reading three days ago. */
     private suspend fun truck(): Long {
         val car = t.vehicle(model = "Tacoma", nickname = "Blue truck")
-        t.db.schedule().applyImport(
+        t.db.schedule().insertAll(
             listOf(
                 ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6),
                 ScheduleItemEntity(vehicleId = car, name = "Tire rotation", templateKey = "rotation", intervalMiles = 5_000, intervalMonths = 6),
             ),
-            emptyList(), emptyList(),
         )
         val oil = t.db.schedule().allFor(car).single { it.templateKey == "oil" }.id
         t.record(car, date = today.minusYears(2), odometer = 31_000, lines = listOf(line("Oil changed", "oil", oil)), shop = "Made-up Motors")

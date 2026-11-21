@@ -129,7 +129,8 @@ class ImportPickerTest {
     fun `asked to, a report is filed with the vehicle's documents once the import is written`() = runTest {
         val id = g.vehicle()
         val vm = ImportViewModel(
-            g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
+            g.db.vehicles(), g.settings, g.db.torque(), g.torqueWriter, g.db.schedule(), g.scheduleItems,
+            VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(), g.milestoneWriter,
             g.db.catalogRules(), g.db.recommendations(), g.actions, picker, g.documents, routeHandle(ImportRoute(id)),
         )
         picker.onPicked(file(carfax()))

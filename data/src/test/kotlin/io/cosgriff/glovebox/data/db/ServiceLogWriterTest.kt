@@ -150,9 +150,8 @@ class ServiceLogWriterTest {
     @Test
     fun `a bare last done is one line, flagged, filed under the catalog line that resets its reminder`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
-        db.schedule().applyImport(
+        db.schedule().insertAll(
             listOf(ScheduleItemEntity(vehicleId = car, name = "Engine oil", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6)),
-            emptyList(), emptyList(),
         )
         val item = db.schedule().allFor(car).single()
 

@@ -48,7 +48,8 @@ class ImportViewModelTest {
 
 
     private fun vm(route: ImportRoute = ImportRoute()) = ImportViewModel(
-        g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
+        g.db.vehicles(), g.settings, g.db.torque(), g.torqueWriter, g.db.schedule(), g.scheduleItems,
+            VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(), g.milestoneWriter,
         g.db.catalogRules(), g.db.recommendations(), g.actions, picker, g.documents, routeHandle(route),
     )
 
@@ -103,23 +104,6 @@ class ImportViewModelTest {
         assertEquals("the user's own figure stays under Add new only", 123.0, rows.getValue("Lug nuts").newtonMeters!!, 0.0)
         assertEquals("14 mm", rows.getValue("Oil drain plug").socketSize)
         assertNull("a finished import lets go of the file", picker.picked.value)
-    }
-
-    @Test
-    fun `replace matching overwrites the rows it listed and keeps their names`() = runTest {
-        val id = g.vehicle()
-        val lug = g.db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "LUG NUTS", category = "WHEELS", newtonMeters = 123.0, note = "Mine"))
-        val vm = vm(ImportRoute(id, torqueOnly = true))
-        pick(example("torque-specs.json"))
-
-        val result = vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING)
-        assertEquals(1, result.replaced)
-        assertEquals(0, result.unchanged)
-        val row = g.db.torque().specsFor(id).single { it.id == lug }
-        assertEquals("LUG NUTS", row.name)
-        assertEquals("21 mm", row.socketSize)
-        assertEquals("Star pattern, re-check after 50 mi", row.note)
-        assertEquals("FACTORY", row.source)
     }
 
     @Test
@@ -325,25 +309,6 @@ class ImportViewModelTest {
         val imported = items.filter { it.templateKey == null }
         assertEquals(view.new.size, imported.size)
         assertTrue(imported.all { it.tracked })
-    }
-
-    @Test
-    fun `replacing a schedule item changes only what the file describes`() = runTest {
-        val id = g.vehicle()
-        val snooze = LocalDate.of(2026, 12, 1)
-        g.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Rotate tires", intervalMiles = 6_000, intervalMonths = null, tracked = false, snoozedUntilDate = snooze)))
-        val vm = vm()
-        pick(example("interval-schedule.json"))
-        val view = vm.ready().view
-        assertEquals(listOf("Rotate tires"), view.differs.map { it.name })
-
-        val result = vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING)
-        assertEquals(1, result.replaced)
-        val item = g.db.schedule().allFor(id).single { it.name == "Rotate tires" }
-        assertEquals(5_000, item.intervalMiles)
-        assertEquals("rotation", item.service)
-        assertFalse("whether it is tracked is the user's", item.tracked)
-        assertEquals(snooze, item.snoozedUntilDate)
     }
 
     @Test

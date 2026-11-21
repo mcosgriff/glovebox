@@ -314,7 +314,16 @@ data class ImportPlan<I, E>(
 
     /** How many of the file's items the import will write. */
     fun changes(mode: ImportMode): Int = new.size + replaced(mode).size
+
+    /** Every item of the file, whatever it comes to: new ones first, each group in the file's order. */
+    val items: List<I> get() = new + (fills + same + differs).map { it.first }
 }
+
+/**
+ * What an import writes, worked out inside its write ([ImportPlans.recheck]): the items to add, and each saved row to
+ * write the file's columns onto, as that row now stands.
+ */
+data class ImportWrite<I, E>(val added: List<I>, val replaced: List<Pair<I, E>>)
 
 object ImportPlans {
     /**
@@ -344,5 +353,17 @@ object ImportPlans {
             }
         }
         return ImportPlan(new, fills, unchanged, differs)
+    }
+
+    /**
+     * What is left to write of the [preview] the owner saw, given [now]: the same file planned again from the rows as
+     * they stand inside the write (#645). An item is added only while it is still new, so nothing is added twice; a
+     * saved row is written only where the preview listed it for [mode] and it still matches, so nothing changed or
+     * added since is written over unless the preview said it would be. [id] names a saved row across the two plans.
+     */
+    fun <I, E> recheck(preview: ImportPlan<I, E>, now: ImportPlan<I, E>, mode: ImportMode, id: (E) -> Long): ImportWrite<I, E> {
+        val adding = preview.new.toSet()
+        val listed = preview.replaced(mode).map { id(it.second) }.toSet()
+        return ImportWrite(now.new.filter { it in adding }, now.replaced(mode).filter { id(it.second) in listed })
     }
 }
