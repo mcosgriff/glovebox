@@ -1,0 +1,101 @@
+# Lint's GradleDependency check ("a newer version of … is available"), out of the PR gate (#639): a library
+# shipping would otherwise fail every PR that day, whatever it changes. Once a week this runs that check
+# alone and keeps one issue open listing what is newer, updating it rather than opening another, and
+# closing it once nothing is. Migrations already tracked by an issue are ignored in app/lint.xml.
+#
+# Two jobs, so the token that can write issues never runs the build:
+#   lint    runs Gradle (read-only token) and hands over only the issue's text;
+#   report  runs no Gradle and opens, updates or closes the issue.
+# Action versions are pinned to commit SHAs; Dependabot keeps them current.
+name: newer-versions
+
+on:
+  schedule:
+    # Mondays, 07:17 UTC.
+    - cron: '17 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newer-versions
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Also validates the Gradle wrapper jar.
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      # -Pglovebox.newerVersions runs GradleDependency and nothing else, and reports instead of failing
+      # (app/ and data/build.gradle.kts). Both modules, though the version catalog is shared.
+      - name: Lint for newer versions
+        run: ./gradlew :app:lintDebug :data:lintDebug -Pglovebox.newerVersions
+
+      # The issue's text, from both modules' XML reports; the count says whether there is anything to report.
+      - name: List newer versions
+        id: list
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          count=$(python3 -I .github/scripts/newer-versions.py "$RUNNER_TEMP/newer-versions.md" \
+            app/build/reports/lint-results-debug.xml data/build/reports/lint-results-debug.xml)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/newer-versions.md"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: newer-versions
+          path: ${{ runner.temp }}/newer-versions.md
+          retention-days: 1
+
+  report:
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      # To open, edit, comment on and close the issue.
+      issues: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: newer-versions
+          path: ${{ runner.temp }}
+
+      # The open issue is found by its exact title, so a week with findings updates it instead of opening
+      # another. Nothing newer: close it, if one is open.
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COUNT: ${{ needs.lint.outputs.count }}
+          TITLE: Newer library versions available
+          BODY: ${{ runner.temp }}/newer-versions.md
+        run: |
+          open=$(gh issue list --state open --limit 500 --json number,title \
+            --jq "map(select(.title == env.TITLE)) | .[0].number // empty")
+          if [ "$COUNT" -gt 0 ]; then
+            if [ -n "$open" ]; then
+              gh issue edit "$open" --body-file "$BODY"
+              echo "Updated #$open ($COUNT newer)."
+            else
+              gh issue create --title "$TITLE" --body-file "$BODY"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Lint finds no newer library versions now."
+            echo "Closed #$open."
+          else
+            echo "Nothing newer, and no issue open."
+          fi

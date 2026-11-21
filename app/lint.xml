@@ -8,12 +8,14 @@
         <ignore path="src/main/res/mipmap-anydpi-v26" />
     </issue>
     <!--
-        Two upgrades that are migrations, not version bumps, so they get a PR of their own; until then lint
-        must not fail every PR over them. Anything else newer (a 1.6.x CameraX, any other library) still fails.
-        - Compose BOM 2026.11 (Compose 1.13, Material 3 1.5) needs compileSdk 37.1, moves ExposedDropdownMenu
-          to an extension that must be imported, deprecates the Slider, rememberModalBottomSheetState and
-          PasswordVisualTransformation the app uses, and changes a screenshot.
-        - CameraX 1.7 moves camera2 onto camera2-pipe, brings Guava into the APK (R8 then needs a rule for
+        GradleDependency runs only in the weekly newer-versions.yml, which keeps an issue open listing what is
+        newer (#639); a PR's lint skips it. Two upgrades are migrations, not version bumps, each with an issue of
+        its own, so they are kept out of that list. Anything else newer (a 1.6.x CameraX, any other library) is
+        listed. Remove an ignore in the PR that does its migration.
+        - Compose BOM 2026.11 (Compose 1.13, Material 3 1.5), #636: needs compileSdk 37.1, moves
+          ExposedDropdownMenu to an extension that must be imported, deprecates the Slider,
+          rememberModalBottomSheetState and PasswordVisualTransformation the app uses, and changes a screenshot.
+        - CameraX 1.7, #637: moves camera2 onto camera2-pipe, brings Guava into the APK (R8 then needs a rule for
           j2objc) and turns ImageProxy into Kotlin properties.
     -->
     <issue id="GradleDependency">

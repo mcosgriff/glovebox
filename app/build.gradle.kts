@@ -101,6 +101,15 @@ android {
         disable += "AndroidGradlePluginVersion"
         // The release is 64-bit ARM only on purpose (abiFilters above); no ChromeOS x86_64 build.
         disable += "ChromeOsAbiSupport"
+        // GradleDependency ("a newer version of … is available") would fail every PR the day a library ships,
+        // whatever the PR changes (#639). A weekly job (newer-versions.yml) runs it alone instead, with
+        // -Pglovebox.newerVersions, and opens an issue naming what is newer.
+        if (providers.gradleProperty("glovebox.newerVersions").isPresent) {
+            checkOnly += "GradleDependency"
+            abortOnError = false
+        } else {
+            disable += "GradleDependency"
+        }
     }
 }
 

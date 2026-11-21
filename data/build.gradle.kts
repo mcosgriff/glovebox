@@ -37,6 +37,13 @@ android {
         warningsAsErrors = true
         disable += "NewerVersionAvailable"
         disable += "AndroidGradlePluginVersion"
+        // As in :app: GradleDependency runs only in the weekly job (newer-versions.yml, #639).
+        if (providers.gradleProperty("glovebox.newerVersions").isPresent) {
+            checkOnly += "GradleDependency"
+            abortOnError = false
+        } else {
+            disable += "GradleDependency"
+        }
     }
 }
 
