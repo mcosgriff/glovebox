@@ -219,7 +219,8 @@ class ServiceLogWriterTest {
     fun `an import adds and replaces in one go, a replaced record keeping its id and photos`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val id = writer.add(record(car, RecordLine("Old wording")), listOf("receipt.jpg"))
-        val file = record(car, RecordLine("Tires rotated", "rotation")).copy(date = day.minusDays(30), odometer = 39_000, imported = true)
+        // A priced record: it reads back whole, its jobs written with it and its lines and part rows pointing at them.
+        val file = invoice(car).copy(date = day.minusDays(30), odometer = 39_000, imported = true)
 
         writer.applyImport(added = listOf(file), replaced = listOf(saved(id).copy(notes = "From the file", imported = true, lines = listOf(RecordLine("New wording")))))
 

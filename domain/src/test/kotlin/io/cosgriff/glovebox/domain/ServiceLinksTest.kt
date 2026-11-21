@@ -30,20 +30,20 @@ class ServiceLinksTest {
     fun `one logged line counts for every item that answers to it`() {
         val answering = ServiceLinks.answering(listOf(typicalOil, myOil, myWipers, myWash))
         // Ticked on Log service: saved against the typical item, picked from the catalog's oil line.
-        assertEquals(setOf(1L, 2L), ServiceLinks.itemIds(listOf(1L to "oil"), answering))
+        assertEquals(setOf(1L, 2L), ServiceLinks.itemIds(listOf(RecordLine("Oil & filter change", "oil", 1)), answering))
         // A bare last done entered for the user's own item is filed under the same line, so it counts for both too.
-        assertEquals(setOf(1L, 2L), ServiceLinks.itemIds(listOf(2L to "oil"), answering))
+        assertEquals(setOf(1L, 2L), ServiceLinks.itemIds(listOf(RecordLine("Oil change", "oil", 2)), answering))
         // Logged under "Your items": no catalog line, so only that item.
-        assertEquals(setOf(4L), ServiceLinks.itemIds(listOf(4L to null), answering))
+        assertEquals(setOf(4L), ServiceLinks.itemIds(listOf(RecordLine("Wash underbody", scheduleItemId = 4)), answering))
         // A recall's line is linked to nothing.
-        assertTrue(ServiceLinks.itemIds(listOf(null to null), answering).isEmpty())
+        assertTrue(ServiceLinks.itemIds(listOf(RecordLine("26V000000")), answering).isEmpty())
     }
 
     @Test
     fun `linking an item to a service makes past work count straight away`() {
         val day = LocalDate.of(2026, 6, 14)
         val oil = TrackedItem(2, "Oil change", Interval(5_000, null), DueRule.MILEAGE_ONLY)
-        val lines = listOf(1L to "oil") // logged before the user's item answered to anything
+        val lines = listOf(RecordLine("Oil & filter change", "oil", 1)) // logged before the user's item answered to anything
 
         val before = ServiceEntry(7, day, 60_100, ServiceLinks.itemIds(lines, ServiceLinks.answering(listOf(typicalOil, myOil.copy(service = null)))))
         assertNull(ServiceLog.lastDone(oil.id, listOf(before)))

@@ -62,9 +62,9 @@ object ServiceLinks {
         return out
     }
 
-    /** [lines] are each line's (schedule item it was saved against, catalog item it was picked from). */
-    fun itemIds(lines: List<Pair<Long?, String?>>, answering: Map<String, Set<Long>>): Set<Long> =
-        lines.flatMap { (itemId, catalogId) -> listOfNotNull(itemId) + catalogId?.let(answering::get).orEmpty() }.toSet()
+    /** Every schedule item [lines] count for: each line's own item, and every item [answering] its catalog line. */
+    fun itemIds(lines: List<RecordLine>, answering: Map<String, Set<Long>>): Set<Long> =
+        lines.flatMap { listOfNotNull(it.scheduleItemId) + it.catalogId?.let(answering::get).orEmpty() }.toSet()
 }
 
 /**

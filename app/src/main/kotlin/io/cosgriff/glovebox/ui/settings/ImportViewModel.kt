@@ -18,8 +18,6 @@ import java.time.LocalDate
 import io.cosgriff.glovebox.domain.FileDistances
 import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import io.cosgriff.glovebox.ui.route
 import androidx.lifecycle.ViewModel
@@ -27,7 +25,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.MilestoneDao
 import io.cosgriff.glovebox.data.db.ScheduleDao
-import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleDao
@@ -161,7 +158,6 @@ class ImportViewModel @Inject constructor(
     settings: SettingsRepository,
     private val torque: TorqueDao,
     private val schedule: ScheduleDao,
-    private val service: ServiceDao,
     private val logs: VehicleLogs,
     private val milestones: MilestoneDao,
     private val catalogRules: CatalogRuleDao,
