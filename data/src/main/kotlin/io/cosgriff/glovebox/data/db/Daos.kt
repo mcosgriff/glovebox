@@ -440,8 +440,6 @@ interface ScheduleDao {
     suspend fun setSnooze(id: Long, odometer: Int?, date: LocalDate?)
 
     @Insert suspend fun insertAll(items: List<ScheduleItemEntity>)
-    @Update suspend fun update(item: ScheduleItemEntity)
-    @Update suspend fun updateAll(items: List<ScheduleItemEntity>)
 
     @Query("UPDATE schedule_items SET tracked = 0 WHERE id IN (:ids)")
     suspend fun stopTracking(ids: List<Long>)
@@ -483,6 +481,27 @@ interface ScheduleDao {
         service: String?,
     )
 
+    /**
+     * What an `interval-schedule` file says of a job, and nothing else (#645): whether it is tracked, a snooze, which
+     * interval is in use, its name and the list it came from stay as they are.
+     */
+    @Query(
+        "UPDATE schedule_items SET intervalMiles = :intervalMiles, intervalMonths = :intervalMonths, severeMiles = :severeMiles, " +
+            "severeMonths = :severeMonths, ruleOverride = :ruleOverride, service = :service, firstMiles = :firstMiles, " +
+            "severeOnly = :severeOnly WHERE id = :id",
+    )
+    suspend fun setFromFile(
+        id: Long,
+        intervalMiles: Int?,
+        intervalMonths: Int?,
+        severeMiles: Int?,
+        severeMonths: Int?,
+        ruleOverride: String?,
+        service: String?,
+        firstMiles: Int?,
+        severeOnly: Boolean,
+    )
+
     /** Typical items only, and only those no logged line was ever saved against. */
     @Query(
         "DELETE FROM schedule_items WHERE id IN (:ids) AND templateKey IS NOT NULL " +
@@ -500,17 +519,6 @@ interface ScheduleDao {
         insertAll(added)
         removeUnlogged(replaced)
         stopTracking(replaced)
-    }
-
-    /**
-     * One import, applied whole or not at all. Nothing is deleted by one; [stopped] are typical items
-     * the user chose to stop tracking because the file has the same job.
-     */
-    @Transaction
-    suspend fun applyImport(added: List<ScheduleItemEntity>, replaced: List<ScheduleItemEntity>, stopped: List<Long>) {
-        insertAll(added)
-        updateAll(replaced)
-        stopTracking(stopped)
     }
 }
 
@@ -548,15 +556,21 @@ interface TorqueDao {
 
     @Insert suspend fun insert(spec: TorqueSpecEntity): Long
     @Insert suspend fun insertAll(specs: List<TorqueSpecEntity>)
-    @Update suspend fun update(spec: TorqueSpecEntity)
-    @Update suspend fun updateAll(specs: List<TorqueSpecEntity>)
 
-    /** One import, applied whole or not at all. Nothing is ever deleted by one. */
-    @Transaction
-    suspend fun applyImport(added: List<TorqueSpecEntity>, replaced: List<TorqueSpecEntity>) {
-        insertAll(added)
-        updateAll(replaced)
-    }
+    /** What the editor shows, and nothing else: the bundled list a row came from stays with it. */
+    @Query(
+        "UPDATE torque_specs SET name = :name, category = :category, socketSize = :socketSize, newtonMeters = :newtonMeters, " +
+            "source = :source, note = :note WHERE id = :id",
+    )
+    suspend fun edit(id: Long, name: String, category: String, socketSize: String?, newtonMeters: Double?, source: String, note: String?)
+
+    /** A fastener's setting, from an import file or a bundled list (#645): its name and category, which matched, stay. */
+    @Query("UPDATE torque_specs SET socketSize = :socketSize, newtonMeters = :newtonMeters, source = :source, note = :note WHERE id = :id")
+    suspend fun setSpec(id: Long, socketSize: String?, newtonMeters: Double?, source: String, note: String?)
+
+    @Query("UPDATE torque_specs SET knownList = :list WHERE id = :id")
+    suspend fun setKnownList(id: Long, list: String)
+
     @Delete suspend fun delete(spec: TorqueSpecEntity)
 }
 
@@ -637,7 +651,14 @@ interface MilestoneDao {
 
     @Insert suspend fun insert(milestone: MilestoneEntity): Long
     @Insert suspend fun insertJobs(jobs: List<MilestoneJobEntity>)
-    @Update suspend fun update(milestone: MilestoneEntity)
+
+    /** A milestone's own columns, which the editor shows; its vehicle stays. */
+    @Query("UPDATE milestones SET atMiles = :atMiles, orMonths = :orMonths WHERE id = :id")
+    suspend fun edit(id: Long, atMiles: Int, orMonths: Int?)
+
+    /** What a file says of a milestone it matched by mileage, besides its jobs (#645). */
+    @Query("UPDATE milestones SET orMonths = :orMonths WHERE id = :id")
+    suspend fun setOrMonths(id: Long, orMonths: Int?)
 
     @Query("DELETE FROM milestone_jobs WHERE milestoneId = :milestoneId")
     suspend fun clearJobs(milestoneId: Long)
@@ -664,9 +685,14 @@ interface MilestoneDao {
      */
     @Transaction
     suspend fun save(milestone: MilestoneEntity, jobs: List<MilestoneJobEntity>) {
-        val id = if (milestone.id == 0L) insert(milestone) else milestone.id.also { update(milestone) }
-        clearJobs(id)
-        insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = id, position = i) })
+        val id = if (milestone.id == 0L) insert(milestone) else milestone.id.also { edit(it, milestone.atMiles, milestone.orMonths) }
+        setJobs(id, jobs)
+    }
+
+    /** Replaces a milestone's jobs with [jobs], in that order. */
+    suspend fun setJobs(milestoneId: Long, jobs: List<MilestoneJobEntity>) {
+        clearJobs(milestoneId)
+        insertJobs(jobs.mapIndexed { i, job -> job.copy(id = 0, milestoneId = milestoneId, position = i) })
     }
 
     /** Deletes one milestone. The last one takes the table with it, and so that it repeats. */
@@ -696,24 +722,9 @@ interface MilestoneDao {
     @Transaction
     suspend fun addKnown(vehicleId: Long, list: String, table: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>) {
         if (count(vehicleId) > 0) return
-        applyImport(vehicleId, null, table, emptyList())
+        setRepeat(vehicleId, null)
+        table.forEach { (milestone, jobs) -> save(milestone, jobs) }
         setKnownList(vehicleId, list)
-    }
-
-    /**
-     * One import, applied whole or not at all. Nothing is deleted by one; a replaced milestone keeps its row.
-     * [repeatsEveryMiles] is the file's, which is the saved table's too unless this is the vehicle's first.
-     */
-    @Transaction
-    suspend fun applyImport(
-        vehicleId: Long,
-        repeatsEveryMiles: Int?,
-        added: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
-        replaced: List<Pair<MilestoneEntity, List<MilestoneJobEntity>>>,
-    ) {
-        setRepeat(vehicleId, repeatsEveryMiles)
-        // New rows have no id yet and replaced ones keep theirs, which is what save() goes by.
-        (added + replaced).forEach { (milestone, jobs) -> save(milestone, jobs) }
     }
 }
 

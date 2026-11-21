@@ -72,9 +72,8 @@ class SortCustomScreenTest {
      */
     private suspend fun car(): Long {
         val car = t.vehicle()
-        t.db.schedule().applyImport(
+        t.db.schedule().insertAll(
             listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null)),
-            emptyList(), emptyList(),
         )
         t.db.milestones().save(MilestoneEntity(vehicleId = car, atMiles = 60_000), listOf(MilestoneJobEntity(milestoneId = 0, name = "Engine oil", service = "oil")))
         t.db.catalogRules().put("Roof rack fitted", "washer", today)

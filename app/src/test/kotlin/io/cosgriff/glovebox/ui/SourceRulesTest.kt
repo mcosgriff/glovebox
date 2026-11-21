@@ -18,19 +18,24 @@ class SourceRulesTest {
     private val appAndData = app + data
     private val appTests = listOf("src/test/kotlin")
 
+    /** The rows written one set of columns at a time, never whole from a copy read earlier (#624, #645). */
+    private val columnWritten = listOf("VehicleEntity", "ScheduleItemEntity", "TorqueSpecEntity", "MilestoneEntity")
+
     /**
-     * The annotation and the `fun` it is on, whether on one line or the annotation on its own above it (#646): a
-     * `VehicleEntity` among the fun's parameters, or named as the annotation's `entity`.
+     * The annotation and the `fun` it is on, whether on one line or the annotation on its own above it (#646): one of
+     * [columnWritten] among the fun's parameters, or named as the annotation's `entity`.
      */
-    private val vehicleRow = Rule(
-        "Write a vehicle's columns one at a time (VehicleDao.setNickname etc.), never a whole-row @Update or @Upsert, " +
-            "which could undo a recall check that landed meanwhile",
-        Regex(
-            """@(?:Update|Upsert)\b(?:\s*\([^)]*\))?(?:\s*@\w+(?:\s*\([^)]*\))?)*\s*(?:\w+\s+)*fun\s+\w+\s*\([^)]*\bVehicleEntity\b""" +
-                """|@(?:Update|Upsert)\s*\([^)]*\bVehicleEntity\b""",
-        ),
-        data,
-    )
+    private val wholeRow = columnWritten.joinToString("|", "\\b(?:", ")\\b").let { entity ->
+        Rule(
+            "Write a vehicle's, schedule item's, torque spec's or milestone's columns, never a whole-row @Update or @Upsert " +
+                "(VehicleDao.setNickname, ScheduleDao.setFromFile etc.), which could undo a change that landed meanwhile",
+            Regex(
+                """@(?:Update|Upsert)\b(?:\s*\([^)]*\))?(?:\s*@\w+(?:\s*\([^)]*\))?)*\s*(?:\w+\s+)*fun\s+\w+\s*\([^)]*$entity""" +
+                    """|@(?:Update|Upsert)\s*\([^)]*$entity""",
+            ),
+            data,
+        )
+    }
 
     private val rules = listOf(
         Rule("Use PlexMono, never FontFamily.Monospace", Regex("""\bFontFamily\.Monospace\b"""), app),
@@ -50,7 +55,7 @@ class SourceRulesTest {
             "Go around the DAOs with useReaderConnection / useWriterConnection, never openHelper",
             Regex("""\bopenHelper\b"""), appAndData,
         ),
-        vehicleRow,
+        wholeRow,
         Rule(
             "Composables use stringResource, never LocalContext.current.getString",
             Regex("""\bLocalContext\.current\.getString\b"""), app,
@@ -87,19 +92,23 @@ class SourceRulesTest {
     }
 
     @Test
-    fun `a whole-row write of a vehicle is caught with its annotation on the fun's line or on its own above it`() {
+    fun `a whole-row write is caught with its annotation on the fun's line or on its own above it`() {
         listOf(
             "@Update suspend fun update(vehicle: VehicleEntity)",
             "@Update\nsuspend fun update(vehicle: VehicleEntity)",
             "@Upsert(onConflict = 1)\n@Transaction\nsuspend fun put(\n    vehicles: List<VehicleEntity>,\n)",
             "@Update(entity = VehicleEntity::class)\nsuspend fun setNickname(row: NicknameRow)",
-        ).forEach { assertEquals(it, listOf(1), lines(vehicleRow, it)) }
+            "@Update suspend fun updateAll(items: List<ScheduleItemEntity>)",
+            "@Update\nsuspend fun update(spec: TorqueSpecEntity)",
+            "@Upsert suspend fun put(milestone: MilestoneEntity)",
+        ).forEach { assertEquals(it, listOf(1), lines(wholeRow, it)) }
         listOf(
-            "@Update suspend fun update(item: ScheduleItemEntity)\nsuspend fun byId(id: Long): VehicleEntity?",
-            "@Update\nsuspend fun update(item: ScheduleItemEntity)\n@Insert suspend fun insert(vehicle: VehicleEntity): Long",
+            "@Update suspend fun update(recall: RecallEntity)\nsuspend fun byId(id: Long): VehicleEntity?",
+            "@Update\nsuspend fun updateRecord(record: ServiceRecordEntity)\n@Insert suspend fun insert(vehicle: VehicleEntity): Long",
+            "@Update suspend fun update(job: MilestoneJobEntity)",
             "@Query(\"UPDATE vehicles SET nickname = :name WHERE id = :id\")\nsuspend fun setNickname(id: Long, name: String)",
             "// @Update suspend fun update(vehicle: VehicleEntity)",
-        ).forEach { assertEquals(it, emptyList<Int>(), lines(vehicleRow, it)) }
+        ).forEach { assertEquals(it, emptyList<Int>(), lines(wholeRow, it)) }
     }
 
     @Test

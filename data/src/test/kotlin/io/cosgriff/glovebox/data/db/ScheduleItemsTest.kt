@@ -8,6 +8,7 @@ import io.cosgriff.glovebox.data.testVehicle
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.DueRule
+import io.cosgriff.glovebox.domain.ImportMode
 import io.cosgriff.glovebox.domain.ImportedMilestone
 import io.cosgriff.glovebox.domain.ImportedScheduleItem
 import io.cosgriff.glovebox.domain.Interval
@@ -15,6 +16,7 @@ import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSpecSource
 import io.cosgriff.glovebox.domain.MilestoneImport
+import io.cosgriff.glovebox.domain.ScheduleImport
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.domain.TableJob
@@ -304,5 +306,89 @@ class ScheduleItemsTest {
         assertTrue(row.tracked)
         assertFalse(row.useSevere || row.useE85)
         assertNull(row.templateKey)
+    }
+
+    /** A made-up `interval-schedule` file: an oil change matching the owner's own, and a new job. */
+    private val file = listOf(
+        ImportedScheduleItem("Oil change", Interval(7_500, 12), severe = Interval(3_750, 6), rule = DueRule.MILEAGE_ONLY, service = "oil"),
+        ImportedScheduleItem("Made-up job", Interval(30_000, 36)),
+    )
+
+    private suspend fun importPreview(car: Long) = ScheduleImport.plan(file, rows(car).map { it.toSaved() })
+
+    @Test
+    fun `an import adds the file's new items as the owner's own and stops only the typical twins it is given`() = runBlocking {
+        val car = db.vehicles().insert(hatch())
+        schedule.insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6)))
+        val preview = importPreview(car)
+        val twins = ScheduleImport.doubles(file, rows(car).map { it.toSaved() })
+        assertEquals("a typical item is never matched", file, preview.new)
+
+        items.import(car, preview, ImportMode.REPLACE_MATCHING, stop = twins.map { it.id })
+
+        val saved = rows(car)
+        assertEquals("nothing is deleted", 3, saved.size)
+        assertFalse(saved.single { it.templateKey == "oil" }.tracked)
+        assertEquals(5_000, saved.single { it.templateKey == "oil" }.intervalMiles)
+        assertTrue(saved.filter { it.templateKey == null }.all { it.tracked })
+        assertEquals(file.map { it.toEntity(car) }, saved.filter { it.templateKey == null }.sortedBy { it.id }.map { it.copy(id = 0) })
+    }
+
+    @Test
+    fun `an import planned before a snooze and an edit writes only what the file says over them`() = runBlocking {
+        val car = db.vehicles().insert(hatch())
+        schedule.insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "OIL CHANGE", intervalMiles = 5_000, intervalMonths = 6, knownList = "madeup-list")))
+        val preview = importPreview(car)
+        val oil = rows(car).single().id
+        assertEquals(listOf(oil), preview.differs.map { it.second.id })
+
+        // Between the preview and Import: a snooze from the notification, the item unticked and put on severe use.
+        val snooze = LocalDate.of(2026, 12, 1)
+        schedule.setSnooze(oil, 61_000, snooze)
+        items.setTracked(oil, false)
+        items.setSevereUse(car, true)
+
+        items.import(car, preview, ImportMode.REPLACE_MATCHING, stop = emptyList())
+
+        val row = rows(car).single { it.id == oil }
+        assertEquals(listOf(7_500, 12, 3_750, 6), listOf(row.intervalMiles, row.intervalMonths, row.severeMiles, row.severeMonths))
+        assertEquals("MILEAGE_ONLY" to "oil", row.ruleOverride to row.service)
+        assertEquals("the owner's name, which matched, stays", "OIL CHANGE", row.name)
+        assertEquals(61_000 to snooze, row.snoozedUntilOdometer to row.snoozedUntilDate)
+        assertFalse(row.tracked)
+        assertTrue(row.useSevere)
+        assertEquals("madeup-list", row.knownList)
+    }
+
+    @Test
+    fun `an item changed or added since the preview is written over only where the preview said, and nothing is added twice`() = runBlocking {
+        val car = db.vehicles().insert(hatch())
+        // The oil change says what the file says, so the preview leaves it be.
+        schedule.insertAll(listOf(file.first().toEntity(car)))
+        val preview = importPreview(car)
+        assertEquals(listOf("Made-up job"), preview.new.map { it.name })
+
+        // Then the owner changes the oil change and adds the new job themselves.
+        val oil = rows(car).single().id
+        items.edit(oil, rows(car).single().toDraft(null)!!.copy(normal = Interval(10_000, 12)))
+        items.add(car, DraftItem(key = "own", name = "Made-up job", normal = Interval(20_000, 24), severe = null))
+
+        items.import(car, preview, ImportMode.REPLACE_MATCHING, stop = emptyList())
+
+        val saved = rows(car)
+        assertEquals(listOf("Made-up job", "Oil change"), saved.map { it.name })
+        assertEquals(10_000, saved.single { it.id == oil }.intervalMiles)
+        assertEquals(20_000, saved.single { it.name == "Made-up job" }.intervalMiles)
+    }
+
+    @Test
+    fun `under Add new only an import adds and writes nothing over a saved item`() = runBlocking {
+        val car = db.vehicles().insert(hatch())
+        schedule.insertAll(listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", intervalMiles = 5_000, intervalMonths = 6)))
+
+        items.import(car, importPreview(car), ImportMode.ADD_NEW, stop = emptyList())
+
+        assertEquals(5_000, rows(car).single { it.name == "Oil change" }.intervalMiles)
+        assertEquals(2, rows(car).size)
     }
 }

@@ -18,6 +18,12 @@ Rules for the import format and schemas, schedule and history imports, the Carfa
 - **An import never deletes, is one transaction, has no Undo, and only writes the user's own rows**; nothing
   Glovebox supplies may be changed by one. "Add new only" is the default; "Replace matching" lists what it will
   overwrite first. The picked file is read into memory (2 MB cap) and never written to disk.
+- **An import writes only the columns the file sets, planned again inside its transaction** (#645). The ViewModel
+  hands the preview's plan to the kind's writer in `:data` (`ScheduleItems.import`, `TorqueSpecWriter.import`,
+  `MilestoneWriter.import`), which plans the file again from the rows as they stand and writes what both plans agree
+  on (`ImportPlans.recheck`): nothing is added twice, and nothing changed since the preview is written over unless
+  the preview listed it. **Never write a whole row from a copy read at preview time**; `SourceRulesTest` refuses a
+  whole-row `@Update` or `@Upsert` of a vehicle, schedule item, torque spec or milestone.
 - **Torque specs are imported only from the Torque & fastener specs page** (#604, `ImportRoute.torqueOnly`):
   Settings → Import and Vehicle details refuse a torque file, and that page's import refuses every other kind.
   Settings holds what is global, not one vehicle's rows.

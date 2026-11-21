@@ -10,12 +10,17 @@ import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.domain.Gearboxes
 import io.cosgriff.glovebox.domain.HistoryImport
+import io.cosgriff.glovebox.domain.ImportMode
+import io.cosgriff.glovebox.domain.ImportPlan
+import io.cosgriff.glovebox.domain.ImportPlans
 import io.cosgriff.glovebox.domain.ImportedScheduleItem
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownIntervalPlan
 import io.cosgriff.glovebox.domain.KnownScheduleList
 import io.cosgriff.glovebox.domain.KnownSchedules
+import io.cosgriff.glovebox.domain.SavedScheduleItem
+import io.cosgriff.glovebox.domain.ScheduleImport
 import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
@@ -232,6 +237,27 @@ class ScheduleItems @Inject constructor(private val makers: MakersSchedules, db:
             list,
             replaced = plan.doubles.map { it.id }.filter { it in stop },
         )
+    }
+
+    /**
+     * Writes an `interval-schedule` file (#645) as its [preview] planned it, in one transaction: the plan is checked
+     * again against the items as they stand inside it ([ImportPlans.recheck]), so nothing is added twice and no item
+     * changed since is written over unless the preview listed it. New items are the owner's own, tracked, built as
+     * every row is ([toEntity]); a replaced one gets only what the file says of it ([ScheduleDao.setFromFile]), so a
+     * snooze, whether it is tracked and which interval is in use stay as they are, whatever was read before. [stop]
+     * are the typical twins the owner chose to stop tracking ([ScheduleImport.doubles]): only `tracked` changes.
+     */
+    suspend fun import(vehicleId: Long, preview: ImportPlan<ImportedScheduleItem, SavedScheduleItem>, mode: ImportMode, stop: List<Long>) = makers.transaction {
+        val now = ScheduleImport.plan(preview.items, schedule.allFor(vehicleId).map { it.toSaved() })
+        val write = ImportPlans.recheck(preview, now, mode) { it.id }
+        schedule.insertAll(write.added.map { it.toEntity(vehicleId) })
+        write.replaced.forEach { (item, mine) ->
+            schedule.setFromFile(
+                mine.id, item.normal.miles, item.normal.months, item.severe?.miles, item.severe?.months, item.rule?.name, item.service,
+                item.firstAt, item.severeOnly,
+            )
+        }
+        schedule.stopTracking(stop)
     }
 
     companion object {

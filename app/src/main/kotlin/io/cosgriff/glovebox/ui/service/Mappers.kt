@@ -17,7 +17,6 @@ import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleSpecEntry
 import io.cosgriff.glovebox.domain.WhatItTakes
 import io.cosgriff.glovebox.data.db.rule
-import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.CountedInterval
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -25,10 +24,6 @@ import io.cosgriff.glovebox.domain.DueHeadline
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.Interval
 import io.cosgriff.glovebox.domain.NextDue
-import io.cosgriff.glovebox.domain.SavedTorqueSpec
-import io.cosgriff.glovebox.domain.Torque
-import io.cosgriff.glovebox.domain.TorqueCategory
-import io.cosgriff.glovebox.domain.TorqueSource
 import io.cosgriff.glovebox.domain.TrackedItem
 import io.cosgriff.glovebox.domain.ReminderChange
 import io.cosgriff.glovebox.domain.Snooze
@@ -225,17 +220,6 @@ fun DueRule.ruleLabel(): String = AppText.res.getString(
         DueRule.MILEAGE_ONLY -> R.string.rule_mileage_only
         DueRule.TIME_ONLY -> R.string.rule_time_only
     },
-)
-
-/** A torque row as an import or a file written from the vehicle sees it. */
-fun TorqueSpecEntity.toSaved() = SavedTorqueSpec(
-    id = id,
-    name = name,
-    category = TorqueCategory.of(category),
-    socket = socketSize,
-    torque = newtonMeters?.let(::Torque),
-    source = TorqueSource.of(source),
-    note = note,
 )
 
 /** Everything entered under "What it takes", as `:domain` reads it. */

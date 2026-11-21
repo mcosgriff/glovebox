@@ -89,25 +89,4 @@ class ScheduleDaoTest {
         assertFalse(after.getValue("Own job").tracked)
         assertEquals("made-up", after.getValue("Oil (maker)").knownList)
     }
-
-    @Test
-    fun `an import adds, replaces and stops tracking, and deletes nothing`() = runBlocking {
-        val v = db.vehicles().add(testVehicle(), firstReading = null)
-        schedule.insertAll(listOf(item(v, "Oil"), item(v, "Tires (typical)", templateKey = "tires")))
-        val before = byName(v)
-
-        schedule.applyImport(
-            added = listOf(item(v, "Coolant")),
-            replaced = listOf(before.getValue("Oil").copy(intervalMiles = 7500)),
-            stopped = listOf(before.getValue("Tires (typical)").id),
-        )
-
-        val after = byName(v)
-        assertEquals(setOf("Oil", "Tires (typical)", "Coolant"), after.keys)
-        assertEquals(7500, after.getValue("Oil").intervalMiles)
-        assertFalse(after.getValue("Tires (typical)").tracked)
-
-        schedule.update(after.getValue("Coolant").copy(intervalMonths = 60))
-        assertEquals(60, byName(v).getValue("Coolant").intervalMonths)
-    }
 }

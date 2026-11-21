@@ -43,7 +43,8 @@ class ImportScreenTest {
 
 
     private fun vm(route: ImportRoute = ImportRoute()) = ImportViewModel(
-        g.db.vehicles(), g.settings, g.db.torque(), g.db.schedule(), VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(),
+        g.db.vehicles(), g.settings, g.db.torque(), g.torqueWriter, g.db.schedule(), g.scheduleItems,
+            VehicleLogs(g.db.vehicles(), g.db.schedule(), g.db.service(), g.db.odometer(), g.settings), g.db.milestones(), g.milestoneWriter,
         g.db.catalogRules(), g.db.recommendations(), g.actions, picker, g.documents, routeHandle(route),
     )
 

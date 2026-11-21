@@ -4,6 +4,7 @@ import io.cosgriff.glovebox.ui.garage.closeWhenIdle
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
+import io.cosgriff.glovebox.data.db.TorqueSpecWriter
 import io.cosgriff.glovebox.domain.Torque
 import io.cosgriff.glovebox.domain.ImportFiles
 import io.cosgriff.glovebox.domain.TorqueCategory
@@ -64,7 +65,7 @@ internal class TorqueHarness(unit: TorqueUnit = TorqueUnit.NEWTON_METER) {
 
     fun viewModel(vehicleId: Long) = viewModels.make {
         TorqueSpecsViewModel(
-            routeHandle(TorqueSpecsRoute(vehicleId)), db.vehicles(), db.torque(), settings,
+            routeHandle(TorqueSpecsRoute(vehicleId)), db.vehicles(), db.torque(), TorqueSpecWriter(db), settings,
             TorqueSpecUndo(db.torque(), db.vehicles(), scope), saver, KnownSpecCatalog(context),
         )
     }

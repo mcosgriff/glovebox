@@ -44,24 +44,14 @@ class TorqueDaoTest {
         assertEquals(id, spec.id)
         assertEquals("USER", spec.source)
 
-        torque.update(spec.copy(newtonMeters = 12.5))
-        assertEquals(12.5, torque.specsFor(v).single().newtonMeters!!, 0.0)
+        torque.setKnownList(id, "made-up")
+        torque.edit(id, "Made-up bolt", "ENGINE", "14 mm", 12.5, "FACTORY", null)
+        val edited = torque.specsFor(v).single()
+        assertEquals(12.5, edited.newtonMeters!!, 0.0)
+        assertEquals("FACTORY" to null, edited.source to edited.note)
+        assertEquals("the list a row came from stays with it", "made-up", edited.knownList)
 
         torque.delete(torque.specsFor(v).single())
         assertEquals(emptyList<TorqueSpecEntity>(), torque.specsFor(v))
-    }
-
-    @Test
-    fun `an import adds and replaces, and deletes nothing`() = runBlocking {
-        val v = db.vehicles().add(testVehicle(), firstReading = null)
-        torque.insertAll(listOf(TorqueSpecEntity(vehicleId = v, name = "A", category = "ENGINE"), TorqueSpecEntity(vehicleId = v, name = "B", category = "ENGINE")))
-        val a = torque.specsFor(v).single { it.name == "A" }
-
-        torque.applyImport(added = listOf(TorqueSpecEntity(vehicleId = v, name = "C", category = "ENGINE", newtonMeters = 5.0)), replaced = listOf(a.copy(newtonMeters = 7.0, knownList = "made-up")))
-
-        val after = torque.specsFor(v).associateBy { it.name }
-        assertEquals(setOf("A", "B", "C"), after.keys)
-        assertEquals(7.0, after.getValue("A").newtonMeters!!, 0.0)
-        assertEquals("made-up", after.getValue("A").knownList)
     }
 }

@@ -96,9 +96,8 @@ class RecordDetailScreenTest {
     /** An oil change tracked every 5,000 mi, logged twice: the later record is the one its reminder counts from. */
     private suspend fun oilTwice(): Triple<Long, Long, Long> {
         val car = t.vehicle(nickname = "Blue car")
-        t.db.schedule().applyImport(
+        t.db.schedule().insertAll(
             listOf(ScheduleItemEntity(vehicleId = car, name = "Oil change", templateKey = "oil", intervalMiles = 5_000, intervalMonths = null)),
-            emptyList(), emptyList(),
         )
         val oil = t.db.schedule().allFor(car).single().id
         val older = t.record(car, date = today.minusDays(200), odometer = 40_000, lines = listOf(line("Oil and filter", "oil", oil)))
@@ -135,7 +134,7 @@ class RecordDetailScreenTest {
         show(vm)
         compose.settle("the delete's impact") { vm.detail.value?.deleteImpact?.size == 1 }
 
-        t.db.schedule().update(t.db.schedule().allFor(car).single().copy(tracked = false))
+        t.db.schedule().setTracked(t.db.schedule().allFor(car).single().id, false)
         compose.settle("an untracked item to move nothing") { vm.detail.value?.deleteImpact?.isEmpty() == true }
     }
 

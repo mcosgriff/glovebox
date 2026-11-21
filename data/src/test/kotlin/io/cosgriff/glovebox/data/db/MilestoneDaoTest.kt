@@ -28,25 +28,17 @@ class MilestoneDaoTest {
     private fun jobs(vararg names: String) = names.map { MilestoneJobEntity(milestoneId = 0, name = it) }
 
     @Test
-    fun `an import adds and replaces milestones, each with its jobs in order`() = runBlocking {
+    fun `a milestone is saved with its jobs in order, and an edit keeps its row`() = runBlocking {
         val id = db.vehicles().insert(VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = day))
-        table.applyImport(id, 30_000, listOf(MilestoneEntity(vehicleId = id, atMiles = 15_000) to jobs("Oil", "Rotate")), emptyList())
+        table.save(MilestoneEntity(vehicleId = id, atMiles = 15_000), jobs("Oil", "Rotate"))
         val saved = table.tableFor(id).single()
         assertEquals(listOf("Oil", "Rotate"), saved.ordered.map { it.name })
 
-        table.applyImport(
-            id, 30_000,
-            added = listOf(MilestoneEntity(vehicleId = id, atMiles = 30_000) to jobs("Oil", "Cabin filter", "Rotate")),
-            replaced = listOf(saved.milestone.copy(orMonths = 12) to jobs("Rotate", "Oil")),
-        )
-        val after = table.tableFor(id)
-        assertEquals(listOf(15_000, 30_000), after.map { it.milestone.atMiles })
-        // The replaced one keeps its row, with the new jobs in the file's order.
-        assertEquals(saved.milestone.id, after[0].milestone.id)
-        assertEquals(12, after[0].milestone.orMonths)
-        assertEquals(listOf("Rotate", "Oil"), after[0].ordered.map { it.name })
-        assertEquals(listOf("Oil", "Cabin filter", "Rotate"), after[1].ordered.map { it.name })
-        assertEquals(30_000, db.vehicles().byId(id)!!.milestonesRepeatEveryMiles)
+        table.save(saved.milestone.copy(atMiles = 20_000, orMonths = 12), jobs("Rotate", "Oil"))
+        val after = table.tableFor(id).single()
+        assertEquals(saved.milestone.id, after.milestone.id)
+        assertEquals(20_000 to 12, after.milestone.atMiles to after.milestone.orMonths)
+        assertEquals(listOf("Rotate", "Oil"), after.ordered.map { it.name })
     }
 
     @Test
