@@ -55,6 +55,7 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toSaved
+import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.ui.ImportRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

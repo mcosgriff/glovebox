@@ -43,7 +43,7 @@ class ScheduleSetupScreenTest {
     private fun show(vehicle: VehicleEntity): Long {
         val id = world.vehicle(vehicle)
         vm = world.viewModel(ScheduleSetupViewModel::class) {
-            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.makers)
+            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.makers, world.scheduleItems)
         }
         compose.show { ScheduleSetupScreen(onDone = { done++ }, onEnterLastDone = { lastDone = it }, vm = vm) }
         compose.until { vm.items != null }

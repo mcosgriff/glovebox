@@ -54,7 +54,7 @@ class ScheduleScreenTest {
         vm = world.viewModel(ScheduleViewModel::class) {
             ScheduleViewModel(
                 routeHandle(ScheduleRoute(vehicleId)), VehicleLogs(world.db.vehicles(), world.db.schedule(), world.db.service(), world.db.odometer(), world.settings),
-                world.db.schedule(), world.db.vehicles(), world.actions, world.db.milestones(), world.makers, world.saver,
+                world.scheduleItems, world.db.vehicles(), world.actions, world.db.milestones(), world.saver,
             )
         }
         compose.show {

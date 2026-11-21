@@ -5,8 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.inMemoryDatabase
 import io.cosgriff.glovebox.data.testVehicle
 import io.cosgriff.glovebox.domain.DueRule
-import io.cosgriff.glovebox.domain.ImportedScheduleItem
-import io.cosgriff.glovebox.domain.Interval
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -111,25 +109,5 @@ class ScheduleDaoTest {
 
         schedule.update(after.getValue("Coolant").copy(intervalMonths = 60))
         assertEquals(60, byName(v).getValue("Coolant").intervalMonths)
-    }
-
-    @Test
-    fun `an interval from a file or a maker's list becomes one of the user's own items`() = runBlocking {
-        val v = db.vehicles().add(testVehicle(), firstReading = null)
-        val imported = ImportedScheduleItem(
-            name = "Made-up job", normal = Interval(30_000, 36), severe = Interval(15_000, 18), e85 = Interval(20_000, 24),
-            rule = DueRule.WHICHEVER_LAST, service = "coolant", firstAt = 100_000, severeOnly = false,
-        )
-
-        schedule.insertAll(listOf(imported.toEntity(v, knownList = "made-up", useSevere = true, useE85 = true), imported.copy(e85 = null).toEntity(v, useE85 = true)))
-
-        val all = schedule.allFor(v)
-        val a = all.single { it.knownList == "made-up" }
-        val b = all.single { it.knownList == null }
-        assertEquals(listOf(30_000, 36, 15_000, 18, 20_000, 24), listOf(a.intervalMiles, a.intervalMonths, a.severeMiles, a.severeMonths, a.e85Miles, a.e85Months))
-        assertTrue(a.useSevere && a.useE85 && a.tracked)
-        assertEquals(listOf("WHICHEVER_LAST", "coolant", "made-up", 100_000), listOf(a.ruleOverride, a.service, a.knownList, a.firstMiles))
-        assertFalse(b.useE85)
-        assertNull(b.templateKey)
     }
 }

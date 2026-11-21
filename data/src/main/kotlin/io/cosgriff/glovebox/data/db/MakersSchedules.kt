@@ -58,9 +58,9 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
      * the vehicle's milestones. Null [makers] is the typical list, which has no table. [replaced] are typical
      * items that are the same jobs as [items] ([ScheduleDao.applyKnown]). [engine] is the one the owner chose
      * among the maker's lists, written with its powertrain only where the vehicle has none on record; [body] is the
-     * body of the list they chose, written the same way.
+     * body of the list they chose, written the same way. [ScheduleItems] builds [items] and calls this (#620).
      */
-    suspend fun adopt(
+    internal suspend fun adopt(
         vehicleId: Long,
         items: List<ScheduleItemEntity>,
         makers: KnownScheduleList? = null,
