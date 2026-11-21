@@ -441,14 +441,16 @@ class LogServiceViewModelTest {
         form.toggle("rotation")
         // One of the user's own items, offered as "schedule-…": no catalog line, in the preview as in the save.
         form.toggle("schedule-$hitch")
-        val previewed = form.toRecord(form.data!!, form.odometer!!)
+        val previewed = form.toSave()!!.record
+        assertEquals(previewed, form.toRecord(form.data!!, form.odometer!!))
         val moves = form.reminderChanges
         assertEquals(3, moves.size)
         var done = false
         vm.save { done = true }
         awaitUntil("the save") { done }
 
-        assertEquals(previewed, t.db.service().record(id)!!.toModel())
+        // The writer leaves out the jobs that say nothing; the lines, which are what moves reminders, are as previewed.
+        assertEquals(previewed.withoutBareJobs(), t.db.service().record(id)!!.toModel())
         assertEquals(setOf(null, "oil", "rotation"), previewed.lines.map { it.catalogId }.toSet())
         val after = VehicleLogs(t.db.vehicles(), t.db.schedule(), t.db.service(), t.db.odometer(), t.settings).load(car)!!
         assertEquals(LogEdits.reminderChanges(before.tracked, before.entries, after.entries), moves)

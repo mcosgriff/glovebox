@@ -283,8 +283,10 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         }
 
     /**
-     * The form as saving writes it, with [odometer] as its reading: on an edit, over the record being edited, which
-     * keeps its id, visit and marks ([ServiceRecord.editedAs]). What [reminderChanges] previews.
+     * The record saving writes ([toSave]), with [odometer] as its reading: the one place the visit is put together. A
+     * new record's notes end with what the user put in them of the shop's recommendations (#572); an edit goes over the
+     * record being edited, which keeps its id, visit and marks ([ServiceRecord.editedAs]). What [reminderChanges]
+     * previews.
      */
     internal fun toRecord(d: LogServiceData, odometer: Int): ServiceRecord {
         // What the user put in the notes of the shop's recommendations (#572), each its own line, after theirs.
@@ -589,22 +591,11 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     fun toSave(): LogSave? {
         val d = data ?: return null
         val odo = odometer ?: return null
-        val noted = if (editing) "" else recommendedNotes(recommended)
-        val visit = ServiceRecord(
-            vehicleId = d.log.vehicle.id,
-            date = date,
-            odometer = odo,
-            diy = diy,
-            shopName = savedShop,
-            costCents = costCents,
-            notes = listOf(notes.trim(), noted).filter { it.isNotEmpty() }.joinToString("\n\n").takeIf { it.isNotEmpty() },
-            charges = charges,
-        )
-        val edit = draft.toRecord(visit, terms)
+        val record = toRecord(d, odo)
         val original = d.original
-        if (original != null) return LogSave.Edit(original, original.toModel().editedAs(edit), removedPhotoIds, doneChange)
+        if (original != null) return LogSave.Edit(original, record, removedPhotoIds, doneChange)
         val kept = recommended.filter { it.keep }.map { KeptRecommendation(it.item, it.line?.catalogId, replaces(it)?.id) }
-        return LogSave.New(edit, kept, doneChange.close, keepInvoice)
+        return LogSave.New(record, kept, doneChange.close, keepInvoice)
     }
 }
 
