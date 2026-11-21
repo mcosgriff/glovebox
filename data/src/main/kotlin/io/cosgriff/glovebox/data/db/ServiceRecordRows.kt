@@ -41,8 +41,8 @@ fun ServiceRecordWithItems.toModel(): ServiceRecord {
 
 /**
  * [this] as rows to write. Its jobs and lines are numbered from 1, only so the lines and part rows can point at them;
- * the write gives them ids of their own. Every job is written: which ones say enough to keep is the caller's
- * ([ServiceRecord.withoutBareJobs]).
+ * the write gives them ids of their own. Every job is written: which ones say enough to keep is
+ * [ServiceLogWriter]'s ([ServiceRecord.withoutBareJobs]).
  */
 fun ServiceRecord.toRows(): RecordRows {
     val record = ServiceRecordEntity(

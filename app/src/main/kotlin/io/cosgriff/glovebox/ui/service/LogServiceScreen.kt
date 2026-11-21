@@ -105,7 +105,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.ServiceDao
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.toModel
-import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.domain.InvoiceCharges
 import io.cosgriff.glovebox.domain.FilledFigure
 import io.cosgriff.glovebox.domain.InvoiceFill
@@ -113,7 +112,6 @@ import io.cosgriff.glovebox.domain.InvoiceFills
 import io.cosgriff.glovebox.domain.InvoiceReader
 import io.cosgriff.glovebox.domain.InvoiceWord
 import io.cosgriff.glovebox.domain.InvoiceMark
-import io.cosgriff.glovebox.ui.AppText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.cosgriff.glovebox.domain.PartAmounts
@@ -171,7 +169,6 @@ import io.cosgriff.glovebox.domain.DoneChange
 import io.cosgriff.glovebox.domain.ShopRecommendation
 import io.cosgriff.glovebox.domain.ShopRecommendations
 import io.cosgriff.glovebox.data.db.ShopRecommendationDao
-import io.cosgriff.glovebox.data.db.ShopRecommendationEntity
 import io.cosgriff.glovebox.data.db.KeptRecommendation
 import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.domain.ShopUse
@@ -565,6 +562,33 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         }
         return true
     }
+
+    /**
+     * What saving writes (#617); null until the form has its vehicle and a reading. A new record's notes end with what
+     * the user put in them of the shop's recommendations (#572), each on its own line, and it keeps the ones kept,
+     * each replacing this shop's open one for the same work; an edit takes the original's place, keeping what the
+     * form doesn't show ([ServiceRecord.editedAs]).
+     */
+    fun toSave(): LogSave? {
+        val d = data ?: return null
+        val odo = odometer ?: return null
+        val noted = if (editing) "" else recommendedNotes(recommended)
+        val visit = ServiceRecord(
+            vehicleId = d.log.vehicle.id,
+            date = date,
+            odometer = odo,
+            diy = diy,
+            shopName = savedShop,
+            costCents = costCents,
+            notes = listOf(notes.trim(), noted).filter { it.isNotEmpty() }.joinToString("\n\n").takeIf { it.isNotEmpty() },
+            charges = charges,
+        )
+        val edit = draft.toRecord(visit, terms)
+        val original = d.original
+        if (original != null) return LogSave.Edit(original, original.toModel().editedAs(edit), removedPhotoIds, doneChange)
+        val kept = recommended.filter { it.keep }.map { KeptRecommendation(it.item, it.line?.catalogId, replaces(it)?.id) }
+        return LogSave.New(edit, kept, doneChange.close, keepInvoice)
+    }
 }
 
 @HiltViewModel
@@ -766,63 +790,34 @@ class LogServiceViewModel @Inject constructor(
 
     private var saving = false
 
+    /** Writes what the form says to save ([LogServiceForm.toSave]), with the photos and pages held for it. */
     fun save(onDone: () -> Unit) {
-        val d = form.data ?: return
         if (!form.check() || saving) return
-        val odo = form.odometer ?: return
+        val save = form.toSave() ?: return
         saving = true
         viewModelScope.launch {
-            with(form) {
-                // What the user put in the notes of the shop's recommendations (#572), each its own line, after theirs.
-                val noted = if (editing) "" else recommendedNotes(recommended)
-                val visit = ServiceRecord(
-                    vehicleId = vehicleId,
-                    date = date,
-                    odometer = odo,
-                    diy = diy,
-                    shopName = savedShop,
-                    costCents = costCents,
-                    notes = listOf(notes.trim(), noted).filter { it.isNotEmpty() }.joinToString("\n\n").takeIf { it.isNotEmpty() },
-                    charges = charges,
-                )
-                val edit = draft.toRecord(visit, terms)
-                val (record, items, jobRows, partRows) = (d.original?.toModel()?.editedAs(edit) ?: edit).toRows()
-                val added = photoPicker.takeDraft(photoKey)
-                // A paper invoice's pages go with the record as its photos unless the user turned that off. They share
-                // the record's room with its other photos (photoRoom), so they fit.
-                val pages = invoicePhotos.take(photoKey)
-                val keptPages = if (keepInvoice) pages else emptyList()
-                invoicePhotos.drop(pages - keptPages.toSet())
-                if (d.original != null) {
-                    actions.replace(d.original, record, items, added, removedPhotoIds, jobRows, partRows, doneChange)
-                } else {
-                    // Kept for later, each replacing this shop's open one for the same work, and the open ones the user
-                    // left ticked as done by this work (#572): saved with the record, and gone with it.
-                    val kept = recommended.filter { it.keep }.map { c ->
-                        KeptRecommendation(
-                            ShopRecommendationEntity(
-                                vehicleId = vehicleId, recordId = 0, wording = c.item.text, cents = c.item.cents, area = c.item.area,
-                                finding = c.item.finding, colour = c.item.colour?.name, catalogId = c.line?.catalogId,
-                            ),
-                            replaces = replaces(c)?.id,
-                        )
-                    }
-                    val done = doneChange.close
-                    actions.add(record, items, added + keptPages, jobRows, partRows, kept, done)
+            val added = photoPicker.takeDraft(photoKey)
+            // A paper invoice's pages go with the record as its photos unless the user turned that off. They share
+            // the record's room with its other photos (photoRoom), so they fit.
+            val pages = invoicePhotos.take(photoKey)
+            val keptPages = if (save is LogSave.New && save.keepInvoice) pages else emptyList()
+            invoicePhotos.drop(pages - keptPages.toSet())
+            when (save) {
+                is LogSave.Edit -> actions.replace(save.original, save.record, added, save.removedPhotoIds, save.done)
+                is LogSave.New -> {
+                    actions.add(save.record, added + keptPages, save.kept, save.done)
                     // Paperwork of the vehicle's, not the record's: an Undo of the record leaves it there.
-                    invoicePdf?.takeIf { keepInvoice }?.let { pdf ->
-                        val name = record.shopName?.let { AppText.res.getString(R.string.invoice_document_name, it) }
-                            ?: AppText.res.getString(R.string.invoice_document_name_plain)
+                    invoicePdf?.takeIf { save.keepInvoice }?.let { pdf ->
                         try {
-                            invoices.keep(vehicleId, pdf, name, date)
+                            invoices.keep(vehicleId, pdf, save.invoiceName, save.record.date)
                         } catch (_: Exception) {
                             // The record is saved by now; a copy that can't be kept costs only the copy.
                         }
                     }
                 }
-                invoicePdf = null
-                onDone()
             }
+            invoicePdf = null
+            onDone()
         }
     }
 }
