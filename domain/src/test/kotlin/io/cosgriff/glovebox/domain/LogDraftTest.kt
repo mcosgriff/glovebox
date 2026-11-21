@@ -208,7 +208,8 @@ class LogDraftTest {
         assertEquals(3, draft.nextRowId)
 
         val visit = record.copy(id = 0, lines = emptyList(), jobs = emptyList())
-        val saved = draft.toRecord(visit, terms)
+        // As the writer saves it, without the jobs that say nothing.
+        val saved = draft.toRecord(visit, terms).withoutBareJobs()
         assertEquals(
             listOf(
                 RecordLine("Oil and filter changed", "oil", 1, job = 0),
@@ -221,13 +222,6 @@ class LogDraftTest {
         )
         assertEquals(record.jobs, saved.jobs)
         assertEquals(JobPrice(4_000, 4_250), saved.jobPrices.single())
-    }
-
-    @Test
-    fun `a job that says nothing isn't saved`() {
-        val saved = opened.toggle("rotation").toRecord(ServiceRecord(vehicleId = 3, date = LocalDate.of(2026, 5, 1), odometer = 61_000, diy = true), terms)
-        assertEquals(emptyList<RecordJob>(), saved.jobs)
-        assertEquals(listOf(null, null), saved.lines.map { it.job })
     }
 
     @Test

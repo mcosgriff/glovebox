@@ -24,6 +24,8 @@ import androidx.compose.ui.test.performScrollTo
 import io.cosgriff.glovebox.ui.garage.GarageOverview
 import io.cosgriff.glovebox.ui.service.monthYear
 import io.cosgriff.glovebox.domain.HistoryOrder
+import io.cosgriff.glovebox.domain.RecordLine
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.domain.HistorySort
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
@@ -248,7 +250,7 @@ class HistoryScreenTest {
         compose.waitForText(string(R.string.history_none))
         vm.search("wipers")
 
-        t.actions.add(ServiceRecordEntity(vehicleId = truck, date = today, odometer = 30_000, diy = true), listOf(line("Brake fluid flushed")))
+        t.actions.add(ServiceRecord(vehicleId = truck, date = today, odometer = 30_000, diy = true, lines = listOf(RecordLine("Brake fluid flushed"))))
         compose.waitForText("Brake fluid flushed")
         assertEquals("", vm.search)
         assertEquals(truck, vm.fresh.value?.vehicleId)
