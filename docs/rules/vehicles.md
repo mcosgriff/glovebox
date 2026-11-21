@@ -45,7 +45,8 @@ Rules for adding by VIN or by hand, VIN scanning, vehicle details, archiving, de
 - Delete vehicle (`DataWipe.deleteVehicle`) has no Undo; `RecordActions.undo` checks the vehicle still exists,
   in the same transaction as the restore (`ServiceLogWriter`). **What the screen says will go is
   `DataWipe.whatGoes`**, the same answer the delete acts on (#624): the rows it counts, and the vehicle's files from
-  `DocumentDao.encryptedFiles(vehicleId)`.
+  `DocumentDao.encryptedFiles(vehicleId)`. **Every table that cascades from `vehicles` is counted** in
+  `VehicleDao.rowCounts` and has its row on the screen (#635); `DataWipeTest` fails on a new one until it is.
 - Odometer offset (`ClusterSwap`): **every reading stays as typed**, and everything computed is in "dash terms"
   (what the cluster now in the dash reads). **Never hand `record.odometer` or an `odometer_readings` row to
   `:domain` raw:** go through `toEntry(swap)` / `toReadings(swap)` (`data/log/VehicleLog.kt`); compare a typed reading

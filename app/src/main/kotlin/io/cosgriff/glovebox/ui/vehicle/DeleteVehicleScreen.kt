@@ -173,9 +173,12 @@ fun DeleteVehicleScreen(
                     listOf(
                         stringResource(R.string.delete_vehicle_records) to rows.records.asNumber(),
                         stringResource(R.string.delete_vehicle_photos) to rows.photos.asNumber(),
+                        stringResource(R.string.delete_vehicle_recommendations) to rows.shopRecommendations.asNumber(),
                         stringResource(R.string.delete_vehicle_schedule) to rows.scheduleItems.asNumber(),
+                        stringResource(R.string.delete_vehicle_milestones) to rows.milestones.asNumber(),
                         stringResource(R.string.delete_vehicle_torque) to rows.torqueSpecs.asNumber(),
                         stringResource(R.string.delete_vehicle_recalls) to rows.recalls.asNumber(),
+                        stringResource(R.string.delete_vehicle_recall_names) to rows.recallNames.asNumber(),
                         stringResource(R.string.readings_title) to rows.mileageReadings.asNumber(),
                         stringResource(R.string.documents_title) to rows.documents.asNumber(),
                         stringResource(R.string.delete_vehicle_details) to

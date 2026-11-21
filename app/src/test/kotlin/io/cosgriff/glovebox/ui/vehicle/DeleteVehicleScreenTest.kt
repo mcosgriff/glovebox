@@ -12,11 +12,14 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.DocumentEntity
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ShopRecommendationEntity
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import io.cosgriff.glovebox.ui.DeleteVehicleRoute
@@ -50,7 +53,10 @@ class DeleteVehicleScreenTest {
     private val archived = mutableListOf<Pair<String, () -> Unit>>()
     private lateinit var vm: DeleteVehicleViewModel
 
-    /** The wagon with a record and its receipt photo, an item, a torque row, a recall, a reading and a document. */
+    /**
+     * The wagon with a record and its receipt photo, a shop recommendation kept from it, an item, a milestone, a torque
+     * row, a recall, two ticked recall names, a reading and a document.
+     */
     private fun wagon(): Pair<Long, List<File>> {
         val id = g.add(VehicleFixtures.wagon.copy(nickname = "Old Faithful", photoFile = "vehicle-1.jpg"), firstReading = 201_000)
         val files = listOf("vehicle-1.jpg", "receipt-1.jpg", "document-1.pdf").map { File(g.crypto.photoDir, it).apply { writeText("not really encrypted") } }
@@ -60,6 +66,9 @@ class DeleteVehicleScreenTest {
                 listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Brake pads")),
             )
             g.db.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = "receipt-1.jpg")))
+            g.db.recommendations().insert(ShopRecommendationEntity(vehicleId = id, recordId = record, wording = "Rear wiper blade"))
+            g.db.milestones().save(MilestoneEntity(vehicleId = id, atMiles = 210_000), listOf(MilestoneJobEntity(milestoneId = 0, name = "Spark plugs")))
+            g.db.recalls().setNames(id, listOf("Wagon", "Wagon Sport"))
             g.db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Oil change", intervalMiles = 5_000, intervalMonths = 6)))
             g.db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "Lug nuts", category = "WHEELS"))
             g.db.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "26V000001", component = "BRAKES", summary = "Made up.", firstSeenOn = today)))
@@ -87,10 +96,20 @@ class DeleteVehicleScreenTest {
         val (id, _) = wagon()
         show(id)
         val d = vm.data!!
-        assertEquals(VehicleRowCounts(records = 1, photos = 1, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1), d.rows)
+        assertEquals(
+            VehicleRowCounts(
+                records = 1, photos = 1, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1,
+                milestones = 1, shopRecommendations = 1, recallNames = 2,
+            ),
+            d.rows,
+        )
         assertEquals(201_000, d.lastOdometer)
         assertEquals("Old Faithful", d.name)
         compose.onNodeWithText(g.string(R.string.delete_vehicle_title, g.vehicle(id)!!.shortName())).assertExists()
+        listOf(R.string.delete_vehicle_milestones, R.string.delete_vehicle_recommendations, R.string.delete_vehicle_recall_names).forEach {
+            compose.onNodeWithText(g.string(it)).performScrollTo().assertExists()
+        }
+        compose.onNodeWithText("2").performScrollTo().assertExists() // the two recall names, the only count that isn't 1
     }
 
     @Test
