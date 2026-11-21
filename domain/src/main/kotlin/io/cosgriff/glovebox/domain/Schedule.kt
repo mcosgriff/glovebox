@@ -118,6 +118,17 @@ object ActiveInterval {
     }
 
     /**
+     * The severe interval to keep when [typed] is entered over what [of] shows for severe use (#616). A figure
+     * [severe] leaves to [normal], typed back as the normal one, stays left to it, so a later change to the normal
+     * interval still reaches it; every other figure is as typed. [typed] itself when that would leave no figure.
+     */
+    fun severeTyped(typed: Interval, normal: Interval, severe: Interval?): Interval {
+        val miles = typed.miles.takeUnless { severe != null && severe.miles == null && it == normal.miles }
+        val months = typed.months.takeUnless { severe != null && severe.months == null && it == normal.months }
+        return if (miles == null && months == null) typed else Interval(miles, months)
+    }
+
+    /**
      * [of], with the months Glovebox works out for an oil change that has none ([OilMonths]). [oil] is whether the item
      * is the oil change ([OilMonths.isOil]); [unit] is the vehicle's, which the interval is in; [own] is the owner's own
      * oil change interval for the vehicle ([OwnOil]), which an oil change counts by in place of every figure it has.
