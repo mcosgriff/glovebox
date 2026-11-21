@@ -6,7 +6,6 @@ import io.cosgriff.glovebox.data.db.toRows
 import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.db.jobRows
 import io.cosgriff.glovebox.data.db.toEntity
-import io.cosgriff.glovebox.domain.CustomLines
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.asNumber
 import io.cosgriff.glovebox.ui.AppText
@@ -35,15 +34,11 @@ import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.HistoryImport
 import io.cosgriff.glovebox.domain.ImportFile
-import io.cosgriff.glovebox.domain.ImportPlan
 import io.cosgriff.glovebox.domain.ImportedRecord
-import io.cosgriff.glovebox.domain.SavedRecord
 import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.SavedMilestone
 import io.cosgriff.glovebox.domain.TableJob
-import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.ImportFormat
 import io.cosgriff.glovebox.domain.ImportKind
@@ -69,20 +64,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.cosgriff.glovebox.data.log.toRef
+import io.cosgriff.glovebox.data.log.HistoryChoices
+import io.cosgriff.glovebox.data.log.HistoryImportPlanner
 import io.cosgriff.glovebox.data.log.VehicleLogs
-import io.cosgriff.glovebox.data.log.newIndexOf
-import io.cosgriff.glovebox.data.log.numberedAsNew
 import io.cosgriff.glovebox.data.photo.DocumentStore
 import io.cosgriff.glovebox.domain.DocumentType
 import io.cosgriff.glovebox.domain.VehicleDocuments
 import io.cosgriff.glovebox.data.db.CatalogRuleDao
-import io.cosgriff.glovebox.data.db.ImportClose
 import io.cosgriff.glovebox.data.db.ShopRecommendationDao
 import io.cosgriff.glovebox.domain.ShopRecommendation
-import io.cosgriff.glovebox.domain.ShopRecommendations
 import io.cosgriff.glovebox.data.db.toRule
-import io.cosgriff.glovebox.domain.CatalogRules
 import io.cosgriff.glovebox.domain.RuleFiling
 import javax.inject.Inject
 
@@ -408,80 +399,38 @@ class ImportViewModel @Inject constructor(
 
     private suspend fun historyPreview(vehicle: VehicleEntity, file: ImportFile.ServiceHistory, keep: Set<Pair<LocalDate, Int>>, notDone: Set<Long>): ImportPreview {
         val unit = vehicle.unit
-        // The user's rules file the lines the file leaves unsaid, and on a Carfax report (a PDF) win over the
-        // wording Glovebox recognised, before anything is compared, so the plan and the write see the same lines.
-        val byRules = CatalogRules.file(file.items, catalogRules.all().map { it.toRule() }, overWording = picker.picked.value?.pdf != null)
-        // The file says which unit its readings are in; they are saved as this vehicle's dash would have shown them.
-        val all = FileDistances.history(byRules.items, file.unit, unit)
         // Gone since it was chosen: as good as none chosen.
         val log = logs.load(vehicle.id) ?: return ImportPreview.NeedsVehicle
-        val swap = log.swap
-        val records = log.records
-        val byId = records.associateBy { it.record.id }
-        val refs = log.items.map { it.toRef() }
-        val saved = records.map { it.toModel().toSaved() }
-        fun added(plan: ImportPlan<ImportedRecord, SavedRecord>) = plan.new.map { HistoryImport.added(it, vehicle.id, refs) }
-        // Same record, same id: its photos and any recall it was the work for stay with it.
-        fun replaced(plan: ImportPlan<ImportedRecord, SavedRecord>, mode: ImportMode) = plan.replaced(mode).mapNotNull { (item, mine) ->
-            byId[mine.id]?.let { HistoryImport.replacing(it.toModel(), item, refs) }
-        }
-        // What moves is read from the records the import would write, the new ones numbered so an entry leads back.
-        fun whatIf(plan: ImportPlan<ImportedRecord, SavedRecord>, mode: ImportMode) = log.whatIf(replaced(plan, mode) + added(plan).numberedAsNew())
-        // Readings that look mistyped are found with the whole file in, then left out unless the user keeps them:
-        // the odometer is the highest reading on record, so one wrong one would put every mileage reminder out.
-        val whole = HistoryImport.plan(all, saved, refs)
-        val doubts = HistoryImport.doubtful(whatIf(whole, ImportMode.ADD_NEW).entries, log.updates, unit).map { d -> whole.new[checkNotNull(newIndexOf(d.entry.id))] to d }
-        val leftOut = doubts.map { (r, _) -> r.date to r.odometer }.filter { it !in keep }.toSet()
-        val items = all.filter { (it.date to it.odometer) !in leftOut }
-        val plan = HistoryImport.plan(items, saved, refs)
-        val added = added(plan)
-        // The open shop recommendations these records look like the work for (#593), offered for each choice the
-        // user can make; nothing closes unless it is left ticked when they import.
-        val kept = recommendations.all(vehicle.id).map { it.toModel() }
-        val offers = ImportMode.entries.associateWith { mode ->
-            val records = added + replaced(plan, mode)
-            records to ShopRecommendations.offeredOnImport(kept, records)
-        }
-        val view = plan.toView(
+        val planned = HistoryImportPlanner.plan(
+            file, log, catalogRules.all().map { it.toRule() }, recommendations.all(vehicle.id).map { it.toModel() },
+            // A Carfax report is the PDF: there the owner's rules win over the wording Glovebox recognised.
+            overWording = picker.picked.value?.pdf != null,
+            choices = HistoryChoices(kept = keep, unticked = notDone),
+        )
+        val view = planned.matched.toView(
             ImportKind.SERVICE_HISTORY, PlanNoun.RECORD, R.string.import_caution_history,
             name = { it.title(unit) }, describe = { it.describe() }, describeSaved = { it.describe() },
-            note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(byRules), guessesNote(CustomLines.guessesFor(items, refs)))
+            note = listOfNotNull(convertedNote(file.unit, unit), rulesNote(planned.filing), guessesNote(planned.guesses))
                 .joinToString(" ").ifEmpty { null },
-            moves = ImportMode.entries.associateWith { mode -> whatIf(plan, mode).changes.map { it.text(unit) } },
-            doubts = doubts.map { (r, d) ->
+            moves = planned.moves.mapValues { (_, changes) -> changes.map { it.text(unit) } },
+            doubts = planned.doubts.map { d ->
                 DoubtLine(
-                    key = r.date to r.odometer,
+                    key = d.key,
                     // As it is written in the file, which is how the user will look for it.
-                    title = r.title(unit),
-                    why = d.before?.let { b ->
-                        AppText.res.getString(
-                            R.string.import_doubt_jump,
-                            (d.entry.odometer - b.odometer).asDistance(unit),
-                            swap.asReadOn(b.odometer, b.date).asDistance(unit),
-                            b.date.format(longDate),
-                        )
+                    title = d.record.title(unit),
+                    why = d.jump?.let { j ->
+                        AppText.res.getString(R.string.import_doubt_jump, j.by.asDistance(unit), j.from.odometer.asDistance(unit), j.from.date.format(longDate))
                     } ?: AppText.res.getString(R.string.import_doubt_out_of_line),
-                    included = (r.date to r.odometer) in keep,
+                    included = d.kept,
                 )
             },
-            done = offers.mapValues { (_, offer) ->
-                val (records, offered) = offer
-                offered.map { o ->
-                    DoneLine(
-                        o.recommendation,
-                        AppText.res.getString(R.string.import_done_why, o.line.label, records[o.record].date.format(longDate)),
-                        ticked = o.recommendation.id !in notDone,
-                    )
-                }
+            done = planned.offers.mapValues { (_, offers) ->
+                offers.map { o -> DoneLine(o.recommendation, AppText.res.getString(R.string.import_done_why, o.line.label, o.record.date.format(longDate)), o.ticked) }
             },
         )
         return ImportPreview.Ready(view) { mode, _ ->
-            val (records, offered) = offers.getValue(mode)
-            val replacing = records.drop(added.size)
-            val close = offered.filter { it.recommendation.id !in notDone }.map { o ->
-                if (o.record < added.size) ImportClose(o.recommendation.id, added = o.record) else ImportClose(o.recommendation.id, savedId = records[o.record].id)
-            }
-            actions.applyImport(added, replacing, close, ShopRecommendations.reopenedOnImport(kept, replacing))
+            val write = planned.write(mode)
+            actions.applyImport(write.added, write.replaced, write.done, write.reopened)
             finish(view, vehicle.id, mode)
         }
     }

@@ -31,7 +31,9 @@ import java.time.LocalDate
 /**
  * Settings → Import against a real database: what the preview says before anything is written, and what an
  * import writes. "Add new only" is the default; "Replace matching" lists what it overwrites; readings that look
- * mistyped are left out unless ticked; an import never deletes and only writes the user's own rows.
+ * mistyped are left out unless ticked; an import never deletes and only writes the user's own rows. Service history
+ * is planned by `HistoryImportPlanner`, tested on its own; here only that the page's choices reach it and its write
+ * reaches the database.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
@@ -179,7 +181,6 @@ class ImportViewModelTest {
         pick(example("service-history.json"))
         val view = vm.ready().view
         assertEquals(ImportKind.SERVICE_HISTORY, view.kind)
-        assertTrue("a sold vehicle has no reminders to move", view.moves.values.all { it.isEmpty() })
         val result = vm.importAndWait(vm.ready(), ImportMode.ADD_NEW)
         assertTrue(result.archived)
         assertEquals(3, result.added)
@@ -209,12 +210,7 @@ class ImportViewModelTest {
         val records = g.db.service().recordsFor(id)
         assertEquals(3, records.size)
         assertEquals(2, records.count { it.record.imported })
-        val mine = records.single { it.record.date == LocalDate.of(2023, 4, 2) }
-        assertEquals("Somewhere", mine.record.shopName)
-        assertFalse(mine.record.imported)
-        // The oil line is saved against the reminder it resets.
-        val march = records.single { it.record.date == LocalDate.of(2024, 3, 1) }
-        assertTrue(march.items.any { it.label == "Oil & filter change" && it.scheduleItemId != null })
+        assertEquals("Somewhere", records.single { it.record.date == LocalDate.of(2023, 4, 2) }.record.shopName)
     }
 
     @Test
@@ -235,75 +231,6 @@ class ImportViewModelTest {
     }
 
     @Test
-    fun `a version-2 file brings its jobs in with their prices`() = runTest {
-        val id = g.vehicle()
-        val vm = vm()
-        pick(example("service-history-priced.json"))
-        assertEquals(2, vm.importAndWait(vm.ready(), ImportMode.ADD_NEW).added)
-        val june = g.db.service().recordsFor(id).single { it.record.date == LocalDate.of(2024, 6, 14) }
-        assertEquals(49_731L, june.record.costCents)
-        val plugs = june.jobs.single { it.wording == "Remove & Replace Spark Plugs and Ignition Coils" }
-        assertEquals(18_000L to 21_240L, plugs.laborCents to plugs.partsCents)
-        assertEquals(listOf("Spark plugs", "Ignition coils"), june.items.filter { it.jobId == plugs.id }.map { it.label })
-        assertEquals(null, june.items.single { it.label == "Tire rotation" }.jobId)
-        assertEquals(listOf(0, 1), june.jobs.sortedBy { it.position }.map { it.position })
-    }
-
-    @Test
-    fun `replacing from a file with no jobs keeps the prices on the same lines`() = runTest {
-        val id = g.vehicle()
-        val recordId = g.db.service().insertWithItems(
-            io.cosgriff.glovebox.data.db.ServiceRecordEntity(vehicleId = id, date = LocalDate.of(2023, 4, 2), odometer = 31_800, diy = false, shopName = "Somewhere"),
-            listOf(io.cosgriff.glovebox.data.db.ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Cabin air filter", jobId = 1)),
-            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobEntity(id = 1, recordId = 0, partsCents = 1_899)),
-        )
-        val vm = vm()
-        pick(example("service-history.json"))
-        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING).replaced)
-        val record = g.db.service().recordsFor(id).single { it.record.id == recordId }
-        assertTrue(record.record.diy)
-        val job = record.jobs.single()
-        assertEquals(1_899L, job.partsCents)
-        assertEquals(job.id, record.items.single().jobId)
-    }
-
-    @Test
-    fun `a version-3 file brings its part rows in on their lines, and its charges`() = runTest {
-        val id = g.vehicle()
-        val vm = vm()
-        pick(example("service-history-itemized.json"))
-        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.ADD_NEW).added)
-        val record = g.db.service().recordsFor(id).single()
-        assertEquals(listOf(1_850L, 4_845L, null), record.record.let { listOf(it.shopSuppliesCents, it.taxCents, it.feesCents) })
-        val plugs = record.jobs.single { it.wording == "Remove & Replace Spark Plugs and Coils" }
-        assertEquals(null, plugs.partsCents)
-        val labels = record.items.associate { it.id to it.label }
-        val rows = record.parts.filter { it.jobId == plugs.id }.sortedBy { it.position }
-        assertEquals(listOf("Spark plug, iridium", "Ignition coil", "Dielectric grease"), rows.map { it.wording })
-        assertEquals(listOf("Spark plugs", "Ignition coils", null), rows.map { r -> r.itemId?.let(labels::get) })
-        assertEquals(4_500L, record.parts.single { it.wording == "Synthetic oil 0W-20" }.quantityMilli)
-    }
-
-    @Test
-    fun `replacing from a file that names no charge keeps the saved charges and part rows`() = runTest {
-        val id = g.vehicle()
-        val recordId = g.db.service().insertWithItems(
-            io.cosgriff.glovebox.data.db.ServiceRecordEntity(vehicleId = id, date = LocalDate.of(2023, 4, 2), odometer = 31_800, diy = false, shopName = "Somewhere", taxCents = 152),
-            listOf(io.cosgriff.glovebox.data.db.ServiceRecordItemEntity(id = 5, recordId = 0, scheduleItemId = null, label = "Cabin air filter", jobId = 1)),
-            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 1_000)),
-            listOf(io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity(jobId = 1, wording = "Made-up filter", totalCents = 1_899, itemId = 5)),
-        )
-        val vm = vm()
-        pick(example("service-history.json"))
-        assertEquals(1, vm.importAndWait(vm.ready(), ImportMode.REPLACE_MATCHING).replaced)
-        val record = g.db.service().recordsFor(id).single { it.record.id == recordId }
-        assertEquals(152L, record.record.taxCents)
-        val part = record.parts.single()
-        assertEquals(record.jobs.single().id, part.jobId)
-        assertEquals(record.items.single().id, part.itemId)
-    }
-
-    @Test
     fun `a reading that looks mistyped is left out unless the user ticks it`() = runTest {
         val id = g.vehicle(firstReading = 30_000)
         g.db.odometer().insert(OdometerReadingEntity(vehicleId = id, date = LocalDate.of(2025, 6, 1), odometer = 52_000))
@@ -318,10 +245,9 @@ class ImportViewModelTest {
 
         val first = vm.ready().view
         val doubt = first.doubts.single()
-        assertEquals(LocalDate.of(2024, 9, 1) to 450_000, doubt.key)
         assertFalse("left out by default", doubt.included)
         assertEquals(1, first.new.size)
-        assertTrue(doubt.why.isNotEmpty())
+        assertEquals(res.getString(R.string.import_doubt_out_of_line), doubt.why)
 
         vm.include(doubt.key, true)
         val ticked = vm.preview.awaitValue { (it as? ImportPreview.Ready)?.view?.doubts?.singleOrNull()?.included == true } as ImportPreview.Ready
@@ -346,10 +272,8 @@ class ImportViewModelTest {
         val recs = g.db.recommendations()
         val oil = recs.insert(io.cosgriff.glovebox.data.db.ShopRecommendationEntity(vehicleId = id, recordId = visit, wording = "Oil Service Due", catalogId = "oil"))
         val rotation = recs.insert(io.cosgriff.glovebox.data.db.ShopRecommendationEntity(vehicleId = id, recordId = visit, wording = "Rotate Tires", catalogId = "rotation"))
-        // Before the recommendation: never offered for it.
         val file = """
             {"glovebox": "import", "version": 1, "kind": "service-history", "items": [
-              {"date": "2023-12-01", "odometer": 34000, "work": [{"label": "Oil & filter change", "service": "oil"}], "doneBy": {"type": "diy"}},
               {"date": "2024-03-01", "odometer": 37000, "work": [{"label": "Oil & filter change", "service": "oil"}], "doneBy": {"type": "diy"}},
               {"date": "2024-04-01", "odometer": 38000, "work": [{"label": "Tire rotation", "service": "rotation"}], "doneBy": {"type": "diy"}}
             ]}
