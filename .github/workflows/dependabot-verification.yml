@@ -46,13 +46,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       # The same command as CLAUDE.md's: it adds what the new versions resolve to and keeps the rest.
-      # These tasks resolve every configuration CI and release.yml use, the device tests' runner
-      # included. The file is written even when the build fails, and a failing build is CI's to
-      # report on the new commit, so it doesn't stop this job.
+      # These tasks resolve every configuration CI and release.yml use. The device tests' runner (the
+      # Unified Test Platform, which end-to-end's connectedDebugAndroidTest fetches) is resolved only by
+      # the last one, without a device (#642). The file is written even when the build fails, and a
+      # failing build is CI's to report on the new commit, so it doesn't stop this job.
       - name: Update verification metadata
         run: |
           ./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache --continue \
             build :app:assembleDebugAndroidTest :baselineprofile:assemble \
+            :app:dependencies --configuration unified-test-platform-gradle-work-action \
             || echo "::warning::The build failed; the metadata was written anyway. CI will show the failure."
           rm -f gradle/verification-keyring.gpg
           python3 .github/scripts/verification-tidy.py

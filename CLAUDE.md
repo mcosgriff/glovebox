@@ -36,8 +36,10 @@ The one exception is `GradleDependency` (a newer library version): only the week
 - **Dependency verification** (#246): every jar, POM and plugin must match `gradle/verification-metadata.xml`
   (keys in `gradle/verification-keyring.keys`), or the build fails, locally and in CI. After changing a
   dependency or plugin by hand, run
-  `./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache build :app:assembleDebugAndroidTest :baselineprofile:assemble`
+  `./gradlew --write-verification-metadata sha256,pgp --export-keys --refresh-dependencies --no-configuration-cache build :app:assembleDebugAndroidTest :baselineprofile:assemble :app:dependencies --configuration unified-test-platform-gradle-work-action`
   then `uv run .github/scripts/verification-tidy.py`, and commit both files (not `verification-keyring.gpg`).
+  The last task resolves the test runner `connectedDebugAndroidTest` fetches for `end-to-end`, which nothing
+  else in the build resolves (#642); it needs no device.
   `--refresh-dependencies` matters: a warm cache records less than CI's cold one fetches. Read the diff; it is
   the list of what is now trusted. Dependabot's PRs get the same command from `dependabot-verification.yml`.
   To prune old entries, delete both files and run it again. Tesseract4Android (JitPack) is unsigned, so only
