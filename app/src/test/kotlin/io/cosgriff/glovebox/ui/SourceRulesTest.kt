@@ -14,7 +14,8 @@ class SourceRulesTest {
     private class Rule(val why: String, val pattern: Regex, val roots: List<String>, val allowedIn: Set<String> = emptySet())
 
     private val app = listOf("src/main/kotlin")
-    private val appAndData = app + "../data/src/main/kotlin"
+    private val data = listOf("../data/src/main/kotlin")
+    private val appAndData = app + data
     private val appTests = listOf("src/test/kotlin")
 
     private val rules = listOf(
@@ -34,6 +35,11 @@ class SourceRulesTest {
         Rule(
             "Go around the DAOs with useReaderConnection / useWriterConnection, never openHelper",
             Regex("""\bopenHelper\b"""), appAndData,
+        ),
+        Rule(
+            "Write a vehicle's columns one at a time (VehicleDao.setNickname etc.), never a whole-row @Update or @Upsert, " +
+                "which could undo a recall check that landed meanwhile",
+            Regex("""@(Update|Upsert)\b.*\bVehicleEntity\b"""), data,
         ),
         Rule(
             "Composables use stringResource, never LocalContext.current.getString",

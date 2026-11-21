@@ -39,11 +39,7 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
      * still ships, else the one that covers it as it is on record. Null when neither. The stored list comes first
      * so that a vehicle whose engine text never matched, or no longer does, keeps the list its owner took up.
      */
-    suspend fun forVehicle(vehicle: VehicleEntity): KnownScheduleList? {
-        val lists = lists()
-        val stored = schedule.allFor(vehicle.id).firstNotNullOfOrNull { it.knownList }
-        return stored?.let { id -> lists.firstOrNull { it.id == id } } ?: match(lists, vehicle)
-    }
+    suspend fun forVehicle(vehicle: VehicleEntity): KnownScheduleList? = forVehicle(lists(), vehicle, schedule.allFor(vehicle.id))
 
     /**
      * The lists the owner could pick between, one per engine (or body), when no list matches because the vehicle's
@@ -52,10 +48,6 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
      */
     suspend fun choices(vehicle: VehicleEntity): List<KnownScheduleList> =
         KnownSchedules.engineChoices(lists(), vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
-
-    /** What is on record about [vehicle] that a list is matched by: the only place that is said (#569 added the trim). */
-    private fun match(lists: List<KnownScheduleList>, vehicle: VehicleEntity): KnownScheduleList? =
-        KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
 
     /** The DAO calls in [block] are kept together or not at all. */
     internal suspend fun <T> transaction(block: suspend () -> T): T =
@@ -66,9 +58,9 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
      * the vehicle's milestones. Null [makers] is the typical list, which has no table. [replaced] are typical
      * items that are the same jobs as [items] ([ScheduleDao.applyKnown]). [engine] is the one the owner chose
      * among the maker's lists, written with its powertrain only where the vehicle has none on record; [body] is the
-     * body of the list they chose, written the same way.
+     * body of the list they chose, written the same way. [ScheduleItems] builds [items] and calls this (#620).
      */
-    suspend fun adopt(
+    internal suspend fun adopt(
         vehicleId: Long,
         items: List<ScheduleItemEntity>,
         makers: KnownScheduleList? = null,
@@ -96,5 +88,21 @@ class MakersSchedules @Inject constructor(private val known: KnownScheduleLists,
         val vehicle = vehicles.byId(vehicleId) ?: return
         val table = KnownSchedules.milestonesIn(list, DistanceUnit.of(vehicle.distanceUnit), vehicle.drivetrain, vehicle.gearboxOnRecord())
         milestones.addKnown(vehicleId, list.id, table.map { m -> m.toRows(vehicleId) })
+    }
+
+    companion object {
+        /**
+         * [forVehicle] over what has been read already: the bundled [lists] and all of the vehicle's schedule [items]
+         * (tracked or not), as a [VehicleLog][io.cosgriff.glovebox.data.log.VehicleLog] holds them, for a view
+         * worked out from the log (#621).
+         */
+        fun forVehicle(lists: List<KnownScheduleList>, vehicle: VehicleEntity, items: List<ScheduleItemEntity>): KnownScheduleList? {
+            val stored = items.firstNotNullOfOrNull { it.knownList }
+            return stored?.let { id -> lists.firstOrNull { it.id == id } } ?: match(lists, vehicle)
+        }
+
+        /** What is on record about [vehicle] that a list is matched by: the only place that is said (#569 added the trim). */
+        private fun match(lists: List<KnownScheduleList>, vehicle: VehicleEntity): KnownScheduleList? =
+            KnownSchedules.match(lists, vehicle.year, vehicle.make, vehicle.model, vehicle.engine, vehicle.fuel, Powertrains.of(vehicle.powertrain), BodyStyles.of(vehicle.bodyStyle), vehicle.trim)
     }
 }

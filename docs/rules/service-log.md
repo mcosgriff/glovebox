@@ -25,7 +25,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
 - **A write that takes more than one step is one transaction** (#419): it goes in `ServiceLogWriter` (`:data`),
   which writes rows only. `RecordActions` calls it and keeps the events, focus, Undo and photo files. A process
   that dies part-way must leave the log as it was, never a record without its photos or a recall's record with
-  the recall still open.
+  the recall still open. **The writer takes a `ServiceRecord`** (#617) with its photos, kept recommendations and
+  done change, and builds every row itself (`toRows`, dropping a save's bare jobs, the last-done and recall
+  lines); a caller builds no row. What saving Log service writes is the form's (`LogServiceForm.toSave`, a
+  `LogSave`); the ViewModel adds the photos and pages it holds and hands it on.
 - Log service: **the odometer is never prefilled** (a prefilled reading gets saved untouched and miscounts every
   reminder); "Use current" fills it on a tap. Future dates are refused. "Due" chips only for reminders that have
   a log entry. Category buttons are tabs, not ticks (the user found the solid "open" button read as chosen).

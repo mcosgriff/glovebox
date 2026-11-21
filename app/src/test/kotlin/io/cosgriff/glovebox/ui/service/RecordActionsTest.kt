@@ -2,13 +2,15 @@ package io.cosgriff.glovebox.ui.service
 
 import io.cosgriff.glovebox.data.db.ServiceLogWriter
 import io.cosgriff.glovebox.data.db.PhotoEntity
-import io.cosgriff.glovebox.data.db.RecordRows
+import io.cosgriff.glovebox.data.db.RecallWork
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.toModel
 import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.CatalogRules
+import io.cosgriff.glovebox.domain.RecordLine
 import io.cosgriff.glovebox.domain.RecordMark
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -24,6 +26,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+/**
+ * What `RecordActions` keeps above the writer: the events it announces, where History is pointed, Undo and the photo
+ * files. What each write puts in the database is `ServiceLogWriterTest`'s.
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = ScreenshotApp::class, sdk = [35])
 class RecordActionsTest {
@@ -41,14 +47,11 @@ class RecordActionsTest {
     private suspend fun noEvent() = assertNull(withTimeoutOrNull(100) { actions.events.first() })
 
     @Test
-    fun `a new record is saved with its lines and photos, announced, and History is pointed at it`() = runBlocking {
+    fun `a new record is announced, and History is pointed at it`() = runBlocking {
         val car = t.vehicle()
-        val receipt = t.photoFile("record-a.jpg")
-        actions.add(ServiceRecordEntity(vehicleId = car, date = day, odometer = 41_000, diy = true), listOf(line("Oil and filter", "oil")), listOf(receipt))
+        actions.add(ServiceRecord(vehicleId = car, date = day, odometer = 41_000, diy = true, lines = listOf(RecordLine("Oil and filter", "oil"))))
 
         val saved = service.recordsFor(car).single()
-        assertEquals(listOf("Oil and filter"), saved.items.map { it.label })
-        assertEquals(listOf(receipt), saved.photos.map { it.fileName })
         assertEquals(RecordEvent.Saved(saved.record.id), nextEvent())
         assertEquals(HistoryFocus(car, saved.record.id, RecordMark.ADDED), actions.focus.value)
 
@@ -57,21 +60,16 @@ class RecordActionsTest {
     }
 
     @Test
-    fun `a bare last done is flagged, filed under the line that resets it, and announces nothing`() = runBlocking {
+    fun `a bare last done announces nothing and leaves History where it was`() = runBlocking {
         val car = t.vehicle()
         t.db.schedule().applyImport(
             listOf(ScheduleItemEntity(vehicleId = car, name = "Engine oil", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6)),
             emptyList(), emptyList(),
         )
-        val item = t.db.schedule().allFor(car).single()
-        val itemId = item.id
 
-        actions.addLastDone(car, item, day, 38_000)
+        actions.addLastDone(car, t.db.schedule().allFor(car).single(), day, 38_000)
 
-        val saved = service.recordsFor(car).single()
-        assertTrue(saved.record.enteredAsLastDone)
-        assertEquals(38_000, saved.record.odometer)
-        assertEquals(listOf(Triple(itemId, "Engine oil", "oil")), saved.items.map { Triple(it.scheduleItemId, it.label, it.catalogId) })
+        assertTrue(service.recordsFor(car).single().record.enteredAsLastDone)
         assertNull(actions.focus.value)
         noEvent()
     }
@@ -87,14 +85,11 @@ class RecordActionsTest {
         val added = t.photoFile("record-new.jpg")
 
         actions.replace(
-            before, before.record.copy(odometer = 40_500), listOf(line("Wiper blades replaced"), line("Washer fluid", "washer")),
+            before, before.toModel().copy(odometer = 40_500, lines = listOf(RecordLine("Wiper blades replaced"), RecordLine("Washer fluid", "washer"))),
             addedPhotos = listOf(added), removedPhotoIds = setOf(before.photos.single { it.fileName == gone }.id),
         )
 
-        val edited = service.record(id)!!
-        assertEquals(40_500, edited.record.odometer)
-        assertEquals(2, edited.items.size)
-        assertEquals(setOf(kept, added), edited.photos.map { it.fileName }.toSet())
+        assertEquals(40_500, service.record(id)!!.record.odometer)
         // The row is gone, the file isn't: Undo may still want it.
         assertTrue(t.hasFile(gone))
         val event = nextEvent() as RecordEvent.Edited
@@ -126,7 +121,7 @@ class RecordActionsTest {
         val car = t.vehicle()
         val id = t.record(car)
         val before = service.record(id)!!
-        actions.replace(before, before.record.copy(odometer = 41_000), before.items)
+        actions.replace(before, before.toModel().copy(odometer = 41_000))
         val event = nextEvent()
         deleteVehicle(car)
         assertFalse(actions.undo(event))
@@ -183,46 +178,26 @@ class RecordActionsTest {
     }
 
     @Test
-    fun `marking a recall done with a record adds the work as a line that resets nothing, once`() = runBlocking {
+    fun `a recall marked done with its work is announced with its record, worded as the app words it, and only once`() = runBlocking {
         val car = t.vehicle()
         val recall = t.recall(car)
-        val record = ServiceRecordEntity(vehicleId = car, date = day, odometer = 43_000, diy = false, shopName = "Made-up Motors")
 
-        actions.completeRecall(recall, day, record)
+        actions.completeRecall(recall, day, RecallWork(43_000, "Made-up Motors"))
 
         val saved = service.recordsFor(car).single()
-        val done = recalls.byId(recall)!!
-        assertEquals(day, done.completedOn)
-        assertEquals(saved.record.id, done.serviceRecordId)
-        val line = saved.items.single()
-        assertNull(line.scheduleItemId)
-        assertNull(line.catalogId)
-        assertEquals(recallServiceLine(done.toNotice()), line.label)
+        assertEquals(listOf(recallServiceLine(recalls.byId(recall)!!.toNotice())), saved.items.map { it.label })
         assertEquals(RecordEvent.RecallDone(recall, saved.record.id), nextEvent())
 
-        // Already done: a second mark adds no second record.
-        actions.completeRecall(recall, day, record)
-        assertEquals(1, service.recordsFor(car).size)
+        // Already done: a second mark says nothing.
+        actions.completeRecall(recall, day, RecallWork(43_000))
         noEvent()
-    }
-
-    @Test
-    fun `a recall's record can join the visit it was done on`() = runBlocking {
-        val car = t.vehicle()
-        val other = t.record(car, odometer = 43_000)
-        val recall = t.recall(car)
-        actions.completeRecall(recall, day, ServiceRecordEntity(vehicleId = car, date = day, odometer = 43_000, diy = true), visitWith = other)
-        val records = service.recordsFor(car).map { it.record }
-        assertEquals(2, records.size)
-        assertNotNull(records.first().visitId)
-        assertEquals(1, records.map { it.visitId }.toSet().size)
     }
 
     @Test
     fun `undoing a recall marked done without a record opens it again`() = runBlocking {
         val car = t.vehicle()
         val recall = t.recall(car)
-        actions.completeRecall(recall, day, record = null)
+        actions.completeRecall(recall, day, work = null)
         val event = nextEvent()
         assertEquals(RecordEvent.RecallDone(recall, null), event)
         assertTrue(actions.undo(event))
@@ -233,19 +208,15 @@ class RecordActionsTest {
     fun `reopening a recall removes the record it added, and Undo puts both back`() = runBlocking {
         val car = t.vehicle()
         val recall = t.recall(car)
-        actions.completeRecall(recall, day, ServiceRecordEntity(vehicleId = car, date = day, odometer = 43_000, diy = true))
+        actions.completeRecall(recall, day, RecallWork(43_000))
         nextEvent()
 
         actions.reopenRecall(recall)
         assertTrue(service.recordsFor(car).isEmpty())
-        assertNull(recalls.byId(recall)!!.completedOn)
         val event = nextEvent() as RecordEvent.RecallReopened
 
         assertTrue(actions.undo(event))
-        val back = service.recordsFor(car).single()
-        val again = recalls.byId(recall)!!
-        assertEquals(day, again.completedOn)
-        assertEquals(back.record.id, again.serviceRecordId)
+        assertEquals(service.recordsFor(car).single().record.id, recalls.byId(recall)!!.serviceRecordId)
 
         // An open recall has nothing to reopen.
         actions.reopenRecall(t.recall(car, campaign = "24V999000"))
@@ -257,7 +228,7 @@ class RecordActionsTest {
         val car = t.vehicle()
         val photo = t.photoFile("record-recall.jpg")
         val recall = t.recall(car)
-        actions.completeRecall(recall, day, ServiceRecordEntity(vehicleId = car, date = day, odometer = 43_000, diy = true))
+        actions.completeRecall(recall, day, RecallWork(43_000))
         nextEvent()
         service.insertPhotos(listOf(PhotoEntity(recordId = recalls.byId(recall)!!.serviceRecordId!!, fileName = photo)))
         actions.reopenRecall(recall)
@@ -301,27 +272,6 @@ class RecordActionsTest {
     }
 
     @Test
-    fun `two records link into one visit, and unlinking one of two leaves neither in a visit`() = runBlocking {
-        val car = t.vehicle()
-        val a = t.record(car, odometer = 40_000)
-        val b = t.record(car, odometer = 40_010)
-        actions.link(a, b)
-        val visit = service.record(a)!!.record.visitId
-        assertNotNull(visit)
-        assertEquals(visit, service.record(b)!!.record.visitId)
-
-        actions.unlink(a)
-        assertNull(service.record(a)!!.record.visitId)
-        assertNull(service.record(b)!!.record.visitId)
-
-        // A record that isn't there links to nothing.
-        actions.link(a, 9_999)
-        assertNull(service.record(a)!!.record.visitId)
-        actions.link(9_999, a)
-        actions.unlink(9_999)
-    }
-
-    @Test
     fun `showIn points History at a vehicle without marking a record`() {
         actions.showIn(7)
         assertEquals(HistoryFocus(7), actions.focus.value)
@@ -338,18 +288,14 @@ class RecordActionsTest {
     }
 
     @Test
-    fun `an import adds and replaces in one go, announcing nothing`() = runBlocking {
+    fun `an import announces nothing`() = runBlocking {
         val car = t.vehicle()
-        val id = t.record(car, odometer = 40_000, lines = listOf(line("Old wording")))
-        val old = service.record(id)!!.record
         actions.applyImport(
-            added = listOf(RecordRows(ServiceRecordEntity(vehicleId = car, date = day.minusDays(30), odometer = 39_000, diy = true, imported = true), listOf(line("Tires rotated", "rotation")))),
-            replaced = listOf(RecordRows(old.copy(notes = "From the file"), listOf(line("New wording")))),
+            added = listOf(ServiceRecord(vehicleId = car, date = day.minusDays(30), odometer = 39_000, diy = true, imported = true, lines = listOf(RecordLine("Tires rotated", "rotation")))),
+            replaced = emptyList(),
         )
-        val all = service.recordsFor(car)
-        assertEquals(2, all.size)
-        assertEquals("From the file", service.record(id)!!.record.notes)
-        assertEquals(listOf("New wording"), service.record(id)!!.items.map { it.label })
+        assertEquals(1, service.recordsFor(car).size)
+        assertNull(actions.focus.value)
         noEvent()
     }
 

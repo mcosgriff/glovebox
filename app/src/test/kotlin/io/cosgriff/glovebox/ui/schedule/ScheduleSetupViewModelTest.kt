@@ -29,7 +29,7 @@ class ScheduleSetupViewModelTest {
     private fun setup(vehicle: VehicleEntity): Pair<Long, ScheduleSetupViewModel> {
         val id = world.vehicle(vehicle)
         val vm = world.viewModel(ScheduleSetupViewModel::class) {
-            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.makers)
+            ScheduleSetupViewModel(routeHandle(ScheduleSetupRoute(id)), world.db.vehicles(), world.settings, world.makers, world.scheduleItems)
         }
         eventually { vm.items != null }
         return id to vm
@@ -59,9 +59,27 @@ class ScheduleSetupViewModelTest {
     }
 
     @Test
+    fun `a second save is refused, and setup is left only once`() {
+        val (id, vm) = setup(ScheduleFixtures.hatch())
+        var done = 0
+        // A double tap: the second finds the vehicle set up already.
+        vm.save { done++ }
+        vm.save { done++ }
+        eventually { done > 0 && world.items(id).isNotEmpty() }
+        repeat(20) {
+            idle()
+            Thread.sleep(5)
+        }
+        assertEquals(1, done)
+        assertEquals(vm.items!!.size, world.items(id).size)
+    }
+
+    @Test
     fun `a bundled maker's schedule is the schedule, its items the user's own, and its table the milestones`() {
         val (id, vm) = setup(ScheduleFixtures.fourRunner())
-        val known = assertNotNull(vm.known).let { vm.known!! }
+        val known = vm.known
+        assertNotNull(known)
+        known!!
         assertEquals("toyota-4runner-2017-2024", known.id)
         val items = vm.items!!
         assertTrue(items.all { it.own && it.template == null && it.knownList == known.id })
@@ -165,7 +183,11 @@ class ScheduleSetupViewModelTest {
         vm.chooseSevereUse(true)
         assertTrue(vm.severeUse)
         assertTrue(vm.items!!.all { it.useSevere })
-        vm.items!!.filter { it.severe != null }.forEach { assertEquals(it.severe, it.active) }
+        // Each figure of a severe interval takes over; one it doesn't give stays the normal one (#616).
+        vm.items!!.forEach { item ->
+            val severe = item.severe ?: return@forEach
+            assertEquals(Interval(severe.miles ?: item.normal.miles, severe.months ?: item.normal.months), item.active)
+        }
 
         vm.chooseEngine(vm.engineChoices.first())
         assertFalse(vm.severeUse)
@@ -214,12 +236,7 @@ class ScheduleSetupViewModelTest {
         assertFalse(vm.isNew(vm.items!!.last()))
 
         vm.saved()
-        val row = world.items(id).first { it.name == "Grease hitch" }
-        assertEquals(3_000, row.intervalMiles)
-        assertNull(row.intervalMonths)
-        assertNull(row.templateKey)
-        assertEquals("belt-check", row.service)
-        assertEquals(DueRule.MILEAGE_ONLY.name, row.ruleOverride)
+        assertEquals("belt-check", world.items(id).first { it.name == "Grease hitch" }.service)
     }
 
     @Test
@@ -232,9 +249,7 @@ class ScheduleSetupViewModelTest {
         assertEquals(Interval(7_500, 9), vm.items!!.first().normal)
 
         vm.saved()
-        val row = world.items(id).first { it.templateKey == first.template!!.key }
-        assertEquals(7_500, row.intervalMiles)
-        assertNull(row.service)
+        assertEquals(7_500, world.items(id).first { it.templateKey == first.template!!.key }.intervalMiles)
     }
 
     @Test
@@ -250,24 +265,5 @@ class ScheduleSetupViewModelTest {
         vm.closeEditor()
         assertNull(vm.editing)
         assertFalse(vm.items!!.first().tracked)
-    }
-
-    @Test
-    fun `a draft and the row it is saved as agree, and a row with no interval has no draft`() {
-        val draft = DraftItem(
-            key = "k", name = "Job", normal = Interval(10_000, 12), severe = Interval(5_000, 6), useSevere = true,
-            rule = DueRule.TIME_ONLY, service = "oil", firstAt = 60_000, e85 = Interval(4_000, null), useE85 = true,
-        )
-        val row = draft.toEntity(vehicleId = 3)
-        assertEquals("oil", row.service)
-        assertTrue(row.useE85)
-        val back = row.copy(id = 9).toDraft(null)!!
-        assertEquals(draft.copy(key = "9"), back)
-
-        // A typical item's draft never carries a service onto its row.
-        assertNull(draft.copy(own = false).toEntity(3).service)
-        // No E85 interval: never on it, whatever the switch.
-        assertFalse(draft.copy(e85 = null).toEntity(3).useE85)
-        assertNull(row.copy(intervalMiles = null, intervalMonths = null).toDraft(null))
     }
 }

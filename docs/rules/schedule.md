@@ -6,6 +6,12 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   bundled maker's schedule covers the vehicle; then that is the schedule** (the user's decision, 2026-10-13).
   Its items become the user's own (`knownList` set) and its table the vehicle's milestones.
 - **Never send a vehicle that already has items back through setup**: it inserts every item again.
+  `ScheduleItems.setUp` refuses one, checked inside its write (#620), so a second Save writes nothing.
+- **A vehicle's schedule items are built and written in one place, `ScheduleItems`** (`:data`, #620). Every row is
+  built from a `DraftItem` (`toEntity`), whether from setup, the editor, a maker's list, the typical list or an import
+  file. A change (tracked, Normal / Severe, E85, the editor's save) writes only its own columns, **never a whole row
+  from a copy read earlier**, which could undo a snooze or a change that landed meanwhile. Adding the maker's items
+  or the missing typical ones works out what to add inside the write, so doing it twice adds nothing.
 - Known maintenance schedules (#134, `KnownSchedules`, `docs/known-schedules.md`, which has the rules, and
   `docs/known-schedules/<id>.md`, what was read for each list). **Glovebox has no schedule of its own for any
   model and works none out; a bundled schedule is a maker's published guide, named.** The one exception is an
@@ -37,9 +43,9 @@ Rules for setup, maker's schedules, drive and gearbox variants, Severe and E85, 
   record, or one that doesn't name it, matches neither, and setup asks. Neither is a
   new vehicle field; both read what the vehicle already has.
 - **Taking up a schedule is one transaction** (#429): setup's save and "Use the maker's schedule" go through
-  `MakersSchedules.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
+  `ScheduleItems` (`setUp`, `takeUpMakers`) to `MakersSchedules.adopt` (`:data`), which writes the items, stops or removes the replaced doubles, fills a blank
   engine and powertrain, and adds the maker's table (read from the vehicle as it is) unless the vehicle has one.
-  The caller builds the item rows from the owner's picks. A process that dies part-way must leave the vehicle as
+  `ScheduleItems` builds the item rows from the owner's picks. A process that dies part-way must leave the vehicle as
   it was, never a maker's schedule without its table.
 - **Which maker's schedule a vehicle is on is asked of `MakersSchedules.forVehicle`** (`:data`, #576), never
   matched by a screen: the list its items were taken up from (`knownList`) while that list still ships, else the

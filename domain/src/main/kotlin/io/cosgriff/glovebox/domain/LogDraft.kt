@@ -234,8 +234,8 @@ data class LogDraft(
     }
 
     /**
-     * The draft saved as a record: [visit] (date, odometer, shop, cost, notes, charges) with these lines and jobs, the
-     * jobs that say nothing left out ([ServiceRecord.withoutBareJobs]).
+     * The draft saved as a record: [visit] (date, odometer, shop, cost, notes, charges) with these lines and every
+     * job. The writer leaves out the jobs that say nothing ([ServiceRecord.withoutBareJobs]).
      */
     fun toRecord(visit: ServiceRecord, terms: LogTerms): ServiceRecord {
         val catalogIds = terms.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
@@ -261,7 +261,7 @@ data class LogDraft(
                     itemized = j.rows != null,
                 )
             },
-        ).withoutBareJobs()
+        )
     }
 
     private fun withJob(jobId: Int, terms: LogTerms, update: (JobDraft<String>) -> JobDraft<String>): LogDraft =

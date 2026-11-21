@@ -1,11 +1,7 @@
 package io.cosgriff.glovebox.ui.schedule
 
-import io.cosgriff.glovebox.data.log.gearboxOnRecord
-import io.cosgriff.glovebox.domain.Gearboxes
-import io.cosgriff.glovebox.domain.Gearbox
 import io.cosgriff.glovebox.ui.screenState
 import io.cosgriff.glovebox.ui.service.shortName
-import io.cosgriff.glovebox.data.db.rule
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -21,7 +17,6 @@ import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.domain.KnownEngine
 import io.cosgriff.glovebox.domain.KnownScheduleList
-import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.domain.BodyStyle
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.ui.service.unit
@@ -77,109 +72,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.DraftItem
+import io.cosgriff.glovebox.data.db.ScheduleItems
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.settings.Settings
 import io.cosgriff.glovebox.data.settings.SettingsRepository
-import io.cosgriff.glovebox.domain.DueRule
-import io.cosgriff.glovebox.domain.Interval
-import io.cosgriff.glovebox.domain.ScheduleTemplateItem
-import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.ui.ScheduleSetupRoute
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-/** A schedule item being set up; nothing is written to the database until the user confirms. */
-data class DraftItem(
-    val key: String,
-    val name: String,
-    val normal: Interval,
-    val severe: Interval?,
-    val useSevere: Boolean = false,
-    /** Null = use the app-wide default rule. */
-    val rule: DueRule? = null,
-    val tracked: Boolean = true,
-    /** The suggestion this came from; null for items the user added. */
-    val template: ScheduleTemplateItem? = null,
-    /** One the user added, not one of the typical items Glovebox suggested. Only these can be pointed at a service line. */
-    val own: Boolean = template == null,
-    /** For the user's own: the CatalogItem id of the built-in service line that resets it; null = logged under "Your items". */
-    val service: String? = null,
-    /** For an item from a maker's schedule that ships with the app: that list's id, kept on the row for good. */
-    val knownList: String? = null,
-    /** The distance covered at which the job is first due, when that isn't one interval in; null for most. */
-    val firstAt: Int? = null,
-    /** A job that exists only under severe use; [normal] is its interval then. On normal use it is listed, switched off. */
-    val severeOnly: Boolean = false,
-    /** A flex-fuel maker's interval for a vehicle run mostly on E85; null for every other item. */
-    val e85: Interval? = null,
-    /** The vehicle runs mostly on E85. Changes nothing on an item without an [e85] interval. */
-    val useE85: Boolean = false,
-    /** The one gearbox a maker's job is for (#549, `dsgOnly` / `automaticOnly`); null for any. */
-    val gearboxOnly: Gearbox? = null,
-) {
-    /** On the list but not reminding: a job only for severe use, while the schedule is on normal use. */
-    val dormant: Boolean get() = severeOnly && !useSevere
-    val active: Interval get() = if (showsE85) e85 ?: normal else if (useSevere) severe ?: normal else normal
-    val showsSevere: Boolean get() = !showsE85 && useSevere && severe != null && severe != normal
-    /** On its E85 interval. */
-    val showsE85: Boolean get() = useE85 && e85 != null
-
-    companion object {
-        /** A new item of the user's own, starting at 5,000 mi or 6 months: Glovebox's figure, so a schedule figure in [unit]. */
-        fun blank(key: String, unit: DistanceUnit) = DraftItem(key = key, name = "", normal = Interval(unit.scheduled(5_000), 6), severe = null)
-    }
-}
-
-/** The row a draft is saved as, at setup. A service is kept only on an item of the user's own. */
-fun DraftItem.toEntity(vehicleId: Long): ScheduleItemEntity = ScheduleItemEntity(
-    vehicleId = vehicleId,
-    name = name,
-    templateKey = template?.key,
-    intervalMiles = normal.miles,
-    intervalMonths = normal.months,
-    severeMiles = severe?.miles,
-    severeMonths = severe?.months,
-    useSevere = useSevere,
-    ruleOverride = rule?.name,
-    tracked = tracked,
-    service = service.takeIf { own },
-    knownList = knownList,
-    firstMiles = firstAt,
-    severeOnly = severeOnly,
-    e85Miles = e85?.miles,
-    e85Months = e85?.months,
-    useE85 = useE85 && e85 != null,
-    gearboxOnly = gearboxOnly?.name,
-)
-
-/** A saved row as the editor's draft, keyed by its id; null for one with no interval. [template] is the typical item it is, if any. */
-fun ScheduleItemEntity.toDraft(template: ScheduleTemplateItem?): DraftItem? {
-    val normal = interval(intervalMiles, intervalMonths) ?: return null
-    return DraftItem(
-        key = id.toString(),
-        name = name,
-        normal = normal,
-        severe = interval(severeMiles, severeMonths),
-        useSevere = useSevere,
-        rule = rule,
-        tracked = tracked,
-        template = template,
-        own = templateKey == null,
-        service = service,
-        knownList = knownList,
-        firstAt = firstMiles,
-        severeOnly = severeOnly,
-        e85 = interval(e85Miles, e85Months),
-        useE85 = useE85,
-        gearboxOnly = Gearboxes.of(gearboxOnly),
-    )
-}
-
-private fun interval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)
 
 @HiltViewModel
 class ScheduleSetupViewModel @Inject constructor(
@@ -187,6 +90,7 @@ class ScheduleSetupViewModel @Inject constructor(
     private val vehicles: VehicleDao,
     settings: SettingsRepository,
     private val makers: MakersSchedules,
+    private val schedule: ScheduleItems,
 ) : ViewModel() {
     private val vehicleId = savedStateHandle.route<ScheduleSetupRoute>().vehicleId
 
@@ -236,29 +140,13 @@ class ScheduleSetupViewModel @Inject constructor(
         viewModelScope.launch {
             val v = vehicles.observe(vehicleId).first()
             vehicle = v
-            val unit = v?.unit ?: DistanceUnit.MILES
             val list = v?.let { makers.forVehicle(it) }
             known = list
             // The maker has a schedule per engine and this vehicle's isn't on record: the owner says which.
             if (list == null && v != null) engineChoices = makers.choices(v)
-            items = if (list != null) {
-                knownItems(list, v)
-            } else {
-                ScheduleTemplates.generic(v?.drivetrain, v?.fuel, unit).map {
-                    DraftItem(key = it.key, name = it.label, normal = it.normal, severe = it.severe, template = it)
-                }
-            }
+            items = if (list != null) ScheduleItems.drafts(list, v) else ScheduleItems.typicalDrafts(v) { it.label }
         }
     }
-
-    private fun knownItems(list: KnownScheduleList, v: VehicleEntity): List<DraftItem> =
-        KnownSchedules.intervalsIn(list, v.unit, v.drivetrain, v.gearboxOnRecord()).mapIndexed { i, it ->
-            DraftItem(
-                key = "known-$i", name = it.name, normal = it.normal, severe = it.severe, rule = it.rule,
-                own = true, service = it.service, knownList = list.id, firstAt = it.firstAt, severeOnly = it.severeOnly, e85 = it.e85,
-                gearboxOnly = it.gearbox,
-            )
-        }
 
     /**
      * The owner says which of [engineChoices] is their engine. The schedule becomes that list's, and
@@ -273,7 +161,7 @@ class ScheduleSetupViewModel @Inject constructor(
         engineChoices = emptyList()
         severeUse = false
         e85Use = false
-        items = knownItems(list, v)
+        items = ScheduleItems.drafts(list, v)
     }
 
     /** "Neither of these": the typical list stays, and the question isn't asked again on this screen. */
@@ -327,12 +215,14 @@ class ScheduleSetupViewModel @Inject constructor(
         editing = null
     }
 
-    /** Unticked items are kept as untracked rows so they can be switched on later. */
+    /**
+     * Unticked items are kept as untracked rows so they can be switched on later. [onDone] only once they are written:
+     * a second tap finds the vehicle set up already, and is refused.
+     */
     fun save(onDone: (vehicleId: Long) -> Unit) = viewModelScope.launch {
         val list = items ?: return@launch
         // One write: the items, the engine chosen, and the maker's table, which goes with its schedule.
-        makers.adopt(vehicleId, list.map { it.toEntity(vehicleId) }, known, engine = chosenEngine, body = chosenBody)
-        onDone(vehicleId)
+        if (schedule.setUp(vehicleId, list, known, engine = chosenEngine, body = chosenBody)) onDone(vehicleId)
     }
 }
 

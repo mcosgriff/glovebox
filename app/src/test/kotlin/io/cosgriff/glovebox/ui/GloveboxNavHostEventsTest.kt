@@ -10,8 +10,10 @@ import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.SHELL_PHONE
 import io.cosgriff.glovebox.ShellTestApp
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.RecallWork
+import io.cosgriff.glovebox.data.db.toModel
+import io.cosgriff.glovebox.domain.RecordLine
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.idleMainUntil
 import io.cosgriff.glovebox.string
 import io.cosgriff.glovebox.ui.service.RecordActions
@@ -59,7 +61,8 @@ class GloveboxNavHostEventsTest {
 
     private fun record(id: Long) = runBlocking { graph.db.service().record(id) }
 
-    private fun newRecord(): ServiceRecordEntity = ServiceRecordEntity(vehicleId = vehicle, date = today.minusDays(3), odometer = 61_100, diy = true)
+    private fun newRecord(): ServiceRecord =
+        ServiceRecord(vehicleId = vehicle, date = today.minusDays(3), odometer = 61_100, diy = true, lines = listOf(RecordLine("Wiper blades")))
 
     private fun recall(done: LocalDate? = null, recordId: Long? = null): Long = runBlocking {
         graph.db.recalls().insertAll(
@@ -75,7 +78,7 @@ class GloveboxNavHostEventsTest {
 
     @Test
     fun `a saved record offers to view it, which opens the record`() {
-        runBlocking { actions.add(newRecord(), listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Wiper blades"))) }
+        runBlocking { actions.add(newRecord()) }
         compose.waitForText(string(R.string.event_saved))
         tap(string(R.string.view))
         compose.waitForText("Wiper blades")
@@ -96,7 +99,7 @@ class GloveboxNavHostEventsTest {
     fun `an edit is undone with Undo`() {
         val id = graph.logService(vehicle, null, today.minusDays(5), 61_050, label = "Cabin air filter")
         val before = checkNotNull(record(id))
-        runBlocking { actions.replace(before, before.record.copy(odometer = 61_070), before.items) }
+        runBlocking { actions.replace(before, before.toModel().copy(odometer = 61_070)) }
         compose.waitForText(string(R.string.event_edited))
         tap(string(R.string.undo))
         compose.waitForText(string(R.string.event_undone))
@@ -117,7 +120,7 @@ class GloveboxNavHostEventsTest {
     @Test
     fun `a recall marked done without a record is reopened with Undo`() {
         val id = recall()
-        runBlocking { actions.completeRecall(id, today, record = null) }
+        runBlocking { actions.completeRecall(id, today, work = null) }
         compose.waitForText(string(R.string.event_recall_done))
         tap(string(R.string.undo))
         idleMainUntil { runBlocking { graph.db.recalls().byId(id) }?.completedOn == null }
@@ -126,7 +129,7 @@ class GloveboxNavHostEventsTest {
     @Test
     fun `a recall marked done with a record offers to view the record`() {
         val id = recall()
-        runBlocking { actions.completeRecall(id, today, record = newRecord()) }
+        runBlocking { actions.completeRecall(id, today, RecallWork(61_100)) }
         compose.waitForText(string(R.string.event_recall_done_logged))
         tap(string(R.string.view))
         val recordId = checkNotNull(runBlocking { graph.db.recalls().byId(id) }?.serviceRecordId)

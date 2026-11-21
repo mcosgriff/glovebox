@@ -33,14 +33,25 @@ class VehicleDaoTest {
     }
 
     @Test
-    fun `every encrypted file is found by the one query, photos, vehicle photos and documents alike`() = runBlocking {
-        val id = db.vehicles().add(VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = day, photoFile = "vehicle.enc"), firstReading = null)
-        val record = db.service().insertWithItems(
-            ServiceRecordEntity(vehicleId = id, date = day, odometer = 60_000, diy = true),
-            listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Work")),
-        )
-        db.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = "receipt.enc")))
-        db.documents().insert(DocumentEntity(vehicleId = id, type = "TITLE", name = "Title", fileName = "document-title.enc", format = "PDF", sizeBytes = 1, addedOn = day))
-        assertEquals(setOf("vehicle.enc", "receipt.enc", "document-title.enc"), db.documents().allEncryptedFiles().toSet())
+    fun `every encrypted file is found by the one query, photos, vehicle photos and documents alike, and each vehicle's apart`() = runBlocking {
+        suspend fun vehicle(tag: String): Long {
+            val id = db.vehicles().add(VehicleEntity(vin = null, year = 2019, make = "Toyota", model = "4Runner", createdOn = day, photoFile = "vehicle-$tag.enc"), firstReading = null)
+            val record = db.service().insertWithItems(
+                ServiceRecordEntity(vehicleId = id, date = day, odometer = 60_000, diy = true),
+                listOf(ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Work")),
+            )
+            db.service().insertPhotos(listOf(PhotoEntity(recordId = record, fileName = "receipt-$tag.enc")))
+            db.documents().insert(DocumentEntity(vehicleId = id, type = "TITLE", name = "Title", fileName = "document-$tag.enc", format = "PDF", sizeBytes = 1, addedOn = day))
+            return id
+        }
+        val a = vehicle("a")
+        val b = vehicle("b")
+        val bare = db.vehicles().add(VehicleEntity(vin = null, year = 2013, make = "Volkswagen", model = "GTI", createdOn = day), firstReading = null)
+
+        assertEquals(setOf("vehicle-a.enc", "receipt-a.enc", "document-a.enc"), db.documents().encryptedFiles(a).toSet())
+        assertEquals(setOf("vehicle-b.enc", "receipt-b.enc", "document-b.enc"), db.documents().encryptedFiles(b).toSet())
+        assertEquals(emptyList<String>(), db.documents().encryptedFiles(bare))
+        // Vehicle by vehicle, the files are every file: what the sweep keeps is what Delete vehicle would take.
+        assertEquals(listOf(a, b, bare).flatMap { db.documents().encryptedFiles(it) }.toSet(), db.documents().allEncryptedFiles().toSet())
     }
 }

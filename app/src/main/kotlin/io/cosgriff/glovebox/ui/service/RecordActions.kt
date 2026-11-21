@@ -13,20 +13,13 @@ import io.cosgriff.glovebox.data.db.ImportClose
 import io.cosgriff.glovebox.domain.DoneChange
 import io.cosgriff.glovebox.data.db.RecordRecommendations
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.data.db.RecordRows
+import io.cosgriff.glovebox.data.db.RecallWork
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceDao
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordJobEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordJobPartEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordWithItems
-import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.data.photo.RecordPhotoStore
-import io.cosgriff.glovebox.domain.Recalls
 import io.cosgriff.glovebox.domain.RecordMark
-import io.cosgriff.glovebox.domain.ServiceCatalog
-import io.cosgriff.glovebox.domain.lineFor
+import io.cosgriff.glovebox.domain.ServiceRecord
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -103,32 +96,27 @@ class RecordActions @Inject constructor(
         _focus.value = null
     }
 
-    /** [photoFiles] are already encrypted in the photo folder; this makes them the record's. */
+    /**
+     * [record] as a new record, its jobs that say nothing left out. [photos] are already encrypted in the photo folder;
+     * this makes them the record's. [kept] and [done] are as [ServiceLogWriter.add] takes them.
+     */
     suspend fun add(
-        record: ServiceRecordEntity,
-        items: List<ServiceRecordItemEntity>,
-        photoFiles: List<String> = emptyList(),
-        jobs: List<ServiceRecordJobEntity> = emptyList(),
-        parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        record: ServiceRecord,
+        photos: List<String> = emptyList(),
         kept: List<KeptRecommendation> = emptyList(),
         done: List<Long> = emptyList(),
     ) {
-        val id = writer.add(record, items, photoFiles, jobs, parts, kept, done)
+        val id = writer.add(record, photos, kept, done)
         _focus.value = HistoryFocus(record.vehicleId, id, RecordMark.ADDED)
         _events.send(RecordEvent.Saved(id))
     }
 
     /**
-     * A bare "last done" for one schedule item: a record with that one line, flagged as such. It is
-     * entered on the spot where its result shows, so there is no snackbar and History isn't opened.
+     * A bare "last done" for one schedule item ([ServiceLogWriter.addLastDone]). It is entered on the spot where its
+     * result shows, so there is no snackbar and History isn't opened.
      */
     suspend fun addLastDone(vehicleId: Long, item: ScheduleItemEntity, date: LocalDate, odometer: Int) {
-        // Filed under the catalog line that resets this reminder, so History puts it in the right category.
-        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = item.id, label = item.name, catalogId = ServiceCatalog.lineFor(item.templateKey, item.service)?.id)
-        service.insertWithItems(
-            ServiceRecordEntity(vehicleId = vehicleId, date = date, odometer = odometer, diy = true, enteredAsLastDone = true),
-            listOf(line),
-        )
+        writer.addLastDone(vehicleId, item, date, odometer)
     }
 
     /**
@@ -137,7 +125,7 @@ class RecordActions @Inject constructor(
      * shop's recommendations the owner left ticked in the preview, closed by their records, and [reopened] those a
      * replaced record no longer looks like the work for (#593).
      */
-    suspend fun applyImport(added: List<RecordRows>, replaced: List<RecordRows>, done: List<ImportClose> = emptyList(), reopened: List<Long> = emptyList()) =
+    suspend fun applyImport(added: List<ServiceRecord>, replaced: List<ServiceRecord>, done: List<ImportClose> = emptyList(), reopened: List<Long> = emptyList()) =
         writer.applyImport(added, replaced, done, reopened)
 
     /** Points History at [vehicleId], for a screen that sends the user there. */
@@ -146,20 +134,17 @@ class RecordActions @Inject constructor(
     }
 
     /**
-     * [removedPhotoIds] lose their rows now; their files wait for [discard], so Undo can still
-     * bring them back.
+     * [record] in [previous]'s place. [removedPhotoIds] lose their rows now; their files wait for [discard], so Undo
+     * can still bring them back.
      */
     suspend fun replace(
         previous: ServiceRecordWithItems,
-        record: ServiceRecordEntity,
-        items: List<ServiceRecordItemEntity>,
+        record: ServiceRecord,
         addedPhotos: List<String> = emptyList(),
         removedPhotoIds: Set<Long> = emptySet(),
-        jobs: List<ServiceRecordJobEntity> = emptyList(),
-        parts: List<ServiceRecordJobPartEntity> = emptyList(),
         done: DoneChange = DoneChange(),
     ) {
-        writer.replace(record, items, addedPhotos, removedPhotoIds, jobs, parts, done)
+        writer.replace(record, addedPhotos, removedPhotoIds, done)
         val removed = previous.photos.filter { it.id in removedPhotoIds }.map { it.fileName }
         _events.send(RecordEvent.Edited(previous, addedPhotos, removed, done))
     }
@@ -182,17 +167,14 @@ class RecordActions @Inject constructor(
     }
 
     /**
-     * Marks a recall done. With [record] the work also goes in the service log, as a line linked to
-     * no schedule item, so it never resets a reminder. Does nothing if the recall is already done,
-     * which is what stops a second record being added for it. [visitWith] is a record the user chose to
-     * link the new one with, as one visit.
+     * Marks a recall done. With [work] the work also goes in the service log, as a line linked to no schedule item,
+     * so it never resets a reminder. Does nothing if the recall is already done, which is what stops a second record
+     * being added for it. [visitWith] is a record the user chose to link the new one with, as one visit.
      */
-    suspend fun completeRecall(recallId: Long, completedOn: LocalDate, record: ServiceRecordEntity?, visitWith: Long? = null) {
-        val recall = recalls.byId(recallId) ?: return
-        val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = recallServiceLine(recall.toNotice()))
+    suspend fun completeRecall(recallId: Long, completedOn: LocalDate, work: RecallWork?, visitWith: Long? = null) {
         // "Add to the visit on …" (#307): the recall's record joins the visit it was done on from the start.
-        val done = writer.completeRecall(recall.id, completedOn, record, listOf(line), visitWith) ?: return
-        _events.send(RecordEvent.RecallDone(recall.id, done.recordId))
+        val done = writer.completeRecall(recallId, completedOn, work, visitWith, ::recallServiceLine) ?: return
+        _events.send(RecordEvent.RecallDone(recallId, done.recordId))
     }
 
     /** Back to open. The record that marking it done added is removed with it. */

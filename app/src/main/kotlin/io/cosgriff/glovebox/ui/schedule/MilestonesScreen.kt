@@ -1,7 +1,6 @@
 package io.cosgriff.glovebox.ui.schedule
 
 import io.cosgriff.glovebox.domain.GearboxOnRecord
-import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -9,6 +8,7 @@ import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.service.shortName
 import io.cosgriff.glovebox.ui.service.fileStem
 import io.cosgriff.glovebox.data.db.MakersSchedules
+import io.cosgriff.glovebox.data.milestones.VehicleMilestones
 import io.cosgriff.glovebox.ui.components.DangerTextButton
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.Pill
@@ -20,10 +20,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.outlined.CheckCircle
-import io.cosgriff.glovebox.ui.service.unit
 import io.cosgriff.glovebox.domain.DistanceUnit
 import io.cosgriff.glovebox.domain.KnownScheduleList
-import io.cosgriff.glovebox.domain.KnownSchedules
 import kotlinx.coroutines.flow.flow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -73,34 +71,25 @@ import io.cosgriff.glovebox.data.db.MilestoneEntity
 import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.domain.ClusterSwap
 import io.cosgriff.glovebox.domain.ImportedMilestone
-import io.cosgriff.glovebox.domain.JobDone
 import io.cosgriff.glovebox.domain.MilestoneEdits
 import io.cosgriff.glovebox.domain.MilestoneExport
 import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.export.SaveAsImportFile
-import io.cosgriff.glovebox.domain.MilestoneImport
 import io.cosgriff.glovebox.domain.MilestoneJobStatus
 import io.cosgriff.glovebox.domain.SavedMilestone
-import io.cosgriff.glovebox.domain.TableJob
 import io.cosgriff.glovebox.domain.MilestonePlace
 import io.cosgriff.glovebox.domain.MilestoneStatus
 import io.cosgriff.glovebox.domain.Milestones
-import io.cosgriff.glovebox.domain.MilestoneContinuation
 import androidx.compose.material.icons.outlined.Info
-import io.cosgriff.glovebox.domain.actual
-import io.cosgriff.glovebox.domain.asReadOn
 import io.cosgriff.glovebox.ui.MilestonesRoute
 import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
-import io.cosgriff.glovebox.data.log.toEntry
-import io.cosgriff.glovebox.data.log.tracked
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import io.cosgriff.glovebox.ui.theme.statusColors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import io.cosgriff.glovebox.data.log.NoLinks
 import javax.inject.Inject
 
 data class MilestonesState(
@@ -156,8 +145,8 @@ class MilestonesViewModel @Inject constructor(
     private val knownLists = flow { emit(makers.lists()) }
 
     /**
-     * Null while loading, and if the vehicle no longer exists. Read through `VehicleLogs`, but milestones go by actual
-     * mileage, so the tracked items are taken again with no swap, and the user's own table is read beside it.
+     * Null while loading, and if the vehicle no longer exists. The milestones are worked out in `:data`
+     * ([VehicleMilestones]), by actual mileage; this only words them.
      */
     val state: StateFlow<MilestonesState?> = combine(
         log,
@@ -167,65 +156,25 @@ class MilestonesViewModel @Inject constructor(
     ) { log, rows, lists, count ->
         if (log == null) return@combine null
         val vehicle = log.vehicle
-        val records = log.records
-        val swap = log.swap
-        val entries = log.entries
-        val tracked = vehicle.tracked(log.items, log.defaultRule, swap = null).filter { it.interval.miles != null } // no swap: milestones are by actual mileage, and so is a first time
-        val keys = tracked.map { it.id }.toSet()
-        // A manual's mileages are miles really covered, so everything is placed by actual mileage.
-        val current = log.actualOdometer
-        val name = vehicle.shortName()
-        if (rows.isNotEmpty()) {
-            // The user's own table is shown as it is, in place of the view built from the schedule.
-            val saved = rows.map { r -> SavedMilestone(r.milestone.id, r.milestone.atMiles, r.ordered.map { TableJob(it.name, it.service) }, r.milestone.orMonths) }
-            // A logged line completes a job by its catalog service, or by being called the same thing.
-            val done = records.flatMap { r ->
-                val e = r.toEntry(swap, NoLinks)
-                r.items.flatMap { line ->
-                    MilestoneImport.doneKeys(line.label, line.catalogId).map { JobDone(it, e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
-                }
-            }
-            // A table that repeats goes on past what is shown, like the view built from the schedule; one that ends doesn't.
-            val every = vehicle.milestonesRepeatEveryMiles?.takeIf { it >= saved.maxOf { m -> m.atMiles } }
-            // A maker's table that doesn't repeat is carried on past its last column from its own rows (#568).
-            val makers = vehicle.milestonesKnownList?.let { id -> lists.firstOrNull { it.id == id } }
-            val laid = MilestoneContinuation.laidOut(
-                saved, every, fromMaker = vehicle.milestonesKnownList != null,
-                // As the table shows them: a one-gearbox job on "Don't know" too, since the view reminds of nothing (#549).
-                later = makers?.let { KnownSchedules.intervalsIn(it, vehicle.unit, vehicle.drivetrain, vehicle.gearboxOnRecord(), onTable = true) }.orEmpty(),
-                current = current, more = count - Milestones.AHEAD,
-            )
-            return@combine MilestonesState(
-                vehicleName = name,
-                milestones = Milestones.status(laid.milestones, done, current, continues = every != null),
-                continuedAfter = laid.endsAt.takeIf { laid.continues },
-                notContinued = if (laid.continues) laid.notContinued.map { it.name } else emptyList(),
-                current = current,
-                swap = swap,
-                unit = vehicle.unit,
-                hasMileageItems = true,
-                fromTable = true,
-                table = saved,
-                model = vehicle.fileStem(),
-                repeatsEveryMiles = every,
-                startedFrom = vehicle.milestonesKnownList?.let { id -> startedFrom(lists.firstOrNull { it.id == id }?.let(KnownSchedules::credit)) },
-            )
-        }
-        val done = entries.flatMap { e ->
-            e.itemIds.filter { it in keys }.map { JobDone(it.toString(), e.date, swap.actual(e.odometer), swap.asReadOn(e.odometer, e.date), e.id) }
-        }
-        val list = Milestones.generate(tracked, Milestones.startFor(done, current), current ?: 0, count)
+        val view = VehicleMilestones.of(log, rows, lists, count)
         MilestonesState(
-            vehicleName = name,
-            milestones = Milestones.status(list, done, current, continues = true),
-            current = current,
-            swap = swap,
-            unit = vehicle.unit,
-            hasMileageItems = tracked.isNotEmpty(),
-            fromTable = false,
-            known = makers.forVehicle(vehicle),
-            drivetrain = vehicle.drivetrain,
-            gearbox = vehicle.gearboxOnRecord(),
+            vehicleName = vehicle.shortName(),
+            milestones = view.milestones,
+            current = view.current,
+            swap = view.swap,
+            unit = view.unit,
+            hasMileageItems = view.hasMileageItems,
+            fromTable = view.fromTable,
+            // A table is saved as a file under it.
+            model = if (view.fromTable) vehicle.fileStem() else "",
+            table = view.table,
+            repeatsEveryMiles = view.repeatsEveryMiles,
+            known = view.known,
+            startedFrom = view.startedFrom?.let { startedFrom(it.credit) },
+            drivetrain = view.drivetrain,
+            gearbox = view.gearbox,
+            continuedAfter = view.continuedAfter,
+            notContinued = view.notContinued,
         )
     }.screenState(viewModelScope, null)
 

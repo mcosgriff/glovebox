@@ -3,7 +3,8 @@ package io.cosgriff.glovebox.data.db
 import io.cosgriff.glovebox.domain.enumOrNull
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.ImportedMilestone
-import io.cosgriff.glovebox.domain.ImportedScheduleItem
+import io.cosgriff.glovebox.domain.Interval
+import io.cosgriff.glovebox.domain.SavedScheduleItem
 
 /** The item's own rule; null follows the default rule, as does a name this version doesn't know. */
 val ScheduleItemEntity.rule: DueRule? get() = enumOrNull<DueRule>(ruleOverride)
@@ -17,26 +18,18 @@ fun ImportedMilestone.toRows(vehicleId: Long): Pair<MilestoneEntity, List<Milest
 
 fun ImportedMilestone.jobRows(): List<MilestoneJobEntity> = work.map { MilestoneJobEntity(milestoneId = 0, name = it.name, service = it.service) }
 
-/**
- * An interval from an import file or a maker's schedule as an item of the user's own, tracked. [knownList] is
- * the bundled list it came from, kept on the row for good; [useSevere] whether severe use is on, and [useE85]
- * whether the vehicle runs mostly on E85 (which matters only to an item with an E85 interval).
- */
-fun ImportedScheduleItem.toEntity(vehicleId: Long, knownList: String? = null, useSevere: Boolean = false, useE85: Boolean = false): ScheduleItemEntity = ScheduleItemEntity(
-    vehicleId = vehicleId,
+/** A schedule item as an import, a maker's schedule or a file written from the vehicle sees it. */
+fun ScheduleItemEntity.toSaved() = SavedScheduleItem(
+    id = id,
     name = name,
-    intervalMiles = normal.miles,
-    intervalMonths = normal.months,
-    severeMiles = severe?.miles,
-    severeMonths = severe?.months,
-    useSevere = useSevere,
-    severeOnly = severeOnly,
-    e85Miles = e85?.miles,
-    e85Months = e85?.months,
-    useE85 = useE85 && e85 != null,
-    ruleOverride = rule?.name,
+    normal = savedInterval(intervalMiles, intervalMonths),
+    severe = savedInterval(severeMiles, severeMonths),
+    rule = this.rule,
+    templateKey = templateKey,
+    tracked = tracked,
     service = service,
-    knownList = knownList,
-    firstMiles = firstAt,
-    gearboxOnly = gearbox?.name,
+    firstAt = firstMiles,
+    severeOnly = severeOnly,
 )
+
+private fun savedInterval(miles: Int?, months: Int?): Interval? = if (miles == null && months == null) null else Interval(miles, months)

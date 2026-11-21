@@ -7,8 +7,12 @@ import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.PhotoEntity
+import io.cosgriff.glovebox.data.db.RecallEntity
+import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.TorqueSpecEntity
+import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -57,24 +61,46 @@ class DataWipeTest {
         return id
     }
 
-    @Test
-    fun `deleting a vehicle takes its rows and its files, and leaves the other vehicle's`() = runBlocking {
-        val gone = db.vehicles().add(testVehicle(photoFile = photo("vehicle-1.jpg")), firstReading = 60_000)
-        val kept = db.vehicles().add(testVehicle(make = "Volkswagen", model = "GTI", photoFile = photo("vehicle-2.jpg")), firstReading = 30_000)
-        record(gone, imported = false, photo("record-1.jpg"))
-        record(kept, imported = false, photo("record-2.jpg"))
-        db.documents().insert(DocumentEntity(vehicleId = gone, type = "TITLE", name = "Title", fileName = photo("document-1.pdf"), format = "PDF", sizeBytes = 1, addedOn = day))
+    /** A vehicle with one of every row Delete vehicle counts, three records' photos, its own photo and a document, all made up. */
+    private suspend fun fullVehicle(tag: String, make: String): Long {
+        val id = db.vehicles().add(testVehicle(make = make, photoFile = photo("vehicle-$tag.jpg")), firstReading = 60_000)
+        record(id, imported = false, photo("receipt-$tag.jpg"), photo("parts-$tag.jpg"))
+        record(id, imported = true, photo("imported-$tag.jpg"))
+        db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Oil change", intervalMiles = 5_000, intervalMonths = 6)))
+        db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "Lug nuts", category = "WHEELS"))
+        db.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "26V00000$tag", component = "BRAKES", summary = "Made up.", firstSeenOn = day)))
+        db.documents().insert(DocumentEntity(vehicleId = id, type = "TITLE", name = "Title", fileName = photo("document-$tag.pdf"), format = "PDF", sizeBytes = 1, addedOn = day))
+        return id
+    }
 
-        DataWipe(context, db, keys, photos).deleteVehicle(db.vehicles().byId(gone)!!)
+    private fun onDisk() = photos.photoDir.list().orEmpty().toSet()
+
+    @Test
+    fun `deleting a vehicle takes what it said would go, every file of it, and nothing of the other vehicle's`() = runBlocking {
+        val gone = fullVehicle("1", make = "Toyota")
+        val kept = fullVehicle("2", make = "Volkswagen")
+        val wipe = DataWipe(context, db, keys, photos)
+        val keptBefore = wipe.whatGoes(kept)!!
+        val said = wipe.whatGoes(gone)!!
+
+        assertEquals(VehicleRowCounts(records = 2, photos = 3, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1), said.rows)
+        assertEquals(setOf("vehicle-1.jpg", "receipt-1.jpg", "parts-1.jpg", "imported-1.jpg", "document-1.pdf"), said.files.toSet())
+
+        assertEquals(said, wipe.deleteVehicle(gone))
 
         assertNull(db.vehicles().byId(gone))
-        assertTrue(db.service().recordsFor(gone).isEmpty())
-        assertTrue(db.odometer().readingsFor(gone).isEmpty())
-        assertTrue(db.documents().documentsFor(gone).isEmpty())
-        assertFalse(exists("vehicle-1.jpg") || exists("record-1.jpg") || exists("document-1.pdf"))
+        assertEquals(VehicleRowCounts(0, 0, 0, 0, 0, 0, 0), db.vehicles().rowCounts(gone))
+        // No orphan: every file left is one a row still points at, and they are all the other vehicle's.
+        assertEquals(db.documents().allEncryptedFiles().toSet(), onDisk())
+        assertEquals(keptBefore.files.toSet(), onDisk())
+        assertEquals(keptBefore, wipe.whatGoes(kept))
+    }
 
-        assertEquals(1, db.service().recordsFor(kept).size)
-        assertTrue(exists("vehicle-2.jpg") && exists("record-2.jpg"))
+    @Test
+    fun `a vehicle already gone has nothing to go`() = runBlocking {
+        val wipe = DataWipe(context, db, keys, photos)
+        assertNull(wipe.whatGoes(404))
+        assertNull(wipe.deleteVehicle(404))
     }
 
     @Test

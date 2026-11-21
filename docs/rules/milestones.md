@@ -4,6 +4,8 @@ Rules for the milestones view and the user's own table. Read before changing any
 
 - **Milestones are a view, never a second source of what is due:** nothing on that screen creates, moves or
   silences a reminder, and nothing about them is stored; "completed" is derived from the log, with no tick-box.
+  They are worked out in one place, `VehicleMilestones` in `:data` (#621), from the vehicle's log, its table and the
+  makers' lists, everything by actual mileage; the screen only words them, and its ViewModel only writes the table.
 - The user's own table (`milestones`, `milestone_jobs`) shows **in place of** the generated view. A job is done by
   its `service` or, failing that, its name. Nothing about reminders, notifications or exports reads these tables.
 - A table repeats one way or not at all (`vehicles.milestonesRepeatEveryMiles`, set by an import or the editor's

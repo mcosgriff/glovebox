@@ -94,7 +94,7 @@ import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.RecallEntity
-import io.cosgriff.glovebox.data.db.ServiceRecordEntity
+import io.cosgriff.glovebox.data.db.RecallWork
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.RecallRefresh
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
@@ -255,16 +255,8 @@ class RecallsViewModel @Inject constructor(
     }
 
     fun markDone(recall: RecallEntity, completion: RecallCompletion) = viewModelScope.launch {
-        val record = completion.odometer?.let {
-            ServiceRecordEntity(
-                vehicleId = vehicleId,
-                date = completion.date,
-                odometer = it,
-                diy = false,
-                shopName = completion.shopName,
-            )
-        }
-        actions.completeRecall(recall.id, completion.date, record, completion.visitWith)
+        val work = completion.odometer?.let { RecallWork(it, completion.shopName) }
+        actions.completeRecall(recall.id, completion.date, work, completion.visitWith)
     }
 
     fun markOpen(recall: RecallEntity) = viewModelScope.launch { actions.reopenRecall(recall.id) }

@@ -4,9 +4,17 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.inMemoryDatabase
 import io.cosgriff.glovebox.data.testVehicle
+import io.cosgriff.glovebox.domain.DoneChange
+import io.cosgriff.glovebox.domain.InvoiceCharges
+import io.cosgriff.glovebox.domain.RecommendedItem
+import io.cosgriff.glovebox.domain.RecordJob
+import io.cosgriff.glovebox.domain.RecordLine
+import io.cosgriff.glovebox.domain.RecordPartRow
+import io.cosgriff.glovebox.domain.ServiceRecord
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -15,7 +23,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
 
-/** Through Android's own driver, as [MigrationTest] explains. What each write announces is `RecordActionsTest`'s. */
+/**
+ * Through Android's own driver, as [MigrationTest] explains. Every record goes in and comes back as a [ServiceRecord]
+ * (#617); what each write announces, Undo's events and the photo files are `RecordActionsTest`'s.
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class ServiceLogWriterTest {
@@ -28,19 +39,39 @@ class ServiceLogWriterTest {
 
     @After fun close() = db.close()
 
-    private fun record(vehicleId: Long) = ServiceRecordEntity(vehicleId = vehicleId, date = day, odometer = 41_000, diy = true)
-    private val line = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Work")
+    private fun record(vehicleId: Long, vararg lines: RecordLine = arrayOf(RecordLine("Work"))) =
+        ServiceRecord(vehicleId = vehicleId, date = day, odometer = 41_000, diy = true, lines = lines.toList())
 
-    private suspend fun recall(vehicleId: Long) = recalls.insertAll(
-        listOf(RecallEntity(vehicleId = vehicleId, campaign = "26V000000", component = "Made up", summary = "", firstSeenOn = day)),
-    ).let { recalls.recallsFor(vehicleId).single() }
+    private suspend fun saved(id: Long): ServiceRecord = service.record(id)!!.toModel()
+
+    /** Made-up shop, work and figures: plugs and coils as one job with its part rows, and a rotation alone. */
+    private fun invoice(vehicleId: Long) = ServiceRecord(
+        vehicleId = vehicleId, date = day, odometer = 41_000, diy = false, shopName = "Made-up Motors", costCents = 155_260,
+        notes = "Odometer in 40,998",
+        lines = listOf(RecordLine("Spark plugs", "spark_plugs", job = 0), RecordLine("Ignition coils", job = 0), RecordLine("Tire rotation", "rotation")),
+        jobs = listOf(
+            RecordJob(
+                "Remove & replace spark plugs and coils", laborCents = 30_000,
+                rows = listOf(
+                    RecordPartRow("Spark plug, iridium", 4_000, 1_250, 5_000, line = 0),
+                    RecordPartRow("Ignition coil", 4_000, 9_250, 37_000, line = 1),
+                    RecordPartRow("Dielectric grease", 3_000, totalCents = 2_000),
+                ),
+            ),
+        ),
+        charges = InvoiceCharges(3_850, 5_210, 1_200),
+    )
+
+    private suspend fun recall(vehicleId: Long, campaign: String = "26V000000") = recalls.insertAll(
+        listOf(RecallEntity(vehicleId = vehicleId, campaign = campaign, component = "Made up", summary = "", firstSeenOn = day)),
+    ).let { recalls.recallsFor(vehicleId).single { it.campaign == campaign } }
 
     @Test
     fun `DAO calls inside one write are kept together or not at all`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val failed = runCatching {
             writer.transaction {
-                service.insertWithItems(record(car), listOf(line))
+                service.insertWithItems(ServiceRecordEntity(vehicleId = car, date = day, odometer = 41_000, diy = true), emptyList())
                 error("the process died here")
             }
         }
@@ -49,20 +80,159 @@ class ServiceLogWriterTest {
     }
 
     @Test
-    fun `a recall done with a record is done, linked to it, and a second time adds nothing`() = runBlocking {
+    fun `a new record is written whole and reads back as it was given, with its photos`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val id = writer.add(invoice(car), listOf("receipt.jpg"))
+        assertEquals(invoice(car).copy(id = id), saved(id))
+        assertEquals(listOf("receipt.jpg"), service.record(id)!!.photos.map { it.fileName })
+    }
+
+    @Test
+    fun `a job that says nothing isn't written on a save or an edit, but an import writes the file's as given`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        // One line alone in a job of its own, unpriced and unworded: a line as it always was.
+        val bare = record(car, RecordLine("Tire rotation", "rotation", job = 0)).copy(jobs = listOf(RecordJob()))
+        val id = writer.add(bare)
+        assertEquals(emptyList<RecordJob>(), saved(id).jobs)
+        assertEquals(listOf<Int?>(null), saved(id).lines.map { it.job })
+
+        writer.add(invoice(car)).let { priced ->
+            // Its prices and part rows taken off, and the coils priced on their own again: the plugs' job says nothing.
+            writer.replace(saved(priced).let { r -> r.copy(lines = r.lines.mapIndexed { i, line -> line.copy(job = 0.takeIf { i == 0 }) }, jobs = listOf(RecordJob())) })
+            assertEquals(emptyList<RecordJob>(), saved(priced).jobs)
+        }
+
+        writer.applyImport(added = listOf(bare.copy(date = day.minusDays(1), imported = true)), replaced = emptyList())
+        val imported = service.recordsFor(car).single { it.record.date == day.minusDays(1) }.toModel()
+        assertEquals(listOf(RecordJob()), imported.jobs)
+    }
+
+    @Test
+    fun `an edit is written in the record's place, and its revert puts it back as it was, photos included`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val id = writer.add(invoice(car), listOf("receipt.jpg", "page.jpg"))
+        val before = service.record(id)!!
+        val page = before.photos.single { it.fileName == "page.jpg" }
+
+        // The rows dropped, the rotation priced on its own, a reading corrected and one photo swapped for another.
+        val edit = saved(id).let { r ->
+            r.copy(
+                odometer = 41_100,
+                lines = r.lines.mapIndexed { i, line -> if (i == 2) line.copy(job = 1) else line },
+                jobs = listOf(r.jobs.single().copy(rows = emptyList(), partsCents = 44_000, itemized = false), RecordJob(laborCents = 2_500)),
+            )
+        }
+        writer.replace(edit, addedPhotos = listOf("new.jpg"), removedPhotoIds = setOf(page.id))
+        assertEquals(edit, saved(id))
+        assertEquals(setOf("receipt.jpg", "new.jpg"), service.record(id)!!.photos.map { it.fileName }.toSet())
+
+        assertTrue(writer.revertEdit(before))
+        assertEquals(invoice(car).copy(id = id), saved(id))
+        assertEquals(setOf("receipt.jpg", "page.jpg"), service.record(id)!!.photos.map { it.fileName }.toSet())
+    }
+
+    @Test
+    fun `a deleted record comes back whole, and not on a vehicle that has gone`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val id = writer.add(invoice(car), listOf("receipt.jpg"))
+        val before = service.record(id)!!
+        writer.delete(before.record)
+        assertNull(service.record(id))
+
+        val back = writer.restore(before, recallIds = emptyList())!!
+        assertEquals(invoice(car).copy(id = back), saved(back))
+        assertEquals(listOf("receipt.jpg"), service.record(back)!!.photos.map { it.fileName })
+
+        db.vehicles().delete(db.vehicles().byId(car)!!)
+        assertNull(writer.restore(before, recallIds = emptyList()))
+    }
+
+    @Test
+    fun `a bare last done is one line, flagged, filed under the catalog line that resets its reminder`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        db.schedule().applyImport(
+            listOf(ScheduleItemEntity(vehicleId = car, name = "Engine oil", templateKey = "oil", intervalMiles = 5_000, intervalMonths = 6)),
+            emptyList(), emptyList(),
+        )
+        val item = db.schedule().allFor(car).single()
+
+        val id = writer.addLastDone(car, item, day, 38_000)
+
+        assertEquals(
+            ServiceRecord(id = id, vehicleId = car, date = day, odometer = 38_000, diy = true, enteredAsLastDone = true, lines = listOf(RecordLine("Engine oil", "oil", item.id))),
+            saved(id),
+        )
+    }
+
+    @Test
+    fun `a recall done with its work is one record that day, its line the recall's and resetting nothing, and a second time adds nothing`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val recall = recall(car)
-        val id = writer.completeRecall(recall.id, day, record(car), listOf(line))!!.recordId
+        val words = { notice: io.cosgriff.glovebox.domain.RecallNotice -> "Recall ${notice.campaign}: ${notice.component}" }
+
+        val id = writer.completeRecall(recall.id, day, RecallWork(43_000, "Made-up Motors"), line = words)!!.recordId!!
+
         val done = recalls.byId(recall.id)!!
         assertEquals(day, done.completedOn)
         assertEquals(id, done.serviceRecordId)
+        assertEquals(
+            ServiceRecord(id = id, vehicleId = car, date = day, odometer = 43_000, diy = false, shopName = "Made-up Motors", lines = listOf(RecordLine("Recall 26V000000: Made up"))),
+            saved(id),
+        )
 
-        assertNull(writer.completeRecall(recall.id, day, record(car), listOf(line)))
+        assertNull(writer.completeRecall(recall.id, day, RecallWork(43_000), line = words))
         assertEquals(1, service.recordsFor(car).size)
     }
 
-    private fun kept(wording: String, catalogId: String? = null) =
-        ShopRecommendationEntity(vehicleId = 0, recordId = 0, wording = wording, cents = 22_999, catalogId = catalogId)
+    @Test
+    fun `a recall done without its work adds no record, and one with it can join the visit it was done on`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        assertNull(writer.completeRecall(recall(car).id, day, work = null) { "never asked" }!!.recordId)
+        assertTrue(service.recordsFor(car).isEmpty())
+
+        val other = writer.add(record(car))
+        writer.completeRecall(recall(car, "26V000111").id, day, RecallWork(41_000), visitWith = other) { it.campaign }
+        val records = service.recordsFor(car).map { it.record }
+        assertEquals(2, records.size)
+        assertNotNull(records.first().visitId)
+        assertEquals(1, records.map { it.visitId }.toSet().size)
+    }
+
+    @Test
+    fun `a recall opened again loses the record marking it done added, and its redo puts both back`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val recall = recall(car)
+        writer.completeRecall(recall.id, day, RecallWork(43_000)) { it.campaign }
+
+        val reopened = writer.reopenRecall(recall.id)!!
+        assertTrue(service.recordsFor(car).isEmpty())
+        assertNull(recalls.byId(recall.id)!!.completedOn)
+        assertNull(writer.reopenRecall(recall.id))
+
+        writer.redoRecall(reopened)
+        val back = service.recordsFor(car).single()
+        assertEquals(back.record.id, recalls.byId(recall.id)!!.serviceRecordId)
+        assertEquals(listOf("26V000000"), back.items.map { it.label })
+    }
+
+    @Test
+    fun `an import adds and replaces in one go, a replaced record keeping its id and photos`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val id = writer.add(record(car, RecordLine("Old wording")), listOf("receipt.jpg"))
+        val file = record(car, RecordLine("Tires rotated", "rotation")).copy(date = day.minusDays(30), odometer = 39_000, imported = true)
+
+        writer.applyImport(added = listOf(file), replaced = listOf(saved(id).copy(notes = "From the file", imported = true, lines = listOf(RecordLine("New wording")))))
+
+        val all = service.recordsFor(car)
+        assertEquals(2, all.size)
+        assertEquals(file.copy(id = all.single { it.record.id != id }.record.id), all.single { it.record.id != id }.toModel())
+        assertEquals("From the file", saved(id).notes)
+        assertEquals(listOf("New wording"), saved(id).lines.map { it.label })
+        assertEquals(listOf("receipt.jpg"), service.record(id)!!.photos.map { it.fileName })
+    }
+
+    private fun kept(wording: String, catalogId: String? = null, cents: Long = 22_999, replaces: Long? = null) =
+        KeptRecommendation(RecommendedItem(wording, cents), catalogId, replaces)
 
     private suspend fun open(car: Long) = db.recommendations().all(car).map { it.toModel() }.filter { it.open }
 
@@ -70,7 +240,7 @@ class ServiceLogWriterTest {
     fun `a record keeps the shop's recommendations, replaces the shop's older one and closes what it did`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
-        val first = writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        val first = writer.add(shop, kept = listOf(kept("Coolant System Service", "coolant"), kept("Battery Replacement", "battery")))
         val older = open(car)
         assertEquals(listOf("Coolant System Service", "Battery Replacement"), older.map { it.item.text })
         assertEquals("Cedar Hollow Auto & Truck", older[0].shop)
@@ -81,8 +251,7 @@ class ServiceLogWriterTest {
         val battery = older.single { it.line == "battery" }
         val second = writer.add(
             shop.copy(date = day.plusDays(30)),
-            listOf(line),
-            kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant").copy(cents = 23_999), replaces = coolant.id)),
+            kept = listOf(kept("Coolant System Service", "coolant", cents = 23_999, replaces = coolant.id)),
             done = listOf(battery.id),
         )
         val now = db.recommendations().all(car).map { it.toModel() }
@@ -93,15 +262,24 @@ class ServiceLogWriterTest {
     }
 
     @Test
+    fun `a kept finding keeps its area, what was found and its colour`() = runBlocking {
+        val car = db.vehicles().insert(testVehicle())
+        val finding = RecommendedItem("Oil pan seeping", null, "Fluid Leaks", "Seeping at the gasket", io.cosgriff.glovebox.domain.FindingColour.AMBER)
+        writer.add(record(car), kept = listOf(KeptRecommendation(finding)))
+        val kept = open(car).single()
+        assertEquals(finding, kept.item)
+        assertNull(kept.line)
+    }
+
+    @Test
     fun `deleting a record takes what it kept and opens what it closed, and its restore puts both back`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
-        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        writer.add(shop, kept = listOf(kept("Coolant System Service", "coolant"), kept("Battery Replacement", "battery")))
         val (coolant, battery) = open(car)
         val id = writer.add(
             shop.copy(date = day.plusDays(30)),
-            listOf(line),
-            kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant"), replaces = coolant.id)),
+            kept = listOf(kept("Coolant System Service", "coolant", replaces = coolant.id)),
             done = listOf(battery.id),
         )
         val saved = service.record(id)!!
@@ -121,13 +299,13 @@ class ServiceLogWriterTest {
     fun `an edit closes and opens again what it says, and its revert undoes both`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
-        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery"))))
+        writer.add(shop, kept = listOf(kept("Coolant System Service", "coolant"), kept("Battery Replacement", "battery")))
         val (coolant, battery) = open(car)
-        val id = writer.add(record(car).copy(date = day.plusDays(30)), listOf(line), done = listOf(coolant.id))
+        val id = writer.add(record(car).copy(date = day.plusDays(30)), done = listOf(coolant.id))
         val before = service.record(id)!!
 
-        val change = io.cosgriff.glovebox.domain.DoneChange(close = listOf(battery.id), reopen = listOf(coolant.id))
-        writer.replace(before.record.copy(odometer = 42_000), before.items.map { it.copy(id = 0) }, emptyList(), emptySet(), done = change)
+        val change = DoneChange(close = listOf(battery.id), reopen = listOf(coolant.id))
+        writer.replace(before.toModel().copy(odometer = 42_000), done = change)
         assertEquals(listOf(coolant.id), open(car).map { it.id })
         assertEquals(id, db.recommendations().all(car).map { it.toModel() }.single { it.id == battery.id }.doneBy)
 
@@ -140,14 +318,13 @@ class ServiceLogWriterTest {
     fun `an import closes by the record each was offered for, added or replaced, and opens what a replaced one no longer did`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
         val shop = record(car).copy(diy = false, shopName = "Cedar Hollow Auto & Truck")
-        writer.add(shop, listOf(line), kept = listOf(KeptRecommendation(kept("Coolant System Service", "coolant")), KeptRecommendation(kept("Battery Replacement", "battery")), KeptRecommendation(kept("Wipers", "wipers"))))
+        writer.add(shop, kept = listOf(kept("Coolant System Service", "coolant"), kept("Battery Replacement", "battery"), kept("Wipers", "wipers")))
         val (coolant, battery, wipers) = open(car)
-        val saved = writer.add(record(car).copy(date = day.plusDays(10)), listOf(line), done = listOf(wipers.id))
-        val replacing = service.record(saved)!!
+        val saved = writer.add(record(car).copy(date = day.plusDays(10)), done = listOf(wipers.id))
 
         writer.applyImport(
-            added = listOf(RecordRows(record(car).copy(date = day.plusDays(20), imported = true), listOf(line), emptyList(), emptyList())),
-            replaced = listOf(RecordRows(replacing.record.copy(imported = true), listOf(line), emptyList(), emptyList())),
+            added = listOf(record(car).copy(date = day.plusDays(20), imported = true)),
+            replaced = listOf(saved(saved).copy(imported = true)),
             done = listOf(ImportClose(coolant.id, added = 0), ImportClose(battery.id, savedId = saved)),
             reopened = listOf(wipers.id),
         )
@@ -161,101 +338,29 @@ class ServiceLogWriterTest {
     @Test
     fun `deleting the vehicle takes its recommendations`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
-        writer.add(record(car), listOf(line), kept = listOf(KeptRecommendation(kept("Wiper Blade Replacement"))))
+        writer.add(record(car), kept = listOf(kept("Wiper Blade Replacement")))
         db.vehicles().delete(db.vehicles().byId(car)!!)
         assertEquals(emptyList<ShopRecommendationRow>(), db.recommendations().all(car))
     }
 
     @Test
-    fun `a record isn't put back on a vehicle that has gone`() = runBlocking {
+    fun `two records link into one visit, and unlinking one of two leaves neither in a visit`() = runBlocking {
         val car = db.vehicles().insert(testVehicle())
-        val id = writer.add(record(car), listOf(line), listOf("receipt.jpg"))
-        val saved = service.record(id)!!
-        db.vehicles().delete(db.vehicles().byId(car)!!)
+        val a = writer.add(record(car))
+        val b = writer.add(record(car).copy(odometer = 41_010))
+        writer.link(a, b)
+        val visit = saved(a).visitId
+        assertNotNull(visit)
+        assertEquals(visit, saved(b).visitId)
 
-        assertNull(writer.restore(saved, recallIds = emptyList()))
-    }
+        writer.unlink(a)
+        assertNull(saved(a).visitId)
+        assertNull(saved(b).visitId)
 
-    @Test
-    fun `jobs are written with their lines, and an edit and its revert carry them`() = runBlocking {
-        val car = db.vehicles().insert(testVehicle())
-        val plugs = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Spark plugs", catalogId = "spark_plugs", jobId = 7)
-        val coils = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Ignition coils", jobId = 7)
-        val rotation = ServiceRecordItemEntity(recordId = 0, scheduleItemId = null, label = "Tire rotation")
-        val job = ServiceRecordJobEntity(id = 7, recordId = 0, wording = "Replace spark plugs and ignition coils", laborCents = 30_000, partsCents = 42_000)
-        val id = writer.add(record(car), listOf(plugs, coils, rotation), jobs = listOf(job))
-
-        val saved = service.record(id)!!
-        val written = saved.jobs.single()
-        assertEquals(job.copy(id = written.id, recordId = id), written)
-        assertEquals(listOf(written.id, written.id, null), saved.items.map { it.jobId })
-
-        // An edit that prices nothing leaves no job behind.
-        writer.replace(saved.record, saved.items.map { it.copy(jobId = null) }, emptyList(), emptySet())
-        assertEquals(emptyList<ServiceRecordJobEntity>(), service.record(id)!!.jobs)
-
-        assertTrue(writer.revertEdit(saved))
-        val back = service.record(id)!!
-        assertEquals(1, back.jobs.size)
-        assertEquals(listOf(back.jobs.single().id, back.jobs.single().id, null), back.items.map { it.jobId })
-    }
-
-    @Test
-    fun `a deleted record comes back with its jobs`() = runBlocking {
-        val car = db.vehicles().insert(testVehicle())
-        val id = writer.add(
-            record(car),
-            listOf(line.copy(jobId = 1)),
-            jobs = listOf(ServiceRecordJobEntity(id = 1, recordId = 0, laborCents = 18_000)),
-        )
-        val saved = service.record(id)!!
-        service.deleteRecord(saved.record)
-
-        val back = service.record(writer.restore(saved, recallIds = emptyList())!!)!!
-        assertEquals(18_000L, back.jobs.single().laborCents)
-        assertEquals(back.jobs.single().id, back.items.single().jobId)
-    }
-
-    @Test
-    fun `part rows and invoice charges are written, edited, reverted and restored with their job`() = runBlocking {
-        val car = db.vehicles().insert(testVehicle())
-        // Lines given ids of their own only so the rows can say which one they are for.
-        val plugs = ServiceRecordItemEntity(id = 1, recordId = 0, scheduleItemId = null, label = "Spark plugs", jobId = 7)
-        val coils = ServiceRecordItemEntity(id = 2, recordId = 0, scheduleItemId = null, label = "Ignition coils", jobId = 7)
-        val job = ServiceRecordJobEntity(id = 7, recordId = 0, wording = "Remove & replace spark plugs and coils", laborCents = 30_000)
-        val rows = listOf(
-            ServiceRecordJobPartEntity(jobId = 7, wording = "Spark plug, iridium", quantityMilli = 4_000, eachCents = 1_250, totalCents = 5_000, itemId = 1, position = 0),
-            ServiceRecordJobPartEntity(jobId = 7, wording = "Ignition coil", quantityMilli = 4_000, eachCents = 9_250, totalCents = 37_000, itemId = 2, position = 1),
-            ServiceRecordJobPartEntity(jobId = 7, wording = "Dielectric grease", quantityMilli = 3_000, totalCents = 2_000, position = 2),
-        )
-        val charged = record(car).copy(costCents = 155_260, shopSuppliesCents = 3_850, taxCents = 5_210, feesCents = 1_200)
-        val id = writer.add(charged, listOf(plugs, coils), jobs = listOf(job), parts = rows)
-
-        val saved = service.record(id)!!
-        assertEquals(listOf(3_850L, 5_210L, 1_200L), saved.record.let { listOf(it.shopSuppliesCents, it.taxCents, it.feesCents) })
-        val jobId = saved.jobs.single().id
-        val byLabel = saved.items.associate { it.label to it.id }
-        val parts = saved.parts.sortedBy { it.position }
-        assertEquals(listOf(jobId, jobId, jobId), parts.map { it.jobId })
-        // Each row still names its line under the line's new id; the untagged one is for the whole job.
-        assertEquals(listOf(byLabel["Spark plugs"], byLabel["Ignition coils"], null), parts.map { it.itemId })
-        assertEquals(rows.map { it.copy(id = 0, jobId = 0, itemId = null) }, parts.map { it.copy(id = 0, jobId = 0, itemId = null) })
-
-        // An edit that drops the rows leaves none behind.
-        writer.replace(saved.record, saved.items, emptyList(), emptySet(), jobs = saved.jobs)
-        assertEquals(emptyList<ServiceRecordJobPartEntity>(), service.record(id)!!.parts)
-
-        assertTrue(writer.revertEdit(saved))
-        val back = service.record(id)!!
-        val backLabels = back.items.associate { it.id to it.label }
-        assertEquals(listOf("Spark plugs", "Ignition coils", null), back.parts.sortedBy { it.position }.map { it.itemId?.let(backLabels::get) })
-
-        service.deleteRecord(back.record)
-        // Gone with its record, by cascade through the job.
-        assertEquals(emptyList<ServiceRecordJobPartEntity>(), service.record(id)?.parts.orEmpty())
-        val restored = service.record(writer.restore(back, recallIds = emptyList())!!)!!
-        assertEquals(3, restored.parts.size)
-        assertEquals(restored.jobs.single().id, restored.parts.map { it.jobId }.distinct().single())
-        assertEquals(5_210L, restored.record.taxCents)
+        // A record that isn't there links to nothing.
+        writer.link(a, 9_999)
+        assertNull(saved(a).visitId)
+        writer.link(9_999, a)
+        writer.unlink(9_999)
     }
 }

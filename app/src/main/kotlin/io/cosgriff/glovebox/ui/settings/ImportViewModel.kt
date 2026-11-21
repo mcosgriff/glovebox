@@ -55,6 +55,7 @@ import io.cosgriff.glovebox.ui.service.asDistance
 import io.cosgriff.glovebox.ui.service.longDate
 import io.cosgriff.glovebox.ui.service.text
 import io.cosgriff.glovebox.ui.service.toSaved
+import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.ui.ImportRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -475,7 +476,7 @@ class ImportViewModel @Inject constructor(
             val close = offered.filter { it.recommendation.id !in notDone }.map { o ->
                 if (o.record < added.size) ImportClose(o.recommendation.id, added = o.record) else ImportClose(o.recommendation.id, savedId = records[o.record].id)
             }
-            actions.applyImport(added.map { it.toRows() }, replacing.map { it.toRows() }, close, ShopRecommendations.reopenedOnImport(kept, replacing))
+            actions.applyImport(added, replacing, close, ShopRecommendations.reopenedOnImport(kept, replacing))
             finish(view, vehicle.id, mode)
         }
     }

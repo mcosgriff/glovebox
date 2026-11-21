@@ -2,15 +2,28 @@ package io.cosgriff.glovebox.data.db
 
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
+import io.cosgriff.glovebox.data.nhtsa.toNotice
 import io.cosgriff.glovebox.domain.DoneChange
+import io.cosgriff.glovebox.domain.RecallNotice
+import io.cosgriff.glovebox.domain.RecommendedItem
+import io.cosgriff.glovebox.domain.RecordLine
+import io.cosgriff.glovebox.domain.ServiceCatalog
+import io.cosgriff.glovebox.domain.ServiceRecord
 import io.cosgriff.glovebox.domain.VisitRecord
+import io.cosgriff.glovebox.domain.lineFor
 import io.cosgriff.glovebox.domain.Visits
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** A recommendation a new record keeps for later (#572): its row, and the open one from the same shop it replaces. */
-data class KeptRecommendation(val row: ShopRecommendationEntity, val replaces: Long? = null)
+/**
+ * A recommendation a new record keeps for later (#572): the shop's [item], the catalog line whose logging offers to
+ * close it ([catalogId]; null matches on its wording), and the open one from the same shop it [replaces].
+ */
+data class KeptRecommendation(val item: RecommendedItem, val catalogId: String? = null, val replaces: Long? = null)
+
+/** A recall's work as a record (#617): the reading on the day it was done and the shop that did it. */
+data class RecallWork(val odometer: Int, val shopName: String? = null)
 
 /**
  * A recommendation an import closes (#593): by the record it was offered for, one of the import's [added] records by
@@ -33,6 +46,9 @@ fun ServiceRecordEntity.toVisit(): VisitRecord = VisitRecord(id, visitId, date, 
  * process that dies part-way leaves the log as it was: never a record without its photos, or a recall's
  * record while the recall is still open. Saying what changed, Undo and the photo files are
  * `RecordActions`'; this only writes rows.
+ *
+ * A record comes in as one [ServiceRecord] (#617) and is turned into rows here ([toRows]); the lines of a bare "last
+ * done" and of a recall's work are built here too, so no caller builds a row.
  */
 @Singleton
 class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
@@ -52,27 +68,40 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
         db.useWriterConnection { it.immediateTransaction { block() } }
 
     /**
-     * [photoFiles] are already encrypted in the photo folder; this makes them the record's. [kept] are the shop's
-     * recommendations it keeps for later (#572), each replacing the open one it names; [done] are open ones the owner
-     * said this record is the work for, which it closes.
+     * [record] as a new record, without the jobs that say nothing ([ServiceRecord.withoutBareJobs]). [photos] are
+     * already encrypted in the photo folder; this makes them the record's. [kept] are the shop's recommendations it
+     * keeps for later (#572), each replacing the open one it names; [done] are open ones the owner said this record is
+     * the work for, which it closes.
      */
     suspend fun add(
-        record: ServiceRecordEntity,
-        items: List<ServiceRecordItemEntity>,
-        photoFiles: List<String> = emptyList(),
-        jobs: List<ServiceRecordJobEntity> = emptyList(),
-        parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        record: ServiceRecord,
+        photos: List<String> = emptyList(),
         kept: List<KeptRecommendation> = emptyList(),
         done: List<Long> = emptyList(),
     ): Long = transaction {
-        val id = service.insertWithItems(record, items, jobs, parts)
-        service.insertPhotos(photoFiles.map { PhotoEntity(recordId = id, fileName = it) })
+        val id = insert(record.withoutBareJobs())
+        service.insertPhotos(photos.map { PhotoEntity(recordId = id, fileName = it) })
         kept.forEachIndexed { i, k ->
-            val keptId = recommendations.insert(k.row.copy(id = 0, vehicleId = record.vehicleId, recordId = id, position = i))
+            val item = k.item
+            val keptId = recommendations.insert(
+                ShopRecommendationEntity(
+                    vehicleId = record.vehicleId, recordId = id, wording = item.text, cents = item.cents, area = item.area,
+                    finding = item.finding, colour = item.colour?.name, catalogId = k.catalogId, position = i,
+                ),
+            )
             k.replaces?.let { recommendations.setReplaced(it, keptId) }
         }
         if (done.isNotEmpty()) recommendations.setDone(done, id)
         id
+    }
+
+    /**
+     * A bare "last done" for one schedule item: a record with that one line, flagged as such, filed under the
+     * catalog line that resets the reminder so History puts it in the right category.
+     */
+    suspend fun addLastDone(vehicleId: Long, item: ScheduleItemEntity, date: LocalDate, odometer: Int): Long = transaction {
+        val line = RecordLine(item.name, ServiceCatalog.lineFor(item.templateKey, item.service)?.id, item.id)
+        insert(ServiceRecord(vehicleId = vehicleId, date = date, odometer = odometer, diy = true, enteredAsLastDone = true, lines = listOf(line)))
     }
 
     /**
@@ -86,19 +115,17 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     }
 
     /**
-     * [removedPhotoIds] lose their rows; their files are the caller's to keep for Undo or delete. [done] is what the
-     * edit closes of the shop's recommendations and opens again of what it had closed (#593).
+     * [record] saved in place of the one with its id, without the jobs that say nothing. [removedPhotoIds] lose their
+     * rows; their files are the caller's to keep for Undo or delete. [done] is what the edit closes of the shop's
+     * recommendations and opens again of what it had closed (#593).
      */
     suspend fun replace(
-        record: ServiceRecordEntity,
-        items: List<ServiceRecordItemEntity>,
-        addedPhotos: List<String>,
-        removedPhotoIds: Set<Long>,
-        jobs: List<ServiceRecordJobEntity> = emptyList(),
-        parts: List<ServiceRecordJobPartEntity> = emptyList(),
+        record: ServiceRecord,
+        addedPhotos: List<String> = emptyList(),
+        removedPhotoIds: Set<Long> = emptySet(),
         done: DoneChange = DoneChange(),
     ) = transaction {
-        service.replaceWithItems(record, items, jobs, parts)
+        update(record.withoutBareJobs())
         service.deletePhotos(removedPhotoIds.toList())
         service.insertPhotos(addedPhotos.map { PhotoEntity(recordId = record.id, fileName = it) })
         closeAndReopen(record.id, done)
@@ -107,18 +134,28 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     /**
      * One import, applied whole or not at all (#593): [added] records, [replaced] ones under their own ids, the
      * recommendations the owner left ticked closed by the record each was offered for, and [reopened] (closed by a
-     * replaced record that no longer looks like the work) open again.
+     * replaced record that no longer looks like the work) open again. Their jobs are written as the file gives them.
      */
     suspend fun applyImport(
-        added: List<RecordRows>,
-        replaced: List<RecordRows>,
+        added: List<ServiceRecord>,
+        replaced: List<ServiceRecord>,
         done: List<ImportClose> = emptyList(),
         reopened: List<Long> = emptyList(),
     ) = transaction {
-        val ids = added.map { (record, items, jobs, parts) -> service.insertWithItems(record, items, jobs, parts) }
-        replaced.forEach { (record, items, jobs, parts) -> service.replaceWithItems(record, items, jobs, parts) }
+        val ids = added.map { insert(it) }
+        replaced.forEach { update(it) }
         if (reopened.isNotEmpty()) recommendations.setDone(reopened, null)
         done.groupBy({ it.savedId ?: ids[checkNotNull(it.added)] }, { it.recommendationId }).forEach { (id, closed) -> recommendations.setDone(closed, id) }
+    }
+
+    private suspend fun insert(record: ServiceRecord): Long {
+        val (row, items, jobs, parts) = record.toRows()
+        return service.insertWithItems(row, items, jobs, parts)
+    }
+
+    private suspend fun update(record: ServiceRecord) {
+        val (row, items, jobs, parts) = record.toRows()
+        service.replaceWithItems(row, items, jobs, parts)
     }
 
     private suspend fun closeAndReopen(recordId: Long, done: DoneChange) {
@@ -143,19 +180,27 @@ class ServiceLogWriter @Inject constructor(private val db: GloveboxDatabase) {
     }
 
     /**
-     * Marks a recall done, with [record] and its [lines] as the work if there is one, joined to the visit of
-     * [visitWith] if given. Null, and nothing written, if the recall is already done: that is what stops a
-     * second record being added for it.
+     * Marks a recall done on [completedOn], with [work] as a record of it if there is one: dated that day, on the
+     * recall's vehicle, by a shop, its one line the recall worded by [line] and linked to no schedule item, so it
+     * never resets a reminder. It joins the visit of [visitWith] if given. Null, and nothing written, if the recall
+     * is already done: that is what stops a second record being added for it.
      */
     suspend fun completeRecall(
         recallId: Long,
         completedOn: LocalDate,
-        record: ServiceRecordEntity?,
-        lines: List<ServiceRecordItemEntity>,
+        work: RecallWork?,
         visitWith: Long? = null,
+        line: (RecallNotice) -> String,
     ): Completed? = transaction {
         val recall = recalls.byId(recallId)?.takeIf { it.completedOn == null } ?: return@transaction null
-        val recordId = record?.let { service.insertWithItems(it, lines) }
+        val recordId = work?.let {
+            insert(
+                ServiceRecord(
+                    vehicleId = recall.vehicleId, date = completedOn, odometer = it.odometer, diy = false, shopName = it.shopName,
+                    lines = listOf(RecordLine(line(recall.toNotice()))),
+                ),
+            )
+        }
         if (recordId != null && visitWith != null) joinVisit(recordId, visitWith)
         recalls.setDone(recall.id, completedOn, recordId)
         Completed(recordId)

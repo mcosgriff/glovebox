@@ -1,15 +1,12 @@
 package io.cosgriff.glovebox.ui.schedule
 
-import io.cosgriff.glovebox.data.log.gearboxOnRecord
 import io.cosgriff.glovebox.data.log.VehicleLogs
 import io.cosgriff.glovebox.ui.screenState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import io.cosgriff.glovebox.ui.service.subtitle
 import io.cosgriff.glovebox.ui.service.fileStem
-import io.cosgriff.glovebox.data.db.toEntity
 import io.cosgriff.glovebox.data.db.rule
-import io.cosgriff.glovebox.data.db.MakersSchedules
 import io.cosgriff.glovebox.ui.components.InkOutlinedButton
 import io.cosgriff.glovebox.ui.components.PrimaryButton
 import io.cosgriff.glovebox.ui.components.ScreenHeader
@@ -22,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import io.cosgriff.glovebox.ui.service.catalogLabel
 import io.cosgriff.glovebox.ui.service.label
 import io.cosgriff.glovebox.ui.service.text
-import io.cosgriff.glovebox.domain.HistoryImport
 import androidx.compose.material3.Surface
 import androidx.compose.material.icons.outlined.Info
 import io.cosgriff.glovebox.domain.DistanceUnit
@@ -33,15 +29,12 @@ import io.cosgriff.glovebox.ui.export.ExportSaver
 import io.cosgriff.glovebox.ui.export.SaveAsImportFile
 import io.cosgriff.glovebox.domain.KnownIntervalPlan
 import io.cosgriff.glovebox.domain.KnownScheduleList
-import io.cosgriff.glovebox.domain.KnownSchedules
 import io.cosgriff.glovebox.ui.theme.PlexMono
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import kotlinx.coroutines.flow.flow
-import io.cosgriff.glovebox.ui.service.toSaved
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,14 +65,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import io.cosgriff.glovebox.ui.route
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.cosgriff.glovebox.data.db.ScheduleDao
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.DraftItem
+import io.cosgriff.glovebox.data.db.ScheduleItems
+import io.cosgriff.glovebox.data.db.toDraft
+import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.DueRule
 import io.cosgriff.glovebox.domain.LastDone
 import io.cosgriff.glovebox.domain.asReadOn
-import io.cosgriff.glovebox.domain.ScheduleSummaries
 import io.cosgriff.glovebox.domain.ScheduleTemplateItem
 import io.cosgriff.glovebox.domain.ScheduleTemplates
 import io.cosgriff.glovebox.domain.ServiceCatalog
@@ -95,7 +90,6 @@ import io.cosgriff.glovebox.ui.components.OilChange
 import io.cosgriff.glovebox.ui.components.OilIntervalSheet
 import io.cosgriff.glovebox.ui.components.oilChange
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -135,11 +129,13 @@ data class ScheduleState(
     val known: Pair<KnownScheduleList, KnownIntervalPlan>? = null,
     /** Said once above the list when any item came from a maker's schedule: whose guide, and to check it. */
     val startedFrom: String? = null,
+    /** The saved rows [items] were read from, by key, for what is read from a whole row: the oil change, a last done, the file. */
+    val rows: Map<String, ScheduleItemEntity> = emptyMap(),
 ) {
-    val use: DrivingUse get() = ScheduleSummaries.of(items.filter { it.severe != null || it.severeOnly }.map { it.tracked to it.useSevere }).use
+    val use: DrivingUse get() = ScheduleItems.use(items)
 
     /** Whether the tracked items with an E85 interval are on it; null when some are and some aren't. */
-    val e85: Boolean? get() = items.filter { it.e85 != null && it.tracked }.map { it.useE85 }.distinct().let { if (it.size > 1) null else it.singleOrNull() ?: false }
+    val e85: Boolean? get() = ScheduleItems.e85(items)
 }
 
 /** A vehicle's schedule after setup: what is tracked, at which intervals, and when each was last done. */
@@ -147,11 +143,10 @@ data class ScheduleState(
 class ScheduleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     logs: VehicleLogs,
-    private val schedule: ScheduleDao,
+    private val schedule: ScheduleItems,
     private val vehicles: VehicleDao,
     private val actions: RecordActions,
     private val milestones: MilestoneDao,
-    private val makers: MakersSchedules,
     private val saver: ExportSaver,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<ScheduleRoute>().vehicleId
@@ -160,13 +155,14 @@ class ScheduleViewModel @Inject constructor(
     val hasMilestoneTable: StateFlow<Boolean> = milestones.observe(vehicleId).map { it.isNotEmpty() }
         .screenState(viewModelScope, false)
 
-    private var entities: Map<String, ScheduleItemEntity> = emptyMap()
+    /** The saved rows as last read, for reading only: every change goes to [schedule] as an intent (#620). */
+    private val rows: Map<String, ScheduleItemEntity> get() = state.value?.rows.orEmpty()
 
     /** The vehicle's oil change as its schedule gives it, when [item] is that oil change already saved (#517); null otherwise. */
     fun oilChangeFor(item: DraftItem): OilChange? {
         val unit = state.value?.vehicle?.unit ?: return null
-        if (entities[item.key]?.isOil() != true) return null
-        return entities.values.toList().oilChange(unit)
+        if (rows[item.key]?.isOil() != true) return null
+        return rows.values.toList().oilChange(unit)
     }
 
     /** The owner's own oil change interval for the vehicle (#517), as typed; null is "Use the maker's". */
@@ -175,7 +171,7 @@ class ScheduleViewModel @Inject constructor(
     }
 
     /** The schedule as an import file: every tracked item, as it is saved. */
-    fun written(): WrittenFile = ScheduleExport.file(entities.values.sortedBy { it.id }.map { it.toSaved() }, state.value?.vehicle?.unit ?: DistanceUnit.MILES)
+    fun written(): WrittenFile = ScheduleExport.file(rows.values.sortedBy { it.id }.map { it.toSaved() }, state.value?.vehicle?.unit ?: DistanceUnit.MILES)
 
     /** [model] is the year, make and model, for the file's suggested name. */
     fun saveAsFile(text: String, model: String) {
@@ -183,16 +179,11 @@ class ScheduleViewModel @Inject constructor(
     }
 
     /** Null while loading, and if the vehicle no longer exists. */
-    val state: StateFlow<ScheduleState?> = combine(
-        logs.observe(vehicleId),
-        flow { emit(makers.lists()) },
-    ) { log, lists ->
-        log ?: return@combine null
+    val state: StateFlow<ScheduleState?> = logs.observe(vehicleId).map { log ->
+        log ?: return@map null
         val vehicle = log.vehicle
         val items = log.items
         val records = log.records
-        val credits = lists.associate { it.id to KnownSchedules.credit(it) }
-        entities = items.associateBy { it.id.toString() }
         val templates = ScheduleTemplates.generic(vehicle.drivetrain, vehicle.fuel, vehicle.unit).associateBy { it.key }
         val swap = log.swap
         val entries = log.entries
@@ -214,16 +205,12 @@ class ScheduleViewModel @Inject constructor(
                 )
             },
             defaultRule = log.defaultRule,
-            // Not a typical item whose job one of the user's own already is: adding it back would be a second reminder.
-            missing = items.filter { it.templateKey == null }.mapNotNull { HistoryImport.services[it.service]?.resets }.toSet().let { covered ->
-                ScheduleTemplates.missing(vehicle.drivetrain, vehicle.fuel, vehicle.unit, items.map { it.templateKey }).filter { it.key !in covered }
-            },
+            missing = ScheduleItems.missing(vehicle, items),
             odometer = log.odometer,
             notLogged = statuses.values.count { !it.counting },
-            startedFrom = items.firstNotNullOfOrNull { it.knownList }?.let { startedFrom(credits[it]) },
-            known = makers.forVehicle(vehicle)
-                ?.let { list -> list to KnownSchedules.plan(KnownSchedules.intervalsIn(list, vehicle.unit, vehicle.drivetrain, vehicle.gearboxOnRecord()), items.map { it.toSaved() }) }
-                ?.takeIf { (_, plan) -> plan.new.isNotEmpty() },
+            startedFrom = schedule.startedFrom(items)?.let { startedFrom(it.credit) },
+            known = schedule.offer(vehicle, items),
+            rows = items.associateBy { it.id.toString() },
         )
     }.screenState(viewModelScope, null)
 
@@ -247,103 +234,46 @@ class ScheduleViewModel @Inject constructor(
 
     /** A date and mileage for the saved item [item], which starts its reminder counting. */
     fun enterLastDone(item: DraftItem, date: LocalDate, odometer: Int) = viewModelScope.launch {
-        val entity = entities[item.key] ?: return@launch
+        val entity = rows[item.key] ?: return@launch
         actions.addLastDone(vehicleId, entity, date, odometer)
     }
 
+    /** A new item, or the editor's columns of a saved one: a snooze and the list it came from stay. */
     fun saveEdit(item: DraftItem) {
         editing = null
-        viewModelScope.launch {
-            val existing = entities[item.key]
-            if (existing == null) {
-                schedule.insertAll(listOf(item.applyTo(ScheduleItemEntity(vehicleId = vehicleId, name = item.name, intervalMiles = null, intervalMonths = null))))
-            } else {
-                schedule.update(item.applyTo(existing))
-            }
-        }
+        val id = rows[item.key]?.id
+        viewModelScope.launch { if (id == null) schedule.add(vehicleId, item) else schedule.edit(id, item) }
     }
 
     /** Ticks or unticks every item at once. Only `tracked` changes; a snooze, an interval and every record stay. */
     fun setAllTracked(tracked: Boolean) {
-        viewModelScope.launch { schedule.updateAll(entities.values.filter { it.tracked != tracked }.map { it.copy(tracked = tracked) }) }
+        viewModelScope.launch { schedule.setAllTracked(vehicleId, tracked) }
     }
 
     fun setTracked(item: DraftItem, tracked: Boolean) {
         editing = null
-        viewModelScope.launch { entities[item.key]?.let { schedule.update(it.copy(tracked = tracked)) } }
+        val id = rows[item.key]?.id ?: return
+        viewModelScope.launch { schedule.setTracked(id, tracked) }
     }
 
-    /** Normal or severe for every item that has a severe interval. */
-    fun chooseSevereUse(severe: Boolean) = viewModelScope.launch {
-        schedule.updateAll(entities.values.filter { it.useSevere != severe }.map { it.copy(useSevere = severe) })
-    }
+    /** Normal or severe: the one switch, for every item. */
+    fun chooseSevereUse(severe: Boolean) = viewModelScope.launch { schedule.setSevereUse(vehicleId, severe) }
 
     /** "Runs mostly on E85", for every item that has an E85 interval. */
-    fun chooseE85Use(on: Boolean) = viewModelScope.launch {
-        schedule.updateAll(entities.values.filter { (it.e85Miles != null || it.e85Months != null) && it.useE85 != on }.map { it.copy(useE85 = on) })
-    }
+    fun chooseE85Use(on: Boolean) = viewModelScope.launch { schedule.setE85Use(vehicleId, on) }
 
-    /**
-     * Adds the typical items the schedule lacks, unticked: the user picks which to track, so a
-     * dozen "not logged yet" reminders don't appear at once.
-     */
     /**
      * Adds the reminders of the maker's schedule as items of the user's own, tracked, each remembering
      * the list it started from. [stop] are the typical items the user agreed to have replaced because
      * one of these is the same job: each is removed, or kept untracked if a service was logged against it.
      */
-    fun addKnown(stop: Set<Long>) = viewModelScope.launch {
-        val s = state.value ?: return@launch
-        val (list, plan) = s.known ?: return@launch
-        val severe = s.use == DrivingUse.SEVERE
-        // On E85 only where the owner has already said so on this schedule; nothing is assumed.
-        val e85 = s.e85 == true
-        // One write: the items, the doubles stopped, and the maker's table unless the vehicle has one of its own.
-        makers.adopt(
-            vehicleId,
-            plan.new.map { it.toEntity(vehicleId, knownList = list.id, useSevere = severe && (it.severe != null || it.severeOnly), useE85 = e85) },
-            list,
-            replaced = plan.doubles.map { it.id }.filter { it in stop },
-        )
-    }
+    fun addKnown(stop: Set<Long>) = viewModelScope.launch { schedule.takeUpMakers(vehicleId, stop) }
 
-    fun addMissing() = viewModelScope.launch {
-        val s = state.value ?: return@launch
-        val severe = s.use == DrivingUse.SEVERE
-        schedule.insertAll(
-            s.missing.map {
-                ScheduleItemEntity(
-                    vehicleId = vehicleId,
-                    name = it.label,
-                    templateKey = it.key,
-                    intervalMiles = it.normal.miles,
-                    intervalMonths = it.normal.months,
-                    severeMiles = it.severe?.miles,
-                    severeMonths = it.severe?.months,
-                    useSevere = severe,
-                    tracked = false,
-                )
-            },
-        )
-    }
-
-    /** Keeps everything the editor doesn't touch, such as a snooze. */
-    private fun DraftItem.applyTo(entity: ScheduleItemEntity) = entity.copy(
-        name = name,
-        intervalMiles = normal.miles,
-        intervalMonths = normal.months,
-        severeMiles = severe?.miles,
-        severeMonths = severe?.months,
-        useSevere = useSevere,
-        e85Miles = e85?.miles,
-        e85Months = e85?.months,
-        useE85 = useE85 && e85 != null,
-        ruleOverride = rule?.name,
-        tracked = tracked,
-        firstMiles = firstAt,
-        // Never on a typical item: those answer through their template key.
-        service = service.takeIf { entity.templateKey == null },
-    )
+    /**
+     * Adds the typical items the schedule lacks, unticked: the user picks which to track, so a
+     * dozen "not logged yet" reminders don't appear at once.
+     */
+    fun addMissing() = viewModelScope.launch { schedule.addMissing(vehicleId) { it.label } }
 
     private companion object {
         const val NEW = "new"

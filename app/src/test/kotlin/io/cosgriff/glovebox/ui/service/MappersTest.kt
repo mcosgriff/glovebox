@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.R
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
+import io.cosgriff.glovebox.data.db.toSaved
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.domain.ClusterSwap

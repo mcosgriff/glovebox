@@ -37,6 +37,23 @@ class ScheduleTest {
     }
 
     @Test
+    fun `a severe figure left to the normal one stays left to it when typed back unchanged`() {
+        val normal = Interval(10_000, 12)
+        val severe = Interval(5_000, null)
+        // What the boxes showed, saved as it was: the months are still the normal ones'.
+        assertEquals(severe, ActiveInterval.severeTyped(Interval(5_000, 12), normal, severe))
+        assertEquals(Interval(4_000, null), ActiveInterval.severeTyped(Interval(4_000, 12), normal, severe))
+        // Months typed of its own are its own.
+        assertEquals(Interval(5_000, 6), ActiveInterval.severeTyped(Interval(5_000, 6), normal, severe))
+        // A figure the severe interval has is kept as typed, even when it matches the normal one.
+        assertEquals(Interval(10_000, 6), ActiveInterval.severeTyped(Interval(10_000, 6), normal, Interval(5_000, 6)))
+        // With no severe interval yet, every figure typed is its own.
+        assertEquals(Interval(10_000, 12), ActiveInterval.severeTyped(Interval(10_000, 12), normal, null))
+        // Every figure falling back would leave nothing: what was typed is kept.
+        assertEquals(Interval(null, 12), ActiveInterval.severeTyped(Interval(null, 12), normal, severe))
+    }
+
+    @Test
     fun `differential fluid is only suggested when the drivetrain has one to service`() {
         fun diff(drivetrain: String?) = ScheduleTemplates.generic(drivetrain, null, DistanceUnit.MILES).firstOrNull { it.key == "diff-fluid" }?.name
         assertEquals(TemplateName.DIFF_AND_TRANSFER, diff("4WD/4-Wheel Drive/4x4"))
