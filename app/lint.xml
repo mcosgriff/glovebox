@@ -7,4 +7,17 @@
     <issue id="ObsoleteSdkInt">
         <ignore path="src/main/res/mipmap-anydpi-v26" />
     </issue>
+    <!--
+        Two upgrades that are migrations, not version bumps, so they get a PR of their own; until then lint
+        must not fail every PR over them. Anything else newer (a 1.6.x CameraX, any other library) still fails.
+        - Compose BOM 2026.11 (Compose 1.13, Material 3 1.5) needs compileSdk 37.1, moves ExposedDropdownMenu
+          to an extension that must be imported, deprecates the Slider, rememberModalBottomSheetState and
+          PasswordVisualTransformation the app uses, and changes a screenshot.
+        - CameraX 1.7 moves camera2 onto camera2-pipe, brings Guava into the APK (R8 then needs a rule for
+          j2objc) and turns ImageProxy into Kotlin properties.
+    -->
+    <issue id="GradleDependency">
+        <ignore regexp="androidx\.compose:compose-bom than 2026\.09\.00 is available" />
+        <ignore regexp="androidx\.camera:camera-[a-z0-9]+ than 1\.6\.2 is available: 1\.7\." />
+    </issue>
 </lint>
