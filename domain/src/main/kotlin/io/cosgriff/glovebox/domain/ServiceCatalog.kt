@@ -67,16 +67,56 @@ object ServiceLinks {
         lines.flatMap { (itemId, catalogId) -> listOfNotNull(itemId) + catalogId?.let(answering::get).orEmpty() }.toSet()
 }
 
-/** One tickable line on the Log service screen. [scheduleItemId] is the reminder it resets, if any. */
+/**
+ * One tickable line on the Log service screen. [scheduleItemId] is the reminder it resets, if any. [id] is the form's
+ * key for it, nothing more: what a line saved from it carries is [catalogId].
+ */
 data class WorkOption(
     val id: String,
     /** The user's own item's name, under "Your items"; null for a catalog line, which `app` names by its id. */
     val name: String? = null,
     val scheduleItemId: Long? = null,
-)
+) {
+    /** The catalog line it is, which a line saved from it carries; null for one of the user's own items. */
+    val catalogId: String? get() = id.takeIf { name == null }
+}
 
 /** `app` names it by its id ([ServiceCatalog.YOUR_ITEMS] for the user's own items). */
 data class WorkCategory(val id: String, val options: List<WorkOption>)
+
+/**
+ * The lines Log service offers one vehicle ([ServiceCatalog.forVehicle]): [categories] as the form shows them, "Your
+ * items" first when there are any, and the line each of the vehicle's reminders ticks.
+ */
+class VehicleLines internal constructor(
+    val categories: List<WorkCategory>,
+    private val forItem: Map<Long, WorkOption>,
+) {
+    val options: List<WorkOption> = categories.flatMap { it.options }
+
+    /** The catalog's lines alone, by category, never the user's own items: what a kept recommendation comes off with. */
+    val catalog: List<WorkCategory> get() = categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }
+
+    /**
+     * The line "Log it" on [scheduleItemId]'s reminder ticks: the catalog line that is the item's own, or failing that
+     * the one saved against it, which wins; one of the user's own items that answers to no line is its line under
+     * "Your items". Its own only: a change of oil also resets the check of it, but "Log it" on the check ticks the
+     * check ([ServiceLinks.own], not [ServiceLinks.answering]). Null for an item no line stands for.
+     */
+    fun optionFor(scheduleItemId: Long?): WorkOption? = scheduleItemId?.let(forItem::get)
+
+    /** The line a saved [line] is ticked as on an edit: its catalog line, or failing that the line [optionFor] its item; null for a custom line. */
+    fun optionOf(line: RecordLine): WorkOption? =
+        line.catalogId?.let { id -> options.firstOrNull { it.catalogId == id } } ?: optionFor(line.scheduleItemId)
+
+    /** The category the line [optionId] is under; null for a custom line. */
+    fun categoryOf(optionId: String): WorkCategory? = categories.firstOrNull { c -> c.options.any { it.id == optionId } }
+
+    companion object {
+        /** No lines at all: a form before its vehicle has loaded. */
+        val NONE = VehicleLines(emptyList(), emptyMap())
+    }
+}
 
 /** The note beside a Log service line; `app` words it. */
 sealed interface WorkHint {
@@ -334,7 +374,7 @@ object ServiceCatalog {
      * [WorkOption.scheduleItemId] is the one item the line is saved against. Which reminders the
      * line counts for is wider than that: see [ServiceLinks].
      */
-    fun forVehicle(schedule: List<ScheduleRef>): List<WorkCategory> {
+    fun forVehicle(schedule: List<ScheduleRef>): VehicleLines {
         val byKey = schedule.filter { it.templateKey != null }.associateBy { it.templateKey }
         // What each line stands for, not everything it would reset: a change of oil isn't the line for the check of it.
         val answering = ServiceLinks.own(schedule)
@@ -350,9 +390,19 @@ object ServiceCatalog {
         }
         val yours = schedule
             .filter { it.tracked && it.id !in linked }
-            .map { WorkOption("schedule-${it.id}", it.name, it.id) }
-        return if (yours.isEmpty()) fromCatalog else listOf(WorkCategory(YOUR_ITEMS, yours)) + fromCatalog
+            .map { WorkOption(ownKey(it.id), it.name, it.id) }
+        val all = if (yours.isEmpty()) fromCatalog else listOf(WorkCategory(YOUR_ITEMS, yours)) + fromCatalog
+        val options = all.flatMap { it.options }
+        // The line to tick for a reminder: the catalog line that is its own, or failing that the one saved against it,
+        // which wins. Its own only: a change of oil also resets the check of it, but "Log it" on the check must tick the
+        // check (ServiceLinks.own, not .answering).
+        val forItem = options.flatMap { o -> o.catalogId?.let(answering::get).orEmpty().map { id -> id to o } }.toMap() +
+            options.mapNotNull { o -> o.scheduleItemId?.let { it to o } }.toMap()
+        return VehicleLines(all, forItem)
     }
+
+    /** The form's key for one of the user's own items, which saves no catalog line: never a catalog id. */
+    private fun ownKey(scheduleItemId: Long) = "schedule-$scheduleItemId"
 }
 
 /** A schedule item being tracked, with the interval and rule already resolved. */

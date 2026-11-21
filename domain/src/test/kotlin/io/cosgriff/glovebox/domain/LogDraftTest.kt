@@ -21,9 +21,13 @@ class LogDraftTest {
 
     private val oil = WorkOption("oil", scheduleItemId = 1)
     private val rotation = WorkOption("rotation", scheduleItemId = 2)
-    private val hitch = WorkOption("schedule-7", "Grease hitch", 7)
+    // One of the user's own items: the form knows it by a key of the catalog's choosing, which saves no catalog line.
+    private val hitch = WorkOption("own-hitch", "Grease hitch", 7)
     private val terms = LogTerms(
-        listOf(WorkCategory("engine", listOf(oil)), WorkCategory("wheels", listOf(rotation)), WorkCategory(ServiceCatalog.YOUR_ITEMS, listOf(hitch))),
+        VehicleLines(
+            listOf(WorkCategory("engine", listOf(oil)), WorkCategory("wheels", listOf(rotation)), WorkCategory(ServiceCatalog.YOUR_ITEMS, listOf(hitch))),
+            mapOf(1L to oil, 2L to rotation, 7L to hitch),
+        ),
         // `:domain` names no catalog line; these stand in for the app's names.
         nameOf = { it.name ?: "Line ${it.id}" },
         figures = figures,
@@ -197,8 +201,8 @@ class LogDraftTest {
             ),
             jobs = listOf(RecordJob(laborCents = 4_000, rows = listOf(RecordPartRow("Filter", 1_000, 1_250, 1_250, line = 0), RecordPartRow(totalCents = 3_000)))),
         )
-        val draft = LogDraft.of(record, mapOf(7L to hitch), terms)
-        assertEquals(setOf("oil", "rotation", "schedule-7"), draft.selected)
+        val draft = LogDraft.of(record, terms)
+        assertEquals(setOf("oil", "rotation", hitch.id), draft.selected)
         assertEquals(listOf("Wiper fluid"), draft.customItems)
         assertEquals(mapOf("oil" to "Oil and filter changed"), draft.keptLabels)
         val job = draft.jobs(terms).first()

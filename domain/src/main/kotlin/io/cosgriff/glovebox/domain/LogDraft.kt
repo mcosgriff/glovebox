@@ -25,15 +25,15 @@ interface TypedFigures {
 }
 
 /**
- * What a draft is read against: the vehicle's lines by category, what the app calls a line (`:domain` names none),
- * and how the form's figures are typed.
+ * What a draft is read against: the vehicle's lines ([ServiceCatalog.forVehicle]), what the app calls a line
+ * (`:domain` names none), and how the form's figures are typed.
  */
 class LogTerms(
-    val categories: List<WorkCategory>,
+    val lines: VehicleLines,
     val nameOf: (WorkOption) -> String,
     val figures: TypedFigures,
 ) {
-    internal val options: List<WorkOption> get() = categories.flatMap { it.options }
+    internal val options: List<WorkOption> get() = lines.options
 }
 
 /**
@@ -238,14 +238,13 @@ data class LogDraft(
      * job. The writer leaves out the jobs that say nothing ([ServiceRecord.withoutBareJobs]).
      */
     fun toRecord(visit: ServiceRecord, terms: LogTerms): ServiceRecord {
-        val catalogIds = terms.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
         val options = selectedOptions(terms)
         val jobs = jobs(terms)
         // Each line by its key, so its job and its part rows can find it.
         val lineIndex = (options.map { it.id } + customItems.map(::customKey)).withIndex().associate { (i, key) -> key to i }
         val jobIndex = jobs.withIndex().flatMap { (i, j) -> j.lines.map { it to i } }.toMap()
         return visit.copy(
-            lines = options.map { RecordLine(labelOf(it, terms), it.id.takeIf { id -> id in catalogIds }, it.scheduleItemId, jobIndex[it.id]) } +
+            lines = options.map { RecordLine(labelOf(it, terms), it.catalogId, it.scheduleItemId, jobIndex[it.id]) } +
                 customItems.map { RecordLine(it, job = jobIndex[customKey(it)]) },
             jobs = jobs.map { j ->
                 val price = price(j, terms)
@@ -277,13 +276,13 @@ data class LogDraft(
         fun customKey(label: String): String = CUSTOM_KEY + label
 
         /**
-         * [record] as a draft to edit: each line ticked as the line it was saved under ([optionFor] finds one by the
-         * reminder it resets, for a line with no catalog id), or a custom line; its wording kept where it isn't the
-         * line's name; its jobs and part rows with their figures as saved. Nothing is filled in on opening.
+         * [record] as a draft to edit: each line ticked as the line it was saved under ([VehicleLines.optionOf] finds
+         * one by the reminder it resets, for a line with no catalog id), or a custom line; its wording kept where it
+         * isn't the line's name; its jobs and part rows with their figures as saved. Nothing is filled in on opening.
          */
-        fun of(record: ServiceRecord, optionFor: Map<Long?, WorkOption>, terms: LogTerms): LogDraft {
+        fun of(record: ServiceRecord, terms: LogTerms): LogDraft {
             // The option each saved line is ticked as; null for a custom line.
-            val optionOf = record.lines.map { line -> terms.options.firstOrNull { it.id == line.catalogId } ?: line.scheduleItemId?.let(optionFor::get) }
+            val optionOf = record.lines.map(terms.lines::optionOf)
             val ticked = mutableSetOf<String>()
             val custom = mutableListOf<String>()
             val kept = mutableMapOf<String, String>()

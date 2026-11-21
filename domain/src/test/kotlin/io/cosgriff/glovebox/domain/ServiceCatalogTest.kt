@@ -43,7 +43,7 @@ class ServiceCatalogTest {
             ScheduleRef(1, "Engine oil & filter", "oil", tracked = true),
             ScheduleRef(2, "Tire rotation", "rotation", tracked = false),
         )
-        val options = ServiceCatalog.forVehicle(schedule).flatMap { it.options }.associateBy { it.id }
+        val options = ServiceCatalog.forVehicle(schedule).options.associateBy { it.id }
         assertEquals(1L, options.getValue("oil").scheduleItemId)
         // Untracked items still get the link, so history counts if tracking is switched back on.
         assertEquals(2L, options.getValue("rotation").scheduleItemId)
@@ -58,12 +58,12 @@ class ServiceCatalogTest {
             ScheduleRef(7, "Grease hitch", null, tracked = true),
             ScheduleRef(8, "Old custom thing", null, tracked = false),
         )
-        val categories = ServiceCatalog.forVehicle(schedule)
+        val categories = ServiceCatalog.forVehicle(schedule).categories
         assertEquals(ServiceCatalog.YOUR_ITEMS, categories.first().id)
-        assertEquals(listOf(WorkOption("schedule-7", "Grease hitch", 7)), categories.first().options)
+        assertEquals(listOf("Grease hitch" to 7L), categories.first().options.map { it.name to it.scheduleItemId })
 
         // No own items: no empty category.
-        assertEquals("engine", ServiceCatalog.forVehicle(schedule.take(1)).first().id)
+        assertEquals("engine", ServiceCatalog.forVehicle(schedule.take(1)).categories.first().id)
     }
 
     @Test
@@ -124,7 +124,7 @@ class ServiceCatalogTest {
         assertEquals(listOf("service:front-diff", "name:front differential oil change", "service:front-diff-check"), MilestoneImport.doneKeys("Front differential oil change", "front-diff"))
         assertEquals(listOf("service:front-diff-check", "name:checked it"), MilestoneImport.doneKeys("Checked it", "front-diff-check"))
         // On Log service each line stands for its own reminder only, so "Log it" on the check ticks the check.
-        val options = ServiceCatalog.forVehicle(schedule).flatMap { it.options }.associateBy { it.id }
+        val options = ServiceCatalog.forVehicle(schedule).options.associateBy { it.id }
         assertEquals(1L, options.getValue("front-diff-check").scheduleItemId)
         assertEquals(2L, options.getValue("front-diff").scheduleItemId)
         assertEquals(3L, options.getValue("rear-diff-check").scheduleItemId)
