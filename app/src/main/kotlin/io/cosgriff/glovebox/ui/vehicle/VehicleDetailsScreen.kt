@@ -136,12 +136,10 @@ import io.cosgriff.glovebox.data.db.RecallDao
 import io.cosgriff.glovebox.data.db.TorqueDao
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
-import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
+import io.cosgriff.glovebox.data.nhtsa.DecodedField
+import io.cosgriff.glovebox.data.nhtsa.VehicleFromVin
+import io.cosgriff.glovebox.data.nhtsa.VinLookupResult
 import io.cosgriff.glovebox.data.nhtsa.toStored
-import io.cosgriff.glovebox.domain.VinRefresh
-import io.cosgriff.glovebox.ui.components.DecodedField
-import io.cosgriff.glovebox.ui.components.savedFields
-import io.cosgriff.glovebox.ui.components.storedFields
 import io.cosgriff.glovebox.data.photo.VehiclePhotoStore
 import io.cosgriff.glovebox.domain.DrivingUse
 import io.cosgriff.glovebox.domain.ClusterSwap
@@ -222,7 +220,7 @@ class VehicleDetailsViewModel @Inject constructor(
     makerDocuments: MakerDocumentCatalog,
     bulletinCatalog: BulletinCatalog,
     settings: SettingsRepository,
-    private val nhtsa: NhtsaClient,
+    private val fromVin: VehicleFromVin,
 ) : ViewModel() {
     val vehicleId = savedStateHandle.route<VehicleDetailsRoute>().vehicleId
 
@@ -344,22 +342,18 @@ class VehicleDetailsViewModel @Inject constructor(
     private val _vinLookup = MutableStateFlow<VinLookup>(VinLookup.Idle)
     val vinLookup: StateFlow<VinLookup> = _vinLookup
 
-    /** Only the VIN is sent. The drivetrain is never offered: it is the owner's pick (docs/rules/vehicles.md). */
+    /** What it sends, offers and fills is [VehicleFromVin]'s (docs/rules/vehicles.md). */
     fun lookUpVin() {
         val v = details.value?.vehicle ?: return
-        val vin = v.vin ?: return
+        if (v.vin == null) return
         _vinLookup.value = VinLookup.Asking
         viewModelScope.launch {
-            _vinLookup.value = runCatching { nhtsa.decodeVin(vin) }.fold(
-                onSuccess = { d ->
-                    if (VinRefresh.sameVehicle(v.year, v.make, d.year, d.make)) {
-                        VinLookup.Found(VinRefresh.additions(v.savedFields(), d.storedFields() - DecodedField.DRIVE))
-                    } else {
-                        VinLookup.NotThisVehicle(d.year?.let { VehicleText.title(it, d.make.orEmpty(), d.model.orEmpty(), trim = null) })
-                    }
-                },
-                onFailure = { VinLookup.Failed },
-            )
+            _vinLookup.value = when (val found = fromVin.lookUp(v)) {
+                is VinLookupResult.Found -> VinLookup.Found(found.additions)
+                is VinLookupResult.NotThisVehicle ->
+                    VinLookup.NotThisVehicle(found.year?.let { VehicleText.title(it, found.make.orEmpty(), found.model.orEmpty(), trim = null) })
+                VinLookupResult.Failed -> VinLookup.Failed
+            }
         }
     }
 
@@ -367,18 +361,7 @@ class VehicleDetailsViewModel @Inject constructor(
     fun fillFromVin() {
         val found = (_vinLookup.value as? VinLookup.Found)?.additions ?: return
         _vinLookup.value = VinLookup.Idle
-        viewModelScope.launch {
-            vehicles.fillFromVin(
-                vehicleId,
-                bodyClass = found[DecodedField.BODY],
-                engine = found[DecodedField.ENGINE],
-                fuel = found[DecodedField.FUEL],
-                transmission = found[DecodedField.TRANSMISSION],
-                engineCode = found[DecodedField.ENGINE_CODE],
-                tpms = found[DecodedField.TPMS],
-                series = found[DecodedField.SERIES],
-            )
-        }
+        viewModelScope.launch { fromVin.fill(vehicleId, found) }
     }
 
     fun closeVinLookup() {
@@ -1416,7 +1399,7 @@ private fun VinLookupDialog(lookup: VinLookup, onAdd: () -> Unit, onDismiss: () 
                         Text(stringResource(R.string.details_vin_lookup_found))
                         additions.forEach { (field, value) ->
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(stringResource(field.label), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(field.label()), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(value, Modifier.weight(1f), fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
                             }
                         }

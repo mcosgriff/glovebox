@@ -80,8 +80,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.glovebox.data.db.VehicleDao
 import io.cosgriff.glovebox.data.db.VehicleEntity
 import io.cosgriff.glovebox.data.nhtsa.DecodedVehicle
-import io.cosgriff.glovebox.ui.components.DecodedField
-import io.cosgriff.glovebox.ui.components.storedFields
+import io.cosgriff.glovebox.data.nhtsa.DecodedField
+import io.cosgriff.glovebox.data.nhtsa.DecodedStart
+import io.cosgriff.glovebox.data.nhtsa.VehicleFromVin
+import io.cosgriff.glovebox.data.nhtsa.withDecoded
 import io.cosgriff.glovebox.data.nhtsa.NhtsaClient
 import io.cosgriff.glovebox.data.nhtsa.RecallRepository
 import io.cosgriff.glovebox.domain.DecodeQuality
@@ -92,8 +94,6 @@ import io.cosgriff.glovebox.domain.Vin
 import io.cosgriff.glovebox.domain.VinDecode
 import io.cosgriff.glovebox.domain.Powertrain
 import io.cosgriff.glovebox.domain.BodyStyle
-import io.cosgriff.glovebox.domain.BodyStyles
-import io.cosgriff.glovebox.domain.Powertrains
 import io.cosgriff.glovebox.ui.components.ChoiceDialog
 import io.cosgriff.glovebox.ui.components.label
 import io.cosgriff.glovebox.ui.theme.statusColors
@@ -137,9 +137,9 @@ class AddVehicleViewModel @Inject constructor(
         private set
     var fields by mutableStateOf(emptyMap<DecodedField, String>())
         private set
-    /** Only what vPIC says plainly ([Powertrains.fromVpic]), then the owner's pick; null is "not known". */
+    /** Only what vPIC says plainly ([DecodedStart.powertrain]), then the owner's pick; null is "not known". */
     var powertrain by mutableStateOf<Powertrain?>(null)
-    /** Only what vPIC says plainly ([BodyStyles.fromVpic]), then the owner's pick; null is "not known". */
+    /** Only what vPIC says plainly ([DecodedStart.bodyStyle]), then the owner's pick; null is "not known". */
     var bodyStyle by mutableStateOf<BodyStyle?>(null)
     /** The owner's answer (#549), started only where the decode settles it ([Gearboxes.suggested]); null is "Don't know". */
     var gearbox by mutableStateOf<Gearbox?>(null)
@@ -199,9 +199,10 @@ class AddVehicleViewModel @Inject constructor(
         year = d.year
         make = d.make.orEmpty()
         model = d.model.orEmpty()
-        fields = d.storedFields()
-        powertrain = Powertrains.fromVpic(d.electrification, d.fuel, d.fuelSecondary)
-        bodyStyle = BodyStyles.fromVpic(d.bodyClass)
+        val start = VehicleFromVin.start(d)
+        fields = start.fields
+        powertrain = start.powertrain
+        bodyStyle = start.bodyStyle
         gearbox = Gearboxes.suggested(d.make, d.transmission)
         gearboxHintedFrom = d.transmission.takeIf { gearbox != null && Gearboxes.volkswagenHint(d.make, d.transmission) == gearbox }
         trimChoices = VinDecode.trimChoices(d.trim)
@@ -275,20 +276,12 @@ class AddVehicleViewModel @Inject constructor(
                     model = model.trim(),
                     trim = savedTrim,
                     trimConfirmed = trimConfirmed && savedTrim != null,
-                    engine = fields[DecodedField.ENGINE],
-                    fuel = fields[DecodedField.FUEL],
                     powertrain = powertrain?.name,
-                    drivetrain = fields[DecodedField.DRIVE],
-                    transmission = fields[DecodedField.TRANSMISSION],
-                    bodyClass = fields[DecodedField.BODY],
                     bodyStyle = bodyStyle?.name,
                     gearbox = gearbox?.name,
-                    engineCode = fields[DecodedField.ENGINE_CODE],
-                    tpms = fields[DecodedField.TPMS],
-                    series = fields[DecodedField.SERIES],
                     createdOn = today,
                     distanceUnit = unit.name,
-                ),
+                ).withDecoded(fields),
                 firstReading = OdometerInput.parse(odometerText.typedNumber()),
             )
             // Keep the list already on screen; if it never arrived, the garage re-checks later.
@@ -483,7 +476,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
         )
     } else editing?.let { field ->
         FieldDialog(
-            label = stringResource(field.label),
+            label = stringResource(field.label()),
             current = vm.fields[field].orEmpty(),
             onSave = {
                 vm.correct(field, it)
@@ -579,7 +572,7 @@ private fun ConfirmVehicle(vm: AddVehicleViewModel, d: DecodedVehicle, onSaved: 
                     } else {
                         value
                     }
-                    FieldRow(stringResource(field.label), shown ?: stringResource(R.string.add), muted = shown == null, onClick = { editing = field })
+                    FieldRow(stringResource(field.label()),shown ?: stringResource(R.string.add), muted = shown == null, onClick = { editing = field })
                     HorizontalDivider(color = scheme.outlineVariant)
                 }
                 val powertrain = vm.powertrain
@@ -754,7 +747,7 @@ private fun DriveDialog(current: String?, onSave: (String) -> Unit, onDismiss: (
     val other = current?.takeIf { initial == null }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(DecodedField.DRIVE.label)) },
+        title = { Text(stringResource(DecodedField.DRIVE.label())) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
