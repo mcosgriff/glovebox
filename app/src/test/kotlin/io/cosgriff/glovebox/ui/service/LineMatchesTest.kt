@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config
 class LineMatchesTest {
     @get:Rule val compose = createComposeRule()
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val lines = ServiceCatalog.forVehicle(emptyList()).flatMap { c -> c.options.map { LineChoice(it, c) } }
+    private val lines = ServiceCatalog.forVehicle(emptyList()).categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
     private val picked = mutableListOf<String>()
 
     private fun string(id: Int, vararg args: Any) = context.getString(id, *args)

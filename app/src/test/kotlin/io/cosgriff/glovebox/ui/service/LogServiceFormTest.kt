@@ -29,7 +29,7 @@ import org.robolectric.annotation.Config
 @Config(application = ScreenshotApp::class, sdk = [35])
 class LogServiceFormTest {
     // One of the user's own lines: it carries its name, so nothing here needs the app's resources.
-    private val hitch = WorkOption("schedule-7", "Grease hitch", 7)
+    private val hitch = WorkOption("own-hitch", "Grease hitch", 7)
 
     private fun form(vararg custom: String) = LogServiceForm(editing = true).apply { customItems = custom.toList() }
 
@@ -37,7 +37,7 @@ class LogServiceFormTest {
     fun `a custom line filed under a line is ticked there and keeps its wording`() {
         val form = form("Hitch greased, ball and pin", "Roof rack fitted")
         form.fileCustom("Hitch greased, ball and pin", hitch)
-        assertEquals(setOf("schedule-7"), form.selected)
+        assertEquals(setOf(hitch.id), form.selected)
         assertEquals(listOf("Roof rack fitted"), form.customItems)
         assertEquals("Hitch greased, ball and pin", form.labelOf(hitch))
         // Still one line on the form, not two.

@@ -39,8 +39,7 @@ import io.cosgriff.glovebox.domain.CatalogRule
 import io.cosgriff.glovebox.domain.Money
 import io.cosgriff.glovebox.domain.format
 import io.cosgriff.glovebox.domain.RecommendedChoice
-import io.cosgriff.glovebox.domain.ServiceCatalog
-import io.cosgriff.glovebox.domain.WorkCategory
+import io.cosgriff.glovebox.domain.VehicleLines
 import io.cosgriff.glovebox.ui.components.RecommendationHead
 import io.cosgriff.glovebox.ui.components.RecommendedDoneRow
 import io.cosgriff.glovebox.ui.components.SectionLabel
@@ -207,8 +206,8 @@ internal fun DoneWithThese(form: LogServiceForm) {
 
 /** Picks the catalog line a kept recommendation comes off with (#572): only the catalog's lines, never the user's own. */
 @Composable
-internal fun RecommendedLineDialog(text: String, categories: List<WorkCategory>, rules: List<CatalogRule>, onPick: (String) -> Unit, onDismiss: () -> Unit) {
-    val lines = categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { c -> c.options.map { LineChoice(it, c) } }
+internal fun RecommendedLineDialog(text: String, vehicleLines: VehicleLines, rules: List<CatalogRule>, onPick: (String) -> Unit, onDismiss: () -> Unit) {
+    val lines = vehicleLines.catalog.flatMap { c -> c.options.map { LineChoice(it, c) } }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.log_recommended_line_title)) },

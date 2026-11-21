@@ -96,7 +96,7 @@ data class SortPreview(val lines: Int, val reminders: List<ReminderChange>, val 
 
 /** Every catalog line, by category, to pick from. Only the catalog's: a Custom line is filed under one of those. */
 internal val catalogChoices: List<LineChoice> by lazy {
-    ServiceCatalog.forVehicle(emptyList()).flatMap { c -> c.options.map { LineChoice(it, c) } }
+    ServiceCatalog.forVehicle(emptyList()).categories.flatMap { c -> c.options.map { LineChoice(it, c) } }
 }
 
 @HiltViewModel

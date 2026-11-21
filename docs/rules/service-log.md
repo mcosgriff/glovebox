@@ -15,6 +15,10 @@ Rules for Log service, Undo, record files, History's list, timeline and spending
   (`LogDraft.of`) and saved as one (`toRecord`). What an invoice puts on them is the draft's merge
   (`LogDraft.fill`, `InvoiceMerge`). Figures stay as typed; the app reads and writes them in its locale
   (`AppFigures`, a `TypedFigures`). `LogServiceForm` holds the draft and writes the visit's own fields.
+- **A vehicle's lines are `ServiceCatalog.forVehicle`'s `VehicleLines`** (#622): the categories, whether each line
+  is a catalog line (`WorkOption.catalogId`, none for the owner's own items), the catalog's lines alone (`catalog`)
+  and the line each reminder ticks (`optionFor`: the item's own line, never one that only includes it). How the form
+  keys the owner's own items is the catalog's; no screen filters out "Your items" or builds that key itself.
 - **"Which reminders would move?" is asked of the log** (#430): `VehicleLog.whatIf` takes the `ServiceRecord`s
   exactly as they would be written (#619: a saved one with its changes, new ones numbered below zero by
   `numberedAsNew`) and the ids of any deleted, and gives the changes and the entries after, in dash terms. A

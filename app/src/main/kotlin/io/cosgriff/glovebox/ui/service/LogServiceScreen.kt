@@ -158,7 +158,8 @@ import io.cosgriff.glovebox.ui.components.SectionLabel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import io.cosgriff.glovebox.domain.ServiceLinks
+import io.cosgriff.glovebox.domain.VehicleLines
+import io.cosgriff.glovebox.domain.loggedLines
 import io.cosgriff.glovebox.domain.RecommendedChoice
 import io.cosgriff.glovebox.domain.KeptLine
 import io.cosgriff.glovebox.domain.LoggedLine
@@ -181,7 +182,8 @@ data class DueSuggestion(val optionId: String, val name: String, val overdue: Bo
 /** What the form needs from the database, loaded once when the screen opens. */
 data class LogServiceData(
     val vehicleName: String,
-    val categories: List<WorkCategory>,
+    /** The vehicle's lines ([ServiceCatalog.forVehicle]). */
+    val lines: VehicleLines,
     val due: List<DueSuggestion>,
     /** The vehicle's whole log, including the record being edited, for previewing what an edit moves. */
     val log: VehicleLog,
@@ -208,7 +210,19 @@ data class LogServiceData(
 
     /** What the vehicle's odometer counts in; the reading is typed and saved in it. */
     val unit: DistanceUnit get() = log.vehicle.unit
+
+    /** The lines by category, as the form shows them. */
+    val categories: List<WorkCategory> get() = lines.categories
+
+    /** What a draft on this form is read against ([LogServiceForm.terms]): made once, with the lines. */
+    internal val terms: LogTerms = lines.terms()
 }
+
+/** What a draft is read against: [this] vehicle's lines, named as the app names them, and figures in its locale. */
+private fun VehicleLines.terms(): LogTerms = LogTerms(this, { it.label }, AppFigures)
+
+/** A form's terms before its vehicle has loaded. */
+private val noTerms = VehicleLines.NONE.terms()
 
 /**
  * What is on the Log service form, apart from the photos the picker holds: plain Compose state, so the
@@ -233,7 +247,7 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
         internal set
 
     /** What the draft is read against: the vehicle's lines, named as the app names them, and figures in its locale. */
-    internal val terms: LogTerms get() = LogTerms(data?.categories.orEmpty(), { it.label }, AppFigures)
+    internal val terms: LogTerms get() = data?.terms ?: noTerms
 
     var selected: Set<String>
         get() = draft.selected
@@ -410,12 +424,12 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     fun replaces(choice: RecommendedChoice): ShopRecommendation? =
         ShopRecommendations.replaced(savedShop, choice.item, data?.openRecommendations.orEmpty())
 
-    /** The lines ticked, as matching sees them: catalog lines by their id, the rest by their wording. */
+    /**
+     * The lines ticked, as matching sees them: catalog lines by their id, the rest by their wording. Read from the record
+     * saving writes ([toRecord]); the reading doesn't come into its lines, so one not typed yet does no harm.
+     */
     internal val loggedLines: List<LoggedLine>
-        get() {
-            val catalog = terms.categories.filter { it.id != ServiceCatalog.YOUR_ITEMS }.flatMap { it.options }.map { it.id }.toSet()
-            return selectedOptions.map { LoggedLine(it.id.takeIf { id -> id in catalog }, labelOf(it)) } + customItems.map { LoggedLine(null, it) }
-        }
+        get() = data?.let { toRecord(it, odometer ?: 0).loggedLines() }.orEmpty()
 
     /** The record being edited; 0 for a new one. */
     private val recordId: Long get() = data?.original?.record?.id ?: 0L
@@ -567,9 +581,7 @@ class LogServiceForm(val editing: Boolean, private val today: () -> LocalDate = 
     fun lineName(key: String): String = draft.lineName(key, terms)
 
     /** Which category a line came from; null for a custom line. */
-    fun lineCategory(key: String): String? =
-        data?.categories?.firstOrNull { c -> c.id != ServiceCatalog.YOUR_ITEMS && c.options.any { it.id == key } }?.label
-            ?: data?.categories?.firstOrNull { c -> c.options.any { it.id == key } }?.label
+    fun lineCategory(key: String): String? = data?.lines?.categoryOf(key)?.label
 
     private fun cents(text: String): Long? = AppFigures.cents(text)
 
@@ -742,24 +754,30 @@ class LogServiceViewModel @Inject constructor(
             val entries = log.entries
             val others = entries.filter { it.id != original?.record?.id }
             val updates = log.updates
-            val categories = ServiceCatalog.forVehicle(items.map { it.toRef() })
-            val options = categories.flatMap { it.options }
-            // The line to tick for a reminder: the catalog line that is its own, or failing that the one saved
-            // against it, which wins. Its own only: a change of oil also resets the check of it, but "Log it" on
-            // the check must tick the check (ServiceLinks.own, not .answering).
-            val own = ServiceLinks.own(items.map { it.toRef() })
-            val optionFor: Map<Long?, WorkOption> = options.flatMap { o -> own[o.id].orEmpty().map { id -> id to o } }.toMap() +
-                options.filter { it.scheduleItemId != null }.associateBy { it.scheduleItemId }
+            val lines = ServiceCatalog.forVehicle(items.map { it.toRef() })
 
             val due = if (editing) {
                 emptyList()
             } else {
                 ReminderPresentation.logSuggestions(log.statuses(LocalDate.now()))
                     .mapNotNull { s ->
-                        val option = optionFor[s.item.id] ?: return@mapNotNull null
+                        val option = lines.optionFor(s.item.id) ?: return@mapNotNull null
                         DueSuggestion(option.id, option.label, overdue = s.status.state == DueState.OVERDUE)
                     }
             }
+
+            val data = LogServiceData(
+                vehicleName = vehicle.shortName(),
+                lines = lines,
+                due = due,
+                log = log,
+                readings = ServiceLog.readings(others, updates),
+                lastOdometer = VehicleReminders.currentOdometer(others, updates),
+                specs = vehicle.whatItTakes(),
+                original = original,
+                rules = catalogRules.all().map { it.toRule() },
+                openRecommendations = recommendations.all(vehicleId).map { it.toModel() }.filter { it.open || (original != null && it.doneBy == original.record.id) },
+            )
 
             if (original != null) {
                 val r = original.toModel()
@@ -773,24 +791,14 @@ class LogServiceViewModel @Inject constructor(
                 form.feesText = r.charges.feesCents?.let(::editableCost).orEmpty()
                 form.notes = r.notes.orEmpty()
                 form.keptPhotos = original.photos
-                form.draft = LogDraft.of(r, optionFor, LogTerms(categories, { it.label }, AppFigures))
+                form.draft = LogDraft.of(r, data.terms)
             }
 
-            if (!editing) optionFor[route.scheduleItemId]?.let { form.selected = setOf(it.id) }
+            if (!editing) lines.optionFor(route.scheduleItemId)?.let { form.selected = setOf(it.id) }
 
-            form.categoryId = categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: categories.first().id
-            form.data = LogServiceData(
-                vehicleName = vehicle.shortName(),
-                categories = categories,
-                due = due,
-                log = log,
-                readings = ServiceLog.readings(others, updates),
-                lastOdometer = VehicleReminders.currentOdometer(others, updates),
-                specs = vehicle.whatItTakes(),
-                original = original,
-                rules = catalogRules.all().map { it.toRule() },
-                openRecommendations = recommendations.all(vehicleId).map { it.toModel() }.filter { it.open || (original != null && it.doneBy == original.record.id) },
-            )
+            form.categoryId = lines.categories.firstOrNull { c -> c.options.any { it.id in form.selected } }?.id ?: lines.categories.first().id
+            // Last, so the form is whole once it has its data.
+            form.data = data
             // Only once the form has its vehicle, so an invoice picked meanwhile waits for it rather than going nowhere.
             if (!editing) invoices.picked.collect { if (it?.key == photoKey) invoices.take(photoKey)?.let { p -> onInvoice(p) } }
         }
@@ -980,7 +988,7 @@ internal fun LogServiceContent(
                                 onClick = {
                                     form.toggle(s.optionId)
                                     // Open the category it was ticked in, so the tick is in sight and not only a count on a button.
-                                    if (!on) data.categories.firstOrNull { c -> c.options.any { it.id == s.optionId } }?.let { form.categoryId = it.id }
+                                    if (!on) data.lines.categoryOf(s.optionId)?.let { form.categoryId = it.id }
                                 },
                                 // Canvas: "+" offers it, a tick and the soft tint show it is on the list.
                                 label = {
@@ -1210,7 +1218,7 @@ internal fun LogServiceContent(
         form.recommended.getOrNull(i)?.let { choice ->
             RecommendedLineDialog(
                 text = choice.item.text,
-                categories = data.categories,
+                vehicleLines = data.lines,
                 rules = data.rules,
                 onPick = {
                     form.lineFor(i, it)

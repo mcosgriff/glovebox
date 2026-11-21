@@ -439,8 +439,8 @@ class LogServiceViewModelTest {
 
         form.odometerText = "52,100"
         form.toggle("rotation")
-        // One of the user's own items, offered as "schedule-…": no catalog line, in the preview as in the save.
-        form.toggle("schedule-$hitch")
+        // One of the user's own items: no catalog line, in the preview as in the save.
+        form.toggle(form.data!!.lines.optionFor(hitch)!!.id)
         val previewed = form.toSave()!!.record
         assertEquals(previewed, form.toRecord(form.data!!, form.odometer!!))
         val moves = form.reminderChanges

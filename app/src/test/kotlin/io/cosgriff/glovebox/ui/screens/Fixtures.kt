@@ -604,12 +604,12 @@ object Fixtures {
     /** A new service, opened from the overdue oil change, with the reading still to type. */
     fun logService(): LogServiceForm {
         val refs = templates.map { ScheduleRef(id(it.key), it.label, it.key, tracked = it.key !in untracked) }
-        val categories = ServiceCatalog.forVehicle(refs)
-        val oil = categories.flatMap { it.options }.first { it.id == "oil" }
+        val lines = ServiceCatalog.forVehicle(refs)
+        val oil = lines.options.first { it.id == "oil" }
         return LogServiceForm(editing = false, today = { TODAY }).apply {
             data = LogServiceData(
                 vehicleName = "2019 Blue truck",
-                categories = categories,
+                lines = lines,
                 due = listOf(DueSuggestion(oil.id, oil.label, overdue = true)),
                 log = VehicleLog(
                     vehicle = truck, items = emptyList(), records = truckRecords, readings = emptyList(), swap = null, entries = truckEntries, updates = truckReadings,
@@ -620,7 +620,7 @@ object Fixtures {
                 specs = truck.whatItTakes(),
                 original = null,
             )
-            categoryId = categories.first { c -> c.options.any { it.id == oil.id } }.id
+            categoryId = lines.categoryOf(oil.id)!!.id
             toggle(oil.id)
         }
     }
