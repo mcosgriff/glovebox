@@ -580,6 +580,9 @@
     <string name="delete_vehicle_schedule">Schedule items &amp; reminders</string>
     <string name="delete_vehicle_torque">Torque &amp; fastener specs</string>
     <string name="delete_vehicle_recalls">Recalls and their status</string>
+    <string name="delete_vehicle_recall_names">Model names for recall checks</string>
+    <string name="delete_vehicle_milestones">Milestones &amp; their jobs</string>
+    <string name="delete_vehicle_recommendations">Shop recommendations</string>
     <string name="delete_vehicle_details">Vehicle details and photo</string>
     <string name="delete_vehicle_no_photo">No photo</string>
     <string name="delete_vehicle_cant_undo">This can\'t be undone. Backup files you\'ve already saved aren\'t changed.</string>

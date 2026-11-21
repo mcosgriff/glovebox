@@ -1,16 +1,20 @@
 package io.cosgriff.glovebox.data
 
 import android.content.Context
+import androidx.room3.useReaderConnection
 import androidx.test.core.app.ApplicationProvider
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.DocumentEntity
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
+import io.cosgriff.glovebox.data.db.MilestoneEntity
+import io.cosgriff.glovebox.data.db.MilestoneJobEntity
 import io.cosgriff.glovebox.data.db.PhotoEntity
 import io.cosgriff.glovebox.data.db.RecallEntity
 import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
+import io.cosgriff.glovebox.data.db.ShopRecommendationEntity
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
 import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import kotlinx.coroutines.runBlocking
@@ -61,14 +65,21 @@ class DataWipeTest {
         return id
     }
 
-    /** A vehicle with one of every row Delete vehicle counts, three records' photos, its own photo and a document, all made up. */
+    /**
+     * A vehicle with one of every row Delete vehicle counts (two milestones and two ticked recall names, so a count
+     * isn't a yes or no), three records' photos, its own photo and a document, all made up.
+     */
     private suspend fun fullVehicle(tag: String, make: String): Long {
         val id = db.vehicles().add(testVehicle(make = make, photoFile = photo("vehicle-$tag.jpg")), firstReading = 60_000)
-        record(id, imported = false, photo("receipt-$tag.jpg"), photo("parts-$tag.jpg"))
+        val logged = record(id, imported = false, photo("receipt-$tag.jpg"), photo("parts-$tag.jpg"))
         record(id, imported = true, photo("imported-$tag.jpg"))
         db.schedule().insertAll(listOf(ScheduleItemEntity(vehicleId = id, name = "Oil change", intervalMiles = 5_000, intervalMonths = 6)))
         db.torque().insert(TorqueSpecEntity(vehicleId = id, name = "Lug nuts", category = "WHEELS"))
         db.recalls().insertAll(listOf(RecallEntity(vehicleId = id, campaign = "26V00000$tag", component = "BRAKES", summary = "Made up.", firstSeenOn = day)))
+        db.recalls().setNames(id, listOf("$make One", "$make Two"))
+        db.milestones().save(MilestoneEntity(vehicleId = id, atMiles = 30_000), listOf(MilestoneJobEntity(milestoneId = 0, name = "Air filter")))
+        db.milestones().save(MilestoneEntity(vehicleId = id, atMiles = 60_000), listOf(MilestoneJobEntity(milestoneId = 0, name = "Spark plugs")))
+        db.recommendations().insert(ShopRecommendationEntity(vehicleId = id, recordId = logged, wording = "Rear wiper blade"))
         db.documents().insert(DocumentEntity(vehicleId = id, type = "TITLE", name = "Title", fileName = photo("document-$tag.pdf"), format = "PDF", sizeBytes = 1, addedOn = day))
         return id
     }
@@ -83,17 +94,40 @@ class DataWipeTest {
         val keptBefore = wipe.whatGoes(kept)!!
         val said = wipe.whatGoes(gone)!!
 
-        assertEquals(VehicleRowCounts(records = 2, photos = 3, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1), said.rows)
+        assertEquals(
+            VehicleRowCounts(
+                records = 2, photos = 3, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1,
+                milestones = 2, shopRecommendations = 1, recallNames = 2,
+            ),
+            said.rows,
+        )
         assertEquals(setOf("vehicle-1.jpg", "receipt-1.jpg", "parts-1.jpg", "imported-1.jpg", "document-1.pdf"), said.files.toSet())
 
         assertEquals(said, wipe.deleteVehicle(gone))
 
         assertNull(db.vehicles().byId(gone))
-        assertEquals(VehicleRowCounts(0, 0, 0, 0, 0, 0, 0), db.vehicles().rowCounts(gone))
+        assertEquals(VehicleRowCounts(0, 0, 0, 0, 0, 0, 0, 0, 0, 0), db.vehicles().rowCounts(gone))
         // No orphan: every file left is one a row still points at, and they are all the other vehicle's.
         assertEquals(db.documents().allEncryptedFiles().toSet(), onDisk())
         assertEquals(keptBefore.files.toSet(), onDisk())
         assertEquals(keptBefore, wipe.whatGoes(kept))
+    }
+
+    @Test
+    fun `every table that names a vehicle is one Delete vehicle counts`() = runBlocking {
+        // The tables VehicleDao.rowCounts counts. A new table that cascades from vehicles fails here until it is
+        // counted and given its row on Delete vehicle (#635), or this says why it isn't.
+        val counted = setOf(
+            "service_records", "schedule_items", "torque_specs", "recalls", "odometer_readings", "documents",
+            "milestones", "shop_recommendations", "recall_names",
+        )
+        val naming = db.useReaderConnection { connection ->
+            val tables = connection.usePrepared("SELECT name FROM sqlite_master WHERE type = 'table'") { s -> buildList { while (s.step()) add(s.getText(0)) } }
+            tables.filter { table ->
+                connection.usePrepared("PRAGMA foreign_key_list(`$table`)") { s -> buildList { while (s.step()) add(s.getText(2)) } }.contains("vehicles")
+            }
+        }
+        assertEquals(counted, naming.toSet())
     }
 
     @Test

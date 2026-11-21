@@ -234,7 +234,10 @@ interface VehicleDao {
             "(SELECT COUNT(*) FROM torque_specs WHERE vehicleId = :vehicleId) AS torqueSpecs, " +
             "(SELECT COUNT(*) FROM recalls WHERE vehicleId = :vehicleId) AS recalls, " +
             "(SELECT COUNT(*) FROM odometer_readings WHERE vehicleId = :vehicleId) AS mileageReadings, " +
-            "(SELECT COUNT(*) FROM documents WHERE vehicleId = :vehicleId) AS documents",
+            "(SELECT COUNT(*) FROM documents WHERE vehicleId = :vehicleId) AS documents, " +
+            "(SELECT COUNT(*) FROM milestones WHERE vehicleId = :vehicleId) AS milestones, " +
+            "(SELECT COUNT(*) FROM shop_recommendations WHERE vehicleId = :vehicleId) AS shopRecommendations, " +
+            "(SELECT COUNT(*) FROM recall_names WHERE vehicleId = :vehicleId) AS recallNames",
     )
     suspend fun rowCounts(vehicleId: Long): VehicleRowCounts
 
@@ -748,6 +751,12 @@ data class VehicleRowCounts(
     val recalls: Int,
     val mileageReadings: Int,
     val documents: Int,
+    /** The user's own milestone table (typed, imported or from a maker's list); their jobs go with them. */
+    val milestones: Int,
+    /** Kept shop recommendations, open and closed (#572). */
+    val shopRecommendations: Int,
+    /** The model names the owner ticked for recall checks (#460). */
+    val recallNames: Int,
 )
 
 /** A shop as one record names it. */
