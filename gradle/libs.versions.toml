@@ -8,8 +8,8 @@ serialization = "1.11.0"
 
 core-ktx = "1.19.1"
 activity-compose = "1.13.0"
-lifecycle = "2.11.0"
-navigation3 = "1.2.0"
+lifecycle = "2.11.1"
+navigation3 = "1.2.2"
 compose-bom = "2026.09.00"
 biometric = "1.1.0"
 fragment = "1.9.1"
@@ -19,7 +19,7 @@ glance = "1.2.0"
 
 room = "3.0.3"
 sqlite = "2.7.1"
-sqlcipher = "4.19.1"
+sqlcipher = "4.20.0"
 tink = "1.23.0"
 ktor = "3.6.0"
 camerax = "1.6.2"
@@ -125,7 +125,7 @@ tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android"
 # Tests that have to run on a phone or emulator (app/src/androidTest); nothing here ships in the app.
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
 androidx-test-core = { module = "androidx.test:core", version = "1.7.0" }
-androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.4.0" }
+androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version = "2.4.1" }
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 # Test only: runs Android's SQLite on the JVM so the database migrations are tested by `./gradlew build`.
