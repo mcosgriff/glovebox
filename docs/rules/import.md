@@ -9,7 +9,10 @@ Rules for the import format and schemas, schedule and history imports, the Carfa
   nothing is repaired, every error has its path. A file never names a vehicle.
 - A new kind: a schema, a valid example, `examples/invalid/<kind>/` and `examples/beyond-schema/<kind>/`, a
   reader and plan in `:domain`, a case in `ImportFormat.parse` and `supported`, and a `…Preview` in
-  `ImportViewModel`. The page is kind-agnostic.
+  `ImportViewModel`. The page is kind-agnostic. **A history import is planned by `HistoryImportPlanner`** (`:data`,
+  #618): the file, the vehicle's log, the rules, the recommendations and the owner's choices in; the plan, with no
+  wording, and the one write out. It reads no screen's state, so any screen that starts a history import plans it
+  the same way; the ViewModel only words it and hands the write to `RecordActions.applyImport`.
 - A file says its unit by its field names (`everyMiles` / `everyKm` …), one unit per file; `FileDistances` puts
   it into the vehicle's unit. A file the app writes is in the vehicle's unit.
 - **An import never deletes, is one transaction, has no Undo, and only writes the user's own rows**; nothing
