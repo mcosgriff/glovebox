@@ -1,6 +1,6 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
-agp = "9.4.1"
+agp = "9.5.2"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 coroutines = "1.11.0"
@@ -20,8 +20,8 @@ glance = "1.2.0"
 room = "3.0.3"
 sqlite = "2.7.1"
 sqlcipher = "4.20.0"
-tink = "1.23.0"
-ktor = "3.6.0"
+tink = "1.24.0"
+ktor = "3.6.1"
 camerax = "1.6.2"
 pdf = "1.0.0-beta01"
 # Barcode reading. Pure Java with no network code; ML Kit was ruled out because it uploads usage logs.
@@ -31,7 +31,7 @@ zxing = "3.5.4"
 # reason as its barcode reader. Published on JitPack only; see settings.gradle.kts.
 tesseract4android = "4.9.0"
 # Argon2id for the backup password. Only the lightweight API is used (no provider), so R8 keeps little of it.
-bouncycastle = "1.86"
+bouncycastle = "1.87"
 # Build tools only (#273): AGP 9.4 brings older httpclient onto the build classpath; held at the last 4.x.
 httpclient = "4.5.14"
 
@@ -50,14 +50,14 @@ junit = "4.13.2"
 # (`@Config(sdk = [35])`, and `[29]` in a few). Robolectric would fetch those jars itself at test time;
 # Gradle resolves, caches and verifies them instead (#585). Each Robolectric release names its own builds of
 # them, so these move together: on a Robolectric upgrade, take the versions from its `AndroidSdk` list.
-robolectric = "4.17"
-robolectric-androidAll-sdk35 = "15-robolectric-13954326-i7"
-robolectric-androidAll-sdk29 = "10-robolectric-5803371-i7"
+robolectric = "4.18"
+robolectric-androidAll-sdk35 = "17-robolectric-16653203-i7"
+robolectric-androidAll-sdk29 = "17-robolectric-16653203-i7"
 # Screenshot tests (#233) on the JVM through Robolectric: test only, nothing of it ships.
-roborazzi = "1.76.0"
+roborazzi = "1.79.0"
 # Test coverage for Codecov (CI only; nothing of it ships).
 kover = "0.9.11"
-jsonSchemaValidator = "3.0.8"
+jsonSchemaValidator = "3.0.9"
 turbine = "1.2.1"
 
 [libraries]
