@@ -1,11 +1,17 @@
 package io.cosgriff.glovebox.data
 
 import android.content.Context
+import androidx.room3.immediateTransaction
+import androidx.room3.useWriterConnection
 import io.cosgriff.glovebox.data.crypto.DatabaseKeyManager
 import io.cosgriff.glovebox.data.crypto.PhotoCrypto
 import io.cosgriff.glovebox.data.db.GloveboxDatabase
 import io.cosgriff.glovebox.data.db.VehicleEntity
+import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import java.io.File
+
+/** What Delete vehicle takes: [vehicle] and the rows counted in [rows], and the encrypted [files] they point at. */
+data class VehicleDeletion(val vehicle: VehicleEntity, val rows: VehicleRowCounts, val files: List<String>)
 
 /** Implements the two destructive flows from the design: delete one vehicle, delete everything. */
 class DataWipe(
@@ -14,11 +20,27 @@ class DataWipe(
     private val keys: DatabaseKeyManager,
     private val photos: PhotoCrypto,
 ) {
-    /** Removes the vehicle row (cascading to all its data) and its encrypted photo and document files. */
-    suspend fun deleteVehicle(vehicle: VehicleEntity) {
-        val files = db.service().photoFilesOf(vehicle.id, all = true) + listOfNotNull(vehicle.photoFile) + db.documents().documentsFor(vehicle.id).map { it.fileName }
-        db.vehicles().delete(vehicle)
-        photos.delete(files)
+    /**
+     * What deleting [vehicleId] takes with it: the rows Delete vehicle counts and every encrypted file the
+     * vehicle's rows point at (`DocumentDao.encryptedFiles`, the query the backup and the orphan sweep go by).
+     * Null if the vehicle doesn't exist.
+     */
+    suspend fun whatGoes(vehicleId: Long): VehicleDeletion? {
+        val vehicle = db.vehicles().byId(vehicleId) ?: return null
+        return VehicleDeletion(vehicle, db.vehicles().rowCounts(vehicleId), db.documents().encryptedFiles(vehicleId))
+    }
+
+    /**
+     * Deletes the vehicle (ADR-0003): the row, which cascades to everything that names it, then the files
+     * [whatGoes] found, read in the same transaction so none is missed. Returns what went, or null if the
+     * vehicle was already gone.
+     */
+    suspend fun deleteVehicle(vehicleId: Long): VehicleDeletion? {
+        val gone = db.useWriterConnection { connection ->
+            connection.immediateTransaction<VehicleDeletion?> { whatGoes(vehicleId)?.also { db.vehicles().delete(it.vehicle) } }
+        } ?: return null
+        photos.delete(gone.files)
+        return gone
     }
 
     /**

@@ -18,6 +18,7 @@ import io.cosgriff.glovebox.data.db.ScheduleItemEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordEntity
 import io.cosgriff.glovebox.data.db.ServiceRecordItemEntity
 import io.cosgriff.glovebox.data.db.TorqueSpecEntity
+import io.cosgriff.glovebox.data.db.VehicleRowCounts
 import io.cosgriff.glovebox.ui.DeleteVehicleRoute
 import io.cosgriff.glovebox.ui.screens.ScreenshotApp
 import io.cosgriff.glovebox.ui.service.shortName
@@ -70,7 +71,7 @@ class DeleteVehicleScreenTest {
     private fun show(id: Long, loaded: Boolean = true) {
         vm = g.viewModel {
             DeleteVehicleViewModel(
-                routeHandle(DeleteVehicleRoute(id)), g.logs, g.db.torque(), g.db.recalls(), g.db.documents(), g.wipe, g.archiver,
+                routeHandle(DeleteVehicleRoute(id)), g.logs, g.wipe, g.archiver,
             )
         }
         compose.setContent {
@@ -86,7 +87,7 @@ class DeleteVehicleScreenTest {
         val (id, _) = wagon()
         show(id)
         val d = vm.data!!
-        assertEquals(listOf(1, 1, 1, 1, 1, 1, 1), listOf(d.records, d.photos, d.scheduleItems, d.torqueSpecs, d.recalls, d.mileageReadings, d.documents))
+        assertEquals(VehicleRowCounts(records = 1, photos = 1, scheduleItems = 1, torqueSpecs = 1, recalls = 1, mileageReadings = 1, documents = 1), d.rows)
         assertEquals(201_000, d.lastOdometer)
         assertEquals("Old Faithful", d.name)
         compose.onNodeWithText(g.string(R.string.delete_vehicle_title, g.vehicle(id)!!.shortName())).assertExists()

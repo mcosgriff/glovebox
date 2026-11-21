@@ -2,7 +2,8 @@
 
 Rules for encrypted files, pictures, the in-app PDF viewer, pickers. Read before changing any of it; review holds a diff to every line here.
 
-- **Every encrypted file the database points at comes from `DocumentDao.allEncryptedFiles()`**, and files are
+- **Every encrypted file the database points at comes from `DocumentDao.encryptedFiles`**: all of them
+  (`allEncryptedFiles()`) for the sweep, backup and restore, one vehicle's for Delete vehicle. Files are
   deleted through `PhotoCrypto.delete`. Documents are encrypted with the photo key in `photoDir`, so the sweep,
   backup, restore and crypto-erase cover them.
 - **The photo key is used only while the Android Keystore protects it.** Tink would quietly keep it in the

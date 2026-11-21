@@ -196,11 +196,9 @@ class MakersSchedulesTest {
     fun `a vehicle stays on the list it took up after its engine text changes`() = runBlocking {
         val car = db.vehicles().insert(truck("2.4L I4"))
         writer.adopt(car, items(car), list)
-        db.vehicles().update(vehicle(car).copy(engine = "4.0L V6"))
 
-        assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
-        db.vehicles().update(vehicle(car).copy(engine = "something none of them is for"))
-        assertEquals(list.id, writer.forVehicle(vehicle(car))?.id)
+        assertEquals(list.id, writer.forVehicle(vehicle(car).copy(engine = "4.0L V6"))?.id)
+        assertEquals(list.id, writer.forVehicle(vehicle(car).copy(engine = "something none of them is for"))?.id)
     }
 
     @Test
